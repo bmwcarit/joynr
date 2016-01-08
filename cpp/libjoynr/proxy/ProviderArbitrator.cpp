@@ -186,8 +186,8 @@ void ProviderArbitrator::setArbitrationStatus(
             assert(listener != nullptr);
             listener->setArbitrationStatus(arbitrationStatus);
         } catch (exceptions::DiscoveryException& e) {
-            JOYNR_LOG_ERROR(logger)
-                    << "Exception while setting arbitration status: " << e.getMessage();
+            JOYNR_LOG_ERROR(
+                    logger, "Exception while setting arbitration status: {}", e.getMessage());
             listenerSemaphore.notify();
             throw;
         }

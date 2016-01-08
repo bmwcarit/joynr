@@ -145,7 +145,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     //check if all Requests were successful
     EXPECT_EQ(numberOfRequests, successfulRequests);
     Logger logger("End2EndPerformanceTest");
-    JOYNR_LOG_INFO(logger) << "Required Time for 1000 Requests: " << (stopTime - startTime);
+    JOYNR_LOG_INFO(logger, "Required Time for 1000 Requests: {}",(stopTime - startTime));
     // to silence unused-variable compiler warnings
     (void)startTime;
     (void)stopTime;

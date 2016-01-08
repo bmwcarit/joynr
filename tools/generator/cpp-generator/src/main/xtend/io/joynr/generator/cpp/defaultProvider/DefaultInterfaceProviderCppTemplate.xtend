@@ -173,9 +173,9 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 				«outputParamType» «argument.joynrName»;
 			«ENDIF»
 		«ENDFOR»
-		JOYNR_LOG_WARN(logger) << "**********************************************";
-		JOYNR_LOG_WARN(logger) << "* Default«interfaceName»Provider::«methodName» called";
-		JOYNR_LOG_WARN(logger) << "**********************************************";
+		JOYNR_LOG_WARN(logger, "**********************************************");
+		JOYNR_LOG_WARN(logger, "* Default«interfaceName»Provider::«methodName» called");
+		JOYNR_LOG_WARN(logger, "**********************************************");
 		onSuccess(
 				«outputUntypedParamList»
 		);

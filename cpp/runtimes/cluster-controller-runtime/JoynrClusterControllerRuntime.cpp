@@ -174,8 +174,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       *
       */
     if (!messageReceiver) {
-        JOYNR_LOG_INFO(logger)
-                << "The message receiver supplied is NULL, creating the default MessageReceiver";
+        JOYNR_LOG_INFO(
+                logger,
+                "The message receiver supplied is NULL, creating the default MessageReceiver");
         messageReceiver = std::shared_ptr<IMessageReceiver>(
                 new HttpReceiver(*messagingSettings, messageRouter));
     }
@@ -184,8 +185,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     // create message sender
     if (!messageSender) {
-        JOYNR_LOG_INFO(logger)
-                << "The message sender supplied is NULL, creating the default MessageSender";
+        JOYNR_LOG_INFO(
+                logger, "The message sender supplied is NULL, creating the default MessageSender");
         messageSender = std::shared_ptr<IMessageSender>(new HttpSender(
                 messagingSettings->getBounceProxyUrl(),
                 std::chrono::milliseconds(messagingSettings->getSendMsgMaxTtl()),
@@ -354,11 +355,11 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
-    JOYNR_LOG_TRACE(logger) << "entering ~JoynrClusterControllerRuntime";
+    JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
     stopMessaging();
 
     if (joynrDispatcher != nullptr) {
-        JOYNR_LOG_TRACE(logger) << "joynrDispatcher";
+        JOYNR_LOG_TRACE(logger, "joynrDispatcher");
         // joynrDispatcher->stopMessaging();
         delete joynrDispatcher;
     }
@@ -382,7 +383,7 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     delete settings;
 
-    JOYNR_LOG_TRACE(logger) << "leaving ~JoynrClusterControllerRuntime";
+    JOYNR_LOG_TRACE(logger, "leaving ~JoynrClusterControllerRuntime");
 }
 
 void JoynrClusterControllerRuntime::startMessaging()

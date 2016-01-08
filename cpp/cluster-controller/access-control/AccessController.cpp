@@ -96,9 +96,11 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
     bool hasPermission = convertToBool(permission);
 
     if (hasPermission == false) {
-        JOYNR_LOG_ERROR(owningAccessController.logger) << "Message " << message.getHeaderMessageId()
-                                                       << " to domain " << domain << ", interface "
-                                                       << interfaceName << " failed ACL check";
+        JOYNR_LOG_ERROR(owningAccessController.logger,
+                        "Message {} to domain {}, interface {} failed ACL check",
+                        message.getHeaderMessageId(),
+                        domain,
+                        interfaceName);
     }
     callback->hasConsumerPermission(hasPermission);
 }
@@ -133,7 +135,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     }
 
     if (operation.empty()) {
-        JOYNR_LOG_ERROR(owningAccessController.logger) << "Could not deserialize request";
+        JOYNR_LOG_ERROR(owningAccessController.logger, "Could not deserialize request");
         callback->hasConsumerPermission(false);
         return;
     }
@@ -146,10 +148,12 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     bool hasPermission = convertToBool(permission);
 
     if (hasPermission == false) {
-        JOYNR_LOG_ERROR(owningAccessController.logger)
-                << "Message " << message.getHeaderMessageId() << " to domain " << domain
-                << ", interface/operation " << interfaceName << "/" << operation
-                << " failed ACL check";
+        JOYNR_LOG_ERROR(owningAccessController.logger,
+                        "Message {} to domain {}, interface/operation {}/{} failed ACL check",
+                        message.getHeaderMessageId(),
+                        domain,
+                        interfaceName,
+                        operation);
     }
 
     callback->hasConsumerPermission(hasPermission);
@@ -249,8 +253,8 @@ void AccessController::hasConsumerPermission(
     std::function<void(const types::DiscoveryEntry&)> lookupSuccessCallback =
             [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
         if (discoveryEntry.getParticipantId() != participantId) {
-            JOYNR_LOG_ERROR(logger) << "Failed to get capabilities for participantId "
-                                    << participantId;
+            JOYNR_LOG_ERROR(
+                    logger, "Failed to get capabilities for participantId {}", participantId);
             callback->hasConsumerPermission(false);
             return;
         }

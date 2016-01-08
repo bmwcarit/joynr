@@ -47,9 +47,12 @@ void KeywordArbitrator::attemptArbitration()
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
         receiveCapabilitiesLookupResults(result);
     } catch (exceptions::JoynrException& e) {
-        JOYNR_LOG_ERROR(logger) << "Unable to lookup provider (domain: " << domain
-                                << ", interface: " << interfaceName
-                                << "from discovery. Error: " << e.getMessage();
+        JOYNR_LOG_ERROR(
+                logger,
+                "Unable to lookup provider (domain: {}, interface: {}from discovery. Error: {}",
+                domain,
+                interfaceName,
+                e.getMessage());
     }
 }
 
@@ -64,7 +67,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     // Loop through the result list
     for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
-        JOYNR_LOG_TRACE(logger) << "Looping over capabilitiesEntry: " << discoveryEntry.toString();
+        JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
 
         // Check that the provider supports onChange subscriptions if this was requested
         if (discoveryQos.getProviderMustSupportOnChange() &&
@@ -78,7 +81,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
             std::string name = parameter.getName();
             if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
                 std::string res = discoveryEntry.getParticipantId();
-                JOYNR_LOG_TRACE(logger) << "setting res to " << res;
+                JOYNR_LOG_TRACE(logger, "setting res to {}", res);
                 joynr::types::CommunicationMiddleware::Enum preferredConnection(
                         selectPreferredCommunicationMiddleware(discoveryEntry.getConnections()));
                 updateArbitrationStatusParticipantIdAndAddress(

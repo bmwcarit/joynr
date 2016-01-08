@@ -42,13 +42,13 @@ int main(int argc, char* argv[])
     // Check the usage
     QString programName(argv[0]);
     if (argc != 2) {
-        JOYNR_LOG_ERROR(logger) << "USAGE: " << programName.toStdString() << " <provider-domain>";
+        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain>", programName.toStdString());
         return 1;
     }
 
     // Get the provider domain
     std::string providerDomain(argv[1]);
-    JOYNR_LOG_INFO(logger) << "Registering provider on domain " << providerDomain;
+    JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
 
     // Get the current program directory
     QString dir(QFileInfo(programName).absolutePath());

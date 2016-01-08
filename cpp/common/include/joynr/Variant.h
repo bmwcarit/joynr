@@ -285,12 +285,14 @@ T& Variant::get()
 {
     if (!is<T>()) {
         if (JoynrTypeId<T>::getTypeId() == 0) {
-            JOYNR_LOG_TRACE(logger)
-                    << "Type param T is not registered with type registry. Variant stores "
-                    << getTypeName() << ".";
+            JOYNR_LOG_TRACE(logger,
+                            "Type param T is not registered with type registry. Variant stores {}.",
+                            getTypeName());
         } else {
-            JOYNR_LOG_TRACE(logger) << "Getting type " << JoynrTypeId<T>::getTypeName()
-                                    << " from variant, but variant stores " << getTypeName();
+            JOYNR_LOG_TRACE(logger,
+                            "Getting type {} from variant, but variant stores {}",
+                            JoynrTypeId<T>::getTypeName(),
+                            getTypeName());
         }
     }
     VariantHolder<T>* holder = static_cast<VariantHolder<T>*>(pointer.get());
@@ -302,12 +304,14 @@ const T& Variant::get() const
 {
     if (!is<T>()) {
         if (JoynrTypeId<T>::getTypeId() == 0) {
-            JOYNR_LOG_TRACE(logger)
-                    << "Type param T is not registered with type registry. Variant stores "
-                    << getTypeName();
+            JOYNR_LOG_TRACE(logger,
+                            "Type param T is not registered with type registry. Variant stores {}",
+                            getTypeName());
         } else {
-            JOYNR_LOG_TRACE(logger) << "Getting type " << JoynrTypeId<T>::getTypeName()
-                                    << " from variant, but variant stores " << getTypeName();
+            JOYNR_LOG_TRACE(logger,
+                            "Getting type {} from variant, but variant stores {}",
+                            JoynrTypeId<T>::getTypeName(),
+                            getTypeName());
         }
     }
     VariantHolder<T>* holder = static_cast<VariantHolder<T>*>(pointer.get());

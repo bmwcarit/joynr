@@ -131,9 +131,9 @@ HttpRequestBuilder* HttpRequestBuilder::addHeader(const std::string& name, const
 HttpRequest* HttpRequestBuilder::build()
 {
     if (built) {
-        JOYNR_LOG_WARN(logger)
-                << "The method build of HttpBuilder may be called only once on a specific "
-                   "instance. Throwing an Exception from worker thread.";
+        JOYNR_LOG_WARN(logger,
+                       "The method build of HttpBuilder may be called only once on a specific "
+                       "instance. Throwing an Exception from worker thread.");
         throw exceptions::JoynrRuntimeException(
                 "The method build of HttpBuilder may be called only once on a specific instance");
     }

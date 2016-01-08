@@ -95,7 +95,7 @@ TEST_F(JsonSerializerPolymorphismTest, DISABLED_serializeDerivedTypeFromSuperTyp
 
     std::string serializedSuper = JsonSerializer::serialize(super);
 
-    JOYNR_LOG_DEBUG(logger) <<  serializedSuper;
+    JOYNR_LOG_DEBUG(logger, serializedSuper);
 
     joynr::types::TestTypes::TStruct* deserializedSuper =
             JsonSerializer::deserialize<joynr::types::TestTypes::TStruct>(serializedSuper);
@@ -146,7 +146,7 @@ TEST_F(JsonSerializerPolymorphismTest, DISABLED_serializeGpsLocationListWithLoca
     std::vector<Variant> variantVector = Util::convertVectorToVariantVector(gpsPositions);
     Variant variant = Variant::make<std::vector<Variant>>(variantVector);
     std::string serializedGpsLocations = JsonSerializer::serialize(variant);
-    JOYNR_LOG_DEBUG(logger) <<  serializedGpsLocations;
+    JOYNR_LOG_DEBUG(logger, serializedGpsLocations);
 
 //    EXPECT_EQ(gpsLocation, *deserializedGpsLocation);
 }

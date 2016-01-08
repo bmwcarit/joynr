@@ -51,14 +51,15 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       */
 
     std::string subscriptionId = subscriptionPublication.getSubscriptionId();
-    JOYNR_LOG_TRACE(logger) << "Sending publication. id=" << subscriptionId;
+    JOYNR_LOG_TRACE(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
-        JOYNR_LOG_ERROR(logger) << "Dropping reply for non/no more existing subscription with id="
-                                << subscriptionId;
+        JOYNR_LOG_ERROR(logger,
+                        "Dropping reply for non/no more existing subscription with id={}",
+                        subscriptionId);
         return;
     }
 
@@ -68,7 +69,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     // PublicationInterpreter polymorphism
     IPublicationInterpreter& interpreter =
             MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
-    JOYNR_LOG_TRACE(logger) << "Interpreting publication. id=" << subscriptionId;
+    JOYNR_LOG_TRACE(logger, "Interpreting publication. id={}", subscriptionId);
     interpreter.execute(callback, subscriptionPublication);
 }
 

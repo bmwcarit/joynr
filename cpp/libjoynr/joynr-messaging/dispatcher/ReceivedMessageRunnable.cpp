@@ -32,8 +32,8 @@ ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
           message(message),
           dispatcher(dispatcher)
 {
-    JOYNR_LOG_DEBUG(logger) << "Creating ReceivedMessageRunnable for message type: "
-                            << message.getType();
+    JOYNR_LOG_DEBUG(
+            logger, "Creating ReceivedMessageRunnable for message type: {}", message.getType());
 }
 
 void ReceivedMessageRunnable::shutdown()
@@ -42,13 +42,15 @@ void ReceivedMessageRunnable::shutdown()
 
 void ReceivedMessageRunnable::run()
 {
-    JOYNR_LOG_DEBUG(logger) << "Running ReceivedMessageRunnable for message type: "
-                            << message.getType() << ", msg ID: " << message.getHeaderMessageId()
-                            << " and "
-                               "payload: " << message.getPayload();
+    JOYNR_LOG_DEBUG(logger,
+                    "Running ReceivedMessageRunnable for message type: {}, msg ID: {} and "
+                    "payload: {}",
+                    message.getType(),
+                    message.getHeaderMessageId(),
+                    message.getPayload());
     if (isExpired()) {
-        JOYNR_LOG_DEBUG(logger)
-                << "Dropping ReceivedMessageRunnable message, because it is expired: ";
+        JOYNR_LOG_DEBUG(
+                logger, "Dropping ReceivedMessageRunnable message, because it is expired: ");
         return;
     }
 
@@ -62,14 +64,14 @@ void ReceivedMessageRunnable::run()
                JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         dispatcher.handleBroadcastSubscriptionRequestReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
-        JOYNR_LOG_FATAL(logger) << "subscription reply not yet implemented";
+        JOYNR_LOG_FATAL(logger, "subscription reply not yet implemented");
         assert(false);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
         dispatcher.handlePublicationReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
         dispatcher.handleSubscriptionStopReceived(message);
     } else {
-        JOYNR_LOG_FATAL(logger) << "unknown message type: " << message.getType();
+        JOYNR_LOG_FATAL(logger, "unknown message type: {}", message.getType());
         assert(false);
     }
 }

@@ -142,9 +142,8 @@ TEST_F(JoynrMessageFactoryTest, createRequest){
     JoynrTimePoint expectedExpiryDate = now + duration<long long>(qos.getTtl());
     JoynrTimePoint expiryDate = joynrMessage.getHeaderExpiryDate();
     EXPECT_NEAR(expectedExpiryDate.time_since_epoch().count(), expiryDate.time_since_epoch().count(), 100.);
-    JOYNR_LOG_DEBUG(logger) << "expiryDate: " << DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate) << " [" << duration_cast<milliseconds>(expiryDate.time_since_epoch()).count() << "]";
-    JOYNR_LOG_DEBUG(logger) << 
-              "expectedExpiryDate: " << DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate) << "  [" << duration_cast<milliseconds>(expectedExpiryDate.time_since_epoch()).count() << "]";
+    JOYNR_LOG_DEBUG(logger, "expiryDate: {} [{}]",DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate),duration_cast<milliseconds>(expiryDate.time_since_epoch()).count());
+    JOYNR_LOG_DEBUG(logger, "expectedExpiryDate: {}  [{}]",DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate),duration_cast<milliseconds>(expectedExpiryDate.time_since_epoch()).count());
 
     checkHeaderCreatorFromTo(joynrMessage);
     checkRequest(joynrMessage);

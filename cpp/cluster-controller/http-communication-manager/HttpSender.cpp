@@ -80,7 +80,7 @@ HttpSender::~HttpSender()
 void HttpSender::sendMessage(const std::string& channelId, const JoynrMessage& message)
 {
 
-    JOYNR_LOG_TRACE(logger) << "sendMessage: ...";
+    JOYNR_LOG_TRACE(logger, "sendMessage: ...");
     std::string&& serializedMessage = JsonSerializer::serialize(message);
     /** Potential issue: needs second threadpool to call the ChannelUrlDir so a deadlock cannot
      * occur
@@ -146,13 +146,15 @@ void HttpSender::SendMessageRunnable::run()
 {
     auto startTime = std::chrono::system_clock::now();
     if (isExpired()) {
-        JOYNR_LOG_DEBUG(logger) << "Message expired, expiration time: "
-                                << DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime);
+        JOYNR_LOG_DEBUG(logger,
+                        "Message expired, expiration time: {}",
+                        DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime));
         return;
     }
 
-    JOYNR_LOG_TRACE(logger) << "messageRunnableCounter: + "
-                            << SendMessageRunnable::messageRunnableCounter << "  SMR existing.";
+    JOYNR_LOG_TRACE(logger,
+                    "messageRunnableCounter: + {}  SMR existing.",
+                    SendMessageRunnable::messageRunnableCounter);
 
     assert(messageSender->channelUrlCache != nullptr);
     // A channelId can have several Url's. Hence, we cannot use up all the time we have for testing
@@ -162,7 +164,7 @@ void HttpSender::SendMessageRunnable::run()
             getRemainingTtl_ms() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
             HttpSender::MIN_ATTEMPT_TTL().count());
     std::string url = resolveUrlForChannelId(std::chrono::milliseconds(curlTimeout));
-    JOYNR_LOG_TRACE(logger) << "going to buildRequest";
+    JOYNR_LOG_TRACE(logger, "going to buildRequest");
     HttpResult sendMessageResult = buildRequestAndSend(url, std::chrono::milliseconds(curlTimeout));
 
     // Delay the next request if an error occurs
@@ -188,37 +190,42 @@ void HttpSender::SendMessageRunnable::run()
         if (!sendMessageResult.getBody().isNull()) {
             body = std::string(sendMessageResult.getBody().data());
         }
-        JOYNR_LOG_ERROR(logger) << "sending message - fail; error message "
-                                << sendMessageResult.getErrorMessage() << "; contents " << body
-                                << "; scheduling for "
-                                   "retry...";
+        JOYNR_LOG_ERROR(
+                logger,
+                "sending message - fail; error message {}; contents {}; rescheduling for retry...",
+                sendMessageResult.getErrorMessage(),
+                body);
     } else {
-        JOYNR_LOG_DEBUG(logger) << "sending message - success; url: " << url
-                                << " status code: " << sendMessageResult.getStatusCode() << " at "
-                                << DispatcherUtils::nowInMilliseconds();
+        JOYNR_LOG_DEBUG(logger,
+                        "sending message - success; url: {} status code: {} at ",
+                        url,
+                        sendMessageResult.getStatusCode(),
+                        DispatcherUtils::nowInMilliseconds());
     }
 }
 std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(
         std::chrono::milliseconds curlTimeout)
 {
-    JOYNR_LOG_TRACE(logger) << "obtaining Url with a curlTimeout of : " << curlTimeout.count();
+    JOYNR_LOG_TRACE(logger, "obtaining Url with a curlTimeout of : {}", curlTimeout.count());
     RequestStatus status;
     // we also use the curl timeout here, to prevent long blocking during shutdown.
     std::string url = messageSender->channelUrlCache->obtainUrl(channelId, status, curlTimeout);
     if (!status.successful()) {
-        JOYNR_LOG_ERROR(logger)
-                << "Issue while trying to obtained URl from the ChannelUrlDirectory: "
-                << status.toString();
+        JOYNR_LOG_ERROR(logger,
+                        "Issue while trying to obtained URl from the ChannelUrlDirectory: {}",
+                        status.toString());
     }
     if (url.empty()) {
-        JOYNR_LOG_DEBUG(logger)
-                << "Url for channelId could not be obtained from the ChannelUrlDirectory"
-                   "... EXITING ...";
+        JOYNR_LOG_DEBUG(logger,
+                        "Url for channelId could not be obtained from the "
+                        "ChannelUrlDirectory ... EXITING ...");
         assert(false); // OR: url = messageSender->bounceProxyUrl.getSendUrl(channelId).toString();
     }
 
-    JOYNR_LOG_TRACE(logger) << "Sending message; url: " << url << ", time left: "
-                            << DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime);
+    JOYNR_LOG_TRACE(logger,
+                    "Sending message; url: {}, time left: {}",
+                    url,
+                    DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime));
     return url;
 }
 
@@ -234,7 +241,7 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(
                     ->withTimeout(std::min(maxAttemptTtl, curlTimeout))
                     ->postContent(QString::fromStdString(data).toUtf8())
                     ->build());
-    JOYNR_LOG_TRACE(logger) << "builtRequest";
+    JOYNR_LOG_TRACE(logger, "builtRequest");
 
     Util::logSerializedMessage(logger, "Sending Message: ", data);
 

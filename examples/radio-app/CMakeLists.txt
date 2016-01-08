@@ -10,6 +10,8 @@ add_definitions("-std=gnu++0x")
 find_package(Qt5Core REQUIRED)
 find_package(Threads REQUIRED)
 
+find_package (Threads)
+
 set(
     JOYNR_SERVER
     "localhost:8080"
@@ -176,6 +178,7 @@ target_link_libraries(radio-app-provider-ws
     radio-app
     ${JOYNR_LIB_WS_LIBRARIES}
     ${Qt5Core_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 # Compile the consumer application (requires: running cluster controller)
@@ -190,6 +193,7 @@ target_link_libraries(radio-app-consumer-ws
     radio-app
     ${JOYNR_LIB_WS_LIBRARIES}
     ${Qt5Core_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 install(TARGETS

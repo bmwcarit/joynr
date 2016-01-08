@@ -71,20 +71,20 @@ Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
 
 Dispatcher::~Dispatcher()
 {
-    JOYNR_LOG_DEBUG(logger) << "Destructing Dispatcher";
+    JOYNR_LOG_DEBUG(logger, "Destructing Dispatcher");
     handleReceivedMessageThreadPool.shutdown();
     delete publicationManager;
     delete subscriptionManager;
     publicationManager = nullptr;
     subscriptionManager = nullptr;
-    JOYNR_LOG_DEBUG(logger) << "Destructing finished";
+    JOYNR_LOG_DEBUG(logger, "Destructing finished");
 }
 
 void Dispatcher::addRequestCaller(const std::string& participantId,
                                   std::shared_ptr<RequestCaller> requestCaller)
 {
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    JOYNR_LOG_DEBUG(logger) << "addRequestCaller id= " << participantId;
+    JOYNR_LOG_DEBUG(logger, "addRequestCaller id= {}", participantId);
     requestCallerDirectory.add(participantId, requestCaller);
 
     if (publicationManager != nullptr) {
@@ -92,14 +92,14 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
         // received before the corresponding request caller is added
         publicationManager->restore(participantId, requestCaller, messageSender);
     } else {
-        JOYNR_LOG_DEBUG(logger) << "No publication manager available!";
+        JOYNR_LOG_DEBUG(logger, "No publication manager available!");
     }
 }
 
 void Dispatcher::removeRequestCaller(const std::string& participantId)
 {
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    JOYNR_LOG_DEBUG(logger) << "removeRequestCaller id= " << participantId;
+    JOYNR_LOG_DEBUG(logger, "removeRequestCaller id= {}", participantId);
     // TODO if a provider is removed, all publication runnables are stopped
     // the subscription request is deleted,
     // Q: Should it be restored once the provider is registered again?
@@ -111,20 +111,20 @@ void Dispatcher::addReplyCaller(const std::string& requestReplyId,
                                 std::shared_ptr<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings)
 {
-    JOYNR_LOG_DEBUG(logger) << "addReplyCaller id= " << requestReplyId;
+    JOYNR_LOG_DEBUG(logger, "addReplyCaller id= {}", requestReplyId);
     // add the callback to the registry that is responsible for reply messages
     replyCallerDirectory.add(requestReplyId, replyCaller, qosSettings.getTtl());
 }
 
 void Dispatcher::removeReplyCaller(const std::string& requestReplyId)
 {
-    JOYNR_LOG_DEBUG(logger) << "removeReplyCaller id= " << requestReplyId;
+    JOYNR_LOG_DEBUG(logger, "removeReplyCaller id= {}", requestReplyId);
     replyCallerDirectory.remove(requestReplyId);
 }
 
 void Dispatcher::receive(const JoynrMessage& message)
 {
-    JOYNR_LOG_DEBUG(logger) << "receive(message). Message payload: " << message.getPayload();
+    JOYNR_LOG_DEBUG(logger, "receive(message). Message payload: {}", message.getPayload());
     ReceivedMessageRunnable* receivedMessageRunnable = new ReceivedMessageRunnable(message, *this);
     handleReceivedMessageThreadPool.execute(receivedMessageRunnable);
 }
@@ -139,8 +139,10 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     std::string jsonRequest = message.getPayload();
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
     if (caller == nullptr) {
-        JOYNR_LOG_ERROR(logger) << "caller not found in the RequestCallerDirectory for receiverId "
-                                << receiverId << ", ignoring";
+        JOYNR_LOG_ERROR(
+                logger,
+                "caller not found in the RequestCallerDirectory for receiverId {}, ignoring",
+                receiverId);
         return;
     }
     std::string interfaceName = caller->getInterfaceName();
@@ -152,7 +154,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     // deserialize json
     Request* request = JsonSerializer::deserialize<Request>(jsonRequest);
     if (request == nullptr) {
-        JOYNR_LOG_ERROR(logger) << "Unable to deserialize request object from: " << jsonRequest;
+        JOYNR_LOG_ERROR(logger, "Unable to deserialize request object from: {}", jsonRequest);
         return;
     }
 
@@ -168,8 +170,8 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         // send reply back to the original sender (ie. sender and receiver ids are reversed
         // on
         // purpose)
-        JOYNR_LOG_DEBUG(logger) << "Got reply from RequestInterpreter for requestReplyId "
-                                << requestReplyId;
+        JOYNR_LOG_DEBUG(
+                logger, "Got reply from RequestInterpreter for requestReplyId {}", requestReplyId);
         JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
         int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
@@ -184,8 +186,9 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
         reply.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(exception));
-        JOYNR_LOG_DEBUG(logger) << "Got error reply from RequestInterpreter for requestReplyId "
-                                << requestReplyId;
+        JOYNR_LOG_DEBUG(logger,
+                        "Got error reply from RequestInterpreter for requestReplyId {}",
+                        requestReplyId);
         JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
         int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
@@ -213,7 +216,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
     // deserialize the jsonReply
     Reply* reply = JsonSerializer::deserialize<Reply>(jsonReply);
     if (reply == nullptr) {
-        JOYNR_LOG_ERROR(logger) << "Unable to deserialize reply object from: " << jsonReply;
+        JOYNR_LOG_ERROR(logger, "Unable to deserialize reply object from: {}", jsonReply);
         return;
     }
     std::string requestReplyId = reply->getRequestReplyId();
@@ -223,8 +226,9 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
         // This used to be a fatal error, but it is possible that the replyCallerDirectory removed
         // the caller
         // because its lifetime exceeded TTL
-        JOYNR_LOG_INFO(logger) << "caller not found in the ReplyCallerDirectory for requestid "
-                               << requestReplyId << ", ignoring";
+        JOYNR_LOG_INFO(logger,
+                       "caller not found in the ReplyCallerDirectory for requestid {}, ignoring",
+                       requestReplyId);
         return;
     }
 
@@ -243,7 +247,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 
 void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
 {
-    JOYNR_LOG_TRACE(logger) << "Starting handleSubscriptionReceived";
+    JOYNR_LOG_TRACE(logger, "Starting handleSubscriptionReceived");
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
@@ -258,8 +262,9 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     SubscriptionRequest* subscriptionRequest =
             JsonSerializer::deserialize<SubscriptionRequest>(jsonSubscriptionRequest);
     if (subscriptionRequest == nullptr) {
-        JOYNR_LOG_ERROR(logger) << "Unable to deserialize subscription request object from: "
-                                << jsonSubscriptionRequest;
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize subscription request object from: {}",
+                        jsonSubscriptionRequest);
         return;
     }
 
@@ -281,7 +286,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
 
 void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message)
 {
-    JOYNR_LOG_TRACE(logger) << "Starting handleBroadcastSubscriptionRequestReceived";
+    JOYNR_LOG_TRACE(logger, "Starting handleBroadcastSubscriptionRequestReceived");
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
@@ -296,9 +301,9 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     BroadcastSubscriptionRequest* subscriptionRequest =
             JsonSerializer::deserialize<BroadcastSubscriptionRequest>(jsonSubscriptionRequest);
     if (subscriptionRequest == nullptr) {
-        JOYNR_LOG_ERROR(logger)
-                << "Unable to deserialize broadcast subscription request object from: "
-                << jsonSubscriptionRequest;
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize broadcast subscription request object from: {}",
+                        jsonSubscriptionRequest);
         return;
     }
 
@@ -320,14 +325,15 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
 
 void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
 {
-    JOYNR_LOG_DEBUG(logger) << "handleSubscriptionStopReceived";
+    JOYNR_LOG_DEBUG(logger, "handleSubscriptionStopReceived");
     std::string jsonSubscriptionStop = message.getPayload();
 
     SubscriptionStop* subscriptionStop =
             JsonSerializer::deserialize<SubscriptionStop>(jsonSubscriptionStop);
     if (subscriptionStop == nullptr) {
-        JOYNR_LOG_ERROR(logger) << "Unable to deserialize subscription stop object from: "
-                                << jsonSubscriptionStop;
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize subscription stop object from: {}",
+                        jsonSubscriptionStop);
         return;
     }
     std::string subscriptionId = subscriptionStop->getSubscriptionId();
@@ -342,8 +348,9 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     SubscriptionPublication* subscriptionPublication =
             JsonSerializer::deserialize<SubscriptionPublication>(jsonSubscriptionPublication);
     if (subscriptionPublication == nullptr) {
-        JOYNR_LOG_ERROR(logger) << "Unable to deserialize subscription publication object from: "
-                                << jsonSubscriptionPublication;
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize subscription publication object from: {}",
+                        jsonSubscriptionPublication);
         return;
     }
     std::string subscriptionId = subscriptionPublication->getSubscriptionId();
@@ -353,8 +360,9 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
-        JOYNR_LOG_ERROR(logger) << "Dropping reply for non/no more existing subscription with id = "
-                                << subscriptionId;
+        JOYNR_LOG_ERROR(logger,
+                        "Dropping reply for non/no more existing subscription with id = {}",
+                        subscriptionId);
         delete subscriptionPublication;
         return;
     }

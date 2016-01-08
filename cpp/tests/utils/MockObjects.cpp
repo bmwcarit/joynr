@@ -54,10 +54,10 @@ void MockRunnableWithAccuracy::run()
     const uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
 
     const uint64_t diff = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
-    JOYNR_LOG_TRACE(logger) << "Runnable run() is called";
-    JOYNR_LOG_TRACE(logger) << " ETA        : " << est_ms;
-    JOYNR_LOG_TRACE(logger) << " current    : " << now_ms;
-    JOYNR_LOG_TRACE(logger) << " difference : " << diff;
+    JOYNR_LOG_TRACE(logger, "Runnable run() is called");
+    JOYNR_LOG_TRACE(logger, " ETA        : {}",est_ms);
+    JOYNR_LOG_TRACE(logger, " current    : {}",now_ms);
+    JOYNR_LOG_TRACE(logger, " difference : {}",diff);
 
     if (diff <= timerAccuracyTolerance_ms)
     {

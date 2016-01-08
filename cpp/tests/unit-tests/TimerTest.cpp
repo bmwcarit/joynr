@@ -80,10 +80,10 @@ public:
         const uint64_t start_ms = timerStartMapping.at(id);
         const int64_t  diff_ms  = now_ms - start_ms;
 
-        JOYNR_LOG_TRACE(logger) << "Timer " << id << " expired";
-        JOYNR_LOG_TRACE(logger) << "  started    : " << start_ms;
-        JOYNR_LOG_TRACE(logger) << "  returned   : " << now_ms;
-        JOYNR_LOG_TRACE(logger) << "  difference : " << diff_ms;
+        JOYNR_LOG_TRACE(logger, "Timer {} expired",id);
+        JOYNR_LOG_TRACE(logger, "  started    : {}",start_ms);
+        JOYNR_LOG_TRACE(logger, "  returned   : {}",now_ms);
+        JOYNR_LOG_TRACE(logger, "  difference : {}",diff_ms);
 
         onTimerExpired(id, diff_ms);
     }

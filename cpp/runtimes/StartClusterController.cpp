@@ -31,8 +31,8 @@ int main(int argc, char* argv[])
     // Check the usage
     std::string programName(argv[0]);
     if (argc == 1) {
-        JOYNR_LOG_INFO(logger) << "USAGE: No settings provided. Starting with default settings.";
-        JOYNR_LOG_INFO(logger) << "USAGE: " << programName << "  <file.settings>...";
+        JOYNR_LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
+        JOYNR_LOG_INFO(logger, "USAGE: {}  <file.settings>...", programName);
     }
 
     // Object that holds all the settings
@@ -44,13 +44,12 @@ int main(int argc, char* argv[])
         std::string settingsFileName(argv[i]);
 
         // Read the settings file
-        JOYNR_LOG_INFO(logger) << "Loading settings file: " << settingsFileName;
+        JOYNR_LOG_INFO(logger, "Loading settings file: {}", settingsFileName);
         Settings currentSettings(settingsFileName);
 
         // Check for errors
         if (!currentSettings.isLoaded()) {
-            JOYNR_LOG_FATAL(logger) << "Settings file \"" << settingsFileName
-                                    << "\" doesn't exist.";
+            JOYNR_LOG_FATAL(logger, "Settings file \"{}\" doesn't exist.", settingsFileName);
             return 1;
         }
 

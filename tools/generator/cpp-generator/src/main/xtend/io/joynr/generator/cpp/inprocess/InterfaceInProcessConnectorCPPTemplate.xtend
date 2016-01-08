@@ -193,7 +193,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 					};
 
 			//see header for more information
-			JOYNR_LOG_ERROR(logger) << "#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.";
+			JOYNR_LOG_ERROR(logger, "#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
 			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccessWrapper, onErrorWrapper);
 			return future;
 		}
@@ -252,12 +252,12 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::ignore = subscriptionListener;
 				std::ignore = subscriptionQos;
 				// TODO support enum return values in C++ client
-				JOYNR_LOG_FATAL(logger) << "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)";
+				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 				// Visual C++ requires a return value
 				return std::string();
 			«ELSE»
-				JOYNR_LOG_DEBUG(logger) << "Subscribing to «attributeName».";
+				JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
 				assert(subscriptionManager != nullptr);
 				std::string attributeName("«attributeName»");
 				auto subscriptionCallback = std::make_shared<
@@ -268,8 +268,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						subscriptionCallback,
 						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
-				JOYNR_LOG_DEBUG(logger) << "Registered subscription: "
-						 << subscriptionRequest.toString();
+				JOYNR_LOG_DEBUG(logger, "Registered subscription: {}", subscriptionRequest.toString());
 				assert(address);
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
@@ -297,15 +296,15 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			«IF isEnum(attribute.type)»
 				std::ignore = subscriptionId;
 				// TODO support enum return values in C++ client
-				JOYNR_LOG_FATAL(logger) << "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)";
+				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 			«ELSE»
-				JOYNR_LOG_DEBUG(logger) << "Unsubscribing. Id=" << subscriptionId;
+				JOYNR_LOG_DEBUG(logger, "Unsubscribing. Id={}", subscriptionId);
 				assert(publicationManager != nullptr);
-				JOYNR_LOG_DEBUG(logger) << "Stopping publications by publication manager.";
+				JOYNR_LOG_DEBUG(logger, "Stopping publications by publication manager.");
 				publicationManager->stopPublication(subscriptionId);
 				assert(subscriptionManager != nullptr);
-				JOYNR_LOG_DEBUG(logger) << "Unregistering attribute subscription.";
+				JOYNR_LOG_DEBUG(logger, "Unregistering attribute subscription.");
 				subscriptionManager->unregisterSubscription(subscriptionId);
 			«ENDIF»
 		}
@@ -400,7 +399,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 				const joynr::OnChangeSubscriptionQos& subscriptionQos
 	«ENDIF»
 	) {
-		JOYNR_LOG_DEBUG(logger) << "Subscribing to «broadcastName».";
+		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
@@ -442,7 +441,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 			const joynr::OnChangeSubscriptionQos& subscriptionQos,
 			joynr::BroadcastSubscriptionRequest& subscriptionRequest
 	) {
-		JOYNR_LOG_DEBUG(logger) << "Subscribing to «broadcastName».";
+		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
 
@@ -454,7 +453,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 					subscriptionCallback,
 					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
-		JOYNR_LOG_DEBUG(logger) << "Registered broadcast subscription: " << subscriptionRequest.toString();
+		JOYNR_LOG_DEBUG(logger, "Registered broadcast subscription: {}", subscriptionRequest.toString());
 		assert(address);
 		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 		assert(caller);
@@ -483,12 +482,12 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	void «interfaceName»InProcessConnector::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
 			std::string& subscriptionId
 	) {
-		JOYNR_LOG_DEBUG(logger) << "Unsubscribing broadcast. Id=" << subscriptionId;
+		JOYNR_LOG_DEBUG(logger, "Unsubscribing broadcast. Id={}", subscriptionId);
 		assert(publicationManager != nullptr);
-		JOYNR_LOG_DEBUG(logger) << "Stopping publications by publication manager.";
+		JOYNR_LOG_DEBUG(logger, "Stopping publications by publication manager.");
 		publicationManager->stopPublication(subscriptionId);
 		assert(subscriptionManager != nullptr);
-		JOYNR_LOG_DEBUG(logger) << "Unregistering broadcast subscription.";
+		JOYNR_LOG_DEBUG(logger, "Unregistering broadcast subscription.");
 		subscriptionManager->unregisterSubscription(subscriptionId);
 	}
 «ENDFOR»

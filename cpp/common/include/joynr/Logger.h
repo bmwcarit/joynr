@@ -25,61 +25,57 @@
 #include <boost/algorithm/string/erase.hpp>
 #include <spdlog/spdlog.h>
 
-#define JOYNR_LOG_NULL(logger) logger
+enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
 
 #ifdef JOYNR_MAX_LOG_LEVEL_FATAL
-#define JOYNR_LOG_TRACE(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_DEBUG(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_INFO(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_WARN(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_ERROR(logger) JOYNR_LOG_NULL(logger)
+#define JOYR_LOG_LEVEL LogLevel::Fatal
 #endif // JOYNR_MAX_LOG_LEVEL_FATAL
 
 #ifdef JOYNR_MAX_LOG_LEVEL_ERROR
-#define JOYNR_LOG_TRACE(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_DEBUG(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_INFO(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_WARN(logger) JOYNR_LOG_NULL(logger)
+#define JOYR_LOG_LEVEL LogLevel::Error
 #endif // JOYNR_MAX_LOG_LEVEL_ERROR
 
 #ifdef JOYNR_MAX_LOG_LEVEL_WARN
-#define JOYNR_LOG_TRACE(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_DEBUG(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_INFO(logger) JOYNR_LOG_NULL(logger)
+#define JOYR_LOG_LEVEL LogLevel::Warn
 #endif // JOYNR_MAX_LOG_LEVEL_WARN
 
 #ifdef JOYNR_MAX_LOG_LEVEL_INFO
-#define JOYNR_LOG_TRACE(logger) JOYNR_LOG_NULL(logger)
-#define JOYNR_LOG_DEBUG(logger) JOYNR_LOG_NULL(logger)
+#define JOYR_LOG_LEVEL LogLevel::Info
 #endif // JOYNR_MAX_LOG_LEVEL_INFO
 
 #ifdef JOYNR_MAX_LOG_LEVEL_DEBUG
-#define JOYNR_LOG_TRACE(logger) JOYNR_LOG_NULL(logger)
+#define JOYR_LOG_LEVEL LogLevel::Debug
 #endif // JOYNR_MAX_LOG_LEVEL_DEBUG
 
-#ifndef JOYNR_LOG_TRACE
-#define JOYNR_LOG_TRACE(logger) logger.spdlog->trace()
-#endif // JOYNR_LOG_TRACE
+// default to Trace if no log level is set
+#ifndef JOYR_LOG_LEVEL
+#define JOYR_LOG_LEVEL LogLevel::Trace
+#endif
 
-#ifndef JOYNR_LOG_DEBUG
-#define JOYNR_LOG_DEBUG(logger) logger.spdlog->debug()
-#endif // JOYNR_LOG_DEBUG
+#define JOYNR_CONDITIONAL_SPDLOG(level, method, logger, ...)                                       \
+    do {                                                                                           \
+        if (JOYR_LOG_LEVEL <= level) {                                                             \
+            logger.spdlog->method(__VA_ARGS__);                                                    \
+        }                                                                                          \
+    } while (0)
 
-#ifndef JOYNR_LOG_INFO
-#define JOYNR_LOG_INFO(logger) logger.spdlog->info()
-#endif // JOYNR_LOG_INFO
+#define JOYNR_LOG_TRACE(logger, ...)                                                               \
+    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Trace, trace, logger, __VA_ARGS__)
 
-#ifndef JOYNR_LOG_WARN
-#define JOYNR_LOG_WARN(logger) logger.spdlog->warn()
-#endif // JOYNR_LOG_WARN
+#define JOYNR_LOG_DEBUG(logger, ...)                                                               \
+    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Debug, debug, logger, __VA_ARGS__)
 
-#ifndef JOYNR_LOG_ERROR
-#define JOYNR_LOG_ERROR(logger) logger.spdlog->error()
-#endif // JOYNR_LOG_ERROR
+#define JOYNR_LOG_INFO(logger, ...)                                                                \
+    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Info, info, logger, __VA_ARGS__)
 
-#ifndef JOYNR_LOG_FATAL
-#define JOYNR_LOG_FATAL(logger) logger.spdlog->emerg()
-#endif // JOYNR_LOG_FATAL
+#define JOYNR_LOG_WARN(logger, ...)                                                                \
+    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Warn, warn, logger, __VA_ARGS__)
+
+#define JOYNR_LOG_ERROR(logger, ...)                                                               \
+    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Error, error, logger, __VA_ARGS__)
+
+#define JOYNR_LOG_FATAL(logger, ...)                                                               \
+    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Fatal, emerg, logger, __VA_ARGS__)
 
 #define ADD_LOGGER(T) static joynr::Logger logger
 // this macro allows to pass typenames containing commas (i.e. templates) as a single argument to
@@ -104,13 +100,6 @@ struct Logger
         std::string prefix = boost::typeindex::type_id<Parent>().pretty_name();
         boost::algorithm::erase_all(prefix, "joynr::");
         return prefix;
-    }
-
-    // this is used when log level is disabled
-    template <typename T>
-    Logger& operator<<(T&&)
-    {
-        return *this;
     }
 
     std::shared_ptr<spdlog::logger> spdlog;

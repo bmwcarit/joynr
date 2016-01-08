@@ -72,13 +72,13 @@ public:
         if (cached) {
             Variant entry = cache->lookUp(attributeID);
             if (entry.isEmpty()) {
-                JOYNR_LOG_DEBUG(logger) << "Cached value for " << methodName << "  is not valid";
+                JOYNR_LOG_DEBUG(logger, "Cached value for {}  is not valid", methodName);
             } else if (!entry.is<T>()) {
-                JOYNR_LOG_DEBUG(logger) << "Cached value for " << methodName
-                                        << "  cannot be converted to type T";
+                JOYNR_LOG_DEBUG(
+                        logger, "Cached value for {}  cannot be converted to type T", methodName);
                 assert(false);
             } else {
-                JOYNR_LOG_DEBUG(logger) << "Returning cached value for method " << methodName;
+                JOYNR_LOG_DEBUG(logger, "Returning cached value for method {}", methodName);
                 std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
                         std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
                 typedReplyCaller->returnValue(entry.get<T>());

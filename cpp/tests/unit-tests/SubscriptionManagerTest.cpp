@@ -289,12 +289,12 @@ public:
 
     }
     void shutdown() {
-        JOYNR_LOG_TRACE(logger) << "shutdown called...";
+        JOYNR_LOG_TRACE(logger, "shutdown called...");
     }
     void run() {
-        JOYNR_LOG_TRACE(logger) << "run: entering...";
+        JOYNR_LOG_TRACE(logger, "run: entering...");
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        JOYNR_LOG_TRACE(logger) << "run: leaving...";
+        JOYNR_LOG_TRACE(logger, "run: leaving...");
     }
 private:
     ADD_LOGGER(TestRunnable);

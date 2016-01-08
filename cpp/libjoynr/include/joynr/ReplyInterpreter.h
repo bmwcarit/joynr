@@ -49,7 +49,7 @@ public:
         }
 
         if ((reply.getResponse()).empty()) {
-            JOYNR_LOG_ERROR(logger) << "Unexpected empty reply object. Calling error callback";
+            JOYNR_LOG_ERROR(logger, "Unexpected empty reply object. Calling error callback");
             caller->returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
             return;
         }

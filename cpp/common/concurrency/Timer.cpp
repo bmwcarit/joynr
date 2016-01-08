@@ -39,7 +39,7 @@ Timer::Timer()
 
 Timer::~Timer()
 {
-    JOYNR_LOG_TRACE(logger) << "Dtor called";
+    JOYNR_LOG_TRACE(logger, "Dtor called");
     assert(!keepRunning);
     assert(!workerThread.joinable());
 }
@@ -66,7 +66,7 @@ Timer::TimerId Timer::addTimer(std::function<void(Timer::TimerId)> onTimerExpire
 
     // If the new timer the next timer in the list we need to reorganize
     if (timers.begin()->second == newTimer) {
-        JOYNR_LOG_TRACE(logger) << "New timer " << currentId << " has the earliest deadline";
+        JOYNR_LOG_TRACE(logger, "New timer {} has the earliest deadline", currentId);
         waitCondition.notify_one();
     }
     return currentId;
@@ -86,7 +86,7 @@ bool Timer::removeTimer(TimerId id)
             ++it;
         }
         if (it == timers.end()) {
-            JOYNR_LOG_TRACE(logger) << "Timer " << id << " not found. Unable to remove.";
+            JOYNR_LOG_TRACE(logger, "Timer {} not found. Unable to remove.", id);
             return false;
         }
         reorganize = (it == timers.begin());
@@ -101,16 +101,16 @@ bool Timer::removeTimer(TimerId id)
 
     // Only reorganize if timer is the current timer
     if (reorganize) {
-        JOYNR_LOG_TRACE(logger) << "Reorganize after " << id << "  was removed.";
+        JOYNR_LOG_TRACE(logger, "Reorganize after {}  was removed.", id);
         waitCondition.notify_one();
     }
-    JOYNR_LOG_TRACE(logger) << "Timer " << id << "  removed.";
+    JOYNR_LOG_TRACE(logger, "Timer {}  removed.", id);
     return true;
 }
 
 void Timer::shutdown()
 {
-    JOYNR_LOG_TRACE(logger) << "shutdown() called";
+    JOYNR_LOG_TRACE(logger, "shutdown() called");
 
     // shutdown thread to go for shure no other event fires
     keepRunning = false;
@@ -135,7 +135,7 @@ void Timer::runTimer()
             // Wait for initial work / timer
             std::unique_lock<std::mutex> lock(mutex);
             if (timers.empty()) {
-                JOYNR_LOG_TRACE(logger) << "List of timers is empty. Waiting.";
+                JOYNR_LOG_TRACE(logger, "List of timers is empty. Waiting.");
                 waitCondition.wait(lock, [this] { return !timers.empty() || !keepRunning; });
             }
         }
@@ -168,11 +168,11 @@ void Timer::runTimer()
                 timers.erase(tp);
             } else {
                 // Either a new timer with earlier deadline was added or a shutdown was triggered
-                JOYNR_LOG_TRACE(logger) << "Timer conditional wait was interrupted";
+                JOYNR_LOG_TRACE(logger, "Timer conditional wait was interrupted");
             }
         }
     }
-    JOYNR_LOG_DEBUG(logger) << "Leaving timer loop";
+    JOYNR_LOG_DEBUG(logger, "Leaving timer loop");
 }
 
 } // namespace joynr

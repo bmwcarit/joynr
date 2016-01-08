@@ -53,7 +53,7 @@ public:
 
         std::vector<Variant> response = subscriptionPublication.getResponse();
         if (response.empty()) {
-            JOYNR_LOG_ERROR(logger) << "Publication object has no response, discarding message";
+            JOYNR_LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
@@ -99,7 +99,7 @@ public:
         }
 
         if (subscriptionPublication.getResponse().empty()) {
-            JOYNR_LOG_ERROR(logger) << "Publication object has no response, discarding message";
+            JOYNR_LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
@@ -113,7 +113,7 @@ public:
                 std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
 
         // value is copied in onSuccess
-        // JOYNR_LOG_TRACE(logger) << "Publication received: notifying attribute changed";
+        // JOYNR_LOG_TRACE(logger, "Publication received: notifying attribute changed");
         typedCallbackQsp->onSuccess(value);
     }
 
@@ -144,7 +144,7 @@ public:
 
         std::vector<Variant> qvList = subscriptionPublication.getResponse();
         if (qvList.empty()) {
-            JOYNR_LOG_ERROR(logger) << "Publication object has no response, discarding message";
+            JOYNR_LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);

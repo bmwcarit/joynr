@@ -109,7 +109,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "adding request";
+    JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
@@ -305,7 +305,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     // will be deleted by the publication manager
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "adding request";
+    JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
     // Fake an attribute change
@@ -370,7 +370,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     // will be deleted by the publication manager
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "adding request";
+    JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
@@ -442,7 +442,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "adding request";
+    JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
@@ -537,7 +537,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qosVariant);
-    JOYNR_LOG_DEBUG(logger) << "adding attribute subscription request";
+    JOYNR_LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
@@ -563,7 +563,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     qos.setMinInterval(minInterval_ms + 500);
     qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setQos(qosVariant);
-    JOYNR_LOG_DEBUG(logger) << "update attribute subscription request";
+    JOYNR_LOG_DEBUG(logger, "update attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
     // Sleep so that the first publication is sent
@@ -646,7 +646,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qosVariant);
 
-    JOYNR_LOG_DEBUG(logger) << "adding attribute subscription request";
+    JOYNR_LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // exceed the minInterval
@@ -659,7 +659,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     qos.setExpiryDate(testAbsExpiryDate + 1000);
     qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setQos(qosVariant);
-    JOYNR_LOG_DEBUG(logger) << "adding request";
+    JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
@@ -679,7 +679,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 }
 
 TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
-    JOYNR_LOG_DEBUG(logger) << "DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME: " << LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME();
+    JOYNR_LOG_DEBUG(logger, "DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME: {}",LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
@@ -740,7 +740,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qosVariant);
-    JOYNR_LOG_DEBUG(logger) << "adding attribute subscription request";
+    JOYNR_LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // exceed the minInterval
@@ -756,7 +756,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     qos.setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
     qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setQos(qosVariant);
-    JOYNR_LOG_DEBUG(logger) << "update attribute subscription request";
+    JOYNR_LOG_DEBUG(logger, "update attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
@@ -854,7 +854,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "adding broadcast subscription request";
+    JOYNR_LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Fake broadcast
@@ -876,7 +876,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     qos.setMinInterval(newMinInterval);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "update broadcast subscription request";
+    JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
     // Fake broadcast
@@ -955,7 +955,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "add broadcast subscription request";
+    JOYNR_LOG_DEBUG(logger, "add broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
     broadcastListener->broadcastOccurred(broadcastValues, filters);
@@ -968,7 +968,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     // extend the expiry date
     qos.setExpiryDate(testAbsExpiryDate + 1000);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "update broadcast subscription request";
+    JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     //now, exceed the original expiryDate, and make a broadcast
@@ -1041,7 +1041,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "adding broadcast subscription request";
+    JOYNR_LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     broadcastListener->broadcastOccurred(broadcastValues, filters);
@@ -1053,7 +1053,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     // reduce the expiry date
     qos.setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "update broadcast subscription request";
+    JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // now, exceed the new expiryDate, and make a broadcast
@@ -1115,7 +1115,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
-    JOYNR_LOG_DEBUG(logger) << "adding request";
+    JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Wait for the subscription to expire

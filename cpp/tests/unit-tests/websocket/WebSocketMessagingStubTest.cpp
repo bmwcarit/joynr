@@ -58,13 +58,13 @@ public:
         webSocket(nullptr)
     {
         if(server.listen(QHostAddress::Any)) {
-            JOYNR_LOG_DEBUG(logger) << "server listening on " << server.serverAddress().toString().toStdString() << ":" << server.serverPort();
+            JOYNR_LOG_DEBUG(logger, "server listening on {}:{}",server.serverAddress().toString().toStdString(),server.serverPort());
             connect(
                     &server, &QWebSocketServer::newConnection,
                     this, &WebSocketMessagingStubTest::onNewConnection
             );
         } else {
-            JOYNR_LOG_ERROR(logger) << "unable to start WebSocket server";
+            JOYNR_LOG_ERROR(logger, "unable to start WebSocket server");
         }
     }
 
@@ -96,11 +96,11 @@ public:
                     server.serverPort(),
                     ""
         );
-        JOYNR_LOG_DEBUG(logger) << "server URL: " << serverAddress->toString();
+        JOYNR_LOG_DEBUG(logger, "server URL: {}",serverAddress->toString());
         webSocket->connect(*serverAddress);
 
         // waiting until the web socket is connected
-        JOYNR_LOG_DEBUG(logger) << "WebSocket is connected: " << webSocket->isConnected();
+        JOYNR_LOG_DEBUG(logger, "WebSocket is connected: {}",webSocket->isConnected());
     }
     virtual void TearDown() {}
 
@@ -109,7 +109,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void onNewConnection() {
-        JOYNR_LOG_TRACE(logger) << "on new connection";
+        JOYNR_LOG_TRACE(logger, "on new connection");
         QWebSocket* client = server.nextPendingConnection();
 
         connect(
@@ -123,7 +123,7 @@ public Q_SLOTS:
     }
 
     void onDisconnected() {
-        JOYNR_LOG_TRACE(logger) << "on disconnected";
+        JOYNR_LOG_TRACE(logger, "on disconnected");
         QWebSocket* client = qobject_cast<QWebSocket*>(sender());
         if(client) {
             client->deleteLater();
@@ -145,7 +145,7 @@ ACTION_P(ReleaseSemaphore,semaphore)
 }
 
 TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
-    JOYNR_LOG_TRACE(logger) << "emits closed signal";
+    JOYNR_LOG_TRACE(logger, "emits closed signal");
 
     // create messaging stub
     joynr::WebSocketMessagingStub messagingStub(
@@ -162,7 +162,7 @@ TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
 }
 
 TEST_F(WebSocketMessagingStubTest, transmitMessage) {
-    JOYNR_LOG_TRACE(logger) << "transmit message";
+    JOYNR_LOG_TRACE(logger, "transmit message");
     QSignalSpy textMessageReceivedSignalSpy(this, SIGNAL(textMessageReceived(QString)));
 
     // send message using messaging stub

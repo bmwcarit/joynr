@@ -59,8 +59,9 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (clientStubMap.find(*webSocketClientAddress) == clientStubMap.cend()) {
-                JOYNR_LOG_ERROR(logger) << "No websocket found for address "
-                                        << webSocketClientAddress->toString();
+                JOYNR_LOG_ERROR(logger,
+                                "No websocket found for address {}",
+                                webSocketClientAddress->toString());
                 return std::shared_ptr<IMessaging>();
             }
         }
@@ -73,8 +74,9 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (serverStubMap.find(*webSocketServerAddress) == serverStubMap.cend()) {
-                JOYNR_LOG_ERROR(logger) << "No websocket found for address "
-                                        << webSocketServerAddress->toString();
+                JOYNR_LOG_ERROR(logger,
+                                "No websocket found for address {}",
+                                webSocketServerAddress->toString());
                 return std::shared_ptr<IMessaging>();
             }
         }
@@ -96,8 +98,9 @@ void WebSocketMessagingStubFactory::addClient(
         std::shared_ptr<IMessaging> clientStub(wsClientStub);
         clientStubMap[*clientAddress] = clientStub;
     } else {
-        JOYNR_LOG_ERROR(logger) << "Client with address " << clientAddress->toString()
-                                << " already exists in the clientStubMap";
+        JOYNR_LOG_ERROR(logger,
+                        "Client with address {} already exists in the clientStubMap",
+                        clientAddress->toString());
     }
 }
 
@@ -121,7 +124,7 @@ void WebSocketMessagingStubFactory::addServer(
 void WebSocketMessagingStubFactory::onMessagingStubClosed(
         const system::RoutingTypes::Address& address)
 {
-    JOYNR_LOG_DEBUG(logger) << "removing messaging stub for address: " << address.toString();
+    JOYNR_LOG_DEBUG(logger, "removing messaging stub for address: {}", address.toString());
     // if destination is a WS client address
     if (auto webSocketClientAddress =
                 dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&address)) {

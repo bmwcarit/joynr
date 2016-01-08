@@ -150,7 +150,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 reply
     );
 
-    JOYNR_LOG_DEBUG(logger) << "expectedReply.payload()=" << expectedReply.getPayload();
+    JOYNR_LOG_DEBUG(logger, "expectedReply.payload()={}",expectedReply.getPayload());
     // setup MockMessaging to expect the response
     EXPECT_CALL(
                 *mockMessageRouter,

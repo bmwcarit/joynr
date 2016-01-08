@@ -99,14 +99,14 @@ TEST_F(VariantTest, checkCollectionOfVariants) {
     // Use the collection of Variants
     for (auto& v : variants) {
         if (v.is<std::string>()) {
-            JOYNR_LOG_DEBUG(logger) << "Variant is std::string, value: " << v.get<std::string>();
+            JOYNR_LOG_DEBUG(logger, "Variant is std::string, value: {}",v.get<std::string>());
         } else if (v.is<ExampleCustomType>()) {
-            JOYNR_LOG_DEBUG(logger) << "Variant is ExampleCustomType, value: " << v.get<ExampleCustomType>().expectedInt;
+            JOYNR_LOG_DEBUG(logger, "Variant is ExampleCustomType, value: {}",v.get<ExampleCustomType>().expectedInt);
         } else if (v.is<std::vector<Variant>>()) {
-            JOYNR_LOG_DEBUG(logger) << "Variant is a collection of variants";
+            JOYNR_LOG_DEBUG(logger, "Variant is a collection of variants");
             auto& vec = v.get<std::vector<Variant>>();
             for (auto& i : vec) {
-                JOYNR_LOG_DEBUG(logger) << "expectedInt: " << i.get<ExampleCustomType>().expectedInt;
+                JOYNR_LOG_DEBUG(logger, "expectedInt: {}",i.get<ExampleCustomType>().expectedInt);
                 // to silence unused-variable compiler warnings
                 (void)i;
             }

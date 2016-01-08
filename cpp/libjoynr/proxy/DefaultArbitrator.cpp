@@ -43,10 +43,12 @@ void DefaultArbitrator::attemptArbitration()
     try {
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
     } catch (exceptions::JoynrException& e) {
-        JOYNR_LOG_ERROR(logger) << "Unable to lookup provider (domain: " << domain
-                                << ", interface: " << interfaceName
-                                << ") "
-                                   "from discovery. Error: " << e.getMessage();
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to lookup provider (domain: {}, interface: {}) "
+                        "from discovery. Error: {}",
+                        domain,
+                        interfaceName,
+                        e.getMessage());
     }
 }
 

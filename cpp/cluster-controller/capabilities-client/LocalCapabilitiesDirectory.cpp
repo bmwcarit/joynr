@@ -423,10 +423,11 @@ void LocalCapabilitiesDirectory::lookup(
     lookup(participantId, future);
     std::vector<CapabilityEntry> capabilities = future->get();
     if (capabilities.size() > 1) {
-        JOYNR_LOG_ERROR(logger) << "participantId " << participantId
-                                << " has more than 1 capability entry:\n "
-                                << capabilities[0].toString() << "\n "
-                                << capabilities[1].toString();
+        JOYNR_LOG_ERROR(logger,
+                        "participantId {} has more than 1 capability entry:\n {}\n {}",
+                        participantId,
+                        capabilities[0].toString(),
+                        capabilities[1].toString());
     }
 
     types::DiscoveryEntry result;

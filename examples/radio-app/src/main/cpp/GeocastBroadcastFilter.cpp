@@ -43,8 +43,9 @@ bool GeocastBroadcastFilter::filter(
             JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
                     filterParameters.getPositionOfInterest());
     if (positionOfInterest == Q_NULLPTR) {
-        JOYNR_LOG_ERROR(logger) << "Unable to deserialize geo position object from: "
-                               << filterParameters.getPositionOfInterest();
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize geo position object from: {}",
+                        filterParameters.getPositionOfInterest());
         return true;
     }
     int radiusOfInterestArea = std::stoi(filterParameters.getRadiusOfInterestArea());

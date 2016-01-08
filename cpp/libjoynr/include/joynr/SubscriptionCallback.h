@@ -46,8 +46,8 @@ public:
 
     ~SubscriptionCallback() override
     {
-        JOYNR_LOG_TRACE(logger) << "destructor: entering...";
-        JOYNR_LOG_TRACE(logger) << "destructor: leaving...";
+        JOYNR_LOG_TRACE(logger, "destructor: entering...");
+        JOYNR_LOG_TRACE(logger, "destructor: leaving...");
     }
 
     void onError(const exceptions::JoynrRuntimeException& error) override

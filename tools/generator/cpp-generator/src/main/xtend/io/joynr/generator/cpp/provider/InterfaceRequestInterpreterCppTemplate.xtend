@@ -242,7 +242,7 @@ void «interfaceName»RequestInterpreter::execute(
 		«ENDFOR»
 	«ENDIF»
 
-	JOYNR_LOG_WARN(logger) << "unknown method name for interface «interfaceName»: " << methodName;
+	JOYNR_LOG_WARN(logger, "unknown method name for interface «interfaceName»: {}", methodName);
 	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + methodName));
 }
 

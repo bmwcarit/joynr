@@ -38,8 +38,9 @@ WebSocketMessagingStub::WebSocketMessagingStub(IWebSocketSendInterface* webSocke
 void WebSocketMessagingStub::transmit(JoynrMessage& message)
 {
     if (!webSocket->isInitialized()) {
-        JOYNR_LOG_ERROR(logger) << "WebSocket not ready. Unable to send message "
-                                << JsonSerializer::serialize(message);
+        JOYNR_LOG_ERROR(logger,
+                        "WebSocket not ready. Unable to send message {}",
+                        JsonSerializer::serialize(message));
         return;
     }
 

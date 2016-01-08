@@ -108,9 +108,9 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::string capParticipantId("testParticipantId");
 
     capabilitiesInformationList.push_back(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
-    JOYNR_LOG_DEBUG(logger) << "Registering capabilities";
+    JOYNR_LOG_DEBUG(logger, "Registering capabilities");
     capabilitiesClient->add(capabilitiesInformationList);
-    JOYNR_LOG_DEBUG(logger) << "Registered capabilities";
+    JOYNR_LOG_DEBUG(logger, "Registered capabilities");
     //sync methods are not yet implemented
 //    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
@@ -129,10 +129,10 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
                 callback->capabilitiesReceived(capabilities);
             };
 
-    JOYNR_LOG_DEBUG(logger) << "get capabilities";
+    JOYNR_LOG_DEBUG(logger, "get capabilities");
     capabilitiesClient->lookup(capDomain, capInterface, onSuccess);
     semaphore.waitFor(std::chrono::seconds(10));
-    JOYNR_LOG_DEBUG(logger) << "finished get capabilities";
+    JOYNR_LOG_DEBUG(logger, "finished get capabilities");
     delete capabilitiesProxyBuilder;
 }
 

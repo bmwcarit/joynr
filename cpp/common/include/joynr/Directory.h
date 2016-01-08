@@ -119,7 +119,7 @@ template <typename Key, typename T>
 Directory<Key, T>::~Directory()
 {
     callBackRemoverScheduler.shutdown();
-    JOYNR_LOG_TRACE(logger) << "destructor: number of entries = " << callbackMap.size();
+    JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", callbackMap.size());
 }
 
 template <typename Key, typename T>
@@ -200,7 +200,7 @@ void RemoverRunnable<Key, T>::shutdown()
 template <typename Key, typename T>
 void RemoverRunnable<Key, T>::run()
 {
-    //    JOYNR_LOG_TRACE(logger) << "Calling Directory<Key,T>" );
+    //    JOYNR_LOG_TRACE(logger, "Calling Directory<Key,T>");
 
     std::shared_ptr<T> val = directory->lookup(keyId);
     directory->remove(keyId);

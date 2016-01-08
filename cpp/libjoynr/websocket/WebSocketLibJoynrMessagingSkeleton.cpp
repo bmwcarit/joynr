@@ -41,10 +41,10 @@ void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const std::string
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg = JsonSerializer::deserialize<joynr::JoynrMessage>(message);
     if (joynrMsg == nullptr || joynrMsg->getType().empty()) {
-        JOYNR_LOG_ERROR(logger) << "Unable to deserialize joynr message object from: " << message;
+        JOYNR_LOG_ERROR(logger, "Unable to deserialize joynr message object from: {}", message);
         return;
     }
-    JOYNR_LOG_TRACE(logger) << "INCOMING\nmessage: " << message;
+    JOYNR_LOG_TRACE(logger, "INCOMING\nmessage: {}", message);
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg);

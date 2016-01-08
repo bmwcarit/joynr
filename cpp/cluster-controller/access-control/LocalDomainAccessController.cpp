@@ -170,7 +170,7 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
                                           const std::string& domain,
                                           Role::Enum role)
 {
-    JOYNR_LOG_DEBUG(logger) << "execute: entering hasRole";
+    JOYNR_LOG_DEBUG(logger, "execute: entering hasRole");
 
     // See if the user has the given role
     bool hasRole = false;
@@ -197,7 +197,7 @@ void LocalDomainAccessController::getConsumerPermission(
         TrustLevel::Enum trustLevel,
         std::shared_ptr<IGetConsumerPermissionCallback> callback)
 {
-    JOYNR_LOG_DEBUG(logger) << "Entering getConsumerPermission with unknown operation";
+    JOYNR_LOG_DEBUG(logger, "Entering getConsumerPermission with unknown operation");
 
     // Is the ACL for this domain/interface available?
     std::string compoundKey = createCompoundKey(domain, interfaceName);
@@ -255,7 +255,7 @@ Permission::Enum LocalDomainAccessController::getConsumerPermission(
         const std::string& operation,
         TrustLevel::Enum trustLevel)
 {
-    JOYNR_LOG_DEBUG(logger) << "Entering getConsumerPermission with known operation";
+    JOYNR_LOG_DEBUG(logger, "Entering getConsumerPermission with known operation");
 
     Optional<MasterAccessControlEntry> masterAceOptional =
             localDomainAccessStore->getMasterAccessControlEntry(
@@ -545,8 +545,10 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         subscriptionIds = aceSubscriptions[compoundKey];
     }
 
-    JOYNR_LOG_DEBUG(logger) << "Unsubscribing from ACL broadcasts for domain " << domain
-                            << ", interface " << interfaceName;
+    JOYNR_LOG_DEBUG(logger,
+                    "Unsubscribing from ACL broadcasts for domain {}, interface {}",
+                    domain,
+                    interfaceName);
 
     // Unsubscribe from ACE change subscriptions
     globalDomainAccessControllerProxy->unsubscribeFromMasterAccessControlEntryChangedBroadcast(
@@ -578,8 +580,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     std::function<void(const exceptions::JoynrException&)> domainRoleOnError =
             [this, initialiser](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger) << "Aborting ACL initialisation due to communication error:\n"
-                                << error.getMessage();
+        JOYNR_LOG_ERROR(logger,
+                        "Aborting ACL initialisation due to communication error:\n{}",
+                        error.getMessage());
 
         // Abort the initialisation
         initialiser->abort();
@@ -600,8 +603,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     std::function<void(const exceptions::JoynrException& error)> masterAceOnError =
             [this, initialiser](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger) << "Aborting ACL initialisation due to communication error:\n"
-                                << error.getMessage();
+        JOYNR_LOG_ERROR(logger,
+                        "Aborting ACL initialisation due to communication error:\n{}",
+                        error.getMessage());
 
         // Abort the initialisation
         initialiser->abort();
@@ -623,8 +627,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     std::function<void(const exceptions::JoynrException& error)> mediatorAceOnError =
             [this, initialiser](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger) << "Aborting ACL initialisation due to communication error:\n"
-                                << error.getMessage();
+        JOYNR_LOG_ERROR(logger,
+                        "Aborting ACL initialisation due to communication error:\n{}",
+                        error.getMessage());
 
         // Abort the initialisation
         initialiser->abort();
@@ -645,8 +650,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     std::function<void(const exceptions::JoynrException& error)> ownerAceOnError =
             [this, initialiser](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger) << "Aborting ACL initialisation due to communication error:\n"
-                                << error.getMessage();
+        JOYNR_LOG_ERROR(logger,
+                        "Aborting ACL initialisation due to communication error:\n{}",
+                        error.getMessage());
 
         // Abort the initialisation
         initialiser->abort();
@@ -683,8 +689,10 @@ void LocalDomainAccessController::initialised(const std::string& domain,
 void LocalDomainAccessController::abortInitialisation(const std::string& domain,
                                                       const std::string& interfaceName)
 {
-    JOYNR_LOG_INFO(logger) << "Removing outstanding ACL requests for domain " << domain
-                           << ", interface " << interfaceName;
+    JOYNR_LOG_INFO(logger,
+                   "Removing outstanding ACL requests for domain {}, interface {}",
+                   domain,
+                   interfaceName);
 
     std::string compoundKey = createCompoundKey(domain, interfaceName);
     std::vector<ConsumerPermissionRequest> requests;
@@ -864,14 +872,14 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
     } else {
         parent.localDomainAccessStore->removeDomainRole(changedDre.getUid(), changedDre.getRole());
     }
-    JOYNR_LOG_DEBUG(parent.logger) << "Changed DRE: " << changedDre.toString();
+    JOYNR_LOG_DEBUG(parent.logger, "Changed DRE: {}", changedDre.toString());
 }
 
 void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     (void)error;
-    JOYNR_LOG_ERROR(parent.logger) << "Change of DRE failed!";
+    JOYNR_LOG_ERROR(parent.logger, "Change of DRE failed!");
 }
 
 LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::
@@ -886,14 +894,14 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
 {
     if (changeType != ChangeType::REMOVE) {
         parent.localDomainAccessStore->updateMasterAccessControlEntry(changedMasterAce);
-        JOYNR_LOG_DEBUG(parent.logger) << "Changed MasterAce: " << changedMasterAce.toString();
+        JOYNR_LOG_DEBUG(parent.logger, "Changed MasterAce: {}", changedMasterAce.toString());
     } else {
         parent.localDomainAccessStore->removeMasterAccessControlEntry(
                 changedMasterAce.getUid(),
                 changedMasterAce.getDomain(),
                 changedMasterAce.getInterfaceName(),
                 changedMasterAce.getOperation());
-        JOYNR_LOG_DEBUG(parent.logger) << "Removed MasterAce: " << changedMasterAce.toString();
+        JOYNR_LOG_DEBUG(parent.logger, "Removed MasterAce: {}", changedMasterAce.toString());
     }
 }
 
@@ -901,7 +909,7 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
         const exceptions::JoynrRuntimeException& error)
 {
     (void)error;
-    JOYNR_LOG_ERROR(parent.logger) << "Change of MasterAce failed!";
+    JOYNR_LOG_ERROR(parent.logger, "Change of MasterAce failed!");
 }
 
 LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::
@@ -923,14 +931,14 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
                 changedMediatorAce.getInterfaceName(),
                 changedMediatorAce.getOperation());
     }
-    JOYNR_LOG_DEBUG(parent.logger) << "Changed MediatorAce: " << changedMediatorAce.toString();
+    JOYNR_LOG_DEBUG(parent.logger, "Changed MediatorAce: {}", changedMediatorAce.toString());
 }
 
 void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     (void)error;
-    JOYNR_LOG_ERROR(parent.logger) << "Change of MediatorAce failed!";
+    JOYNR_LOG_ERROR(parent.logger, "Change of MediatorAce failed!");
 }
 
 LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::
@@ -952,14 +960,14 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
                 changedOwnerAce.getInterfaceName(),
                 changedOwnerAce.getOperation());
     }
-    JOYNR_LOG_DEBUG(parent.logger) << "Changed OwnerAce: " << changedOwnerAce.toString();
+    JOYNR_LOG_DEBUG(parent.logger, "Changed OwnerAce: {}", changedOwnerAce.toString());
 }
 
 void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     (void)error;
-    JOYNR_LOG_ERROR(parent.logger) << "Change of OwnerAce failed!";
+    JOYNR_LOG_ERROR(parent.logger, "Change of OwnerAce failed!");
 }
 
 template <typename T>

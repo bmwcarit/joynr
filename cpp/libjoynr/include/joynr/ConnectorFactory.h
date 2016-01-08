@@ -60,7 +60,7 @@ public:
                     domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached);
         }
 
-        JOYNR_LOG_ERROR(logger) << "Can not create Connector: Unknown address type.";
+        JOYNR_LOG_ERROR(logger, "Can not create Connector: Unknown address type.");
         return nullptr;
     }
 

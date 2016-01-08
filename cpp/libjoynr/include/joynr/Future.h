@@ -111,7 +111,7 @@ public:
     Future<Ts...>()
             : error(nullptr), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
-        JOYNR_LOG_INFO(logger) << "resultReceived.getStatus(): " << resultReceived.getStatus();
+        JOYNR_LOG_INFO(logger, "resultReceived.getStatus(): {}", resultReceived.getStatus());
     }
 
     /** @brief ResultCopier helper to copy tuple entries to function arguments */
@@ -229,7 +229,7 @@ public:
      */
     void wait()
     {
-        JOYNR_LOG_INFO(logger) << "resultReceived.getStatus():" << resultReceived.getStatus();
+        JOYNR_LOG_INFO(logger, "resultReceived.getStatus():{}", resultReceived.getStatus());
         resultReceived.wait();
         resultReceived.notify();
     }
@@ -250,7 +250,7 @@ public:
      */
     void onSuccess(Ts... results)
     {
-        JOYNR_LOG_INFO(logger) << "onSuccess has been invoked";
+        JOYNR_LOG_INFO(logger, "onSuccess has been invoked");
         status.setCode(RequestStatusCode::OK);
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(results...);
@@ -274,7 +274,7 @@ public:
      */
     void onError(const RequestStatus& status, const exceptions::JoynrException& error)
     {
-        JOYNR_LOG_INFO(logger) << "onError has been invoked";
+        JOYNR_LOG_INFO(logger, "onError has been invoked");
         this->error.reset(error.clone());
         this->status = status;
         resultReceived.notify();

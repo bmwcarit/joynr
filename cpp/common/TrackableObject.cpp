@@ -30,21 +30,19 @@ int TrackableObject::instances = 0;
 TrackableObject::TrackableObject()
 {
     ++instances;
-    std::stringstream ss;
-    ss << static_cast<const void*>(this);
-    std::string address = ss.str();
-    JOYNR_LOG_TRACE(logger) << "Creating Traceable Object at address " << address << "Now we have"
-                            << instances << "instances";
+    JOYNR_LOG_TRACE(logger,
+                    "Creating Traceable Object at address {}. Now we have {} instances.",
+                    static_cast<const void*>(this),
+                    instances);
 }
 
 TrackableObject::~TrackableObject()
 {
     --instances;
-    std::stringstream ss;
-    ss << static_cast<const void*>(this);
-    std::string address = ss.str();
-    JOYNR_LOG_TRACE(logger) << "Deleting Traceable Object at address " << address << "Now we have"
-                            << instances << "instances";
+    JOYNR_LOG_TRACE(logger,
+                    "Deleting Traceable Object at address {}. Now we have {} instances.",
+                    static_cast<const void*>(this),
+                    instances);
 }
 
 int TrackableObject::getInstances()

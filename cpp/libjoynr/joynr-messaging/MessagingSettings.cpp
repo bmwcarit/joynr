@@ -515,52 +515,74 @@ void MessagingSettings::checkSettings() const
 
 void MessagingSettings::printSettings() const
 {
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_BOUNCE_PROXY_URL() << " = "
-                            << settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()) << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_DISCOVERY_DIRECTORIES_DOMAIN() << " = "
-                            << settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN())
-                            << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CHANNEL_URL_DIRECTORY_URL() << "  = "
-                            << settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL())
-                            << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CHANNEL_URL_DIRECTORY_CHANNELID() << "  = "
-                            << settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID())
-                            << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()
-                            << "  = "
-                            << settings.get<std::string>(
-                                       SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()) << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CAPABILITIES_DIRECTORY_URL() << "  = "
-                            << settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL())
-                            << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CAPABILITIES_DIRECTORY_CHANNELID() << "  = "
-                            << settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_CHANNELID())
-                            << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()
-                            << "  = "
-                            << settings.get<std::string>(
-                                       SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()) << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_INDEX() << "  = "
-                            << settings.get<std::string>(SETTING_INDEX()) << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CREATE_CHANNEL_RETRY_INTERVAL() << "  = "
-                            << settings.get<std::string>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL())
-                            << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_DELETE_CHANNEL_RETRY_INTERVAL() << "  = "
-                            << settings.get<std::string>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL())
-                            << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_SEND_MSG_RETRY_INTERVAL() << "  = "
-                            << settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL()) << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_LONGPOLL_RETRY_INTERVAL() << "  = "
-                            << settings.get<std::string>(SETTING_LONGPOLL_RETRY_INTERVAL()) << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_LOCAL_PROXY_HOST() << "  = "
-                            << settings.get<std::string>(SETTING_LOCAL_PROXY_HOST()) << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_LOCAL_PROXY_PORT() << "  = "
-                            << settings.get<std::string>(SETTING_LOCAL_PROXY_PORT()) << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_PERSISTENCE_FILENAME() << "  = "
-                            << settings.get<std::string>(SETTING_PERSISTENCE_FILENAME()) << ")";
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_DISCOVERY_MESSAGES_TTL_MS() << "  = "
-                            << settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS())
-                            << ")";
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_BOUNCE_PROXY_URL(),
+                    settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_DISCOVERY_DIRECTORIES_DOMAIN(),
+                    settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CHANNEL_URL_DIRECTORY_URL(),
+                    settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CHANNEL_URL_DIRECTORY_CHANNELID(),
+                    settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID(),
+                    settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CAPABILITIES_DIRECTORY_URL(),
+                    settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CAPABILITIES_DIRECTORY_CHANNELID(),
+                    settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID(),
+                    settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_INDEX(),
+                    settings.get<std::string>(SETTING_INDEX()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CREATE_CHANNEL_RETRY_INTERVAL(),
+                    settings.get<std::string>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_DELETE_CHANNEL_RETRY_INTERVAL(),
+                    settings.get<std::string>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_SEND_MSG_RETRY_INTERVAL(),
+                    settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_LONGPOLL_RETRY_INTERVAL(),
+                    settings.get<std::string>(SETTING_LONGPOLL_RETRY_INTERVAL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_LOCAL_PROXY_HOST(),
+                    settings.get<std::string>(SETTING_LOCAL_PROXY_HOST()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_LOCAL_PROXY_PORT(),
+                    settings.get<std::string>(SETTING_LOCAL_PROXY_PORT()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_PERSISTENCE_FILENAME(),
+                    settings.get<std::string>(SETTING_PERSISTENCE_FILENAME()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_DISCOVERY_MESSAGES_TTL_MS(),
+                    settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
 }
 
 } // namespace joynr

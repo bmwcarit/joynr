@@ -149,11 +149,13 @@ public:
                                      const std::string& message)
     {
         if (message.size() > 2048) {
-            JOYNR_LOG_DEBUG(logger) << explanation << " " << message.substr(0, 2048)
-                                    << "<**truncated, length " << message.length();
+            JOYNR_LOG_DEBUG(logger,
+                            "{} {}<**truncated, length {}",
+                            explanation,
+                            message.substr(0, 2048),
+                            message.length());
         } else {
-            JOYNR_LOG_DEBUG(logger) << explanation << " " << message << ", length "
-                                    << message.length();
+            JOYNR_LOG_DEBUG(logger, "{} {}, length {}", explanation, message, message.length());
         }
     }
 

@@ -144,7 +144,7 @@ void JoynrMessage::setHeader(const std::map<std::string, std::string>& newHeader
     while (i != newHeaders.end()) {
         if (!containsHeader(i->first)) {
             header.insert(std::pair<std::string, std::string>(i->first, i->second));
-            JOYNR_LOG_DEBUG(logger) << "insert header: " << i->second << " = " << i->first;
+            JOYNR_LOG_DEBUG(logger, "insert header: {} = {}", i->second, i->first);
         }
         i++;
     }
@@ -218,7 +218,7 @@ std::string JoynrMessage::getHeaderCreatorUserId() const
 
 void JoynrMessage::setHeaderCreatorUserId(const std::string& creatorUserId)
 {
-    JOYNR_LOG_TRACE(logger) << "########## header creater user id: " << HEADER_CREATOR_USER_ID();
+    JOYNR_LOG_TRACE(logger, "########## header creater user id: {}", HEADER_CREATOR_USER_ID());
     setHeaderForKey(HEADER_CREATOR_USER_ID(), creatorUserId);
 }
 

@@ -97,7 +97,7 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     // Use libcurl to get the HTTP date from the bounce proxy server
     CURL *curl = curl_easy_init();
     if (!curl) {
-        JOYNR_LOG_ERROR(logger) << "unknown error during curl_easy_init";
+        JOYNR_LOG_ERROR(logger, "unknown error during curl_easy_init");
         FAIL();
     }
 
@@ -126,7 +126,7 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     auto minMaxTime = std::minmax(now, remoteTime);
     uint64_t diff = minMaxTime.second - minMaxTime.first;
 
-    JOYNR_LOG_INFO(logger) << "Time difference is " << now << "  msecs";
+    JOYNR_LOG_INFO(logger, "Time difference is {}  msecs",now);
     EXPECT_TRUE(diff < 2000) << "Time difference between local and remote is over 2 seconds";
 
 }

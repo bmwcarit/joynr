@@ -80,9 +80,13 @@ public:
         try {
             discoveryProxy.add(entry);
         } catch (exceptions::JoynrException& e) {
-            JOYNR_LOG_ERROR(logger) << "Unable to add provider (participant ID: " << participantId
-                                    << ", domain: " << domain << ", interface: " << interfaceName
-                                    << ") to discovery. Error: " << e.getMessage();
+            JOYNR_LOG_ERROR(logger,
+                            "Unable to add provider (participant ID: {}, domain: {}, interface: "
+                            "{}) to discovery. Error: {}",
+                            participantId,
+                            domain,
+                            interfaceName,
+                            e.getMessage());
         }
 
         // add next hop to dispatcher
@@ -118,10 +122,13 @@ public:
         try {
             discoveryProxy.remove(participantId);
         } catch (exceptions::JoynrException& e) {
-            JOYNR_LOG_ERROR(logger)
-                    << "Unable to remove provider (participant ID: " << participantId
-                    << ", domain: " << domain << ", interface: " << interfaceName
-                    << "to discovery. Status code: " << e.getMessage();
+            JOYNR_LOG_ERROR(logger,
+                            "Unable to remove provider (participant ID: {}, domain: {}, interface: "
+                            "{} to discovery. Status code: {}",
+                            participantId,
+                            domain,
+                            interfaceName,
+                            e.getMessage());
         }
 
         std::shared_ptr<joynr::Future<void>> future(new Future<void>());
@@ -130,9 +137,9 @@ public:
         future->wait();
 
         if (!future->getStatus().successful()) {
-            JOYNR_LOG_ERROR(logger)
-                    << "Unable to remove next hop (participant ID: " << participantId
-                    << ") from message router.";
+            JOYNR_LOG_ERROR(logger,
+                            "Unable to remove next hop (participant ID: {}) from message router.",
+                            participantId);
         }
 
         return participantId;

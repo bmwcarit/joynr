@@ -303,7 +303,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					const joynr::SubscriptionQos& subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
 		) {
-			JOYNR_LOG_DEBUG(logger) << "Subscribing to «attributeName».";
+			JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
 			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
@@ -320,7 +320,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						subscriptionCallback,
 						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
-			JOYNR_LOG_DEBUG(logger) << subscriptionRequest.toString();
+			JOYNR_LOG_DEBUG(logger, subscriptionRequest.toString());
 			joynrMessageSender->sendSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
@@ -475,7 +475,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				const joynr::OnChangeSubscriptionQos& subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest
 	) {
-		JOYNR_LOG_DEBUG(logger) << "Subscribing to «broadcastName» broadcast.";
+		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
@@ -493,7 +493,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					subscriptionCallback,
 					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
-		JOYNR_LOG_DEBUG(logger) << subscriptionRequest.toString();
+		JOYNR_LOG_DEBUG(logger, subscriptionRequest.toString());
 		joynrMessageSender->sendBroadcastSubscriptionRequest(
 					proxyParticipantId,
 					providerParticipantId,

@@ -48,10 +48,12 @@ void QosArbitrator::attemptArbitration()
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
         receiveCapabilitiesLookupResults(result);
     } catch (exceptions::JoynrException& e) {
-        JOYNR_LOG_ERROR(logger) << "Unable to lookup provider (domain: " << domain
-                                << ", interface: " << interfaceName
-                                << ") "
-                                   "from discovery. Error: " << e.getMessage();
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to lookup provider (domain: {}, interface: {}) "
+                        "from discovery. Error: {}",
+                        domain,
+                        interfaceName,
+                        e.getMessage());
     }
 }
 
@@ -70,23 +72,23 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
     int64_t highestPriority = -1;
     for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
-        JOYNR_LOG_TRACE(logger) << "Looping over capabilitiesEntry: " << discoveryEntry.toString();
+        JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
         if (discoveryQos.getProviderMustSupportOnChange() &&
             !providerQos.getSupportsOnChangeSubscriptions()) {
             continue;
         }
         if (providerQos.getPriority() > highestPriority) {
             res = discoveryEntry.getParticipantId();
-            JOYNR_LOG_TRACE(logger) << "setting res to " << res;
+            JOYNR_LOG_TRACE(logger, "setting res to {}", res);
             preferredConnection =
                     selectPreferredCommunicationMiddleware(discoveryEntry.getConnections());
             highestPriority = providerQos.getPriority();
         }
     }
     if (res == "") {
-        JOYNR_LOG_WARN(logger)
-                << "There was more than one entries in capabilitiesEntries, but none had a "
-                   "Priority > -1";
+        JOYNR_LOG_WARN(logger,
+                       "There was more than one entries in capabilitiesEntries, but none "
+                       "had a Priority > -1");
         return;
     }
 

@@ -41,7 +41,7 @@ public:
             : // factory(NULL),
               serviceAddress(serviceAddress)
     {
-        JOYNR_LOG_INFO(logger) << "Registering dbus skeleton on address: " << serviceAddress;
+        JOYNR_LOG_INFO(logger, "Registering dbus skeleton on address: {}", serviceAddress);
 
         // create the skeleton
         std::shared_ptr<_SkeletonClass> skeleton = std::make_shared<_SkeletonClass>(callBack);
@@ -54,15 +54,15 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            JOYNR_LOG_INFO(logger) << "registering service " << serviceAddress << ": SUCCESS";
+            JOYNR_LOG_INFO(logger, "registering service {}: SUCCESS", serviceAddress);
         } else {
-            JOYNR_LOG_FATAL(logger) << "registering service " << serviceAddress << ": ERROR";
+            JOYNR_LOG_FATAL(logger, "registering service {} : ERROR", serviceAddress);
         }
     }
 
     ~IDbusSkeletonWrapper()
     {
-        JOYNR_LOG_INFO(logger) << "Unregistering dbus skeleton from address: " << serviceAddress;
+        JOYNR_LOG_INFO(logger, "Unregistering dbus skeleton from address: {}", serviceAddress);
 
         auto runtime = CommonAPI::Runtime::load("DBus");
         bool success = runtime->getServicePublisher()->unregisterService(serviceAddress);
@@ -70,16 +70,15 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            JOYNR_LOG_INFO(logger) << "unregistering service " << serviceAddress << ": SUCCESS";
+            JOYNR_LOG_INFO(logger, "unregistering service {}: SUCCESS", serviceAddress);
         } else {
-            JOYNR_LOG_FATAL(logger) << "unregistering service " << serviceAddress << ": ERROR";
+            JOYNR_LOG_FATAL(logger, "unregistering service {}: ERROR", serviceAddress);
         }
     }
 
     void logMethodCall(const std::string& method, const std::string& adapter)
     {
-        JOYNR_LOG_INFO(logger) << "Call method " << adapter << ":" << serviceAddress << "-> "
-                               << method;
+        JOYNR_LOG_INFO(logger, "Call method {}:{}-> {}", adapter, serviceAddress, method);
     }
 
 private:

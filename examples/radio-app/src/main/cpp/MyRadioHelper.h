@@ -41,10 +41,10 @@ public:
     /**
      * Output a prominent log message at level INFO
      */
-    static void prettyLog(const joynr::Logger& logger, const QString& message);
+    static void prettyLog(joynr::Logger& logger, const QString& message);
 
 private:
-    static joynr::Logger logger;
+    ADD_LOGGER(MyRadioHelper);
 };
 
 #endif

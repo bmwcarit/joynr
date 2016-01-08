@@ -75,10 +75,10 @@ void LibjoynrSettings::setParticipantIdsPersistenceFilename(const std::string& f
 
 void LibjoynrSettings::printSettings() const
 {
-    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()
-                            << "  = "
-                            << settings.get<std::string>(
-                                       SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(),
+                    settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
 }
 
 } // namespace joynr
