@@ -68,7 +68,7 @@ void MyRadioProvider::getCurrentStation(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::lock_guard<std::mutex> locker(mutex);
-    (void)onError;
+    std::ignore = onError;
     MyRadioHelper::prettyLog(logger,
                              QString("getCurrentStation -> %1")
                                      .arg(QString::fromStdString(currentStation.toString())));
@@ -81,7 +81,7 @@ void MyRadioProvider::shuffleStations(
 {
     std::lock_guard<std::mutex> locker(mutex);
 
-    (void)onError;
+    std::ignore = onError;
     vehicle::RadioStation oldStation = currentStation;
     ++currentStationIndex;
     currentStationIndex %= stationsList.size();
@@ -128,7 +128,7 @@ void MyRadioProvider::getLocationOfCurrentStation(
                            const joynr::vehicle::GeoPosition& location)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     joynr::vehicle::Country::Enum country(currentStation.getCountry());
     joynr::vehicle::GeoPosition location(countryGeoPositionMap.at(country));
     MyRadioHelper::prettyLog(
