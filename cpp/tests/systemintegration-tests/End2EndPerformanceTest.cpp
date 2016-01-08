@@ -120,9 +120,9 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
                                                ->build());
     uint64_t startTime = DispatcherUtils::nowInMilliseconds();
     std::vector<std::shared_ptr<Future<int> > >testFutureList;
-    int numberOfMessages = 150;
-    int successFullMessages = 0;
-    for (int i=0; i<numberOfMessages; i++){
+    int numberOfRequests = 150;
+    int successfulRequests = 0;
+    for (int i=0; i<numberOfRequests; i++){
         std::vector<int> list;
         list.push_back(2);
         list.push_back(4);
@@ -131,21 +131,21 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
         testFutureList.push_back(testProxy->sumIntsAsync(list));
     }
 
-    for (int i=0; i<numberOfMessages; i++){
+    for (int i=0; i<numberOfRequests; i++){
         testFutureList.at(i)->wait();
         int expectedValue = 2+4+8+i;
         if (testFutureList.at(i)->getStatus().successful()) {
-            successFullMessages++;
+            successfulRequests++;
             int actualValue;
             testFutureList.at(i)->get(actualValue);
             EXPECT_EQ(expectedValue, actualValue);
         }
     }
     uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
-    //check if all Messages were received:
-    EXPECT_EQ(numberOfMessages, successFullMessages);
+    //check if all Requests were successful
+    EXPECT_EQ(numberOfRequests, successfulRequests);
     Logger logger("End2EndPerformanceTest");
-    JOYNR_LOG_INFO(logger) << "Required Time for 1000 Messages: " << (stopTime - startTime);
+    JOYNR_LOG_INFO(logger) << "Required Time for 1000 Requests: " << (stopTime - startTime);
     // to silence unused-variable compiler warnings
     (void)startTime;
     (void)stopTime;
