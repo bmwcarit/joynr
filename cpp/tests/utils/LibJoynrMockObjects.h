@@ -255,6 +255,19 @@ public:
         );
     }
 
+    void methodWithByteBuffer(
+            const joynr::ByteBuffer& input,
+            std::function<void(
+                    const joynr::ByteBuffer& result
+            )> onSuccess,
+            std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
+    ) {
+        (void) onError;
+        onSuccess(
+                input
+        );
+    }
+
     void mapParameters(
             const joynr::types::TestTypes::TStringKeyMap& tStringMapIn,
             std::function<void(

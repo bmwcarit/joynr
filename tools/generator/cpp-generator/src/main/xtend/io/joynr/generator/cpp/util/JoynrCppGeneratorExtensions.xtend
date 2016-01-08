@@ -189,6 +189,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		case isFloat(predefined)  : "Float"
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
+		case isByteBuffer(predefined)   : "Byte[]"
 		case datatype != null     : buildPackagePath(datatype, ".", true) +
 									datatype.joynrName
 		default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)

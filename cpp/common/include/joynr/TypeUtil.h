@@ -31,6 +31,8 @@
 namespace joynr
 {
 
+typedef std::vector<std::uint8_t> ByteBuffer;
+
 /**
   * @class TypeUtil
   * @brief Container class for helper methods related with the used datatypes

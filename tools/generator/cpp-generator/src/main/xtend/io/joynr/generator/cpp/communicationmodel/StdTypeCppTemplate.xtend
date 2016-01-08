@@ -52,7 +52,6 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 #include "«type.includeOf»"
 
 #include "joynr/Reply.h"
-#include "joynr/Util.h"
 
 «getNamespaceStarter(type, true)»
 

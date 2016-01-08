@@ -42,9 +42,13 @@ class CppStdTypeUtil extends CppTypeUtil {
 			case FBasicTypeId::FLOAT: "float"
 			case FBasicTypeId::DOUBLE: "double"
 			case FBasicTypeId::STRING: "std::string"
-			case FBasicTypeId::BYTE_BUFFER: "std::vector<std::uint8_t>"
+			case FBasicTypeId::BYTE_BUFFER: "joynr::ByteBuffer"
 			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.getName)
 		}
+	}
+
+	def getByteBufferElementType() {
+		FBasicTypeId.UINT8.typeName
 	}
 
 	override getTypeNameForList(FType datatype) {

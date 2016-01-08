@@ -332,6 +332,17 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         } catch (std::exception e) {
             ASSERT_FALSE(true) << "joynr::exceptions::MethodInvocationException is expected, however exception with message " << e.what() << "is thrown";
         }
+
+        // Testing byte buffer
+        joynr::ByteBuffer byteBufferValue {1,2,3};
+        testProxy->setByteBufferAttribute(byteBufferValue);
+        joynr::ByteBuffer actualByteBufferValue;
+        testProxy->getByteBufferAttribute(actualByteBufferValue);
+        EXPECT_EQ(actualByteBufferValue, byteBufferValue);
+
+        joynr::ByteBuffer returnByteBufferValue;
+        testProxy->methodWithByteBuffer(returnByteBufferValue, byteBufferValue);
+        EXPECT_EQ(returnByteBufferValue, byteBufferValue);
     }
 
     // Testing TTL

@@ -53,6 +53,7 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 #include <vector>
 
 #include "joynr/Util.h"
+#include "joynr/TypeUtil.h"
 
 // include complex Datatype headers.
 «FOR member: getRequiredIncludesFor(type)»

@@ -58,6 +58,8 @@ internalRequestObject.setMethodName("«method.joynrName»");
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isMap(param.type)»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
+	«ELSEIF isByteBuffer(param.type)»
+		internalRequestObject.addParam(joynr::TypeUtil::toVariant(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSE»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ENDIF»
@@ -203,6 +205,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isArray(attribute)»
 				internalRequestObject.addParam(TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isByteBuffer(attribute.type)»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSE»
 				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»

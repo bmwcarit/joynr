@@ -92,9 +92,16 @@ void «interfaceName»RequestInterpreter::execute(
 			if (methodName == "get«attributeName.toFirstUpper»"){
 				std::function<void(«returnType» «attributeName»)> requestCallerOnSuccess =
 						[onSuccess] («returnType» «attributeName») {
-							Variant singleOutParam(«IF isArray(attribute)»joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attributeName»)«ELSE»Variant::make<«getTypeName(attribute.type)»>(«attributeName»)«ENDIF»);
 							std::vector<Variant> outParams;
-							outParams.push_back(singleOutParam);
+								outParams.push_back(
+									«IF isArray(attribute)»
+										joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attributeName»)
+									«ELSEIF isByteBuffer(attribute.type)»
+										joynr::TypeUtil::toVariant(«attribute.joynrName»)
+									«ELSE»
+										Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+									«ENDIF»
+							);
 							onSuccess(std::move(outParams));
 						};
 				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerOnSuccess, onError);
@@ -122,6 +129,15 @@ void «interfaceName»RequestInterpreter::execute(
 						std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
 						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
 								«attributeRef»;
+					«ELSEIF isByteBuffer(attribute.type)»
+						//isArray
+						if (!«attributeName»Var.is<std::vector<Variant>>()) {
+							onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
+							return;
+						}
+						std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
+						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+								«joynrGenerationPrefix»::Util::convertVariantVectorToVector<«byteBufferElementType»>(paramList);
 					«ELSE»
 						«var attributeRef = if (attribute.type.float)
 												"static_cast<float>(" + attributeName + "Var.get<double>())"
@@ -177,8 +193,10 @@ void «interfaceName»RequestInterpreter::execute(
 								outParams.push_back(
 										«IF isArray(param)»
 											joynr::TypeUtil::toVariant<«getTypeName(param.type)»>(«param.joynrName»)
+										«ELSEIF isByteBuffer(param.type)»
+											joynr::TypeUtil::toVariant(«param.joynrName»)
 										«ELSE»
-											Variant::make<«getTypeName(param.type)»>(«param.joynrName»)
+											Variant::make<«getTypeName(param)»>(«param.joynrName»)
 										«ENDIF»
 								);
 							«ENDFOR»
@@ -206,6 +224,14 @@ void «interfaceName»RequestInterpreter::execute(
 							}
 							std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
 							std::vector<«getTypeName(input.type)»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantVectorToVector<«getTypeName(input.type)»>(«inputName»VarList);
+						«ELSEIF isByteBuffer(input.type)»
+							//isArray
+							if (!«inputName»Var.is<std::vector<Variant>>()) {
+								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
+								return;
+							}
+							std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
+							std::vector<«byteBufferElementType»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantVectorToVector<«byteBufferElementType»>(«inputName»VarList);
 						«ELSE»
 							//«getTypeName(input)»
 							«var inputRef = if (input.type.float)
