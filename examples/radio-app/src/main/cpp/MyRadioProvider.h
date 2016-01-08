@@ -25,7 +25,7 @@
 #include "joynr/Logger.h"
 #include "joynr/exceptions/JoynrException.h"
 #include <vector>
-#include <QMap>
+#include <unordered_map>
 #include <QMutex>
 
 using namespace joynr;
@@ -79,7 +79,8 @@ private:
 
     int currentStationIndex;                                // Index to the current station
     std::vector<joynr::vehicle::RadioStation> stationsList; // List of possible stations
-    QMap<joynr::vehicle::Country::Enum, joynr::vehicle::GeoPosition> countryGeoPositionMap;
+    std::unordered_map<joynr::vehicle::Country::Enum, joynr::vehicle::GeoPosition>
+            countryGeoPositionMap;
     QMutex mutex; // Providers need to be threadsafe
 
     ADD_LOGGER(MyRadioProvider);

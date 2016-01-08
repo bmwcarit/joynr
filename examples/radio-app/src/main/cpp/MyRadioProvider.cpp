@@ -48,14 +48,14 @@ MyRadioProvider::MyRadioProvider()
     stationsList.push_back(vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY));
     stationsList.push_back(vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA));
     stationsList.push_back(vehicle::RadioStation("Bayern 3", true, vehicle::Country::GERMANY));
-    countryGeoPositionMap.insert(vehicle::Country::AUSTRALIA,
-                                 vehicle::GeoPosition(-37.8141070, 144.9632800)); // Melbourne
+    countryGeoPositionMap.insert({vehicle::Country::AUSTRALIA,
+                                  vehicle::GeoPosition(-37.8141070, 144.9632800)}); // Melbourne
     countryGeoPositionMap.insert(
-            vehicle::Country::ITALY, vehicle::GeoPosition(46.4982950, 11.3547580)); // Bolzano
+            {vehicle::Country::ITALY, vehicle::GeoPosition(46.4982950, 11.3547580)}); // Bolzano
     countryGeoPositionMap.insert(
-            vehicle::Country::CANADA, vehicle::GeoPosition(53.5443890, -113.4909270)); // Edmonton
+            {vehicle::Country::CANADA, vehicle::GeoPosition(53.5443890, -113.4909270)}); // Edmonton
     countryGeoPositionMap.insert(
-            vehicle::Country::GERMANY, vehicle::GeoPosition(48.1351250, 11.5819810)); // Munich
+            {vehicle::Country::GERMANY, vehicle::GeoPosition(48.1351250, 11.5819810)}); // Munich
     currentStation = stationsList.at(currentStationIndex);
 }
 
@@ -130,7 +130,7 @@ void MyRadioProvider::getLocationOfCurrentStation(
 {
     (void)onError;
     joynr::vehicle::Country::Enum country(currentStation.getCountry());
-    joynr::vehicle::GeoPosition location(countryGeoPositionMap.value(country));
+    joynr::vehicle::GeoPosition location(countryGeoPositionMap.at(country));
     MyRadioHelper::prettyLog(
             logger,
             QString("getLocationOfCurrentStation: return country \"%1\" and location \"%2\"")
@@ -151,7 +151,7 @@ void MyRadioProvider::fireWeakSignalBroadcast()
 void MyRadioProvider::fireNewStationDiscoveredBroadcast()
 {
     vehicle::RadioStation discoveredStation(stationsList.at(currentStationIndex));
-    vehicle::GeoPosition geoPosition(countryGeoPositionMap.value(discoveredStation.getCountry()));
+    vehicle::GeoPosition geoPosition(countryGeoPositionMap.at(discoveredStation.getCountry()));
     MyRadioHelper::prettyLog(logger,
                              QString("fire newStationDiscoveredBroadcast: %1 at %2")
                                      .arg(QString::fromStdString(discoveredStation.toString()))
