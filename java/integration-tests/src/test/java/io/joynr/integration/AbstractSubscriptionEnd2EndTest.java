@@ -245,6 +245,38 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    public void subscribeToByteBufferAttribute() throws InterruptedException {
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Byte[]> testByteBufferListener = mock(AttributeSubscriptionListener.class);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(testByteBufferListener).onReceive(any(Byte[].class));
+
+        Byte[] expectedByteBuffer = { 1, 2, 3 };
+        provider.setByteBufferAttribute(expectedByteBuffer);
+
+        int periods = 2;
+        long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
+        long alertInterval_ms = 500;
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+
+        String subscriptionId = proxy.subscribeToByteBufferAttribute(testByteBufferListener, subscriptionQos);
+
+        assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
+
+        verify(testByteBufferListener, times(0)).onError(null);
+
+        proxy.unsubscribeFromByteBufferAttribute(subscriptionId);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
     public void registerSubscriptionForListAndReceiveUpdates() throws InterruptedException {
         final Semaphore onReceiveSemaphore = new Semaphore(0);
         AttributeSubscriptionListener<Integer[]> integersListener = mock(AttributeSubscriptionListener.class);

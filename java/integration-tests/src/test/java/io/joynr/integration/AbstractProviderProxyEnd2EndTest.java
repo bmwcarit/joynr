@@ -68,6 +68,7 @@ import joynr.tests.test.MethodWithImplicitErrorEnumErrorEnum;
 import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
 import joynr.tests.testBroadcastInterface.BroadcastWithMapParametersBroadcastListener;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
+import joynr.tests.testProvider.MethodWithByteBufferDeferred;
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
 import joynr.tests.testTypes.AnotherDerivedStruct;
@@ -400,6 +401,13 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
 
         @Override
+        public Promise<MethodWithByteBufferDeferred> methodWithByteBuffer(Byte[] input) {
+            MethodWithByteBufferDeferred deferred = new MethodWithByteBufferDeferred();
+            deferred.resolve(input);
+            return new Promise<MethodWithByteBufferDeferred>(deferred);
+        }
+
+        @Override
         public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
             super.registerBroadcastListener(broadcastName, broadcastListener);
             if (!broadcastSubscriptionArrived) {
@@ -692,6 +700,16 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testByteBufferAttribute() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        Byte[] byteArray = { 1, 2, 3 };
+        proxy.setByteBufferAttribute(byteArray);
+        Byte[] result = proxy.getByteBufferAttribute();
+        assertArrayEquals(byteArray, result);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testSimpleBroadcast() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
         final GpsLocation gpsLocation = new GpsLocation(1.0,
@@ -875,6 +893,39 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             assertEquals(expected, e);
         }
         verify(callbackVoid).onFailure(expected);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncMethodCallWithByteBuffer() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        Byte[] input = { 1, 2, 3 };
+        Byte[] result = proxy.methodWithByteBuffer(input);
+        assertArrayEquals(input, result);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void asyncMethodCallWithByteBuffer() throws JoynrWaitExpiredException, JoynrRuntimeException,
+                                               InterruptedException, ApplicationException {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        Byte[] input = { 1, 2, 3 };
+        Future<Byte[]> future = proxy.methodWithByteBuffer(new Callback<Byte[]>() {
+
+            @Override
+            public void onFailure(JoynrException error) {
+                fail("byteBuffer was not returned correctly");
+
+            }
+
+            @Override
+            public void onSuccess(Byte[] result) {
+            }
+        }, input);
+
+        Byte[] result = future.get();
+        assertArrayEquals(input, result);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
