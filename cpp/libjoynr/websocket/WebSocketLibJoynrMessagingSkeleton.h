@@ -19,23 +19,21 @@
 #ifndef WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 #define WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 
-#include <QtCore/QObject>
-
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/joynrlogging.h"
 
-#include "joynr/MessageRouter.h"
 #include "joynr/IMessaging.h"
+#include "joynr/MessageRouter.h"
 
-class QWebSocketServer;
-class QWebSocket;
+#include "IWebSocketEventHandler.h"
+
+#include <string>
 
 namespace joynr
 {
 
-class WebSocketLibJoynrMessagingSkeleton : public QObject, public IMessaging
+class WebSocketLibJoynrMessagingSkeleton : public IMessaging
 {
-    Q_OBJECT
 public:
     explicit WebSocketLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
 
@@ -43,8 +41,7 @@ public:
 
     void transmit(JoynrMessage& message) override;
 
-public Q_SLOTS:
-    void onTextMessageReceived(const QString& message);
+    void onTextMessageReceived(const std::string& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);

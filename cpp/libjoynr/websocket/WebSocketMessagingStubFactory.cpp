@@ -18,10 +18,9 @@
  */
 #include "WebSocketMessagingStubFactory.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QEventLoop>
-#include <QtWebSockets/QWebSocket>
-#include <assert.h>
+#include <cassert>
+#include <typeinfo>
+#include <functional>
 
 #include "websocket/WebSocketMessagingStub.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -35,8 +34,8 @@ namespace joynr
 joynr_logging::Logger* WebSocketMessagingStubFactory::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStubFactory");
 
-WebSocketMessagingStubFactory::WebSocketMessagingStubFactory(QObject* parent)
-        : QObject(parent), serverStubMap(), clientStubMap(), mutex()
+WebSocketMessagingStubFactory::WebSocketMessagingStubFactory()
+        : serverStubMap(), clientStubMap(), mutex()
 {
 }
 
@@ -88,15 +87,13 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
 
 void WebSocketMessagingStubFactory::addClient(
         const joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress,
-        QWebSocket* webSocket)
+        IWebSocketSendInterface* webSocket)
 {
 
     if (clientStubMap.count(*clientAddress) == 0) {
-        WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(clientAddress, webSocket);
-        connect(wsClientStub,
-                &WebSocketMessagingStub::closed,
-                this,
-                &WebSocketMessagingStubFactory::onMessagingStubClosed);
+        WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(
+                webSocket,
+                [this, clientAddress]() { this->onMessagingStubClosed(*clientAddress); });
         std::shared_ptr<IMessaging> clientStub(wsClientStub);
         clientStubMap[*clientAddress] = clientStub;
     } else {
@@ -115,15 +112,11 @@ void WebSocketMessagingStubFactory::removeClient(
 
 void WebSocketMessagingStubFactory::addServer(
         const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
-        QWebSocket* webSocket)
+        IWebSocketSendInterface* webSocket)
 {
 
     WebSocketMessagingStub* wsServerStub = new WebSocketMessagingStub(
-            new system::RoutingTypes::WebSocketAddress(serverAddress), webSocket);
-    connect(wsServerStub,
-            &WebSocketMessagingStub::closed,
-            this,
-            &WebSocketMessagingStubFactory::onMessagingStubClosed);
+            webSocket, [this, serverAddress]() { this->onMessagingStubClosed(serverAddress); });
     std::shared_ptr<IMessaging> serverStub(wsServerStub);
     serverStubMap[serverAddress] = serverStub;
 }

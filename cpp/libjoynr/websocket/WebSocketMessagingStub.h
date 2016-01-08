@@ -19,14 +19,14 @@
 #ifndef WEBSOCKETMESSAGINSTUB_H
 #define WEBSOCKETMESSAGINSTUB_H
 
-#include <QtCore/QObject>
+#include <functional>
+#include <memory>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/joynrlogging.h"
 
 #include "joynr/IMessaging.h"
-
-class QWebSocket;
+#include "joynr/IWebSocketSendInterface.h"
 
 namespace joynr
 {
@@ -40,29 +40,33 @@ class Address;
 }
 }
 
-class WebSocketMessagingStub : public QObject, public IMessaging
+/**
+ * @class WebSocketMessagingStub
+ * @brief Represents an outgoing WebSocket connection
+ */
+class WebSocketMessagingStub : public IMessaging
 {
-    Q_OBJECT
 public:
-    WebSocketMessagingStub(const joynr::system::RoutingTypes::Address* address,
-                           QWebSocket* webSocket,
-                           QObject* parent = nullptr);
-    ~WebSocketMessagingStub() override;
+    /**
+     * @brief Constructor
+     * @param webSocket Interface to be used to send data
+     * @param onStubClosed Function to be called on close
+     */
+    WebSocketMessagingStub(IWebSocketSendInterface* webSocket, std::function<void()> onStubClosed);
+
+    /**
+     * @brief Destructor
+     */
+    ~WebSocketMessagingStub() = default;
     void transmit(JoynrMessage& message) override;
 
-Q_SIGNALS:
-    void closed(const joynr::system::RoutingTypes::Address& address);
-    void queueTextMessage(QString message);
-
-private Q_SLOTS:
-    void onSocketDisconnected();
-    void sendTextMessage(const QString& message);
-
 private:
-    static joynr_logging::Logger* logger;
-    const system::RoutingTypes::Address* address;
-    QWebSocket* webSocket;
     DISALLOW_COPY_AND_ASSIGN(WebSocketMessagingStub);
+
+    /*! Message sender for outgoing messages over WebSocket */
+    std::shared_ptr<IWebSocketSendInterface> webSocket;
+
+    static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr

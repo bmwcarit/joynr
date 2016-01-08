@@ -39,15 +39,28 @@ class QWebSocket;
 namespace joynr
 {
 
+/**
+ * @class WebSocketCcMessagingSkeleton
+ * @brief Messaging skeleton for the cluster controller
+ */
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT WebSocketCcMessagingSkeleton : public QObject,
                                                                           public IMessaging
 {
     Q_OBJECT
 public:
+    /**
+     * @brief Constructor
+     * @param messageRouter Router
+     * @param messagingStubFactory Factory
+     * @param serverAddress Address of the server
+     */
     WebSocketCcMessagingSkeleton(MessageRouter& messageRouter,
                                  WebSocketMessagingStubFactory& messagingStubFactory,
                                  const system::RoutingTypes::WebSocketAddress& serverAddress);
 
+    /**
+     * @brief Destructor
+     */
     ~WebSocketCcMessagingSkeleton() override;
 
     void transmit(JoynrMessage& message) override;
@@ -63,9 +76,13 @@ private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
     bool isInitializationMessage(const QString& message);
     static joynr_logging::Logger* logger;
+    /*! Websocket server listening for incoming connections */
     QWebSocketServer* webSocketServer;
+    /*! List of client connections */
     std::vector<QWebSocket*> clients;
+    /*! Router for incoming messages */
     MessageRouter& messageRouter;
+    /*! Factory to build outgoing messaging stubs */
     WebSocketMessagingStubFactory& messagingStubFactory;
 };
 

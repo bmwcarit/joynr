@@ -20,22 +20,19 @@
 #ifndef LIBJOYNRWEBSOCKETRUNTIME_H
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
-#include <QtWebSockets/QWebSocket>
-
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/joynrlogging.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
+#include "libjoynr/websocket/WebSocketClient.h"
 
 namespace joynr
 {
-
 class WebSocketLibJoynrMessagingSkeleton;
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime
 {
     WebSocketSettings wsSettings;
-    QWebSocket* websocket;
 
 public:
     explicit LibJoynrWebSocketRuntime(Settings* settings);
@@ -48,6 +45,10 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);
+
+    void onWebSocketError(const std::string& errorMessage);
+
+    std::shared_ptr<WebSocketClient> websocket;
     static joynr_logging::Logger* logger;
 };
 

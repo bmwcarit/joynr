@@ -18,8 +18,6 @@
  */
 #include "WebSocketLibJoynrMessagingSkeleton.h"
 
-#include <QtWebSockets/QWebSocket>
-
 #include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
@@ -40,19 +38,18 @@ void WebSocketLibJoynrMessagingSkeleton::transmit(JoynrMessage& message)
     messageRouter.route(message);
 }
 
-void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const QString& message)
+void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const std::string& message)
 {
     // deserialize message and transmit
-    joynr::JoynrMessage* joynrMsg =
-            JsonSerializer::deserialize<joynr::JoynrMessage>(message.toStdString());
+    joynr::JoynrMessage* joynrMsg = JsonSerializer::deserialize<joynr::JoynrMessage>(message);
     if (joynrMsg == nullptr) {
         LOG_ERROR(logger,
                   FormatString("Unable to deserialize joynr message object from: %1")
-                          .arg(message.toStdString())
+                          .arg(message)
                           .str());
         return;
     }
-    LOG_TRACE(logger, FormatString("INCOMING\nmessage: %1").arg(message.toStdString()).str());
+    LOG_TRACE(logger, FormatString("INCOMING\nmessage: %1").arg(message).str());
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg);

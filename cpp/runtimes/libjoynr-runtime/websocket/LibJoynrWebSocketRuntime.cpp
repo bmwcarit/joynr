@@ -23,10 +23,11 @@
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
+#include "libjoynr/websocket/WebSocketClient.h"
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/JsonSerializer.h"
-#include <QString>
+
 namespace joynr
 {
 
@@ -36,8 +37,10 @@ joynr_logging::Logger* LibJoynrWebSocketRuntime::logger =
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
           wsSettings(*settings),
-          websocket(nullptr),
-          wsLibJoynrMessagingSkeleton(nullptr)
+          wsLibJoynrMessagingSkeleton(nullptr),
+          websocket(new joynr::WebSocketClient(
+                  [this](const std::string& err) { this->onWebSocketError(err); },
+                  [](joynr::WebSocket*) {}))
 {
     std::string uuid = Util::createUuid();
     // remove dashes
@@ -51,26 +54,19 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
             new joynr::system::RoutingTypes::WebSocketAddress(
                     wsSettings.createClusterControllerMessagingAddress()));
 
-    websocket = new QWebSocket();
-
-    // wait synchronously until websocket is connected
-    QEventLoop loop;
-    QObject::connect(websocket, &QWebSocket::connected, &loop, &QEventLoop::quit);
-    websocket->open(
-            WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(*ccMessagingAddress));
-    loop.exec();
+    websocket->connect(*ccMessagingAddress);
 
     // send intialization message containing libjoynr messaging address
-    std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
+    std::string initializationMsg(JsonSerializer::serialize(*libjoynrMessagingAddress).data());
     LOG_TRACE(logger,
               FormatString("OUTGOING sending websocket intialization message\nmessage: %1\nto: %2")
                       .arg(initializationMsg)
                       .arg(libjoynrMessagingAddress->toString())
                       .str());
-    websocket->sendTextMessage(QString::fromStdString(initializationMsg));
+    websocket->send(initializationMsg);
 
     WebSocketMessagingStubFactory* factory = new WebSocketMessagingStubFactory();
-    factory->addServer(*ccMessagingAddress, websocket);
+    factory->addServer(*ccMessagingAddress, websocket.get());
 
     LibJoynrRuntime::init(factory, libjoynrMessagingAddress, ccMessagingAddress);
 }
@@ -85,11 +81,14 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(MessageRouter& mes
 {
     // create messaging skeleton using uuid
     wsLibJoynrMessagingSkeleton = new WebSocketLibJoynrMessagingSkeleton(messageRouter);
+    websocket->registerReceiveCallback([&](const std::string& msg) {
+        wsLibJoynrMessagingSkeleton->onTextMessageReceived(msg);
+    });
+}
 
-    QObject::connect(websocket,
-                     &QWebSocket::textMessageReceived,
-                     wsLibJoynrMessagingSkeleton,
-                     &WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived);
+void LibJoynrWebSocketRuntime::onWebSocketError(const std::string& errorMessage)
+{
+    LOG_ERROR(logger, FormatString("WebSocket error occurred: %1").arg(errorMessage).str());
 }
 
 } // namespace joynr

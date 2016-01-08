@@ -32,6 +32,10 @@
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 
+#include "utils/MockObjects.h"
+
+using namespace ::testing;
+
 namespace joynr {
 
 class WebSocketMessagingStubFactoryTest : public testing::Test {
@@ -81,39 +85,46 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsNullForUnknownClient) {
 
 TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
     WebSocketMessagingStubFactory factory;
-    QWebSocket* clientWebsocket = new QWebSocket();
+    MockWebSocketClient* clientWebsocket = new MockWebSocketClient();
     QWebSocket* serverWebsocket = new QWebSocket();
+    MockQWebSocketSendWrapper* wrapper = new MockQWebSocketSendWrapper(serverWebsocket);
 
     factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), clientWebsocket);
-    factory.addServer(webSocketServerAddress, serverWebsocket);
-    EXPECT_FALSE(factory.create(webSocketClientAddress).get() == 0);
-    EXPECT_FALSE(factory.create(webSocketServerAddress).get() == 0);
+    factory.addServer(webSocketServerAddress, wrapper);
+    EXPECT_TRUE(factory.create(webSocketClientAddress).get() != NULL);
+    EXPECT_TRUE(factory.create(webSocketServerAddress).get() != NULL);
+
+    // Terminate call is needed if context was created. This is normally done within the runtime
+    clientWebsocket->terminate();
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
     WebSocketMessagingStubFactory factory;
-    QWebSocket* websocket = new QWebSocket();
+    MockWebSocketClient* websocket = new MockWebSocketClient();
 
     factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
+    EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
     std::shared_ptr<joynr::IMessaging> messagingStub(factory.create(webSocketClientAddress));
     std::shared_ptr<joynr::WebSocketMessagingStub> wsMessagingStub(std::dynamic_pointer_cast<joynr::WebSocketMessagingStub>(messagingStub));
-    QSignalSpy wsMessagingStubClosedSpy(wsMessagingStub.get(), SIGNAL(closed(joynr::system::RoutingTypes::Address)));
-    EXPECT_FALSE(messagingStub.get() == 0);
+    EXPECT_TRUE(messagingStub.get() != NULL);
 
-    QTimer::singleShot(0, wsMessagingStub.get(), SLOT(onSocketDisconnected()));
-    EXPECT_TRUE(wsMessagingStubClosedSpy.wait());
-    EXPECT_EQ(1, wsMessagingStubClosedSpy.count());
-    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == 0);
+    EXPECT_CALL(*websocket, dtorCalled());
+    std::thread(&MockWebSocketClient::signalDisconnect, websocket).detach();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == NULL);
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     WebSocketMessagingStubFactory factory;
-    QWebSocket* websocket = new QWebSocket();
+    joynr::WebSocketClient* websocket = new MockWebSocketClient();
 
     factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
-    EXPECT_FALSE(factory.create(webSocketClientAddress).get() == 0);
+    EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
+    EXPECT_CALL(*static_cast<MockWebSocketClient*>(websocket), dtorCalled());
     factory.removeClient(webSocketClientAddress);
-    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == 0);
+    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == nullptr);
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {

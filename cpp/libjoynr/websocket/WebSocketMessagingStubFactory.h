@@ -19,11 +19,10 @@
 #ifndef WEBSOCKETMESSAGINGSTUBFACTORY_H
 #define WEBSOCKETMESSAGINGSTUBFACTORY_H
 
-#include <QtCore/QObject>
-#include <unordered_map>
 #include <QtCore/QUrl>
 #include <memory>
 #include <mutex>
+#include <unordered_map>
 
 #include "joynr/joynrlogging.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
@@ -31,42 +30,27 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
-class QWebSocket;
-
 namespace joynr
 {
+class IWebSocketSendInterface;
 
-namespace system
+class WebSocketMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {
-
-namespace RoutingTypes
-{
-class Address;
-class WebSocketAddress;
-class WebSocketClientAddress;
-}
-}
-
-class WebSocketMessagingStubFactory : public QObject, public IMiddlewareMessagingStubFactory
-{
-    Q_OBJECT
 
 public:
-    explicit WebSocketMessagingStubFactory(QObject* parent = nullptr);
+    WebSocketMessagingStubFactory();
     std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
-    void addClient(const system::RoutingTypes::WebSocketClientAddress* clientAddress,
-                   QWebSocket* webSocket);
+    void addClient(const joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress,
+                   IWebSocketSendInterface* webSocket);
     void removeClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress);
     void addServer(const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
-                   QWebSocket* webSocket);
+                   IWebSocketSendInterface* webSocket);
+    void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);
 
     static QUrl convertWebSocketAddressToUrl(
             const joynr::system::RoutingTypes::WebSocketAddress& address);
-
-private Q_SLOTS:
-    void onMessagingStubClosed(const system::RoutingTypes::Address& address);
 
 private:
     std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress, std::shared_ptr<IMessaging>>

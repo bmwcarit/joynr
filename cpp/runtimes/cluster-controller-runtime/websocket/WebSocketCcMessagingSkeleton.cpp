@@ -20,6 +20,7 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "QWebSocketSendWrapper.h"
 
 #include <QtWebSockets/QWebSocketServer>
 #include <QtWebSockets/QWebSocket>
@@ -107,7 +108,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
         // client address must be valid, or libjoynr and CC are deployed in different versions
         assert(clientAddress);
 
-        messagingStubFactory.addClient(clientAddress, client);
+        IWebSocketSendInterface* clientWrapper = new QWebSocketSendWrapper(client);
+        messagingStubFactory.addClient(clientAddress, clientWrapper);
 
         // cleanup
         disconnect(client,
