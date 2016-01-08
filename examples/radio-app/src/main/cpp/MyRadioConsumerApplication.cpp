@@ -17,7 +17,6 @@
  * #L%
  */
 
-#include <QFileInfo>
 #include <string>
 #include <stdint.h>
 #include <memory>
@@ -138,7 +137,8 @@ int main(int argc, char* argv[])
     JOYNR_LOG_INFO(logger, "Creating proxy for provider on domain {}", providerDomain);
 
     // Get the current program directory
-    QString dir(QFileInfo(programName).absolutePath());
+    QString dir(QString::fromStdString(
+            MyRadioHelper::getAbsolutePathToExectuable(programName.toStdString())));
 
     // Initialise the JOYn runtime
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-consumer.settings"));

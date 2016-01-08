@@ -18,9 +18,10 @@
  */
 
 #include "MyRadioHelper.h"
-#include <QTextStream>
 #include <termios.h>
 #include <unistd.h>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 using namespace joynr;
 
@@ -59,6 +60,13 @@ void MyRadioHelper::pressQToContinue()
 
     while (getch() != 'q')
         ;
+}
+
+std::string MyRadioHelper::getAbsolutePathToExectuable(const std::string& executableName)
+{
+    boost::filesystem::path fullPath =
+            boost::filesystem::system_complete(boost::filesystem::path(executableName));
+    return fullPath.parent_path().string();
 }
 
 void MyRadioHelper::prettyLog(joynr::Logger& logger, const QString& message)

@@ -26,8 +26,6 @@
 #include "joynr/Logger.h"
 
 #include <QString>
-#include <QSettings>
-#include <QFileInfo>
 #include <memory>
 #include <string>
 
@@ -51,7 +49,8 @@ int main(int argc, char* argv[])
     JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
 
     // Get the current program directory
-    QString dir(QFileInfo(programName).absolutePath());
+    QString dir(QString::fromStdString(
+            MyRadioHelper::getAbsolutePathToExectuable(programName.toStdString())));
 
     // Initialise the JOYn runtime
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-provider.settings"));

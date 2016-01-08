@@ -42,6 +42,17 @@ message(STATUS "joynr variable JOYNR_EXECUTABLES=${JOYNR_EXECUTABLES}")
 message(STATUS "joynr variable JOYNR_RESOURCES_DIR=${JOYNR_RESOURCES_DIR}")
 message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
 
+######## Add Boost ########
+
+find_package(Boost 1.56.0 REQUIRED
+    COMPONENTS
+    filesystem
+)
+message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
+message(STATUS "variable Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
+
+include_directories(${Boost_INCLUDE_DIRS})
+
 ##### Helper variables for using generated code ###########
 
 file(GLOB_RECURSE GENERATED_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -126,7 +137,10 @@ add_library(radio-app SHARED
     ${GENERATED_SOURCES}
 )
 
-target_link_libraries(radio-app ${JOYNR_LIBRARIES})
+target_link_libraries(radio-app
+    ${JOYNR_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
 
 # Compile the provider application (running in-process with cluster controller)
 add_executable(radio-app-provider-cc

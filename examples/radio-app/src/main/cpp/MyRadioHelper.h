@@ -35,6 +35,8 @@ public:
      */
     static void pressQToContinue();
 
+    static std::string getAbsolutePathToExectuable(const std::string& executableName);
+
     static int getch();
 
     static const std::string& MISSING_NAME();
