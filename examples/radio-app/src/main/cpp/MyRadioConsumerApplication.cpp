@@ -167,7 +167,7 @@ int main(int argc, char* argv[])
     // NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
     //       directory. Therefore, not all providers registered with the global capabilities
     //       directory might be taken into account during arbitration.
-    discoveryQos.setCacheMaxAge(std::numeric_limits<qint64>::max());
+    discoveryQos.setCacheMaxAge(std::numeric_limits<std::int64_t>::max());
     // The discovery process outputs a list of matching providers. The arbitration strategy then
     // chooses one or more of them to be used by the proxy.
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);

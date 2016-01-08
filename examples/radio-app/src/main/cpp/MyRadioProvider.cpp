@@ -19,7 +19,7 @@
 
 #include "MyRadioProvider.h"
 
-#include <QDateTime>
+#include <chrono>
 
 #include "MyRadioHelper.h"
 #include "joynr/RequestStatus.h"
@@ -38,7 +38,10 @@ MyRadioProvider::MyRadioProvider()
     // Initialise the quality of service settings
     // Set the priority so that the consumer application always uses the most recently
     // started provider
-    providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
 
     stationsList << vehicle::RadioStation("ABC Trible J", true, vehicle::Country::AUSTRALIA)
                  << vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY)
