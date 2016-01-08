@@ -94,6 +94,9 @@
 #include "joynr/Variant.h"
 #include "joynr/Settings.h"
 
+#include "libjoynr/websocket/WebSocketClient.h"
+#include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
+
 using ::testing::A;
 using ::testing::_;
 using ::testing::A;
@@ -995,6 +998,55 @@ class MockConsumerPermissionCallback : public joynr::IAccessController::IHasCons
 {
 public:
     MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
+};
+
+class MockWebSocketClient : public joynr::WebSocketClient
+{
+public:
+    MockWebSocketClient()
+        : joynr::WebSocketClient([](const std::string& message){},
+                                 [](joynr::WebSocket* webSocket){})
+    {
+    }
+
+    MOCK_METHOD0(dtorCalled, void());
+    ~MockWebSocketClient() override
+    {
+        dtorCalled();
+    }
+
+    MOCK_METHOD1(connect, void (const joynr::system::RoutingTypes::WebSocketAddress&));
+
+    MOCK_METHOD1(send , void (const std::string& message));
+
+    MOCK_CONST_METHOD0(isConnected, bool ());
+
+    MOCK_METHOD2(onWebSocketWriteable, void (joynr::WebSocketContext::WebSocketConnectionHandle,
+                              std::function<int(const std::string&)>));
+
+    MOCK_METHOD3(onNewConnection, void (joynr::WebSocketContext::WebSocketConnectionHandle handle,
+                         const std::string& host,
+                         const std::string& name));
+
+    void signalDisconnect() {
+        onWebSocketDisconnected();
+    }
+};
+
+class MockQWebSocketSendWrapper : public joynr::QWebSocketSendWrapper {
+public:
+
+    MockQWebSocketSendWrapper(QWebSocket* websocket)
+        : joynr::QWebSocketSendWrapper(websocket)
+    {
+        registerDisconnectCallback(std::bind(&MockQWebSocketSendWrapper::onConnectionClosed, this));
+    }
+
+    MOCK_METHOD1(send, void (const std::string& message));
+
+    MOCK_CONST_METHOD0(isConnected, bool ());
+
+    MOCK_METHOD0(onConnectionClosed, void ());
 };
 
 #ifdef _MSC_VER
