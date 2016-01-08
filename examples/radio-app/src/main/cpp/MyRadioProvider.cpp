@@ -43,10 +43,11 @@ MyRadioProvider::MyRadioProvider()
                     std::chrono::system_clock::now().time_since_epoch());
     providerQos.setPriority(millisSinceEpoch.count());
 
-    stationsList << vehicle::RadioStation("ABC Trible J", true, vehicle::Country::AUSTRALIA)
-                 << vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY)
-                 << vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA)
-                 << vehicle::RadioStation("Bayern 3", true, vehicle::Country::GERMANY);
+    stationsList.push_back(
+            vehicle::RadioStation("ABC Trible J", true, vehicle::Country::AUSTRALIA));
+    stationsList.push_back(vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY));
+    stationsList.push_back(vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA));
+    stationsList.push_back(vehicle::RadioStation("Bayern 3", true, vehicle::Country::GERMANY));
     countryGeoPositionMap.insert(vehicle::Country::AUSTRALIA,
                                  vehicle::GeoPosition(-37.8141070, 144.9632800)); // Melbourne
     countryGeoPositionMap.insert(
@@ -117,7 +118,7 @@ void MyRadioProvider::addFavoriteStation(
         MyRadioHelper::prettyLog(logger,
                                  QString("addFavoriteStation(%1)")
                                          .arg(QString::fromStdString(radioStation.toString())));
-        stationsList.append(radioStation);
+        stationsList.push_back(radioStation);
         onSuccess(true);
     }
 }
