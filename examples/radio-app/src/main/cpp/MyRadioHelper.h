@@ -20,7 +20,7 @@
 #define MY_RADIO_HELPER_H
 
 #include "joynr/Logger.h"
-#include <QString>
+#include <string>
 
 /**
  * A helper class for use by the MyRadio consumer and provider applications
@@ -43,7 +43,7 @@ public:
     /**
      * Output a prominent log message at level INFO
      */
-    static void prettyLog(joynr::Logger& logger, const QString& message);
+    static void prettyLog(joynr::Logger& logger, const std::string& message);
 
 private:
     ADD_LOGGER(MyRadioHelper);

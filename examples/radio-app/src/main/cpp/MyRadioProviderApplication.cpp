@@ -22,10 +22,8 @@
 #include "TrafficServiceBroadcastFilter.h"
 #include "GeocastBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
-#include "joynr/QtTypeUtil.h"
 #include "joynr/Logger.h"
 
-#include <QString>
 #include <memory>
 #include <string>
 
@@ -38,9 +36,9 @@ int main(int argc, char* argv[])
     Logger logger("MyRadioProviderApplication");
 
     // Check the usage
-    QString programName(argv[0]);
+    std::string programName(argv[0]);
     if (argc != 2) {
-        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain>", programName.toStdString());
+        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain>", programName);
         return 1;
     }
 
@@ -49,15 +47,13 @@ int main(int argc, char* argv[])
     JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
 
     // Get the current program directory
-    QString dir(QString::fromStdString(
-            MyRadioHelper::getAbsolutePathToExectuable(programName.toStdString())));
+    std::string dir(MyRadioHelper::getAbsolutePathToExectuable(programName));
 
     // Initialise the JOYn runtime
-    QString pathToMessagingSettings(dir + QString("/resources/radio-app-provider.settings"));
-    QString pathToLibJoynrSettings(dir +
-                                   QString("/resources/radio-app-provider.libjoynr.settings"));
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(
-            QtTypeUtil::toStd(pathToLibJoynrSettings), QtTypeUtil::toStd(pathToMessagingSettings));
+    std::string pathToMessagingSettings(dir + "/resources/radio-app-provider.settings");
+    std::string pathToLibJoynrSettings(dir + "/resources/radio-app-provider.libjoynr.settings");
+    JoynrRuntime* runtime =
+            JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
 
     // create provider instance
     std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
@@ -73,8 +69,7 @@ int main(int argc, char* argv[])
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
             [&](const joynr::exceptions::ProviderRuntimeException& exception) {
-        MyRadioHelper::prettyLog(
-                logger, QString("Exception: %1").arg(QtTypeUtil::toQt(exception.getMessage())));
+        MyRadioHelper::prettyLog(logger, "Exception: " + exception.getMessage());
     };
 
     // Run until the user hits q
@@ -92,11 +87,11 @@ int main(int argc, char* argv[])
             break;
         default:
             MyRadioHelper::prettyLog(logger,
-                                     QString("USAGE press\n"
-                                             " q\tto quit\n"
-                                             " s\tto shuffle stations\n"
-                                             " w\tto fire weak signal broadcast\n"
-                                             " n\tto fire new station discovered broadcast"));
+                                     "USAGE press\n"
+                                     " q\tto quit\n"
+                                     " s\tto shuffle stations\n"
+                                     " w\tto fire weak signal broadcast\n"
+                                     " n\tto fire new station discovered broadcast");
             break;
         }
     }

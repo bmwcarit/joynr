@@ -32,7 +32,6 @@
 #include <cassert>
 #include <limits>
 #include "joynr/JsonSerializer.h"
-#include "joynr/QtTypeUtil.h"
 #include "joynr/Logger.h"
 
 using namespace joynr;
@@ -47,22 +46,18 @@ public:
 
     void onReceive(const vehicle::RadioStation& value)
     {
-        MyRadioHelper::prettyLog(logger,
-                                 QString("ATTRIBUTE SUBSCRIPTION current station: %1")
-                                         .arg(QString::fromStdString(value.toString())));
+        MyRadioHelper::prettyLog(
+                logger, "ATTRIBUTE SUBSCRIPTION current station: " + value.toString());
     }
 
     void onError(const exceptions::JoynrRuntimeException& error)
     {
         if (error.getTypeName() == exceptions::PublicationMissedException::TYPE_NAME) {
-            MyRadioHelper::prettyLog(
-                    logger,
-                    QString("ATTRIBUTE SUBSCRIPTION Publication Missed, subscriptionId: %1")
-                            .arg(QString::fromStdString(error.getMessage())));
-        } else {
             MyRadioHelper::prettyLog(logger,
-                                     QString("ATTRIBUTE SUBSCRIPTION error: %1")
-                                             .arg(QString::fromStdString(error.getMessage())));
+                                     "ATTRIBUTE SUBSCRIPTION Publication Missed, subscriptionId: " +
+                                             error.getMessage());
+        } else {
+            MyRadioHelper::prettyLog(logger, "ATTRIBUTE SUBSCRIPTION error: " + error.getMessage());
         }
     }
 
@@ -82,9 +77,7 @@ public:
 
     void onReceive(const vehicle::RadioStation& value)
     {
-        MyRadioHelper::prettyLog(logger,
-                                 QString("BROADCAST SUBSCRIPTION weak signal: %1")
-                                         .arg(QString::fromStdString(value.toString())));
+        MyRadioHelper::prettyLog(logger, "BROADCAST SUBSCRIPTION weak signal: " + value.toString());
     }
 
 private:
@@ -106,9 +99,9 @@ public:
                    const vehicle::GeoPosition& geoPosition)
     {
         MyRadioHelper::prettyLog(logger,
-                                 QString("BROADCAST SUBSCRIPTION new station discovered: %1 at %2")
-                                         .arg(QString::fromStdString(discoveredStation.toString()))
-                                         .arg(QString::fromStdString(geoPosition.toString())));
+                                 "BROADCAST SUBSCRIPTION new station discovered: " +
+                                         discoveredStation.toString() + " at " +
+                                         geoPosition.toString());
     }
 
 private:
@@ -126,9 +119,9 @@ int main(int argc, char* argv[])
     joynr::Logger logger("MyRadioConsumerApplication");
 
     // Check the usage
-    QString programName(argv[0]);
+    std::string programName(argv[0]);
     if (argc != 2) {
-        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain>", programName.toStdString());
+        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain>", programName);
         return 1;
     }
 
@@ -137,21 +130,20 @@ int main(int argc, char* argv[])
     JOYNR_LOG_INFO(logger, "Creating proxy for provider on domain {}", providerDomain);
 
     // Get the current program directory
-    QString dir(QString::fromStdString(
-            MyRadioHelper::getAbsolutePathToExectuable(programName.toStdString())));
+    std::string dir(MyRadioHelper::getAbsolutePathToExectuable(programName));
 
     // Initialise the JOYn runtime
-    QString pathToMessagingSettings(dir + QString("/resources/radio-app-consumer.settings"));
+    std::string pathToMessagingSettings(dir + "/resources/radio-app-consumer.settings");
 
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(QtTypeUtil::toStd(pathToMessagingSettings));
+    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
     ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
             runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
-    qlonglong qosMsgTtl = 30000;                // Time to live is 30 secs in one direction
-    qlonglong qosCacheDataFreshnessMs = 400000; // Only consider data cached for < 400 secs
+    std::int64_t qosMsgTtl = 30000;                // Time to live is 30 secs in one direction
+    std::int64_t qosCacheDataFreshnessMs = 400000; // Only consider data cached for < 400 secs
 
     // Find the provider with the highest priority set in ProviderQos
     DiscoveryQos discoveryQos;
@@ -184,9 +176,7 @@ int main(int argc, char* argv[])
     } catch (exceptions::JoynrException& e) {
         assert(false);
     }
-    MyRadioHelper::prettyLog(
-            logger,
-            QString("ATTRIBUTE GET: %1").arg(QString::fromStdString(currentStation.toString())));
+    MyRadioHelper::prettyLog(logger, "ATTRIBUTE GET: " + currentStation.toString());
     // Run a short subscription using the proxy
     // Set the Quality of Service parameters for the subscription
 
@@ -272,22 +262,23 @@ int main(int argc, char* argv[])
     bool success;
     try {
         proxy->addFavoriteStation(success, favoriteStation);
-        MyRadioHelper::prettyLog(logger,
-                                 QString("METHOD: added favorite station: %1")
-                                         .arg(QString::fromStdString(favoriteStation.toString())));
+        MyRadioHelper::prettyLog(
+                logger, "METHOD: added favorite station: " + favoriteStation.toString());
         proxy->addFavoriteStation(success, favoriteStation);
     } catch (exceptions::ApplicationException& e) {
         if (e.getError<AddFavoriteStationErrorEnum::Enum>() ==
             AddFavoriteStationErrorEnum::DUPLICATE_RADIOSTATION) {
             MyRadioHelper::prettyLog(
                     logger,
-                    QString("METHOD: add favorite station a second time failed with the following "
-                            "expected exception: %1").arg(QString::fromStdString(e.getName())));
+                    "METHOD: add favorite station a second time failed with the following "
+                    "expected exception: " +
+                            e.getName());
         } else {
             MyRadioHelper::prettyLog(
                     logger,
-                    QString("METHOD: add favorite station a second time failed with the following "
-                            "UNEXPECTED exception: %1").arg(QString::fromStdString(e.getName())));
+                    "METHOD: add favorite station a second time failed with the following "
+                    "UNEXPECTED exception: " +
+                            e.getName());
         }
     }
 
@@ -296,22 +287,22 @@ int main(int argc, char* argv[])
         proxy->addFavoriteStation(success, favoriteStation);
     } catch (exceptions::ProviderRuntimeException& e) {
         if (e.getMessage() == MyRadioHelper::MISSING_NAME()) {
-            MyRadioHelper::prettyLog(
-                    logger,
-                    QString("METHOD: add favorite station with empty name failed with the "
-                            "following "
-                            "expected exception: %1").arg(QString::fromStdString(e.getMessage())));
+            MyRadioHelper::prettyLog(logger,
+                                     "METHOD: add favorite station with empty name failed with the "
+                                     "following "
+                                     "expected exception: " +
+                                             e.getMessage());
         } else {
             MyRadioHelper::prettyLog(logger,
-                                     QString("METHOD: add favorite station with empty name failed "
-                                             "with the following "
-                                             "UNEXPECTED exception: %1")
-                                             .arg(QString::fromStdString(e.getMessage())));
+                                     "METHOD: add favorite station with empty name failed "
+                                     "with the following "
+                                     "UNEXPECTED exception: " +
+                                             e.getMessage());
         }
     }
 
     // shuffle the stations
-    MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));
+    MyRadioHelper::prettyLog(logger, "METHOD: calling shuffle stations");
     proxy->shuffleStations();
     // Run until the user hits q
     int key;
@@ -325,18 +316,16 @@ int main(int argc, char* argv[])
             break;
         case 'm':
             proxy->getLocationOfCurrentStation(country, location);
-            MyRadioHelper::prettyLog(
-                    logger,
-                    QString("METHOD: getLocationOfCurrentStation: country: %1, location: %2")
-                            .arg(QString::fromStdString(
-                                    joynr::vehicle::Country::getLiteral(country)))
-                            .arg(QString::fromStdString(location.toString())));
+            MyRadioHelper::prettyLog(logger,
+                                     "METHOD: getLocationOfCurrentStation: country: " +
+                                             joynr::vehicle::Country::getLiteral(country) +
+                                             ", location: " + location.toString());
             break;
         default:
             MyRadioHelper::prettyLog(logger,
-                                     QString("USAGE press\n"
-                                             " q\tto quit\n"
-                                             " s\tto shuffle stations\n"));
+                                     "USAGE press\n"
+                                     " q\tto quit\n"
+                                     " s\tto shuffle stations\n");
             break;
         }
     }

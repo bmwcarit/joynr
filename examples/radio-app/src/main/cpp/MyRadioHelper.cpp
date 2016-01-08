@@ -69,9 +69,9 @@ std::string MyRadioHelper::getAbsolutePathToExectuable(const std::string& execut
     return fullPath.parent_path().string();
 }
 
-void MyRadioHelper::prettyLog(joynr::Logger& logger, const QString& message)
+void MyRadioHelper::prettyLog(joynr::Logger& logger, const std::string& message)
 {
     JOYNR_LOG_INFO(logger, "--------------------------------------------------");
-    JOYNR_LOG_INFO(logger, message.toStdString());
+    JOYNR_LOG_INFO(logger, message);
     JOYNR_LOG_INFO(logger, "--------------------------------------------------");
 }
