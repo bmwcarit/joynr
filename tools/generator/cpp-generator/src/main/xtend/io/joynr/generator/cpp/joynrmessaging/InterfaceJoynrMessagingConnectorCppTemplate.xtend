@@ -53,7 +53,7 @@ internalRequestObject.setMethodName("«method.joynrName»");
 	«ELSEIF isEnum(param.type)»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isArray(param)»
-		internalRequestObject.addParam(TypeUtil::toVariant<«getTypeName(param.type)»>(«param.name»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(joynr::TypeUtil::toVariant<«getTypeName(param.type)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isCompound(param.type)»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isMap(param.type)»
@@ -203,8 +203,16 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		) {
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
-			«IF isArray(attribute)»
-				internalRequestObject.addParam(TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«IF isEnum(attribute.type) && isArray(attribute)»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»)), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isEnum(attribute.type)»
+				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isArray(attribute)»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isCompound(attribute.type)»
+				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isMap(attribute.type)»
+				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSEIF isByteBuffer(attribute.type)»
 				internalRequestObject.addParam(joynr::TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSE»
@@ -249,8 +257,18 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		) {
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
-			«IF isArray(attribute)»
-				internalRequestObject.addParam(TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«IF isEnum(attribute.type) && isArray(attribute)»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»)), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isEnum(attribute.type)»
+				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isArray(attribute)»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isCompound(attribute.type)»
+				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isMap(attribute.type)»
+				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«ELSEIF isByteBuffer(attribute.type)»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSE»
 				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»

@@ -94,8 +94,16 @@ void «interfaceName»RequestInterpreter::execute(
 						[onSuccess] («returnType» «attributeName») {
 							std::vector<Variant> outParams;
 								outParams.push_back(
-									«IF isArray(attribute)»
-										joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attributeName»)
+									«IF isEnum(attribute.type) && isArray(attribute)»
+										joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
+									«ELSEIF isEnum(attribute.type)»
+										Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+									«ELSEIF isArray(attribute)»
+										joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attribute.joynrName»)
+									«ELSEIF isCompound(attribute.type)»
+										Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+									«ELSEIF isMap(attribute.type)»
+										Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
 									«ELSEIF isByteBuffer(attribute.type)»
 										joynr::TypeUtil::toVariant(«attribute.joynrName»)
 									«ELSE»
@@ -127,7 +135,7 @@ void «interfaceName»RequestInterpreter::execute(
 							return;
 						}
 						std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
-						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
+						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 								«attributeRef»;
 					«ELSEIF isByteBuffer(attribute.type)»
 						//isArray
@@ -191,8 +199,16 @@ void «interfaceName»RequestInterpreter::execute(
 							std::vector<Variant> outParams;
 							«FOR param : method.outputParameters»
 								outParams.push_back(
-										«IF isArray(param)»
+										«IF isEnum(param.type) && isArray(param)»
+											joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.joynrName»))
+										«ELSEIF isEnum(param.type)»
+											Variant::make<«getTypeName(param)»>(«param.joynrName»)
+										«ELSEIF isArray(param)»
 											joynr::TypeUtil::toVariant<«getTypeName(param.type)»>(«param.joynrName»)
+										«ELSEIF isCompound(param.type)»
+											Variant::make<«getTypeName(param)»>(«param.joynrName»)
+										«ELSEIF isMap(param.type)»
+											Variant::make<«getTypeName(param)»>(«param.joynrName»)
 										«ELSEIF isByteBuffer(param.type)»
 											joynr::TypeUtil::toVariant(«param.joynrName»)
 										«ELSE»

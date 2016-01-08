@@ -76,14 +76,18 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 		) {
 			onAttributeValueChanged(
 					"«attributeName»",
-					«IF isArray(attribute)»
-						«IF isEnum(attribute.type)»
-							Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
-						«ELSE»
-							Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«attribute.joynrName»))
-						«ENDIF»
+					«IF isEnum(attribute.type) && isArray(attribute)»
+						joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
+					«ELSEIF isEnum(attribute.type)»
+						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+					«ELSEIF isArray(attribute)»
+						joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attribute.joynrName»)
+					«ELSEIF isCompound(attribute.type)»
+						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+					«ELSEIF isMap(attribute.type)»
+						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
 					«ELSE»
-						Variant::make<«getTypeName(attribute.type)»>(«attribute.joynrName»)
+						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
 					«ENDIF»
 			);
 		}
@@ -96,16 +100,22 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
 	) {
 		std::vector<Variant> broadcastValues;
-		«FOR parameter: getOutputParameters(broadcast)»
-			«IF isArray(parameter)»
-				«IF isEnum(parameter.type)»
-					broadcastValues.push_back(Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(parameter.type.derived)»>(«parameter.joynrName»)));
-				«ELSE»
-					broadcastValues.push_back(Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«parameter.joynrName»)));
-				«ENDIF»
-			«ELSE»
-				broadcastValues.push_back(Variant::make<«getTypeName(parameter.type)»>(«parameter.joynrName»));
-			«ENDIF»
+		«FOR param: getOutputParameters(broadcast)»
+			broadcastValues.push_back(
+					«IF isEnum(param.type) && isArray(param)»
+						joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.joynrName»))
+					«ELSEIF isEnum(param.type)»
+						Variant::make<«getTypeName(param)»>(«param.joynrName»)
+					«ELSEIF isArray(param)»
+						joynr::TypeUtil::toVariant<«getTypeName(param.type)»>(«param.joynrName»)
+					«ELSEIF isCompound(param.type)»
+						Variant::make<«getTypeName(param)»>(«param.joynrName»)
+					«ELSEIF isMap(param.type)»
+						Variant::make<«getTypeName(param)»>(«param.joynrName»)
+					«ELSE»
+						Variant::make<«getTypeName(param)»>(«param.joynrName»)
+					«ENDIF»
+			);
 		«ENDFOR»
 		fireBroadcast("«broadcastName»", broadcastValues);
 	}
