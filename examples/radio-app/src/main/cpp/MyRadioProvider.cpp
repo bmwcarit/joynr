@@ -67,7 +67,7 @@ void MyRadioProvider::getCurrentStation(
         std::function<void(const vehicle::RadioStation&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
     (void)onError;
     MyRadioHelper::prettyLog(logger,
                              QString("getCurrentStation -> %1")
@@ -79,7 +79,7 @@ void MyRadioProvider::shuffleStations(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
 
     (void)onError;
     vehicle::RadioStation oldStation = currentStation;
@@ -100,7 +100,7 @@ void MyRadioProvider::addFavoriteStation(
         std::function<void(const joynr::vehicle::Radio::AddFavoriteStationErrorEnum::Enum&)>
                 onError)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
 
     if (radioStation.getName().empty()) {
         throw joynr::exceptions::ProviderRuntimeException(MyRadioHelper::MISSING_NAME());
