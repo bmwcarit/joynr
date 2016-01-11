@@ -20,10 +20,14 @@ package io.joynr.discovery;
  */
 
 import io.joynr.capabilities.CapabilitiesStore;
+import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.servlet.JoynrWebServlet;
+import joynr.types.ProviderScope;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.inject.Singleton;
 import javax.servlet.ServletException;
@@ -47,12 +51,21 @@ public class DiscoveryInformationServlet extends HttpServlet {
         this.capabilitiesStore = capabilitiesStore;
     }
 
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        out.println(gson.toJson(capabilitiesStore.getAllCapabilities()));
+        Set<CapabilityEntry> globalCapabilities = new HashSet<CapabilityEntry>();
+        Set<CapabilityEntry> allCapabilities = capabilitiesStore.getAllCapabilities();
+        for (CapabilityEntry capabilityEntry : allCapabilities) {
+            if (capabilityEntry.getProviderQos().getScope() == ProviderScope.GLOBAL) {
+                globalCapabilities.add(capabilityEntry);
+            }
+        }
+        out.println(gson.toJson(globalCapabilities));
     }
 
+    @Override
     public void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String queryString = request.getQueryString();
         String[] query = queryString.split("=");
@@ -69,6 +82,7 @@ public class DiscoveryInformationServlet extends HttpServlet {
         }
     }
 
+    @Override
     public void destroy() {
         // do nothing.
     }
