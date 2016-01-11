@@ -578,6 +578,8 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 
 ### Add spdlog ###########################################################
+find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
+
 message(STATUS "############ Download: spdlog ############")
 set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
 set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
@@ -675,6 +677,7 @@ set(
     JoynrCommon
     Joynr
     jsonserializer
+    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -692,6 +695,7 @@ set(
     Joynr
     jsonserializer
     JoynrWsRuntime
+    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -701,6 +705,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         Joynr
         jsonserializer
         JoynrDbusRuntime
+        ${CMAKE_THREAD_LIBS_INIT}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 

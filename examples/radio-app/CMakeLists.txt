@@ -7,8 +7,6 @@ project(radio-app-0.14.0-SNAPSHOT)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 add_definitions("-std=gnu++0x")
 
-find_package (Threads)
-
 set(
     JOYNR_SERVER
     "localhost:8080"
@@ -102,8 +100,7 @@ set(radio-app-provider_SOURCES
 
 # Link with the joynr libraries
 set(radio-app_LIBRARIES
-    ${JOYNR_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
+    ${JOYNR_LIB_INPROCESS_LIBRARIES}
 )
 
 # Put the generated code into a library and put the library in the bin directory
@@ -186,7 +183,6 @@ add_executable(radio-app-provider-ws
 target_link_libraries(radio-app-provider-ws
     radio-app
     ${JOYNR_LIB_WS_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 # Compile the consumer application (requires: running cluster controller)
@@ -200,7 +196,6 @@ add_executable(radio-app-consumer-ws
 target_link_libraries(radio-app-consumer-ws
     radio-app
     ${JOYNR_LIB_WS_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 install(TARGETS
