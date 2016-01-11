@@ -434,6 +434,14 @@ class TypeUtil {
 		datatype.elements.filter(element | isCompound(element.type));
 	}
 
+	def isComplex(FTypeRef typeRef) {
+		isMap(typeRef) || isCompound(typeRef) || isEnum(typeRef)
+	}
+
+	def isComplex(FType type) {
+		isMap(type) || isCompound(type) || isEnum(type)
+	}
+
 	def getComplexMembers(FCompoundType datatype) {
 		datatype.elements.filter(element | isMap(element.type) || isCompound(element.type) || isEnum(element.type) || isArray(element));
 	}
