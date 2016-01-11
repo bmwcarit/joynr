@@ -313,7 +313,6 @@ find_package(Boost 1.56.0 REQUIRED
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-
 message(STATUS "############ Import: cURL ############")
 if(${WIN32})
     if(NOT CURL_HOME)
@@ -673,7 +672,7 @@ install(
 
 # Create the JoynrConfig.cmake and JoynrConfigVersion files
 set(
-    JoynrConfig_LIBRARIES
+    JoynrConfig_LIB_COMMON_LIBRARIES
     JoynrCommon
     Joynr
     jsonserializer
@@ -681,9 +680,8 @@ set(
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
-    LIST(
-        APPEND
-        JoynrConfig_LIBRARIES
+    set(
+        JoynrConfig_LIB_INPROCESS_LIBRARIES
         JoynrClusterController
         JoynrClusterControllerRuntime
     )
@@ -695,7 +693,6 @@ set(
     Joynr
     jsonserializer
     JoynrWsRuntime
-    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -705,7 +702,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         Joynr
         jsonserializer
         JoynrDbusRuntime
-        ${CMAKE_THREAD_LIBS_INIT}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
@@ -716,19 +712,19 @@ get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLI
 message(STATUS "variable jsonserializer_PUBLIC_INCLUDE_DIRECTORY=" ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY})
 
 set(
-    JoynrConfig_INCLUDE_DIRS
+    JoynrConfig_LIB_COMMON_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_SOURCE_DIR}
+    ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
 if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
     get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
-    LIST(
-        APPEND
-        JoynrConfig_INCLUDE_DIRS
+    set(
+        JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS
         ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
         ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
     )
@@ -764,7 +760,7 @@ file(
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_INCLUDE_DIR}"
 )
-set(JoynrConfig_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
+set(JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_TARGETS_FILE "\${CMAKE_CURRENT_LIST_DIR}/JoynrTargets.cmake")
 file(
     RELATIVE_PATH RELATIVE_INSTALL_BIN_DIR

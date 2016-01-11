@@ -11,6 +11,11 @@ set(
     runtime_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
+set(
+    runtime_PUBLIC_INCLUDE_DIRECTORY
+    "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
+    PARENT_SCOPE
+)
 
 file(
     GLOB_RECURSE runtime_PUBLIC_HEADERS
