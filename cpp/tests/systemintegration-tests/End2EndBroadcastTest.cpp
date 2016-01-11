@@ -75,6 +75,10 @@ public:
     void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) override {
         tests::testAbstractProvider::fireLocationUpdateSelective(location);
     }
+
+    void fireBroadcastWithByteBufferParameter(const joynr::ByteBuffer& byteBufferParameter) override {
+        tests::testAbstractProvider::fireBroadcastWithByteBufferParameter(byteBufferParameter);
+    }
 };
 
 class End2EndBroadcastTest : public Test {
@@ -238,61 +242,76 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTest);
 
+protected:
+    template <typename FireBroadcast, typename SubscribeTo, typename T>
+    void testOneShotBroadcastSubscription(const T& expectedValue,
+                                          SubscribeTo subscribeTo,
+                                          FireBroadcast fireBroadcast,
+                                          const std::string& broadcastName) {
+        MockSubscriptionListenerOneType<T>* mockListener =
+                new MockSubscriptionListenerOneType<T>();
+
+        // Use a semaphore to count and wait on calls to the mock listener
+        ON_CALL(*mockListener, onReceive(Eq(expectedValue)))
+                .WillByDefault(ReleaseSemaphore(&semaphore));
+
+        std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(
+                        mockListener);
+
+        std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+        runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+
+        //This wait is necessary, because registerProvider is async, and a lookup could occur
+        // before the register has finished.
+        std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
+
+        ProxyBuilder<tests::testProxy>* testProxyBuilder
+                = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeout(1000);
+        discoveryQos.setRetryInterval(250);
+
+        std::int64_t qosRoundTripTTL = 500;
+
+        // Send a message and expect to get a result
+        tests::testProxy* testProxy = testProxyBuilder
+                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                ->setCached(false)
+                ->setDiscoveryQos(discoveryQos)
+                ->build();
+
+        std::int64_t minInterval_ms = 50;
+        OnChangeSubscriptionQos subscriptionQos(
+                    500000,   // validity_ms
+                    minInterval_ms);  // minInterval_ms
+
+        subscribeTo(testProxy, subscriptionListener, subscriptionQos);
+        waitForBroadcastSubscriptionArrivedAtProvider(testProvider, broadcastName);
+
+        (*testProvider.*fireBroadcast)(expectedValue);
+
+        // Wait for a subscription message to arrive
+        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+
+        delete testProxyBuilder;
+        delete testProxy;
+    }
 };
 
 } // namespace joynr
 
 TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
-    MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>* mockListener =
-            new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>();
 
-    // Use a semaphore to count and wait on calls to the mock listener
-    ON_CALL(*mockListener, onReceive(Eq(expectedTestEnum)))
-            .WillByDefault(ReleaseSemaphore(&semaphore));
-
-    std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener(
-                    mockListener);
-
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
-
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
-
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
-    discoveryQos.setRetryInterval(250);
-
-    qlonglong qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    tests::testProxy* testProxy = testProxyBuilder
-            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
-            ->setDiscoveryQos(discoveryQos)
-            ->build();
-
-    std::int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
-                500000,   // validity_ms
-                minInterval_ms);  // minInterval_ms
-
-    testProxy->subscribeToBroadcastWithEnumOutputBroadcast(subscriptionListener, subscriptionQos);
-
-    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "broadcastWithEnumOutput");
-
-    testProvider->fireBroadcastWithEnumOutput(expectedTestEnum);
-
-    // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
-
-    delete testProxyBuilder;
-    delete testProxy;
+    testOneShotBroadcastSubscription(expectedTestEnum,
+                                 [](tests::testProxy* testProxy,
+                                    std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
+                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    testProxy->subscribeToBroadcastWithEnumOutputBroadcast(subscriptionListener, subscriptionQos);
+                                 },
+                                 &tests::testProvider::fireBroadcastWithEnumOutput,
+                                 "broadcastWithEnumOutput");
 }
 
 TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
