@@ -86,7 +86,7 @@ private:
  * @param messagingQos The current object instance
  * @param os The output stream to send the output to
  */
-void PrintTo(const joynr::MessagingQos& messagingQos, ::std::ostream* os);
+void PrintTo(const MessagingQos& messagingQos, ::std::ostream* os);
 
 } // namespace joynr
 #endif // MESSAGINGQOS_H

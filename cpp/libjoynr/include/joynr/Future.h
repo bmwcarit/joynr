@@ -422,7 +422,7 @@ public:
 private:
     std::shared_ptr<exceptions::JoynrException> error;
     RequestStatus status;
-    joynr::Semaphore resultReceived;
+    Semaphore resultReceived;
 };
 
 } // namespace joynr

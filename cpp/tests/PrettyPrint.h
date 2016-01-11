@@ -41,9 +41,9 @@ namespace joynr {
 // The following PrintTo's are defined directly in the file where the type is
 // defined:
 //    class JoynrMessage;
-//    void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
+//    void PrintTo(const JoynrMessage& value, ::std::ostream* os);
 //    class MessagingQos;
-//    void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
+//    void PrintTo(const MessagingQos& value, ::std::ostream* os);
 
 namespace system {
     class DiscoveryEntry;

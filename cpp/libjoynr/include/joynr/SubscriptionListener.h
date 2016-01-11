@@ -31,7 +31,7 @@ namespace joynr
  * this class.
  */
 template <typename T, typename... Ts>
-class SubscriptionListener : public joynr::ISubscriptionListener<T, Ts...>
+class SubscriptionListener : public ISubscriptionListener<T, Ts...>
 {
 public:
     /** Default Constructor */

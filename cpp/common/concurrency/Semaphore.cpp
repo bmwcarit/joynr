@@ -23,18 +23,18 @@
 namespace joynr
 {
 
-joynr::Semaphore::Semaphore(std::int8_t initialValue) : mutex(), condition(), counter(initialValue)
+Semaphore::Semaphore(std::int8_t initialValue) : mutex(), condition(), counter(initialValue)
 {
 }
 
-void joynr::Semaphore::wait()
+void Semaphore::wait()
 {
     std::unique_lock<std::mutex> lock(mutex);
     condition.wait(lock, [this] { return counter > 0; });
     --counter;
 }
 
-void joynr::Semaphore::notify()
+void Semaphore::notify()
 {
     std::unique_lock<std::mutex> lock(mutex);
     ++counter;
@@ -42,8 +42,7 @@ void joynr::Semaphore::notify()
     condition.notify_one();
 }
 
-bool joynr::Semaphore::waitFor(
-        std::chrono::milliseconds timeoutMs /*= std::chrono::milliseconds(0)*/)
+bool Semaphore::waitFor(std::chrono::milliseconds timeoutMs /*= std::chrono::milliseconds(0)*/)
 {
     std::unique_lock<std::mutex> lock(mutex);
     bool result = condition.wait_for(lock, timeoutMs, [this]() { return counter > 0; });
@@ -53,7 +52,7 @@ bool joynr::Semaphore::waitFor(
     return result;
 }
 
-std::size_t joynr::Semaphore::getStatus() const
+std::size_t Semaphore::getStatus() const
 {
     std::unique_lock<std::mutex> lock(mutex);
     return counter;

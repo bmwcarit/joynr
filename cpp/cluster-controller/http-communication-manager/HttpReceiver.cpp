@@ -33,7 +33,7 @@ INIT_LOGGER(HttpReceiver);
 
 HttpReceiver::HttpReceiver(const MessagingSettings& settings,
                            std::shared_ptr<MessageRouter> messageRouter)
-        : channelCreatedSemaphore(new joynr::Semaphore(0)),
+        : channelCreatedSemaphore(new Semaphore(0)),
           channelId(),
           receiverId(),
           settings(settings),

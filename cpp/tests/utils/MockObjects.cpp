@@ -39,7 +39,7 @@ INIT_LOGGER(MockRunnableWithAccuracy);
 MockRunnableWithAccuracy::MockRunnableWithAccuracy(
     bool deleteMe,
     const std::uint64_t delay)
-    : joynr::Runnable(deleteMe),
+    : Runnable(deleteMe),
       est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
 {
 }

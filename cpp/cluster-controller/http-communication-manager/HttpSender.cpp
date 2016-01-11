@@ -120,7 +120,7 @@ HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
                                                      std::string&& data,
                                                      DelayedScheduler& delayedScheduler,
                                                      std::chrono::milliseconds maxAttemptTtl)
-        : joynr::Runnable(true),
+        : Runnable(true),
           ObjectWithDecayTime(decayTime),
           channelId(channelId),
           data(std::move(data)),

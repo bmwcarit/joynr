@@ -148,19 +148,19 @@ class MockDelayedScheduler : public joynr::DelayedScheduler
 {
 public:
     MockDelayedScheduler()
-        : joynr::DelayedScheduler([](joynr::Runnable*){ assert(false); }, std::chrono::milliseconds::zero())
+        : DelayedScheduler([](joynr::Runnable*){ assert(false); }, std::chrono::milliseconds::zero())
     {
     }
 
     void shutdown() { joynr::DelayedScheduler::shutdown(); }
-    MOCK_METHOD1(unschedule, void (DelayedScheduler::RunnableHandle));
+    MOCK_METHOD1(unschedule, void (joynr::DelayedScheduler::RunnableHandle));
     MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (joynr::Runnable*, std::chrono::milliseconds delay));
 };
 
 class MockRunnable : public joynr::Runnable
 {
 public:
-    MockRunnable(bool deleteMe) : joynr::Runnable(deleteMe)
+    MockRunnable(bool deleteMe) : Runnable(deleteMe)
     {
     }
 
@@ -200,7 +200,7 @@ class MockRunnableBlocking : public joynr::Runnable
 {
 public:
     MockRunnableBlocking(bool deleteMe = false)
-        : joynr::Runnable(deleteMe),
+        : Runnable(deleteMe),
           mutex(),
           wait()
     {
@@ -741,7 +741,7 @@ class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::Chann
 public:
     MockChannelUrlDirectoryProxy() :
         ChannelUrlDirectoryProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        joynr::ProxyBase(nullptr, nullptr, "domain", "INTERFACE_NAME", joynr::MessagingQos(), false),
+        ProxyBase(nullptr, nullptr, "domain", "INTERFACE_NAME", joynr::MessagingQos(), false),
         ChannelUrlDirectoryProxyBase(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
         ChannelUrlDirectorySyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
         ChannelUrlDirectoryAsyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false){}
@@ -828,7 +828,7 @@ public:
                 "domain",
                 joynr::MessagingQos(),
                 false),
-        joynr::ProxyBase(
+        ProxyBase(
                 nullptr,
                 nullptr,
                 "domain",
@@ -995,8 +995,8 @@ class MockWebSocketClient : public joynr::WebSocketClient
 {
 public:
     MockWebSocketClient()
-        : joynr::WebSocketClient([](const std::string& message){},
-                                 [](joynr::WebSocket* webSocket){})
+        : WebSocketClient([](const std::string& message){},
+                                 [](WebSocket* webSocket){})
     {
     }
 
@@ -1028,7 +1028,7 @@ class MockQWebSocketSendWrapper : public joynr::QWebSocketSendWrapper {
 public:
 
     MockQWebSocketSendWrapper(QWebSocket* websocket)
-        : joynr::QWebSocketSendWrapper(websocket)
+        : QWebSocketSendWrapper(websocket)
     {
         registerDisconnectCallback(std::bind(&MockQWebSocketSendWrapper::onConnectionClosed, this));
     }

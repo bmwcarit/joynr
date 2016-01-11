@@ -74,7 +74,7 @@ public:
      * Executes work by adding to the queue
      * @param runnable Runnable to be executed
      */
-    void execute(joynr::Runnable* runnable);
+    void execute(Runnable* runnable);
 
 private:
     /*! Disallow copy and assign */
@@ -94,7 +94,7 @@ private:
     std::vector<std::thread> threads;
 
     /*! FIFO queue of work that could be done right now */
-    joynr::BlockingQueue scheduler;
+    BlockingQueue scheduler;
 
     /*! Flag indicating @ref threads to keep running */
     std::atomic_bool keepRunning;

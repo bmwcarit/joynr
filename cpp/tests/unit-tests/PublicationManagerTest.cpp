@@ -59,13 +59,13 @@ protected:
 INIT_LOGGER(PublicationManagerTest);
 
 // New matcher definition that works with the latest Google Mock.
-class SubscriptionPublicationMatcherInterface : public MatcherInterface<const joynr::SubscriptionPublication&> {
+class SubscriptionPublicationMatcherInterface : public MatcherInterface<const SubscriptionPublication&> {
   private:
      SubscriptionPublication& expectedSubscriptionPublication;
   public:
      explicit SubscriptionPublicationMatcherInterface (SubscriptionPublication& expectedSubscriptionPublication) : expectedSubscriptionPublication(expectedSubscriptionPublication){}
   virtual void DescribeTo(::std::ostream* os) const {}
-  virtual bool MatchAndExplain(const joynr::SubscriptionPublication& subscriptionPublication,
+  virtual bool MatchAndExplain(const SubscriptionPublication& subscriptionPublication,
                                MatchResultListener* listener) const {
     return subscriptionPublication == expectedSubscriptionPublication;
   }

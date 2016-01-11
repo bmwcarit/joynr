@@ -39,11 +39,11 @@ using ::testing::WithArgs;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, std::chrono::milliseconds timeout) {
+std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, std::chrono::milliseconds timeout) {
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(new joynr::Future<types::ChannelUrlInformation>());
+    std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(new Future<types::ChannelUrlInformation>());
     future->onSuccess(urlInformation);
     return future;
 }

@@ -37,7 +37,7 @@ using ::testing::Invoke;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> localChannelUrlDirectoryTestPseudoGetChannelUrls(
+std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> localChannelUrlDirectoryTestPseudoGetChannelUrls(
         const std::string& channelId,
         std::function<void(types::ChannelUrlInformation& urls)> onSuccess,
         std::function<void(const exceptions::JoynrException& error)> onError) {
@@ -46,7 +46,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> localChannel
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(new joynr::Future<types::ChannelUrlInformation>());
+    std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(new Future<types::ChannelUrlInformation>());
     future->onSuccess(urlInformation);
     onSuccess(urlInformation);
     return future;
@@ -117,8 +117,8 @@ TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
                     A<std::function<void(void)>>(),
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(1)
-            .WillOnce(Return(std::shared_ptr<joynr::Future<void>>(
-                                 new joynr::Future<void>())));
+            .WillOnce(Return(std::shared_ptr<Future<void>>(
+                                 new Future<void>())));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 
@@ -134,7 +134,7 @@ TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
                     A<std::function<void()>>(),
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(1)
-            .WillOnce(Return(std::shared_ptr<joynr::Future<void>>(new joynr::Future<void>())));
+            .WillOnce(Return(std::shared_ptr<Future<void>>(new Future<void>())));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 

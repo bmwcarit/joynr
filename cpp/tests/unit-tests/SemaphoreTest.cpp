@@ -24,20 +24,22 @@
 
 #include <thread>
 
+using joynr::Semaphore;
+
 TEST(SemaphoreTest, createAndDestroy) {
-    joynr::Semaphore sem(2);
+    Semaphore sem(2);
 }
 
 TEST(SemaphoreTest, singleWait_accept) {
-    joynr::Semaphore sem(1);
+    Semaphore sem(1);
 
     sem.wait();
 }
 
 TEST(SemaphoreTest, singleWait_locking) {
-    joynr::Semaphore sem(0);
+    Semaphore sem(0);
 
-    std::thread t1(&joynr::Semaphore::wait, &sem);
+    std::thread t1(&Semaphore::wait, &sem);
 
     EXPECT_TRUE(t1.joinable());
 
@@ -48,11 +50,11 @@ TEST(SemaphoreTest, singleWait_locking) {
 }
 
 TEST(SemaphoreTest, multiWait_allAccept) {
-    joynr::Semaphore sem(3);
+    Semaphore sem(3);
 
-    std::thread t1(&joynr::Semaphore::wait, &sem);
-    std::thread t2(&joynr::Semaphore::wait, &sem);
-    std::thread t3(&joynr::Semaphore::wait, &sem);
+    std::thread t1(&Semaphore::wait, &sem);
+    std::thread t2(&Semaphore::wait, &sem);
+    std::thread t3(&Semaphore::wait, &sem);
 
     EXPECT_TRUE(t1.joinable());
     EXPECT_TRUE(t2.joinable());
@@ -65,13 +67,13 @@ TEST(SemaphoreTest, multiWait_allAccept) {
 }
 
 TEST(SemaphoreTest, multiWait_onlyAcceptFirst) {
-    joynr::Semaphore sem(1);
+    Semaphore sem(1);
 
-    std::thread t1(&joynr::Semaphore::wait, &sem);
+    std::thread t1(&Semaphore::wait, &sem);
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    std::thread t2(&joynr::Semaphore::wait, &sem);
+    std::thread t2(&Semaphore::wait, &sem);
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    std::thread t3(&joynr::Semaphore::wait, &sem);
+    std::thread t3(&Semaphore::wait, &sem);
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     EXPECT_TRUE(t1.joinable());
@@ -94,7 +96,7 @@ TEST(SemaphoreTest, multiWait_onlyAcceptFirst) {
 }
 
 TEST(SemaphoreTest, timedWait_timeout) {
-    joynr::Semaphore sem(0);
+    Semaphore sem(0);
 
     const std::uint64_t expectedTimeout = 100;
     const std::uint64_t start = joynr::TimeUtils::getCurrentMillisSinceEpoch();
@@ -110,14 +112,14 @@ TEST(SemaphoreTest, timedWait_timeout) {
 }
 
 TEST(SemaphoreTest, timedWait_unlockAfterSomeTime) {
-    joynr::Semaphore sem(0);
+    Semaphore sem(0);
 
     const std::uint64_t expectedTimeout = 1000;
     const std::uint64_t expectedUnlock = 80;
     std::uint64_t duration = 0;
     bool result = false;
 
-    std::thread t1([&](joynr::Semaphore* semaphore, std::uint64_t timeout, std::uint64_t* dur, bool* res){
+    std::thread t1([&](Semaphore* semaphore, std::uint64_t timeout, std::uint64_t* dur, bool* res){
         const std::uint64_t start = joynr::TimeUtils::getCurrentMillisSinceEpoch();
         (*res) = semaphore->waitFor(std::chrono::milliseconds(expectedTimeout));
         (*dur) = joynr::TimeUtils::getCurrentMillisSinceEpoch() - start;

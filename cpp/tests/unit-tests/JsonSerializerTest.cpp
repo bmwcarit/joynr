@@ -1143,14 +1143,14 @@ TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
 
 TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
 
-    joynr::OnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
+    OnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
 
-    std::string jsonQos = JsonSerializer::serialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(qos);
+    std::string jsonQos = JsonSerializer::serialize<OnChangeWithKeepAliveSubscriptionQos>(qos);
     JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
-    joynr::OnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
+    OnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
 
-    jsonQos = JsonSerializer::serialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(*desQos);
+    jsonQos = JsonSerializer::serialize<OnChangeWithKeepAliveSubscriptionQos>(*desQos);
     JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
 

@@ -62,7 +62,7 @@ public:
     std::string requestId;
     MessagingQos qos;
     std::shared_ptr<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
-    joynr::Semaphore semaphore;
+    Semaphore semaphore;
 
     JoynrMessageFactory messageFactory;
     std::shared_ptr<MockMessageReceiver> mockMessageReceiver;

@@ -176,7 +176,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("GpsLocation")));
 
     // Use a semaphore to count and wait on calls to the mockGpsLocationListener
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockGpsLocationListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -233,7 +233,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("TestEnum")));
 
     // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockTestEnumSubscriptionListener, onReceive(A<const joynr::tests::testTypes::TestEnum::Enum&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -287,7 +287,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
 TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(
             *mockRequestCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
@@ -335,7 +335,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     ));
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -399,7 +399,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
@@ -445,7 +445,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
 TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(

@@ -35,9 +35,9 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
           wsSettings(*settings),
           wsLibJoynrMessagingSkeleton(nullptr),
-          websocket(new joynr::WebSocketClient(
+          websocket(new WebSocketClient(
                   [this](const std::string& err) { this->onWebSocketError(err); },
-                  [](joynr::WebSocket*) {}))
+                  [](WebSocket*) {}))
 {
     std::string uuid = Util::createUuid();
     // remove dashes

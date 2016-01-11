@@ -117,7 +117,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::shared_ptr<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 
     // use a semaphore to wait for capabilities to be received
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::CapabilityInformation>&>()))
            .WillRepeatedly(
                 DoAll(

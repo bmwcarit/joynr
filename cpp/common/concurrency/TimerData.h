@@ -40,8 +40,8 @@ public:
      * @param periodic Flag indicating whether timer is periodic or not
      */
     TimerData(const Timer::TimerId id,
-              std::function<void(joynr::Timer::TimerId)> expiryCallback,
-              std::function<void(joynr::Timer::TimerId)> removeCallback,
+              std::function<void(Timer::TimerId)> expiryCallback,
+              std::function<void(Timer::TimerId)> removeCallback,
               bool periodic);
 
     /**
@@ -69,13 +69,13 @@ public:
      * Returns the expiry callback
      * @return The function pointer on expiry
      */
-    std::function<void(joynr::Timer::TimerId)> getExpiryCallback() const;
+    std::function<void(Timer::TimerId)> getExpiryCallback() const;
 
     /**
      * Returns the removal callback
      * @return The function pointer on removal
      */
-    std::function<void(joynr::Timer::TimerId)> getRemoveCallback() const;
+    std::function<void(Timer::TimerId)> getRemoveCallback() const;
 
     /**
      * Returns the unique ID
@@ -89,9 +89,9 @@ private:
     /*! Unique ID of the timer */
     const Timer::TimerId id;
     /*! Expiry callback of the timer */
-    std::function<void(joynr::Timer::TimerId)> expiryCallback;
+    std::function<void(Timer::TimerId)> expiryCallback;
     /*! Remove callback of the timer */
-    std::function<void(joynr::Timer::TimerId)> removeCallback;
+    std::function<void(Timer::TimerId)> removeCallback;
 };
 
 /**
@@ -109,8 +109,8 @@ public:
      * @param delay Delay of the timer in milliseconds
      */
     OneShotTimerData(const Timer::TimerId id,
-                     std::function<void(joynr::Timer::TimerId)> expiryCallback,
-                     std::function<void(joynr::Timer::TimerId)> removeCallback,
+                     std::function<void(Timer::TimerId)> expiryCallback,
+                     std::function<void(Timer::TimerId)> removeCallback,
                      const std::chrono::milliseconds delay);
     ~OneShotTimerData() override = default;
 
@@ -137,8 +137,8 @@ public:
      * @param interval Interval of the timer in milliseconds
      */
     PeriodicTimerData(const Timer::TimerId id,
-                      std::function<void(joynr::Timer::TimerId)> expiryCallback,
-                      std::function<void(joynr::Timer::TimerId)> removeCallback,
+                      std::function<void(Timer::TimerId)> expiryCallback,
+                      std::function<void(Timer::TimerId)> removeCallback,
                       const std::chrono::milliseconds interval);
     ~PeriodicTimerData() override = default;
 

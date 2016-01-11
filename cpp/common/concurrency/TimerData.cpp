@@ -19,61 +19,65 @@
 #include <concurrency/TimerData.h>
 #include "joynr/TimeUtils.h"
 
-joynr::TimerData::TimerData(const Timer::TimerId id,
-                            std::function<void(joynr::Timer::TimerId)> expiryCallback,
-                            std::function<void(joynr::Timer::TimerId)> removeCallback,
-                            bool periodic)
+namespace joynr
+{
+
+TimerData::TimerData(const Timer::TimerId id,
+                     std::function<void(Timer::TimerId)> expiryCallback,
+                     std::function<void(Timer::TimerId)> removeCallback,
+                     bool periodic)
         : periodic(periodic), id(id), expiryCallback(expiryCallback), removeCallback(removeCallback)
 {
 }
 
-bool joynr::TimerData::isPeriodic() const
+bool TimerData::isPeriodic() const
 {
     return periodic;
 }
 
-std::function<void(joynr::Timer::TimerId)> joynr::TimerData::getExpiryCallback() const
+std::function<void(Timer::TimerId)> TimerData::getExpiryCallback() const
 {
     return expiryCallback;
 }
 
-std::function<void(joynr::Timer::TimerId)> joynr::TimerData::getRemoveCallback() const
+std::function<void(Timer::TimerId)> TimerData::getRemoveCallback() const
 {
     return removeCallback;
 }
 
-joynr::Timer::TimerId joynr::TimerData::getId() const
+Timer::TimerId TimerData::getId() const
 {
     return id;
 }
 
-joynr::OneShotTimerData::OneShotTimerData(const Timer::TimerId id,
-                                          std::function<void(joynr::Timer::TimerId)> expiryCallback,
-                                          std::function<void(joynr::Timer::TimerId)> removeCallback,
-                                          const std::chrono::milliseconds delay)
-        : joynr::TimerData(id, expiryCallback, removeCallback, false),
-          expiry(joynr::TimeUtils::getCurrentTime() + delay)
+OneShotTimerData::OneShotTimerData(const Timer::TimerId id,
+                                   std::function<void(Timer::TimerId)> expiryCallback,
+                                   std::function<void(Timer::TimerId)> removeCallback,
+                                   const std::chrono::milliseconds delay)
+        : TimerData(id, expiryCallback, removeCallback, false),
+          expiry(TimeUtils::getCurrentTime() + delay)
 {
 }
 
-std::chrono::system_clock::time_point joynr::OneShotTimerData::getNextExpiry()
+std::chrono::system_clock::time_point OneShotTimerData::getNextExpiry()
 {
     return expiry;
 }
 
-joynr::PeriodicTimerData::PeriodicTimerData(
-        const Timer::TimerId id,
-        std::function<void(joynr::Timer::TimerId)> expiryCallback,
-        std::function<void(joynr::Timer::TimerId)> removeCallback,
-        const std::chrono::milliseconds interval)
-        : joynr::TimerData(id, expiryCallback, removeCallback, true),
+PeriodicTimerData::PeriodicTimerData(const Timer::TimerId id,
+                                     std::function<void(Timer::TimerId)> expiryCallback,
+                                     std::function<void(Timer::TimerId)> removeCallback,
+                                     const std::chrono::milliseconds interval)
+        : TimerData(id, expiryCallback, removeCallback, true),
           interval(interval),
           counter(0),
-          creation(joynr::TimeUtils::getCurrentTime())
+          creation(TimeUtils::getCurrentTime())
 {
 }
 
-std::chrono::system_clock::time_point joynr::PeriodicTimerData::getNextExpiry()
+std::chrono::system_clock::time_point PeriodicTimerData::getNextExpiry()
 {
     return creation + (interval * (++counter));
 }
+
+} // namespace joynr

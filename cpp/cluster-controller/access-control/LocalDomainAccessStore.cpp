@@ -418,8 +418,8 @@ std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const std::s
     return domainRoles;
 }
 
-Optional<DomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const std::string& uid,
-                                                                       Role::Enum role)
+Optional<DomainRoleEntry> LocalDomainAccessStore::getDomainRole(const std::string& uid,
+                                                                Role::Enum role)
 {
     // Execute a query to get the domain role entry
     QSqlQuery query;

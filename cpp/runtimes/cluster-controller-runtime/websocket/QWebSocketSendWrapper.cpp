@@ -24,10 +24,7 @@ namespace joynr
 {
 
 QWebSocketSendWrapper::QWebSocketSendWrapper(QWebSocket* websocket)
-        : QObject(websocket),
-          joynr::IWebSocketSendInterface(),
-          websocket(websocket),
-          onConnectionClosed()
+        : QObject(websocket), IWebSocketSendInterface(), websocket(websocket), onConnectionClosed()
 {
     connect(this,
             &QWebSocketSendWrapper::queueTextMessage,

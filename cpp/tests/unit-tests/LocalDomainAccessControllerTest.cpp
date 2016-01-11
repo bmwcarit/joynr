@@ -69,7 +69,7 @@ public:
 private:
     bool isValid;
     Permission::Enum permission;
-    joynr::Semaphore sem;
+    Semaphore sem;
 };
 
 // Test class

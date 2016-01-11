@@ -34,7 +34,7 @@ INIT_LOGGER(WebSocketClient);
 
 WebSocketClient::WebSocketClient(std::function<void(const std::string& error)> onErrorOccurred,
                                  std::function<void(WebSocket* webSocket)> onWebSocketConnected)
-        : joynr::WebSocket(),
+        : WebSocket(),
           context(),
           messageQueue(),
           handle(-1),

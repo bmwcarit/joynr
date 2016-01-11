@@ -284,7 +284,7 @@ class TestRunnable : public Runnable {
 public:
     virtual ~TestRunnable() = default;
     TestRunnable()
-        : joynr::Runnable(true)
+        : Runnable(true)
     {
 
     }

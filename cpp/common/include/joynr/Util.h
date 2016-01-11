@@ -266,64 +266,56 @@ inline std::string Util::valueOf<std::string>(const Variant& variant)
 template <>
 inline std::vector<std::int8_t> Util::valueOf<std::vector<std::int8_t>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<std::int8_t>(
-            variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<std::int8_t>(variant.get<std::vector<Variant>>());
 }
 
 template <>
 inline std::vector<std::uint8_t> Util::valueOf<std::vector<std::uint8_t>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<std::uint8_t>(
-            variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<std::uint8_t>(variant.get<std::vector<Variant>>());
 }
 
 template <>
 inline std::vector<std::int16_t> Util::valueOf<std::vector<std::int16_t>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<std::int16_t>(
-            variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<std::int16_t>(variant.get<std::vector<Variant>>());
 }
 
 template <>
 inline std::vector<std::uint16_t> Util::valueOf<std::vector<std::uint16_t>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<std::uint16_t>(
-            variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<std::uint16_t>(variant.get<std::vector<Variant>>());
 }
 
 template <>
 inline std::vector<std::int32_t> Util::valueOf<std::vector<std::int32_t>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<std::int32_t>(
-            variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<std::int32_t>(variant.get<std::vector<Variant>>());
 }
 
 template <>
 inline std::vector<std::uint32_t> Util::valueOf<std::vector<std::uint32_t>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<std::uint32_t>(
-            variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<std::uint32_t>(variant.get<std::vector<Variant>>());
 }
 
 template <>
 inline std::vector<std::int64_t> Util::valueOf<std::vector<std::int64_t>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<std::int64_t>(
-            variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<std::int64_t>(variant.get<std::vector<Variant>>());
 }
 
 template <>
 inline std::vector<std::uint64_t> Util::valueOf<std::vector<std::uint64_t>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<std::uint64_t>(
-            variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<std::uint64_t>(variant.get<std::vector<Variant>>());
 }
 
 template <>
 inline std::vector<float> Util::valueOf<std::vector<float>>(const Variant& variant)
 {
     std::vector<double> doubles =
-            joynr::Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
+            Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
     std::vector<float> floats(doubles.size());
     std::copy(doubles.cbegin(), doubles.cend(), floats.begin());
     return floats;
@@ -332,14 +324,13 @@ inline std::vector<float> Util::valueOf<std::vector<float>>(const Variant& varia
 template <>
 inline std::vector<double> Util::valueOf<std::vector<double>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
 }
 
 template <>
 inline std::vector<std::string> Util::valueOf<std::vector<std::string>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<std::string>(
-            variant.get<std::vector<Variant>>());
+    return Util::convertVariantVectorToVector<std::string>(variant.get<std::vector<Variant>>());
 }
 
 template <typename... Ts>

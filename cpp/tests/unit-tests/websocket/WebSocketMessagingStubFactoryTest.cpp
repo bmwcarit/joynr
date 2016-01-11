@@ -105,8 +105,8 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
 
     factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
     EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
-    std::shared_ptr<joynr::IMessaging> messagingStub(factory.create(webSocketClientAddress));
-    std::shared_ptr<joynr::WebSocketMessagingStub> wsMessagingStub(std::dynamic_pointer_cast<joynr::WebSocketMessagingStub>(messagingStub));
+    std::shared_ptr<IMessaging> messagingStub(factory.create(webSocketClientAddress));
+    std::shared_ptr<WebSocketMessagingStub> wsMessagingStub(std::dynamic_pointer_cast<WebSocketMessagingStub>(messagingStub));
     EXPECT_TRUE(messagingStub.get() != NULL);
 
     EXPECT_CALL(*websocket, dtorCalled());
@@ -119,7 +119,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
 
 TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     WebSocketMessagingStubFactory factory;
-    joynr::WebSocketClient* websocket = new MockWebSocketClient();
+    WebSocketClient* websocket = new MockWebSocketClient();
 
     factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);

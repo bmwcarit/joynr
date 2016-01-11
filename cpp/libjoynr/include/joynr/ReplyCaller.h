@@ -38,8 +38,8 @@ template <class... Ts>
 class ReplyCaller : public IReplyCaller
 {
 public:
-    ReplyCaller(std::function<void(const joynr::RequestStatus& status, const Ts&...)> callbackFct,
-                std::function<void(const joynr::RequestStatus& status,
+    ReplyCaller(std::function<void(const RequestStatus& status, const Ts&...)> callbackFct,
+                std::function<void(const RequestStatus& status,
                                    const exceptions::JoynrException& error)> errorFct)
             : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
     {
@@ -74,8 +74,8 @@ public:
     }
 
 private:
-    std::function<void(const joynr::RequestStatus& status, const Ts&... returnValue)> callbackFct;
-    std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)>
+    std::function<void(const RequestStatus& status, const Ts&... returnValue)> callbackFct;
+    std::function<void(const RequestStatus& status, const exceptions::JoynrException& error)>
             errorFct;
     bool hasTimeOutOccurred;
 };
@@ -88,8 +88,8 @@ template <>
 class ReplyCaller<void> : public IReplyCaller
 {
 public:
-    ReplyCaller(std::function<void(const joynr::RequestStatus& status)> callbackFct,
-                std::function<void(const joynr::RequestStatus& status,
+    ReplyCaller(std::function<void(const RequestStatus& status)> callbackFct,
+                std::function<void(const RequestStatus& status,
                                    const exceptions::JoynrException& error)> errorFct)
             : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
     {
@@ -122,8 +122,8 @@ public:
     }
 
 private:
-    std::function<void(const joynr::RequestStatus& status)> callbackFct;
-    std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)>
+    std::function<void(const RequestStatus& status)> callbackFct;
+    std::function<void(const RequestStatus& status, const exceptions::JoynrException& error)>
             errorFct;
     bool hasTimeOutOccurred;
 };

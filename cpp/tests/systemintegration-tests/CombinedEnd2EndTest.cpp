@@ -881,7 +881,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    // joynr::Semaphore semaphore(0);
+    // Semaphore semaphore(0);
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 

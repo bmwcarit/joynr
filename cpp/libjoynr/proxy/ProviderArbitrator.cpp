@@ -55,7 +55,7 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
 
 void ProviderArbitrator::startArbitration()
 {
-    joynr::Semaphore semaphore;
+    Semaphore semaphore;
 
     // Arbitrate until successful or timed out
     while (true) {

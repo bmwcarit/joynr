@@ -113,7 +113,7 @@ private:
 TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -166,7 +166,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<const types::Localisation::GpsLocation&>(), A<const double&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 

@@ -186,7 +186,7 @@ private:
     ProxyFactory* proxyFactory;
     joynr::system::IDiscoverySync& discoveryProxy;
     ProviderArbitrator* arbitrator;
-    joynr::Semaphore arbitrationSemaphore;
+    Semaphore arbitrationSemaphore;
     std::string participantId;
     joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;

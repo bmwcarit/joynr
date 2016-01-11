@@ -46,10 +46,10 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const std::string& channelId,
         const std::string& receiverId,
         const LongPollingMessageReceiverSettings& settings,
-        joynr::Semaphore* channelCreatedSemaphore,
+        Semaphore* channelCreatedSemaphore,
         std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
         std::shared_ptr<MessageRouter> messageRouter)
-        : joynr::Thread("LongPollRecv"),
+        : Thread("LongPollRecv"),
           bounceProxyUrl(bounceProxyUrl),
           channelId(channelId),
           receiverId(receiverId),
@@ -77,7 +77,7 @@ bool LongPollingMessageReceiver::isInterrupted()
 void LongPollingMessageReceiver::stop()
 {
     interrupt();
-    joynr::Thread::stop();
+    Thread::stop();
 }
 
 void LongPollingMessageReceiver::run()

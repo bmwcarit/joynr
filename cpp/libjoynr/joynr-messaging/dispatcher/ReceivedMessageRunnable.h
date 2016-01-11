@@ -35,7 +35,7 @@ class Dispatcher;
   *
   */
 
-class ReceivedMessageRunnable : public joynr::Runnable, public ObjectWithDecayTime
+class ReceivedMessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
     ReceivedMessageRunnable(const JoynrMessage& message, Dispatcher& dispatcher);

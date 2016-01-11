@@ -485,7 +485,7 @@ INIT_LOGGER(MessageRunnable);
 
 MessageRunnable::MessageRunnable(const JoynrMessage& message,
                                  std::shared_ptr<IMessaging> messagingStub)
-        : joynr::Runnable(true),
+        : Runnable(true),
           ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
           messagingStub(messagingStub)

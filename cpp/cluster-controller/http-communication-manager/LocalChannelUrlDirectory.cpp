@@ -72,7 +72,7 @@ void LocalChannelUrlDirectory::init()
                     capabilitiesDirectoryUrl);
 }
 
-std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrlsAsync(
+std::shared_ptr<Future<void>> LocalChannelUrlDirectory::registerChannelUrlsAsync(
         const std::string& channelId,
         types::ChannelUrlInformation channelUrlInformation,
         std::function<void(void)> onSuccess,
@@ -83,7 +83,7 @@ std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUr
             channelId, channelUrlInformation, onSuccess, onError);
 }
 
-std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannelUrlsAsync(
+std::shared_ptr<Future<void>> LocalChannelUrlDirectory::unregisterChannelUrlsAsync(
         const std::string& channelId,
         std::function<void(void)> onSuccess,
         std::function<void(const exceptions::JoynrException& error)> onError)
@@ -92,7 +92,7 @@ std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannel
     return channelUrlDirectoryProxy->unregisterChannelUrlsAsync(channelId, onSuccess, onError);
 }
 
-std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDirectory::
+std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDirectory::
         getUrlsForChannelAsync(
                 const std::string& channelId,
                 std::chrono::milliseconds timeout,
@@ -104,8 +104,8 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
 
     if (localCache.contains(channelIdQT)) {
         JOYNR_LOG_TRACE(logger, "using cached Urls for id = {}", channelIdQT.toStdString());
-        std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
-                new joynr::Future<joynr::types::ChannelUrlInformation>());
+        std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(
+                new Future<joynr::types::ChannelUrlInformation>());
         future->onSuccess(localCache.value(channelIdQT));
         if (onSuccess) {
             onSuccess(localCache.value(channelIdQT));
@@ -113,7 +113,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
         return future;
     }
     assert(channelUrlDirectoryProxy);
-    std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
+    std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(
             channelUrlDirectoryProxy->getUrlsForChannelAsync(channelId, onSuccess, onError));
     try {
         future->wait(timeout.count());

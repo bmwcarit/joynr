@@ -35,7 +35,7 @@ namespace joynr
  * @brief An implementation of the @ref DelayedScheduler using multiple threads
  *      to execute scheduled @ref Runnable
  */
-class JOYNRCOMMON_EXPORT ThreadPoolDelayedScheduler : public joynr::DelayedScheduler
+class JOYNRCOMMON_EXPORT ThreadPoolDelayedScheduler : public DelayedScheduler
 {
 
 public:

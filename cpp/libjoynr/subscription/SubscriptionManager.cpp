@@ -268,7 +268,7 @@ SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         std::shared_ptr<Subscription> subscription,
         SubscriptionManager& subscriptionManager,
         const std::int64_t& alertAfterInterval)
-        : joynr::Runnable(true),
+        : Runnable(true),
           ObjectWithDecayTime(expiryDate),
           expectedIntervalMSecs(expectedIntervalMSecs),
           subscription(subscription),
@@ -334,9 +334,7 @@ INIT_LOGGER(SubscriptionManager::SubscriptionEndRunnable);
 SubscriptionManager::SubscriptionEndRunnable::SubscriptionEndRunnable(
         const std::string& subscriptionId,
         SubscriptionManager& subscriptionManager)
-        : joynr::Runnable(true),
-          subscriptionId(subscriptionId),
-          subscriptionManager(subscriptionManager)
+        : Runnable(true), subscriptionId(subscriptionId), subscriptionManager(subscriptionManager)
 {
 }
 

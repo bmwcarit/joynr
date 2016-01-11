@@ -88,8 +88,8 @@ public:
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
-    joynr::Semaphore semaphore;
-    joynr::Semaphore altSemaphore;
+    Semaphore semaphore;
+    Semaphore altSemaphore;
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter;
     unsigned long registerProviderWait;

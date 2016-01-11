@@ -32,7 +32,7 @@ namespace joynr
 /**
  * @brief The WebSocket class is used as base class for Client and Server implementations.
  */
-class WebSocket : public joynr::IWebSocketSendInterface, public IWebSocketContextCallback
+class WebSocket : public IWebSocketSendInterface, public IWebSocketContextCallback
 {
 public:
     /**

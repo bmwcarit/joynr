@@ -234,7 +234,7 @@ public:
     ~LocalCapabilitiesFuture() override = default;
 
 private:
-    joynr::Semaphore futureSemaphore;
+    Semaphore futureSemaphore;
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesFuture);
     std::vector<CapabilityEntry> capabilities;
 };

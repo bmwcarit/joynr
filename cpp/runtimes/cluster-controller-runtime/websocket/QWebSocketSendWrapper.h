@@ -36,7 +36,7 @@ namespace joynr
  * @class QWebSocketSendWrapper
  * @brief A wrapper to send messages over a QWebSocket to be used in libJoynr
  */
-class QWebSocketSendWrapper : public QObject, public joynr::IWebSocketSendInterface
+class QWebSocketSendWrapper : public QObject, public IWebSocketSendInterface
 {
     Q_OBJECT
 public:

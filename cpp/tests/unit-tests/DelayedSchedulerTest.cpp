@@ -38,19 +38,19 @@ using ::testing::StrictMock;
 static const std::uint64_t timerAccuracy_ms = 5U;
 
 class SimpleDelayedScheduler :
-    public joynr::DelayedScheduler
+    public DelayedScheduler
 {
 
 public:
 
     SimpleDelayedScheduler()
-        : joynr::DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1)),
+        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1)),
           est_ms(0)
     {
     }
 
     SimpleDelayedScheduler(const std::uint64_t delay)
-        : joynr::DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1)),
+        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1)),
           est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
     {
     }
@@ -59,11 +59,11 @@ public:
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-    MOCK_CONST_METHOD1(workAvailableCalled, void (joynr::Runnable*));
+    MOCK_CONST_METHOD1(workAvailableCalled, void (Runnable*));
     MOCK_CONST_METHOD0(workAvailableInTime, void ());
 #pragma GCC diagnostic pop
 
-    void workAvailable(joynr::Runnable* runnable)
+    void workAvailable(Runnable* runnable)
     {
         workAvailableCalled(runnable);
 
@@ -157,7 +157,7 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 {
     SimpleDelayedScheduler scheduler(5);
     StrictMock<MockRunnable> runnable1(false);
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
+    DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -174,7 +174,7 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
 {
     SimpleDelayedScheduler scheduler(5);
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
+    DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

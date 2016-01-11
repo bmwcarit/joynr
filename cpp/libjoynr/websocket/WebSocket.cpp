@@ -24,7 +24,7 @@ namespace joynr
 {
 
 joynr::WebSocket::WebSocket()
-        : joynr::IWebSocketSendInterface(),
+        : IWebSocketSendInterface(),
           state(WebSocketState_Closed),
           sslCertPath(),
           sslKeyPath(),

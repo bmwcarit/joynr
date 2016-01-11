@@ -37,8 +37,7 @@ namespace joynr
  * @note This implementation should not be used for runnables that take
  *      substantial time to complete.
  */
-class JOYNRCOMMON_EXPORT SingleThreadedDelayedScheduler : public joynr::DelayedScheduler,
-                                                          private joynr::Thread
+class JOYNRCOMMON_EXPORT SingleThreadedDelayedScheduler : public DelayedScheduler, private Thread
 {
 public:
     /**
@@ -65,7 +64,7 @@ public:
     void shutdown() override;
 
 private:
-    /* joynr::Thread pure virtual function */
+    /* Thread pure virtual function */
     void run() override;
 
     /*! @ref SingleThreadedDelayedScheduler is not allowed to be copied */

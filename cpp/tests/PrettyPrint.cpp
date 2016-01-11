@@ -65,5 +65,5 @@ namespace system {
 
  void PrintTo(const JoynrMessage& value, ::std::ostream* os)
  {
-     *os << joynr::JsonSerializer::serialize(value);
+     *os << JsonSerializer::serialize(value);
  }

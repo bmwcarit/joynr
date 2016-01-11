@@ -104,7 +104,7 @@ void SubscriptionQos::clearExpiryDate()
 void SubscriptionQos::setValidity(const std::int64_t& validity)
 {
     if (validity == -1) {
-        setExpiryDate(joynr::SubscriptionQos::NO_EXPIRY_DATE());
+        setExpiryDate(SubscriptionQos::NO_EXPIRY_DATE());
     } else {
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();

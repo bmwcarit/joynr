@@ -702,7 +702,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationW
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
 {
     // Create a publication
-    joynr::SubscriptionPublication expectedPublication;
+    SubscriptionPublication expectedPublication;
     std::string someString{"Hello World"};
     std::vector<Variant> expectedResponse;
     expectedResponse.push_back(Variant::make<std::string>(someString));
@@ -720,7 +720,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
 
     // Serialize into JSON
     std::stringstream stream;
-    auto serializer = ClassSerializer<joynr::SubscriptionPublication>();
+    auto serializer = ClassSerializer<SubscriptionPublication>();
     serializer.serialize(expectedPublication, stream);
     std::string json{ stream.str() };
     JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
@@ -988,8 +988,8 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeStructContainingStringMember
 // test with TEverythingStruct
 TEST_F(JoynrJsonSerializerTest, correctEscapingOfStrings)
 {
-    EXPECT_EQ(joynr::addEscapeForSpecialCharacters("normalString"), "normalString");
-    EXPECT_EQ(joynr::addEscapeForSpecialCharacters(R"(\stringWithBackSlash)"), R"(\\stringWithBackSlash)");
-    EXPECT_EQ(joynr::addEscapeForSpecialCharacters(R"("stringWithQuotas")"), R"(\"stringWithQuotas\")");
-    EXPECT_EQ(joynr::addEscapeForSpecialCharacters(R"(\"stringWithBackSlashAndQuotas\")"), R"(\\\"stringWithBackSlashAndQuotas\\\")");
+    EXPECT_EQ(addEscapeForSpecialCharacters("normalString"), "normalString");
+    EXPECT_EQ(addEscapeForSpecialCharacters(R"(\stringWithBackSlash)"), R"(\\stringWithBackSlash)");
+    EXPECT_EQ(addEscapeForSpecialCharacters(R"("stringWithQuotas")"), R"(\"stringWithQuotas\")");
+    EXPECT_EQ(addEscapeForSpecialCharacters(R"(\"stringWithBackSlashAndQuotas\")"), R"(\\\"stringWithBackSlashAndQuotas\\\")");
 }

@@ -116,7 +116,7 @@ private:
     joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
-    joynr::Semaphore listenerSemaphore;
+    Semaphore listenerSemaphore;
     ADD_LOGGER(ProviderArbitrator);
 };
 

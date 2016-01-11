@@ -101,7 +101,7 @@ TEST(SingleThreadedDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 
     StrictMock<MockRunnableWithAccuracy> runnable1(false, 5);
 
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
+    DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -120,7 +120,7 @@ TEST(SingleThreadedDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorO
 
     StrictMock<MockRunnableWithAccuracy>* runnable1 = new StrictMock<MockRunnableWithAccuracy>(true, 5u);
 
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
+    DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
