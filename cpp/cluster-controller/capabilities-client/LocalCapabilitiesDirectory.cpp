@@ -87,7 +87,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
 LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 {
     // cleanup
-    const auto zero = std::chrono::milliseconds(0);
+    const auto zero = std::chrono::milliseconds::zero();
     interfaceAddress2GlobalCapabilities.cleanup(zero);
     participantId2GlobalCapabilities.cleanup(zero);
 

@@ -67,7 +67,7 @@ public:
      * @param timeoutMs Number of milliseconds this method is allowed to block
      * @return If @c true the semaphore is accquired, @c false on timeout
      */
-    bool waitFor(std::chrono::milliseconds timeoutMs = std::chrono::milliseconds(0));
+    bool waitFor(std::chrono::milliseconds timeoutMs = std::chrono::milliseconds::zero());
 
     /**
      * Returns the current status of the internal counter
