@@ -596,6 +596,8 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
     bool expectedBool = true;
     expectedResponse.push_back(Variant::make<bool>(expectedBool));
 
+    std::vector<int32_t> expectedIntList {1,2,3,4};
+    expectedResponse.push_back(joynr::TypeUtil::toVariant<int32_t>(expectedIntList));
     expectedReply.setResponse(expectedResponse);
     expectedReply.setRequestReplyId("000-10000-01100");
 
@@ -632,6 +634,10 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
         Variant boolParam = response[4];
         EXPECT_TRUE(boolParam.is<bool>());
         EXPECT_EQ(expectedBool, boolParam.get<bool>());
+        Variant intListVariant = response[5];
+        EXPECT_TRUE(intListVariant.is<std::vector<Variant>>());
+        std::vector<Variant> intListParam = intListVariant.get<std::vector<Variant>>();
+        EXPECT_EQ(expectedIntList, joynr::Util::convertVariantVectorToVector<int32_t>(intListParam));
         EXPECT_EQ(expectedReply.getRequestReplyId(), reply.getRequestReplyId());
     }
 }
