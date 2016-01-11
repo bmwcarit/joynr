@@ -21,6 +21,8 @@
 
 using namespace joynr;
 
+INIT_LOGGER(MockGpsProvider);
+
 const std::string& IMockProviderInterface::INTERFACE_NAME()
 {
     static const std::string INTERFACE_NAME("test/interface");

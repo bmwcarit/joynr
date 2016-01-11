@@ -23,6 +23,11 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <chrono>
+#include <string>
+#include <vector>
+#include <mutex>
+#include <condition_variable>
+
 #include "PrettyPrint.h"
 #include "LibJoynrMockObjects.h"
 
@@ -32,9 +37,6 @@
 #include "joynr/tests/testRequestCaller.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
-#include "QtCore"
-#include <string>
-#include <vector>
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Runnable.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
@@ -148,7 +150,7 @@ public:
     MockDelayedScheduler()
         : joynr::DelayedScheduler([](joynr::Runnable*){ assert(false); }, std::chrono::milliseconds::zero())
     {
-    };
+    }
 
     void shutdown() { joynr::DelayedScheduler::shutdown(); }
     MOCK_METHOD1(unschedule, void (DelayedScheduler::RunnableHandle));
@@ -158,10 +160,15 @@ public:
 class MockRunnable : public joynr::Runnable
 {
 public:
-    MockRunnable(bool deleteMe) : joynr::Runnable(deleteMe) {}
+    MockRunnable(bool deleteMe) : joynr::Runnable(deleteMe)
+    {
+    }
 
     MOCK_CONST_METHOD0(dtorCalled, void ());
-    ~MockRunnable() { dtorCalled(); }
+    ~MockRunnable()
+    {
+        dtorCalled();
+    }
 
     MOCK_METHOD0(shutdown, void ());
     MOCK_METHOD0(run, void ());
@@ -182,15 +189,12 @@ public:
 
     MOCK_CONST_METHOD0(runCalled, void());
     MOCK_CONST_METHOD0(runCalledInTime, void());
-    virtual void run();
+    void run() override;
 
 private:
     const uint64_t est_ms;
     static joynr::Logger logger;
 };
-
-#include <mutex>
-#include <condition_variable>
 
 class MockRunnableBlocking : public joynr::Runnable
 {
@@ -474,8 +478,8 @@ class MockProvider : public joynr::AbstractJoynrProvider, public IMockProviderIn
 public:
     MOCK_CONST_METHOD0(getProviderQos, joynr::types::ProviderQos());
     MOCK_CONST_METHOD0(getParticipantId, std::string());
-    virtual ~MockProvider() = default;
-    virtual std::string getInterfaceName() const;
+    ~MockProvider() override = default;
+    std::string getInterfaceName() const override;
 };
 
 namespace joynr {
@@ -558,34 +562,25 @@ public:
 
 class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
 {
-    public:
+public:
     MockGpsProvider() : joynr::vehicle::DefaultGpsProvider()
     {
-    };
+    }
+
     ~MockGpsProvider()
     {
-        qDebug() << "I am being destroyed_ MockProvider";
-    };
+        JOYNR_LOG_DEBUG(logger, "I am being destroyed");
+    }
 
     MOCK_METHOD1(getLocation, void(joynr::types::Localisation::GpsLocation& result) );
     MOCK_METHOD1(setLocation, void(joynr::types::Localisation::GpsLocation gpsLocation));
-    //MOCK_METHOD2(calculateAvailableSatellites,joynr::RequestStatus(int32_t& result));
-    //MOCK_METHOD2(restartWithRetries, joynr::RequestStatus(int32_t gpsFix));
 
-    joynr::RequestStatus restartWithRetries(int32_t gpsfix ) {
-
-        return joynr::RequestStatus(joynr::RequestStatusCode::OK);
-    }
-
-    joynr::RequestStatus calculateAvailableSatellites(int32_t& result) {
-        result = 42;
-        return joynr::RequestStatus(joynr::RequestStatusCode::OK);
-    }
-
-
-    std::string getParticipantId() const{
+    std::string getParticipantId() const
+    {
         return "Fake_ParticipantId_vehicle/DefaultGpsProvider";
     }
+private:
+    ADD_LOGGER(MockGpsProvider);
 };
 
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {
@@ -705,11 +700,6 @@ public:
     MOCK_METHOD1(containsRequestCaller, bool(const std::string& participantId));
 };
 
-class MockEndpointAddress : public joynr::system::RoutingTypes::Address {
-
-};
-
-
 
 template <typename Key, typename T>
 class MockDirectory : public joynr::IDirectory<Key, T> {
@@ -747,7 +737,6 @@ public:
     MOCK_METHOD2(attributeValueChanged, void(const std::string& subscriptionId, const joynr::Variant& value));
 };
 
-//virtual public IChannelUrlDirectory, virtual public ChannelUrlDirectorySyncProxy, virtual public ChannelUrlDirectoryAsyncProxy
 class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::ChannelUrlDirectoryProxy {
 public:
     MockChannelUrlDirectoryProxy() :
