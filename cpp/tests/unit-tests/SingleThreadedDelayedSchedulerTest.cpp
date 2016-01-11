@@ -102,24 +102,6 @@ TEST(SingleThreadedDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExp
     scheduler.shutdown();
 }
 
-TEST(SingleThreadedDelayedSchedulerTest, testRunnableWithoutDelay)
-{
-    SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", std::chrono::milliseconds::zero());
-
-    StrictMock<MockRunnableWithAccuracy> runnable1(false, 0);
-
-    EXPECT_CALL(runnable1, runCalled()).Times(1);
-    EXPECT_CALL(runnable1, runCalledInTime()).Times(1);
-
-    scheduler.schedule(&runnable1, std::chrono::milliseconds::zero());
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
-
-    scheduler.shutdown();
-
-    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
-}
-
 TEST(SingleThreadedDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 {
     SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", std::chrono::milliseconds::zero());

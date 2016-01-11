@@ -105,24 +105,6 @@ TEST(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpired
     scheduler.shutdown();
 }
 
-TEST(ThreadPoolDelayedSchedulerTest, testRunnableWithoutDelay)
-{
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
-
-    StrictMock<MockRunnableWithAccuracy> runnable1(false, 0);
-
-    EXPECT_CALL(runnable1, runCalled()).Times(1);
-    EXPECT_CALL(runnable1, runCalledInTime()).Times(1);
-
-    scheduler.schedule(&runnable1, std::chrono::milliseconds::zero());
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-    scheduler.shutdown();
-
-    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
-}
-
 TEST(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 {
     ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());

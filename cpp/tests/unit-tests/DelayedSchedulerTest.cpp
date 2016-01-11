@@ -163,21 +163,6 @@ TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
     EXPECT_CALL(runnable1, dtorCalled()).Times(1);
 }
 
-TEST(DelayedSchedulerTest, testRunnableWithoutDelay)
-{
-    SimpleDelayedScheduler scheduler(0);
-    StrictMock<MockRunnable> runnable1(false);
-
-    EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(1);
-    EXPECT_CALL(scheduler, workAvailableInTime()).Times(1);
-
-    scheduler.schedule(&runnable1, std::chrono::milliseconds::zero());
-
-    scheduler.shutdown();
-
-    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
-}
-
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 {
     SimpleDelayedScheduler scheduler(5);
