@@ -128,6 +128,7 @@ private:
     std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     friend class End2EndBroadcastTest;
+    friend class End2EndSubscriptionTest;
 };
 
 } // namespace joynr

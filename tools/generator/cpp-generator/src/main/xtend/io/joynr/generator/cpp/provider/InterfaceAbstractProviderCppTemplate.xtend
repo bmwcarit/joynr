@@ -86,6 +86,8 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
 					«ELSEIF isMap(attribute.type)»
 						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+					«ELSEIF isByteBuffer(attribute.type)»
+						joynr::TypeUtil::toVariant(«attribute.joynrName»)
 					«ELSE»
 						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
 					«ENDIF»
