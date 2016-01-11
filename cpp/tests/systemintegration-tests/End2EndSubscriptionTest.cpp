@@ -196,6 +196,20 @@ protected:
 
 } // namespace joynr
 
+
+TEST_F(End2EndSubscriptionTest, subscribeToEnumAttribute) {
+    tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
+
+    testOneShotAttributeSubscription(expectedTestEnum,
+                                 [](tests::testProxy* testProxy,
+                                    std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
+                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
+                                 },
+                                 &tests::testProvider::setEnumAttribute,
+                                 "enumAttribute");
+}
+
 TEST_F(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
     joynr::ByteBuffer expectedByteBuffer {0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0};
 
