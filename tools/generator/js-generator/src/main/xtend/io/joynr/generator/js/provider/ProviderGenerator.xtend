@@ -135,7 +135,6 @@ class ProviderGenerator {
 			}
 
 			var implementation = passedImplementation || {};
-			var TypesEnum = dependencies.TypesEnum;
 
 			// defining provider members
 			«FOR attribute: getAttributes(fInterface)»
@@ -146,7 +145,7 @@ class ProviderGenerator {
 				 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 				 */
 				this.«attributeName» = new dependencies.ProviderAttribute«getAttributeCaps(attribute)»
-					(this, implementation.«attributeName», "«attributeName»", «attribute.typeNameForParameter»);
+					(this, implementation.«attributeName», "«attributeName»", "«attribute.joynrTypeName»");
 				if (implementation.«attributeName») {
 					implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
 				}
@@ -173,7 +172,7 @@ class ProviderGenerator {
 							«FOR param: getInputParameters(operation) SEPARATOR ","»
 							{
 								name : "«param.joynrName»",
-								type : «param.typeNameForParameter»
+								type : "«param.joynrTypeName»"
 							}
 							«ENDFOR»
 						],
@@ -184,7 +183,7 @@ class ProviderGenerator {
 							«FOR param: getOutputParameters(operation) SEPARATOR ","»
 							{
 								name : "«param.joynrName»",
-								type : «param.typeNameForParameter»
+								type : "«param.joynrTypeName»"
 							}
 							«ENDFOR»
 						]
@@ -208,7 +207,7 @@ class ProviderGenerator {
 						«FOR param : getOutputParameters(event) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : «param.typeNameForParameter»
+							type : "«param.joynrTypeName»"
 						}
 						«ENDFOR»
 					],
@@ -281,7 +280,7 @@ class ProviderGenerator {
 			return getTypeNameForErrorEnumType(method, enumType);
 		}
 		else if (method.errorEnum != null){
-			return method.errorEnum.toTypesEnum;
+			return method.errorEnum.joynrTypeName;
 		}
 		else {
 			return "no error enumeration given"

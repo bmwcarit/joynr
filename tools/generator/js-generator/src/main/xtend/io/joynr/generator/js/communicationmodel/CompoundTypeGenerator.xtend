@@ -21,6 +21,7 @@ package io.joynr.generator.js.communicationmodel
 import com.google.inject.Inject
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
+import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import java.util.Set
@@ -33,6 +34,7 @@ class CompoundTypeGenerator {
 	@Inject extension JSTypeUtil
 	@Inject extension GeneratorParameter
 	@Inject private extension NamingUtil
+	@Inject private extension JoynrJSGeneratorExtensions
 
 	def generateCompoundType(FCompoundType compoundType, Set<Object> generatedTypes) '''
 		«IF !generatedTypes.contains(compoundType)»
@@ -94,7 +96,7 @@ class CompoundTypeGenerator {
 					configurable : false,
 					writable : false,
 					enumerable : true,
-					value : "«type.toTypesEnum»"
+					value : "«type.joynrTypeName»"
 				});
 				«IF type.base != null»
 
@@ -109,7 +111,7 @@ class CompoundTypeGenerator {
 					configurable : false,
 					writable : false,
 					enumerable : false,
-					value : "«type.base.toTypesEnum»"
+					value : "«type.base.joynrTypeName»"
 				});
 				«ENDIF»
 
@@ -141,14 +143,14 @@ class CompoundTypeGenerator {
 
 			var memberTypes = {
 				«FOR member : members SEPARATOR ","»
-				«member.joynrName»: function(TypesEnum) { return «member.typeNameForParameter»; }
+				«member.joynrName»: function() { return "«member.joynrTypeName»"; }
 				«ENDFOR»
 			};
 			Object.defineProperty(«type.joynrName», 'getMemberType', {
 				enumerable: false,
-				value: function getMemberType(memberName, TypesEnum) {
+				value: function getMemberType(memberName) {
 					if (memberTypes[memberName] !== undefined) {
-						return memberTypes[memberName](TypesEnum);
+						return memberTypes[memberName]();
 					}
 					return undefined;
 				}
@@ -160,7 +162,7 @@ class CompoundTypeGenerator {
 				define(«type.defineName»["joynr"], function (joynr) {
 					«type.joynrName».prototype = new joynr.JoynrObject();
 					«type.joynrName».prototype.constructor = «type.joynrName»;
-					joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+					joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 					return «type.joynrName»;
 				});
 			} else if (typeof exports !== 'undefined' ) {
@@ -174,18 +176,18 @@ class CompoundTypeGenerator {
 				«type.joynrName».prototype = new joynr.JoynrObject();
 				«type.joynrName».prototype.constructor = «type.joynrName»;
 
-				joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+				joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 			} else {
 				«type.joynrName».prototype = new window.joynr.JoynrObject();
 				«type.joynrName».prototype.constructor = «type.joynrName»;
-				window.joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+				window.joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 				window.«type.joynrName» = «type.joynrName»;
 			}
 			«ELSE»
 				//we assume a correct order of script loading
 			«type.joynrName».prototype = new window.joynr.JoynrObject();
 			«type.joynrName».prototype.constructor = «type.joynrName»;
-			window.joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+			window.joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 			window.«type.joynrName» = «type.joynrName»;
 			«ENDIF»
 		})();
