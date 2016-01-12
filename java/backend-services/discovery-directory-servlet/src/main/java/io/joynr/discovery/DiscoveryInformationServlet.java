@@ -1,5 +1,20 @@
 package io.joynr.discovery;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.inject.Singleton;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.inject.Inject;
+
 /*
  * #%L
  * %%
@@ -21,23 +36,11 @@ package io.joynr.discovery;
 
 import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilityEntry;
+import io.joynr.channel.ChannelUrlDirectoyImpl;
+import io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted;
 import io.joynr.servlet.JoynrWebServlet;
+import joynr.types.CapabilityInformation;
 import joynr.types.ProviderScope;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.inject.Singleton;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.inject.Inject;
 
 @Singleton
 @JoynrWebServlet(value = "/capabilities/")
@@ -45,21 +48,35 @@ public class DiscoveryInformationServlet extends HttpServlet {
     private static final long serialVersionUID = 8839103126167589803L;
     private transient CapabilitiesStore capabilitiesStore;
     transient private Gson gson = new GsonBuilder().create();
+    transient private ChannelUrlDirectoyImpl channelUrlDirectory;
 
     @Inject
-    public DiscoveryInformationServlet(CapabilitiesStore capabilitiesStore) {
+    public DiscoveryInformationServlet(CapabilitiesStore capabilitiesStore, ChannelUrlDirectoyImpl channelUrlDirectory) {
         this.capabilitiesStore = capabilitiesStore;
+        this.channelUrlDirectory = channelUrlDirectory;
     }
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        Set<CapabilityEntry> globalCapabilities = new HashSet<CapabilityEntry>();
+        Set<CapabilityInformation> globalCapabilities = new HashSet<CapabilityInformation>();
         Set<CapabilityEntry> allCapabilities = capabilitiesStore.getAllCapabilities();
         for (CapabilityEntry capabilityEntry : allCapabilities) {
             if (capabilityEntry.getProviderQos().getScope() == ProviderScope.GLOBAL) {
-                globalCapabilities.add(capabilityEntry);
+                String channelId = "";
+                String channelUrl = "";
+                try {
+                    JoynrMessagingEndpointAddressPersisted address = (JoynrMessagingEndpointAddressPersisted) capabilityEntry.getAddresses()
+                                                                                                                             .get(0);
+                    channelId = address.getChannelId();
+                    channelUrl = channelUrlDirectory.getRegisteredChannels().get(channelId).getUrls()[0];
+                    CapabilityInformation capabilityInformation = capabilityEntry.toCapabilityInformation();
+                    capabilityInformation.setChannelId(channelId + ":" + channelUrl);
+                    globalCapabilities.add(capabilityInformation);
+                } catch (Exception e) {
+                    log("error adding channel information", e);
+                }
             }
         }
         out.println(gson.toJson(globalCapabilities));
