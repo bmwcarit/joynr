@@ -27,19 +27,10 @@ extern "C" {
 #include <private-libwebsockets.h>
 }
 
-#include "joynr/joynrlogging.h"
-
-// FIXME: libwebsocket includes syslog.h defining LOG_* symbols
-#undef LOG_INFO
-#undef LOG_DEBUG
-#undef JOYNRLOGGINGMACROS_H_
-#include "joynr/joynrloggingmacros.h"
-
 namespace joynr
 {
 
-joynr_logging::Logger* WebSocketContext::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketContext");
+INIT_LOGGER(WebSocketContext);
 
 WebSocketContext::WebSocketContext(IWebSocketContextCallback* webSocketServer,
                                    const std::string& protocolName,
@@ -86,7 +77,7 @@ void WebSocketContext::start()
 void WebSocketContext::stop()
 {
     std::unique_lock<std::mutex> lock(intitializeMutex);
-    LOG_TRACE(logger, "Signaling to stop context thread");
+    JOYNR_LOG_TRACE(logger) << "Signaling to stop context thread";
     keepRunning = false;
     if (thread->joinable()) {
         // Throw assertion if stop is called by the running thread
@@ -100,12 +91,12 @@ void WebSocketContext::onOutgoingDataAvailable(WebSocketConnectionHandle handle)
 {
     std::unique_lock<std::mutex> lock(intitializeMutex);
     if (websocketContext == nullptr) {
-        LOG_WARN(logger, "Not yet initialized");
+        JOYNR_LOG_WARN(logger) << "Not yet initialized";
         return;
     }
     auto it = websocketHandles.find(handle);
     if (it == websocketHandles.end()) {
-        LOG_WARN(logger, "Not yet connected");
+        JOYNR_LOG_WARN(logger) << "Not yet connected";
         return;
     }
 
@@ -130,7 +121,7 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
     // The following events are directly forwarded to the user
     case LWS_CALLBACK_SERVER_WRITEABLE:
     case LWS_CALLBACK_CLIENT_WRITEABLE: {
-        LOG_TRACE(logger, "WebSocket got writable");
+        JOYNR_LOG_TRACE(logger) << "WebSocket got writable";
         assert(wsi != nullptr);
         assert(context != nullptr);
         assert(callback != nullptr);
@@ -145,32 +136,32 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
     }
     case LWS_CALLBACK_ESTABLISHED:
     case LWS_CALLBACK_CLIENT_ESTABLISHED: {
-        LOG_DEBUG(logger, "WebSocket connection established");
+        JOYNR_LOG_DEBUG(logger) << "WebSocket connection established";
         assert(callback != nullptr);
         // WebSocketConnectionHandle handle = findHandle(wsi);
         callback->onConnectionEstablished(/*handle*/);
         break;
     }
     case LWS_CALLBACK_CLIENT_CONNECTION_ERROR: {
-        LOG_WARN(logger, "WebSocket connection error");
+        JOYNR_LOG_WARN(logger) << "WebSocket connection error";
         assert(callback != nullptr);
         callback->onErrorOccured(IWebSocketContextCallback::WebSocketError_ConnectionError);
         break;
     }
     case LWS_CALLBACK_PROTOCOL_DESTROY: {
         // WSI is not available anymore. So there is no callback available
-        LOG_TRACE(logger, "Protocol destroyed");
+        JOYNR_LOG_TRACE(logger) << "Protocol destroyed";
         break;
     }
     case LWS_CALLBACK_WSI_DESTROY: {
-        LOG_TRACE(logger, "Connection handle and/or protocol deleted");
+        JOYNR_LOG_TRACE(logger) << "Connection handle and/or protocol deleted";
         // Using the global callback because WSI is not available anymore
         serverCallback->onConnectionClosed();
         break;
     }
     case LWS_CALLBACK_CLOSED:
     case LWS_CALLBACK_CLOSED_HTTP: {
-        LOG_DEBUG(logger, "WebSocket connection closed");
+        JOYNR_LOG_DEBUG(logger) << "WebSocket connection closed";
         assert(callback != nullptr);
         callback->onConnectionClosed(/*handle*/);
         break;
@@ -189,12 +180,7 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
                                          sizeof(name),
                                          host,
                                          sizeof(host));
-        LOG_DEBUG(logger,
-                  FormatString("Message received by: %1 / %2 / %3")
-                          .arg(name)
-                          .arg(host)
-                          //.arg(wsi)
-                          .str());
+        JOYNR_LOG_DEBUG(logger) << "Message received by: " << name << " " << host;
 
         callback->onMessageReceived(std::string(name),
                                     std::string(host),
@@ -203,17 +189,15 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
     }
     case LWS_CALLBACK_PROTOCOL_INIT: {
         assert(context != nullptr);
-        LOG_TRACE(
-                logger,
-                FormatString("Protocol initialized: \"%1\"").arg(context->protocols[0].name).str());
+        JOYNR_LOG_TRACE(logger) << "Protocol initialized: " << context->protocols[0].name;
     }
     case LWS_CALLBACK_WSI_CREATE:
-        LOG_TRACE(logger, "WebSocket created.");
+        JOYNR_LOG_TRACE(logger) << "WebSocket created.";
         break;
     case LWS_CALLBACK_GET_THREAD_ID:
         break;
     case LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED: {
-        LOG_DEBUG(logger, "New client connection instantiated");
+        JOYNR_LOG_DEBUG(logger) << "New client connection instantiated";
         assert(wsi != nullptr);
         char name[30];
         char host[30];
@@ -224,12 +208,7 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
                                          sizeof(name),
                                          host,
                                          sizeof(host));
-        LOG_DEBUG(logger,
-                  FormatString("New client: %1 / %2 / %3")
-                          .arg(name)
-                          .arg(host)
-                          //.arg(wsi)
-                          .str());
+        JOYNR_LOG_DEBUG(logger) << "New client: " << name << " " << host;
 
         WebSocketConnectionHandle handle = ++handleCounter;
         websocketHandles.emplace(std::make_pair(handle, wsi));
@@ -245,7 +224,7 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
         break;
     case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
         // Possibility to modify the header before sending (e.g. coockie data)
-        LOG_TRACE(logger, "Handshake header");
+        JOYNR_LOG_TRACE(logger) << "Handshake header";
         break;
     case LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH:
         // this is the last chance for the client user code to examine the http
@@ -253,7 +232,7 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
         // headers is interesting to the client (url, etc) it needs to copy it
         // out at this point since it will be destroyed before the
         // CLIENT_ESTABLISHED call
-        LOG_TRACE(logger, "Pre establish filter called");
+        JOYNR_LOG_TRACE(logger) << "Pre establish filter called";
         break;
     case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
         // Possiblitity to reject incoming connections on protocol level. Return > 0 to drop
@@ -272,7 +251,7 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
     case LWS_CALLBACK_HTTP_WRITEABLE:
     case LWS_CALLBACK_FILTER_HTTP_CONNECTION:
         // No support for HTTP
-        LOG_TRACE(logger, FormatString("HTTP callback: %1").arg(reason).str());
+        JOYNR_LOG_TRACE(logger) << "HTTP callback: " << reason;
         //        return -1;
         break;
     case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS:
@@ -285,7 +264,7 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
     case LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED:
     case LWS_CALLBACK_USER:
     default:
-        LOG_TRACE(logger, FormatString("Unhandled callback reason received: %1").arg(reason).str());
+        JOYNR_LOG_TRACE(logger) << "Unhandled callback reason received: " << reason;
         break;
     }
     return 0;
@@ -295,7 +274,7 @@ int WebSocketContext::write(struct libwebsocket* handle, const std::string& mess
 {
     std::unique_lock<std::mutex> lock(intitializeMutex);
     if (websocketContext == nullptr || handle == nullptr) {
-        LOG_WARN(logger, "Not yet connected");
+        JOYNR_LOG_WARN(logger) << "Not yet connected";
         return -1;
     }
 
@@ -313,7 +292,7 @@ int WebSocketContext::write(struct libwebsocket* handle, const std::string& mess
                                (unsigned char*)(buffer.data() + LWS_SEND_BUFFER_PRE_PADDING),
                                len,
                                LWS_WRITE_TEXT);
-    LOG_TRACE(logger, FormatString("Wrote %1 characters to websocket").arg(n).str());
+    JOYNR_LOG_TRACE(logger) << "Wrote " << n << " characters to websocket";
     return n;
 }
 
@@ -325,7 +304,7 @@ WebSocketContext::WebSocketConnectionHandle WebSocketContext::connectToServer(
     assert(address.getPort() > 0);
 
     // attempt connection
-    LOG_TRACE(logger, FormatString("Attempting to connect to %1").arg(address.toString()).str());
+    JOYNR_LOG_TRACE(logger) << "Attempting to connect to " << address.toString();
 
     std::stringstream uriStream;
     uriStream << address.getHost() << ":" << address.getPort();
@@ -346,10 +325,8 @@ WebSocketContext::WebSocketConnectionHandle WebSocketContext::connectToServer(
             );
 
     if (websocketHandle == nullptr) {
-        LOG_ERROR(logger,
-                  FormatString("Connection over websocket with server %1 not possible")
-                          .arg(address.toString())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "Connection over websocket with server " << address.toString()
+                                << " not possible";
         return -1;
     }
 
@@ -357,7 +334,7 @@ WebSocketContext::WebSocketConnectionHandle WebSocketContext::connectToServer(
     websocketHandles.emplace(std::make_pair(handle, websocketHandle));
 
     // service the context only if connection attempt returned non-null wsi
-    LOG_TRACE(logger, FormatString("Successfully connected to %1").arg(address.toString()).str());
+    JOYNR_LOG_TRACE(logger) << "Successfully connected to " << address.toString();
 
     return handle;
 }
@@ -379,17 +356,17 @@ void WebSocketContext::libWebSocketLog(int level, const char* message)
 {
     switch (level) {
     case LLL_ERR:
-        LOG_ERROR(logger, message);
+        JOYNR_LOG_ERROR(logger) << message;
         break;
     case LLL_WARN:
-        LOG_WARN(logger, message);
+        JOYNR_LOG_WARN(logger) << message;
         break;
     case LLL_NOTICE:
     case LLL_INFO:
-        LOG_INFO(logger, message);
+        JOYNR_LOG_INFO(logger) << message;
         break;
     case LLL_DEBUG:
-        LOG_DEBUG(logger, message);
+        JOYNR_LOG_DEBUG(logger) << message;
         break;
     case LLL_PARSER:
     case LLL_HEADER:
@@ -397,7 +374,7 @@ void WebSocketContext::libWebSocketLog(int level, const char* message)
     case LLL_CLIENT:
     case LLL_LATENCY:
     default:
-        LOG_TRACE(logger, message);
+        JOYNR_LOG_TRACE(logger) << message;
         break;
     }
 }
@@ -409,7 +386,7 @@ void WebSocketContext::libWebSocketContextLoop()
     struct lws_context_creation_info info;
 
     if (!initContext(protocols, info)) {
-        LOG_ERROR(logger, "Creating context failed");
+        JOYNR_LOG_ERROR(logger) << "Creating context failed";
         return;
     }
 
@@ -423,9 +400,9 @@ void WebSocketContext::libWebSocketContextLoop()
     }
 
     if (timeout >= 0) {
-        LOG_TRACE(logger, "End context loop due to normal shutdown");
+        JOYNR_LOG_TRACE(logger) << "End context loop due to normal shutdown";
     } else {
-        LOG_WARN(logger, "Context loop exits. Maybe a connection error.");
+        JOYNR_LOG_WARN(logger) << "Context loop exits. Maybe a connection error.";
     }
 
     deinitContext();
@@ -469,7 +446,7 @@ bool WebSocketContext::initContext(struct libwebsocket_protocols* protocols,
     info.user = this;
 
     websocketContext = libwebsocket_create_context(&info);
-    LOG_TRACE(logger, "Context created");
+    JOYNR_LOG_TRACE(logger) << "Context created";
 
     return websocketContext != nullptr;
 }
@@ -489,7 +466,7 @@ void WebSocketContext::deinitContext()
         websocketContext = nullptr;
     }
 
-    LOG_DEBUG(logger, "Destroyed client context");
+    JOYNR_LOG_DEBUG(logger) << "Destroyed client context";
 }
 
 WebSocketContext::WebSocketConnectionHandle WebSocketContext::findHandle(

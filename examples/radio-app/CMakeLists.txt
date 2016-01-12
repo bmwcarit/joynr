@@ -8,6 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 add_definitions("-std=gnu++0x")
 
 find_package(Qt5Core REQUIRED)
+find_package(Threads REQUIRED)
 
 set(
     JOYNR_SERVER
@@ -94,6 +95,7 @@ set(radio-app-provider_SOURCES
 set(radio-app_LIBRARIES
     ${JOYNR_LIBRARIES}
     ${Qt5Core_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 # Put the generated code into a library and put the library in the bin directory

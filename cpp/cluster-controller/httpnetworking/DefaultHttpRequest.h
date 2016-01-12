@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include <QByteArray>
 
 struct curl_slist;
@@ -48,7 +48,7 @@ private:
     curl_slist* headers;
 
     QByteArray content;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(DefaultHttpRequest);
 };
 
 } // namespace joynr

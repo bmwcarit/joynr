@@ -47,7 +47,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ReceivedMessageRunnable);
     JoynrMessage message;
     Dispatcher& dispatcher;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ReceivedMessageRunnable);
 };
 
 } // namespace joynr

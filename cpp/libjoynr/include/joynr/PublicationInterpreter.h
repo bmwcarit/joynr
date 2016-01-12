@@ -20,7 +20,7 @@
 #define PUBLICATIONINTERPRETER_H
 
 #include "joynr/IPublicationInterpreter.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/Util.h"
@@ -53,7 +53,7 @@ public:
 
         std::vector<Variant> response = subscriptionPublication.getResponse();
         if (response.empty()) {
-            LOG_ERROR(logger, "Publication object has no response, discarding message");
+            JOYNR_LOG_ERROR(logger) << "Publication object has no response, discarding message";
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
@@ -70,12 +70,11 @@ public:
     }
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(PublicationInterpreter);
 };
 
 template <class... Ts>
-joynr_logging::Logger* PublicationInterpreter<Ts...>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "PublicationInterpreter");
+INIT_LOGGER(PublicationInterpreter<Ts...>);
 
 /**
   * Class that handles conversion of enum publications
@@ -100,7 +99,7 @@ public:
         }
 
         if (subscriptionPublication.getResponse().empty()) {
-            LOG_ERROR(logger, "Publication object has no response, discarding message");
+            JOYNR_LOG_ERROR(logger) << "Publication object has no response, discarding message";
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
@@ -114,17 +113,16 @@ public:
                 std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
 
         // value is copied in onSuccess
-        // LOG_TRACE(logger, "Publication received: notifying attribute changed");
+        // JOYNR_LOG_TRACE(logger) << "Publication received: notifying attribute changed";
         typedCallbackQsp->onSuccess(value);
     }
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(EnumPublicationInterpreter);
 };
 
 template <class T>
-joynr_logging::Logger* EnumPublicationInterpreter<T>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "EnumPublicationInterpreter");
+INIT_LOGGER(EnumPublicationInterpreter<T>);
 
 template <class T>
 class EnumPublicationInterpreter<std::vector<T>> : public IPublicationInterpreter
@@ -146,7 +144,7 @@ public:
 
         std::vector<Variant> qvList = subscriptionPublication.getResponse();
         if (qvList.empty()) {
-            LOG_ERROR(logger, "Publication object has no response, discarding message");
+            JOYNR_LOG_ERROR(logger) << "Publication object has no response, discarding message";
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
@@ -163,13 +161,11 @@ public:
     }
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(EnumPublicationInterpreter);
 };
 
 template <class T>
-joynr_logging::Logger* EnumPublicationInterpreter<std::vector<T>>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG",
-                                                         "EnumPublicationInterpreter<std::vector>");
+INIT_LOGGER(EnumPublicationInterpreter<std::vector<T>>);
 
 } // namespace joynr
 #endif // PUBLICATIONINTERPRETER_H

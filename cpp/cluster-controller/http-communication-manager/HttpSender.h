@@ -24,7 +24,7 @@
 
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BounceProxyUrl.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
@@ -69,7 +69,7 @@ private:
     IChannelUrlSelector* channelUrlCache;
     const std::chrono::milliseconds maxAttemptTtl;
     const std::chrono::milliseconds messageSendRetryInterval;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(HttpSender);
 
     /**
      * @brief @ref ThreadPool used to send messages once an URL is known
@@ -124,7 +124,7 @@ private:
         HttpSender* messageSender;
         std::chrono::milliseconds maxAttemptTtl;
 
-        static joynr_logging::Logger* logger;
+        ADD_LOGGER(SendMessageRunnable);
         static int messageRunnableCounter;
     };
 };

@@ -26,8 +26,7 @@
 
 using namespace joynr;
 
-joynr_logging::Logger* MyRadioProvider::logger =
-        joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioProvider");
+INIT_LOGGER(MyRadioProvider);
 
 MyRadioProvider::MyRadioProvider()
         : DefaultRadioProvider(),

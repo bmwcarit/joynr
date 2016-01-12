@@ -23,7 +23,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/IArbitrationListener.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
 
@@ -117,7 +117,7 @@ private:
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
     joynr::Semaphore listenerSemaphore;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ProviderArbitrator);
 };
 
 } // namespace joynr

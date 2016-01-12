@@ -31,8 +31,7 @@
 namespace joynr
 {
 
-joynr_logging::Logger* FixedParticipantArbitrator::logger =
-        joynr_logging::Logging::getInstance()->getLogger("Arb", "FixedParticipantArbitrator");
+INIT_LOGGER(FixedParticipantArbitrator);
 
 FixedParticipantArbitrator::FixedParticipantArbitrator(
         const std::string& domain,
@@ -55,13 +54,10 @@ void FixedParticipantArbitrator::attemptArbitration()
         updateArbitrationStatusParticipantIdAndAddress(
                 ArbitrationStatus::ArbitrationSuccessful, participantId, preferredConnection);
     } catch (exceptions::JoynrException& e) {
-        LOG_ERROR(logger,
-                  FormatString("Unable to lookup provider (domain: %1, interface: %2) "
-                               "from discovery. Error: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .arg(e.getMessage())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "Unable to lookup provider (domain: " << domain
+                                << ", interface: " << interfaceName
+                                << ") "
+                                   "from discovery. Error: " << e.getMessage();
     }
 }
 

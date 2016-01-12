@@ -23,7 +23,7 @@
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/Runnable.h"
 #include "joynr/ITimeoutListener.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/IReplyCaller.h"
 
 #include <string>
@@ -71,8 +71,8 @@ public:
 template <typename Key, typename T>
 class Directory : public IDirectory<Key, T>
 {
-
 public:
+    Directory() = default;
     ~Directory() override;
     explicit Directory(const std::string& directoryName);
     std::shared_ptr<T> lookup(const Key& keyId) override;
@@ -94,7 +94,7 @@ private:
     std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
     std::mutex mutex;
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(Directory);
 };
 
 template <typename Key, typename T>
@@ -109,23 +109,17 @@ private:
     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
     Key keyId;
     Directory<Key, T>* directory;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(RemoverRunnable);
 };
 
 template <typename Key, typename T>
-joynr_logging::Logger* RemoverRunnable<Key, T>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "RemoverRunnable");
-
-template <typename Key, typename T>
-joynr_logging::Logger* Directory<Key, T>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "Directory");
+INIT_LOGGER(SINGLE_MACRO_ARG(Directory<Key, T>));
 
 template <typename Key, typename T>
 Directory<Key, T>::~Directory()
 {
     callBackRemoverScheduler.shutdown();
-    LOG_TRACE(logger,
-              FormatString("destructor: number of entries = %1").arg(callbackMap.size()).str());
+    JOYNR_LOG_TRACE(logger) << "destructor: number of entries = " << callbackMap.size();
 }
 
 template <typename Key, typename T>
@@ -206,7 +200,7 @@ void RemoverRunnable<Key, T>::shutdown()
 template <typename Key, typename T>
 void RemoverRunnable<Key, T>::run()
 {
-    //    LOG_TRACE(logger, "Calling Directory<Key,T>" );
+    //    JOYNR_LOG_TRACE(logger) << "Calling Directory<Key,T>" );
 
     std::shared_ptr<T> val = directory->lookup(keyId);
     directory->remove(keyId);
@@ -232,7 +226,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
     std::string keyId;
     Directory<Key, IReplyCaller>* directory;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(RemoverRunnable);
 };
 
 template <typename Key>
@@ -251,15 +245,17 @@ void RemoverRunnable<Key, IReplyCaller>::run()
 }
 
 template <typename Key>
+INIT_LOGGER(SINGLE_MACRO_ARG(RemoverRunnable<Key, IReplyCaller>));
+
+template <typename Key, typename T>
+INIT_LOGGER(SINGLE_MACRO_ARG(RemoverRunnable<Key, T>));
+
+template <typename Key>
 RemoverRunnable<Key, IReplyCaller>::RemoverRunnable(const Key& keyId,
                                                     Directory<Key, IReplyCaller>* directory)
         : Runnable(true), keyId(keyId), directory(directory)
 {
 }
-
-template <typename Key>
-joynr_logging::Logger* RemoverRunnable<Key, IReplyCaller>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "Directory");
 
 } // namespace joynr
 

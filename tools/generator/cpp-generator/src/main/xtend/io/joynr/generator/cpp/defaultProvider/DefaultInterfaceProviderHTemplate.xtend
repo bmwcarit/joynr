@@ -64,7 +64,7 @@ class DefaultInterfaceProviderHTemplate implements InterfaceTemplate{
 
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 	#include «parameterType»
@@ -140,7 +140,7 @@ protected:
 	«ENDFOR»
 
 private:
-	static joynr::joynr_logging::Logger* logger;
+	ADD_LOGGER(Default«interfaceName»Provider);
 
 };
 

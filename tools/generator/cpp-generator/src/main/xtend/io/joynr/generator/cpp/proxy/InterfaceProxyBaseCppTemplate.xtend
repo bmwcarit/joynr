@@ -91,8 +91,8 @@ void «className»::handleArbitrationFinished(
 	void «className»::unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId)
 	{
 		if (connector==nullptr){
-			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
-					 because the communication end partner is not (yet) known");
+			JOYNR_LOG_WARN(logger) << "proxy cannot subscribe to «className».«attributeName», \
+					 because the communication end partner is not (yet) known";
 		}
 		else{
 			connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
@@ -104,8 +104,8 @@ void «className»::handleArbitrationFinished(
 				const joynr::SubscriptionQos& subscriptionQos,
 				std::string& subscriptionId) {
 		if (connector==nullptr){
-			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
-					 because the communication end partner is not (yet) known");
+			JOYNR_LOG_WARN(logger) << "proxy cannot subscribe to «className».«attributeName», \
+					 because the communication end partner is not (yet) known";
 			return "";
 		}
 		else{
@@ -120,8 +120,8 @@ void «className»::handleArbitrationFinished(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				const joynr::SubscriptionQos& subscriptionQos) {
 		if (connector==nullptr){
-			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
-					 because the communication end partner is not (yet) known");
+			JOYNR_LOG_WARN(logger) << "proxy cannot subscribe to «className».«attributeName», \
+					 because the communication end partner is not (yet) known";
 			return "";
 		}
 		else{
@@ -139,8 +139,8 @@ void «className»::handleArbitrationFinished(
 	void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId)
 	{
 		if (connector==nullptr){
-			LOG_WARN(logger, "proxy cannot unsubscribe from «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known");
+			JOYNR_LOG_WARN(logger) << "proxy cannot unsubscribe from «className».«broadcastName» broadcast, \
+					 because the communication end partner is not (yet) known";
 			return;
 		}
 		else{
@@ -159,8 +159,8 @@ void «className»::handleArbitrationFinished(
 					const joynr::OnChangeSubscriptionQos& subscriptionQos) {
 	«ENDIF»
 		if (connector==nullptr){
-			LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known");
+			JOYNR_LOG_WARN(logger) << "proxy cannot subscribe to «className».«broadcastName» broadcast, \
+					 because the communication end partner is not (yet) known";
 			return "";
 		}
 		else{
@@ -190,8 +190,8 @@ void «className»::handleArbitrationFinished(
 					std::string& subscriptionId) {
 	«ENDIF»
 		if (connector==nullptr){
-			LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known");
+			JOYNR_LOG_WARN(logger) << "proxy cannot subscribe to «className».«broadcastName» broadcast, \
+					 because the communication end partner is not (yet) known";
 			return "";
 		}
 		else{

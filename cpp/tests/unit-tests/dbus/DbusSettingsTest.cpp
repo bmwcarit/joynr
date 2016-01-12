@@ -28,7 +28,6 @@ using namespace joynr;
 class DbusSettingsTest : public testing::Test {
 public:
     DbusSettingsTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TST", "DbusSettingsTest")),
         testSettingsFileName("DbusSettingsTest-testSettings.settings")
     {
     }
@@ -38,7 +37,6 @@ public:
     }
 
 protected:
-    joynr_logging::Logger* logger;
     std::string testSettingsFileName;
 };
 

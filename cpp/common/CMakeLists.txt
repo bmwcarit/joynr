@@ -65,7 +65,6 @@ file(
     "in-process/*.h"
     "joynr-messaging/*.h"
     "cache/*.h"
-    "logging/*.h"
     "capabilities/*.h"
     "rpc/*.h"
     "exceptions/*.h"
@@ -91,14 +90,6 @@ file(
     "SettingsMerger.cpp"
     "concurrency/*.cpp"
 )
-
-
-list(
-    APPEND JoynrCommon_SOURCES
-    "logging/SpdlogLogging.cpp"
-    "logging/FormatString.cpp"
-)
-
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
@@ -141,12 +132,7 @@ set_target_properties(
 )
 
 # make spdlog system directory to avoid compiler warnings
-set_target_properties(
-    JoynrCommon
-    PROPERTIES
-    APPEND_STRING
-    PROPERTY COMPILE_FLAGS "${CMAKE_INCLUDE_SYSTEM_FLAG_CXX} ${spdlog_SOURCE_DIR}/include"
-)
+target_include_directories(JoynrCommon SYSTEM PUBLIC $<BUILD_INTERFACE:${spdlog_SOURCE_DIR}/include>)
 
 generate_export_header(
     JoynrCommon

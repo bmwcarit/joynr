@@ -22,7 +22,7 @@
 #include "joynr/vehicle/DefaultRadioProvider.h"
 #include "joynr/vehicle/RadioStation.h"
 #include "joynr/vehicle/Country.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/exceptions/JoynrException.h"
 #include <QList>
 #include <QMap>
@@ -82,7 +82,7 @@ private:
     QMap<joynr::vehicle::Country::Enum, joynr::vehicle::GeoPosition> countryGeoPositionMap;
     QMutex mutex; // Providers need to be threadsafe
 
-    static joynr::joynr_logging::Logger* logger;
+    ADD_LOGGER(MyRadioProvider);
 };
 
 #endif

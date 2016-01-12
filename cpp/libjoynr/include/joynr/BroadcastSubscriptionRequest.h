@@ -27,6 +27,7 @@
 #include <memory>
 
 #include "joynr/Variant.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -60,7 +61,7 @@ private:
 
     BroadcastFilterParameters filterParameters;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(BroadcastSubscriptionRequest);
 };
 
 } // namespace joynr

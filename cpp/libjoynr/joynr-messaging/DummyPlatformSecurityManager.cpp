@@ -23,12 +23,8 @@
 
 namespace joynr
 {
-joynr_logging::Logger* DummyPlatformSecurityManager::logger =
-        joynr_logging::Logging::getInstance()->getLogger("LIB", "DummyPlatformSecurityManager");
 
-DummyPlatformSecurityManager::DummyPlatformSecurityManager()
-{
-}
+INIT_LOGGER(DummyPlatformSecurityManager);
 
 std::string DummyPlatformSecurityManager::getCurrentProcessUserId()
 {

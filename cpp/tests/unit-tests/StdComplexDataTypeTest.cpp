@@ -19,7 +19,6 @@
 #include <gtest/gtest.h>
 
 #include "PrettyPrint.h"
-#include "joynr/joynrlogging.h"
 #include <string>
 
 #include "joynr/types/TestTypes/Word.h"
@@ -106,7 +105,6 @@ public:
     virtual ~StdComplexDataTypeTest() = default;
 
 protected:
-    static joynr::joynr_logging::Logger* logger;
 
     int8_t tInt8;
     uint8_t tUInt8;
@@ -134,11 +132,6 @@ protected:
     std::string tStringExtended;
     TestTypes::TEverythingExtendedStruct tEverythingExtended1;
 };
-
-joynr::joynr_logging::Logger* StdComplexDataTypeTest::logger(
-        joynr::joynr_logging::Logging::getInstance()->getLogger("TST", "StdComplexDataTypeTest")
-);
-
 
 TEST_F(StdComplexDataTypeTest, createComplexDataType) {
     EXPECT_EQ(tEverything1.getTBoolean(), tBoolean);

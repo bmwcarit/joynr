@@ -27,7 +27,7 @@
 #include "joynr/IDispatcher.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
 
@@ -80,16 +80,9 @@ public:
         try {
             discoveryProxy.add(entry);
         } catch (exceptions::JoynrException& e) {
-            LOG_ERROR(logger,
-                      FormatString(
-                              "Unable to add provider (participant ID: %1, domain: %2, interface: "
-                              "%3) "
-                              "to discovery. Error: %4.")
-                              .arg(participantId)
-                              .arg(domain)
-                              .arg(interfaceName)
-                              .arg(e.getMessage())
-                              .str());
+            JOYNR_LOG_ERROR(logger) << "Unable to add provider (participant ID: " << participantId
+                                    << ", domain: " << domain << ", interface: " << interfaceName
+                                    << ") to discovery. Error: " << e.getMessage();
         }
 
         // add next hop to dispatcher
@@ -125,15 +118,10 @@ public:
         try {
             discoveryProxy.remove(participantId);
         } catch (exceptions::JoynrException& e) {
-            LOG_ERROR(logger,
-                      FormatString("Unable to remove provider (participant ID: %1, domain: %2, "
-                                   "interface: %3) "
-                                   "to discovery. Status code: %4.")
-                              .arg(participantId)
-                              .arg(domain)
-                              .arg(interfaceName)
-                              .arg(e.getMessage())
-                              .str());
+            JOYNR_LOG_ERROR(logger)
+                    << "Unable to remove provider (participant ID: " << participantId
+                    << ", domain: " << domain << ", interface: " << interfaceName
+                    << "to discovery. Status code: " << e.getMessage();
         }
 
         std::shared_ptr<joynr::Future<void>> future(new Future<void>());
@@ -142,11 +130,9 @@ public:
         future->wait();
 
         if (!future->getStatus().successful()) {
-            LOG_ERROR(logger,
-                      FormatString(
-                              "Unable to remove next hop (participant ID: %1) from message router.")
-                              .arg(participantId)
-                              .str());
+            JOYNR_LOG_ERROR(logger)
+                    << "Unable to remove next hop (participant ID: " << participantId
+                    << ") from message router.";
         }
 
         return participantId;
@@ -163,7 +149,7 @@ private:
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(CapabilitiesRegistrar);
 };
 
 } // namespace joynr

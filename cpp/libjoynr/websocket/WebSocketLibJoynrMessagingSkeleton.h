@@ -20,7 +20,7 @@
 #define WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/IMessaging.h"
 #include "joynr/MessageRouter.h"
@@ -45,7 +45,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketLibJoynrMessagingSkeleton);
     MessageRouter& messageRouter;
 };
 

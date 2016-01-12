@@ -50,7 +50,7 @@ public:
     std::string toString() const;
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(BroadcastSubscriptionRequestInformation);
 };
 
 } // namespace joynr

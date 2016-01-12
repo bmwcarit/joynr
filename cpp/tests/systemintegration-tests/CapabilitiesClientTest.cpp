@@ -42,14 +42,13 @@ static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystem
 
 class CapabilitiesClientTest : public Test {
 public:
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(CapabilitiesClientTest);
     JoynrClusterControllerRuntime* runtime;
     Settings settings;
     MessagingSettings messagingSettings;
     std::string channelId;
 
     CapabilitiesClientTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "CapabilitiesClientTest")),
         runtime(nullptr),
         settings(settingsFilename),
         messagingSettings(settings)
@@ -82,6 +81,8 @@ private:
 
 };
 
+INIT_LOGGER(CapabilitiesClientTest);
+
 TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
@@ -107,9 +108,9 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::string capParticipantId("testParticipantId");
 
     capabilitiesInformationList.push_back(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
-    LOG_DEBUG(logger,"Registering capabilities");
+    JOYNR_LOG_DEBUG(logger) << "Registering capabilities";
     capabilitiesClient->add(capabilitiesInformationList);
-    LOG_DEBUG(logger,"Registered capabilities");
+    JOYNR_LOG_DEBUG(logger) << "Registered capabilities";
     //sync methods are not yet implemented
 //    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
@@ -128,11 +129,10 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
                 callback->capabilitiesReceived(capabilities);
             };
 
-    LOG_DEBUG(logger,"get capabilities");
+    JOYNR_LOG_DEBUG(logger) << "get capabilities";
     capabilitiesClient->lookup(capDomain, capInterface, onSuccess);
     semaphore.waitFor(std::chrono::seconds(10));
-    LOG_DEBUG(logger,"finished get capabilities");
-
+    JOYNR_LOG_DEBUG(logger) << "finished get capabilities";
     delete capabilitiesProxyBuilder;
 }
 

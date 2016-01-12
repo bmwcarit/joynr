@@ -23,6 +23,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/IJoynrMessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
+#include "joynr/Logger.h"
 #include <string>
 #include <memory>
 
@@ -112,7 +113,7 @@ private:
     IDispatcher* dispatcher;
     std::shared_ptr<MessageRouter> messageRouter;
     JoynrMessageFactory messageFactory;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(JoynrMessageSender);
 };
 
 } // namespace joynr

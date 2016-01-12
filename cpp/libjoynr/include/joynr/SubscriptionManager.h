@@ -22,7 +22,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionManager.h"
@@ -110,7 +110,7 @@ private:
     ThreadSafeMap<std::string, std::shared_ptr<Subscription>> subscriptions;
 
     DelayedScheduler* missedPublicationScheduler;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(SubscriptionManager);
     /**
       * @class SubscriptionManager::MissedPublicationRunnable
       * @brief
@@ -142,7 +142,7 @@ private:
         const std::string subscriptionId;
         int64_t alertAfterInterval;
         SubscriptionManager& subscriptionManager;
-        static joynr_logging::Logger* logger;
+        ADD_LOGGER(MissedPublicationRunnable);
     };
     /**
       * @class SubscriptionManager::SubscriptionEndRunnable
@@ -165,7 +165,7 @@ private:
         DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);
         std::string subscriptionId;
         SubscriptionManager& subscriptionManager;
-        static joynr_logging::Logger* logger;
+        ADD_LOGGER(SubscriptionEndRunnable);
     };
 };
 

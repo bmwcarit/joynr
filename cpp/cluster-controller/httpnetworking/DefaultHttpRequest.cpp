@@ -24,8 +24,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* DefaultHttpRequest::logger = Logging::getInstance()->getLogger("MSG", "DefaultHttpRequest");
+INIT_LOGGER(DefaultHttpRequest);
 
 size_t DefaultHttpRequest::writeToQByteArray(void* buffer, size_t size, size_t nmemb, void* userp)
 {

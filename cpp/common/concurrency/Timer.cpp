@@ -22,33 +22,32 @@
 #include <chrono>
 #include <cassert>
 
-#include "joynr/joynrlogging.h"
+namespace joynr
+{
 
-using namespace joynr::joynr_logging;
-Logger* joynr::Timer::logger = Logging::getInstance()->getLogger("MSG", "Timer");
+INIT_LOGGER(Timer);
 
-joynr::Timer::Timer()
+Timer::Timer()
         : currentId(0),
           timers(),
           waitCondition(),
           mutex(),
           keepRunning(true),
-          workerThread(&joynr::Timer::runTimer, this)
+          workerThread(&Timer::runTimer, this)
 {
 }
 
-joynr::Timer::~Timer()
+Timer::~Timer()
 {
-    LOG_TRACE(logger, "Dtor called");
+    JOYNR_LOG_TRACE(logger) << "Dtor called";
     assert(!keepRunning);
     assert(!workerThread.joinable());
 }
 
-joynr::Timer::TimerId joynr::Timer::addTimer(
-        std::function<void(joynr::Timer::TimerId)> onTimerExpired,
-        std::function<void(joynr::Timer::TimerId)> onActiveTimerRemoved,
-        uint64_t msToBeExpired,
-        bool periodic)
+Timer::TimerId Timer::addTimer(std::function<void(Timer::TimerId)> onTimerExpired,
+                               std::function<void(Timer::TimerId)> onActiveTimerRemoved,
+                               uint64_t msToBeExpired,
+                               bool periodic)
 {
     const milliseconds interval(msToBeExpired);
     TimerData* newTimer = nullptr;
@@ -67,14 +66,13 @@ joynr::Timer::TimerId joynr::Timer::addTimer(
 
     // If the new timer the next timer in the list we need to reorganize
     if (timers.begin()->second == newTimer) {
-        LOG_TRACE(logger,
-                  FormatString("New timer %0 has the earliest deadline").arg(currentId).str());
+        JOYNR_LOG_TRACE(logger) << "New timer " << currentId << " has the earliest deadline";
         waitCondition.notify_one();
     }
     return currentId;
 }
 
-bool joynr::Timer::removeTimer(TimerId id)
+bool Timer::removeTimer(TimerId id)
 {
     bool reorganize = false;
     // Call Dtor and remove from map
@@ -88,7 +86,7 @@ bool joynr::Timer::removeTimer(TimerId id)
             ++it;
         }
         if (it == timers.end()) {
-            LOG_TRACE(logger, FormatString("Timer %1 not found. Unable to remove.").arg(id).str());
+            JOYNR_LOG_TRACE(logger) << "Timer " << id << " not found. Unable to remove.";
             return false;
         }
         reorganize = (it == timers.begin());
@@ -103,16 +101,16 @@ bool joynr::Timer::removeTimer(TimerId id)
 
     // Only reorganize if timer is the current timer
     if (reorganize) {
-        LOG_TRACE(logger, FormatString("Reorganize after %1 was removed.").arg(id).str());
+        JOYNR_LOG_TRACE(logger) << "Reorganize after " << id << "  was removed.";
         waitCondition.notify_one();
     }
-    LOG_TRACE(logger, FormatString("Timer %1 removed.").arg(id).str());
+    JOYNR_LOG_TRACE(logger) << "Timer " << id << "  removed.";
     return true;
 }
 
-void joynr::Timer::shutdown()
+void Timer::shutdown()
 {
-    LOG_TRACE(logger, "shutdown() called");
+    JOYNR_LOG_TRACE(logger) << "shutdown() called";
 
     // shutdown thread to go for shure no other event fires
     keepRunning = false;
@@ -130,14 +128,14 @@ void joynr::Timer::shutdown()
     timers.clear();
 }
 
-void joynr::Timer::runTimer()
+void Timer::runTimer()
 {
     while (keepRunning) {
         {
             // Wait for initial work / timer
             std::unique_lock<std::mutex> lock(mutex);
             if (timers.empty()) {
-                LOG_TRACE(logger, "List of timers is empty. Waiting.");
+                JOYNR_LOG_TRACE(logger) << "List of timers is empty. Waiting.";
                 waitCondition.wait(lock, [this] { return !timers.empty() || !keepRunning; });
             }
         }
@@ -170,9 +168,11 @@ void joynr::Timer::runTimer()
                 timers.erase(tp);
             } else {
                 // Either a new timer with earlier deadline was added or a shutdown was triggered
-                LOG_TRACE(logger, "Timer conditional wait was interrupted");
+                JOYNR_LOG_TRACE(logger) << "Timer conditional wait was interrupted";
             }
         }
     }
-    LOG_DEBUG(logger, "Leaving timer loop");
+    JOYNR_LOG_DEBUG(logger) << "Leaving timer loop";
 }
+
+} // namespace joynr

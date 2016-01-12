@@ -21,7 +21,7 @@
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/Settings.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <string>
 
@@ -63,7 +63,7 @@ private:
     void operator=(const SystemServicesSettings& other);
 
     Settings& settings;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(SystemServicesSettings);
     void checkSettings() const;
 };
 

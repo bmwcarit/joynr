@@ -24,8 +24,7 @@
 
 using namespace joynr;
 
-joynr_logging::Logger* MyRadioHelper::logger =
-        joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioHelper");
+Logger MyRadioHelper::logger("MyRadioHelper");
 
 MyRadioHelper::MyRadioHelper()
 {
@@ -54,17 +53,17 @@ const std::string& MyRadioHelper::MISSING_NAME()
 
 void MyRadioHelper::pressQToContinue()
 {
-    LOG_INFO(logger, "*****************************************************");
-    LOG_INFO(logger, "Please press \"q\" to quit the application\n");
-    LOG_INFO(logger, "*****************************************************");
+    JOYNR_LOG_INFO(logger) << "*****************************************************";
+    JOYNR_LOG_INFO(logger) << "Please press \"q\" to quit the application\n";
+    JOYNR_LOG_INFO(logger) << "*****************************************************";
 
     while (getch() != 'q')
         ;
 }
 
-void MyRadioHelper::prettyLog(joynr_logging::Logger* logger, const QString& message)
+void MyRadioHelper::prettyLog(const Logger& logger, const QString& message)
 {
-    LOG_INFO(logger, "--------------------------------------------------");
-    LOG_INFO(logger, message.toStdString());
-    LOG_INFO(logger, "--------------------------------------------------");
+    JOYNR_LOG_INFO(logger) << "--------------------------------------------------";
+    JOYNR_LOG_INFO(logger) << message.toStdString();
+    JOYNR_LOG_INFO(logger) << "--------------------------------------------------";
 }

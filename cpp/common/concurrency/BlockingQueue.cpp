@@ -21,13 +21,10 @@
 
 #include <cassert>
 
-#include "joynr/joynrlogging.h"
-
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* BlockingQueue::logger = Logging::getInstance()->getLogger("MSG", "BlockingQueue");
+INIT_LOGGER(BlockingQueue);
 
 BlockingQueue::BlockingQueue() : stoppingScheduler(false), queue(), condition(), conditionMutex()
 {
@@ -52,22 +49,22 @@ void BlockingQueue::add(Runnable* work)
 Runnable* BlockingQueue::take()
 {
     if (stoppingScheduler) {
-        LOG_TRACE(logger, "Shuting down and returning NULL");
+        JOYNR_LOG_TRACE(logger) << "Shuting down and returning NULL";
         return nullptr;
     }
 
     std::unique_lock<std::mutex> lock(
             conditionMutex); // std::condition_variable works only with unique_lock
 
-    LOG_TRACE(logger, FormatString("Wait for condition (queuelen=%0)").arg(queue.size()).str());
+    JOYNR_LOG_TRACE(logger) << "Wait for condition (queuelen=" << queue.size() << ")";
     // Wait for work or shutdown
     condition.wait(lock, [this] { return (stoppingScheduler || !queue.empty()); });
     if (stoppingScheduler) {
-        LOG_TRACE(logger, "Shuting down and returning NULL");
+        JOYNR_LOG_TRACE(logger) << "Shuting down and returning NULL";
         return nullptr;
     }
 
-    LOG_TRACE(logger, "Condition released");
+    JOYNR_LOG_TRACE(logger) << "Condition released";
 
     // Get the item
     Runnable* item = queue.back();
@@ -83,7 +80,7 @@ int BlockingQueue::getQueueLength() const
 
 void BlockingQueue::shutdown()
 {
-    LOG_TRACE(logger, "Shutdown called");
+    JOYNR_LOG_TRACE(logger) << "Shutdown called";
     {
         std::lock_guard<std::mutex> lock(conditionMutex);
         stoppingScheduler = true;
@@ -98,7 +95,7 @@ void BlockingQueue::shutdown()
     }
 
     // unblock waiting threads
-    LOG_TRACE(logger, "Shutdown, notifying all.");
+    JOYNR_LOG_TRACE(logger) << "Shutdown, notifying all.";
     condition.notify_all();
 }
 

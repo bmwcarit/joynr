@@ -31,10 +31,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* QosArbitrator::logger =
-        joynr_logging::Logging::getInstance()->getLogger("Arbi", "QosArbitrator");
+INIT_LOGGER(QosArbitrator);
 
 QosArbitrator::QosArbitrator(const std::string& domain,
                              const std::string& interfaceName,
@@ -51,13 +48,10 @@ void QosArbitrator::attemptArbitration()
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
         receiveCapabilitiesLookupResults(result);
     } catch (exceptions::JoynrException& e) {
-        LOG_ERROR(logger,
-                  FormatString("Unable to lookup provider (domain: %1, interface: %2) "
-                               "from discovery. Error: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .arg(e.getMessage())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "Unable to lookup provider (domain: " << domain
+                                << ", interface: " << interfaceName
+                                << ") "
+                                   "from discovery. Error: " << e.getMessage();
     }
 }
 
@@ -76,26 +70,23 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
     int64_t highestPriority = -1;
     for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
-        LOG_TRACE(logger,
-                  FormatString("Looping over capabilitiesEntry: %1")
-                          .arg(discoveryEntry.toString())
-                          .str());
+        JOYNR_LOG_TRACE(logger) << "Looping over capabilitiesEntry: " << discoveryEntry.toString();
         if (discoveryQos.getProviderMustSupportOnChange() &&
             !providerQos.getSupportsOnChangeSubscriptions()) {
             continue;
         }
         if (providerQos.getPriority() > highestPriority) {
             res = discoveryEntry.getParticipantId();
-            LOG_TRACE(logger, FormatString("setting res to %1").arg(res).str());
+            JOYNR_LOG_TRACE(logger) << "setting res to " << res;
             preferredConnection =
                     selectPreferredCommunicationMiddleware(discoveryEntry.getConnections());
             highestPriority = providerQos.getPriority();
         }
     }
     if (res == "") {
-        LOG_WARN(logger,
-                 "There was more than one entries in capabilitiesEntries, but none had a "
-                 "Priority > -1");
+        JOYNR_LOG_WARN(logger)
+                << "There was more than one entries in capabilitiesEntries, but none had a "
+                   "Priority > -1";
         return;
     }
 

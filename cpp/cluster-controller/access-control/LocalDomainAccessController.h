@@ -31,6 +31,7 @@
 #include "joynr/ISubscriptionListener.h"
 #include "AccessControlAlgorithm.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
 #include <string>
 #include <memory>
@@ -42,11 +43,6 @@
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-} // namespace joynr_logging
-
 namespace infrastructure
 {
 class GlobalDomainAccessControllerProxy;
@@ -457,7 +453,7 @@ private:
             globalDomainAccessControllerProxy;
     LocalDomainAccessStore* localDomainAccessStore;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(LocalDomainAccessController);
     static std::chrono::milliseconds broadcastMinInterval;
     static std::chrono::milliseconds broadcastSubscriptionValidity;
     static std::chrono::milliseconds broadcastPublicationTtl;

@@ -17,7 +17,6 @@
  * #L%
  */
 #include "gtest/gtest.h"
-#include "joynr/joynrlogging.h"
 
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "utils/MockObjects.h"
@@ -28,14 +27,8 @@
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr_logging;
 
 using ::testing::StrictMock;
-
-namespace ThreadPoolDelayedSchedulerTest
-{
-Logger* logger = Logging::getInstance()->getLogger("MSG", "ThreadPoolDelayedSchedulerTest");
-}
 
 // Expected accuracy of the timer in milliseconds
 

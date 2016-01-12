@@ -19,7 +19,7 @@
 #ifndef MY_RADIO_HELPER_H
 #define MY_RADIO_HELPER_H
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include <QString>
 
 /**
@@ -41,10 +41,10 @@ public:
     /**
      * Output a prominent log message at level INFO
      */
-    static void prettyLog(joynr::joynr_logging::Logger* logger, const QString& message);
+    static void prettyLog(const joynr::Logger& logger, const QString& message);
 
 private:
-    static joynr::joynr_logging::Logger* logger;
+    static joynr::Logger logger;
 };
 
 #endif

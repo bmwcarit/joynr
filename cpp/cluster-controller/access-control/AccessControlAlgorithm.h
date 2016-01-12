@@ -27,11 +27,6 @@
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-} // namespace joynr_logging
-
 namespace infrastructure
 {
 
@@ -48,8 +43,6 @@ class OwnerAccessControlEntry;
 class JOYNRCLUSTERCONTROLLER_EXPORT AccessControlAlgorithm
 {
 public:
-    static joynr_logging::Logger* logger;
-
     AccessControlAlgorithm() = default;
     virtual ~AccessControlAlgorithm() = default;
 

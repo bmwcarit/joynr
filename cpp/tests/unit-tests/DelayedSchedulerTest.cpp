@@ -20,7 +20,7 @@
 #define BOOST_BIND_NO_PLACEHOLDERS
 
 #include "gtest/gtest.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/DelayedScheduler.h"
 
@@ -31,18 +31,11 @@
 #include <cassert>
 
 using namespace joynr;
-using namespace joynr_logging;
 
 using namespace ::testing;
 using ::testing::StrictMock;
 
 using namespace std::placeholders;
-
-namespace DelayedSchedulerTest
-{
-Logger* logger = Logging::getInstance()->getLogger("MSG",
-    "DelayedSchedulerTest");
-}
 
 // Expected accuracy of the timer in milliseconds
 static const uint64_t timerAccuracy_ms = 5U;
@@ -82,10 +75,10 @@ public:
             const uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
             const uint64_t diff_ms = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
 
-            LOG_TRACE(DelayedSchedulerTest::logger, FormatString("Runnable is available").str());
-            LOG_TRACE(DelayedSchedulerTest::logger, FormatString(" ETA        : %1").arg(est_ms).str());
-            LOG_TRACE(DelayedSchedulerTest::logger, FormatString(" current    : %1").arg(now_ms).str());
-            LOG_TRACE(DelayedSchedulerTest::logger, FormatString(" difference : %1").arg(diff_ms).str());
+            JOYNR_LOG_TRACE(logger) << "Runnable is available";
+            JOYNR_LOG_TRACE(logger) << " ETA        : " << est_ms;
+            JOYNR_LOG_TRACE(logger) << " current    : " << now_ms;
+            JOYNR_LOG_TRACE(logger) << " difference : " << diff_ms;
 
             if (diff_ms <= timerAccuracy_ms)
             {
@@ -94,7 +87,7 @@ public:
         }
         else
         {
-            LOG_TRACE(DelayedSchedulerTest::logger, "No delay given but work available called.");
+            JOYNR_LOG_TRACE(logger) << "No delay given but work available called.";
         }
     }
 

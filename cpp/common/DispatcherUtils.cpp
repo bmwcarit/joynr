@@ -25,12 +25,10 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
 using namespace std::chrono;
 
-Logger* DispatcherUtils::logger = Logging::getInstance()->getLogger("MSG", "DispatcherUtils");
-
 // Dispatcher Utils
+INIT_LOGGER(DispatcherUtils);
 
 JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(int64_t ttl_ms)
 {

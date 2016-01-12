@@ -24,7 +24,7 @@
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/TrackableObject.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Util.h"
 
 namespace joynr
@@ -46,8 +46,8 @@ public:
 
     ~SubscriptionCallback() override
     {
-        LOG_TRACE(logger, "destructor: entering...");
-        LOG_TRACE(logger, "destructor: leaving...");
+        JOYNR_LOG_TRACE(logger) << "destructor: entering...";
+        JOYNR_LOG_TRACE(logger) << "destructor: leaving...";
     }
 
     void onError(const exceptions::JoynrRuntimeException& error) override
@@ -75,12 +75,11 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(SubscriptionCallback);
 };
 
 template <typename T, typename... Ts>
-joynr_logging::Logger* SubscriptionCallback<T, Ts...>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "SubscriptionCallback");
+INIT_LOGGER(SINGLE_MACRO_ARG(SubscriptionCallback<T, Ts...>));
 
 } // namespace joynr
 #endif // SUBSCRIPTIONCALLBACK_H

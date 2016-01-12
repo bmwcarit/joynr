@@ -25,9 +25,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* DbusSettings::logger = Logging::getInstance()->getLogger("MSG", "DbusSettings");
+INIT_LOGGER(DbusSettings);
 
 DbusSettings::DbusSettings(Settings& settings) : settings(settings)
 {
@@ -118,21 +116,12 @@ std::string DbusSettings::createClusterControllerMessagingAddressString() const
 
 void DbusSettings::printSettings() const
 {
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CC_MESSAGING_DOMAIN())
-                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_DOMAIN()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CC_MESSAGING_SERVICENAME())
-                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_SERVICENAME()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CC_MESSAGING_PARTICIPANTID())
-                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_PARTICIPANTID()))
-                      .str());
+    JOYNR_LOG_DEBUG(logger, "SETTING: {} = {}", SETTING_CC_MESSAGING_DOMAIN(),
+                            settings.get<std::string>(SETTING_CC_MESSAGING_DOMAIN()));
+    JOYNR_LOG_DEBUG(logger, "SETTING: {} = {}", SETTING_CC_MESSAGING_SERVICENAME(),
+                            settings.get<std::string>(SETTING_CC_MESSAGING_SERVICENAME()));                
+    JOYNR_LOG_DEBUG(logger, "SETTING: {} = {}", SETTING_CC_MESSAGING_PARTICIPANTID(),
+                            settings.get<std::string>(SETTING_CC_MESSAGING_PARTICIPANTID()));
 }
 
 } // namespace joynr

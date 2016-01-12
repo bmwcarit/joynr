@@ -23,6 +23,7 @@
 
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
+#include "joynr/Logger.h"
 #include <string>
 namespace joynr
 {
@@ -73,7 +74,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(KeywordArbitrator);
     std::string keyword;
     static int ARBITRATION_RETRY_INTERVAL;
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(KeywordArbitrator);
 };
 
 } // namespace joynr

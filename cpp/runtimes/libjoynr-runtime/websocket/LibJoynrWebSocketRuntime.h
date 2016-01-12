@@ -21,7 +21,7 @@
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
 #include "libjoynr/websocket/WebSocketClient.h"
@@ -49,7 +49,7 @@ private:
     void onWebSocketError(const std::string& errorMessage);
 
     std::shared_ptr<WebSocketClient> websocket;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(LibJoynrWebSocketRuntime);
 };
 
 } // namespace joynr

@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <QByteArray>
 #include <string>
@@ -69,7 +69,7 @@ private:
     QByteArray content;
     bool built;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(HttpRequestBuilder);
 };
 
 } // namespace joynr

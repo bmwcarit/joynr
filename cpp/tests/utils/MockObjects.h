@@ -93,6 +93,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
 #include "joynr/Settings.h"
+#include "joynr/Logger.h"
 
 #include "libjoynr/websocket/WebSocketClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
@@ -185,6 +186,7 @@ public:
 
 private:
     const uint64_t est_ms;
+    static joynr::Logger logger;
 };
 
 #include <mutex>

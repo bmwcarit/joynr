@@ -19,7 +19,6 @@
 #ifndef ICHANNELDIRECTORYURLCACHE_H_
 #define ICHANNELDIRECTORYURLCACHE_H_
 
-#include "joynr/joynrlogging.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/RequestStatus.h"
 #include <memory>

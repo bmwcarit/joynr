@@ -23,6 +23,7 @@
 #include "GeocastBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/QtTypeUtil.h"
+#include "joynr/Logger.h"
 
 #include <QString>
 #include <QSettings>
@@ -31,27 +32,23 @@
 #include <string>
 
 using namespace joynr;
-using joynr_logging::Logger;
-using joynr_logging::Logging;
 
 int main(int argc, char* argv[])
 {
 
     // Get a logger
-    Logger* logger = Logging::getInstance()->getLogger("DEMO", "MyRadioProviderApplication");
+    Logger logger("MyRadioProviderApplication");
 
     // Check the usage
     QString programName(argv[0]);
     if (argc != 2) {
-        LOG_ERROR(logger,
-                  FormatString("USAGE: %1 <provider-domain>").arg(programName.toStdString()).str());
+        JOYNR_LOG_ERROR(logger) << "USAGE: " << programName.toStdString() << " <provider-domain>";
         return 1;
     }
 
     // Get the provider domain
     std::string providerDomain(argv[1]);
-    LOG_INFO(logger,
-             FormatString("Registering provider on domain \"%1\"").arg(providerDomain).str());
+    JOYNR_LOG_INFO(logger) << "Registering provider on domain " << providerDomain;
 
     // Get the current program directory
     QString dir(QFileInfo(programName).absolutePath());
@@ -76,7 +73,7 @@ int main(int argc, char* argv[])
     runtime->registerProvider<vehicle::RadioProvider>(providerDomain, provider);
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
-            [logger](const joynr::exceptions::ProviderRuntimeException& exception) {
+            [&](const joynr::exceptions::ProviderRuntimeException& exception) {
         MyRadioHelper::prettyLog(
                 logger, QString("Exception: %1").arg(QtTypeUtil::toQt(exception.getMessage())));
     };
@@ -109,6 +106,5 @@ int main(int argc, char* argv[])
     runtime->unregisterProvider<vehicle::RadioProvider>(providerDomain, provider);
 
     delete runtime;
-    delete logger;
     return 0;
 }

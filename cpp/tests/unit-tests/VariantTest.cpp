@@ -19,7 +19,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "joynr/Variant.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/TypeUtil.h"
 //#include "tests/utils/MockObjects.h"
 
@@ -37,12 +37,12 @@ using namespace joynr;
 class VariantTest : public ::testing::Test {
 public:
 
-    VariantTest():logger(joynr_logging::Logging::getInstance()->getLogger("TST", "VariantTest")){}
+    VariantTest() = default;
 
     void SetUp() {}
 
 protected:
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(VariantTest);
 };
 
 /*
@@ -53,6 +53,8 @@ struct ExampleCustomType
     ExampleCustomType(int content):expectedInt(content){}
     int expectedInt;
 };
+
+INIT_LOGGER(VariantTest);
 
 static bool isExampleCustomTypeRegistered = Variant::registerType<ExampleCustomType>("ExampleCustomType");
 
@@ -97,14 +99,14 @@ TEST_F(VariantTest, checkCollectionOfVariants) {
     // Use the collection of Variants
     for (auto& v : variants) {
         if (v.is<std::string>()) {
-            LOG_DEBUG(logger, FormatString("Variant is std::string, value: %1").arg(v.get<std::string>()).str());
+            JOYNR_LOG_DEBUG(logger) << "Variant is std::string, value: " << v.get<std::string>();
         } else if (v.is<ExampleCustomType>()) {
-            LOG_DEBUG(logger, FormatString("Variant is ExampleCustomType, value: %1").arg(v.get<ExampleCustomType>().expectedInt).str());
+            JOYNR_LOG_DEBUG(logger) << "Variant is ExampleCustomType, value: " << v.get<ExampleCustomType>().expectedInt;
         } else if (v.is<std::vector<Variant>>()) {
-            LOG_DEBUG(logger, FormatString("Variant is a collection of variants").str());
+            JOYNR_LOG_DEBUG(logger) << "Variant is a collection of variants";
             auto& vec = v.get<std::vector<Variant>>();
             for (auto& i : vec) {
-                LOG_DEBUG(logger, FormatString("expectedInt: %1").arg(i.get<ExampleCustomType>().expectedInt).str());
+                JOYNR_LOG_DEBUG(logger) << "expectedInt: " << i.get<ExampleCustomType>().expectedInt;
                 // to silence unused-variable compiler warnings
                 (void)i;
             }

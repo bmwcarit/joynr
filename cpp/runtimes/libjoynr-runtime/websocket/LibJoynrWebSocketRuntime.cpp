@@ -29,8 +29,7 @@
 namespace joynr
 {
 
-joynr_logging::Logger* LibJoynrWebSocketRuntime::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "LibJoynrWebSocketRuntime");
+INIT_LOGGER(LibJoynrWebSocketRuntime);
 
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
@@ -55,12 +54,10 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     websocket->connect(*ccMessagingAddress);
 
     // send intialization message containing libjoynr messaging address
-    std::string initializationMsg(JsonSerializer::serialize(*libjoynrMessagingAddress).data());
-    LOG_TRACE(logger,
-              FormatString("OUTGOING sending websocket intialization message\nmessage: %1\nto: %2")
-                      .arg(initializationMsg)
-                      .arg(libjoynrMessagingAddress->toString())
-                      .str());
+    std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
+    JOYNR_LOG_TRACE(logger) << "OUTGOING sending websocket intialization message\nmessage: "
+                            << initializationMsg
+                            << "\nto: " << libjoynrMessagingAddress->toString();
     websocket->send(initializationMsg);
 
     WebSocketMessagingStubFactory* factory = new WebSocketMessagingStubFactory();
@@ -86,7 +83,7 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(MessageRouter& mes
 
 void LibJoynrWebSocketRuntime::onWebSocketError(const std::string& errorMessage)
 {
-    LOG_ERROR(logger, FormatString("WebSocket error occurred: %1").arg(errorMessage).str());
+    JOYNR_LOG_ERROR(logger) << "WebSocket error occurred: " << errorMessage;
 }
 
 } // namespace joynr

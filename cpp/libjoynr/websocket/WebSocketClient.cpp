@@ -18,7 +18,6 @@
  */
 #include "IWebSocketEventHandler.h"
 #include "websocket/WebSocketClient.h"
-#include "joynr/joynrlogging.h"
 #include "joynr/exceptions/JoynrException.h"
 
 #include <thread>
@@ -31,8 +30,7 @@ namespace joynr
 
 using namespace system::RoutingTypes;
 
-joynr_logging::Logger* WebSocketClient::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketClient");
+INIT_LOGGER(WebSocketClient);
 
 WebSocketClient::WebSocketClient(std::function<void(const std::string& error)> onErrorOccurred,
                                  std::function<void(WebSocket* webSocket)> onWebSocketConnected)
@@ -56,13 +54,13 @@ void WebSocketClient::connect(const WebSocketAddress& address)
 {
     WebSocketContext::WebSocketSsl ssl = WebSocketContext::WebSocketSsl_NoSsl;
 
-    LOG_TRACE(logger, "Called connect");
+    JOYNR_LOG_TRACE(logger) << "Called connect";
 
     if (address.getProtocol() == WebSocketProtocol::WSS) {
         assert(!sslCertPath.empty());
         assert(!sslKeyPath.empty());
         ssl = WebSocketContext::WebSocketSsl_SelfSigned;
-        LOG_DEBUG(logger, "Configured for use SSL");
+        JOYNR_LOG_DEBUG(logger) << "Configured for use SSL";
     }
 
     context = std::unique_ptr<WebSocketContext>(
@@ -74,7 +72,7 @@ void WebSocketClient::connect(const WebSocketAddress& address)
     state = WebSocketState_Connecting;
     assert(handle >= 0);
 
-    LOG_TRACE(logger, "Called finished");
+    JOYNR_LOG_TRACE(logger) << "Called finished";
 
     this->address = address;
 }
@@ -83,7 +81,7 @@ void WebSocketClient::send(const std::string& message)
 {
     messageQueue.push(message);
     if (context == nullptr || handle < 0) {
-        LOG_WARN(logger, "Not yet connected, message was queued");
+        JOYNR_LOG_WARN(logger) << "Not yet connected, message was queued";
     } else {
         context->onOutgoingDataAvailable(handle);
     }
@@ -92,7 +90,7 @@ void WebSocketClient::send(const std::string& message)
 void WebSocketClient::terminate()
 {
     state = WebSocketState_Terminating;
-    LOG_DEBUG(logger, "Signaling to stop WebSocketContext");
+    JOYNR_LOG_DEBUG(logger) << "Signaling to stop WebSocketContext";
     if (context.get() != nullptr) {
         context->stop();
     }
@@ -115,12 +113,10 @@ void WebSocketClient::onConnectionClosed()
 void WebSocketClient::onConnectionEstablished()
 {
     state = WebSocketState_Connected;
-    LOG_DEBUG(logger, "Connection got established");
+    JOYNR_LOG_DEBUG(logger) << "Connection got established";
     if (!messageQueue.empty()) {
-        LOG_DEBUG(logger,
-                  FormatString("Will try to send messages already queued (queue: %1)")
-                          .arg(messageQueue.size())
-                          .str());
+        JOYNR_LOG_DEBUG(logger) << "Will try to send messages already queued (queue: )"
+                                << messageQueue.size();
         context->onOutgoingDataAvailable(handle);
     }
     onWebSocketConnected(this);
@@ -128,7 +124,7 @@ void WebSocketClient::onConnectionEstablished()
 
 void WebSocketClient::onErrorOccured(WebSocketError err)
 {
-    LOG_ERROR(logger, FormatString("onErrorOccured with value %1").arg(err).str());
+    JOYNR_LOG_ERROR(logger) << "onErrorOccured with value " << err;
 }
 
 void WebSocketClient::onWebSocketWriteable(WebSocketContext::WebSocketConnectionHandle handle,
@@ -139,19 +135,17 @@ void WebSocketClient::onWebSocketWriteable(WebSocketContext::WebSocketConnection
     std::string& message = messageQueue.front();
 
     if (!message.empty()) {
-        LOG_TRACE(logger, "Sending message from queue");
+        JOYNR_LOG_TRACE(logger) << "Sending message from queue";
         int32_t bytesSent = write(message);
         if (bytesSent < 0) {
-            LOG_ERROR(logger, "Writing to socket returned with an error");
+            JOYNR_LOG_ERROR(logger) << "Writing to socket returned with an error";
         }
         if (static_cast<uint32_t>(bytesSent) != message.length()) {
-            LOG_WARN(logger, "Was not able to send exact message, will retry...");
+            JOYNR_LOG_WARN(logger) << "Was not able to send exact message, will retry...";
         } else {
             messageQueue.pop();
-            LOG_TRACE(logger,
-                      FormatString("Message sent successfully. %1 messages in queue")
-                              .arg(messageQueue.size())
-                              .str());
+            JOYNR_LOG_TRACE(logger) << "Message sent successfully. " << messageQueue.size()
+                                    << " messages in queue";
         }
     }
 
@@ -165,7 +159,7 @@ void WebSocketClient::onNewConnection(WebSocketContext::WebSocketConnectionHandl
                                       const std::string&,
                                       const std::string&)
 {
-    LOG_TRACE(logger, "New incoming connection on a client should not happen.");
+    JOYNR_LOG_TRACE(logger) << "New incoming connection on a client should not happen.";
 }
 
 } // namespace joynr

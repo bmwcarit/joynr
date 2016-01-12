@@ -44,7 +44,7 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 «getDllExportIncludeStatement()»
 #include "joynr/IRequestInterpreter.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/exceptions/JoynrException.h"
 
 #include "joynr/Variant.h"
@@ -83,7 +83,7 @@ public:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);
-	static joynr::joynr_logging::Logger* logger;
+	ADD_LOGGER(«interfaceName»RequestInterpreter);
 };
 
 «getNamespaceEnder(serviceInterface)»

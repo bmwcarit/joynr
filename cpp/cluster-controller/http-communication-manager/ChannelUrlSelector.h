@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
@@ -115,7 +115,7 @@ private:
     double punishmentFactor;
     std::string channelUrlDirectoryUrl;
     bool useDefaultUrl;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ChannelUrlSelector);
 };
 
 /**
@@ -175,7 +175,7 @@ private:
     types::ChannelUrlInformation urlInformation;
     double punishmentFactor;
     std::chrono::milliseconds timeForOneRecouperation;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ChannelUrlSelectorEntry);
 };
 
 } // namespace joynr

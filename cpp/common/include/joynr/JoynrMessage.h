@@ -21,7 +21,7 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/DispatcherUtils.h"
 #include <stdint.h>
 
@@ -320,7 +320,7 @@ private:
     std::string type;
     std::map<std::string, std::string> header;
     std::string payload;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(JoynrMessage);
 
     void generateAndSetMsgIdHeaderIfAbsent();
 };

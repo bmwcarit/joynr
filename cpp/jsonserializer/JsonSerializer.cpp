@@ -17,11 +17,9 @@
  * #L%
  */
 #include "joynr/JsonSerializer.h"
-#include "joynr/joynrlogging.h"
 
 namespace joynr
 {
-joynr_logging::Logger* JsonSerializer::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "JsonSerializer");
+INIT_LOGGER(JsonSerializer);
 
 } // namespace joynr

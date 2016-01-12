@@ -30,12 +30,12 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/FormatString.h"
 
 namespace joynr
 {
 
-joynr_logging::Logger* WebSocketMessagingStubFactory::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStubFactory");
+INIT_LOGGER(WebSocketMessagingStubFactory);
 
 WebSocketMessagingStubFactory::WebSocketMessagingStubFactory()
         : serverStubMap(), clientStubMap(), mutex()
@@ -59,10 +59,8 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (clientStubMap.find(*webSocketClientAddress) == clientStubMap.cend()) {
-                LOG_ERROR(logger,
-                          FormatString("No websocket found for address %1")
-                                  .arg(webSocketClientAddress->toString())
-                                  .str());
+                JOYNR_LOG_ERROR(logger) << "No websocket found for address "
+                                        << webSocketClientAddress->toString();
                 return std::shared_ptr<IMessaging>();
             }
         }
@@ -75,10 +73,8 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (serverStubMap.find(*webSocketServerAddress) == serverStubMap.cend()) {
-                LOG_ERROR(logger,
-                          FormatString("No websocket found for address %1")
-                                  .arg(webSocketServerAddress->toString())
-                                  .str());
+                JOYNR_LOG_ERROR(logger) << "No websocket found for address "
+                                        << webSocketServerAddress->toString();
                 return std::shared_ptr<IMessaging>();
             }
         }
@@ -100,10 +96,8 @@ void WebSocketMessagingStubFactory::addClient(
         std::shared_ptr<IMessaging> clientStub(wsClientStub);
         clientStubMap[*clientAddress] = clientStub;
     } else {
-        LOG_ERROR(logger,
-                  FormatString("Client with address %1 already exists in the clientStubMap")
-                          .arg(clientAddress->toString())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "Client with address " << clientAddress->toString()
+                                << " already exists in the clientStubMap";
     }
 }
 
@@ -127,9 +121,7 @@ void WebSocketMessagingStubFactory::addServer(
 void WebSocketMessagingStubFactory::onMessagingStubClosed(
         const system::RoutingTypes::Address& address)
 {
-    LOG_DEBUG(
-            logger,
-            FormatString("removing messaging stub for address: %1").arg(address.toString()).str());
+    JOYNR_LOG_DEBUG(logger) << "removing messaging stub for address: " << address.toString();
     // if destination is a WS client address
     if (auto webSocketClientAddress =
                 dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&address)) {

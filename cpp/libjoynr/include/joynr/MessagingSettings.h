@@ -20,7 +20,7 @@
 #define MESSAGINGSETTINGS_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <string>
 
@@ -34,7 +34,7 @@ class JOYNR_EXPORT MessagingSettings
 {
 public:
     explicit MessagingSettings(Settings& settings);
-    MessagingSettings(const MessagingSettings& other) = default;
+    MessagingSettings(const MessagingSettings& other);
 
     ~MessagingSettings() = default;
 
@@ -140,7 +140,7 @@ private:
     void operator=(const MessagingSettings& other);
 
     Settings& settings;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(MessagingSettings);
     void checkSettings() const;
 };
 

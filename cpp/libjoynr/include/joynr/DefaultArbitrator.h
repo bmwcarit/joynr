@@ -20,7 +20,7 @@
 #define DEFAULTARBITRATOR_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
 #include <string>
@@ -48,7 +48,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(DefaultArbitrator);
     virtual void receiveCapabilitiesLookupResults(
             const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(DefaultArbitrator);
 };
 
 } // namespace joynr

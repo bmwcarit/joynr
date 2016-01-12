@@ -63,10 +63,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* JoynrClusterControllerRuntime::logger =
-        Logging::getInstance()->getLogger("JoynrClusterControllerRuntime",
-                                          "JoynrClusterControllerRuntime");
+INIT_LOGGER(JoynrClusterControllerRuntime);
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* app,
                                                              Settings* settings,
@@ -177,8 +174,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       *
       */
     if (!messageReceiver) {
-        LOG_INFO(logger,
-                 "The message receiver supplied is NULL, creating the default MessageReceiver");
+        JOYNR_LOG_INFO(logger)
+                << "The message receiver supplied is NULL, creating the default MessageReceiver";
         messageReceiver = std::shared_ptr<IMessageReceiver>(
                 new HttpReceiver(*messagingSettings, messageRouter));
     }
@@ -187,7 +184,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     // create message sender
     if (!messageSender) {
-        LOG_INFO(logger, "The message sender supplied is NULL, creating the default MessageSender");
+        JOYNR_LOG_INFO(logger)
+                << "The message sender supplied is NULL, creating the default MessageSender";
         messageSender = std::shared_ptr<IMessageSender>(new HttpSender(
                 messagingSettings->getBounceProxyUrl(),
                 std::chrono::milliseconds(messagingSettings->getSendMsgMaxTtl()),
@@ -356,11 +354,11 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
-    LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
+    JOYNR_LOG_TRACE(logger) << "entering ~JoynrClusterControllerRuntime";
     stopMessaging();
 
     if (joynrDispatcher != nullptr) {
-        LOG_TRACE(logger, "joynrDispatcher");
+        JOYNR_LOG_TRACE(logger) << "joynrDispatcher";
         // joynrDispatcher->stopMessaging();
         delete joynrDispatcher;
     }
@@ -384,7 +382,7 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     delete settings;
 
-    LOG_TRACE(logger, "leaving ~JoynrClusterControllerRuntime");
+    JOYNR_LOG_TRACE(logger) << "leaving ~JoynrClusterControllerRuntime";
 }
 
 void JoynrClusterControllerRuntime::startMessaging()

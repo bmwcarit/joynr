@@ -23,6 +23,7 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/Logger.h"
 
 /*
 *   Client for the capabilities directory. Registration and lookup
@@ -115,7 +116,7 @@ private:
     // Joynr
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(CapabilitiesClient);
 };
 
 } // namespace joynr

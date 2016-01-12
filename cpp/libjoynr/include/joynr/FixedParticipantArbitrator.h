@@ -19,7 +19,7 @@
 #ifndef FIXEDPARTICIPANTARBITRATOR_H
 #define FIXEDPARTICIPANTARBITRATOR_H
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
@@ -49,7 +49,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrator);
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(FixedParticipantArbitrator);
     std::string participantId;
     int64_t reqCacheDataFreshness;
 };

@@ -22,9 +22,6 @@
 namespace joynr
 {
 
-joynr_logging::Logger* BounceProxyUrl::logger =
-        joynr_logging::Logging::getInstance()->getLogger("JOYNR", "BounceProxyUrl");
-
 const std::string& BounceProxyUrl::URL_PATH_SEPARATOR()
 {
     static const std::string value("/");

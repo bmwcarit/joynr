@@ -24,7 +24,7 @@
 #include <unordered_map>
 
 #include "joynr/Url.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -59,7 +59,7 @@ private:
                        std::shared_ptr<IMessaging>> clientStubMap;
     std::mutex mutex;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketMessagingStubFactory);
 };
 
 } // namespace joynr

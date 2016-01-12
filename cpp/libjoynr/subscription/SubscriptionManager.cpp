@@ -49,13 +49,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(Subscription);
 };
 
-using namespace joynr_logging;
-Logger* SubscriptionManager::logger =
-        Logging::getInstance()->getLogger("MSG", "SubscriptionManager");
-
 SubscriptionManager::~SubscriptionManager()
 {
-    LOG_DEBUG(logger, "Destructing...");
+    JOYNR_LOG_DEBUG(logger) << "Destructing...";
     // check if all missed publication runnables are deleted before
     // deleting the missed publication scheduler
 
@@ -63,6 +59,8 @@ SubscriptionManager::~SubscriptionManager()
     delete missedPublicationScheduler;
     subscriptions.deleteAll();
 }
+
+INIT_LOGGER(SubscriptionManager);
 
 SubscriptionManager::SubscriptionManager()
         : subscriptions(),
@@ -83,7 +81,7 @@ void SubscriptionManager::registerSubscription(
 {
     // Register the subscription
     std::string subscriptionId = subscriptionRequest.getSubscriptionId();
-    LOG_DEBUG(logger, FormatString("Subscription registered. ID=%1").arg(subscriptionId).str());
+    JOYNR_LOG_DEBUG(logger) << "Subscription registered. ID=" << subscriptionId;
 
     if (subscriptions.contains(subscriptionId)) {
         // pre-existing subscription: remove it first from the internal data structure
@@ -108,7 +106,7 @@ void SubscriptionManager::registerSubscription(
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         if (SubscriptionUtil::getAlertInterval(qosVariant) > 0 &&
             SubscriptionUtil::getPeriodicPublicationInterval(qosVariant) > 0) {
-            LOG_DEBUG(logger, "Will notify if updates are missed.");
+            JOYNR_LOG_DEBUG(logger) << "Will notify if updates are missed.";
             int64_t alertAfterInterval = SubscriptionUtil::getAlertInterval(qosVariant);
             JoynrTimePoint expiryDate{milliseconds(qos->getExpiryDate())};
             int64_t periodicPublicationInterval =
@@ -143,10 +141,8 @@ void SubscriptionManager::unregisterSubscription(const std::string& subscription
 {
     if (subscriptions.contains(subscriptionId)) {
         std::shared_ptr<Subscription> subscription(subscriptions.take(subscriptionId));
-        LOG_DEBUG(logger,
-                  FormatString("Called unregister / unsubscribe on subscription id= %1")
-                          .arg(subscriptionId)
-                          .str());
+        JOYNR_LOG_DEBUG(logger) << "Called unregister / unsubscribe on subscription id= "
+                                << subscriptionId;
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         subscription->isStopped = true;
         if (subscription->subscriptionEndRunnableHandle !=
@@ -161,11 +157,9 @@ void SubscriptionManager::unregisterSubscription(const std::string& subscription
                     DelayedScheduler::INVALID_RUNNABLE_HANDLE;
         }
     } else {
-        LOG_DEBUG(logger,
-                  FormatString(
-                          "Called unregister on a non/no longer existent subscription, used id= %1")
-                          .arg(subscriptionId)
-                          .str());
+        JOYNR_LOG_DEBUG(logger)
+                << "Called unregister on a non/no longer existent subscription, used id= "
+                << subscriptionId;
     }
 }
 
@@ -177,10 +171,7 @@ void SubscriptionManager::checkMissedPublication(
 
     if (!isExpired() && !subscription->isStopped)
     {
-        LOG_DEBUG(
-            logger,
-            "Running MissedPublicationRunnable for subscription id= "
-                + subscriptionId);
+        JOYNR_LOG_DEBUG(logger) << "Running MissedPublicationRunnable for subscription id= " << subscriptionId;
         int64_t delay = 0;
         int64_t now = duration_cast<milliseconds>(
             system_clock::now().time_since_epoch()).count();
@@ -189,12 +180,12 @@ void SubscriptionManager::checkMissedPublication(
         bool publicationInTime = timeSinceLastPublication < alertAfterInterval;
         if (publicationInTime)
         {
-            LOG_TRACE(logger, "Publication in time!");
+            JOYNR_LOG_TRACE(logger) << "Publication in time!";
             delay = alertAfterInterval - timeSinceLastPublication;
         }
         else
         {
-            LOG_DEBUG(logger, "Publication missed!");
+            JOYNR_LOG_DEBUG(logger) << "Publication missed!";
             std::shared_ptr<ISubscriptionCallback> callback =
                 subscription->subscriptionCaller;
 
@@ -202,9 +193,8 @@ void SubscriptionManager::checkMissedPublication(
             delay = alertAfterInterval
                 - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
-        LOG_DEBUG(logger,
-            "Resceduling MissedPublicationRunnable with delay: "
-                + std::string::number(delay));
+        JOYNR_LOG_DEBUG(logger) << 
+            "Resceduling MissedPublicationRunnable with delay: " << std::string::number(delay);
         subscription->missedPublicationRunnableHandle =
             subscriptionManager.missedPublicationScheduler->schedule(
                 new MissedPublicationRunnable(decayTime,
@@ -217,18 +207,14 @@ void SubscriptionManager::checkMissedPublication(
     }
     else
     {
-        LOG_DEBUG(
-            logger,
-            "Publication expired / interrupted. Expiring on subscription id="
-                + subscriptionId);
+        JOYNR_LOG_DEBUG(logger) << "Publication expired / interrupted. Expiring on subscription id=" << subscriptionId;
     }
 }
 #endif
 
 void SubscriptionManager::touchSubscriptionState(const std::string& subscriptionId)
 {
-    LOG_DEBUG(logger,
-              FormatString("Touching subscription state for id=%1").arg(subscriptionId).str());
+    JOYNR_LOG_DEBUG(logger) << "Touching subscription state for id=" << subscriptionId;
     if (!subscriptions.contains(subscriptionId)) {
         return;
     }
@@ -243,15 +229,11 @@ void SubscriptionManager::touchSubscriptionState(const std::string& subscription
 std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallback(
         const std::string& subscriptionId)
 {
-    LOG_DEBUG(logger,
-              FormatString("Getting subscription callback for subscription id=%1")
-                      .arg(subscriptionId)
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "Getting subscription callback for subscription id="
+                            << subscriptionId;
     if (!subscriptions.contains(subscriptionId)) {
-        LOG_DEBUG(logger,
-                  FormatString("Trying to acces a non existing subscription callback for id=%1")
-                          .arg(subscriptionId)
-                          .str());
+        JOYNR_LOG_DEBUG(logger) << "Trying to acces a non existing subscription callback for id="
+                                << subscriptionId;
         return std::shared_ptr<ISubscriptionCallback>();
     }
 
@@ -278,8 +260,7 @@ SubscriptionManager::Subscription::Subscription(
 /**
   *  SubscriptionManager::MissedPublicationRunnable
   */
-Logger* SubscriptionManager::MissedPublicationRunnable::logger =
-        Logging::getInstance()->getLogger("MSG", "MissedPublicationRunnable");
+INIT_LOGGER(SubscriptionManager::MissedPublicationRunnable);
 
 SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         const JoynrTimePoint& expiryDate,
@@ -307,29 +288,24 @@ void SubscriptionManager::MissedPublicationRunnable::run()
     std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
 
     if (!isExpired() && !subscription->isStopped) {
-        LOG_DEBUG(logger,
-                  FormatString("Running MissedPublicationRunnable for subscription id= %1")
-                          .arg(subscriptionId)
-                          .str());
+        JOYNR_LOG_DEBUG(logger) << "Running MissedPublicationRunnable for subscription id= "
+                                << subscriptionId;
         int64_t delay = 0;
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         int64_t timeSinceLastPublication = now - subscription->timeOfLastPublication;
         bool publicationInTime = timeSinceLastPublication < alertAfterInterval;
         if (publicationInTime) {
-            LOG_TRACE(logger, "Publication in time!");
+            JOYNR_LOG_TRACE(logger) << "Publication in time!";
             delay = alertAfterInterval - timeSinceLastPublication;
         } else {
-            LOG_DEBUG(logger, "Publication missed!");
+            JOYNR_LOG_DEBUG(logger) << "Publication missed!";
             std::shared_ptr<ISubscriptionCallback> callback = subscription->subscriptionCaller;
 
             exceptions::PublicationMissedException error(subscriptionId);
             callback->onError(error);
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
-        LOG_DEBUG(logger,
-                  FormatString("Rescheduling MissedPublicationRunnable with delay: %1")
-                          .arg(delay)
-                          .str());
+        JOYNR_LOG_DEBUG(logger) << "Rescheduling MissedPublicationRunnable with delay: " << delay;
         subscription->missedPublicationRunnableHandle =
                 subscriptionManager.missedPublicationScheduler->schedule(
                         new MissedPublicationRunnable(decayTime,
@@ -340,10 +316,8 @@ void SubscriptionManager::MissedPublicationRunnable::run()
                                                       alertAfterInterval),
                         std::chrono::milliseconds(delay));
     } else {
-        LOG_DEBUG(logger,
-                  FormatString("Publication expired / interrupted. Expiring on subscription id=%1")
-                          .arg(subscriptionId)
-                          .str());
+        JOYNR_LOG_DEBUG(logger) << "Publication expired / interrupted. Expiring on subscription id="
+                                << subscriptionId;
     }
 }
 
@@ -353,8 +327,7 @@ int64_t SubscriptionManager::MissedPublicationRunnable::timeSinceLastExpectedPub
     return timeSinceLastPublication % expectedIntervalMSecs;
 }
 
-Logger* SubscriptionManager::SubscriptionEndRunnable::logger =
-        Logging::getInstance()->getLogger("MSG", "SubscriptionEndRunnable");
+INIT_LOGGER(SubscriptionManager::SubscriptionEndRunnable);
 
 SubscriptionManager::SubscriptionEndRunnable::SubscriptionEndRunnable(
         const std::string& subscriptionId,
@@ -371,14 +344,10 @@ void SubscriptionManager::SubscriptionEndRunnable::shutdown()
 
 void SubscriptionManager::SubscriptionEndRunnable::run()
 {
-    LOG_DEBUG(logger,
-              FormatString("Running SubscriptionEndRunnable for subscription id= %1")
-                      .arg(subscriptionId)
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("Publication expired / interrupted. Expiring on subscription id=%1")
-                      .arg(subscriptionId)
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "Running SubscriptionEndRunnable for subscription id= "
+                            << subscriptionId;
+    JOYNR_LOG_DEBUG(logger) << "Publication expired / interrupted. Expiring on subscription id="
+                            << subscriptionId;
     subscriptionManager.unregisterSubscription(subscriptionId);
 }
 

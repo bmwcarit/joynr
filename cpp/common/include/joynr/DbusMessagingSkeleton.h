@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/IMessaging.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 // save the GCC diagnostic state
 #pragma GCC diagnostic push
@@ -46,7 +46,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingSkeleton);
     IMessaging& callBack;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(DbusMessagingSkeleton);
 };
 
 } // namespace joynr

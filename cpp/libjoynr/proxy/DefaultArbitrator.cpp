@@ -27,8 +27,7 @@
 namespace joynr
 {
 
-joynr_logging::Logger* DefaultArbitrator::logger =
-        joynr_logging::Logging::getInstance()->getLogger("DIS", "DefaultArbitrator");
+INIT_LOGGER(DefaultArbitrator);
 
 DefaultArbitrator::DefaultArbitrator(const std::string& domain,
                                      const std::string& interfaceName,
@@ -44,13 +43,10 @@ void DefaultArbitrator::attemptArbitration()
     try {
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
     } catch (exceptions::JoynrException& e) {
-        LOG_ERROR(logger,
-                  FormatString("Unable to lookup provider (domain: %1, interface: %2) "
-                               "from discovery. Error: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .arg(e.getMessage())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "Unable to lookup provider (domain: " << domain
+                                << ", interface: " << interfaceName
+                                << ") "
+                                   "from discovery. Error: " << e.getMessage();
     }
 }
 

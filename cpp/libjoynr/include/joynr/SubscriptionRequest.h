@@ -20,7 +20,7 @@
 #define SUBSCRIPTIONREQUEST_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/SubscriptionQos.h"
 
@@ -72,7 +72,7 @@ private:
     std::string subscribedToName;
     Variant qos;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(SubscriptionRequest);
 };
 
 } // namespace joynr

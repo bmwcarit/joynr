@@ -24,9 +24,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* BroadcastSubscriptionRequest::logger =
-        Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequest");
+INIT_LOGGER(BroadcastSubscriptionRequest);
 
 // Register the BroadcastSubscriptionRequest type id
 static const bool isBroadcastSubscriptionRequestRegistered =

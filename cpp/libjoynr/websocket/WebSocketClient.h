@@ -20,6 +20,7 @@
 #define WEBSOCKETCLIENT_H
 
 #include "joynr/ConcurrentQueue.h"
+#include "joynr/Logger.h"
 #include "WebSocket.h"
 #include "WebSocketContext.h"
 
@@ -28,10 +29,6 @@
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-}
 
 /**
  * @class WebSocketClient
@@ -98,7 +95,7 @@ private:
     /*! On connection successful callback */
     std::function<void(WebSocket* webSocket)> onWebSocketConnected;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketClient);
 };
 
 } // namespace joynr

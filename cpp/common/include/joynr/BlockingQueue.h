@@ -21,6 +21,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/Logger.h"
 
 #include <deque>
 #include <mutex>
@@ -30,10 +31,7 @@
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-} // namespace joynr_logging
+
 class Runnable;
 
 /**
@@ -92,7 +90,7 @@ private:
 
 private:
     /*! Logger */
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(BlockingQueue);
 
     /*! Flag indicating scheduler is shutting down */
     std::atomic_bool stoppingScheduler;

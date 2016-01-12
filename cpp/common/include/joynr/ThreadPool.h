@@ -21,7 +21,7 @@
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
-
+#include "joynr/Logger.h"
 #include "joynr/BlockingQueue.h"
 
 #include <stdint.h>
@@ -34,10 +34,7 @@
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-} // namespace joynr_logging
+
 class RunnableProvider;
 class Runnable;
 
@@ -91,7 +88,7 @@ private:
 
 private:
     /*! Logger */
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ThreadPool);
 
     /*! Worker threads */
     std::vector<std::thread> threads;

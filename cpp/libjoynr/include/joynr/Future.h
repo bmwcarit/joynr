@@ -20,7 +20,7 @@
 #define FUTURE_H
 
 #include "joynr/RequestStatus.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <cassert>
 #include <functional>
@@ -111,10 +111,7 @@ public:
     Future<Ts...>()
             : error(nullptr), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
-        LOG_INFO(logger,
-                 FormatString("resultReceived.getStatus():%1")
-                         .arg(resultReceived.getStatus())
-                         .str());
+        JOYNR_LOG_INFO(logger) << "resultReceived.getStatus(): " << resultReceived.getStatus();
     }
 
     /** @brief ResultCopier helper to copy tuple entries to function arguments */
@@ -232,10 +229,7 @@ public:
      */
     void wait()
     {
-        LOG_INFO(logger,
-                 FormatString("resultReceived.getStatus():%1")
-                         .arg(resultReceived.getStatus())
-                         .str());
+        JOYNR_LOG_INFO(logger) << "resultReceived.getStatus():" << resultReceived.getStatus();
         resultReceived.wait();
         resultReceived.notify();
     }
@@ -256,7 +250,7 @@ public:
      */
     void onSuccess(Ts... results)
     {
-        LOG_INFO(logger, "onSuccess has been invoked");
+        JOYNR_LOG_INFO(logger) << "onSuccess has been invoked";
         status.setCode(RequestStatusCode::OK);
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(results...);
@@ -280,7 +274,7 @@ public:
      */
     void onError(const RequestStatus& status, const exceptions::JoynrException& error)
     {
-        LOG_INFO(logger, "onError has been invoked");
+        JOYNR_LOG_INFO(logger) << "onError has been invoked";
         this->error.reset(error.clone());
         this->status = status;
         resultReceived.notify();
@@ -292,12 +286,11 @@ private:
     std::tuple<Ts...> results;
     Semaphore resultReceived;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(Future);
 };
 
 template <class... Ts>
-joynr_logging::Logger* Future<Ts...>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "Future");
+INIT_LOGGER(Future<Ts...>);
 
 template <>
 /**

@@ -29,9 +29,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* HttpReceiver::logger = Logging::getInstance()->getLogger("MSG", "HttpReceiver");
+INIT_LOGGER(HttpReceiver);
 
 HttpReceiver::HttpReceiver(const MessagingSettings& settings,
                            std::shared_ptr<MessageRouter> messageRouter)
@@ -54,10 +52,10 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
 
 void HttpReceiver::init()
 {
-    LOG_DEBUG(logger, "Print settings... ");
+    JOYNR_LOG_DEBUG(logger) << "Print settings... ";
     settings.printSettings();
     updateSettings();
-    LOG_DEBUG(logger, "Init finished.");
+    JOYNR_LOG_DEBUG(logger) << "Init finished.";
 }
 
 void HttpReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory)
@@ -93,14 +91,15 @@ void HttpReceiver::updateSettings()
 
 HttpReceiver::~HttpReceiver()
 {
-    LOG_TRACE(logger, "destructing HttpCommunicationManager");
+    JOYNR_LOG_TRACE(logger) << "destructing HttpCommunicationManager";
 }
 
 void HttpReceiver::startReceiveQueue()
 {
 
     if (!messageRouter || !channelUrlDirectory) {
-        LOG_FATAL(logger, "FAIL::receiveQueue started with no messageRouter/channelUrlDirectory.");
+        JOYNR_LOG_FATAL(logger)
+                << "FAIL::receiveQueue started with no messageRouter/channelUrlDirectory.";
     }
 
     // Get the settings specific to long polling
@@ -110,7 +109,7 @@ void HttpReceiver::startReceiveQueue()
             std::chrono::milliseconds(settings.getLongPollRetryInterval()),
             std::chrono::milliseconds(settings.getCreateChannelRetryInterval())};
 
-    LOG_DEBUG(logger, "startReceiveQueue");
+    JOYNR_LOG_DEBUG(logger) << "startReceiveQueue";
     messageReceiver = new LongPollingMessageReceiver(settings.getBounceProxyUrl(),
                                                      channelId,
                                                      receiverId,
@@ -123,7 +122,7 @@ void HttpReceiver::startReceiveQueue()
 
 void HttpReceiver::waitForReceiveQueueStarted()
 {
-    LOG_TRACE(logger, "waiting for ReceiveQueue to be started.");
+    JOYNR_LOG_TRACE(logger) << "waiting for ReceiveQueue to be started.";
     channelCreatedSemaphore->wait();
     channelCreatedSemaphore->notify();
 }
@@ -132,7 +131,7 @@ void HttpReceiver::stopReceiveQueue()
 {
     // currently channelCreatedSemaphore is not released here. This would be necessary if
     // stopReceivequeue is called, before channel is created.
-    LOG_DEBUG(logger, "stopReceiveQueue");
+    JOYNR_LOG_DEBUG(logger) << "stopReceiveQueue";
     if (messageReceiver != nullptr) {
         messageReceiver->stop();
 
@@ -157,26 +156,23 @@ bool HttpReceiver::tryToDeleteChannel()
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(
             deleteChannelRequestBuilder->withTimeout(std::chrono::seconds(20))->build());
-    LOG_DEBUG(logger,
-              FormatString("sending delete channel request to %1").arg(deleteChannelUrl).str());
+    JOYNR_LOG_DEBUG(logger) << "sending delete channel request to " << deleteChannelUrl;
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
     std::int32_t statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
         channelCreatedSemaphore->waitFor(
                 std::chrono::seconds(5)); // Reset the channel created Semaphore.
-        LOG_INFO(logger, "channel deletion successfull");
+        JOYNR_LOG_INFO(logger) << "channel deletion successfull";
         channelUrlDirectory->unregisterChannelUrlsAsync(channelId);
-        LOG_INFO(logger, "Sendeing unregister request to ChannelUrlDirectory ...");
+        JOYNR_LOG_INFO(logger) << "Sendeing unregister request to ChannelUrlDirectory ...";
 
         return true;
     } else if (statusCode == 204) {
-        LOG_INFO(logger, FormatString("channel did not exist: %1").arg(statusCode).str());
+        JOYNR_LOG_INFO(logger) << "channel did not exist: " << statusCode;
         return true;
     } else {
-        LOG_INFO(logger,
-                 FormatString("channel deletion failed with status code: %1")
-                         .arg(deleteChannelResult.getStatusCode())
-                         .str());
+        JOYNR_LOG_INFO(logger) << "channel deletion failed with status code: "
+                               << deleteChannelResult.getStatusCode();
         return false;
     }
 }

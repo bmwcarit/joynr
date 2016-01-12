@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/MessagingSettings.h"
@@ -101,7 +101,7 @@ private:
     MessagingSettings& messagingSettings;
     std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
     QMap<QString, types::ChannelUrlInformation> localCache;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(LocalChannelUrlDirectory);
 };
 
 } // namespace joynr

@@ -58,7 +58,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-
+#include "joynr/Logger.h"
 #include "joynr/TypeUtil.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
@@ -130,7 +130,7 @@ public:
 	«produceSubscribeUnsubscribeMethods(serviceInterface, false)»
 
 private:
-	static joynr::joynr_logging::Logger* logger;
+	ADD_LOGGER(«interfaceName»InProcessConnector);
 
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»InProcessConnector);
 	std::string proxyParticipantId;

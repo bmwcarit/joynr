@@ -29,7 +29,6 @@ using namespace joynr;
 class WebSocketSettingsTest : public testing::Test {
 public:
     WebSocketSettingsTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TST", "WebSocketSettingsTest")),
         testSettingsFileName("WebSocketSettingsTest-testSettings.settings")
     {
     }
@@ -39,9 +38,11 @@ public:
     }
 
 protected:
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketSettingsTest);
     std::string testSettingsFileName;
 };
+
+INIT_LOGGER(WebSocketSettingsTest);
 
 TEST_F(WebSocketSettingsTest, intializedWithDefaultSettings) {
     Settings testSettings(testSettingsFileName);

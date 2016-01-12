@@ -24,8 +24,7 @@
 namespace joynr
 {
 
-joynr_logging::Logger* Variant::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "Variant");
+INIT_LOGGER(Variant);
 
 // Register basic types to be able to put them in Variant
 static const bool isInt8Registered = Variant::registerType<int8_t>("Int8");

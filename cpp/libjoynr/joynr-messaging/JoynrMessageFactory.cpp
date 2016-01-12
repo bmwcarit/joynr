@@ -32,9 +32,9 @@
 namespace joynr
 {
 
-JoynrMessageFactory::JoynrMessageFactory()
-        : securityManager(new DummyPlatformSecurityManager()),
-          logger(joynr_logging::Logging::getInstance()->getLogger("LIB", "JoynrMessageFactory"))
+INIT_LOGGER(JoynrMessageFactory);
+
+JoynrMessageFactory::JoynrMessageFactory() : securityManager(new DummyPlatformSecurityManager())
 {
 }
 

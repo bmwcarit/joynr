@@ -18,7 +18,6 @@
  */
 
 #include "LocalDomainAccessStore.h"
-#include "joynr/joynrlogging.h"
 #include "joynr/Util.h"
 #include "AceValidator.h"
 
@@ -35,12 +34,10 @@
 namespace joynr
 {
 using namespace infrastructure::DacTypes;
-using namespace joynr_logging;
+
+INIT_LOGGER(LocalDomainAccessStore);
 
 QSqlDatabase LocalDomainAccessStore::db = QSqlDatabase::addDatabase("QSQLITE");
-
-Logger* LocalDomainAccessStore::logger =
-        Logging::getInstance()->getLogger("MSG", "LocalDomainAccessStore");
 
 //--- SQL statements -------------------------------------------------------------
 
@@ -324,7 +321,7 @@ LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
     // Its a compilation problem if  SQLite is unavailable
     assert(db.isValid());
 
-    LOG_DEBUG(logger, "Called LocalDomainAccessStore");
+    JOYNR_LOG_DEBUG(logger) << "Called LocalDomainAccessStore";
 
     db.setDatabaseName(":memory:");
     db.open();
@@ -390,23 +387,20 @@ LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
                                  db);
         assert(createOwnerACL.exec());
     }
-    LOG_DEBUG(logger, "Connection to SQLite DB opened");
+    JOYNR_LOG_DEBUG(logger) << "Connection to SQLite DB opened";
 }
 
 LocalDomainAccessStore::~LocalDomainAccessStore()
 {
     if (db.isOpen()) {
         db.close();
-        LOG_DEBUG(logger, "Connection to SQLite DB closed");
+        JOYNR_LOG_DEBUG(logger) << "Connection to SQLite DB closed";
     }
 }
 
 std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const std::string& userId)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering getDomainRoleEntries with userId %1")
-                      .arg(userId)
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering getDomainRoleEntries with userId " << userId;
 
     std::vector<DomainRoleEntry> domainRoles;
     Optional<DomainRoleEntry> masterDre = getDomainRole(userId, Role::MASTER);
@@ -451,10 +445,8 @@ Optional<DomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const std
 
 bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntry)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering updateDomainRoleEntry with uId %1")
-                      .arg(updatedEntry.getUid())
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering updateDomainRoleEntry with uId "
+                            << updatedEntry.getUid();
 
     bool updateSuccess = insertDomainRoleEntry(
             updatedEntry.getUid(), updatedEntry.getRole(), updatedEntry.getDomains());
@@ -463,9 +455,7 @@ bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntr
 
 bool LocalDomainAccessStore::removeDomainRole(const std::string& userId, Role::Enum role)
 {
-    LOG_DEBUG(
-            logger,
-            FormatString("execute: entering removeDomainRoleEntry with uId %1").arg(userId).str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering removeDomainRoleEntry with uId " << userId;
 
     QSqlQuery query;
     query.setForwardOnly(true);
@@ -489,10 +479,8 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterAccessControlEntries(
         const std::string& userId)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering getEditableMasterAccessControlEntry with uId %1")
-                      .arg(userId)
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering getEditableMasterAccessControlEntry with uId "
+                            << userId;
 
     // Get all the Master ACEs for the domains where the user is master
     QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_MASTER_ACES, userId, Role::MASTER);
@@ -539,10 +527,8 @@ Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessContro
 bool LocalDomainAccessStore::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering updateMasterAce with uId %1")
-                      .arg(updatedMasterAce.getUid())
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering updateMasterAce with uId "
+                            << updatedMasterAce.getUid();
 
     // Add/update a master ACE
     QSqlQuery query = createUpdateMasterAceQuery(UPDATE_MASTER_ACE, updatedMasterAce);
@@ -571,10 +557,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
         getEditableMediatorAccessControlEntries(const std::string& userId)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering getEditableMediatorAces with uId %1")
-                      .arg(userId)
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering getEditableMediatorAces with uId " << userId;
 
     // Get all the Mediator ACEs for the domains where the user is master
     QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_MEDIATOR_ACES, userId, Role::MASTER);
@@ -621,10 +604,8 @@ Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessCont
 bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering updateMediatorAce with uId %1")
-                      .arg(updatedMediatorAce.getUid())
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering updateMediatorAce with uId "
+                            << updatedMediatorAce.getUid();
 
     bool updateSuccess = false;
 
@@ -651,14 +632,9 @@ bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const std::string&
                                                               const std::string& interfaceName,
                                                               const std::string& operation)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering removeMediatorAce with userId: %1, domain: %2, "
-                           "interface: %3, operation: %4")
-                      .arg(userId)
-                      .arg(domain)
-                      .arg(interfaceName)
-                      .arg(operation)
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering removeMediatorAce with userId: " << userId
+                            << ", domain: " << domain << ", interfaceName: " << interfaceName
+                            << ", operation: " << operation;
 
     QSqlQuery query =
             createRemoveAceQuery(DELETE_MEDIATOR_ACE, userId, domain, interfaceName, operation);
@@ -677,8 +653,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessControlEntries(
         const std::string& userId)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering getEditableOwnerAces with uId %1").arg(userId).str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering getEditableOwnerAces with uId " << userId;
 
     // Get all the Owner ACEs for the domains owned by the user
     QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_OWNER_ACES, userId, Role::OWNER);
@@ -725,10 +700,8 @@ Optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlE
 bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering updateOwnerAce with uId %1")
-                      .arg(updatedOwnerAce.getUid())
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering updateOwnerAce with uId "
+                            << updatedOwnerAce.getUid();
 
     bool updateSuccess = false;
 
@@ -770,15 +743,9 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const std::string& us
                                                            const std::string& interfaceName,
                                                            const std::string& operation)
 {
-    LOG_DEBUG(
-            logger,
-            FormatString("execute: entering removeOwnerAce with userId: %1, domain: %2, interface: "
-                         "%3, operation: %4")
-                    .arg(userId)
-                    .arg(domain)
-                    .arg(interfaceName)
-                    .arg(operation)
-                    .str());
+    JOYNR_LOG_DEBUG(logger) << "execute: entering removeOwnerAce with userId: " << userId
+                            << ", domain: " << domain << ", interface: " << interfaceName
+                            << ", operation: " << operation;
 
     QSqlQuery query =
             createRemoveAceQuery(DELETE_OWNER_ACE, userId, domain, interfaceName, operation);
@@ -787,7 +754,7 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const std::string& us
 
 void LocalDomainAccessStore::reset()
 {
-    LOG_DEBUG(logger, "execute: entering reset store");
+    JOYNR_LOG_DEBUG(logger) << "execute: entering reset store";
 
     QSqlQuery dropDomainRole("DROP TABLE IF EXISTS DomainRole", db);
     QSqlQuery dropMasterAcl("DROP TABLE IF EXISTS MasterACL", db);
@@ -821,12 +788,8 @@ bool LocalDomainAccessStore::insertDomainRoleEntry(const std::string& userId,
         query.bindValue(BIND_DOMAIN, QtTypeUtil::toQt(domain));
 
         if (!query.exec()) {
-            LOG_ERROR(logger,
-                      FormatString("Could not add domain entry %1 %2 %3")
-                              .arg(userId)
-                              .arg(role)
-                              .arg(domain)
-                              .str());
+            JOYNR_LOG_ERROR(logger) << "Could not add domain entry " << userId << " " << role << " "
+                                    << domain;
             return false;
         }
         ++it;

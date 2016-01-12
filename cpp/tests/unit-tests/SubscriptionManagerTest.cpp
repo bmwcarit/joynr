@@ -27,7 +27,7 @@
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/Runnable.h"
 #include "joynr/TimeUtils.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Directory.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/Util.h"
@@ -289,17 +289,18 @@ public:
 
     }
     void shutdown() {
-        LOG_TRACE(logger, "shutdown called...");
+        JOYNR_LOG_TRACE(logger) << "shutdown called...";
     }
     void run() {
-        LOG_TRACE(logger, "run: entering...");
+        JOYNR_LOG_TRACE(logger) << "run: entering...";
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        LOG_TRACE(logger, "run: leaving...");
+        JOYNR_LOG_TRACE(logger) << "run: leaving...";
     }
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(TestRunnable);
 };
-joynr_logging::Logger* TestRunnable::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "TestRunnable");
+
+INIT_LOGGER(TestRunnable);
 
 TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
     SingleThreadedDelayedScheduler scheduler("SingleThread");

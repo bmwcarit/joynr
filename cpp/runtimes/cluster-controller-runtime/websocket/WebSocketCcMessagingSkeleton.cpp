@@ -28,8 +28,7 @@
 namespace joynr
 {
 
-joynr_logging::Logger* WebSocketCcMessagingSkeleton::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketCcMessagingSkeleton");
+INIT_LOGGER(WebSocketCcMessagingSkeleton);
 
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
         MessageRouter& messageRouter,
@@ -48,19 +47,15 @@ WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
     webSocketServer = new QWebSocketServer(QStringLiteral("joynr CC"), sslMode, this);
 
     if (webSocketServer->listen(QHostAddress::Any, serverAddress.getPort())) {
-        LOG_INFO(logger,
-                 FormatString("joynr CC WebSocket server listening on port %1.")
-                         .arg(serverAddress.getPort())
-                         .str());
+        JOYNR_LOG_INFO(logger) << "joynr CC WebSocket server listening on port "
+                               << serverAddress.getPort();
         connect(webSocketServer,
                 &QWebSocketServer::newConnection,
                 this,
                 &WebSocketCcMessagingSkeleton::onNewConnection);
     } else {
-        LOG_FATAL(logger,
-                  FormatString("Error: WebSocket server could not listen on port %1.")
-                          .arg(serverAddress.getPort())
-                          .str());
+        JOYNR_LOG_FATAL(logger) << "Error: WebSocket server could not listen on port "
+                                << serverAddress.getPort();
     }
 }
 
@@ -97,10 +92,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
     QWebSocket* client = qobject_cast<QWebSocket*>(sender());
 
     if (isInitializationMessage(message)) {
-        LOG_DEBUG(logger,
-                  FormatString("received initialization message from websocket client: %1")
-                          .arg(message.toStdString())
-                          .str());
+        JOYNR_LOG_DEBUG(logger) << "received initialization message from websocket client: "
+                                << message.toStdString();
         // register client with messaging stub factory
         joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress =
                 JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketClientAddress>(
@@ -124,13 +117,11 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
     joynr::JoynrMessage* joynrMsg =
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toStdString());
     if (joynrMsg == nullptr || joynrMsg->getPayload().empty()) {
-        LOG_ERROR(logger,
-                  FormatString("Unable to deserialize joynr message object from: %1")
-                          .arg(message.toStdString())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "Unable to deserialize joynr message object from: "
+                                << message.toStdString();
         return;
     }
-    LOG_TRACE(logger, FormatString("INCOMING\nmessage: %1").arg(message.toStdString()).str());
+    JOYNR_LOG_TRACE(logger) << "INCOMING\nmessage: " << message.toStdString();
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg);
@@ -150,21 +141,16 @@ void WebSocketCcMessagingSkeleton::onAcceptError(QAbstractSocket::SocketError so
 {
     QString code;
     QDebug(&code) << socketError;
-    LOG_ERROR(logger,
-              FormatString("Unable to accept new socket connection. Error: %1.")
-                      .arg(code.toStdString())
-                      .str());
+    JOYNR_LOG_ERROR(logger) << "Unable to accept new socket connection. Error: "
+                            << code.toStdString();
 }
 
 void WebSocketCcMessagingSkeleton::onServerError(QWebSocketProtocol::CloseCode closeCode)
 {
     QString code;
     QDebug(&code) << closeCode;
-    LOG_ERROR(logger,
-              FormatString("Error occured on WebSocket connection: %1. Description: %2.")
-                      .arg(code.toStdString())
-                      .arg(webSocketServer->errorString().toStdString())
-                      .str());
+    JOYNR_LOG_ERROR(logger) << "Error occured on WebSocket connection: " << code.toStdString()
+                            << ". Description: " << webSocketServer->errorString().toStdString();
 }
 
 bool WebSocketCcMessagingSkeleton::isInitializationMessage(const QString& message)

@@ -20,7 +20,7 @@
 #define LIBJOYNRSETTINGS_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <string>
 
@@ -51,7 +51,7 @@ private:
     void operator=(const LibjoynrSettings& other);
 
     Settings& settings;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(LibjoynrSettings);
     void checkSettings() const;
 };
 

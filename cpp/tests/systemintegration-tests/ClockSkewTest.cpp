@@ -21,7 +21,7 @@
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Settings.h"
 
 #include <chrono>
@@ -30,7 +30,6 @@
 #include <regex>
 
 using namespace joynr;
-using namespace joynr_logging;
 
 using namespace ::testing;
 
@@ -87,7 +86,7 @@ size_t getHTTPHeaderDate(void *ptr, size_t size, size_t nmemb, void *userdata) {
 
 // TODO reenable test
 TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
-    Logger* logger = Logging::getInstance()->getLogger("TEST", "ClockSkewTest");
+    Logger logger("ClockSkewTest");
 
     // Get the location of the bounce proxy
     Url bounceurl = messagingSettings->getBounceProxyUrl().getTimeCheckUrl();
@@ -98,7 +97,7 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     // Use libcurl to get the HTTP date from the bounce proxy server
     CURL *curl = curl_easy_init();
     if (!curl) {
-        LOG_ERROR(logger,"unknown error during curl_easy_init");
+        JOYNR_LOG_ERROR(logger) << "unknown error during curl_easy_init";
         FAIL();
     }
 
@@ -127,7 +126,7 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     auto minMaxTime = std::minmax(now, remoteTime);
     uint64_t diff = minMaxTime.second - minMaxTime.first;
 
-    LOG_INFO(logger, FormatString("Time difference is %1 msecs").arg(now).str());
+    JOYNR_LOG_INFO(logger) << "Time difference is " << now << "  msecs";
     EXPECT_TRUE(diff < 2000) << "Time difference between local and remote is over 2 seconds";
 
 }

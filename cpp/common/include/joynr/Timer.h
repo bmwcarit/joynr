@@ -21,6 +21,7 @@
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
 #include <stdint.h>
 #include <map>
@@ -34,11 +35,6 @@ using namespace std::chrono;
 namespace joynr
 {
 class TimerData;
-namespace joynr_logging
-{
-class Logger;
-} // namespace joynr_logging
-
 /**
  * @class Timer
  * @brief Implementation of a single threaded timer container
@@ -100,7 +96,7 @@ private:
 
 private:
     /*! Logger */
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(Timer);
 
     /*! Last published ID to be increased by one for every new timer */
     TimerId currentId;

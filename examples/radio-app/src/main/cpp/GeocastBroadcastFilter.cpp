@@ -22,8 +22,7 @@
 #include "joynr/JsonSerializer.h"
 #include <string>
 
-joynr_logging::Logger* GeocastBroadcastFilter::logger =
-        joynr_logging::Logging::getInstance()->getLogger("DEMO", "GeocastBroadcastFilter");
+INIT_LOGGER(GeocastBroadcastFilter);
 
 GeocastBroadcastFilter::GeocastBroadcastFilter()
 {
@@ -44,10 +43,8 @@ bool GeocastBroadcastFilter::filter(
             JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
                     filterParameters.getPositionOfInterest());
     if (positionOfInterest == Q_NULLPTR) {
-        LOG_ERROR(logger,
-                  FormatString("Unable to deserialize geo position object from: %1")
-                          .arg(filterParameters.getPositionOfInterest())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "Unable to deserialize geo position object from: "
+                               << filterParameters.getPositionOfInterest();
         return true;
     }
     int radiusOfInterestArea = std::stoi(filterParameters.getRadiusOfInterestArea());

@@ -35,8 +35,7 @@
 namespace joynr
 {
 
-joynr_logging::Logger* CapabilitiesClient::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "CapabilitiesClient");
+INIT_LOGGER(CapabilitiesClient);
 
 CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
         : localChannelId(localChannelId), capabilitiesProxy(nullptr)
@@ -65,9 +64,10 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
         // capabilitiesProxy->add(rs, capabilitiesInformationList);
 
         std::function<void(const exceptions::JoynrException&)> onError =
-                [](const exceptions::JoynrException& error) {
+                [&](const exceptions::JoynrException& error) {
             (void)error;
-            LOG_ERROR(logger, "Error occured during the execution of capabilitiesProxy->add");
+            JOYNR_LOG_ERROR(logger)
+                    << "Error occured during the execution of capabilitiesProxy->add";
         };
         capabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
     }

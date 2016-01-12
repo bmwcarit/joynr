@@ -26,7 +26,7 @@
 
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/MessageRouter.h"
 #include "joynr/IMessaging.h"
@@ -75,7 +75,7 @@ private Q_SLOTS:
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
     bool isInitializationMessage(const QString& message);
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketCcMessagingSkeleton);
     /*! Websocket server listening for incoming connections */
     QWebSocketServer* webSocketServer;
     /*! List of client connections */

@@ -23,7 +23,6 @@
 #include <QtConcurrent/QtConcurrent>
 
 using namespace joynr;
-using namespace joynr_logging;
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =

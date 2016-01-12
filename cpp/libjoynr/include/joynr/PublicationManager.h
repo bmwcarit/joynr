@@ -22,7 +22,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionPublication.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadSafeMap.h"
@@ -196,7 +196,7 @@ private:
     std::mutex queuedBroadcastSubscriptionRequestsMutex;
 
     // Logging
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(PublicationManager);
 
     // List of subscriptionId's of runnables scheduled with delay <= qos.getMinInterval_ms()
     std::vector<std::string> currentScheduledPublications;

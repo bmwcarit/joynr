@@ -31,7 +31,6 @@
 using namespace ::testing;
 
 using namespace joynr;
-using namespace joynr_logging;
 
 
 /*
@@ -145,8 +144,8 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
     //check if all Messages were received:
     EXPECT_EQ(numberOfMessages, successFullMessages);
-    Logger* logger = Logging::getInstance()->getLogger("TEST", "CombinedEnd2EndTest");
-    LOG_INFO(logger,FormatString("Required Time for 1000 Messages: %1").arg((stopTime - startTime)).str());
+    Logger logger("End2EndPerformanceTest");
+    JOYNR_LOG_INFO(logger) << "Required Time for 1000 Messages: " << (stopTime - startTime);
     // to silence unused-variable compiler warnings
     (void)startTime;
     (void)stopTime;

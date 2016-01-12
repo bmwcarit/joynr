@@ -20,7 +20,7 @@
 #define DUMMYPLATFORMSECURITYMANAGER_H_
 
 #include "joynr/IPlatformSecurityManager.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -28,7 +28,7 @@ namespace joynr
 class DummyPlatformSecurityManager : public IPlatformSecurityManager
 {
 public:
-    DummyPlatformSecurityManager();
+    DummyPlatformSecurityManager() = default;
 
     ~DummyPlatformSecurityManager() override = default;
 
@@ -39,7 +39,7 @@ public:
     std::string decrypt(const std::string& encryptedBytes) override;
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(DummyPlatformSecurityManager);
 };
 
 } // namespace joynr

@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "joynr/Cache.h"
-#include "joynr/joynrlogging.h"
 
 using ::testing::Property;
 using ::testing::Eq;
@@ -38,7 +37,7 @@ static const std::string defaultCacheValue("Hello");
 class CacheTest : public ::testing::Test {
 public:
 
-    CacheTest():logger(joynr_logging::Logging::getInstance()->getLogger("TST", "CacheTest")){}
+    CacheTest() = default;
 
     void SetUp() {
         std::string* strPtr = new std::string(defaultCacheValue);
@@ -51,7 +50,6 @@ public:
     }
 
 protected:
-    joynr_logging::Logger* logger;
     // cache with default maxCost 100
     Cache<std::string, std::string> cache;
 };

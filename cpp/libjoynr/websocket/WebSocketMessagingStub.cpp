@@ -26,8 +26,7 @@
 namespace joynr
 {
 
-joynr_logging::Logger* WebSocketMessagingStub::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStub");
+INIT_LOGGER(WebSocketMessagingStub);
 
 WebSocketMessagingStub::WebSocketMessagingStub(IWebSocketSendInterface* webSocket,
                                                std::function<void()> onStubClosed)
@@ -39,10 +38,8 @@ WebSocketMessagingStub::WebSocketMessagingStub(IWebSocketSendInterface* webSocke
 void WebSocketMessagingStub::transmit(JoynrMessage& message)
 {
     if (!webSocket->isInitialized()) {
-        LOG_ERROR(logger,
-                  FormatString("WebSocket not ready. Unable to send message %1.")
-                          .arg(JsonSerializer::serialize(message))
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "WebSocket not ready. Unable to send message "
+                                << JsonSerializer::serialize(message);
         return;
     }
 

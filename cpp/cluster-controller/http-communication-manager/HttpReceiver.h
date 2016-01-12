@@ -24,7 +24,7 @@
 
 #include "joynr/IMessageReceiver.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 
 #include <string>
@@ -113,7 +113,7 @@ private:
     friend class ::DispatcherIntegrationTest;
     friend class ::CapabilitiesClientTest;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(HttpReceiver);
 };
 
 } // namespace joynr

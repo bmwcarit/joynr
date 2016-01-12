@@ -41,7 +41,6 @@ namespace joynr {
 class WebSocketMessagingStubFactoryTest : public testing::Test {
 public:
     WebSocketMessagingStubFactoryTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TST", "WebSocketMessagingStubFactoryTest")),
         webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS, "localhost", 42, "path"),
         webSocketClientAddress("clientId"),
         channelAddress("channelId"),
@@ -54,13 +53,15 @@ public:
     }
 
 protected:
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketMessagingStubFactoryTest);
     joynr::system::RoutingTypes::WebSocketAddress webSocketServerAddress;
     joynr::system::RoutingTypes::WebSocketClientAddress webSocketClientAddress;
     joynr::system::RoutingTypes::ChannelAddress channelAddress;
     joynr::system::RoutingTypes::CommonApiDbusAddress commonApiDbusAddress;
     joynr::system::RoutingTypes::BrowserAddress browserAddress;
 };
+
+INIT_LOGGER(WebSocketMessagingStubFactoryTest);
 
 TEST_F(WebSocketMessagingStubFactoryTest, canCreateWebSocketAddressses) {
     WebSocketMessagingStubFactory factory;

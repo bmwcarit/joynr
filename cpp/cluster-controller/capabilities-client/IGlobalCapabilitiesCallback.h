@@ -20,7 +20,6 @@
 #define CAPABILITIESRESULTCALLBACK_H
 
 #include "joynr/types/CapabilityInformation.h"
-#include "joynr/joynrlogging.h"
 #include <vector>
 
 namespace joynr
@@ -43,9 +42,6 @@ class IGlobalCapabilitiesCallback
 public:
     virtual ~IGlobalCapabilitiesCallback() = default;
     virtual void capabilitiesReceived(const std::vector<types::CapabilityInformation>& results) = 0;
-
-private:
-    static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr

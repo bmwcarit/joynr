@@ -45,9 +45,6 @@ public:
     bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
 
     std::string toString() const;
-
-private:
-    static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr

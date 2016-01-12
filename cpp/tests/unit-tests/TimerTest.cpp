@@ -20,7 +20,7 @@
 #include "gmock/gmock.h"
 
 #include "joynr/Timer.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/TimeUtils.h"
 #include "joynr/Semaphore.h"
@@ -28,7 +28,6 @@
 #include <unordered_map>
 
 using namespace joynr;
-using namespace joynr_logging;
 
 using namespace ::testing;
 using ::testing::StrictMock;
@@ -45,7 +44,7 @@ ACTION_P(ReleaseSemaphore, semaphore)
 class TimerTest : public ::testing::Test {
 public:
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(TimerTest);
 
     TimerTest() :
         ::testing::Test(),
@@ -81,10 +80,10 @@ public:
         const uint64_t start_ms = timerStartMapping.at(id);
         const int64_t  diff_ms  = now_ms - start_ms;
 
-        LOG_TRACE(TimerTest::logger, FormatString("Timer %0 expired").arg(id).str());
-        LOG_TRACE(TimerTest::logger, FormatString("  started    : %0").arg(start_ms).str());
-        LOG_TRACE(TimerTest::logger, FormatString("  returned   : %0").arg(now_ms).str());
-        LOG_TRACE(TimerTest::logger, FormatString("  difference : %0").arg(diff_ms).str());
+        JOYNR_LOG_TRACE(logger) << "Timer " << id << " expired";
+        JOYNR_LOG_TRACE(logger) << "  started    : " << start_ms;
+        JOYNR_LOG_TRACE(logger) << "  returned   : " << now_ms;
+        JOYNR_LOG_TRACE(logger) << "  difference : " << diff_ms;
 
         onTimerExpired(id, diff_ms);
     }
@@ -107,7 +106,7 @@ private:
     std::unordered_map<Timer::TimerId, uint64_t> timerStartMapping;
 };
 
-joynr_logging::Logger* TimerTest::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "TimerTest");
+INIT_LOGGER(TimerTest);
 
 TEST_F(TimerTest, deinitializationWithoutRun_WaitSomeTime) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));

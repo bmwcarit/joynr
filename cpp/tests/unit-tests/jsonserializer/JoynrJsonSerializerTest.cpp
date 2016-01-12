@@ -24,7 +24,7 @@
 #include "joynr/Reply.h"
 #include "jsonserializer/RequestSerializer.h"
 #include "jsonserializer/ReplySerializer.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/SubscriptionPublication.h"
 
@@ -64,18 +64,16 @@ using namespace joynr;
 class JoynrJsonSerializerTest : public ::testing::Test {
 
 public:
-    JoynrJsonSerializerTest(){}
+    JoynrJsonSerializerTest() = default;
     void SetUp() {
     }
 protected:
-    static joynr::joynr_logging::Logger* logger;
+    ADD_LOGGER(JoynrJsonSerializerTest);
     void testSerializationOfTStruct(joynr::types::TestTypes::TStruct expectedStruct);
 private:
 };
 
-joynr::joynr_logging::Logger* JoynrJsonSerializerTest::logger(
-        joynr::joynr_logging::Logging::getInstance()->getLogger("TST", "JoynrJsonSerializerTest")
-);
+INIT_LOGGER(JoynrJsonSerializerTest);
 
 TEST_F(JoynrJsonSerializerTest, exampleVariant)
 {
@@ -128,7 +126,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerKnownType)
     if (tokenizer.hasNextObject()) {
         SomeOtherType t;
         ClassDeserializer<SomeOtherType>::deserialize(t, tokenizer.nextObject());
-        LOG_TRACE(logger, FormatString("Deserialized value is %1").arg(t.getA()).str());
+        JOYNR_LOG_TRACE(logger) << "Deserialized value is " << t.getA();
     }
 }
 
@@ -140,14 +138,14 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerUnknownType)
     if (tokenizer.hasNextObject()) {
         auto variant = deserialize(tokenizer.nextObject());
         assert(variant.is<SomeOtherType>());
-        LOG_TRACE(logger, FormatString("Unknown type deserialized value is %1").arg(variant.get<SomeOtherType>().getA()).str());
+        JOYNR_LOG_TRACE(logger) << "Unknown type deserialized value is " << variant.get<SomeOtherType>().getA();
     }
 }
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerValue)
 {
     std::string json(R"([{"_typeName":"joynr.SomeOtherType","a": 123},{"_typeName":"joynr.SomeOtherType","a": 456}])"); // raw string literal
-    LOG_TRACE(logger, FormatString("json: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "json: " << json;
     std::vector<SomeOtherType*> vector = JsonSerializer::deserializeVector<SomeOtherType>(json);
     EXPECT_EQ(vector.size(), 2);
     EXPECT_EQ(vector.at(0)->getA(), 123);
@@ -157,7 +155,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerValue)
     variantVector.push_back(Variant::make<SomeOtherType>(*vector.at(0)));
     variantVector.push_back(Variant::make<SomeOtherType>(*vector.at(1)));
     std::string variantVectorStr = JsonSerializer::serializeVector(variantVector);
-    LOG_TRACE(logger, FormatString("variantVector: %1").arg(variantVectorStr).str());
+    JOYNR_LOG_TRACE(logger) << "variantVector: " << variantVectorStr;
     EXPECT_EQ(json, variantVectorStr);
 
     // Clean up
@@ -189,14 +187,14 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrType)
         auto variant = deserialize(tokenizer.nextObject());
         assert(variant.is<ExampleMasterAccessControlEntry>());
         ExampleMasterAccessControlEntry& entry = variant.get<ExampleMasterAccessControlEntry>();
-        LOG_TRACE(logger, FormatString("ExampleMasterAccessControlEntry JSON: %1").arg(json).str());
-        LOG_TRACE(logger, FormatString("ExampleMasterAccessControlEntry operation: %1").arg(entry.getOperation()).str());
-        LOG_TRACE(logger, FormatString("ExampleMasterAccessControlEntry defaultConsumerPermission: %1").arg(convertPermission(entry.getDefaultConsumerPermission())).str());
+        JOYNR_LOG_TRACE(logger) << "ExampleMasterAccessControlEntry JSON: " << json;
+        JOYNR_LOG_TRACE(logger) << "ExampleMasterAccessControlEntry operation: " << entry.getOperation();
+        JOYNR_LOG_TRACE(logger) << "ExampleMasterAccessControlEntry defaultConsumerPermission: " << convertPermission(entry.getDefaultConsumerPermission());
         std::stringstream strStream;
         for (auto& i : entry.getPossibleConsumerPermissions()) {
             strStream << convertPermission(i) << " ";
         }
-        LOG_TRACE(logger, FormatString("ExampleMasterAccessControlEntry possibleConsumerPermissions: %1").arg(strStream.str()).str());
+        JOYNR_LOG_TRACE(logger) << "ExampleMasterAccessControlEntry possibleConsumerPermissions: " << strStream.str();
     }
 }
 
@@ -276,13 +274,13 @@ void compareRequestWithPrimitiveValues(const Request& expectedRequest, const Req
     EXPECT_EQ(expectedRequest.getParams().at(4).get<bool>(), boolParam.get<bool>());
 }
 
-void checkRequest(const Request& expectedRequest, std::function<void(const Request&, const Request&)> compareFct, joynr::joynr_logging::Logger* logger){
+void checkRequest(const Request& expectedRequest, std::function<void(const Request&, const Request&)> compareFct, Logger& logger){
     // Serialize into JSON
     std::stringstream stream;
     auto serializer = ClassSerializer<Request>();
     serializer.serialize(expectedRequest, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("Request JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "Request JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -328,7 +326,7 @@ TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
     auto serializer = ClassSerializer<JoynrMessage>();
     serializer.serialize(expectedMessage, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("JoynrMessage JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "JoynrMessage JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -336,7 +334,7 @@ TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
     if (tokenizer.hasNextObject()) {
         JoynrMessage message;
         ClassDeserializer<JoynrMessage>::deserialize(message, tokenizer.nextObject());
-        LOG_TRACE(logger, FormatString("JoynrMessage payload JSON: %1").arg(message.getPayload()).str());
+        JOYNR_LOG_TRACE(logger) << "JoynrMessage payload JSON: " << message.getPayload();
         Request* request = JsonSerializer::deserialize<Request>(message.getPayload());
         compareRequestWithPrimitiveValues(expectedRequest, *request);
         delete request;
@@ -360,7 +358,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerAplicationException)
     auto serializer = ClassSerializer<exceptions::ApplicationException>{};
     serializer.serialize(exception, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("exceptions::ApplicationException JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "exceptions::ApplicationException JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -387,7 +385,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerProviderRuntimeException)
     auto serializer = ClassSerializer<exceptions::ProviderRuntimeException>{};
     serializer.serialize(exception, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("exceptions::ProviderRuntimeException JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "exceptions::ProviderRuntimeException JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -411,7 +409,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerDiscoveryException)
     auto serializer = ClassSerializer<exceptions::DiscoveryException>{};
     serializer.serialize(exception, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("exceptions::DiscoveryException JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "exceptions::DiscoveryException JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -435,7 +433,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMethodInvocationException)
     auto serializer = ClassSerializer<exceptions::MethodInvocationException>{};
     serializer.serialize(exception, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("exceptions::MethodInvocationException JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "exceptions::MethodInvocationException JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -459,7 +457,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializerEmptyStruct)
     auto serializer = ClassSerializer<Address>{};
     serializer.serialize(expectedAddress, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("Address JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "Address JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -483,7 +481,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerPublicationMissedException)
     auto serializer = ClassSerializer<exceptions::PublicationMissedException>{};
     serializer.serialize(exception, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("exceptions::PublicationMissedException JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "exceptions::PublicationMissedException JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -508,7 +506,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrTimeOutException)
     auto serializer = ClassSerializer<exceptions::JoynrTimeOutException>{};
     serializer.serialize(exception, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("exceptions::JoynrTimeOutException JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "exceptions::JoynrTimeOutException JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -532,7 +530,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithProviderRuntime
     auto serializer = ClassSerializer<Reply>{};
     serializer.serialize(reply, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("Reply JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "Reply JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -566,7 +564,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithApplicationExce
     auto serializer = ClassSerializer<Reply>{};
     serializer.serialize(reply, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("Reply JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "Reply JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -607,7 +605,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
     auto serializer = ClassSerializer<Reply>{};
     serializer.serialize(expectedReply, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("Reply JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "Reply JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -651,7 +649,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationW
     auto serializer = ClassSerializer<SubscriptionPublication>{};
     serializer.serialize(publication, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("SubscriptionPublication JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "SubscriptionPublication JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -685,7 +683,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationW
     auto serializer = ClassSerializer<SubscriptionPublication>{};
     serializer.serialize(publication, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("SubscriptionPublication JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "SubscriptionPublication JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -726,7 +724,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
     auto serializer = ClassSerializer<joynr::SubscriptionPublication>();
     serializer.serialize(expectedPublication, stream);
     std::string json{ stream.str() };
-    LOG_TRACE(logger, FormatString("SubscriptionPublication JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "SubscriptionPublication JSON: " << json;
 
     // Deserialize from JSON
     JsonTokenizer tokenizer(json);
@@ -793,7 +791,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeMasterAccessControlEntry)
     serializer.serialize(expectedMac, stream);
     std::string json{ stream.str() };
 
-    LOG_TRACE(logger, FormatString("MAC JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "MAC JSON: " << json;
 
     // Deserialize
     MasterAccessControlEntry mac;
@@ -817,7 +815,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeMasterAccessControlEntry)
 }
 
 template <typename T>
-void serializeDeserializeMap(T expectedMap, joynr::joynr_logging::Logger* logger) {
+void serializeDeserializeMap(T expectedMap, Logger& logger) {
     // Serialize
     std::stringstream stream;
     auto serializer = ClassSerializer<T>{};
@@ -825,7 +823,7 @@ void serializeDeserializeMap(T expectedMap, joynr::joynr_logging::Logger* logger
     std::string json{ stream.str() };
 
     // TODO: replace with logging
-    LOG_DEBUG(logger,FormatString("ExpectedMap Json: %1").arg(json).str());
+    JOYNR_LOG_DEBUG(logger) << "ExpectedMap Json: " << json;
     JsonTokenizer tokenizer(json);
 
     T actualMap;
@@ -943,7 +941,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
     std::string json{ stream.str() };
 
     // TODO: replace with logging
-    LOG_TRACE(logger, FormatString("TEverythingStruct JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "TEverythingStruct JSON: " << json;
 
     // Deserialize
     TEverythingStruct* everythingStruct = JsonSerializer::deserialize<TEverythingStruct>(json);
@@ -962,7 +960,7 @@ void JoynrJsonSerializerTest::testSerializationOfTStruct(joynr::types::TestTypes
     std::string json{ stream.str() };
 
     // TODO: replace with logging
-    LOG_TRACE(logger, FormatString("TStruct JSON: %1").arg(json).str());
+    JOYNR_LOG_TRACE(logger) << "TStruct JSON: " << json;
 
     // Deserialize
     TStruct* actualStruct = JsonSerializer::deserialize<TStruct>(json);

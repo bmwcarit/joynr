@@ -20,7 +20,7 @@
 #define DISPATCHERUTILS_H
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <stdint.h>
 #include <string>
@@ -45,6 +45,7 @@ class JOYNRCOMMON_EXPORT DispatcherUtils
 {
 public:
     DispatcherUtils() = default;
+
     // todo some of those could be moved  to other classes (e.g. a HeaderMap Dataclass)
     typedef std::map<std::string, Variant>
             HeaderMap; // todo refactor this,  remove Headermap and create dataclass
@@ -96,7 +97,7 @@ public:
      * @return current time in milliseconds as uint64_t
      */
     static uint64_t nowInMilliseconds();
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(DispatcherUtils);
 };
 
 } // namespace joynr

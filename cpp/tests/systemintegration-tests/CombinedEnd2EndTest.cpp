@@ -43,11 +43,10 @@
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr_logging;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
@@ -57,8 +56,7 @@ ACTION_P(ReleaseSemaphore,semaphore)
 static const std::string messagingPropertiesPersistenceFileName1("CombinedEnd2EndTest-runtime1-joynr.settings");
 static const std::string messagingPropertiesPersistenceFileName2("CombinedEnd2EndTest-runtime2-joynr.settings");
 
-joynr_logging::Logger* CombinedEnd2EndTest::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "CombinedEnd2EndTest");
+INIT_LOGGER(CombinedEnd2EndTest);
 
 CombinedEnd2EndTest::CombinedEnd2EndTest() :
         runtime1(nullptr),
@@ -78,15 +76,15 @@ CombinedEnd2EndTest::CombinedEnd2EndTest() :
 
 void CombinedEnd2EndTest::SetUp()
 {
-    LOG_DEBUG(logger, "SetUp() CombinedEnd2End");
+    JOYNR_LOG_DEBUG(logger) << "SetUp() CombinedEnd2End";
 
     // See if the test environment has overridden the configuration files
     tests::Configuration& configuration = tests::Configuration::getInstance();
     std::string systemSettingsFile = configuration.getDefaultSystemSettingsFile();
     std::string websocketSettingsFile = configuration.getDefaultWebsocketSettingsFile();
 
-    LOG_DEBUG(logger, FormatString("Default system settings file: %1").arg(systemSettingsFile.c_str()).str());
-    LOG_DEBUG(logger, FormatString("Default websocket settings file: %1").arg(websocketSettingsFile.c_str()).str());
+    JOYNR_LOG_DEBUG(logger) << "Default system settings file: " << systemSettingsFile.c_str();
+    JOYNR_LOG_DEBUG(logger) << "Default websocket settings file: " << websocketSettingsFile.c_str();
 
     if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
         runtime1 = JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration1.settings",
@@ -330,7 +328,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
             testProxy->setEnumAttribute(static_cast<tests::testTypes::TestEnum::Enum>(999));
             ASSERT_FALSE(true) << "This line of code should never be reached";
         } catch (joynr::exceptions::MethodInvocationException e) {
-            LOG_DEBUG(logger, FormatString("Expected joynr::exceptions::MethodInvocationException has been thrown. Message: %1").arg(e.getMessage()).str());
+            JOYNR_LOG_DEBUG(logger) << "Expected joynr::exceptions::MethodInvocationException has been thrown. Message: " << e.getMessage();
         } catch (std::exception e) {
             ASSERT_FALSE(true) << "joynr::exceptions::MethodInvocationException is expected, however exception with message " << e.what() << "is thrown";
         }

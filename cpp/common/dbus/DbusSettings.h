@@ -20,7 +20,7 @@
 #define DBUSSETTINGS_H
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <string>
 
@@ -57,7 +57,7 @@ private:
     void operator=(const DbusSettings& other);
 
     Settings& settings;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(DbusSettings);
     void checkSettings() const;
 };
 

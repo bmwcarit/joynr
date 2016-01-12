@@ -20,7 +20,6 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/Directory.h"
-#include "joynr/joynrlogging.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
@@ -40,10 +39,9 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* MessageRouter::logger = Logging::getInstance()->getLogger("MSG", "MessageRouter");
-
 using namespace std::chrono;
+
+INIT_LOGGER(MessageRouter);
 
 //------ ConsumerPermissionCallback --------------------------------------------
 
@@ -185,27 +183,20 @@ void MessageRouter::route(const JoynrMessage& message)
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     if (now > message.getHeaderExpiryDate()) {
-        LOG_WARN(logger,
-                 FormatString("Received expired message. Dropping the message (ID: %1).")
-                         .arg(message.getHeaderMessageId())
-                         .str());
+        JOYNR_LOG_WARN(logger) << "Received expired message. Dropping the message (ID: "
+                               << message.getHeaderMessageId() << ").";
         return;
     }
 
     // Validate the message if possible
     if (securityManager != nullptr && !securityManager->validate(message)) {
-        LOG_ERROR(logger,
-                  FormatString("messageId %1 failed validation")
-                          .arg(message.getHeaderMessageId())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "messageId " << message.getHeaderMessageId()
+                                << " failed validation";
         return;
     }
 
-    LOG_DEBUG(logger,
-              FormatString("Route message with Id %1 and payload %2")
-                      .arg(message.getHeaderMessageId())
-                      .arg(message.getPayload())
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "Route message with Id " << message.getHeaderMessageId()
+                            << " and payload " << message.getPayload();
     // search for the destination address
     const std::string destinationPartId = message.getHeaderTo();
     std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress(nullptr);
@@ -218,7 +209,7 @@ void MessageRouter::route(const JoynrMessage& message)
     if (!destAddress) {
         // save the message for later delivery
         messageQueue->queueMessage(message);
-        LOG_DEBUG(logger, FormatString("message queued: %1").arg(message.getPayload()).str());
+        JOYNR_LOG_DEBUG(logger) << "message queued: " << message.getPayload();
 
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
@@ -228,19 +219,15 @@ void MessageRouter::route(const JoynrMessage& message)
                 std::function<void(const bool&)> onSuccess =
                         [this, destinationPartId](const bool& resolved) {
                     if (resolved) {
-                        LOG_INFO(this->logger,
-                                 FormatString("Got destination address for participant %1")
-                                         .arg(destinationPartId)
-                                         .str());
+                        JOYNR_LOG_INFO(logger) << "Got destination address for participant "
+                                               << destinationPartId;
                         // save next hop in the routing table
                         this->addProvisionedNextHop(destinationPartId, this->parentAddress);
                         this->removeRunningParentResolvers(destinationPartId);
                         this->sendMessages(destinationPartId, this->parentAddress);
                     } else {
-                        LOG_ERROR(this->logger,
-                                  FormatString("Failed to resolve next hop for participant %1")
-                                          .arg(destinationPartId)
-                                          .str());
+                        JOYNR_LOG_ERROR(logger) << "Failed to resolve next hop for participant "
+                                                << destinationPartId;
                         // TODO error handling in case of failing submission (?)
                     }
                 };
@@ -250,14 +237,12 @@ void MessageRouter::route(const JoynrMessage& message)
             }
         } else {
             // no parent message router to resolve destination address
-            LOG_WARN(logger,
-                     FormatString(
-                             "No routing information found for destination participant ID \"%1\" "
-                             "so far. Waiting for participant registration. "
-                             "Queueing message (ID : %2)")
-                             .arg(message.getHeaderTo())
-                             .arg(message.getHeaderMessageId())
-                             .str());
+            JOYNR_LOG_WARN(logger)
+                    << "No routing information found for destination participant ID \""
+                    << message.getHeaderTo()
+                    << "\" "
+                       "so far. Waiting for participant registration. "
+                       "Queueing message (ID : " << message.getHeaderMessageId() << ")";
         }
         return;
     }
@@ -303,12 +288,9 @@ void MessageRouter::sendMessage(const JoynrMessage& message,
     if (stub) {
         threadPool.execute(new MessageRunnable(message, stub));
     } else {
-        LOG_WARN(
-                logger,
-                FormatString("Messag with payload %1 could not be send to %2. Stub creation failed")
-                        .arg(message.getPayload())
-                        .arg((*destAddress).toString())
-                        .str());
+        JOYNR_LOG_WARN(logger) << "Messag with payload " << message.getPayload()
+                               << "  could not be send to " << (*destAddress).toString()
+                               << ". Stub creation failed";
     }
 }
 
@@ -495,7 +477,7 @@ void MessageRouter::resolveNextHop(
  * IMPLEMENTATION of MessageRunnable class
  */
 
-Logger* MessageRunnable::logger = Logging::getInstance()->getLogger("MSG", "MessageRunnable");
+INIT_LOGGER(MessageRunnable);
 
 MessageRunnable::MessageRunnable(const JoynrMessage& message,
                                  std::shared_ptr<IMessaging> messagingStub)
@@ -515,10 +497,8 @@ void MessageRunnable::run()
     if (!isExpired()) {
         messagingStub->transmit(message);
     } else {
-        LOG_ERROR(logger,
-                  FormatString("Message with ID %1 expired: dropping!")
-                          .arg(message.getHeaderMessageId())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "Message with ID " << message.getHeaderMessageId()
+                                << "  expired: dropping!";
     }
 }
 

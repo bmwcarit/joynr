@@ -20,7 +20,7 @@
 #define WEBSOCKETCONTEXT_H
 
 #include "joynr/PrivateCopyAssign.h"
-
+#include "joynr/Logger.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include <libwebsockets.h>
@@ -35,10 +35,6 @@ struct libwebsocket_context;
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-}
 
 class IWebSocketContextCallback;
 
@@ -166,7 +162,7 @@ private:
     std::condition_variable initializeCondition;
     std::mutex intitializeMutex;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketContext);
 };
 
 } // namespace joynr

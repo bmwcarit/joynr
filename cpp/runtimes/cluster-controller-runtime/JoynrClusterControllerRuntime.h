@@ -26,7 +26,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/ClientQCache.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/JoynrRuntime.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
 
@@ -146,7 +146,7 @@ protected:
     IPlatformSecurityManager* securityManager;
     bool messagingIsRunning;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(JoynrClusterControllerRuntime);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);

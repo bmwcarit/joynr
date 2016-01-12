@@ -19,7 +19,7 @@
 #ifndef JSONSERIALIZER_H
 #define JSONSERIALIZER_H
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include <vector>
 #include <sstream>
 #include "joynr/Variant.h"
@@ -119,7 +119,7 @@ public:
     }
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(JsonSerializer);
 };
 
 } // namespace joynr

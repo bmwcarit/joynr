@@ -25,16 +25,13 @@
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/Optional.h"
+#include "joynr/Logger.h"
 #include <vector>
 #include <string>
 #include <QtSql/QSqlDatabase>
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-} // namespace joynr_logging
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessStore
 {
 public:
@@ -365,7 +362,7 @@ public:
     static constexpr const char* WILDCARD = "*";
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(LocalDomainAccessStore);
 
     static QSqlDatabase db;
 

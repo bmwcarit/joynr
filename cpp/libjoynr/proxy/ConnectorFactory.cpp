@@ -21,9 +21,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* ConnectorFactory::logger = Logging::getInstance()->getLogger("CON", "ConnectorFactory");
+INIT_LOGGER(ConnectorFactory);
 
 ConnectorFactory::ConnectorFactory(InProcessConnectorFactory* inProcessConnectorFactory,
                                    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory)

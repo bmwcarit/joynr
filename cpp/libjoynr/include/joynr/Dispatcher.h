@@ -30,7 +30,7 @@
 
 #include "joynr/IDispatcher.h"
 #include "joynr/LibJoynrDirectories.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ThreadPool.h"
 
 #include <string>
@@ -89,7 +89,7 @@ private:
     PublicationManager* publicationManager;
     ISubscriptionManager* subscriptionManager;
     ThreadPool handleReceivedMessageThreadPool;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(Dispatcher);
     std::mutex subscriptionHandlingMutex;
 
     friend class ReceivedMessageRunnable;

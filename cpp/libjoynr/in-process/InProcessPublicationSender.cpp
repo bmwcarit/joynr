@@ -27,9 +27,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* InProcessPublicationSender::logger =
-        Logging::getInstance()->getLogger("MSG", "InProcessPublicationSender");
+INIT_LOGGER(InProcessPublicationSender);
 
 InProcessPublicationSender::InProcessPublicationSender(ISubscriptionManager* subscriptionManager)
         : subscriptionManager(subscriptionManager)
@@ -53,16 +51,14 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       */
 
     std::string subscriptionId = subscriptionPublication.getSubscriptionId();
-    LOG_TRACE(logger, FormatString("Sending publication. id=%1").arg(subscriptionId).str());
+    JOYNR_LOG_TRACE(logger) << "Sending publication. id=" << subscriptionId;
     assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
-        LOG_ERROR(logger,
-                  FormatString("Dropping reply for non/no more existing subscription with id=%1")
-                          .arg(subscriptionId)
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "Dropping reply for non/no more existing subscription with id="
+                                << subscriptionId;
         return;
     }
 
@@ -72,7 +68,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     // PublicationInterpreter polymorphism
     IPublicationInterpreter& interpreter =
             MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
-    LOG_TRACE(logger, FormatString("Interpreting publication. id=%1").arg(subscriptionId).str());
+    JOYNR_LOG_TRACE(logger) << "Interpreting publication. id=" << subscriptionId;
     interpreter.execute(callback, subscriptionPublication);
 }
 

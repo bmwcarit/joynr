@@ -25,11 +25,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* SystemServicesSettings::logger =
-        Logging::getInstance()->getLogger("MSG", "SystemServicesSettings");
-
+INIT_LOGGER(SystemServicesSettings);
 SystemServicesSettings::SystemServicesSettings(Settings& settings) : settings(settings)
 {
     Settings defaultSystemServicesSettings{DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME()};
@@ -142,33 +138,22 @@ void SystemServicesSettings::checkSettings() const
 
 void SystemServicesSettings::printSettings() const
 {
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_DOMAIN())
-                      .arg(settings.get<std::string>(SETTING_DOMAIN()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN())
-                      .arg(settings.get<std::string>(
-                              SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID())
-                      .arg(settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN())
-                      .arg(settings.get<std::string>(
-                              SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID())
-                      .arg(settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()))
-                      .str());
+    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_DOMAIN() << " = "
+                            << settings.get<std::string>(SETTING_DOMAIN());
+    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()
+                            << " = "
+                            << settings.get<std::string>(
+                                       SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN());
+    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID() << "  = "
+                            << settings.get<std::string>(
+                                       SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID());
+    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()
+                            << "  = "
+                            << settings.get<std::string>(
+                                       SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN());
+    JOYNR_LOG_DEBUG(logger) << "SETTING: " << SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID() << " = "
+                            << settings.get<std::string>(
+                                       SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID());
 }
 
 } // namespace joynr

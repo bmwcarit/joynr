@@ -20,7 +20,6 @@
 #define IJOYNRMESSAGESENDER_H
 
 #include "joynr/IPublicationSender.h"
-#include "joynr/joynrlogging.h"
 #include <string>
 
 #include <memory>

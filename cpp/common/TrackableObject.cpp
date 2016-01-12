@@ -23,9 +23,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* TrackableObject::logger = Logging::getInstance()->getLogger("MSG", "TrackableObject");
+INIT_LOGGER(TrackableObject);
 
 int TrackableObject::instances = 0;
 
@@ -35,11 +33,8 @@ TrackableObject::TrackableObject()
     std::stringstream ss;
     ss << static_cast<const void*>(this);
     std::string address = ss.str();
-    LOG_TRACE(logger,
-              FormatString("Creating Traceable Object at address %1 Now we have %2 instances.")
-                      .arg(address)
-                      .arg(instances)
-                      .str());
+    JOYNR_LOG_TRACE(logger) << "Creating Traceable Object at address " << address << "Now we have"
+                            << instances << "instances";
 }
 
 TrackableObject::~TrackableObject()
@@ -48,11 +43,8 @@ TrackableObject::~TrackableObject()
     std::stringstream ss;
     ss << static_cast<const void*>(this);
     std::string address = ss.str();
-    LOG_TRACE(logger,
-              FormatString("Deleting Traceable Object at address %1 Now we have %2 instances.")
-                      .arg(address)
-                      .arg(instances)
-                      .str());
+    JOYNR_LOG_TRACE(logger) << "Deleting Traceable Object at address " << address << "Now we have"
+                            << instances << "instances";
 }
 
 int TrackableObject::getInstances()

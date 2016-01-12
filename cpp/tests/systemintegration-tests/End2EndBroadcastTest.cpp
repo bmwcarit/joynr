@@ -34,7 +34,6 @@
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr_logging;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {

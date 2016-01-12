@@ -60,7 +60,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
 «getNamespaceStarter(serviceInterface)»
 
-joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joynr::joynr_logging::Logging::getInstance()->getLogger("SDMO", "«interfaceName»RequestInterpreter");
+INIT_LOGGER(«interfaceName»RequestInterpreter);
 
 «interfaceName»RequestInterpreter::«interfaceName»RequestInterpreter()
 {
@@ -242,7 +242,7 @@ void «interfaceName»RequestInterpreter::execute(
 		«ENDFOR»
 	«ENDIF»
 
-	LOG_WARN(logger, FormatString("unknown method name for interface «interfaceName»: %1").arg(methodName).str());
+	JOYNR_LOG_WARN(logger) << "unknown method name for interface «interfaceName»: " << methodName;
 	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + methodName));
 }
 

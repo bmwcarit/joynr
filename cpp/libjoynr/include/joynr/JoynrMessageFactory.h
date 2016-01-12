@@ -22,7 +22,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include <string>
 namespace joynr
@@ -109,7 +109,7 @@ private:
                                         const SubscriptionPublication& payload);
 
     IPlatformSecurityManager* securityManager;
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(JoynrMessageFactory);
 };
 
 } // namespace joynr

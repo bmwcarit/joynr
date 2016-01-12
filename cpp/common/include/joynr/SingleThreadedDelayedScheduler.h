@@ -73,7 +73,7 @@ private:
 
 private:
     /*! Logger */
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(SingleThreadedDelayedScheduler);
 
     /*! Flag signaling @ref Thread to keep running */
     std::atomic_bool keepRunning;

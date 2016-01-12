@@ -21,16 +21,16 @@
 
 #include <cassert>
 
-#include "joynr/joynrlogging.h"
+namespace joynr
+{
 
-using namespace joynr::joynr_logging;
-Logger* joynr::ThreadPool::logger = Logging::getInstance()->getLogger("MSG", "ThreadPool");
+INIT_LOGGER(ThreadPool);
 
-joynr::ThreadPool::ThreadPool(const std::string& /*name*/, uint8_t numberOfThreads)
+ThreadPool::ThreadPool(const std::string& /*name*/, uint8_t numberOfThreads)
         : threads(), scheduler(), keepRunning(true), currentlyRunning(), mutex()
 {
     for (uint8_t i = 0; i < numberOfThreads; ++i) {
-        threads.emplace_back(std::bind(&joynr::ThreadPool::threadLifecycle, this));
+        threads.emplace_back(std::bind(&ThreadPool::threadLifecycle, this));
     }
 
 #if 0 // This is not working in g_SystemIntegrationTests
@@ -44,13 +44,14 @@ joynr::ThreadPool::ThreadPool(const std::string& /*name*/, uint8_t numberOfThrea
 #endif
 }
 
-joynr::ThreadPool::~ThreadPool()
+ThreadPool::~ThreadPool()
 {
+    shutdown();
     assert(keepRunning == false);
     assert(threads.empty());
 }
 
-void joynr::ThreadPool::shutdown()
+void ThreadPool::shutdown()
 {
     keepRunning = false;
 
@@ -76,30 +77,30 @@ void joynr::ThreadPool::shutdown()
     assert(currentlyRunning.size() == 0);
 }
 
-bool joynr::ThreadPool::isRunning()
+bool ThreadPool::isRunning()
 {
     return keepRunning;
 }
 
-void joynr::ThreadPool::execute(joynr::Runnable* runnable)
+void ThreadPool::execute(Runnable* runnable)
 {
     scheduler.add(runnable);
 }
 
-void joynr::ThreadPool::threadLifecycle()
+void ThreadPool::threadLifecycle()
 {
-    LOG_TRACE(logger, "Thread enters lifecycle");
+    JOYNR_LOG_TRACE(logger) << "Thread enters lifecycle";
 
     while (keepRunning) {
         reportThreadPoolStats();
 
-        LOG_TRACE(logger, "Thread is waiting");
+        JOYNR_LOG_TRACE(logger) << "Thread is waiting";
         // Take a runnable
         Runnable* runnable = scheduler.take();
 
         if (runnable != nullptr) {
 
-            LOG_TRACE(logger, "Thread got runnable and will do work");
+            JOYNR_LOG_TRACE(logger) << "Thread got runnable and will do work";
 
             // Add runable to the queue of currently running context
             {
@@ -110,7 +111,7 @@ void joynr::ThreadPool::threadLifecycle()
             // Run the runnable
             runnable->run();
 
-            LOG_TRACE(logger, "Thread finished work");
+            JOYNR_LOG_TRACE(logger) << "Thread finished work";
 
             {
                 std::lock_guard<std::mutex> lock(mutex);
@@ -124,15 +125,14 @@ void joynr::ThreadPool::threadLifecycle()
         }
     }
 
-    LOG_TRACE(logger, "Thread leaves lifecycle");
+    JOYNR_LOG_TRACE(logger) << "Thread leaves lifecycle";
 }
 
-void joynr::ThreadPool::reportThreadPoolStats()
+void ThreadPool::reportThreadPoolStats()
 {
-    LOG_TRACE(logger,
-              FormatString("Thread statistics (active / waiting / available threads): %0 / %1 / %2")
-                      .arg(currentlyRunning.size())
-                      .arg(scheduler.getQueueLength())
-                      .arg(threads.size())
-                      .str());
+    JOYNR_LOG_TRACE(logger) << "Thread statistics (active / waiting / available threads): "
+                            << currentlyRunning.size() << "/ " << scheduler.getQueueLength()
+                            << "  / " << threads.size();
 }
+
+} // namespace joynr

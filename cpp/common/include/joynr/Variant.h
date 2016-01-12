@@ -28,7 +28,7 @@
 #include <vector>
 #include <tuple>
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -200,7 +200,7 @@ private:
     }
 
     std::unique_ptr<IVariantHolder> pointer;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(Variant);
 };
 
 template <typename T>
@@ -285,18 +285,12 @@ T& Variant::get()
 {
     if (!is<T>()) {
         if (JoynrTypeId<T>::getTypeId() == 0) {
-            LOG_TRACE(
-                    logger,
-                    FormatString(
-                            "Type param T is not registered with type registry. Variant stores %1.")
-                            .arg(getTypeName())
-                            .str());
+            JOYNR_LOG_TRACE(logger)
+                    << "Type param T is not registered with type registry. Variant stores "
+                    << getTypeName() << ".";
         } else {
-            LOG_TRACE(logger,
-                      FormatString("Getting type %1 from variant, but variant stores %2.")
-                              .arg(JoynrTypeId<T>::getTypeName())
-                              .arg(getTypeName())
-                              .str());
+            JOYNR_LOG_TRACE(logger) << "Getting type " << JoynrTypeId<T>::getTypeName()
+                                    << " from variant, but variant stores " << getTypeName();
         }
     }
     VariantHolder<T>* holder = static_cast<VariantHolder<T>*>(pointer.get());
@@ -308,18 +302,12 @@ const T& Variant::get() const
 {
     if (!is<T>()) {
         if (JoynrTypeId<T>::getTypeId() == 0) {
-            LOG_TRACE(
-                    logger,
-                    FormatString(
-                            "Type param T is not registered with type registry. Variant stores %1.")
-                            .arg(getTypeName())
-                            .str());
+            JOYNR_LOG_TRACE(logger)
+                    << "Type param T is not registered with type registry. Variant stores "
+                    << getTypeName();
         } else {
-            LOG_TRACE(logger,
-                      FormatString("Getting type %1 from variant, but variant stores %2.")
-                              .arg(JoynrTypeId<T>::getTypeName())
-                              .arg(getTypeName())
-                              .str());
+            JOYNR_LOG_TRACE(logger) << "Getting type " << JoynrTypeId<T>::getTypeName()
+                                    << " from variant, but variant stores " << getTypeName();
         }
     }
     VariantHolder<T>* holder = static_cast<VariantHolder<T>*>(pointer.get());

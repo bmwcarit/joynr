@@ -24,7 +24,7 @@
 
 #include <CommonAPI/CommonAPI.h>
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/TypeUtil.h"
 
 #include <string>
@@ -40,7 +40,6 @@ public:
     IDbusStubWrapper(std::string serviceAddress)
             : serviceAddress(serviceAddress),
               proxy(NULL),
-              logger(NULL),
               proxyEvent(NULL),
               proxyEventSubscription()
     {
@@ -97,27 +96,18 @@ private:
 
     void logCallStatus(const std::string& method, const std::string& status)
     {
-        LOG_INFO(logger,
-                 FormatString("Call status %1->%2: %3")
-                         .arg(serviceAddress)
-                         .arg(method)
-                         .arg(status)
-                         .str());
+        JOYNR_LOG_INFO(logger, "Call status {} -> {} : {}", serviceAddress, method, status);
     }
 
     void logAvailabilityStatus(const std::string& status)
     {
-        LOG_INFO(logger,
-                 FormatString("Status dbus proxy on address %1: %2")
-                         .arg(serviceAddress)
-                         .arg(status)
-                         .str());
+        JOYNR_LOG_INFO(logger, "Status dbus proxy on address {} : {}", serviceAddress, status);
     }
 
 protected:
     std::string serviceAddress;
     std::shared_ptr<_ProxyClass<>> proxy;
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(IDbusStubWrapper);
 
     // event handling subscritpion
     CommonAPI::ProxyStatusEvent* proxyEvent;
@@ -146,19 +136,20 @@ protected:
 
         // if proxy not available log and exit
         if (!isProxyAvailable()) {
-            LOG_ERROR(logger,
-                      FormatString("Could not connect to proxy within %1ms!")
-                              .arg((max_retries * retry_delay))
-                              .str());
+            JOYNR_LOG_ERROR(logger, "Could not connect to proxy within {} ms!", (max_retries * retry_delay));
             assert(false);
         }
     }
 
     void logMethodCall(const std::string& method)
     {
-        LOG_INFO(logger, FormatString("Call method %1-> %2").arg(serviceAddress).arg(method).str());
+        JOYNR_LOG_INFO(logger, "Call method {} -> {}", serviceAddress, method);
     }
 };
+
+
+template <template <class...> class _ProxyClass>
+INIT_LOGGER(SINGLE_MACRO_ARG(IDbusStubWrapper<_ProxyClass>));
 
 } // namespace joynr
 #endif // IDBUSSTUBWRAPPER_H

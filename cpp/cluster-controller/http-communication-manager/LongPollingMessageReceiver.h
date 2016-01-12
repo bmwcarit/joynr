@@ -22,7 +22,7 @@
 
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BounceProxyUrl.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Directory.h"
 #include "joynr/Thread.h"
 
@@ -88,7 +88,7 @@ private:
 
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(LongPollingMessageReceiver);
     Semaphore* channelCreatedSemaphore;
     std::shared_ptr<MessageRouter> messageRouter;
 };

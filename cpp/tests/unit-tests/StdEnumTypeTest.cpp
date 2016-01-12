@@ -19,7 +19,6 @@
 #include <gtest/gtest.h>
 
 #include "PrettyPrint.h"
-#include "joynr/joynrlogging.h"
 
 #include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/tests/testTypes/TestEnumExtended.h"
@@ -39,7 +38,6 @@ public:
     virtual ~StdEnumTypeTest() = default;
 
 protected:
-    static joynr::joynr_logging::Logger* logger;
 
     TestEnum::Enum testEnumZero;
     TestEnum::Enum testEnumZeroOther;
@@ -47,10 +45,6 @@ protected:
     TestEnum::Enum testEnumOneOther;
     TestEnum::Enum testEnumTwo;
 };
-
-joynr::joynr_logging::Logger* StdEnumTypeTest::logger(
-        joynr::joynr_logging::Logging::getInstance()->getLogger("TST", "StdEnumTypeTest")
-);
 
 TEST_F(StdEnumTypeTest, createEnum) {
     TestEnum::Enum testEnum(TestEnum::ONE);

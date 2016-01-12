@@ -20,7 +20,7 @@
 #define TRACKABLEOBJECT_H
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -34,7 +34,7 @@ public:
 
 private:
     static int instances;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(TrackableObject);
 };
 
 } // namespace joynr

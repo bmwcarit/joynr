@@ -34,6 +34,7 @@
 #include "joynr/Timer.h"
 #include "joynr/Runnable.h"
 #include "joynr/Semaphore.h"
+#include "joynr/Logger.h"
 
 #include <unordered_set>
 #include <mutex>
@@ -47,10 +48,7 @@ class IMessagingStubFactory;
 class JoynrMessagingEndpointAddress;
 class IAccessController;
 class IPlatformSecurityManager;
-namespace joynr_logging
-{
-class Logger;
-} // namespace joynr_logging
+
 namespace system
 {
 class Address;
@@ -154,7 +152,7 @@ private:
     joynr::system::RoutingProxy* parentRouter;
     std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress;
     std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(MessageRouter);
 
     MessageQueue* messageQueue;
     Timer messageQueueCleanerTimer;
@@ -195,7 +193,7 @@ public:
 private:
     JoynrMessage message;
     std::shared_ptr<IMessaging> messagingStub;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(MessageRunnable);
 };
 
 } // namespace joynr

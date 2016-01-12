@@ -17,7 +17,6 @@
  * #L%
  */
 #include "gtest/gtest.h"
-#include "joynr/joynrlogging.h"
 
 #include "joynr/SingleThreadedDelayedScheduler.h"
 
@@ -29,14 +28,8 @@
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr_logging;
 
 using ::testing::StrictMock;
-
-namespace SingleThreadedDelayedSchedulerTest
-{
-Logger* logger = Logging::getInstance()->getLogger("MSG", "SingleThreadedDelayedSchedulerTest");
-}
 
 TEST(SingleThreadedDelayedSchedulerTest, startAndShutdownWithoutWork)
 {

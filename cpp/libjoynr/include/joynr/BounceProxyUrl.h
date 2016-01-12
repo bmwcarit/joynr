@@ -20,7 +20,6 @@
 #define BOUNCEPROXYURL_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/joynrlogging.h"
 #include "joynr/Url.h"
 
 #include <string>
@@ -54,7 +53,6 @@ public:
 private:
     std::string bounceProxyBaseUrl;
     Url bounceProxyChannelsBaseUrl;
-    static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr

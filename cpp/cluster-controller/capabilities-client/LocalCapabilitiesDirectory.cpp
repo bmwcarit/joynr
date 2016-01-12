@@ -30,10 +30,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* LocalCapabilitiesDirectory::logger =
-        Logging::getInstance()->getLogger("MSG", "LocalCapabilitiesDirectory");
+INIT_LOGGER(LocalCapabilitiesDirectory);
 
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                                        ICapabilitiesClient* capabilitiesClientPtr,
@@ -426,12 +423,10 @@ void LocalCapabilitiesDirectory::lookup(
     lookup(participantId, future);
     std::vector<CapabilityEntry> capabilities = future->get();
     if (capabilities.size() > 1) {
-        LOG_ERROR(logger,
-                  FormatString("participantId %1 has more than 1 capability entry:\n %2\n %3")
-                          .arg(participantId)
-                          .arg(capabilities[0].toString())
-                          .arg(capabilities[1].toString())
-                          .str());
+        JOYNR_LOG_ERROR(logger) << "participantId " << participantId
+                                << " has more than 1 capability entry:\n "
+                                << capabilities[0].toString() << "\n "
+                                << capabilities[1].toString();
     }
 
     types::DiscoveryEntry result;

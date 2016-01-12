@@ -22,21 +22,16 @@
 
 #include <cassert>
 
-#include "joynr/joynrlogging.h"
-
 namespace joynr
 {
 
-using namespace joynr::joynr_logging;
-Logger* joynr::SingleThreadedDelayedScheduler::logger =
-        Logging::getInstance()->getLogger("MSG", "SingleThreadedDelayedScheduler");
+INIT_LOGGER(SingleThreadedDelayedScheduler);
 
-joynr::SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(
+SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(
         const std::string& threadName,
         std::chrono::milliseconds defaultDelayMs)
-        : joynr::DelayedScheduler([this](Runnable* work) { this->queue.add(work); },
-                                  defaultDelayMs),
-          joynr::Thread(threadName),
+        : DelayedScheduler([this](Runnable* work) { this->queue.add(work); }, defaultDelayMs),
+          Thread(threadName),
           keepRunning(true),
           currentlyRunning(nullptr),
           queue()
@@ -44,15 +39,15 @@ joynr::SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(
     Thread::start();
 }
 
-joynr::SingleThreadedDelayedScheduler::~SingleThreadedDelayedScheduler()
+SingleThreadedDelayedScheduler::~SingleThreadedDelayedScheduler()
 {
-    LOG_TRACE(logger, "Dtor called");
+    JOYNR_LOG_TRACE(logger) << "Dtor called";
     shutdown();
 }
 
-void joynr::SingleThreadedDelayedScheduler::shutdown()
+void SingleThreadedDelayedScheduler::shutdown()
 {
-    LOG_TRACE(logger, "shutdown() called");
+    JOYNR_LOG_TRACE(logger) << "shutdown() called";
 
     keepRunning = false;
 
@@ -67,24 +62,24 @@ void joynr::SingleThreadedDelayedScheduler::shutdown()
     Thread::stop();
 }
 
-void joynr::SingleThreadedDelayedScheduler::run()
+void SingleThreadedDelayedScheduler::run()
 {
-    LOG_TRACE(logger, "Starting loop");
+    JOYNR_LOG_TRACE(logger) << "Starting loop";
 
     while (keepRunning) {
-        LOG_TRACE(logger, "Waiting for work");
+        JOYNR_LOG_TRACE(logger) << "Waiting for work";
 
         Runnable* work = queue.take();
 
         if (work != nullptr) {
 
-            LOG_TRACE(logger, "Got work. Executing now.");
+            JOYNR_LOG_TRACE(logger) << "Got work. Executing now.";
 
             currentlyRunning = work;
             work->run();
             currentlyRunning = nullptr;
 
-            LOG_TRACE(logger, "Finished work");
+            JOYNR_LOG_TRACE(logger) << "Finished work";
 
             if (work->isDeleteOnExit()) {
                 delete work;
@@ -92,6 +87,6 @@ void joynr::SingleThreadedDelayedScheduler::run()
         }
     }
 
-    LOG_TRACE(logger, FormatString("End of loop. Terminating").str());
+    JOYNR_LOG_TRACE(logger) << "End of loop. Terminating";
 }
 } // namespace joynr

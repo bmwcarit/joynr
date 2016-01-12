@@ -25,7 +25,7 @@
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/InProcessAddress.h"
 #include "joynr/LibJoynrDirectories.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <string>
 #include <memory>
@@ -68,7 +68,7 @@ private:
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
     ISubscriptionManager* subscriptionManager;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(InProcessDispatcher);
 };
 
 } // namespace joynr

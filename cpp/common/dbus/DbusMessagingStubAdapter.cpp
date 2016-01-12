@@ -21,18 +21,17 @@
 #include "joynr/JoynrMessage.h"
 #include <CommonAPI/CommonAPI.h>
 #include "joynr/TypeUtil.h"
+#include "joynr/FormatString.h"
 
 namespace joynr
 {
 
-using namespace joynr_logging;
+INIT_LOGGER(DbusMessagingStubAdapter);
 
 DbusMessagingStubAdapter::DbusMessagingStubAdapter(std::string serviceAddress)
         : IDbusStubWrapper(serviceAddress)
 {
-    // init logger
-    logger = Logging::getInstance()->getLogger("MSG", "DbusMessagingStubAdapter");
-    LOG_INFO(logger, FormatString("Get dbus proxy on address: %1").arg(serviceAddress).str());
+    JOYNR_LOG_INFO(logger, "Get dbus proxy on address: {}", serviceAddress);
 
     // init the stub
     init();

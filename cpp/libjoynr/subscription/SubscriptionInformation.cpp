@@ -22,9 +22,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* SubscriptionInformation::logger =
-        Logging::getInstance()->getLogger("MSG", "SubscriptionInformation");
+INIT_LOGGER(SubscriptionInformation);
 
 SubscriptionInformation::SubscriptionInformation() : proxyId(), providerId()
 {

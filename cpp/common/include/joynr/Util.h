@@ -20,7 +20,7 @@
 #define UTIL_H_
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <cassert>
 #include <cstddef>
@@ -30,6 +30,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <sstream>
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
@@ -143,9 +144,18 @@ public:
     /**
      * Log a serialized Joynr message
      */
-    static void logSerializedMessage(joynr_logging::Logger* logger,
+    static void logSerializedMessage(Logger& logger,
                                      const std::string& explanation,
-                                     const std::string& message);
+                                     const std::string& message)
+    {
+        if (message.size() > 2048) {
+            JOYNR_LOG_DEBUG(logger) << explanation << " " << message.substr(0, 2048)
+                                    << "<**truncated, length " << message.length();
+        } else {
+            JOYNR_LOG_DEBUG(logger) << explanation << " " << message << ", length "
+                                    << message.length();
+        }
+    }
 
     static void throwJoynrException(const exceptions::JoynrException& error);
 
@@ -196,9 +206,19 @@ public:
     template <typename... Ts>
     static std::tuple<Ts...> toValueTuple(const std::vector<Variant>& list);
 
-private:
-    static joynr_logging::Logger* logger;
+    template <class... Ts>
+    static std::string packTypeName()
+    {
+        std::string expandedTypeNames[] = {(std::string(typeid(Ts).name()))...};
+        std::stringstream ss;
+        for (std::string typeNameElement : expandedTypeNames) {
+            ss << typeNameElement;
+        }
+        std::string typeName = ss.str();
+        return typeName;
+    }
 
+private:
     template <typename T, typename... Ts>
     static int getTypeId_split()
     {

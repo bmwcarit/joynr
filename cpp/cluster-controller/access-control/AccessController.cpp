@@ -30,7 +30,6 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/joynrlogging.h"
 
 #include <tuple>
 
@@ -42,9 +41,8 @@ namespace joynr
 using namespace infrastructure;
 using namespace infrastructure::DacTypes;
 using namespace types;
-using namespace joynr_logging;
 
-Logger* AccessController::logger = Logging::getInstance()->getLogger("MSG", "AccessController");
+INIT_LOGGER(AccessController);
 
 //--------- InternalConsumerPermissionCallbacks --------------------------------
 
@@ -98,12 +96,9 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
     bool hasPermission = convertToBool(permission);
 
     if (hasPermission == false) {
-        LOG_ERROR(logger,
-                  FormatString("Message %1 to domain %2, interface %3 failed ACL check")
-                          .arg(message.getHeaderMessageId())
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .str());
+        JOYNR_LOG_ERROR(owningAccessController.logger) << "Message " << message.getHeaderMessageId()
+                                                       << " to domain " << domain << ", interface "
+                                                       << interfaceName << " failed ACL check";
     }
     callback->hasConsumerPermission(hasPermission);
 }
@@ -138,7 +133,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     }
 
     if (operation.empty()) {
-        LOG_ERROR(logger, "Could not deserialize request");
+        JOYNR_LOG_ERROR(owningAccessController.logger) << "Could not deserialize request";
         callback->hasConsumerPermission(false);
         return;
     }
@@ -151,14 +146,10 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     bool hasPermission = convertToBool(permission);
 
     if (hasPermission == false) {
-        LOG_ERROR(
-                logger,
-                FormatString("Message %1 to domain %2, interface/operation %3/%4 failed ACL check")
-                        .arg(message.getHeaderMessageId())
-                        .arg(domain)
-                        .arg(interfaceName)
-                        .arg(operation)
-                        .str());
+        JOYNR_LOG_ERROR(owningAccessController.logger)
+                << "Message " << message.getHeaderMessageId() << " to domain " << domain
+                << ", interface/operation " << interfaceName << "/" << operation
+                << " failed ACL check";
     }
 
     callback->hasConsumerPermission(hasPermission);
@@ -258,10 +249,8 @@ void AccessController::hasConsumerPermission(
     std::function<void(const types::DiscoveryEntry&)> lookupSuccessCallback =
             [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
         if (discoveryEntry.getParticipantId() != participantId) {
-            LOG_ERROR(logger,
-                      FormatString("Failed to get capabilities for participantId %1")
-                              .arg(participantId)
-                              .str());
+            JOYNR_LOG_ERROR(logger) << "Failed to get capabilities for participantId "
+                                    << participantId;
             callback->hasConsumerPermission(false);
             return;
         }

@@ -34,7 +34,7 @@
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/TypedClientMultiCache.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
@@ -203,7 +203,7 @@ private:
             const std::vector<CapabilityEntry>& capabilityEntries,
             std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(LocalCapabilitiesDirectory);
     ICapabilitiesClient* capabilitiesClient;
     std::mutex cacheLock;
 

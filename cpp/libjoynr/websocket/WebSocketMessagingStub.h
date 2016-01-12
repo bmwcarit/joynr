@@ -23,7 +23,7 @@
 #include <memory>
 
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/IMessaging.h"
 #include "joynr/IWebSocketSendInterface.h"
@@ -66,7 +66,7 @@ private:
     /*! Message sender for outgoing messages over WebSocket */
     std::shared_ptr<IWebSocketSendInterface> webSocket;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketMessagingStub);
 };
 
 } // namespace joynr
