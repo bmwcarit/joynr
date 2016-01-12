@@ -24,6 +24,7 @@ import io.joynr.generator.templates.BroadcastTemplate
 import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.EnumTemplate
 import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.MapTemplate
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.StringReader
@@ -40,7 +41,8 @@ import org.franca.core.franca.FModel
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FMapType
-import io.joynr.generator.templates.MapTemplate
+import org.franca.core.franca.FTypeRef
+import org.franca.core.franca.FTypedElement
 
 abstract class JoynrGeneratorExtensions {
 
@@ -248,6 +250,42 @@ abstract class JoynrGeneratorExtensions {
 		}
 		if (generate) {
 			fsa.generateFile(path, generator.generate(compoundType).toString);
+		}
+	}
+
+	// Convert a data type declaration into a string giving the typename
+	def String getJoynrTypeName(FTypedElement element) {
+		var typeName = getJoynrTypeName(element.type)
+		if (isArray(element)) {
+			typeName += "[]"
+		}
+		return typeName
+	}
+
+	def String getJoynrTypeName(FType type) {
+		buildPackagePath(type, ".", true) + "." + type.joynrName
+	}
+
+	def String getJoynrTypeName(FBasicTypeId predefined) {
+		switch predefined {
+			case isString(predefined) : "String"
+			case isShort(predefined)  : "Short"
+			case isInteger(predefined): "Integer"
+			case isLong(predefined)   : "Long"
+			case isDouble(predefined) : "Double"
+			case isFloat(predefined)  : "Float"
+			case isBool(predefined)   : "Boolean"
+			case isByte(predefined)   : "Byte"
+			case isByteBuffer(predefined)   : "Byte[]"
+			default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
+		}
+	}
+
+	def String getJoynrTypeName(FTypeRef datatypeRef) {
+		if (datatypeRef.complex) {
+			getJoynrTypeName(datatypeRef.derived)
+		} else {
+			getJoynrTypeName(datatypeRef.predefined)
 		}
 	}
 

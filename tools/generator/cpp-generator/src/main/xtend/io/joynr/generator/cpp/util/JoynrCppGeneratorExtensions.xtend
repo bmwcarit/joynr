@@ -28,7 +28,6 @@ import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
-import org.franca.core.franca.FTypedElement
 
 class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -139,38 +138,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	// Get the name of enum types that are nested in an Enum wrapper class
 	def String getNestedEnumName() {
 		return "Enum";
-	}
-
-	// Convert a data type declaration into a string giving the typename
-	def String getJoynrTypeName(FTypedElement element) {
-		var typeName = getJoynrBaseTypeName(element)
-		if (isArray(element)) {
-			typeName += "[]"
-		}
-		return typeName
-	}
-
-	private def String getJoynrBaseTypeName(FTypedElement element) {
-		val datatypeRef = element.type;
-		val datatype = datatypeRef.derived;
-		val predefined = datatypeRef.predefined;
-
-		switch datatype {
-		case isEnum(datatypeRef)  : buildPackagePath(datatype, ".", true) +
-									datatype.joynrName
-		case isString(predefined) : "String"
-		case isShort(predefined)  : "Short"
-		case isInteger(predefined): "Integer"
-		case isLong(predefined)   : "Long"
-		case isDouble(predefined) : "Double"
-		case isFloat(predefined)  : "Float"
-		case isBool(predefined)   : "Boolean"
-		case isByte(predefined)   : "Byte"
-		case isByteBuffer(predefined)   : "Byte[]"
-		case datatype != null     : buildPackagePath(datatype, ".", true) +
-									datatype.joynrName
-		default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
-		}
 	}
 
 	// Return a call to a macro that allows classes to be exported and imported
