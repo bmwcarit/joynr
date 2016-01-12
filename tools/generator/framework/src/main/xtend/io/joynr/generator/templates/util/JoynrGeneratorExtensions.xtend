@@ -298,10 +298,12 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def String getJoynrTypeName(FTypeRef datatypeRef) {
-		if (datatypeRef.complex) {
+		if (datatypeRef.isTypeDef) {
+			getJoynrTypeName((datatypeRef.derived as FTypeDef).actualType)
+		} else if (datatypeRef.complex) {
 			getJoynrTypeName(datatypeRef.derived)
 		} else {
-			getJoynrTypeName(datatypeRef.predefined)
+			getJoynrTypeName(datatypeRef.getPrimitive)
 		}
 	}
 
