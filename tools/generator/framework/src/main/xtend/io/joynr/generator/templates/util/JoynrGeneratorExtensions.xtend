@@ -43,6 +43,8 @@ import org.franca.core.franca.FType
 import org.franca.core.franca.FMapType
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
+import io.joynr.generator.templates.TypeDefTemplate
+import org.franca.core.franca.FTypeDef
 
 abstract class JoynrGeneratorExtensions {
 
@@ -250,6 +252,20 @@ abstract class JoynrGeneratorExtensions {
 		}
 		if (generate) {
 			fsa.generateFile(path, generator.generate(compoundType).toString);
+		}
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		TypeDefTemplate generator,
+		FTypeDef typeDefType
+	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
+		if (generate) {
+			fsa.generateFile(path, generator.generate(typeDefType).toString);
 		}
 	}
 
