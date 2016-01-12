@@ -17,6 +17,7 @@ package io.joynr.generator.cpp.util
  * limitations under the License.
  */
 
+import com.google.common.collect.Sets
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.AbstractTypeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
@@ -36,6 +37,7 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMapType
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
+import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypedElement
 
 abstract class CppTypeUtil extends AbstractTypeUtil {
@@ -238,6 +240,18 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		type = getDatatype(datatype.valueType)
 		if (type instanceof FType){
 			typeList.add(getIncludeOf(type));
+		}
+	
+		return typeList;
+	}
+
+	def Iterable<String> getRequiredIncludesFor(FTypeDef datatype){
+		val typeList = new TreeSet<String>();
+		var type = getDatatype(datatype.actualType);
+		if (type instanceof FType){
+			typeList.add("\"" + getIncludeOf(type) + "\"");
+		} else if (type instanceof FBasicTypeId){
+			typeList.addAll(getIncludesFor(Sets::newHashSet(type)))
 		}
 	
 		return typeList;
