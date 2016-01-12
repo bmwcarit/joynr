@@ -534,6 +534,7 @@ joynrTestRequire(
                         it("subscribe to broadcastWithEnum", function() {
                             var spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {
+                                broadcastName: "broadcastWithEnum",
                                 times: 1
                             });
                             expectPublication(spy, function(call) {
@@ -546,6 +547,7 @@ joynrTestRequire(
                             subscriptionQosOnChange.minInterval = 0;
                             var times = 100, spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {
+                                broadcastName: "broadcastWithEnum",
                                 times: times
                             });
                             expectMultiplePublications(spy, times, 5000, function(calls) {

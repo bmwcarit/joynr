@@ -142,6 +142,7 @@ interface Radio {
 
 	method triggerBroadcasts {
 		in {
+			String broadcastName
 			UInt32 times
 		}
 	}

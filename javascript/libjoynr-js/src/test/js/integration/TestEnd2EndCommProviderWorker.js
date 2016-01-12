@@ -325,11 +325,16 @@ function initializeTest(provisioningSuffix, providedDomain) {
             });
 
             radioProvider.triggerBroadcasts.registerOperation(function(opArgs) {
-                var i, outputParams = radioProvider.broadcastWithEnum.createBroadcastOutputParameters();
-                outputParams.setEnumOutput(Country.CANADA);
-                outputParams.setEnumArrayOutput([Country.GERMANY, Country.ITALY]);
+                var i, outputParams, broadcast;
+                if (opArgs.broadcastName === "broadcastWithEnum") {
+                    //broadcastWithEnum
+                    broadcast = radioProvider.broadcastWithEnum;
+                    outputParams = broadcast.createBroadcastOutputParameters();
+                    outputParams.setEnumOutput(Country.CANADA);
+                    outputParams.setEnumArrayOutput([Country.GERMANY, Country.ITALY]);
+                }
                 for (i = 0; i < opArgs.times; i++) {
-                    radioProvider.broadcastWithEnum.fire(outputParams);
+                    broadcast.fire(outputParams);
                 }
             });
 
