@@ -231,7 +231,7 @@ void «interfaceName»RequestInterpreter::execute(
 								«joynrGenerationPrefix»::Util::convertVariantVectorToEnumVector<«getTypeNameOfContainingClass(input.type.derived)»> («inputName»Var.get<std::vector<Variant>>());
 						«ELSEIF isEnum(input.type)»
 							//isEnum
-							«getTypeName(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«buildPackagePath(input.type.derived, "::", true) + input.type.joynrName»>(«inputName»Var);
+							«getTypeName(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«buildPackagePath(input.type.derived, "::", true) + "::" + input.type.joynrName»>(«inputName»Var);
 						«ELSEIF isArray(input)»
 							//isArray
 							if (!«inputName»Var.is<std::vector<Variant>>()) {

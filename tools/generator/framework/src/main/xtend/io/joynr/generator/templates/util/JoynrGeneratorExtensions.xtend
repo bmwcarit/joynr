@@ -250,4 +250,24 @@ abstract class JoynrGeneratorExtensions {
 			fsa.generateFile(path, generator.generate(compoundType).toString);
 		}
 	}
+
+	def buildPackagePath(FType datatype, String separator) {
+		return buildPackagePath(datatype, separator, false);
+	}
+
+	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
+		if (datatype == null) {
+			return "";
+		}
+		var packagepath = "";
+		try {
+			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
+		} catch (IllegalStateException e){
+			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
+		}
+		if (includeTypeCollection && datatype.partOfTypeCollection) {
+			packagepath += separator + datatype.typeCollectionName;
+		}
+		return packagepath;
+	}
 }

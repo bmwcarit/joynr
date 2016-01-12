@@ -210,7 +210,7 @@ struct hash<«type.typeName»> {
 	 * @return the ordinal number representing the enum value
 	 */
 	std::size_t operator()(const «type.typeName»& «typeName.toFirstLower»Value) const {
-		return «type.buildPackagePath("::", true)»hash_value(«typeName.toFirstLower»Value);
+		return «type.buildPackagePath("::", true)»::hash_value(«typeName.toFirstLower»Value);
 	}
 };
 } // namespace std

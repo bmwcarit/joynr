@@ -89,29 +89,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		return sb.toString();
 	}
 
-	def buildPackagePath(FType datatype, String separator) {
-		return buildPackagePath(datatype, separator, false);
-	}
-
-	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
-		if (datatype == null) {
-			return "";
-		}
-		var packagepath = "";
-		try {
-			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
-		} catch (IllegalStateException e){
-			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
-		}
-		if (packagepath!="") {
-			packagepath = packagepath + separator;
-		};
-		if (includeTypeCollection && datatype.partOfTypeCollection) {
-			packagepath += datatype.typeCollectionName + separator;
-		}
-		return packagepath;
-	}
-
 	// for classes and methods
 	def appendDoxygenSummaryAndWriteSeeAndDescription(FModelElement element, String prefix)'''
 		«IF element.comment != null»

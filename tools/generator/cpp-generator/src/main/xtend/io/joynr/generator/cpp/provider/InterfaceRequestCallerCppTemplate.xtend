@@ -204,7 +204,7 @@ def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName)
 		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")
 		packagePath + "::" + methodToErrorEnumName.get(method)
 	} else{
-		buildPackagePath(method.errorEnum, "::", true) + method.errorEnum.joynrName
+		buildPackagePath(method.errorEnum, "::", true) + "::" + method.errorEnum.joynrName
 	}
 }
 }

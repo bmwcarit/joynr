@@ -35,24 +35,6 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 	@Inject extension InterfaceUtil
 	@Inject extension BroadcastUtil
 
-	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
-		if (datatype == null) {
-			return "";
-		}
-		var packagepath = "";
-		try {
-			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
-		} catch (IllegalStateException e){
-			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
-		}
-		if (packagepath!="") {
-			if (includeTypeCollection && datatype.partOfTypeCollection) {
-				packagepath += separator + datatype.typeCollectionName;
-			}
-		};
-		return packagepath;
-	}
-
 	def String getNamespaceStarter(FInterface interfaceType) {
 		getNamespaceStarter(getPackageNames(interfaceType));
 	}

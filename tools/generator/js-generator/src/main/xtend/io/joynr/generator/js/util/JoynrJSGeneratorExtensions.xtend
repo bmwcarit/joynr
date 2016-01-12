@@ -23,7 +23,6 @@ import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import org.franca.core.franca.FAttribute
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
 
 class JoynrJSGeneratorExtensions extends JoynrGeneratorExtensions {
 	@Inject private extension AttributeUtil
@@ -37,24 +36,5 @@ class JoynrJSGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def getFQN(FInterface fInterface) {
 		getPackagePathWithoutJoynrPrefix(fInterface, "/") + "/" + fInterface.joynrName
-	}
-
-	//TODO: refactor this for general use by all languages. Requires normalising how separators are added
-	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
-		if (datatype == null) {
-			return "";
-		}
-		var packagepath = "";
-		try {
-			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
-		} catch (IllegalStateException e){
-			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
-		}
-		if (packagepath!="") {
-			if (includeTypeCollection && datatype.partOfTypeCollection) {
-				packagepath = packagepath + separator + datatype.typeCollectionName;
-			}
-		};
-		return packagepath;
 	}
 }

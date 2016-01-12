@@ -150,21 +150,21 @@ inline std::vector<«type.typeName»> joynr::Util::valueOf<std::vector<«type.ty
 namespace std {
 
 /**
- * @brief Function object that implements a hash function for «type.buildPackagePath("::", true)»«typeName».
+ * @brief Function object that implements a hash function for «type.buildPackagePath("::", true)»::«typeName».
  *
  * Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
  * std::unordered_map, std::unordered_multimap as default hash function.
  */
 template<>
-struct hash<«type.buildPackagePath("::", true)»«typeName»::«getNestedEnumName()»> {
+struct hash<«type.buildPackagePath("::", true)»::«typeName»::«getNestedEnumName()»> {
 
 	/**
 	 * @brief method overriding default implementation of operator ()
 	 * @param «typeName.toFirstLower»Value the operators argument
 	 * @return the ordinal number representing the enum value
 	 */
-	std::size_t operator()(const «type.buildPackagePath("::", true)»«typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) const {
-		return «type.buildPackagePath("::", true)»«typeName»::getOrdinal(«typeName.toFirstLower»Value);
+	std::size_t operator()(const «type.buildPackagePath("::", true)»::«typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) const {
+		return «type.buildPackagePath("::", true)»::«typeName»::getOrdinal(«typeName.toFirstLower»Value);
 	}
 };
 } // namespace std

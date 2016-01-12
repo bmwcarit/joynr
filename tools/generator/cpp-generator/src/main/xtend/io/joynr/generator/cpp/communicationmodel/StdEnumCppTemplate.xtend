@@ -79,7 +79,7 @@ std::string «typeName»::getLiteral(const «typeName»::«getNestedEnumName()»
 }
 
 std::string «typeName»::getTypeName() {
-	return "«type.buildPackagePath(".", true) + type.joynrName»";
+	return "«type.buildPackagePath(".", true) + "." + type.joynrName»";
 }
 
 std::uint32_t «typeName»::getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value) {
