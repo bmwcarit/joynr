@@ -35,7 +35,6 @@ joynrTestRequire(
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
             "joynr/dispatching/types/SubscriptionPublication",
-            "joynr/TypesEnum",
             "joynr/util/LongTimer",
             "uuid",
             "Date",
@@ -55,7 +54,6 @@ joynrTestRequire(
                 ProviderQos,
                 ProviderScope,
                 SubscriptionPublication,
-                TypesEnum,
                 LongTimer,
                 uuid,
                 Date,
@@ -206,14 +204,14 @@ joynrTestRequire(
                                             provider,
                                             providerSettings,
                                             testAttributeName,
-                                            TypesEnum.BOOL);
+                                            "Boolean");
 
                             asyncTestAttribute =
                                     new ProviderAttributeNotifyReadWrite(
                                             provider,
                                             providerSettings,
                                             asyncTestAttributeName,
-                                            TypesEnum.BOOL);
+                                            "Boolean");
 
                             provider[testAttributeName] = testAttribute;
                             spyOn(testAttribute, "get").andReturn("attributeValue");

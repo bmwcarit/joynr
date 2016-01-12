@@ -24,7 +24,6 @@ joynrTestRequire(
         "joynr/dispatching/subscription/TestSubscriptionManager",
         [
             "joynr/dispatching/subscription/SubscriptionManager",
-            "joynr/TypesEnum",
             "joynr/messaging/MessagingQos",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionStop",
@@ -41,7 +40,6 @@ joynrTestRequire(
         ],
         function(
                 SubscriptionManager,
-                TypesEnum,
                 MessagingQos,
                 SubscriptionRequest,
                 SubscriptionStop,
@@ -435,11 +433,11 @@ joynrTestRequire(
                                     broadcastParameter : [
                                          {
                                              name : "param1",
-                                             type : TypesEnum.STRING,
+                                             type : "String",
                                          },
                                          {
                                              name : "param2",
-                                             type : TypesEnum.INT,
+                                             type : "Integer",
                                          },
                                          {
                                              name : "param3",

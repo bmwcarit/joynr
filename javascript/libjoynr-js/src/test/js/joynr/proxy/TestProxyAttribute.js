@@ -23,7 +23,6 @@
 joynrTestRequire(
         "joynr/proxy/TestProxyAttribute",
         [
-            "joynr/TypesEnum",
             "joynr/proxy/ProxyAttribute",
             "joynr/proxy/ProxyAttributeNotifyReadWrite",
             "joynr/proxy/ProxyAttributeNotifyRead",
@@ -41,7 +40,6 @@ joynrTestRequire(
             "global/Promise"
         ],
         function(
-                TypesEnum,
                 ProxyAttribute,
                 ProxyAttributeNotifyReadWrite,
                 ProxyAttributeNotifyRead,
@@ -173,49 +171,49 @@ joynrTestRequire(
                                             proxy,
                                             settings,
                                             "isOn",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "NOTIFYREADWRITE");
                             isOnNotifyReadOnly =
                                     new ProxyAttribute(
                                             proxy,
                                             settings,
                                             "isOnNotifyReadOnly",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "NOTIFYREADONLY");
                             isOnNotifyWriteOnly =
                                     new ProxyAttribute(
                                             proxy,
                                             settings,
                                             "isOnNotifyWriteOnly",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "NOTIFYWRITEONLY");
                             isOnNotify =
                                     new ProxyAttribute(
                                             proxy,
                                             settings,
                                             "isOnNotify",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "NOTIFY");
                             isOnReadWrite =
                                     new ProxyAttribute(
                                             proxy,
                                             settings,
                                             "isOnReadWrite",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "READWRITE");
                             isOnReadOnly =
                                     new ProxyAttribute(
                                             proxy,
                                             settings,
                                             "isOnReadOnly",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "READONLY");
                             isOnWriteOnly =
                                     new ProxyAttribute(
                                             proxy,
                                             settings,
                                             "isOnWriteOnly",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "WRITEONLY");
 
                             isOnProxyAttributeNotifyReadWrite =
@@ -223,43 +221,43 @@ joynrTestRequire(
                                             proxy,
                                             settings,
                                             "isOnProxyAttributeNotifyReadWrite",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProxyAttributeNotifyRead =
                                     new ProxyAttributeNotifyRead(
                                             proxy,
                                             settings,
                                             "isOnProxyAttributeNotifyRead",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProxyAttributeNotifyWrite =
                                     new ProxyAttributeNotifyWrite(
                                             proxy,
                                             settings,
                                             "isOnProxyAttributeNotifyWrite",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProxyAttributeNotify =
                                     new ProxyAttributeNotify(
                                             proxy,
                                             settings,
                                             "isOnProxyAttributeNotify",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProxyAttributeReadWrite =
                                     new ProxyAttributeReadWrite(
                                             proxy,
                                             settings,
                                             "isOnProxyAttributeReadWrite",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProxyAttributeRead =
                                     new ProxyAttributeRead(
                                             proxy,
                                             settings,
                                             "isOnProxyAttributeRead",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProxyAttributeWrite =
                                     new ProxyAttributeWrite(
                                             proxy,
                                             settings,
                                             "isOnProxyAttributeWrite",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                         });
 
                         it("is of correct type (ProxyAttribute)", function() {
@@ -517,7 +515,7 @@ joynrTestRequire(
                                         providerId : providerParticipantId,
                                         messagingQos : messagingQos,
                                         attributeName : "isOn",
-                                        attributeType : TypesEnum.BOOL,
+                                        attributeType : "Boolean",
                                         qos : subscriptionQos,
                                         onReceive : spy.publication,
                                         onError : spy.publicationMissed

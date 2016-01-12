@@ -30,7 +30,6 @@ joynrTestRequire(
             "joynr/dispatching/types/Request",
             "test/data/Operation",
             "global/Promise",
-            "joynr/TypesEnum",
             "joynr/tests/testTypes/TestEnum",
             "joynr/vehicle/radiotypes/RadioStation"
         ],
@@ -42,7 +41,6 @@ joynrTestRequire(
                 Request,
                 testDataOperation,
                 Promise,
-                TypesEnum,
                 TestEnum,
                 RadioStation) {
 

@@ -23,7 +23,6 @@
 joynrTestRequire(
         "joynr/proxy/TestProxyBuilder",
         [
-            "joynr/TypesEnum",
             "joynr/proxy/ProxyBuilder",
             "joynr/proxy/ProxyAttributeNotifyReadWrite",
             "joynr/proxy/ProxyOperation",
@@ -41,7 +40,6 @@ joynrTestRequire(
             "global/Promise"
         ],
         function(
-                TypesEnum,
                 ProxyBuilder,
                 ProxyAttributeNotifyReadWrite,
                 ProxyOperation,

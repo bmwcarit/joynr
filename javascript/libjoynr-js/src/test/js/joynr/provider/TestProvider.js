@@ -34,7 +34,6 @@ joynrTestRequire(
             "joynr/provider/ProviderAttributeWrite",
             "joynr/provider/ProviderOperation",
             "joynr/provider/ProviderEvent",
-            "joynr/TypesEnum",
             "joynr/util/uuid"
         ],
         function(
@@ -50,7 +49,6 @@ joynrTestRequire(
                 ProviderAttributeWrite,
                 ProviderOperation,
                 ProviderEvent,
-                TypesEnum,
                 uuid) {
             describe(
                     "libjoynr-js.joynr.provider.Provider",
@@ -66,7 +64,6 @@ joynrTestRequire(
                             ProviderAttributeWrite : ProviderAttributeWrite,
                             ProviderOperation : ProviderOperation,
                             ProviderEvent : ProviderEvent,
-                            TypesEnum : TypesEnum,
                             uuid : uuid
                         };
 

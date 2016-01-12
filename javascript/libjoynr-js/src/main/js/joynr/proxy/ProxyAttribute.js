@@ -24,10 +24,9 @@ define(
             "joynr/dispatching/types/Request",
             "joynr/messaging/MessagingQos",
             "joynr/util/Typing",
-            "joynr/TypesEnum",
             "joynr/types/TypeRegistrySingleton"
         ],
-        function(Util, Request, MessagingQos, Typing, TypesEnum, TypeRegistrySingleton) {
+        function(Util, Request, MessagingQos, Typing, TypeRegistrySingleton) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**

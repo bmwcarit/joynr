@@ -30,7 +30,6 @@ define("joynr/proxy/ProxyBuilder", [
     "joynr/proxy/ProxyAttributeWrite",
     "joynr/proxy/ProxyOperation",
     "joynr/proxy/ProxyEvent",
-    "joynr/TypesEnum",
     "uuid",
     "joynr/proxy/DiscoveryQos",
     "joynr/messaging/MessagingQos",
@@ -48,7 +47,6 @@ define("joynr/proxy/ProxyBuilder", [
         ProxyAttributeWrite,
         ProxyOperation,
         ProxyEvent,
-        TypesEnum,
         uuid,
         DiscoveryQos,
         MessagingQos,
@@ -65,8 +63,7 @@ define("joynr/proxy/ProxyBuilder", [
         ProxyAttributeRead : ProxyAttributeRead,
         ProxyAttributeWrite : ProxyAttributeWrite,
         ProxyOperation : ProxyOperation,
-        ProxyEvent : ProxyEvent,
-        TypesEnum : TypesEnum
+        ProxyEvent : ProxyEvent
     };
     var typeRegistry = TypeRegistrySingleton.getInstance();
 

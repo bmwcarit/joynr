@@ -24,7 +24,6 @@ define(
         [
             "joynr/util/Typing",
             "joynr/util/MethodUtil",
-            "joynr/TypesEnum",
             "joynr/types/TypeRegistrySingleton",
             "joynr/exceptions/ApplicationException",
             "joynr/exceptions/ProviderRuntimeException",
@@ -33,7 +32,6 @@ define(
         function(
             Typing,
             MethodUtil,
-            TypesEnum,
             TypeRegistrySingleton,
             ApplicationException,
             ProviderRuntimeException,
