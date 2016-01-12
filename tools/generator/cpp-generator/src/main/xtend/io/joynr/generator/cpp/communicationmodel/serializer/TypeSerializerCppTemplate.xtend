@@ -146,7 +146,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 '''
 
 def getDeserializer(FTypeRef type) {
-	val targetType = type
+	val targetType = if (type.isTypeDef) type.typeDefType.actualType else type
 	if (targetType.isEnum){
 		"PrimitiveDeserializer"
 	} else if (targetType.isCompound || targetType.isMap) {

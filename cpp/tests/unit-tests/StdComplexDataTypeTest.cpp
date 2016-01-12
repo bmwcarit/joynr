@@ -53,6 +53,7 @@ public:
             word(TestTypes::Word()),
             wordArray({TestTypes::Word()}),
             stringMap(),
+            typeDefForTStruct(),
             tEverything1(
                     tInt8,
                     tUInt8,
@@ -73,7 +74,8 @@ public:
                     tStringArray,
                     word,
                     wordArray,
-                    stringMap
+                    stringMap,
+                    typeDefForTStruct
                 ),
             tBooleanExtended(false),
             tStringExtended("extended"),
@@ -98,6 +100,7 @@ public:
                     word,
                     wordArray,
                     stringMap,
+                    typeDefForTStruct,
                     tBooleanExtended,
                     tStringExtended)
     {}
@@ -126,6 +129,7 @@ protected:
     TestTypes::Word word;
     std::vector<TestTypes::Word>  wordArray;
     TestTypes::TStringKeyMap stringMap;
+    TestTypes::TypeDefForTStruct typeDefForTStruct;
     TestTypes::TEverythingStruct tEverything1;
 
     bool tBooleanExtended;
@@ -338,6 +342,7 @@ TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType) {
             word,
             wordArray,
             stringMap,
+            typeDefForTStruct,
             tBooleanExtended,
             tStringExtended,
             tStringExtendedExtended);

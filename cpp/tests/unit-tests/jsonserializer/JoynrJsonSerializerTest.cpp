@@ -916,6 +916,9 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
                 });
     TStringKeyMap stringMap;
     stringMap.insert({"StringKey", "StringValue"});
+
+    TypeDefForTStruct typeDefForTStruct{};
+
     TEverythingStruct expectedEverythingStruct{
         1,
         2,
@@ -936,7 +939,8 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
         stringArray,
         wordWithVowelinies,
         words,
-        stringMap
+        stringMap,
+        typeDefForTStruct
     };
 
     // Serialize

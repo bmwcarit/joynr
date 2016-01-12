@@ -215,7 +215,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	}
 
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
-		val members = getComplexMembers(datatype);
+		val members = getComplexMembers(datatype, true);
 
 		val typeList = new TreeSet<String>();
 		if (hasExtendsDeclaration(datatype)){
