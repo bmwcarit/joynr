@@ -228,20 +228,20 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		return typeList;
 	}
 
-    def Iterable<String> getRequiredIncludesFor(FMapType datatype){
-        val typeList = new TreeSet<String>();
-        var type = getDatatype(datatype.keyType);
-        if (type instanceof FType){
-            typeList.add(getIncludeOf(type));
-        }
+	def Iterable<String> getRequiredIncludesFor(FMapType datatype){
+		val typeList = new TreeSet<String>();
+		var type = getDatatype(datatype.keyType);
+		if (type instanceof FType){
+			typeList.add(getIncludeOf(type));
+		}
 
-        type = getDatatype(datatype.valueType)
-        if (type instanceof FType){
-            typeList.add(getIncludeOf(type));
-        }
-    
-        return typeList;
-    }
+		type = getDatatype(datatype.valueType)
+		if (type instanceof FType){
+			typeList.add(getIncludeOf(type));
+		}
+	
+		return typeList;
+	}
 
 	def Set<String> getIncludesFor(Iterable<FBasicTypeId> datatypes)
 
