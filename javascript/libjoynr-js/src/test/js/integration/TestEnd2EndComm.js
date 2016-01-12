@@ -508,6 +508,29 @@ joynrTestRequire(
                             });
                         });
 
+
+                        it("subscribe to byteBufferAttribute", function() {
+                            //initialize attribute
+                            setAttribute("byteBufferAttribute", []);
+                            var spy = setupSubscriptionAndReturnSpy("byteBufferAttribute", subscriptionQosOnChange);
+                            expectPublication(spy, function(call) {
+                                expect(call.args[0]).toEqual([]);
+                            });
+                            var i, byteBuffer10k = [], testByteBufferAttribute = function(expectedByteBuffer) {
+                                setAttribute("byteBufferAttribute", expectedByteBuffer);
+                                expectPublication(spy, function(call) {
+                                   expect(call.args[0]).toEqual(expectedByteBuffer);
+                                });
+                            };
+                            testByteBufferAttribute([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
+                            testByteBufferAttribute([255]);
+                            testByteBufferAttribute([2,2,2,2]);
+                            for (i = 0; i < 10000; i++) {
+                                byteBuffer10k.push(i % 256);
+                            }
+                            testByteBufferAttribute(byteBuffer10k);
+                        });
+
                         it("subscribe to broadcastWithEnum", function() {
                             var spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {
