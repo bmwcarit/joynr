@@ -308,6 +308,16 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 };
             });
 
+            // register operation function "methodWithSingleArrayParameters"
+            radioProvider.methodWithByteBuffer.registerOperation(function(opArgs) {
+                /* the dummy implementation returns the incoming byteBuffer
+                 */
+
+                return {
+                    result: opArgs.input
+                };
+            });
+
             radioProvider.methodProvidedImpl.registerOperation(function(opArgs) {
                 return {
                     returnValue : opArgs.arg

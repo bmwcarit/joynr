@@ -96,6 +96,15 @@ interface Radio {
 		}
 	}
 
+	method methodWithByteBuffer{
+		in {
+			ByteBuffer input
+		}
+		out {
+			ByteBuffer result
+		}
+	}
+
 	method operationWithEnumsAsInputAndOutput {
 		in {
 			Country enumInput

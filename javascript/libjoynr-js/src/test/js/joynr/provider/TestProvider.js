@@ -166,6 +166,8 @@ joynrTestRequire(
                                         triggerBroadcasts : jasmine.createSpy("triggerBroadcasts"),
                                         methodProvidedImpl : jasmine
                                                 .createSpy("methodProvidedImpl"),
+                                        methodWithByteBuffer : jasmine
+                                                .createSpy("methodWithByteBuffer"),
                                         operationWithEnumsAsInputAndOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndOutput"),
                                         operationWithMultipleOutputParameters : jasmine
