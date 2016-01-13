@@ -1,5 +1,5 @@
 /*jslint es5: true, nomen: true */
-/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, Country: true, RadioProvider: true, domain: true, interfaceNameComm: true, providerParticipantIdComm: true, providerChannelIdComm: true, globalCapDirCapability: true, channelUrlDirCapability: true, ErrorList: true */
+/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, Country: true, RadioStation: true, RadioProvider: true, domain: true, interfaceNameComm: true, providerParticipantIdComm: true, providerChannelIdComm: true, globalCapDirCapability: true, channelUrlDirCapability: true, ErrorList: true */
 
 /*
  * #%L
@@ -47,6 +47,8 @@ var numberOfStations = -1;
 var mixedSubscriptions = null;
 var byteBufferAttribute = null;
 var stringMapAttribute = null;
+var typeDefForStruct = null;
+var typeDefForPrimitive = null;
 
 var providerDomain;
 var libjoynrAsync;
@@ -174,6 +176,22 @@ function initializeTest(provisioningSuffix, providedDomain) {
 
             radioProvider.byteBufferAttribute.registerGetter(function(value) {
                 return byteBufferAttribute;
+            });
+
+            radioProvider.typeDefForStruct.registerSetter(function(value) {
+                typeDefForStruct = value;
+            });
+
+            radioProvider.typeDefForStruct.registerGetter(function(value) {
+                return typeDefForStruct;
+            });
+
+            radioProvider.typeDefForPrimitive.registerSetter(function(value) {
+                typeDefForPrimitive = value;
+            });
+
+            radioProvider.typeDefForPrimitive.registerGetter(function(value) {
+                return typeDefForPrimitive;
             });
 
             radioProvider.stringMapAttribute.registerSetter(function(value) {
@@ -308,13 +326,24 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 };
             });
 
-            // register operation function "methodWithSingleArrayParameters"
+            // register operation function "methodWithByteBuffer"
             radioProvider.methodWithByteBuffer.registerOperation(function(opArgs) {
                 /* the dummy implementation returns the incoming byteBuffer
                  */
 
                 return {
                     result: opArgs.input
+                };
+            });
+
+            // register operation function "methodWithTypeDef"
+            radioProvider.methodWithTypeDef.registerOperation(function(opArgs) {
+                /* the dummy implementation returns the incoming data
+                 */
+
+                return {
+                    typeDefStructOutput: opArgs.typeDefStructInput,
+                    typeDefPrimitiveOutput: opArgs.typeDefPrimitiveInput
                 };
             });
 
@@ -332,12 +361,21 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     outputParams = broadcast.createBroadcastOutputParameters();
                     outputParams.setEnumOutput(Country.CANADA);
                     outputParams.setEnumArrayOutput([Country.GERMANY, Country.ITALY]);
-                } else {
+                } else if (opArgs.broadcastName === "weakSignal"){
                     //weakSignal
                     broadcast = radioProvider.weakSignal;
                     outputParams = broadcast.createBroadcastOutputParameters();
                     outputParams.setRadioStation("radioStation");
                     outputParams.setByteBuffer([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
+                } else if (opArgs.broadcastName === "broadcastWithTypeDefs"){
+                    //broadcastWithTypeDefs
+                    broadcast = radioProvider.broadcastWithTypeDefs;
+                    outputParams = broadcast.createBroadcastOutputParameters();
+                    outputParams.setTypeDefStructOutput(new RadioStation({
+                        name: "TestEnd2EndCommProviderWorker.broadcastWithTypeDefs.RadioStation",
+                        byteBuffer: []
+                    }));
+                    outputParams.setTypeDefPrimitiveOutput(123456);
                 }
                 for (i = 0; i < opArgs.times; i++) {
                     broadcast.fire(outputParams);

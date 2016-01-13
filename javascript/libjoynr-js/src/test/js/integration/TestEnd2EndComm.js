@@ -451,6 +451,18 @@ joynrTestRequire(
                             getAttribute("enumArrayAttribute", value);
                         });
 
+                        it("sets the typeDef attributes", function() {
+                            var value = new RadioStation({
+                                name: "TestEnd2EndComm.typeDefForStructAttribute.RadioStation",
+                                byteBuffer: []
+                            });
+                            setAttribute("typeDefForStruct", value);
+                            getAttribute("typeDefForStruct", value);
+                            value = 1234543;
+                            setAttribute("typeDefForPrimitive", value);
+                            getAttribute("typeDefForPrimitive", value);
+                        });
+
                         it("sets the attribute", function() {
                             setAttribute("isOn", true);
                             getAttribute("isOn", true);
@@ -508,6 +520,27 @@ joynrTestRequire(
                             });
                         });
 
+                        it("subscribe to complex typedef attribute", function() {
+                            var value = new RadioStation({
+                                name: "TestEnd2EndComm.typeDefForStructAttribute.RadioStation",
+                                byteBuffer: []
+                            });
+                            setAttribute("typeDefForStruct", value);
+                            var spy = setupSubscriptionAndReturnSpy("typeDefForStruct", subscriptionQosOnChange);
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0]).toEqual(value);
+                            });
+                        });
+
+                        it("subscribe to primitive typedef attribute", function() {
+                            var value = 1234543;
+                            setAttribute("typeDefForPrimitive", value);
+                            var spy = setupSubscriptionAndReturnSpy("typeDefForPrimitive", subscriptionQosOnChange);
+                            getAttribute("typeDefForPrimitive", value);
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0]).toEqual(value);
+                            });
+                        });
 
                         it("subscribe to byteBufferAttribute", function() {
                             //initialize attribute
@@ -552,6 +585,25 @@ joynrTestRequire(
                             expectPublication(spy, function(call) {
                                expect(call.args[0].enumOutput).toEqual(Country.CANADA);
                                expect(call.args[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
+                            });
+                        });
+
+
+                        it("subscribe to type def broadcast", function() {
+                            var typeDefStructOutput = new RadioStation({
+                                name: "TestEnd2EndCommProviderWorker.broadcastWithTypeDefs.RadioStation",
+                                byteBuffer: []
+                            });
+                            var typeDefPrimitiveOutput = 123456;
+
+                            var spy = setupSubscriptionAndReturnSpy("broadcastWithTypeDefs", subscriptionQosOnChange);
+                            callOperation("triggerBroadcasts", {
+                                broadcastName: "broadcastWithTypeDefs",
+                                times: 1
+                            });
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0].typeDefStructOutput).toEqual(typeDefStructOutput);
+                               expect(call.args[0].typeDefPrimitiveOutput).toEqual(typeDefPrimitiveOutput);
                             });
                         });
 
@@ -811,6 +863,26 @@ joynrTestRequire(
                                                 returnValue : false
                                             });
                                 });
+
+                        it(
+                                "can call an operation with typedef arguments",
+                                function() {
+                                    var typeDefStructInput = new RadioStation({
+                                        name: "TestEnd2EndComm.methodWithTypeDef.RadioStation",
+                                        byteBuffer: []
+                                    });
+                                    var typeDefPrimitiveInput = 1234543;
+                                    callOperation(
+                                            "methodWithTypeDef",
+                                            {
+                                                typeDefStructInput : typeDefStructInput,
+                                                typeDefPrimitiveInput : typeDefPrimitiveInput
+                                            },
+                                            {
+                                                typeDefStructOutput : typeDefStructInput,
+                                                typeDefPrimitiveOutput : typeDefPrimitiveInput
+                                            });
+                               });
 
                         it(
                                 "can call an operation with enum arguments and enum return type",

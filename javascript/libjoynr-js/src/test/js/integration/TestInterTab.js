@@ -37,6 +37,7 @@ joynrTestRequire(
             "joynr/system/RoutingTypes/CommonApiDbusAddress",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/RadioProvider",
+            "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provisioning/provisioning_libjoynr",
@@ -57,6 +58,7 @@ joynrTestRequire(
                 CommonApiDbusAddress,
                 RadioProxy,
                 RadioProvider,
+                RadioStation,
                 Country,
                 StringMap,
                 provisioning,
@@ -482,6 +484,17 @@ joynrTestRequire(
                                         };
                                     });
 
+                                    // register operation function "methodWithTypeDef"
+                                    radioProvider.methodWithTypeDef.registerOperation(function(opArgs) {
+                                        /* the dummy implementation returns the incoming data
+                                         */
+
+                                        return {
+                                            typeDefStructOutput: opArgs.typeDefStructInput,
+                                            typeDefPrimitiveOutput: opArgs.typeDefPrimitiveInput
+                                        };
+                                    });
+
                                     radioProvider.methodProvidedImpl.registerOperation(function(
                                             opArgs) {
                                         return {
@@ -497,6 +510,21 @@ joynrTestRequire(
                                             outputParams = broadcast.createBroadcastOutputParameters();
                                             outputParams.setEnumOutput(Country.CANADA);
                                             outputParams.setEnumArrayOutput([Country.GERMANY, Country.ITALY]);
+                                        } else if (opArgs.broadcastName === "weakSignal"){
+                                            //weakSignal
+                                            broadcast = radioProvider.weakSignal;
+                                            outputParams = broadcast.createBroadcastOutputParameters();
+                                            outputParams.setRadioStation("radioStation");
+                                            outputParams.setByteBuffer([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
+                                        } else if (opArgs.broadcastName === "broadcastWithTypeDefs"){
+                                            //broadcastWithTypeDefs
+                                            broadcast = radioProvider.broadcastWithTypeDefs;
+                                            outputParams = broadcast.createBroadcastOutputParameters();
+                                            outputParams.setTypeDefStructOutput(new RadioStation({
+                                                name: "TestEnd2EndCommProviderWorker.broadcastWithTypeDefs.RadioStation",
+                                                byteBuffer: []
+                                            }));
+                                            outputParams.setTypeDefPrimitiveOutput(123456);
                                         }
                                         for (i = 0; i < opArgs.times; i++) {
                                             broadcast.fire(outputParams);

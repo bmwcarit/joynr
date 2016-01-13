@@ -23,6 +23,7 @@ joynrTestRequire(
         "joynr/provider/TestProvider",
         [
             "joynr/vehicle/RadioProvider",
+            "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provider/ProviderAttributeNotifyReadWrite",
@@ -38,6 +39,7 @@ joynrTestRequire(
         ],
         function(
                 RadioProvider,
+                RadioStation,
                 Country,
                 StringMap,
                 ProviderAttributeNotifyReadWrite,
@@ -160,6 +162,27 @@ joynrTestRequire(
                                                 return undefined;
                                             }
                                         },
+                                        typeDefForStruct : {
+                                            value : new RadioStation({
+                                                name : "radioStation",
+                                                byteBuffer : []
+                                            }),
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
+                                        typeDefForPrimitive : {
+                                            value : 0,
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
                                         addFavoriteStation : jasmine
                                                 .createSpy("addFavoriteStation"),
                                         weakSignal : jasmine.createSpy("weakSignal"),
@@ -168,6 +191,7 @@ joynrTestRequire(
                                                 .createSpy("methodProvidedImpl"),
                                         methodWithByteBuffer : jasmine
                                                 .createSpy("methodWithByteBuffer"),
+                                        methodWithTypeDef : jasmine.createSpy("methodWithTypeDef"),
                                         operationWithEnumsAsInputAndOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndOutput"),
                                         operationWithMultipleOutputParameters : jasmine
