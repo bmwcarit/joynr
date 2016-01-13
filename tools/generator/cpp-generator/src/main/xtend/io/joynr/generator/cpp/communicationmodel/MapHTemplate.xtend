@@ -65,17 +65,6 @@ class MapHTemplate implements MapTemplate{
 
 «getNamespaceEnder(type, true)»
 
-namespace joynr
-{
-template <>
-inline std::vector<«type.typeName»> Util::valueOf<
-		std::vector<«type.typeName»>>(const Variant& variant)
-{
-	return joynr::Util::convertVariantVectorToVector<«type.typeName»>(
-			variant.get<std::vector<Variant>>());
-}
-} // namespace joynr
-
 #endif // «headerGuard»
 '''
 

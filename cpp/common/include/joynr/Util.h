@@ -244,71 +244,42 @@ private:
     }
 };
 
+// this level of indirection is necessary to allow partial specialization
+template <typename T>
+struct ValueOfImpl
+{
+    static T valueOf(const Variant& variant)
+    {
+        return variant.get<T>();
+    }
+};
+
+// partial specilization for lists of datatypes
+template <typename T>
+struct ValueOfImpl<std::vector<T>>
+{
+    static std::vector<T> valueOf(const Variant& variant)
+    {
+        return Util::convertVariantVectorToVector<T>(variant.get<std::vector<Variant>>());
+    }
+};
+
 template <typename T>
 inline T Util::valueOf(const Variant& variant)
 {
-    return variant.get<T>();
+    return ValueOfImpl<T>::valueOf(variant);
 }
 
 template <>
 inline float Util::valueOf<float>(const Variant& variant)
 {
-    return variant.get<double>();
+    return ValueOfImpl<double>::valueOf(variant);
 }
 
 template <>
 inline std::string Util::valueOf<std::string>(const Variant& variant)
 {
-    return removeEscapeFromSpecialChars(variant.get<std::string>());
-}
-
-// concrete specilization for lists of primitive datatypes
-template <>
-inline std::vector<std::int8_t> Util::valueOf<std::vector<std::int8_t>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<std::int8_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<std::uint8_t> Util::valueOf<std::vector<std::uint8_t>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<std::uint8_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<std::int16_t> Util::valueOf<std::vector<std::int16_t>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<std::int16_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<std::uint16_t> Util::valueOf<std::vector<std::uint16_t>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<std::uint16_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<std::int32_t> Util::valueOf<std::vector<std::int32_t>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<std::int32_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<std::uint32_t> Util::valueOf<std::vector<std::uint32_t>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<std::uint32_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<std::int64_t> Util::valueOf<std::vector<std::int64_t>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<std::int64_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<std::uint64_t> Util::valueOf<std::vector<std::uint64_t>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<std::uint64_t>(variant.get<std::vector<Variant>>());
+    return removeEscapeFromSpecialChars(ValueOfImpl<std::string>::valueOf(variant));
 }
 
 template <>
@@ -319,18 +290,6 @@ inline std::vector<float> Util::valueOf<std::vector<float>>(const Variant& varia
     std::vector<float> floats(doubles.size());
     std::copy(doubles.cbegin(), doubles.cend(), floats.begin());
     return floats;
-}
-
-template <>
-inline std::vector<double> Util::valueOf<std::vector<double>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<std::string> Util::valueOf<std::vector<std::string>>(const Variant& variant)
-{
-    return Util::convertVariantVectorToVector<std::string>(variant.get<std::vector<Variant>>());
 }
 
 template <typename... Ts>
