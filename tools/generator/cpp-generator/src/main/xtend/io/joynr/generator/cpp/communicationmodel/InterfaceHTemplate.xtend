@@ -25,7 +25,6 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.FMapTypeAsLastComparator
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -37,9 +36,6 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension CppInterfaceUtil
-
-	@Inject
-	private extension InterfaceUtil
 
 	@Inject
 	private extension AttributeUtil

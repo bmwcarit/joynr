@@ -24,12 +24,11 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class CppInterfaceUtil {
+class CppInterfaceUtil extends InterfaceUtil {
 	@Inject extension NamingUtil
 	@Inject extension CppStdTypeUtil
 	@Inject extension AttributeUtil
 	@Inject extension MethodUtil
-	@Inject extension InterfaceUtil
 
 	def printFutureReturnDefinition()
 '''

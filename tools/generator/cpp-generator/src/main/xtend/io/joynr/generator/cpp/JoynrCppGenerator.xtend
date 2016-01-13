@@ -27,6 +27,8 @@ import io.joynr.generator.cpp.inprocess.InProcessGenerator
 import io.joynr.generator.cpp.joynrmessaging.JoynrMessagingGenerator
 import io.joynr.generator.cpp.provider.ProviderGenerator
 import io.joynr.generator.cpp.proxy.ProxyGenerator
+import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.templates.util.TypeUtil
 import io.joynr.generator.util.FileSystemAccessUtil
 import io.joynr.generator.util.InvocationArguments
 import java.io.File
@@ -41,32 +43,17 @@ import static com.google.common.base.Preconditions.*
 
 class JoynrCppGenerator extends AbstractJoynrGenerator{
 
-	@Inject 
-	private FrancaPersistenceManager francaPersistenceManager
+	@Inject private FrancaPersistenceManager francaPersistenceManager
 
-	@Inject 
-	CommunicationModelGenerator communicationModelGenerator
+	@Inject CommunicationModelGenerator communicationModelGenerator
+	@Inject ProxyGenerator proxyGenerator
+	@Inject ProviderGenerator providerGenerator
+	@Inject FilterGenerator filterGenerator;
+	@Inject InProcessGenerator inProcessGenerator
+	@Inject JoynrMessagingGenerator joynrMessagingGenerator
+	@Inject DefaultInterfaceProviderGenerator defaultProviderGenerator
 
-	@Inject
-	ProxyGenerator proxyGenerator
-
-	@Inject
-	ProviderGenerator providerGenerator
-
-	@Inject
-	private FilterGenerator filterGenerator;
-
-	@Inject
-	InProcessGenerator inProcessGenerator
-
-	@Inject
-	JoynrMessagingGenerator joynrMessagingGenerator
-
-	@Inject
-	DefaultInterfaceProviderGenerator defaultProviderGenerator
-
-	@Inject
-	IFileSystemAccess outputHeaderFileSystem;
+	@Inject IFileSystemAccess outputHeaderFileSystem;
 
 	public static final String OUTPUT_HEADER_PATH = "outputHeaderPath";
 	private Map<String, String> parameters;
@@ -79,6 +66,14 @@ class JoynrCppGenerator extends AbstractJoynrGenerator{
 		return "cpp"
 	}
 
+	override getGeneratorModule() {
+		new AbstractModule() {
+			override protected configure() {
+				bind(typeof(TypeUtil)).to(typeof(CppStdTypeUtil))
+			}
+		}
+	}
+
 	/*
 	 * Triggers the generation. In case the parameter "generate" is set to false, the generator is cleaning the generation folder
 	 */
@@ -86,12 +81,12 @@ class JoynrCppGenerator extends AbstractJoynrGenerator{
 		val fModel = getModel(input);
 
 		filterGenerator.doGenerate(fModel, sourceFileSystem, headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "filter"), 
+			getSourceContainerPath(sourceFileSystem, "filter"),
 			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "filter")
 		);
 
 		proxyGenerator.doGenerate(fModel, sourceFileSystem, headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "proxy"), 
+			getSourceContainerPath(sourceFileSystem, "proxy"),
 			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "proxy")
 		);
 
