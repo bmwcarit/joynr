@@ -395,7 +395,15 @@ void MessageRouter::addNextHopToParent(
 {
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
             [onError](const exceptions::JoynrException& error) {
-        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        } else {
+            JOYNR_LOG_WARN(logger,
+                           "Unable to report error (received by calling "
+                           "parentRouter->addNextHopAsync), since onError function is "
+                           "empty. Error message: {}",
+                           error.getMessage());
+        }
     };
 
     // add to parent router

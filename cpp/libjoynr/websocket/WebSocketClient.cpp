@@ -100,7 +100,13 @@ void WebSocketClient::onMessageReceived(const std::string&,
                                         const std::string&,
                                         const std::string& message)
 {
-    onTextMessageReceived(message);
+    if (onTextMessageReceived) {
+        onTextMessageReceived(message);
+    } else {
+        JOYNR_LOG_ERROR(
+                logger,
+                "Discarding received message, since onTextMessageReceived callback is empty.");
+    }
 }
 
 void WebSocketClient::onConnectionClosed()
