@@ -28,6 +28,7 @@ import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FMapType
+import io.joynr.generator.templates.util.InterfaceUtil.TypeFilter
 
 @Singleton
 public class InterfaceUtil {
@@ -155,39 +156,39 @@ public class InterfaceUtil {
 	}
 
 	def getAllRequiredTypes(
+		FInterface fInterface
+	) {
+		fInterface.getAllRequiredTypes(TypeFilter::defaultTypeFilter)
+	}
+	
+	def getAllRequiredTypes(
 			FInterface fInterface,
-			Boolean includingTransitiveTypes,
-			boolean methods,
-			boolean readAttributes,
-			boolean writeAttributes,
-			boolean notifyAttributes,
-			boolean broadcasts,
-			boolean errorTypes
+			TypeFilter filter
 	) {
 		val typeList = new HashSet<Object>();
-		if (methods){
+		if (filter.methods){
 			val methodToErrorEnumName = fInterface.methodToErrorEnumName
 			for (method : fInterface.methods) {
-				typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), errorTypes))
+				typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), filter.errorTypes))
 			}
 		}
 
 		for (attribute : getAttributes(fInterface)) {
-			if ((readAttributes && attribute.readable)
-					|| (writeAttributes && attribute.writable)
-					|| (notifyAttributes && attribute.notifiable)
+			if ((filter.readAttributes && attribute.readable)
+					|| (filter.writeAttributes && attribute.writable)
+					|| (filter.notifyAttributes && attribute.notifiable)
 			) {
 				typeList.addAll(getRequiredTypes(attribute.type));
 			}
 		}
 
-		if (broadcasts) {
+		if (filter.broadcasts) {
 			for (broadcast : fInterface.broadcasts) {
 				typeList.addAll(getAllRequiredTypes(broadcast))
 			}
 		}
 
-		if (includingTransitiveTypes){
+		if (filter.includeTransitiveTypes){
 			var returnValue = new HashSet<Object>()
 			getAllReferredDatatypes(typeList, returnValue)
 			return returnValue
@@ -197,42 +198,17 @@ public class InterfaceUtil {
 		}
 	}
 
-	def getAllRequiredTypes(FInterface fInterface) {
-		getAllRequiredTypes(fInterface, false)
-	}
-
-	def getAllRequiredTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
-		getAllRequiredTypes(fInterface, includingTransitiveTypes, true, true, true, true, true, false);
-	}
-
-	def getAllComplexTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
-		getAllComplexTypes(fInterface, includingTransitiveTypes, true, true, true, true, true)
-	}
-
 	def getAllComplexTypes(
-			FInterface fInterface,
-			Boolean includingTransitiveTypes,
-			boolean methods,
-			boolean readAttributes,
-			boolean writeAttributes,
-			boolean notifyAttributes,
-			boolean broadcasts
-			) {
-			getAllComplexTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, false)
-			}
-
-	def getAllComplexTypes(
-			FInterface fInterface,
-			Boolean includingTransitiveTypes,
-			boolean methods,
-			boolean readAttributes,
-			boolean writeAttributes,
-			boolean notifyAttributes,
-			boolean broadcasts,
-			boolean errorTypes
+			FInterface fInterface
 	) {
-		getAllRequiredTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, errorTypes).
-			filterComplex
+		getAllRequiredTypes(fInterface).filterComplex
+	}
+
+	def getAllComplexTypes(
+			FInterface fInterface,
+			TypeFilter filter
+	) {
+		getAllRequiredTypes(fInterface, filter).filterComplex
 	}
 
 	def private void getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
@@ -249,19 +225,45 @@ public class InterfaceUtil {
 		}
 	}
 
-	def getAllComplexTypes(FInterface fInterface) {
-		getAllComplexTypes(fInterface, false)
-	}
+	static class TypeFilter {
+		var methods = true
+		var readAttributes = true
+		var writeAttributes = true
+		var notifyAttributes = true
+		var broadcasts = true
+		var errorTypes = false
+		var includeTransitiveTypes = false
+		static def defaultTypeFilter () {
+			new TypeFilter()
+		}
 
-	def getAllComplexTypes(
-			FInterface fInterface,
-			boolean methods,
-			boolean readAttributes,
-			boolean writeAttributes,
-			boolean notifyAttributes,
-			boolean broadcasts
-	) {
-		getAllComplexTypes(fInterface, false, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)
+		def methods(boolean methods) {
+			this.methods = methods
+		}
+
+		def readAttributes(boolean readAttributes) {
+			this.readAttributes = readAttributes
+		}
+
+		def writeAttributes(boolean writeAttributes) {
+			this.writeAttributes = writeAttributes
+		}
+
+		def notifyAttributes(boolean notifyAttributes) {
+			this.notifyAttributes = notifyAttributes
+		}
+
+		def broadcasts(boolean broadcasts) {
+			this.broadcasts = broadcasts
+		}
+
+		def errorTypes(boolean errorTypes) {
+			this.errorTypes = errorTypes
+		}
+
+		def includeTransitiveTypes(boolean includeTransitiveTypes) {
+			this.includeTransitiveTypes = includeTransitiveTypes
+		}
 	}
 
 	def boolean hasReadAttribute(FInterface interfaceType){

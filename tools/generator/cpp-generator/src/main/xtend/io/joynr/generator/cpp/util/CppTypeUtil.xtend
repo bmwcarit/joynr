@@ -39,6 +39,7 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypedElement
+import io.joynr.generator.templates.util.InterfaceUtil.TypeFilter
 
 abstract class CppTypeUtil extends AbstractTypeUtil {
 	@Inject
@@ -271,15 +272,11 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	}
 	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
+		val filter = TypeFilter::defaultTypeFilter
+		filter.errorTypes(true)
 		for(datatype: getAllComplexTypes(
 			serviceInterface,
-			false,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true
+			filter
 		)){
 			if (datatype instanceof FType){
 				includeSet.add("\"" + getIncludeOf(datatype) + "\"");

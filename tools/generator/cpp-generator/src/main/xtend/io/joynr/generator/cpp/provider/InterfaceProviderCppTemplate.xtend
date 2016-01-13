@@ -26,6 +26,7 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
+import io.joynr.generator.templates.util.InterfaceUtil.TypeFilter
 
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
@@ -35,7 +36,9 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
 
-	override generate(FInterface serviceInterface)
+	override generate(FInterface serviceInterface) {
+var filter = TypeFilter::defaultTypeFilter
+filter.includeTransitiveTypes(true)
 '''
 «warning()»
 «val interfaceName = serviceInterface.joynrName»
@@ -56,7 +59,7 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
 
-	«val typeObjs = getAllComplexTypes(serviceInterface, true)»
+	«val typeObjs = getAllComplexTypes(serviceInterface, filter)»
 
 	«IF !typeObjs.isEmpty()»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
@@ -93,4 +96,5 @@ const std::string& «interfaceName»Provider::INTERFACE_NAME()
 
 «getNamespaceEnder(serviceInterface)»
 '''
+}
 }

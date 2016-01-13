@@ -29,6 +29,7 @@ import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
+import io.joynr.generator.templates.util.InterfaceUtil.TypeFilter
 
 class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.JoynrGeneratorExtensions {
 	@Inject extension JavaTypeUtil
@@ -113,7 +114,14 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 			boolean broadcasts
 	) {
 		val includeSet = new TreeSet<String>();
-		for(datatype : getAllComplexTypes(serviceInterface, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)) {
+		val filter = TypeFilter::defaultTypeFilter
+		filter.methods(methods);
+		filter.readAttributes(readAttributes);
+		filter.writeAttributes(writeAttributes);
+		filter.notifyAttributes(notifyAttributes);
+		filter.broadcasts(broadcasts);
+
+		for(datatype : getAllComplexTypes(serviceInterface, filter)) {
 			if (datatype instanceof FType){
 				val include = getIncludeOf(datatype);
 				if (include != null) {
