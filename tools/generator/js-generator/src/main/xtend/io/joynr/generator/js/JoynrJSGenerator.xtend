@@ -38,23 +38,12 @@ import static com.google.common.base.Preconditions.*
 
 class JoynrJSGenerator extends AbstractJoynrGenerator {
 
-	@Inject
-	private FrancaPersistenceManager francaPersistenceManager
-
-	@Inject
-	private GeneratorParameter parameters
-
-	@Inject
-	private extension ProxyGenerator
-
-	@Inject
-	private extension ProviderGenerator
-
-	@Inject
-	private extension TypesGenerator
-
-	@Inject
-	private extension ErrorEnumTypesGenerator
+	@Inject private FrancaPersistenceManager francaPersistenceManager
+	@Inject private GeneratorParameter parameters
+	@Inject private extension ProxyGenerator
+	@Inject private extension ProviderGenerator
+	@Inject private extension TypesGenerator
+	@Inject private extension ErrorEnumTypesGenerator
 
 	override getLanguageId() {
 		"javascript"

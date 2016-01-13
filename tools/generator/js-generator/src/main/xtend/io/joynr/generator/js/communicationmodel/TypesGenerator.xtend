@@ -28,6 +28,7 @@ import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FType
 import org.franca.core.franca.FMapType
+import io.joynr.generator.templates.util.TypeUtil
 
 class TypesGenerator {
 
@@ -35,12 +36,13 @@ class TypesGenerator {
 	@Inject extension EnumTypeGenerator
 	@Inject extension CompoundTypeGenerator
 	@Inject extension MapTypeGenerator
+	@Inject extension TypeUtil
 	@Inject private extension NamingUtil
 
 	def generateTypes(Iterable<FType> types, IFileSystemAccess fsa) {
 		var generatedTypes = new HashSet<Object>;
 
-		for (type : types) {
+		for (type : filterComplex(types)) {
 			val path = type.buildPackagePath(File::separator, true)
 
 			val fileName = path + File::separator + type.joynrName + ".js"

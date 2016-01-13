@@ -164,7 +164,10 @@ class JSTypeUtil extends AbstractTypeUtil {
 		if (datatype.isMap){
 			return datatype.mapType.joynrName
 		}
-		throw new IllegalStateException("JoynrJSGeneratorExtensions.getMappedDatatype: unsupported state, datatype " +
+		if (datatype.isTypeDef){
+			return datatype.typeDefType.actualType.jsdocTypeName
+		}
+		throw new IllegalStateException("getJsdocTypeName: unsupported state, datatype " +
 			datatype.joynrName + " could not be mapped to an implementation datatype")
 	}
 
