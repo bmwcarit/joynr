@@ -28,7 +28,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
@@ -93,8 +93,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             }
 
             @Override
-            public void onFailure(JoynrException error) {
-                logger.error("Error while registering Provider:", error);
+            public void onFailure(JoynrRuntimeException runtimeException) {
+                logger.error("Unexpected Error while registering Provider:", runtimeException);
+
             }
         };
         return localDiscoveryAggregator.add(callback, discoveryEntry);
@@ -111,7 +112,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             }
 
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 logger.error("Error while unregistering provider: ", error);
             }
         };

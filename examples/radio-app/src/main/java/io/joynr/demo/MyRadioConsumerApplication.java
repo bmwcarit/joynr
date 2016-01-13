@@ -1,5 +1,20 @@
 package io.joynr.demo;
 
+import java.io.IOException;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.Module;
+import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /*
  * #%L
  * %%
@@ -24,13 +39,12 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.websocket.WebsocketModule;
-import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
@@ -40,10 +54,6 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-
-import java.io.IOException;
-import java.util.Properties;
-
 import jline.console.ConsoleReader;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -58,18 +68,6 @@ import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
 import joynr.vehicle.RadioProxy;
 import joynr.vehicle.RadioStation;
 import joynr.vehicle.RadioSync.GetLocationOfCurrentStationReturned;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import com.google.inject.Module;
-import com.google.inject.name.Named;
-import com.google.inject.util.Modules;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     private static final String PRINT_BORDER = "\n####################\n";
@@ -395,18 +393,33 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
 
             // add favorite radio station async
             RadioStation radioStation = new RadioStation("99.4 AFN", false, Country.GERMANY);
-            Callback<Boolean> callback = new Callback<Boolean>() {
+            Future<Boolean> future = radioProxy.addFavoriteStation(new CallbackWithModeledError<Boolean, AddFavoriteStationErrorEnum>() {
                 @Override
                 public void onSuccess(Boolean result) {
                     LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onSuccess" + PRINT_BORDER);
                 }
 
                 @Override
-                public void onFailure(JoynrException error) {
-                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onFailure" + PRINT_BORDER);
+                public void onFailure(JoynrRuntimeException error) {
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onFailure: " + error.getMessage() + PRINT_BORDER);
                 }
-            };
-            Future<Boolean> future = radioProxy.addFavoriteStation(callback, radioStation);
+
+                @Override
+                public void onFailure(AddFavoriteStationErrorEnum errorEnum) {
+                    switch (errorEnum) {
+                    case DUPLICATE_RADIOSTATION:
+                        LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station failed: Duplicate Station!" + PRINT_BORDER);
+                        break;
+
+                    default:
+                        LOG.error(PRINT_BORDER + "ASYNC METHOD: added favorite station failed: unknown errorEnum:" + errorEnum + PRINT_BORDER);
+                        break;
+                    }
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onFailure: " + errorEnum
+                    + PRINT_BORDER);
+                }
+            }, radioStation);
+
             try {
                 long timeoutInMilliseconds = 8000;
                 Boolean reply = future.get(timeoutInMilliseconds);

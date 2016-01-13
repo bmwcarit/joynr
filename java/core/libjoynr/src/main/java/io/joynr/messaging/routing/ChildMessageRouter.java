@@ -20,7 +20,7 @@ package io.joynr.messaging.routing;
  */
 
 import com.google.inject.Inject;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
@@ -94,7 +94,7 @@ public class ChildMessageRouter extends MessageRouterImpl {
             }
 
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 deferred.reject(new ProviderRuntimeException("Failed to add next hop to parent: " + error));
             }
         };

@@ -27,7 +27,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.proxy.Callback;
+import io.joynr.provider.ProviderCallback;
 
 import java.io.IOException;
 import java.util.Date;
@@ -198,7 +198,7 @@ public class DispatcherImpl implements Dispatcher {
                         final String fromParticipantId,
                         final String toParticipantId,
                         final long expiryDate) {
-        requestReplyManager.handleRequest(new Callback<Reply>() {
+        requestReplyManager.handleRequest(new ProviderCallback<Reply>() {
             @Override
             public void onSuccess(Reply reply) {
                 try {

@@ -1,13 +1,9 @@
 package io.joynr.proxy;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-
-import javax.annotation.CheckForNull;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +19,6 @@ import javax.annotation.CheckForNull;
  * #L%
  */
 
-public interface ICallback {
-    void resolve(@CheckForNull Object... result);
-
-    /**
-     *
-     * @param runtimeException: unexpected non-modeled exception
-     * to be passed back to the consumer.
-     */
-    void onFailure(JoynrRuntimeException runtimeException);
+public abstract class CallbackWithModeledError<T, U extends Enum<?>> extends Callback<T> implements
+        ICallbackWithModeledError<U> {
 }

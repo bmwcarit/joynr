@@ -32,7 +32,6 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
@@ -43,6 +42,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.publication.BroadcastFilter;
@@ -68,7 +68,6 @@ import joynr.tests.test.MethodWithImplicitErrorEnumErrorEnum;
 import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
 import joynr.tests.testBroadcastInterface.BroadcastWithMapParametersBroadcastListener;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
-import joynr.tests.testProvider.MethodWithByteBufferDeferred;
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
 import joynr.tests.testTypes.AnotherDerivedStruct;
@@ -143,6 +142,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Mock
     Callback<Void> callbackVoid;
+
+    @Mock
+    private CallbackWithModeledError<Void, Enum<?>> callbackWithApplicationException;
 
     private TestAsyncProviderImpl providerAsync;
 
@@ -535,7 +537,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
 
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
             }
 
@@ -568,7 +570,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         Future<MethodWithMultipleOutputParametersReturned> future = proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
             }
 
@@ -651,7 +653,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             }
 
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 future.onFailure(error);
             }
 
@@ -883,7 +885,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(ErrorEnumBase.BASE_ERROR_TYPECOLLECTION);
-        Future<Void> future = proxy.methodWithErrorEnum(callbackVoid);
+        Future<Void> future = proxy.methodWithErrorEnum(callbackWithApplicationException);
         try {
             future.get();
             fail("Should throw ApplicationException");
@@ -892,7 +894,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackVoid).onFailure(expected);
+        verify(callbackWithApplicationException).onFailure(expected.getError());
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -914,7 +916,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         Future<Byte[]> future = proxy.methodWithByteBuffer(new Callback<Byte[]>() {
 
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 fail("byteBuffer was not returned correctly");
 
             }
@@ -950,7 +952,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(MethodWithErrorEnumExtendedErrorEnum.IMPLICIT_ERROR_TYPECOLLECTION);
-        Future<Void> future = proxy.methodWithErrorEnumExtended(callbackVoid);
+        Future<Void> future = proxy.methodWithErrorEnumExtended(callbackWithApplicationException);
         try {
             future.get();
             fail("Should throw ApplicationException");
@@ -959,7 +961,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackVoid).onFailure(expected);
+        verify(callbackWithApplicationException).onFailure(expected.getError());
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -984,7 +986,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(MethodWithImplicitErrorEnumErrorEnum.IMPLICIT_ERROR);
-        Future<Void> future = proxy.methodWithImplicitErrorEnum(callbackVoid);
+        Future<Void> future = proxy.methodWithImplicitErrorEnum(callbackWithApplicationException);
         try {
             future.get();
             fail("Should throw ApplicationException");
@@ -993,7 +995,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackVoid).onFailure(expected);
+        verify(callbackWithApplicationException).onFailure(expected.getError());
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

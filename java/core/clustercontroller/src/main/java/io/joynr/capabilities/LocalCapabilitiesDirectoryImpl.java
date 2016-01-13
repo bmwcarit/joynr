@@ -38,7 +38,6 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -161,7 +160,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     }
 
                     @Override
-                    public void onFailure(JoynrException exception) {
+                    public void onFailure(JoynrRuntimeException exception) {
                         deferred.reject(new ProviderRuntimeException(exception.toString()));
                     }
                 }, capabilityInformation);
@@ -188,7 +187,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
 
                 @Override
-                public void onFailure(JoynrException error) {
+                public void onFailure(JoynrRuntimeException error) {
                     //do nothing
                 }
             };
@@ -368,7 +367,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
 
                 @Override
-                public void onFailure(JoynrException exception) {
+                public void onFailure(JoynrRuntimeException exception) {
                     capabilitiesCallback.onError((Exception) exception);
 
                 }
@@ -407,7 +406,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
 
             @Override
-            public void onFailure(JoynrException exception) {
+            public void onFailure(JoynrRuntimeException exception) {
                 capabilitiesCallback.onError((Exception) exception);
             }
         },
@@ -442,7 +441,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     Callback<Void> callback = new Callback<Void>() {
 
                         @Override
-                        public void onFailure(JoynrException error) {
+                        public void onFailure(JoynrRuntimeException error) {
                         }
 
                         @Override

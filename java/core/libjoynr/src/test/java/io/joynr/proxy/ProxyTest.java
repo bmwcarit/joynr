@@ -346,7 +346,9 @@ public class ProxyTest {
                                                  Mockito.<String> any(),
                                                  Mockito.<Request> any(),
                                                  Mockito.anyLong());
-        final Future<String> future = proxy.asyncMethodWithApplicationError(callback);
+
+        CallbackWithModeledError<String, Enum<?>> callbackWithApplicationException = Mockito.mock(CallbackWithModeledError.class);
+        final Future<String> future = proxy.asyncMethodWithApplicationError(callbackWithApplicationException);
 
         // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
         try {
@@ -356,7 +358,7 @@ public class ProxyTest {
             Assert.assertEquals(expected, e);
         }
 
-        verify(callback).onFailure(expected);
+        verify(callbackWithApplicationException).onFailure(expected.getError());
         Assert.assertEquals(RequestStatusCode.ERROR, future.getStatus().getCode());
     }
 

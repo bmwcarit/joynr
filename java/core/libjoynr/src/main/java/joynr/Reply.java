@@ -27,6 +27,7 @@ import io.joynr.exceptions.JoynrException;
  * Value class for the response of a JSON-RPC function call.
  */
 public class Reply implements JoynrMessageType {
+    private static final long serialVersionUID = 1L;
     private Object[] response;
     private JoynrException error;
     private String requestReplyId;

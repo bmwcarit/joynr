@@ -1,8 +1,4 @@
-package io.joynr.proxy;
-
-import io.joynr.exceptions.JoynrRuntimeException;
-
-import javax.annotation.CheckForNull;
+package io.joynr.provider;
 
 /*
  * #%L
@@ -23,13 +19,21 @@ import javax.annotation.CheckForNull;
  * #L%
  */
 
-public interface ICallback {
-    void resolve(@CheckForNull Object... result);
+import javax.annotation.CheckForNull;
 
-    /**
-     *
-     * @param runtimeException: unexpected non-modeled exception
-     * to be passed back to the consumer.
-     */
-    void onFailure(JoynrRuntimeException runtimeException);
+import io.joynr.exceptions.JoynrException;
+
+public abstract class ProviderCallback<T> {
+    public abstract void onSuccess(@CheckForNull T result);
+
+    @SuppressWarnings("unchecked")
+    public void resolve(Object... result) {
+        if (result.length == 0) {
+            onSuccess(null);
+        } else {
+            onSuccess((T) result[0]);
+        }
+    }
+
+    public abstract void onFailure(JoynrException joynrException);
 }

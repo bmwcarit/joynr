@@ -2,7 +2,7 @@ package io.joynr.capabilities;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ProxyBuilder;
@@ -78,7 +78,7 @@ public class GlobalCapabilitiesDirectoryClient {
                        long timeout) {
         getProxy(timeout).lookup(new Callback<CapabilityInformation[]>() {
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 callback.onFailure(error);
             }
 
@@ -93,6 +93,7 @@ public class GlobalCapabilitiesDirectoryClient {
                 }
                 callback.onSuccess(capabilityInformationList);
             }
+
         }, domain, interfaceName);
 
     }

@@ -77,7 +77,7 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 
 	override generate(FInterface serviceInterface) {
 		var methodToDeferredName = new HashMap<FMethod, String>();
-		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName()
+		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
 		init(serviceInterface, methodToDeferredName, uniqueMethodsToCreateDeferreds);
 

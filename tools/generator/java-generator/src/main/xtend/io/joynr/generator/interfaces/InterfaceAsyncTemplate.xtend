@@ -39,7 +39,8 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 	@Inject extension NamingUtil
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
-	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods) {
+	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName,  HashMap<FMethod, String> methodToErrorEnumName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods) {
+		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 		var uniqueMultioutMethodSignatureToOutputContainerName = new HashMap<String, String>();
 		var methodCounts = overloadedMethodCounts(getMethods(serviceInterface));
 		var indexForMethod = new HashMap<String, Integer>();
@@ -47,15 +48,22 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 		for (FMethod method : getMethods(serviceInterface)) {
 			if (method.outputParameters.size < 2) {
 				val outputParamterType = method.getTypeNamesForOutputParameter.iterator.next;
-				if (outputParamterType == "void") {
-					methodToCallbackName.put(method, "Callback<Void>");
-					methodToFutureName.put(method, "Future<Void>");
-					methodToSyncReturnedName.put(method, "Void");
+				var outputType = if (outputParamterType == "void") "Void" else getObjectDataTypeForPlainType(outputParamterType)
+
+				if (method.hasErrorEnum) {
+					var errorEnumType = ""
+					if (method.errors != null) {
+						errorEnumType = packagePath + "." + serviceInterface.joynrName + "." +
+							methodToErrorEnumName.get(method)
+					} else {
+						errorEnumType = method.errorEnum.buildPackagePath(".", true) + "." + method.errorEnum.joynrName
+					}
+					methodToCallbackName.put(method, "CallbackWithModeledError<" + outputType + "," + errorEnumType + ">");
 				} else {
-					methodToCallbackName.put(method, "Callback<" + getObjectDataTypeForPlainType(outputParamterType) + ">");
-					methodToFutureName.put(method, "Future<" + getObjectDataTypeForPlainType(outputParamterType) + ">");
-					methodToSyncReturnedName.put(method, getObjectDataTypeForPlainType(outputParamterType));
+					methodToCallbackName.put(method, "Callback<" + outputType + ">");
 				}
+				methodToFutureName.put(method, "Future<" + outputType + ">");
+				methodToSyncReturnedName.put(method, outputType);
 			} else {
 				// Multiple Out Parameters
 				var callbackName = method.name.toFirstUpper;
@@ -95,9 +103,10 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 	override generate(FInterface serviceInterface) {
 		var methodToCallbackName = new HashMap<FMethod, String>();
 		var methodToFutureName = new HashMap<FMethod, String>();
+		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName
 		var methodToSyncReturnedName = new HashMap<FMethod, String>();
 		var uniqueMultioutMethods = new ArrayList<FMethod>();
-		init(serviceInterface, methodToCallbackName, methodToFutureName, methodToSyncReturnedName, uniqueMultioutMethods);
+		init(serviceInterface, methodToCallbackName, methodToFutureName, methodToErrorEnumName, methodToSyncReturnedName, uniqueMultioutMethods);
 		val interfaceName =  serviceInterface.joynrName
 		val asyncClassName = interfaceName + "Async"
 
@@ -112,6 +121,10 @@ package «packagePath»;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 «IF getMethods(serviceInterface).size > 0 || hasReadAttribute»
 import io.joynr.proxy.Callback;
+«IF serviceInterface.hasMethodWithErrorEnum»
+import io.joynr.proxy.ICallbackWithModeledError;
+import io.joynr.proxy.CallbackWithModeledError;
+«ENDIF»
 import io.joynr.proxy.Future;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 «ENDIF»
@@ -170,7 +183,17 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 	«FOR method: uniqueMultioutMethods»
 		«val callbackName = methodToCallbackName.get(method)»
 		«val outputParametersLength = method.outputParameters.length»
+		«IF method.hasErrorEnum»
+			«IF method.errors != null»
+				«val errorEnumType = packagePath + "." + interfaceName + "." + methodToErrorEnumName.get(method)»
+				public abstract class «callbackName» implements ICallback, ICallbackWithModeledError<«errorEnumType»> {
+			«ELSE»
+				«val errorEnumType = method.errorEnum.buildPackagePath(".", true) + "." + method.errorEnum.joynrName»
+				public abstract class «callbackName» implements ICallback, ICallbackWithModeledError<«errorEnumType»> {
+			«ENDIF»
+		«ELSE»
 		public abstract class «callbackName» implements ICallback {
+		«ENDIF»
 			public abstract void onSuccess(«method.commaSeperatedTypedOutputParameterList»);
 
 			public void resolve(Object... outParameters) {

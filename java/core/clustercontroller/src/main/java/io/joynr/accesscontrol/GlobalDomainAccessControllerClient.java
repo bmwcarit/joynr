@@ -6,7 +6,7 @@ import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryCh
 import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChangedBroadcastListener;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
@@ -79,7 +79,7 @@ public class GlobalDomainAccessControllerClient {
 
         getProxy(TTL_30_DAYS_IN_MS).getMasterAccessControlEntries(new Callback<MasterAccessControlEntry[]>() {
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 callback.onFailure(error);
                 future.onFailure(error);
             }
@@ -192,7 +192,7 @@ public class GlobalDomainAccessControllerClient {
 
         getProxy(TTL_30_DAYS_IN_MS).getMasterRegistrationControlEntries(new Callback<MasterRegistrationControlEntry[]>() {
                                                                             @Override
-                                                                            public void onFailure(JoynrException error) {
+                                                                            public void onFailure(JoynrRuntimeException error) {
                                                                                 callback.onFailure(error);
                                                                                 future.onFailure(error);
                                                                             }
@@ -224,7 +224,7 @@ public class GlobalDomainAccessControllerClient {
 
         getProxy(TTL_30_DAYS_IN_MS).getEditableMasterRegistrationControlEntries(new Callback<MasterRegistrationControlEntry[]>() {
                                                                                     @Override
-                                                                                    public void onFailure(JoynrException error) {
+                                                                                    public void onFailure(JoynrRuntimeException error) {
                                                                                         callback.onFailure(error);
                                                                                         future.onFailure(error);
                                                                                     }
@@ -256,7 +256,7 @@ public class GlobalDomainAccessControllerClient {
 
         getProxy(TTL_30_DAYS_IN_MS).getMediatorRegistrationControlEntries(new Callback<MasterRegistrationControlEntry[]>() {
                                                                               @Override
-                                                                              public void onFailure(JoynrException error) {
+                                                                              public void onFailure(JoynrRuntimeException error) {
                                                                                   callback.onFailure(error);
                                                                                   future.onFailure(error);
                                                                               }
@@ -291,7 +291,7 @@ public class GlobalDomainAccessControllerClient {
 
         getProxy(TTL_30_DAYS_IN_MS).getOwnerRegistrationControlEntries(new Callback<OwnerRegistrationControlEntry[]>() {
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 callback.onFailure(error);
                 future.onFailure(error);
             }
@@ -322,7 +322,7 @@ public class GlobalDomainAccessControllerClient {
 
         getProxy(TTL_30_DAYS_IN_MS).getEditableOwnerRegistrationControlEntries(new Callback<OwnerRegistrationControlEntry[]>() {
                                                                                    @Override
-                                                                                   public void onFailure(JoynrException error) {
+                                                                                   public void onFailure(JoynrRuntimeException error) {
                                                                                        callback.onFailure(error);
                                                                                        future.onFailure(error);
                                                                                    }

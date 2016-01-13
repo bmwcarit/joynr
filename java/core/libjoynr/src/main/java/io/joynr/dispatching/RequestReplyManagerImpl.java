@@ -31,7 +31,7 @@ import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.proxy.Callback;
+import io.joynr.provider.ProviderCallback;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     private Map<String, PayloadListener<?>> oneWayRecipients = Maps.newHashMap();
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>>();
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<OneWay>>> oneWayRequestQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<OneWay>>>();
-    private ConcurrentHashMap<Request, Callback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, Callback<Reply>>();
+    private ConcurrentHashMap<Request, ProviderCallback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, ProviderCallback<Reply>>();
 
     private ReplyCallerDirectory replyCallerDirectory;
     private RequestCallerDirectory requestCallerDirectory;
@@ -95,7 +95,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.dispatcher.MessageSender#sendRequest(java. lang.String, java.lang.String,
      * java.lang.Object, io.joynr.dispatcher.ReplyCaller, long, long)
      */
@@ -123,7 +123,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.dispatcher.MessageSender#sendSyncRequest(java .lang.String, java.lang.String,
      * java.lang.Object, long, long)
      */
@@ -186,7 +186,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.dispatcher.MessageSender#sendOneWay(java.lang .String, java.lang.String,
      * java.lang.Object, long)
      */
@@ -207,6 +207,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
 
     }
 
+    @Override
     public void sendReply(final String fromParticipantId,
                           final String toParticipantId,
                           Reply payload,
@@ -270,13 +271,13 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void handleOneWayRequest(final PayloadListener listener, final OneWay requestPayload) {
         listener.receive(requestPayload.getPayload());
     }
 
     @Override
-    public void handleRequest(Callback<Reply> replyCallback,
+    public void handleRequest(ProviderCallback<Reply> replyCallback,
                               String providerParticipant,
                               Request request,
                               long expiryDate) {
@@ -288,7 +289,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
         }
     }
 
-    private void handleRequest(Callback<Reply> replyCallback, RequestCaller requestCaller, Request request) {
+    private void handleRequest(ProviderCallback<Reply> replyCallback, RequestCaller requestCaller, Request request) {
         // TODO shall be moved to request manager and not handled by dispatcher
         logger.debug("executing request {}", request.getRequestReplyId());
         requestInterpreter.execute(replyCallback, requestCaller, request);
@@ -316,7 +317,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
         }
     }
 
-    private void queueRequest(final Callback<Reply> replyCallback,
+    private void queueRequest(final ProviderCallback<Reply> replyCallback,
                               final String providerParticipantId,
                               Request request,
                               ExpiryDate incomingTtlExpirationDate_ms) {

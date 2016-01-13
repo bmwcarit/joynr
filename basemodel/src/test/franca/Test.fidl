@@ -427,6 +427,15 @@ interface test {
 		error testTypes.ErrorEnumBase
 	}
 
+	method methodWithMultipleOutAndErrorEnum {
+		out {
+			String out1
+			String out2
+		}
+		error testTypes.ErrorEnumBase
+	}
+
+
 	method methodWithErrorEnumExtended {
 		error extends testTypes.ErrorEnumBase {
 			IMPLICIT_ERROR_TYPECOLLECTION
