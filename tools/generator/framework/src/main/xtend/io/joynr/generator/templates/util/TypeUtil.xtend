@@ -280,6 +280,15 @@ class TypeUtil {
 		}
 	}
 
+	def FTypeDef getTypeDefType(FTypeRef type){
+		if (type==null){
+			return null;
+		}
+		else{
+			return getTypeDefType(type.derived)
+		}
+	}
+
 	def FMapType getMapType(FType type){
 		if (type == null){
 			return null;
@@ -319,6 +328,18 @@ class TypeUtil {
 		}
 	}
 
+	def FTypeDef getTypeDefType(FType type){
+		if (type == null){
+			return null;
+		}
+		if (type instanceof FArrayType){
+			return getTypeDefType(type.elementType)
+		}
+		else if (type instanceof FTypeDef){
+			return type
+		}
+	}
+
 	def boolean isCompound(FType type) {
 		if (type==null){
 			return false
@@ -347,6 +368,23 @@ class TypeUtil {
 		}
 		if (typeRef.derived!=null){
 			return isCompound(typeRef.derived)
+		}
+		return false
+	}
+
+	def boolean isTypeDef(FType type) {
+		if (type instanceof FTypeDef){
+			return true
+		}
+		return false
+	}
+
+	def boolean isTypeDef(FTypeRef typeRef) {
+		if (typeRef == null){
+			return false;
+		}
+		if (typeRef.derived!=null){
+			return isTypeDef(typeRef.derived)
 		}
 		return false
 	}
