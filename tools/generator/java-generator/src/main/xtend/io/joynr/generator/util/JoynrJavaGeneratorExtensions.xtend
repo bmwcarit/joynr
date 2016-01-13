@@ -30,6 +30,7 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
+import org.franca.core.franca.FTypedElement
 
 class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.JoynrGeneratorExtensions {
 	@Inject extension JavaTypeUtil
@@ -180,16 +181,28 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 		«ENDIF»
 	'''
 
-	// for parameters
-	def appendJavadocParameter(FModelElement element, String prefixForNewLines)'''
-		«IF element.comment != null»
-			«FOR comment : element.comment.elements»
-				«IF comment.type == FAnnotationType::DESCRIPTION»
-					«prefixForNewLines» @param «element.joynrName» «ReformatComment(comment, prefixForNewLines)»
-				«ENDIF»
-			«ENDFOR»
-		«ENDIF»
-	'''
+	def appendJavadocParameter(FTypedElement element, String prefixForNewLines) {
+		var description = prefixForNewLines + " @param " + element.joynrName + " ";
+		if (element.comment != null) {
+			for (comment : element.comment.elements) {
+				if (comment.type == FAnnotationType::DESCRIPTION) {
+					description += ReformatComment(comment, prefixForNewLines)
+				}
+			}
+		} else {
+			description += "description missing in Franca model."
+		}
+		if (element.type.isTypeDef) {
+			description += "\n" + prefixForNewLines +
+			" (type resolved from modeled Franca typedef " + 
+			element.type.joynrName +
+			" as " +
+			element.type.typeDefType.actualType.typeName +
+			")";
+		}
+
+		return description;
+	}
 
 	def String getIncludeOf(FType dataType) {
 		return dataType.buildPackagePath(".", true) + "." + dataType.joynrName;

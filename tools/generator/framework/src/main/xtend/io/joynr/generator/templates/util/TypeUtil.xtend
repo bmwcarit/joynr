@@ -350,9 +350,6 @@ class TypeUtil {
 		if (type instanceof FCompoundType){
 			return true
 		}
-		if (type instanceof FTypeDef){
-			return isCompound(type.actualType)
-		}
 		if (type instanceof FEnumerationType){
 			return false
 		}
@@ -513,6 +510,10 @@ class TypeUtil {
 	 */
 	def boolean isArray(FTypedElement typedElement) {
 		return typedElement.array
+	}
+
+	def boolean isArray(FType type) {
+		return type.array
 	}
 
 	def boolean hasExtendsDeclaration(FCompoundType datatype) {

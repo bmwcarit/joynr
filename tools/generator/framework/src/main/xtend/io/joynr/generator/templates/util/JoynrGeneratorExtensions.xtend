@@ -2,7 +2,7 @@ package io.joynr.generator.templates.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,9 +128,9 @@ abstract class JoynrGeneratorExtensions {
 	def getDataTypes(FModel fModel) {
 		val referencedFTypes = new HashSet<FType>()
 
-		fModel.typeCollections.forEach[referencedFTypes.addAll(types)]
+		fModel.typeCollections.forEach[typeCollection | referencedFTypes.addAll(typeCollection.types)]
 
-		fModel.interfaces.forEach[referencedFTypes.addAll(types)]
+		fModel.interfaces.forEach[anInterface | referencedFTypes.addAll(anInterface.types)]
 
 		return referencedFTypes
 	}
@@ -145,6 +145,10 @@ abstract class JoynrGeneratorExtensions {
 
 	def getEnumDataTypes(FModel fModel) {
 		getDataTypes(fModel).filter(type | type.isEnum).map(type | type.enumType).filterNull
+	}
+
+	def getTypeDefDataTypes(FModel fModel) {
+		getDataTypes(fModel).filter(type | type.isTypeDef).map(type | type.typeDefType).filterNull
 	}
 
 	def getMapDataTypes(FModel fModel) {

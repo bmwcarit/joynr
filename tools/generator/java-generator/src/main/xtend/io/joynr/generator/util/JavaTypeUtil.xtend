@@ -13,6 +13,7 @@ import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FTypeRef
 
 class JavaTypeUtil extends AbstractTypeUtil {
 
@@ -156,7 +157,11 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	}
 
 	override getTypeName(FType datatype) {
-		datatype.joynrName
+		if (datatype.isTypeDef) {
+			datatype.typeDefType.actualType.joynrName
+		} else {
+			datatype.joynrName
+		}
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {
@@ -211,24 +216,27 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	}
 
 	def getDefaultValue(FTypedElement element) {
-		getDefaultValue(element, "");
-	}
-
-	def getDefaultValue(FTypedElement element, String constructorParams) {
 		if ((isArray(element))){
 			return "{}";
 		}
-		if (isMap(element.type)) {
-			return "new " + element.type.joynrName + "()";
+		return element.type.getDefaultValue();
+	}
+
+	def String getDefaultValue(FTypeRef typeRef) {
+		if (typeRef.isMap) {
+			return "new " + typeRef.joynrName + "()";
 		}
-		if (element.type.isCompound || element.type.isMap) {
-			return "new " + element.type.compoundType.joynrName + "(" + constructorParams + ")";
-		} else if (element.type.isEnum) {
-			return  element.type.enumType.joynrName + "." + element.type.enumType.enumerators.get(0).joynrName;
-		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
+		if (typeRef.isTypeDef) {
+			return getDefaultValue(typeRef.typeDefType.actualType);
+		}
+		if (typeRef.isCompound || typeRef.isMap) {
+			return "new " + typeRef.compoundType.joynrName + "()";
+		} else if (typeRef.isEnum) {
+			return typeRef.enumType.joynrName + "." + typeRef.enumType.enumerators.get(0).joynrName;
+		} else if (!primitiveDataTypeDefaultMap.containsKey(typeRef.predefined)) {
  			return "NaN";
- 		} else if (isPrimitive(element.type)) {
-			return primitiveDataTypeDefaultMap.get(element.type.predefined);
+ 		} else if (typeRef.isPrimitive) {
+			return primitiveDataTypeDefaultMap.get(typeRef.predefined);
 		}
 	}
 }

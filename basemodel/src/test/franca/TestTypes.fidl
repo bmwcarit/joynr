@@ -30,6 +30,9 @@ typeCollection TestTypes {
 		String tString
 	}
 
+	typedef TypeDefForPrimitive is Int32
+	typedef TypeDefForTStruct is TStruct
+
 	struct TStructExtended extends TStruct {
 		TEnum tEnum
 		Int32 tInt32
@@ -72,6 +75,7 @@ typeCollection TestTypes {
 		Word word
 		Word[] wordArray
 		TStringKeyMap stringMap
+		TypeDefForTStruct typeDefForTStruct
 	}
 
 	struct TEverythingExtendedStruct extends TEverythingStruct {

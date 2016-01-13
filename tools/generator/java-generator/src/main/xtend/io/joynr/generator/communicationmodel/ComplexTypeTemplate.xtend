@@ -140,7 +140,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	/**
 	 * Gets «memberName.toFirstUpper»
 	 *
-	 * @return «appendJavadocComment(member, "* ")»
+	 * @return «appendJavadocComment(member, "* ")»«IF member.type.isTypeDef» (type resolved from modeled Franca typedef «member.type.joynrName» as «member.type.typeDefType.actualType.typeName»)«ENDIF»
 	 */
 	«IF isArray(member)»@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")«ENDIF»
 	@JsonIgnore

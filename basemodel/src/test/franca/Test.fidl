@@ -127,6 +127,8 @@ interface test {
 
 	attribute ByteBuffer byteBufferAttribute
 
+	attribute TypeDefForTStruct typeDefForTStruct
+
 	method addNumbers {
 		in {
 			Int32 first
@@ -213,6 +215,24 @@ interface test {
 		}
 		out {
 			Int8[] result
+		}
+	}
+
+	method  methodWithPrimitiveTypeDef{
+		in {
+			TypeDefForTStruct input
+		}
+		out {
+			TypeDefForTStruct result
+		}
+	}
+
+	method  methodWithCompoundTypeDef{
+		in {
+			TypeDefForTStruct input
+		}
+		out {
+			TypeDefForTStruct result
 		}
 	}
 
