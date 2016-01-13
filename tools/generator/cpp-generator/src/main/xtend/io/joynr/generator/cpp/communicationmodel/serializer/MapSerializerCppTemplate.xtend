@@ -80,9 +80,8 @@ void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.to
 				«deserializePrimitiveValue(typeRef.predefined, varName, "field." + varName + "()")»
 			«ELSE»
 				«typeRef.typeName» «varName»;
-				«val complexType = typeRef.derived»
-				«val deserializerType = complexType.deserializer»
-				«deserializerType»<«complexType.typeName»>::deserialize(«varName», field.«varName»());
+				«val deserializerType = typeRef.deserializer»
+				«deserializerType»<«typeRef.typeName»>::deserialize(«varName», field.«varName»());
 		«ENDIF»
 		''']»
 		«deserializeMapEntry.apply(type.keyType, "key")»

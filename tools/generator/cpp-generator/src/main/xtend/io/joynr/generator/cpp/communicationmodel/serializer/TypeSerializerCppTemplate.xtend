@@ -25,7 +25,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FType
+import org.franca.core.franca.FTypeRef
 
 class TypeSerializerCppTemplate implements CompoundTypeTemplate{
 
@@ -79,22 +79,20 @@ void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.to
 				if (field.name() == "«member.name»") {
 				«IF member.array»
 					«IF member.type.isPrimitive»
-						«deserializePrimitiveArrayValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
+						«deserializePrimitiveArrayValue(member.type.getPrimitive,member.name, joynrName.toFirstLower+"Var", "field")»
 					«ELSE»
-						«val complexType = member.type.derived»
-						«val deserializerType = complexType.deserializer»
+						«val deserializerType = member.type.deserializer»
 						IArray& array = field.value();
-						auto&& converted«member.name.toFirstUpper» = convertArray<«complexType.typeName»>(array, «deserializerType»<«complexType.typeName»>::deserialize);
-						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(std::forward<std::vector<«complexType.typeName»>>(converted«member.name.toFirstUpper»));
+						auto&& converted«member.name.toFirstUpper» = convertArray<«member.type.typeName»>(array, «deserializerType»<«member.type.typeName»>::deserialize);
+						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(std::forward<std::vector<«member.type.typeName»>>(converted«member.name.toFirstUpper»));
 					«ENDIF»
 				«ELSE»
 					«IF member.type.isPrimitive»
-						«deserializePrimitiveValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
+						«deserializePrimitiveValue(member.type.getPrimitive,member.name, joynrName.toFirstLower+"Var", "field")»
 					«ELSE»
-						«val complexType = member.type.derived»
-						«val deserializerType = complexType.deserializer»
-						«complexType.typeName» «member.name»Container;
-						«deserializerType»<«complexType.typeName»>::deserialize(«member.name»Container, field.value());
+						«val deserializerType = member.type.deserializer»
+						«member.type.typeName» «member.name»Container;
+						«deserializerType»<«member.type.typeName»>::deserialize(«member.name»Container, field.value());
 						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(«member.name»Container);
 					«ENDIF»
 				«ENDIF»
@@ -147,10 +145,11 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 
 '''
 
-def getDeserializer(FType type) {
-	if (type.isEnum){
+def getDeserializer(FTypeRef type) {
+	val targetType = type
+	if (targetType.isEnum){
 		"PrimitiveDeserializer"
-	} else if (type.isCompound || type.isMap) {
+	} else if (targetType.isCompound || targetType.isMap) {
 		"ClassDeserializer"
 	} else {
 		throw new IllegalStateException("No deserializer known for type " + type.class.simpleName)
