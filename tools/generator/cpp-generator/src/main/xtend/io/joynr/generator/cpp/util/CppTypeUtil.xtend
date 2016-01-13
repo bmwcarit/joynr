@@ -249,6 +249,12 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	abstract def String getIncludeOf(FType type)
 
+	override getDatatype(FType type){
+		if (type.isTypeDef) {
+			return type
+		}
+		return super.getDatatype(type)
+	}
 	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
 		for(datatype: getAllComplexTypes(
