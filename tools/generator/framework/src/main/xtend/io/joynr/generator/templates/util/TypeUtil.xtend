@@ -480,8 +480,12 @@ class TypeUtil {
 		isMap(type) || isCompound(type) || isEnum(type)
 	}
 
+	def getComplexMembers(FCompoundType datatype, boolean includeTypeDefs) {
+		datatype.elements.filter(element | (isTypeDef(element.type) && includeTypeDefs) || isMap(element.type) || isCompound(element.type) || isEnum(element.type) || isArray(element));
+	}
+
 	def getComplexMembers(FCompoundType datatype) {
-		datatype.elements.filter(element | isMap(element.type) || isCompound(element.type) || isEnum(element.type) || isArray(element));
+		getComplexMembers(datatype, false)
 	}
 
 	def filterComplex(Iterable<Object> iterable) {
