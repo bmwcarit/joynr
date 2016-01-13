@@ -32,7 +32,7 @@ static const bool isOnChangeWithKeepAliveSubscriptionQosSerializerRegistered =
                 "joynr.OnChangeWithKeepAliveSubscriptionQos");
 
 template <>
-void ClassDeserializer<OnChangeWithKeepAliveSubscriptionQos>::deserialize(
+void ClassDeserializerImpl<OnChangeWithKeepAliveSubscriptionQos>::deserialize(
         OnChangeWithKeepAliveSubscriptionQos& qos,
         IObject& o)
 {
@@ -53,7 +53,7 @@ void ClassDeserializer<OnChangeWithKeepAliveSubscriptionQos>::deserialize(
 }
 
 template <>
-void ClassSerializer<OnChangeWithKeepAliveSubscriptionQos>::serialize(
+void ClassSerializerImpl<OnChangeWithKeepAliveSubscriptionQos>::serialize(
         const OnChangeWithKeepAliveSubscriptionQos& qos,
         std::ostream& stream)
 {

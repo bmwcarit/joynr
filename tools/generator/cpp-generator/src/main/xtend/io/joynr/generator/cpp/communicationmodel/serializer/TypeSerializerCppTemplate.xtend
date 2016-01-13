@@ -67,7 +67,7 @@ static const bool is«joynrName»SerializerRegistered =
 		SerializerRegistry::registerType<«joynrName»>("«typeName.replace("::", ".")»");
 
 template <>
-void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.toFirstLower»Var, IObject &object)
+void ClassDeserializerImpl<«joynrName»>::deserialize(«joynrName» &«joynrName.toFirstLower»Var, IObject &object)
 {
 	«IF type.membersRecursive.isEmpty»
 		std::ignore = «joynrName.toFirstLower»Var;
@@ -103,17 +103,8 @@ void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.to
 }
 
 template <>
-void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.toFirstLower»Var, std::ostream& stream)
+void ClassSerializerImpl<«joynrName»>::serialize(const «joynrName» &«joynrName.toFirstLower»Var, std::ostream& stream)
 {
-	«IF type.membersRecursive.exists[member | member.type.typeName.equals("double")]»
-		ClassSerializer<double> doubleSerializer;
-	«ENDIF»
-	«IF type.membersRecursive.exists[member | member.type.typeName.equals("float")]»
-		ClassSerializer<float> floatSerializer;
-	«ENDIF»
-	«IF type.membersRecursive.exists[member | member.type.string]»
-		ClassSerializer<std::string> stringSerializer;
-	«ENDIF»
 	«IF type.membersRecursive.isEmpty»
 		std::ignore = «joynrName.toFirstLower»Var;
 	«ENDIF»
@@ -133,7 +124,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 				«serializePrimitiveValue(member.type.predefined, member.name, joynrName.toFirstLower + "Var")»
 			«ELSE»
 				stream << "\"«member.name»\": ";
-				ClassSerializer<«member.typeName»> «member.name»Serializer;
+				ClassSerializerImpl<«member.typeName»> «member.name»Serializer;
 				«member.name»Serializer.serialize(«joynrName.toFirstLower»Var.get«member.name.toFirstUpper»(), stream);
 			«ENDIF»
 		«ENDIF»
@@ -236,15 +227,15 @@ def serializePrimitiveValue(FBasicTypeId basicType, String memberName, String va
 		'''
 		case DOUBLE: return '''
 			stream << "\"«memberName»\": ";
-			doubleSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
+			ClassSerializerImpl<double>::serialize(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		case FLOAT: return '''
 			stream << "\"«memberName»\": ";
-			floatSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
+			ClassSerializerImpl<float>::serialize(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		case STRING: return '''
 			stream << "\"«memberName»\": ";
-			stringSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
+			ClassSerializerImpl<std::string>::serialize(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		case BOOLEAN: 
 		return '''

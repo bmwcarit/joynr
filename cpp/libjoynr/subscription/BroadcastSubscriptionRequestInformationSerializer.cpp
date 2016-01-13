@@ -31,7 +31,7 @@ static const bool isBroadcastSubscriptionRequestInformationSerializerRegistered 
                 "joynr.BroadcastSubscriptionRequestInformation");
 
 template <>
-void ClassDeserializer<BroadcastSubscriptionRequestInformation>::deserialize(
+void ClassDeserializerImpl<BroadcastSubscriptionRequestInformation>::deserialize(
         BroadcastSubscriptionRequestInformation& info,
         IObject& o)
 {
@@ -60,7 +60,7 @@ void ClassDeserializer<BroadcastSubscriptionRequestInformation>::deserialize(
 }
 
 template <>
-void ClassSerializer<BroadcastSubscriptionRequestInformation>::serialize(
+void ClassSerializerImpl<BroadcastSubscriptionRequestInformation>::serialize(
         const BroadcastSubscriptionRequestInformation& info,
         std::ostream& stream)
 {

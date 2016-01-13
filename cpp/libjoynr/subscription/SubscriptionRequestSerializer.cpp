@@ -30,8 +30,9 @@ static const bool isSubscriptionRequestSerializerRegistered =
         SerializerRegistry::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
 
 template <>
-void ClassDeserializer<SubscriptionRequest>::deserialize(SubscriptionRequest& subscriptionRequest,
-                                                         IObject& o)
+void ClassDeserializerImpl<SubscriptionRequest>::deserialize(
+        SubscriptionRequest& subscriptionRequest,
+        IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
@@ -49,8 +50,9 @@ void ClassDeserializer<SubscriptionRequest>::deserialize(SubscriptionRequest& su
 }
 
 template <>
-void ClassSerializer<SubscriptionRequest>::serialize(const SubscriptionRequest& subscriptionRequest,
-                                                     std::ostream& stream)
+void ClassSerializerImpl<SubscriptionRequest>::serialize(
+        const SubscriptionRequest& subscriptionRequest,
+        std::ostream& stream)
 {
     stream << R"({)";
     stream << R"("_typeName":")" << JoynrTypeId<SubscriptionRequest>::getTypeName() << R"(",)";

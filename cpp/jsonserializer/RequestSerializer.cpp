@@ -17,7 +17,6 @@
  * #L%
  */
 #include "RequestSerializer.h"
-#include "joynr/Request.h"
 #include "joynr/ArraySerializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/Variant.h"
@@ -33,7 +32,7 @@ static const bool isRequestSerializerRegistered =
         SerializerRegistry::registerType<Request>("joynr.Request");
 
 template <>
-void ClassDeserializer<Request>::deserialize(Request& request, IObject& o)
+void ClassDeserializerImpl<Request>::deserialize(Request& request, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
@@ -54,7 +53,7 @@ void ClassDeserializer<Request>::deserialize(Request& request, IObject& o)
 }
 
 template <>
-void ClassSerializer<Request>::serialize(const Request& request, std::ostream& stream)
+void ClassSerializerImpl<Request>::serialize(const Request& request, std::ostream& stream)
 {
     stream << R"({)";
     stream << R"("_typeName":")" << JoynrTypeId<Request>::getTypeName() << R"(",)";

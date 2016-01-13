@@ -26,55 +26,55 @@ namespace joynr
 {
 
 template <>
-void ClassSerializer<std::int8_t>::serialize(const std::int8_t& i, std::ostream& stream)
+void ClassSerializerImpl<std::int8_t>::serialize(const std::int8_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<std::uint8_t>::serialize(const std::uint8_t& i, std::ostream& stream)
+void ClassSerializerImpl<std::uint8_t>::serialize(const std::uint8_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<std::int16_t>::serialize(const std::int16_t& i, std::ostream& stream)
+void ClassSerializerImpl<std::int16_t>::serialize(const std::int16_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<std::uint16_t>::serialize(const std::uint16_t& i, std::ostream& stream)
+void ClassSerializerImpl<std::uint16_t>::serialize(const std::uint16_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<std::int32_t>::serialize(const std::int32_t& i, std::ostream& stream)
+void ClassSerializerImpl<std::int32_t>::serialize(const std::int32_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<std::uint32_t>::serialize(const std::uint32_t& i, std::ostream& stream)
+void ClassSerializerImpl<std::uint32_t>::serialize(const std::uint32_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<std::int64_t>::serialize(const std::int64_t& i, std::ostream& stream)
+void ClassSerializerImpl<std::int64_t>::serialize(const std::int64_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<std::uint64_t>::serialize(const std::uint64_t& i, std::ostream& stream)
+void ClassSerializerImpl<std::uint64_t>::serialize(const std::uint64_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<double>::serialize(const double& i, std::ostream& stream)
+void ClassSerializerImpl<double>::serialize(const double& i, std::ostream& stream)
 {
     std::stringstream buffer;
     buffer << std::setprecision(std::numeric_limits<double>::digits10) << i;
@@ -87,7 +87,7 @@ void ClassSerializer<double>::serialize(const double& i, std::ostream& stream)
 }
 
 template <>
-void ClassSerializer<float>::serialize(const float& i, std::ostream& stream)
+void ClassSerializerImpl<float>::serialize(const float& i, std::ostream& stream)
 {
     std::stringstream buffer;
     buffer << std::setprecision(std::numeric_limits<float>::digits10) << i;
@@ -100,7 +100,7 @@ void ClassSerializer<float>::serialize(const float& i, std::ostream& stream)
 }
 
 template <>
-void ClassSerializer<bool>::serialize(const bool& i, std::ostream& stream)
+void ClassSerializerImpl<bool>::serialize(const bool& i, std::ostream& stream)
 {
     stream << std::boolalpha << i;
 }
@@ -119,7 +119,7 @@ std::string addEscapeForSpecialCharacters(const std::string& str) {
 }
 
 template <>
-void ClassSerializer<std::string>::serialize(const std::string& s, std::ostream& stream)
+void ClassSerializerImpl<std::string>::serialize(const std::string& s, std::ostream& stream)
 {
     stream << '"' << addEscapeForSpecialCharacters(s) << '"';
 }
@@ -131,7 +131,7 @@ void ClassSerializer<Variant>::serializeVariant(const Variant &variant, std::ost
 }
 
 template <>
-void ClassSerializer<Variant>::serialize(const Variant &variant,
+void ClassSerializerImpl<Variant>::serialize(const Variant &variant,
                                              std::ostream &stream)
 {
     if (variant.isEmpty()) {

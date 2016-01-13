@@ -35,7 +35,7 @@ namespace joynr
  * @param o the stream to write the serialized content to
  */
 template <>
-void ClassSerializer<OnChangeSubscriptionQos>::serialize(const OnChangeSubscriptionQos& subscription, std::ostream& o);
+void ClassSerializerImpl<OnChangeSubscriptionQos>::serialize(const OnChangeSubscriptionQos& subscription, std::ostream& o);
 
 /**
  * @brief Specialized deserialize method for OnChangeSubscriptionQos.
@@ -43,7 +43,7 @@ void ClassSerializer<OnChangeSubscriptionQos>::serialize(const OnChangeSubscript
  * @param o object containing the parsed json tokens
  */
 template <>
-void ClassDeserializer<OnChangeSubscriptionQos>::deserialize(OnChangeSubscriptionQos& subscription, IObject& o);
+void ClassDeserializerImpl<OnChangeSubscriptionQos>::deserialize(OnChangeSubscriptionQos& subscription, IObject& o);
 
 } // namespace joynr
 

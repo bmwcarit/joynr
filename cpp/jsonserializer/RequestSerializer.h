@@ -21,21 +21,19 @@
 
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
-
+#include "joynr/Request.h"
 #include <ostream>
 
 namespace joynr
 {
 
-class Request;
-
 // Serializes a request
 template <>
-void ClassSerializer<Request>::serialize(const Request& request, std::ostream& o);
+void ClassSerializerImpl<Request>::serialize(const Request& request, std::ostream& o);
 
 // Deserializes a request
 template <>
-void ClassDeserializer<Request>::deserialize(Request& t, IObject& o);
+void ClassDeserializerImpl<Request>::deserialize(Request& t, IObject& o);
 
 } // namespace joynr
 #endif // REQUESTSERIALIZER_H

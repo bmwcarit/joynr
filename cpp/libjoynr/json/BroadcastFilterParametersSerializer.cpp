@@ -29,7 +29,7 @@ static const bool isBroadcastFilterParametersSerializerRegistered =
                 "joynr.BroadcastFilterParameters");
 
 template <>
-void ClassDeserializer<BroadcastFilterParameters>::deserialize(
+void ClassDeserializerImpl<BroadcastFilterParameters>::deserialize(
         BroadcastFilterParameters& parameters,
         IObject& o)
 {
@@ -43,7 +43,7 @@ void ClassDeserializer<BroadcastFilterParameters>::deserialize(
 }
 
 template <>
-void ClassSerializer<BroadcastFilterParameters>::serialize(
+void ClassSerializerImpl<BroadcastFilterParameters>::serialize(
         const BroadcastFilterParameters& parameters,
         std::ostream& stream)
 {

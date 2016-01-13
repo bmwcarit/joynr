@@ -63,7 +63,7 @@ void PrimitiveDeserializer<«typeName»>::deserialize(«typeName»& «joynrName.
 }
 
 template <>
-void ClassSerializer<«typeName»>::serialize(const «typeName»& «joynrName.toFirstLower», std::ostream& stringstream)
+void ClassSerializerImpl<«typeName»>::serialize(const «typeName»& «joynrName.toFirstLower», std::ostream& stringstream)
 {
 	stringstream << "\""<< «type.typeNameOfContainingClass»::getLiteral(«joynrName.toFirstLower») << "\"";
 }

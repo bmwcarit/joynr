@@ -36,6 +36,12 @@ public:
     virtual void serializeVariant(const Variant& variant, std::ostream& stream) = 0;
 };
 
+template <typename T>
+struct ClassSerializerImpl
+{
+    static void serialize(const T& t, std::ostream& stream);
+};
+
 /**
  * @brief Template for classes that serialize other classes
  * @tparam T the type to serialize
@@ -54,7 +60,10 @@ public:
     /**
      * @brief Serialize the known type T
      */
-    void serialize(const T& t, std::ostream& stream);
+    void serialize(const T& t, std::ostream& stream)
+    {
+        ClassSerializerImpl<T>::serialize(t, stream);
+    }
 };
 
 // Implementation of generic Variant serializer
@@ -68,7 +77,7 @@ void ClassSerializer<T>::serializeVariant(const Variant& variant, std::ostream& 
 template <>
 void ClassSerializer<Variant>::serializeVariant(const Variant &variant, std::ostream &stream);
 template <>
-void ClassSerializer<Variant>::serialize(const Variant &variant, std::ostream &stream);
+void ClassSerializerImpl<Variant>::serialize(const Variant &variant, std::ostream &stream);
 
 std::string addEscapeForSpecialCharacters(const std::string& str);
 

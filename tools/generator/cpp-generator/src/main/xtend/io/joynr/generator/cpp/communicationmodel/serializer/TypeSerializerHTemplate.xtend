@@ -63,7 +63,7 @@ using «joynrName» = «type.typeName»;
  * @param stringstream the stream to write the serialized content to
  */
 template <>
-void ClassSerializer<«joynrName»>::serialize(const «joynrName»& «joynrName.toFirstLower», std::ostream& stringstream);
+void ClassSerializerImpl<«joynrName»>::serialize(const «joynrName»& «joynrName.toFirstLower», std::ostream& stringstream);
 
 /**
  * @brief Specialized deserialize method for «joynrName».
@@ -71,7 +71,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName»& «joynrName.
  * @param object object containing the parsed json tokens
  */
 template <>
-void ClassDeserializer<«joynrName»>::deserialize(«joynrName»& «joynrName.toFirstLower», IObject& object);
+void ClassDeserializerImpl<«joynrName»>::deserialize(«joynrName»& «joynrName.toFirstLower», IObject& object);
 
 } // namespace joynr
 

@@ -34,7 +34,7 @@ static const bool isJoynrMessageRegistered =
         SerializerRegistry::registerType<JoynrMessage>("joynr.JoynrMessage");
 
 template <>
-void ClassDeserializer<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o)
+void ClassDeserializerImpl<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
@@ -50,7 +50,7 @@ void ClassDeserializer<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o)
 }
 
 template <>
-void ClassSerializer<JoynrMessage>::serialize(const JoynrMessage& msg, std::ostream& stream)
+void ClassSerializerImpl<JoynrMessage>::serialize(const JoynrMessage& msg, std::ostream& stream)
 {
     stream << R"({)";
     stream << R"("_typeName":")" << JoynrTypeId<JoynrMessage>::getTypeName() << R"(",)";

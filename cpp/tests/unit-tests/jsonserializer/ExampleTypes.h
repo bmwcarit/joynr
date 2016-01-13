@@ -35,11 +35,11 @@ struct SomeType {};
 
 // A serializer for the empty type
 template <>
-void ClassSerializer<SomeType>::serialize(const SomeType& t, std::ostream& stream);
+void ClassSerializerImpl<SomeType>::serialize(const SomeType& t, std::ostream& stream);
 
 // A deserializer for the empty type
 template <>
-void ClassDeserializer<SomeType>::deserialize(SomeType& t, IObject& o);
+void ClassDeserializerImpl<SomeType>::deserialize(SomeType& t, IObject& o);
 
 //---- A simple type -----------------------------------------------------------
 
@@ -57,11 +57,11 @@ private:
 
 // A serializer for the simple type
 template <>
-void ClassSerializer<SomeOtherType>::serialize(const SomeOtherType& t, std::ostream& stream);
+void ClassSerializerImpl<SomeOtherType>::serialize(const SomeOtherType& t, std::ostream& stream);
 
 // A deserializer for the simple type
 template <>
-void ClassDeserializer<SomeOtherType>::deserialize(SomeOtherType& t, IObject& o);
+void ClassDeserializerImpl<SomeOtherType>::deserialize(SomeOtherType& t, IObject& o);
 
 //---- MasterAccessControlEntry -------------------------------------------------
 
@@ -121,11 +121,11 @@ private:
 
 // A serializer for ExampleMasterAccessControlEntry
 template <>
-void ClassSerializer<ExampleMasterAccessControlEntry>::serialize(const ExampleMasterAccessControlEntry& mace, std::ostream& stream);
+void ClassSerializerImpl<ExampleMasterAccessControlEntry>::serialize(const ExampleMasterAccessControlEntry& mace, std::ostream& stream);
 
 // A deserializer for ExampleMasterAccessControlEntry
 template <>
-void ClassDeserializer<ExampleMasterAccessControlEntry>::deserialize(ExampleMasterAccessControlEntry& t, IObject& o);
+void ClassDeserializerImpl<ExampleMasterAccessControlEntry>::deserialize(ExampleMasterAccessControlEntry& t, IObject& o);
 
 } // namespace joynr
 #endif // EXAMPLETYPES_H

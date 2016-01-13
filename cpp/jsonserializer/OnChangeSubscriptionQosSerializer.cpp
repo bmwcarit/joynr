@@ -25,7 +25,7 @@ namespace joynr
 static const bool isOnChangeSubscriptionQosSerializerRegistered = SerializerRegistry::registerType<OnChangeSubscriptionQos>("joynr.OnChangeSubscriptionQos");
 
 template <>
-void ClassDeserializer<OnChangeSubscriptionQos>::deserialize(OnChangeSubscriptionQos& subscription, IObject& o)
+void ClassDeserializerImpl<OnChangeSubscriptionQos>::deserialize(OnChangeSubscriptionQos& subscription, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
@@ -40,7 +40,7 @@ void ClassDeserializer<OnChangeSubscriptionQos>::deserialize(OnChangeSubscriptio
 }
 
 template <>
-void ClassSerializer<OnChangeSubscriptionQos>::serialize(const OnChangeSubscriptionQos& subscription, std::ostream& stream)
+void ClassSerializerImpl<OnChangeSubscriptionQos>::serialize(const OnChangeSubscriptionQos& subscription, std::ostream& stream)
 {
     stream << R"({)";
     stream << R"("_typeName":")" << JoynrTypeId<OnChangeSubscriptionQos>::getTypeName() << R"(",)";

@@ -31,7 +31,7 @@ static const bool isPeriodicSubscriptionQosSerializerRegistered =
                 "joynr.PeriodicSubscriptionQos");
 
 template <>
-void ClassDeserializer<PeriodicSubscriptionQos>::deserialize(
+void ClassDeserializerImpl<PeriodicSubscriptionQos>::deserialize(
         PeriodicSubscriptionQos& qos,
         IObject& o)
 {
@@ -46,7 +46,7 @@ void ClassDeserializer<PeriodicSubscriptionQos>::deserialize(
 }
 
 template <>
-void ClassSerializer<PeriodicSubscriptionQos>::serialize(
+void ClassSerializerImpl<PeriodicSubscriptionQos>::serialize(
         const PeriodicSubscriptionQos& qos,
         std::ostream& stream)
 {

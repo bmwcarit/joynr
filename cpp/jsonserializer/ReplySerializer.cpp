@@ -31,7 +31,7 @@ namespace joynr
 static const bool isReplySerializerRegistered = SerializerRegistry::registerType<Reply>("joynr.Reply");
 
 template <>
-void ClassDeserializer<Reply>::deserialize(Reply& reply, IObject& o)
+void ClassDeserializerImpl<Reply>::deserialize(Reply& reply, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
@@ -47,7 +47,7 @@ void ClassDeserializer<Reply>::deserialize(Reply& reply, IObject& o)
 }
 
 template <>
-void ClassSerializer<Reply>::serialize(const Reply& reply, std::ostream& stream)
+void ClassSerializerImpl<Reply>::serialize(const Reply& reply, std::ostream& stream)
 {
     stream << R"({)";
     stream << R"("_typeName":")" << JoynrTypeId<Reply>::getTypeName() << R"(",)";

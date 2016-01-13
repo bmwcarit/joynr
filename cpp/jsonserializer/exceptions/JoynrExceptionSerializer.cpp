@@ -48,7 +48,7 @@ static const bool isMethodInvocationExceptionRegistered =
         SerializerRegistry::registerType<exceptions::MethodInvocationException>("joynr.exceptions.MethodInvocationException");
 
 template <>
-void ClassDeserializer<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o)
+void ClassDeserializerImpl<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
@@ -77,7 +77,7 @@ void ClassDeserializer<exceptions::ApplicationException>::deserialize(exceptions
     }
 }
 template <>
-void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exceptions::JoynrRuntimeException& t, IObject& o)
+void ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(exceptions::JoynrRuntimeException& t, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
@@ -87,27 +87,27 @@ void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exception
     }
 }
 template <>
-void ClassDeserializer<exceptions::ProviderRuntimeException>::deserialize(exceptions::ProviderRuntimeException& t, IObject& o)
+void ClassDeserializerImpl<exceptions::ProviderRuntimeException>::deserialize(exceptions::ProviderRuntimeException& t, IObject& o)
 {
-    ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(t, o);
+    ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(t, o);
 }
 template <>
-void ClassDeserializer<exceptions::DiscoveryException>::deserialize(exceptions::DiscoveryException& t, IObject& o)
+void ClassDeserializerImpl<exceptions::DiscoveryException>::deserialize(exceptions::DiscoveryException& t, IObject& o)
 {
-    ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(t, o);
+    ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(t, o);
 }
 template <>
-void ClassDeserializer<exceptions::JoynrTimeOutException>::deserialize(exceptions::JoynrTimeOutException& t, IObject& o)
+void ClassDeserializerImpl<exceptions::JoynrTimeOutException>::deserialize(exceptions::JoynrTimeOutException& t, IObject& o)
 {
-    ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(t, o);
+    ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(t, o);
 }
 template <>
-void ClassDeserializer<exceptions::MethodInvocationException>::deserialize(exceptions::MethodInvocationException& t, IObject& o)
+void ClassDeserializerImpl<exceptions::MethodInvocationException>::deserialize(exceptions::MethodInvocationException& t, IObject& o)
 {
-    ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(t, o);
+    ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(t, o);
 }
 template <>
-void ClassDeserializer<exceptions::PublicationMissedException>::deserialize(exceptions::PublicationMissedException& t, IObject& o)
+void ClassDeserializerImpl<exceptions::PublicationMissedException>::deserialize(exceptions::PublicationMissedException& t, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
@@ -129,7 +129,7 @@ void serializeExceptionWithDetailMessage(const std::string& typeName, const exce
 }
 
 template <>
-void ClassSerializer<exceptions::ApplicationException>::serialize(const exceptions::ApplicationException& exception, std::ostream& stream)
+void ClassSerializerImpl<exceptions::ApplicationException>::serialize(const exceptions::ApplicationException& exception, std::ostream& stream)
 {
     initSerialization(JoynrTypeId<exceptions::ApplicationException>::getTypeName(), stream);
     if (!exception.getMessage().empty()) {
@@ -143,32 +143,32 @@ void ClassSerializer<exceptions::ApplicationException>::serialize(const exceptio
 }
 
 template <>
-void ClassSerializer<exceptions::JoynrRuntimeException>::serialize(const exceptions::JoynrRuntimeException& exception, std::ostream& stream)
+void ClassSerializerImpl<exceptions::JoynrRuntimeException>::serialize(const exceptions::JoynrRuntimeException& exception, std::ostream& stream)
 {
     serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::JoynrRuntimeException>::getTypeName(), exception, stream);
 }
 template <>
-void ClassSerializer<exceptions::ProviderRuntimeException>::serialize(const exceptions::ProviderRuntimeException& exception, std::ostream& stream)
+void ClassSerializerImpl<exceptions::ProviderRuntimeException>::serialize(const exceptions::ProviderRuntimeException& exception, std::ostream& stream)
 {
     serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::ProviderRuntimeException>::getTypeName(), exception, stream);
 }
 template <>
-void ClassSerializer<exceptions::DiscoveryException>::serialize(const exceptions::DiscoveryException& exception, std::ostream& stream)
+void ClassSerializerImpl<exceptions::DiscoveryException>::serialize(const exceptions::DiscoveryException& exception, std::ostream& stream)
 {
     serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::DiscoveryException>::getTypeName(), exception, stream);
 }
 template <>
-void ClassSerializer<exceptions::JoynrTimeOutException>::serialize(const exceptions::JoynrTimeOutException& exception, std::ostream& stream)
+void ClassSerializerImpl<exceptions::JoynrTimeOutException>::serialize(const exceptions::JoynrTimeOutException& exception, std::ostream& stream)
 {
     serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::JoynrTimeOutException>::getTypeName(), exception, stream);
 }
 template <>
-void ClassSerializer<exceptions::MethodInvocationException>::serialize(const exceptions::MethodInvocationException& exception, std::ostream& stream)
+void ClassSerializerImpl<exceptions::MethodInvocationException>::serialize(const exceptions::MethodInvocationException& exception, std::ostream& stream)
 {
     serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::MethodInvocationException>::getTypeName(), exception, stream);
 }
 template <>
-void ClassSerializer<exceptions::PublicationMissedException>::serialize(const exceptions::PublicationMissedException& exception, std::ostream& stream)
+void ClassSerializerImpl<exceptions::PublicationMissedException>::serialize(const exceptions::PublicationMissedException& exception, std::ostream& stream)
 {
     initSerialization(JoynrTypeId<exceptions::PublicationMissedException>::getTypeName(), stream);
     stream << R"("subscriptionId": ")" << exception.getSubscriptionId() << R"(")";

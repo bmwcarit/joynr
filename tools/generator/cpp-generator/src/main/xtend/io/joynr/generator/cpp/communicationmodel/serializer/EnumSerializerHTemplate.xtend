@@ -62,7 +62,7 @@ using «joynrName» = «type.typeName»;
  * @param stringstream the stream to write the serialized content to
  */
 template <>
-void ClassSerializer<«joynrName»>::serialize(const «joynrName»& «joynrName.toFirstLower», std::ostream& stringstream);
+void ClassSerializerImpl<«joynrName»>::serialize(const «joynrName»& «joynrName.toFirstLower», std::ostream& stringstream);
 
 /**
  * @brief Specialized deserialize method for «joynrName».

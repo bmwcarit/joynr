@@ -31,11 +31,11 @@ namespace joynr
 
 // Serializes a Reply
 template <>
-void ClassSerializer<Reply>::serialize(const Reply& reply, std::ostream& o);
+void ClassSerializerImpl<Reply>::serialize(const Reply& reply, std::ostream& o);
 
 // Deserializes a Reply
 template <>
-void ClassDeserializer<Reply>::deserialize(Reply& t, IObject& o);
+void ClassDeserializerImpl<Reply>::deserialize(Reply& t, IObject& o);
 
 } // namespace joynr
 #endif // REPLYSERIALIZER_H

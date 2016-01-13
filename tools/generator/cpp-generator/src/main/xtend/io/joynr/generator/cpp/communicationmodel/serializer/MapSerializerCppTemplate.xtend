@@ -22,11 +22,8 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.util.NamingUtil
-import java.util.UUID
 import javax.inject.Inject
-import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FMapType
-import org.franca.core.franca.FTypeRef
 
 class MapSerializerCppTemplate implements MapTemplate{
 
@@ -35,8 +32,6 @@ class MapSerializerCppTemplate implements MapTemplate{
 	@Inject private extension CppStdTypeUtil
 
 	@Inject private extension NamingUtil
-
-	@Inject private extension TypeSerializerCppTemplate
 
 	@Inject private extension TemplateBase
 
@@ -68,30 +63,7 @@ static const bool is«joynrName»SerializerRegistered =
 		SerializerRegistry::registerType<«joynrName»>("«fqJoynrName»");
 
 template <>
-void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.toFirstLower»Var, IObject &object)
-{
-	while (object.hasNextField()) {
-		IField& field = object.nextField();
-		if (field.key().isString() && field.name() == "_typeName") {
-			continue;
-		}
-		«val deserializeMapEntry = [FTypeRef typeRef, String varName | '''
-			«IF typeRef.isPrimitive»
-				«deserializePrimitiveValue(typeRef.predefined, varName, "field." + varName + "()")»
-			«ELSE»
-				«typeRef.typeName» «varName»;
-				«val deserializerType = typeRef.deserializer»
-				«deserializerType»<«typeRef.typeName»>::deserialize(«varName», field.«varName»());
-		«ENDIF»
-		''']»
-		«deserializeMapEntry.apply(type.keyType, "key")»
-		«deserializeMapEntry.apply(type.valueType, "value")»
-		«joynrName.toFirstLower»Var.insert({key, value});
-	}
-}
-
-template <>
-void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.toFirstLower»Var, std::ostream& stream)
+void ClassSerializerImpl<«joynrName»>::serialize(const «joynrName» &«joynrName.toFirstLower»Var, std::ostream& stream)
 {
 	MapSerializer::serialize<«type.keyType.typeName», «type.valueType.typeName»>(
 				"«fqJoynrName»",
@@ -103,34 +75,5 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 } // namespace joynr
 
 '''
-
-def deserializePrimitiveValue(FBasicTypeId basicType, String varName, String fieldValue) {
- 
-	var deserializedValue = basicType.typeName + " " + varName + " = " + fieldValue
-	switch basicType {
-		case BYTE_BUFFER : return '''
-		«val randomName = "converted" + UUID::randomUUID.toString.substring(0, 5)»
-		IArray& array = «fieldValue»;
-		auto&& «randomName» = convertArray<std::uint8_t>(array, convertUIntType<std::uint8_t>);
-		«basicType.typeName» «varName» = std::forward<std::vector<std::uint8_t>>(«randomName.toFirstUpper»);
-		'''
-		case STRING : '''
-		std::string «varName»;
-		PrimitiveDeserializer<std::string>::deserialize(«varName», «fieldValue»);
-		'''
-		case BOOLEAN : return deserializedValue + ".getBool();"
-		case INT8 : return deserializedValue + ".getIntType<std::int8_t>();"
-		case INT16 : return deserializedValue + ".getIntType<std::int16_t>();"
-		case INT32 : return deserializedValue + ".getIntType<std::int32_t>();"
-		case INT64 : return deserializedValue + ".getIntType<std::int64_t>();"
-		case UINT8 : return deserializedValue + ".getIntType<std::uint8_t>();"
-		case UINT16 : return deserializedValue + ".getIntType<std::uint16_t>();"
-		case UINT32 : return deserializedValue + ".getIntType<std::uint32_t>();"
-		case UINT64 : return deserializedValue + ".getIntType<std::uint64_t>();"
-		case FLOAT : return deserializedValue + ".getDoubleType<float>();"
-		case DOUBLE : return deserializedValue + ".getDoubleType<double>();"
-		default: throw new IllegalStateException("Type for varName " + varName + " could not be resolved")
-	}
-}
 
 }
