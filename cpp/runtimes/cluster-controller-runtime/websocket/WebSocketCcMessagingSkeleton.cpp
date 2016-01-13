@@ -123,7 +123,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
                         message.toStdString());
         return;
     }
-    JOYNR_LOG_TRACE(logger, "INCOMING\nmessage: {}", message.toStdString());
+    JOYNR_LOG_TRACE(logger, "<<<< INCOMING <<<< {}", message.toStdString());
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg);

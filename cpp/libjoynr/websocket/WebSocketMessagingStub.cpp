@@ -44,7 +44,9 @@ void WebSocketMessagingStub::transmit(JoynrMessage& message)
         return;
     }
 
-    webSocket->send(JsonSerializer::serialize(message));
+    std::string serializedMessage = JsonSerializer::serialize(message);
+    JOYNR_LOG_TRACE(logger, ">>>> OUTGOING >>>> {}", serializedMessage);
+    webSocket->send(serializedMessage);
 }
 
 } // namespace joynr
