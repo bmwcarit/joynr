@@ -2,7 +2,7 @@ package io.joynr.generator.cpp
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package io.joynr.generator.cpp
  */
 
 import com.google.common.collect.Sets
-import io.joynr.generator.IJoynrGenerator
+import com.google.inject.AbstractModule
+import io.joynr.generator.AbstractJoynrGenerator
 import io.joynr.generator.cpp.communicationmodel.CommunicationModelGenerator
+import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderGenerator
 import io.joynr.generator.cpp.filter.FilterGenerator
 import io.joynr.generator.cpp.inprocess.InProcessGenerator
 import io.joynr.generator.cpp.joynrmessaging.JoynrMessagingGenerator
@@ -36,9 +38,8 @@ import org.franca.core.dsl.FrancaPersistenceManager
 import org.franca.core.franca.FModel
 
 import static com.google.common.base.Preconditions.*
-import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderGenerator
 
-class JoynrCppGenerator implements IJoynrGenerator{
+class JoynrCppGenerator extends AbstractJoynrGenerator{
 
 	@Inject 
 	private FrancaPersistenceManager francaPersistenceManager

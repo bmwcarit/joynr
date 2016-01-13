@@ -20,16 +20,16 @@ package io.outofscope;
  * #L%
  */
 
+import io.joynr.generator.AbstractJoynrGenerator;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import io.joynr.generator.IJoynrGenerator;
-
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 
-public class OutOfScopeJoynGenerator implements IJoynrGenerator {
+public class OutOfScopeJoynGenerator extends AbstractJoynrGenerator {
 
     @Override
     public void doGenerate(Resource input, IFileSystemAccess fsa) {

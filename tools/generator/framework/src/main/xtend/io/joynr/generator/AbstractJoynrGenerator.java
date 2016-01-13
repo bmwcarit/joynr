@@ -4,7 +4,7 @@ package io.joynr.generator;
  * #%L
  * io.joynr.tools.generator:generator-framework
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,18 @@ package io.joynr.generator;
  * #L%
  */
 
-import java.util.Map;
-import java.util.Set;
-
-import org.eclipse.xtext.generator.IGenerator;
-
+import com.google.inject.Binder;
 import com.google.inject.Module;
 
-public interface IJoynrGenerator extends IGenerator {
+public abstract class AbstractJoynrGenerator implements IJoynrGenerator {
 
-    public String getLanguageId();
+    @Override
+    public Module getGeneratorModule() {
+        return new Module() {
+            @Override
+            public void configure(Binder binder) {
+            }
+        };
+    }
 
-    public void setParameters(Map<String, String> parameter);
-
-    public Set<String> supportedParameters();
-
-    public Module getGeneratorModule();
 }
