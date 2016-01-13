@@ -46,8 +46,7 @@ QWebSocketSendWrapper::~QWebSocketSendWrapper()
 
 void QWebSocketSendWrapper::send(const std::string& message)
 {
-    QString string(message.c_str());
-    emit queueTextMessage(string);
+    emit queueTextMessage(QString::fromStdString(message));
 }
 
 void QWebSocketSendWrapper::registerDisconnectCallback(
