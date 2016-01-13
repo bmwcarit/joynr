@@ -689,18 +689,12 @@ endif(${BUILD_CLUSTER_CONTROLLER})
 
 set(
     JoynrConfig_LIB_WS_LIBRARIES
-    JoynrCommon
-    Joynr
-    jsonserializer
     JoynrWsRuntime
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrConfig_LIB_DBUS_LIBRARIES
-        JoynrCommon
-        Joynr
-        jsonserializer
         JoynrDbusRuntime
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})

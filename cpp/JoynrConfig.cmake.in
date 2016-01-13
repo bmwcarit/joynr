@@ -69,7 +69,7 @@ set(
 set(
     Joynr_LIB_COMMON_LIBRARIES
     "${Boost_LIBRARIES}"
-    @JoynrConfig_LIBRARIES@
+    @JoynrConfig_LIB_COMMON_LIBRARIES@
 )
 
 set(Joynr_EXECUTABLES)
