@@ -28,7 +28,7 @@ import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FMapType
-import io.joynr.generator.templates.util.InterfaceUtil.TypeFilter
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
 @Singleton
 public class InterfaceUtil {
@@ -158,37 +158,37 @@ public class InterfaceUtil {
 	def getAllRequiredTypes(
 		FInterface fInterface
 	) {
-		fInterface.getAllRequiredTypes(TypeFilter::defaultTypeFilter)
+		fInterface.getAllRequiredTypes(TypeSelector::defaultTypeSelector)
 	}
 	
 	def getAllRequiredTypes(
 			FInterface fInterface,
-			TypeFilter filter
+			TypeSelector selector
 	) {
 		val typeList = new HashSet<Object>();
-		if (filter.methods){
+		if (selector.methods){
 			val methodToErrorEnumName = fInterface.methodToErrorEnumName
 			for (method : fInterface.methods) {
-				typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), filter.errorTypes))
+				typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), selector.errorTypes))
 			}
 		}
 
 		for (attribute : getAttributes(fInterface)) {
-			if ((filter.readAttributes && attribute.readable)
-					|| (filter.writeAttributes && attribute.writable)
-					|| (filter.notifyAttributes && attribute.notifiable)
+			if ((selector.readAttributes && attribute.readable)
+					|| (selector.writeAttributes && attribute.writable)
+					|| (selector.notifyAttributes && attribute.notifiable)
 			) {
 				typeList.addAll(getRequiredTypes(attribute.type));
 			}
 		}
 
-		if (filter.broadcasts) {
+		if (selector.broadcasts) {
 			for (broadcast : fInterface.broadcasts) {
 				typeList.addAll(getAllRequiredTypes(broadcast))
 			}
 		}
 
-		if (filter.includeTransitiveTypes){
+		if (selector.transitiveTypes){
 			var returnValue = new HashSet<Object>()
 			getAllReferredDatatypes(typeList, returnValue)
 			return returnValue
@@ -206,9 +206,9 @@ public class InterfaceUtil {
 
 	def getAllComplexTypes(
 			FInterface fInterface,
-			TypeFilter filter
+			TypeSelector selector
 	) {
-		getAllRequiredTypes(fInterface, filter).filterComplex
+		getAllRequiredTypes(fInterface, selector).filterComplex
 	}
 
 	def private void getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
@@ -225,16 +225,16 @@ public class InterfaceUtil {
 		}
 	}
 
-	static class TypeFilter {
+	static class TypeSelector {
 		var methods = true
 		var readAttributes = true
 		var writeAttributes = true
 		var notifyAttributes = true
 		var broadcasts = true
 		var errorTypes = false
-		var includeTransitiveTypes = false
-		static def defaultTypeFilter () {
-			new TypeFilter()
+		var transitiveTypes = false
+		static def defaultTypeSelector () {
+			new TypeSelector()
 		}
 
 		def methods(boolean methods) {
@@ -261,8 +261,8 @@ public class InterfaceUtil {
 			this.errorTypes = errorTypes
 		}
 
-		def includeTransitiveTypes(boolean includeTransitiveTypes) {
-			this.includeTransitiveTypes = includeTransitiveTypes
+		def transitiveTypes(boolean transitiveTypes) {
+			this.transitiveTypes = transitiveTypes
 		}
 	}
 

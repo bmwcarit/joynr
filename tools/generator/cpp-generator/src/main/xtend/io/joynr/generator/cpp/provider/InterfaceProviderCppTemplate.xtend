@@ -26,7 +26,7 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
-import io.joynr.generator.templates.util.InterfaceUtil.TypeFilter
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
@@ -37,8 +37,8 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	@Inject private extension InterfaceUtil
 
 	override generate(FInterface serviceInterface) {
-var filter = TypeFilter::defaultTypeFilter
-filter.includeTransitiveTypes(true)
+var selector = TypeSelector::defaultTypeSelector
+selector.transitiveTypes(true)
 '''
 «warning()»
 «val interfaceName = serviceInterface.joynrName»
@@ -59,7 +59,7 @@ filter.includeTransitiveTypes(true)
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
 
-	«val typeObjs = getAllComplexTypes(serviceInterface, filter)»
+	«val typeObjs = getAllComplexTypes(serviceInterface, selector)»
 
 	«IF !typeObjs.isEmpty()»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();

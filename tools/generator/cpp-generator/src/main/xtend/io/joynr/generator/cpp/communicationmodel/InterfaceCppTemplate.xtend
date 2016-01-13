@@ -25,12 +25,12 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
-import io.joynr.generator.templates.util.InterfaceUtil.TypeFilter
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.HashSet
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
 class InterfaceCppTemplate implements InterfaceTemplate{
 
@@ -59,8 +59,8 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	override generate(FInterface serviceInterface){
-var filter = TypeFilter::defaultTypeFilter
-filter.includeTransitiveTypes(true)
+var selector = TypeSelector::defaultTypeSelector
+selector.transitiveTypes(true)
 '''
 «val interfaceName = serviceInterface.joynrName»
 «warning()»
@@ -78,7 +78,7 @@ filter.includeTransitiveTypes(true)
 
 I«interfaceName»Base::I«interfaceName»Base()
 {
-	«val typeObjs = getAllComplexTypes(serviceInterface, filter)»
+	«val typeObjs = getAllComplexTypes(serviceInterface, selector)»
 	«var replyMetatypes = getReplyMetatypes(serviceInterface)»
 	«var broadcastMetatypes = getBroadcastMetatypes(serviceInterface)»
 
