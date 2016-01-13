@@ -482,8 +482,12 @@ class TypeUtil {
 		getComplexMembers(datatype, false)
 	}
 
-	def filterComplex(Iterable<Object> iterable) {
-		iterable.filter(typeof(FType)).filter[type | (type.map || type.compound || type.enum || type.map)]
+	def filterComplex(Iterable<? extends Object> iterable) {
+		filterComplex(iterable, false)
+	}
+
+	def filterComplex(Iterable<? extends Object> iterable, boolean includeTypeDefs) {
+		iterable.filter(typeof(FType)).filter[type | (type.typeDef && includeTypeDefs) || type.compound || type.enum || type.map]
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {

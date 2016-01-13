@@ -201,14 +201,14 @@ public class InterfaceUtil {
 	def getAllComplexTypes(
 			FInterface fInterface
 	) {
-		getAllRequiredTypes(fInterface).filterComplex
+		getAllComplexTypes(fInterface, TypeSelector::defaultTypeSelector)
 	}
 
 	def getAllComplexTypes(
 			FInterface fInterface,
 			TypeSelector selector
 	) {
-		getAllRequiredTypes(fInterface, selector).filterComplex
+		getAllRequiredTypes(fInterface, selector).filterComplex(selector.typeDefs)
 	}
 
 	def private void getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
@@ -233,6 +233,7 @@ public class InterfaceUtil {
 		var broadcasts = true
 		var errorTypes = false
 		var transitiveTypes = false
+		var typeDefs = false
 		static def defaultTypeSelector () {
 			new TypeSelector()
 		}
@@ -263,6 +264,10 @@ public class InterfaceUtil {
 
 		def transitiveTypes(boolean transitiveTypes) {
 			this.transitiveTypes = transitiveTypes
+		}
+
+		def typeDefs(boolean typeDefs) {
+			this.typeDefs = typeDefs
 		}
 	}
 

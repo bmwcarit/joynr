@@ -59,8 +59,8 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	override generate(FInterface serviceInterface){
-var selector = TypeSelector::defaultTypeSelector
-selector.transitiveTypes(true)
+		var selector = TypeSelector::defaultTypeSelector
+		selector.transitiveTypes(true)
 '''
 «val interfaceName = serviceInterface.joynrName»
 «warning()»

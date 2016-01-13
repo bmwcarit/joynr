@@ -26,6 +26,7 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.FMapTypeAsLastComparator
 import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
@@ -52,7 +53,9 @@ class InterfaceHTemplate implements InterfaceTemplate{
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface)
+	override generate(FInterface serviceInterface){
+		var selector = TypeSelector::defaultTypeSelector
+		selector.typeDefs(true)
 '''
 «val interfaceName = serviceInterface.joynrName»
 «val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"_h").toUpperCase»
@@ -61,7 +64,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(serviceInterface),new FMapTypeAsLastComparator())»
+«FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(serviceInterface, selector),new FMapTypeAsLastComparator())»
 	«IF datatype instanceof FType»
 		«IF isCompound(datatype)»
 			«getNamespaceStarter(datatype, true)»
@@ -148,4 +151,5 @@ public:
 «getNamespaceEnder(serviceInterface)»
 #endif // «headerGuard»
 '''
+}
 }

@@ -25,7 +25,6 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
@@ -37,8 +36,8 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	@Inject private extension InterfaceUtil
 
 	override generate(FInterface serviceInterface) {
-var selector = TypeSelector::defaultTypeSelector
-selector.transitiveTypes(true)
+		var selector = TypeSelector::defaultTypeSelector
+		selector.transitiveTypes(true)
 '''
 «warning()»
 «val interfaceName = serviceInterface.joynrName»
@@ -65,7 +64,7 @@ selector.transitiveTypes(true)
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
 	«ENDIF»
 	«FOR typeobj : typeObjs»
-		«val datatype = typeobj as FType»
+		«val datatype = typeobj»
 
 		// Register metatype «datatype.typeName»
 		«IF isEnum(datatype)»
