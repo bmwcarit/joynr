@@ -356,17 +356,17 @@ void WebSocketContext::libWebSocketLog(int level, const char* message)
 {
     switch (level) {
     case LLL_ERR:
-        JOYNR_LOG_ERROR(logger, message);
+        JOYNR_LOG_ERROR(logger, "libWebSocketLog {}", message);
         break;
     case LLL_WARN:
-        JOYNR_LOG_WARN(logger, message);
+        JOYNR_LOG_WARN(logger, "libWebSocketLog {}", message);
         break;
     case LLL_NOTICE:
     case LLL_INFO:
-        JOYNR_LOG_INFO(logger, message);
+        JOYNR_LOG_INFO(logger, "libWebSocketLog {}", message);
         break;
     case LLL_DEBUG:
-        JOYNR_LOG_DEBUG(logger, message);
+        JOYNR_LOG_DEBUG(logger, "libWebSocketLog {}", message);
         break;
     case LLL_PARSER:
     case LLL_HEADER:
@@ -374,7 +374,7 @@ void WebSocketContext::libWebSocketLog(int level, const char* message)
     case LLL_CLIENT:
     case LLL_LATENCY:
     default:
-        JOYNR_LOG_TRACE(logger, message);
+        JOYNR_LOG_TRACE(logger, "libWebSocketLog {}", message);
         break;
     }
 }
