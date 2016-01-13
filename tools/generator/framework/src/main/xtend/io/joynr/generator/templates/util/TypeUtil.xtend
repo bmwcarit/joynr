@@ -483,7 +483,7 @@ class TypeUtil {
 	}
 
 	def filterComplex(Iterable<Object> iterable) {
-		iterable.filter[type | type instanceof FType && ((type as FType).map || (type as FType).compound || (type as FType).enum || (type as FType).map)]
+		iterable.filter(typeof(FType)).filter[type | (type.map || type.compound || type.enum || type.map)]
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {
