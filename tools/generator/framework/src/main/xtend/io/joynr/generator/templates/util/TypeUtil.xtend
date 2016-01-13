@@ -396,9 +396,6 @@ class TypeUtil {
 		if (type instanceof FArrayType){
 			isMap(type.elementType)
 		}
-		if (type instanceof FTypeDef){
-			isMap(type.actualType)
-		}
 		if (type instanceof FMapType){
 			return true;
 		}
@@ -414,9 +411,6 @@ class TypeUtil {
 		}
 		if (type instanceof FStructType || type instanceof FUnionType){
 			return false
-		}
-		if (type instanceof FTypeDef){
-			isEnum(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return true
