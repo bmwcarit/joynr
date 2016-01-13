@@ -89,6 +89,9 @@ typeCollection TestTypes {
 
 	map TStringKeyMap {String to String}
 
+	// duplicate map to check whether code generation is correct
+	map TStringKeyMapDuplicate {String to String}
+
 	map TIntegerKeyMap {Int32 to String}
 
 	map TDoubleKeyMap {Double to String}
