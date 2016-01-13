@@ -29,7 +29,6 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.HashSet
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
 class InterfaceCppTemplate implements InterfaceTemplate{
@@ -85,9 +84,7 @@ I«interfaceName»Base::I«interfaceName»Base()
 	«IF !typeObjs.isEmpty() || !replyMetatypes.empty || !broadcastMetatypes.empty»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
 	«ENDIF»
-	«FOR typeobj : typeObjs»
-		«val datatype = typeobj as FType»
-
+	«FOR datatype : typeObjs»
 		// Register metatype «datatype.typeName»
 		«IF isEnum(datatype)»
 		{

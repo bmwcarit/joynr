@@ -29,7 +29,6 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
 
 class InterfaceHTemplate implements InterfaceTemplate{
 
@@ -65,14 +64,12 @@ class InterfaceHTemplate implements InterfaceTemplate{
 #define «headerGuard»
 
 «FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(serviceInterface, selector),new FMapTypeAsLastComparator())»
-	«IF datatype instanceof FType»
-		«IF isCompound(datatype)»
-			«getNamespaceStarter(datatype, true)»
-			class «(datatype).joynrName»;
-			«getNamespaceEnder(datatype, true)»
-		«ELSE »
-			#include "«getIncludeOf(datatype)»"
-		«ENDIF»
+	«IF isCompound(datatype)»
+		«getNamespaceStarter(datatype, true)»
+		class «(datatype).joynrName»;
+		«getNamespaceEnder(datatype, true)»
+	«ELSE »
+		#include "«getIncludeOf(datatype)»"
 	«ENDIF»
 «ENDFOR»
 

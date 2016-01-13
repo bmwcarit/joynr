@@ -217,8 +217,8 @@ class ProxyGenerator {
 
 		«fInterface.proxyName».getUsedDatatypes = function getUsedDatatypes(){
 			return [
-						«FOR datatype : fInterface.getAllComplexTypes.filter[a | a instanceof FType] SEPARATOR ','»
-						"«(datatype as FType).joynrTypeName»"
+						«FOR datatype : fInterface.getAllComplexTypes SEPARATOR ','»
+						"«datatype.joynrTypeName»"
 						«ENDFOR»
 					];
 		};
@@ -227,16 +227,16 @@ class ProxyGenerator {
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
 			define(«fInterface.defineName(fInterface.proxyName)»[
-				«FOR datatype : fInterface.getAllComplexTypes.filter[a | a instanceof FType] SEPARATOR ','»
-						"«(datatype as FType).getDependencyPath»"
+				«FOR datatype : fInterface.getAllComplexTypes SEPARATOR ','»
+						"«datatype.getDependencyPath»"
 				«ENDFOR»
 				], function () {
 					return «fInterface.proxyName»;
 				});
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {
-				«FOR datatype : getAllComplexTypes(fInterface).filter[a | a instanceof FType]»
-					require("«relativePathToBase() + (datatype as FType).getDependencyPath()»");
+				«FOR datatype : getAllComplexTypes(fInterface)»
+					require("«relativePathToBase() + datatype.getDependencyPath()»");
 				«ENDFOR»
 				exports = module.exports = «fInterface.proxyName»;
 			}

@@ -30,7 +30,6 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
-import org.franca.core.franca.FType
 
 class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 
@@ -100,11 +99,9 @@ internalRequestObject.setMethodName("«method.joynrName»");
 «ENDFOR»
 
 «FOR datatype: getAllComplexTypes(serviceInterface)»
-«IF datatype instanceof FType»
 	«IF isCompound(datatype) || isMap(datatype)»
 		#include "«getIncludeOf(datatype)»"
 	«ENDIF»
-«ENDIF»
 «ENDFOR»
 
 «getNamespaceStarter(serviceInterface)»

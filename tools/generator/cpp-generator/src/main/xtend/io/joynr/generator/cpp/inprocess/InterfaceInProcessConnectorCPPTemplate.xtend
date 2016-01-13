@@ -28,7 +28,6 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
 
 class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
@@ -51,11 +50,9 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»InProcessConnector.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 «FOR datatype: getAllComplexTypes(serviceInterface)»
-«IF datatype instanceof FType»
 	«IF isCompound(datatype) || isMap(datatype)»
 		#include "«getIncludeOf(datatype)»"
 	«ENDIF»
-«ENDIF»
 «ENDFOR»
 
 #include "joynr/InProcessAddress.h"

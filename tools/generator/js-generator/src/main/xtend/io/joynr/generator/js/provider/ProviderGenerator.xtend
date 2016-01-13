@@ -246,8 +246,8 @@ class ProviderGenerator {
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
 			define(«fInterface.defineName(fInterface.providerName)»[
-				«FOR datatype : fInterface.getAllComplexTypes.filter[a | a instanceof FType] SEPARATOR ','»
-						"«(datatype as FType).getDependencyPath»"
+				«FOR datatype : fInterface.getAllComplexTypes SEPARATOR ','»
+						"«datatype.getDependencyPath»"
 				«ENDFOR»
 				], function () {
 					return «fInterface.providerName»;
@@ -255,8 +255,8 @@ class ProviderGenerator {
 			);
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {
-				«FOR datatype : getAllComplexTypes(fInterface).filter[a | a instanceof FType]»
-					require("«relativePathToBase() + (datatype as FType).getDependencyPath()»");
+				«FOR datatype : getAllComplexTypes(fInterface)»
+					require("«relativePathToBase() + datatype.getDependencyPath()»");
 				«ENDFOR»
 				exports = module.exports = «fInterface.providerName»;
 			}
