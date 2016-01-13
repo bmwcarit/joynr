@@ -242,7 +242,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		if (type instanceof FType){
 			typeList.add(getIncludeOf(type));
 		}
-	
+
 		return typeList;
 	}
 
@@ -254,7 +254,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		} else if (type instanceof FBasicTypeId){
 			typeList.addAll(getIncludesFor(Sets::newHashSet(type)))
 		}
-	
+
 		return typeList;
 	}
 

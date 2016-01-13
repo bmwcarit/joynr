@@ -160,7 +160,7 @@ public class InterfaceUtil {
 	) {
 		fInterface.getAllRequiredTypes(TypeSelector::defaultTypeSelector)
 	}
-	
+
 	def getAllRequiredTypes(
 			FInterface fInterface,
 			TypeSelector selector
