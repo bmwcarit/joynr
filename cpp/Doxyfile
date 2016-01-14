@@ -862,10 +862,10 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          cluster-controller/include/joynr/JoynrClusterControllerExport.h \
                          cluster-controller/include/joynr/LocalCapabilitiesDirectory.h \
                          cluster-controller/include/joynr/LocalChannelUrlDirectory.h \
-                         cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.cpp \
-                         cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.cpp \
-                         cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h \
-                         cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h \
+                         cluster-controller/messaging/joynr-messaging/HttpMessagingStub.cpp \
+                         cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.cpp \
+                         cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h \
+                         cluster-controller/messaging/joynr-messaging/HttpMessagingStub.h \
                          cluster-controller/messaging/MessagingPropertiesPersistence.cpp \
                          cluster-controller/messaging/MessagingPropertiesPersistence.h \
                          common-api/joynr/messaging/IMessaging.cpp \

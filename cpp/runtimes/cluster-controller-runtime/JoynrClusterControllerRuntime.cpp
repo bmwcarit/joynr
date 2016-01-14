@@ -39,7 +39,7 @@
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
+#include "cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "websocket/WebSocketCcMessagingSkeleton.h"
 #include "joynr/LocalDiscoveryAggregator.h"
@@ -193,7 +193,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                 std::chrono::milliseconds(messagingSettings->getSendMsgRetryInterval())));
     }
     messagingStubFactory->registerStubFactory(
-            new JoynrMessagingStubFactory(messageSender, messageReceiver->getReceiveChannelId()));
+            new HttpMessagingStubFactory(messageSender, messageReceiver->getReceiveChannelId()));
 
     // joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
     // ccDispatcher = DispatcherFactory::createDispatcherInSameThread(messagingSettings);

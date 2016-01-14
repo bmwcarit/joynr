@@ -32,7 +32,7 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "cluster-controller/http-communication-manager/HttpSender.h"
-#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
+#include "cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/Future.h"
 #include "joynr/Settings.h"
@@ -100,7 +100,7 @@ public:
                         messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
-        messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockMessageSender, senderChannelId));
+        messagingStubFactory->registerStubFactory(new HttpMessagingStubFactory(mockMessageSender, senderChannelId));
         messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
 
         qos.setTtl(10000);
@@ -131,7 +131,7 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     // - InProcessClusterControllerMessagingSkeleton.transmit (IMessaging)
     // - MessageRouter.route
     // - MessageRunnable.run
-    // - JoynrMessagingStub.transmit (IMessaging)
+    // - HttpMessagingStub.transmit (IMessaging)
     // - MessageSender.send
 
 

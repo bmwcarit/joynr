@@ -16,33 +16,33 @@
  * limitations under the License.
  * #L%
  */
-#include "JoynrMessagingStubFactory.h"
+#include "HttpMessagingStubFactory.h"
 
+#include "HttpMessagingStub.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/IMessageSender.h"
-#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
 
 namespace joynr
 {
 
-JoynrMessagingStubFactory::JoynrMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
-                                                     std::string receiveChannelId)
+HttpMessagingStubFactory::HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
+                                                   std::string receiveChannelId)
         : messageSender(messageSender), receiveChannelId(receiveChannelId)
 {
 }
 
-bool JoynrMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Address& destAddress)
+bool HttpMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Address& destAddress)
 {
     return dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destAddress);
 }
 
-std::shared_ptr<IMessaging> JoynrMessagingStubFactory::create(
+std::shared_ptr<IMessaging> HttpMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
     const system::RoutingTypes::ChannelAddress* channelAddress =
             dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destAddress);
-    return std::shared_ptr<IMessaging>(new JoynrMessagingStub(
-            messageSender, channelAddress->getChannelId(), receiveChannelId));
+    return std::shared_ptr<IMessaging>(
+            new HttpMessagingStub(messageSender, channelAddress->getChannelId(), receiveChannelId));
 }
 
 } // namespace joynr

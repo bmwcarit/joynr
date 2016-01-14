@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNRMESSAGINGSTUBFACTORY_H
-#define JOYNRMESSAGINGSTUBFACTORY_H
+#ifndef HTTPMESSAGINGSTUBFACTORY_H
+#define HTTPMESSAGINGSTUBFACTORY_H
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 #include <memory>
@@ -28,12 +28,12 @@ namespace joynr
 
 class IMessageSender;
 
-class JoynrMessagingStubFactory : public IMiddlewareMessagingStubFactory
+class HttpMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {
 
 public:
-    JoynrMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
-                              std::string receiveChannelId);
+    HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
+                             std::string receiveChannelId);
     std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
@@ -44,4 +44,4 @@ private:
 };
 
 } // namespace joynr
-#endif // JOYNRMESSAGINGSTUBFACTORY_H
+#endif // HTTPMESSAGINGSTUBFACTORY_H

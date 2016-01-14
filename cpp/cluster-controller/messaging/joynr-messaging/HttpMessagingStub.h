@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNRMESSAGINGSTUB_H
-#define JOYNRMESSAGINGSTUB_H
+#ifndef HTTPMESSAGINGSTUB_H
+#define HTTPMESSAGINGSTUB_H
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IMessaging.h"
 
@@ -33,21 +33,21 @@ class JoynrMessage;
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
   */
-class JoynrMessagingStub : public IMessaging
+class HttpMessagingStub : public IMessaging
 {
 public:
-    explicit JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                                const std::string& destinationChannelId,
-                                const std::string& receiveChannelId);
-    ~JoynrMessagingStub() override = default;
+    explicit HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
+                               const std::string& destinationChannelId,
+                               const std::string& receiveChannelId);
+    ~HttpMessagingStub() override = default;
     void transmit(JoynrMessage& message) override;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(JoynrMessagingStub);
+    DISALLOW_COPY_AND_ASSIGN(HttpMessagingStub);
     std::shared_ptr<IMessageSender> messageSender;
     const std::string destinationChannelId;
     const std::string receiveChannelId;
 };
 
 } // namespace joynr
-#endif // JOYNRMESSAGINGSTUB_H
+#endif // HTTPMESSAGINGSTUB_H

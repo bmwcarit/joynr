@@ -16,7 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
+#include "HttpMessagingStub.h"
+
 #include "joynr/IMessageSender.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
@@ -24,16 +25,16 @@
 namespace joynr
 {
 
-JoynrMessagingStub::JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                                       const std::string& destinationChannelId,
-                                       const std::string& receiveChannelId)
+HttpMessagingStub::HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
+                                     const std::string& destinationChannelId,
+                                     const std::string& receiveChannelId)
         : messageSender(messageSender),
           destinationChannelId(destinationChannelId),
           receiveChannelId(receiveChannelId)
 {
 }
 
-void JoynrMessagingStub::transmit(JoynrMessage& message)
+void HttpMessagingStub::transmit(JoynrMessage& message)
 {
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
