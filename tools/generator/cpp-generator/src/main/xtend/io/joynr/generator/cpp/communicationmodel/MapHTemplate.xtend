@@ -71,10 +71,4 @@ class MapHTemplate implements MapTemplate{
 private def getTypeDefinition(FMapType type)'''
 struct «type.joynrName» : public std::map<«type.keyType.typeName», «type.valueType.typeName»> {};
 '''
-
-// TODO now that maps are realized through inheritance, they actually CAN be forward declared
-def forwardDeclaration(FMapType type){
-//forward declaration is not supported for type definitions
-type.typeDefinition
-}
 }

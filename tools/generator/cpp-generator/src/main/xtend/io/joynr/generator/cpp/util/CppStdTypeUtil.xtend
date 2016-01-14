@@ -131,4 +131,10 @@ class CppStdTypeUtil extends CppTypeUtil {
 		}
 	}
 
+	def getForwardDeclaration(FType datatype)'''
+«getNamespaceStarter(datatype, true)»
+class «(datatype).joynrName»;
+«getNamespaceEnder(datatype, true)»
+'''
+
 }

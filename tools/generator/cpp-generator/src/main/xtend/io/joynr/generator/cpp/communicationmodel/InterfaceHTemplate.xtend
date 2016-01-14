@@ -52,12 +52,10 @@ class InterfaceHTemplate implements InterfaceTemplate{
 #define «headerGuard»
 
 «FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(serviceInterface, selector),new FMapTypeAsLastComparator())»
-	«IF isCompound(datatype)»
-		«getNamespaceStarter(datatype, true)»
-		class «(datatype).joynrName»;
-		«getNamespaceEnder(datatype, true)»
+	«IF isCompound(datatype) || isMap(datatype)»
+		«datatype.forwardDeclaration»
 	«ELSE »
-		#include "«getIncludeOf(datatype)»"
+		#include "«datatype.includeOf»"
 	«ENDIF»
 «ENDFOR»
 
