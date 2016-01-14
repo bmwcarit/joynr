@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,6 @@ TEST_F(MessagingSettingsTest, overrideDefaultSettings) {
     testSettings.set(MessagingSettings::SETTING_BROKER_URL(), expectedBrokerUrl);
     MessagingSettings messagingSettings(testSettings);
 
-    std::string brokerUrl = messagingSettings.getBrokerUrlString();
+    std::string brokerUrl = messagingSettings.getBounceProxyUrlString();
     EXPECT_EQ(expectedBrokerUrl, brokerUrl);
 }

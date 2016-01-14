@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ void HttpReceiver::startReceiveQueue()
             std::chrono::milliseconds(settings.getCreateChannelRetryInterval())};
 
     JOYNR_LOG_DEBUG(logger, "startReceiveQueue");
-    messageReceiver = new LongPollingMessageReceiver(settings.getBrokerUrl(),
+    messageReceiver = new LongPollingMessageReceiver(settings.getBounceProxyUrl(),
                                                      channelId,
                                                      receiverId,
                                                      longPollSettings,
@@ -151,7 +151,7 @@ bool HttpReceiver::tryToDeleteChannel()
     // messageSender.
     // TODO channelUrl is known only to the LongPlooMessageReceiver!
     std::string deleteChannelUrl =
-            settings.getBrokerUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
+            settings.getBounceProxyUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(

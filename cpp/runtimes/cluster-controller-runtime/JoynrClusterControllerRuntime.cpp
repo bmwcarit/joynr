@@ -46,6 +46,7 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
+#include "cluster-controller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "websocket/WebSocketCcMessagingSkeleton.h"
 #include "joynr/LocalDiscoveryAggregator.h"
@@ -115,7 +116,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
           httpMessagingIsRunning(false),
           mqttMessagingIsRunning(false),
           doMqttMessaging(false),
-          doHttpMessaging(false)
+          doHttpMessaging(false),
+          mqttSettings()
 {
     initializeAllDependencies();
 }
@@ -149,6 +151,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             new MessageRouter(messagingStubFactory, securityManager));
 
     const BrokerUrl brokerUrl = messagingSettings->getBrokerUrl();
+    const BrokerUrl bounceProxyUrl = messagingSettings->getBounceProxyUrl();
 
     // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
     if (brokerUrl.getBrokerChannelsBaseUrl().isValid()) {
@@ -168,23 +171,44 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         }
     }
 
-    if (!doHttpMessaging) {
+    if (!doHttpMessaging && bounceProxyUrl.getBrokerChannelsBaseUrl().isValid()) {
         JOYNR_LOG_INFO(logger, "HTTP-Messaging");
         doHttpMessaging = true;
     }
 
+    std::string capabilitiesDirectoryChannelId =
+            messagingSettings->getCapabilitiesDirectoryChannelId();
+    std::string capabilitiesDirectoryParticipantId =
+            messagingSettings->getCapabilitiesDirectoryParticipantId();
+    std::string channelUrlDirectoryChannelId = messagingSettings->getChannelUrlDirectoryChannelId();
+    std::string channelUrlDirectoryParticipantId =
+            messagingSettings->getChannelUrlDirectoryParticipantId();
+
     // provision global capabilities directory
-    std::shared_ptr<joynr::system::RoutingTypes::Address> globalCapabilitiesDirectoryAddress(
-            new system::RoutingTypes::ChannelAddress(
-                    messagingSettings->getCapabilitiesDirectoryChannelId()));
-    messageRouter->addProvisionedNextHop(messagingSettings->getCapabilitiesDirectoryParticipantId(),
-                                         globalCapabilitiesDirectoryAddress);
+    if (capabilitiesDirectoryChannelId.substr(0, 5) == mqttSettings.mqttChannelIdPrefix) {
+        std::shared_ptr<joynr::system::RoutingTypes::Address> globalCapabilitiesDirectoryAddress(
+                new system::RoutingTypes::MqttAddress(capabilitiesDirectoryChannelId.substr(5)));
+        messageRouter->addProvisionedNextHop(
+                capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
+    } else {
+        std::shared_ptr<joynr::system::RoutingTypes::Address> globalCapabilitiesDirectoryAddress(
+                new system::RoutingTypes::ChannelAddress(capabilitiesDirectoryChannelId));
+        messageRouter->addProvisionedNextHop(
+                capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
+    }
+
     // provision channel url directory
-    std::shared_ptr<joynr::system::RoutingTypes::Address> globalChannelUrlDirectoryAddress(
-            new system::RoutingTypes::ChannelAddress(
-                    messagingSettings->getChannelUrlDirectoryChannelId()));
-    messageRouter->addProvisionedNextHop(messagingSettings->getChannelUrlDirectoryParticipantId(),
-                                         globalChannelUrlDirectoryAddress);
+    if (channelUrlDirectoryChannelId.substr(0, 5) == mqttSettings.mqttChannelIdPrefix) {
+        std::shared_ptr<joynr::system::RoutingTypes::Address> globalChannelUrlDirectoryAddress(
+                new system::RoutingTypes::MqttAddress(channelUrlDirectoryChannelId.substr(5)));
+        messageRouter->addProvisionedNextHop(
+                channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);
+    } else {
+        std::shared_ptr<joynr::system::RoutingTypes::Address> globalChannelUrlDirectoryAddress(
+                new system::RoutingTypes::ChannelAddress(channelUrlDirectoryChannelId));
+        messageRouter->addProvisionedNextHop(
+                channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);
+    }
 
     // setup CC WebSocket interface
     WebSocketMessagingStubFactory* wsMessagingStubFactory = new WebSocketMessagingStubFactory();
@@ -237,7 +261,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "http MessageSender");
 
             httpMessageSender = std::make_shared<HttpSender>(
-                    messagingSettings->getBrokerUrl(),
+                    messagingSettings->getBounceProxyUrl(),
                     std::chrono::milliseconds(messagingSettings->getSendMsgMaxTtl()),
                     std::chrono::milliseconds(messagingSettings->getSendMsgRetryInterval()));
         }
@@ -284,6 +308,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
             mqttMessageSender = std::make_shared<MqttSender>(messagingSettings->getBrokerUrl());
         }
+
+        messagingStubFactory->registerStubFactory(new MqttMessagingStubFactory(
+                mqttMessageSender, mqttMessageReceiver->getReceiveChannelId()));
     }
 
     // joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);

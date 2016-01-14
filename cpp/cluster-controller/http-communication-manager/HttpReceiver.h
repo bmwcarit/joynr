@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,8 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
     void init();
+
+    const BrokerUrl getBrokerUrl();
 
     /* This semaphore keeps track of the status of the channel. On creation no resources are
        available.

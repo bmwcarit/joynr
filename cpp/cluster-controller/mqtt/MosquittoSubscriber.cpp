@@ -151,8 +151,8 @@ void MosquittoSubscriber::on_message(const struct mosquitto_message* message)
         msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
         std::string replyChannelId = msg->getHeaderReplyChannelId();
-        std::shared_ptr<system::RoutingTypes::ChannelAddress> address =
-                std::make_shared<system::RoutingTypes::ChannelAddress>(replyChannelId);
+        std::shared_ptr<system::RoutingTypes::MqttAddress> address =
+                std::make_shared<system::RoutingTypes::MqttAddress>(replyChannelId);
         messageRouter->addNextHop(msg->getHeaderFrom(), address);
     }
 

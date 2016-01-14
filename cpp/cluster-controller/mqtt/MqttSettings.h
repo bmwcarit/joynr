@@ -35,6 +35,8 @@ struct MqttSettings
     std::string prio = "low";
     bool retain = false;
     std::chrono::milliseconds reconnectSleepTimeMs = std::chrono::milliseconds(25);
+
+    std::string mqttChannelIdPrefix = "mqtt_";
 };
 
 #endif // CLUSTER_CONTROLLER_MQTT_MQTTSETTINGS_H_

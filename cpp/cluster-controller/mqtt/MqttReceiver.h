@@ -99,6 +99,8 @@ private:
 
     MosquittoSubscriber mosquittoSubscriber;
 
+    MqttSettings mqttSettings;
+
     ADD_LOGGER(MqttReceiver);
 };
 

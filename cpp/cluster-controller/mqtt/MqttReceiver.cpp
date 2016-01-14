@@ -36,11 +36,14 @@ MqttReceiver::MqttReceiver(const MessagingSettings& settings,
           mosquittoSubscriber(settings.getBrokerUrl(),
                               channelId,
                               channelCreatedSemaphore,
-                              messageRouter)
+                              messageRouter),
+          mqttSettings()
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
-    channelId = persist.getChannelId();
+
+    channelId = mqttSettings.mqttChannelIdPrefix + persist.getChannelId();
     receiverId = persist.getReceiverId();
+
     init();
 }
 
@@ -52,10 +55,6 @@ MqttReceiver::~MqttReceiver()
 void MqttReceiver::init()
 {
     mosquittoSubscriber.registerChannelId(channelId);
-    JOYNR_LOG_DEBUG(logger, "Print settings... ");
-    settings.printSettings();
-    updateSettings();
-    JOYNR_LOG_DEBUG(logger, "Init finished.");
 }
 
 void MqttReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory)
@@ -78,7 +77,6 @@ void MqttReceiver::waitForReceiveQueueStarted()
 {
     JOYNR_LOG_TRACE(logger, "waiting for ReceiveQueue to be started.");
     channelCreatedSemaphore->wait();
-    channelCreatedSemaphore->notify();
 }
 
 void MqttReceiver::stopReceiveQueue()

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#include <boost/algorithm/string/predicate.hpp>
+
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IChannelUrlDirectory.h"
@@ -45,7 +47,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
           participantId2LocalCapability(),
           registeredGlobalCapabilities(),
           messageRouter(messageRouter),
-          observers()
+          observers(),
+          mqttSettings()
 {
     providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
     providerQos.setProviderVersion(1);
@@ -377,9 +380,18 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
     while (entryIterator.hasNext()) {
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
-        std::shared_ptr<joynr::system::RoutingTypes::Address> joynrAddress(
-                new system::RoutingTypes::ChannelAddress(entryIterator.key()));
-        messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
+
+        std::string participantId = currentEntry.getParticipantId();
+
+        if (boost::starts_with(entryIterator.key(), mqttSettings.mqttChannelIdPrefix)) {
+            auto joynrAddress =
+                    std::make_shared<system::RoutingTypes::MqttAddress>(entryIterator.key());
+            messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
+        } else {
+            auto joynrAddress =
+                    std::make_shared<system::RoutingTypes::ChannelAddress>(entryIterator.key());
+            messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
+        }
         this->insertInCache(currentEntry, false, true);
     }
 }

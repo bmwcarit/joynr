@@ -23,6 +23,7 @@
 #include <string>
 #include <memory>
 
+#include "cluster-controller/mqtt/MqttSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/ClientQCache.h"
@@ -157,6 +158,7 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
+    MqttSettings mqttSettings;
 
     friend class ::JoynrClusterControllerRuntimeTest;
 };
