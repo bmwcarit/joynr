@@ -100,7 +100,7 @@ internalRequestObject.setMethodName("«method.joynrName»");
 
 «FOR datatype: getAllComplexTypes(serviceInterface)»
 	«IF isCompound(datatype) || isMap(datatype)»
-		#include "«getIncludeOf(datatype)»"
+		#include «getIncludeOf(datatype)»
 	«ENDIF»
 «ENDFOR»
 

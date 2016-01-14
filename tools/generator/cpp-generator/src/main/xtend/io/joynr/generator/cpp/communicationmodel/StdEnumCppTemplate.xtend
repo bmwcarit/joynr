@@ -45,7 +45,7 @@ class StdEnumCppTemplate implements EnumTemplate {
 «warning»
 «getDllExportIncludeStatement()»
 
-#include "«type.includeOf»"
+#include «type.includeOf»
 #include <sstream>
 
 «getNamespaceStarter(type, true)»

@@ -55,7 +55,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 	«IF isCompound(datatype) || isMap(datatype)»
 		«datatype.forwardDeclaration»
 	«ELSE »
-		#include "«datatype.includeOf»"
+		#include «datatype.includeOf»
 	«ENDIF»
 «ENDFOR»
 

@@ -45,7 +45,7 @@ class MapCppTemplate implements MapTemplate{
 «warning()»
 «getDllExportIncludeStatement()»
 
-#include "«type.includeOf»"
+#include «type.includeOf»
 #include "joynr/Variant.h"
 
 «getNamespaceStarter(type, true)»

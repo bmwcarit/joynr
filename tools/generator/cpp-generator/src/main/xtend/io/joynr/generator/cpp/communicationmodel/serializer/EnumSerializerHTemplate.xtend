@@ -49,7 +49,7 @@ class EnumSerializerHTemplate implements EnumTemplate{
 
 #include "joynr/PrimitiveDeserializer.h"
 #include "joynr/ClassSerializer.h"
-#include "«getIncludeOf(type)»"
+#include «getIncludeOf(type)»
 
 namespace joynr
 {

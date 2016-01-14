@@ -159,10 +159,10 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	}
 
 	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast) {
-		return getPackagePathWithJoynrPrefix(serviceInterface, "/")
+		return "\"" + getPackagePathWithJoynrPrefix(serviceInterface, "/")
 			+ "/" + serviceInterface.name.toFirstUpper
 			+ broadcast.joynrName.toFirstUpper
-			+ "BroadcastFilterParameters.h"
+			+ "BroadcastFilterParameters.h\""
 	}
 
 	def getPackageSourceDirectory(FModelElement fModelElement) {

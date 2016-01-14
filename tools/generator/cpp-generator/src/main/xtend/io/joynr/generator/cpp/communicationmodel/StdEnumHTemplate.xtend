@@ -55,7 +55,7 @@ class StdEnumHTemplate implements EnumTemplate {
 #include "joynr/Variant.h"
 
 «IF type.hasExtendsDeclaration»
-	#include "«type.extendedType.includeOf»"
+	#include «type.extendedType.includeOf»
 
 «ENDIF»
 «getNamespaceStarter(type, true)»

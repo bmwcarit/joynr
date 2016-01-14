@@ -119,7 +119,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 		if (dataType.isPartOfTypeCollection) {
 			path += "/" + dataType.typeCollectionName
 		}
-		return path + "/" + dataType.joynrName + nameSuffix + ".h";
+		return "\"" + path + "/" + dataType.joynrName + nameSuffix + ".h\"";
 	}
 
 	override getDefaultValue(FTypedElement element) {

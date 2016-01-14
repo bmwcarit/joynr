@@ -219,13 +219,13 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 		val typeList = new TreeSet<String>();
 		if (hasExtendsDeclaration(datatype)){
-			typeList.add(getIncludeOf(getExtendedType(datatype)))
+			typeList.add(datatype.extendedType.includeOf)
 		}
 
 		for (member : members) {
 			val type = getDatatype(member.type);
 			if (type instanceof FType){
-				typeList.add(getIncludeOf(type));
+				typeList.add(type.includeOf);
 			}
 		}
 		return typeList;
@@ -235,12 +235,12 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		val typeList = new TreeSet<String>();
 		var type = getDatatype(datatype.keyType);
 		if (type instanceof FType){
-			typeList.add(getIncludeOf(type));
+			typeList.add(type.includeOf);
 		}
 
 		type = getDatatype(datatype.valueType)
 		if (type instanceof FType){
-			typeList.add(getIncludeOf(type));
+			typeList.add(type.includeOf);
 		}
 
 		return typeList;
@@ -250,7 +250,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		val typeList = new TreeSet<String>();
 		var type = getDatatype(datatype.actualType);
 		if (type instanceof FType){
-			typeList.add("\"" + getIncludeOf(type) + "\"");
+			typeList.add(type.includeOf);
 		} else if (type instanceof FBasicTypeId){
 			typeList.addAll(getIncludesFor(Sets::newHashSet(type)))
 		}
@@ -275,7 +275,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		val selector = TypeSelector::defaultTypeSelector
 		selector.errorTypes(true)
 		for(datatype: getAllComplexTypes(serviceInterface,selector)){
-			includeSet.add("\"" + getIncludeOf(datatype) + "\"");
+			includeSet.add(datatype.includeOf);
 		}
 
 		includeSet.addAll(serviceInterface.allPrimitiveTypes.includesFor)
@@ -285,7 +285,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 		for (broadcast: serviceInterface.broadcasts) {
 			if (isSelective(broadcast)) {
-				includeSet.add("\"" + getIncludeOfFilterParametersContainer(serviceInterface, broadcast) + "\"");
+				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
 			}
 		}
 		return includeSet;

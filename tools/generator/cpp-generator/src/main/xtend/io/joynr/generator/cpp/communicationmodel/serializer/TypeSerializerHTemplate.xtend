@@ -49,7 +49,7 @@ class TypeSerializerHTemplate implements CompoundTypeTemplate{
 
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
-#include "«getIncludeOf(type)»"
+#include «getIncludeOf(type)»
 #include <ostream>
 
 namespace joynr

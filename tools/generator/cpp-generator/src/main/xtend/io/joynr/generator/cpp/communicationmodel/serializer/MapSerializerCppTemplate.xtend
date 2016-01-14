@@ -45,7 +45,7 @@ class MapSerializerCppTemplate implements MapTemplate{
 «val joynrName = type.joynrName»
 «val typeName = type.typeName»
 «warning»
-#include "«type.includeOfSerializer»"
+#include «type.includeOfSerializer»
 #include "joynr/ArraySerializer.h"
 #include "joynr/PrimitiveDeserializer.h"
 #include "joynr/MapSerializer.h"
