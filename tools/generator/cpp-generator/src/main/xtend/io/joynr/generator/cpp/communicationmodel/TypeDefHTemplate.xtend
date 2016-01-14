@@ -24,6 +24,8 @@ import io.joynr.generator.templates.TypeDefTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FTypeDef
+import org.franca.core.franca.FType
+import org.franca.core.franca.FBasicTypeId
 
 class TypeDefHTemplate implements TypeDefTemplate{
 
@@ -50,8 +52,12 @@ class TypeDefHTemplate implements TypeDefTemplate{
 «getDllExportIncludeStatement()»
 
 // include required datatype headers.
-«FOR member: getRequiredIncludesFor(type)»
+«val typeDependencies = type.typeDependencies»
+«FOR member: typeDependencies.filter(typeof(FBasicTypeId)).includesFor»
 	#include «member»
+«ENDFOR»
+«FOR member: typeDependencies.filter(typeof(FType))»
+	#include «member.includeOf»
 «ENDFOR»
 
 «getNamespaceStarter(type, true)»

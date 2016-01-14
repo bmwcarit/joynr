@@ -17,7 +17,6 @@ package io.joynr.generator.cpp.util
  * limitations under the License.
  */
 
-import com.google.common.collect.Sets
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.AbstractTypeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
@@ -28,7 +27,6 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import java.util.Set
-import java.util.TreeSet
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
@@ -214,45 +212,45 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		}
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
+	def Iterable<FType> getTypeDependencies(FCompoundType datatype){
 		val members = getComplexMembers(datatype, true);
 
-		val typeList = new TreeSet<String>();
+		val typeList = new HashSet<FType>();
 		if (hasExtendsDeclaration(datatype)){
-			typeList.add(datatype.extendedType.includeOf)
+			typeList.add(datatype.extendedType)
 		}
 
 		for (member : members) {
 			val type = getDatatype(member.type);
 			if (type instanceof FType){
-				typeList.add(type.includeOf);
+				typeList.add(type);
 			}
 		}
 		return typeList;
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FMapType datatype){
-		val typeList = new TreeSet<String>();
+	def Iterable<FType> getTypeDependencies(FMapType datatype){
+		val typeList = new HashSet<FType>();
 		var type = getDatatype(datatype.keyType);
 		if (type instanceof FType){
-			typeList.add(type.includeOf);
+			typeList.add(type);
 		}
 
 		type = getDatatype(datatype.valueType)
 		if (type instanceof FType){
-			typeList.add(type.includeOf);
+			typeList.add(type);
 		}
 
 		return typeList;
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FTypeDef datatype){
-		val typeList = new TreeSet<String>();
+	def Iterable<? extends Object> getTypeDependencies(FTypeDef datatype){
+		val typeList = new HashSet<Object>();
 		var type = getDatatype(datatype.actualType);
 		if (type instanceof FType){
-			typeList.add(type.includeOf);
+			typeList.add(type);
 		} else if (type instanceof FBasicTypeId){
-			typeList.addAll(getIncludesFor(Sets::newHashSet(type)))
+			typeList.addAll(type)
 		}
 
 		return typeList;

@@ -55,8 +55,8 @@ class MapHTemplate implements MapTemplate{
 #include "joynr/Util.h"
 
 // include complex Datatype headers.
-«FOR member: getRequiredIncludesFor(type)»
-	#include «member»
+«FOR member: type.typeDependencies»
+	#include «member.includeOf»
 «ENDFOR»
 
 «getNamespaceStarter(type, true)»

@@ -56,8 +56,8 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 #include "joynr/TypeUtil.h"
 
 // include complex Datatype headers.
-«FOR member: getRequiredIncludesFor(type)»
-	#include «member»
+«FOR member: type.typeDependencies»
+	#include «member.includeOf»
 «ENDFOR»
 
 «getNamespaceStarter(type, true)»
