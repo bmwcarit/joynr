@@ -46,6 +46,7 @@
 #include "joynr/types/TestTypes/TStringKeyMap.h"
 #include "joynr/types/TestTypes/TIntegerKeyMap.h"
 #include "joynr/types/TestTypes/TDoubleKeyMap.h"
+#include "joynr/types/TestTypes/TStringToByteBufferMap.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
@@ -879,6 +880,17 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTStringKeyMap)
     expectedMap.insert({"StringKey2", "StringValue2"});
 
     serializeDeserializeMap<TStringKeyMap>(expectedMap, logger);
+}
+
+TEST_F(JoynrJsonSerializerTest, serializeDeserializeTStringToByteBufferMap)
+{
+    using namespace joynr::types::TestTypes;
+
+    TStringToByteBufferMap expectedMap;
+    expectedMap.insert({"StringKey1", {0,1,2,3,4,5}});
+    expectedMap.insert({"StringKey2", {10,9,8,7,6}});
+
+    serializeDeserializeMap<TStringToByteBufferMap>(expectedMap, logger);
 }
 
 // test with TEverythingStruct

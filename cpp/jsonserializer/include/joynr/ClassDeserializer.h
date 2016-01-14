@@ -91,6 +91,21 @@ public:
     Variant deserializeVariant(IObject& object) override;
 };
 
+
+/**
+ *@brief this meta function allows to check whether a type U is derived from a template T
+ */
+template <template<typename...> class T, typename U>
+struct IsDerivedFromTemplate
+{
+private:
+    template<typename... Args>
+    static decltype(static_cast<const T<Args...>&>(std::declval<U>()), std::true_type{}) test(const T<Args...>&);
+    static std::false_type test(...);
+public:
+    static constexpr bool value = decltype(IsDerivedFromTemplate::test(std::declval<U>()))::value;
+};
+
 template <typename...> using void_t = void;
 
 template <typename T, typename = void>
@@ -136,70 +151,27 @@ std::vector<T> convertArray(IArray& array, std::function<T(IValue&)> fn)
     return resultVector;
 }
 
+
+/**
+* @brief Converts an IArray into a std::vector, used for deserialization
+*/
+template <typename T>
+std::vector<T> convertArray(IArray& array, std::function<void(T&, IValue&)> fn)
+{
+    std::vector<T> resultVector;
+
+    while (array.hasNextValue()) {
+        T value;
+        fn(value, array.nextValue());
+        resultVector.push_back(value);
+    }
+    return resultVector;
+}
+
 template<typename T>
 T convertUIntType(IValue& value)
 {
     return value.getUIntType<T>();
-}
-
-template <typename T>
-struct SelectedDeserializer<std::vector<T>>
-{
-    static void deserialize(std::vector<T>& typeReference, IValue& value)
-    {
-        IArray& array = value;
-        auto&& converted = convertArray<std::uint8_t>(array, convertUIntType<std::uint8_t>);
-        typeReference = std::forward<std::vector<std::uint8_t>>(converted);
-    }
-};
-
-/**
- *@brief this meta function allows to check whether a type U is derived from a template T
- */
-template <template<typename...> class T, typename U>
-struct IsDerivedFromTemplate
-{
-private:
-    template<typename... Args>
-    static decltype(static_cast<const T<Args...>&>(std::declval<U>()), std::true_type{}) test(const T<Args...>&);
-    static std::false_type test(...);
-public:
-    static constexpr bool value = decltype(IsDerivedFromTemplate::test(std::declval<U>()))::value;
-};
-
-
-
-/**
- * @brief partial specialization for map deserialization via return type
- */
-template <typename T>
-struct ClassDeserializerImpl<T, typename std::enable_if<IsDerivedFromTemplate<std::map, T>::value>::type>
-{
-    static void deserialize(T& map, IObject& object)
-    {
-        while (object.hasNextField()) {
-            IField& field = object.nextField();
-            if (field.key().isString() && field.name() == "_typeName") {
-                continue;
-            }
-            using Key = typename T::key_type;
-            Key key;
-            SelectedDeserializer<Key>::deserialize(key, field.key());
-
-            using Value = typename T::mapped_type;
-            Value value;
-            SelectedDeserializer<Value>::deserialize(value, field.value());
-            map.insert({key, value});
-        }
-    }
-};
-
-template <class T>
-Variant ClassDeserializer<T>::deserializeVariant(IObject& object)
-{
-    Variant variant = Variant::make<T>();
-    deserialize(variant.get<T>(), object);
-    return variant;
 }
 
 /**
@@ -222,23 +194,6 @@ std::string convertString(IValue& value);
  * @return
  */
 bool convertBool(IValue& value);
-
-
-/**
- * @brief Converts an IArray into a std::vector, used for deserialization
- */
-template <typename T>
-std::vector<T> convertArray(IArray& array, std::function<void(T&, IValue&)> fn)
-{
-    std::vector<T> resultVector;
-
-    while (array.hasNextValue()) {
-        T value;
-        fn(value, array.nextValue());
-        resultVector.push_back(value);
-    }
-    return resultVector;
-}
 
 /**
  * @brief Converts an IObject into a std::map, used for deserialization
@@ -281,6 +236,138 @@ template<typename T>
 T convertDoubleType(IValue& value)
 {
     return value.getDoubleType<T>();
+}
+
+
+template <typename T, typename = void>
+struct TypeConverter
+{
+    static T convert(IValue& value)
+    {
+        return convertObject<T>(value);
+    }
+};
+
+template <typename T>
+struct TypeConverter<T, typename std::enable_if<std::is_unsigned<T>::value>::type>
+{
+    static T convert(IValue& value)
+    {
+        return convertIntType<T>(value);
+    }
+};
+
+template <typename T>
+struct TypeConverter<T, typename std::enable_if<std::is_floating_point<T>::value>::type>
+{
+    static T convert(IValue& value)
+    {
+        return convertDoubleType<T>(value);
+    }
+};
+
+template <typename T>
+struct TypeConverter<T, typename std::enable_if<std::is_signed<T>::value>::type>
+{
+    static T convert(IValue& value)
+    {
+        return convertIntType<T>(value);
+    }
+};
+
+template <>
+struct TypeConverter<std::string>
+{
+    static std::string convert(IValue& value)
+    {
+        return convertString(value);
+    }
+};
+
+template <>
+struct TypeConverter<bool>
+{
+    static bool convert(IValue& value)
+    {
+        return convertBool(value);
+    }
+};
+
+template <>
+struct TypeConverter<Variant>
+{
+    static Variant convert(IValue& value)
+    {
+        return convertVariant(value);
+    }
+};
+
+template <typename T>
+struct TypeConverter<T, typename std::enable_if<IsDerivedFromTemplate<std::map, T>::value>::type>
+{
+    static T convert(IValue& value)
+    {
+        return convertMap<T>(value);
+    }
+};
+
+
+template <typename T>
+struct ArrayConverter
+{
+    static std::vector<T> convert(IArray& array)
+    {
+        std::vector<T> resultVector;
+
+        while (array.hasNextValue()) {
+            resultVector.emplace_back(TypeConverter<T>::convert(array.nextValue()));
+        }
+        return resultVector;
+    }
+};
+
+template <typename T>
+struct SelectedDeserializer<std::vector<T>>
+{
+    static void deserialize(std::vector<T>& typeReference, IValue& value)
+    {
+        IArray& array = value;
+        typeReference = ArrayConverter<T>::convert(array);
+    }
+};
+
+
+/**
+ * @brief partial specialization for map deserialization
+ */
+template <typename T>
+struct ClassDeserializerImpl<T, typename std::enable_if<IsDerivedFromTemplate<std::map, T>::value>::type>
+{
+    static void deserialize(T& map, IObject& object)
+    {
+        while (object.hasNextField()) {
+            IField& field = object.nextField();
+            if (field.key().isString() && field.name() == "_typeName") {
+                continue;
+            }
+            using Key = typename T::key_type;
+            Key key;
+            SelectedDeserializer<Key>::deserialize(key, field.key());
+
+            using Value = typename T::mapped_type;
+            Value value;
+            SelectedDeserializer<Value>::deserialize(value, field.value());
+            map.insert({key, value});
+        }
+    }
+};
+
+template <class T>
+Variant ClassDeserializer<T>::deserializeVariant(IObject& object)
+{
+    Variant variant = Variant::make<T>();
+    deserialize(variant.get<T>(), object);
+    return variant;
 }
 
 } // namespace joynr

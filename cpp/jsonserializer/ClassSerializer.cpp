@@ -18,6 +18,8 @@
  */
 #include "joynr/ClassSerializer.h"
 #include "joynr/SerializerRegistry.h"
+#include <cstdint>
+#include <string>
 #include <iomanip>
 #include <sstream>
 #include <regex>

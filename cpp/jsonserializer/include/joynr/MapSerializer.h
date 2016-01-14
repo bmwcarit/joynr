@@ -22,6 +22,7 @@
 #include <ostream>
 #include <string>
 #include <map>
+#include "joynr/ClassSerializer.h"
 
 namespace joynr
 {
@@ -57,11 +58,9 @@ void MapSerializer::serializeEntries(const std::map<T, S>& map,
         } else {
             needsInitialComma = true;
         }
-        ClassSerializer<T> stringSerializer;
-        stringSerializer.serialize(entry.first, stream);
+        ClassSerializerImpl<T>::serialize(entry.first, stream);
         stream << R"(: )";
-        ClassSerializer<S> serializer;
-        serializer.serialize(entry.second, stream);
+        ClassSerializerImpl<S>::serialize(entry.second, stream);
     }
 }
 

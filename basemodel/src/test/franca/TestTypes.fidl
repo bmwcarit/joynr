@@ -97,4 +97,6 @@ typeCollection TestTypes {
 	map TDoubleKeyMap {Double to String}
 
 	map TEverythingMap {TEnum to TEverythingExtendedStruct}
+
+	map TStringToByteBufferMap {String to ByteBuffer}
 }

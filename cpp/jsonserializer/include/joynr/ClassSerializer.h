@@ -20,7 +20,7 @@
 #define CLASSSERIALIZER
 
 #include "joynr/Variant.h"
-
+#include <vector>
 #include <ostream>
 
 namespace joynr
@@ -63,6 +63,24 @@ public:
     void serialize(const T& t, std::ostream& stream)
     {
         ClassSerializerImpl<T>::serialize(t, stream);
+    }
+};
+
+} // namespace joynr
+
+// include after ClassSerializer has been declared to handle cyclic dependencies
+#include "joynr/ArraySerializer.h"
+
+namespace joynr
+{
+
+// partial specialization for vectors
+template <typename T>
+struct ClassSerializerImpl<std::vector<T>>
+{
+    static void serialize(const std::vector<T>& v, std::ostream& stream)
+    {
+        ArraySerializer::serialize(v, stream);
     }
 };
 

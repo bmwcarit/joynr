@@ -22,7 +22,6 @@
 #include <ostream>
 #include <vector>
 #include "joynr/Variant.h"
-#include "joynr/ClassSerializer.h"
 
 namespace joynr
 {
@@ -43,7 +42,13 @@ public:
     static void serialize(const std::vector<T>& array, std::ostream& stream);
 };
 
+} // namespace joynr
 
+// include after ArraySerializer has been declared to handle cyclic dependencies
+#include "joynr/ClassSerializer.h"
+
+namespace joynr
+{
 /**
  * @brief serializes a vector of variants
  * @param array the vector to serialize
@@ -65,8 +70,7 @@ void ArraySerializer::serialize(const std::vector<T>& array,
         } else {
             needsComma = true;
         }
-        ClassSerializer<T> serializer;
-        serializer.serialize(entry, stream);
+        ClassSerializerImpl<T>::serialize(entry, stream);
     }
     stream << "]";
 }
