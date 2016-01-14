@@ -69,6 +69,6 @@ class MapHTemplate implements MapTemplate{
 '''
 
 private def getTypeDefinition(FMapType type)'''
-struct «type.joynrName» : public std::map<«type.keyType.typeName», «type.valueType.typeName»> {};
+class «type.joynrName» : public std::map<«type.keyType.typeName», «type.valueType.typeName»> {};
 '''
 }
