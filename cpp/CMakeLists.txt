@@ -383,6 +383,19 @@ else(${WIN32})
     find_package(CURL REQUIRED)
 endif(${WIN32})
 
+message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
+message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
+message(STATUS "variable CURL_INCLUDE_DIRS=" ${CURL_INCLUDE_DIRS})
+message(STATUS "variable CURL_LIBRARIES=" ${CURL_LIBRARIES})
+
+if(NOT CURL_FOUND)
+    message(FATAL_ERROR "Could not find library: curl.")
+endif()
+
+include_directories(
+   SYSTEM ${CURL_INCLUDE_DIRS}
+)
+
 include(AddExternalProject)
 
 ### Add libwebsockets ###########################################################
@@ -422,19 +435,6 @@ set(libwebsockets_INCLUDE_DIRS
 
 message(STATUS "variable libwebsockets_LIBRARIES=${libwebsockets_LIBRARIES}")
 message(STATUS "variable libwebsockets_INCLUDE_DIRS=${libwebsockets_INCLUDE_DIRS}")
-
-message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
-message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
-message(STATUS "variable CURL_INCLUDE_DIRS=" ${CURL_INCLUDE_DIRS})
-message(STATUS "variable CURL_LIBRARIES=" ${CURL_LIBRARIES})
-
-if(NOT CURL_FOUND)
-    message(FATAL_ERROR "Could not find library: curl.")
-endif()
-
-include_directories(
-   SYSTEM ${CURL_INCLUDE_DIRS}
-)
 
 # ---------------------------------------------- Build library --------------------------------------------------
 
