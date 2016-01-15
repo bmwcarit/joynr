@@ -242,7 +242,7 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 					return "@JoynrRpcCallback(deserializationType = " + outputObjectType + ".class) " + callbackType + " callback"
 				}
 			} else {
-				return "@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback"
+				return "@JoynrRpcCallback(deserializationType = Void.class) " + callbackType + " callback"
 			}
 		} else {
 			return "@JoynrRpcCallback " + callbackType + " callback"
