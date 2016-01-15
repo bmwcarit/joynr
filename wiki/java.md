@@ -298,6 +298,7 @@ Using asynchronous method calls allows the current thread to continue its work. 
 The message order on Joynr RPCs will not be preserved.
 If no return type exists, the term ```Void``` is used instead.
 
+### Asynchronous Remote Procedure calls with single return parameter
 Example for calls with single return parameter:
 
 ```java
@@ -334,9 +335,28 @@ public void run() {
     ...
 }
 ```
+If the Franca model includes error enums, then the Callback will also need to implement onFailure for the modeled error:
+
+```java
+@Override
+public void onFailure(<Method>ErrorEnum errorEnum) {
+    switch (errorEnum) {
+    case <ENUM_LITERAL_A>:
+        break;
+    case <ENUM_LITERAL_B>:
+        break;
+    default:
+    // handle default error case
+        break;
+    }
+
+}
+```
+### Async Remote Procedure calls with Multiple Return Parameters
 
 In case of multiple return parameters the parameters will be wrapped into a class named
 ```<Method>Returned```. Each parameter value is available through a public member variable inside this class.
+
 ```java
 // for any Franca type named "<Type>" used
 import joynr.<Package>.<TypeCollection.<Type>;
@@ -373,6 +393,24 @@ public void run() {
         // handle error
     }
     ...
+}
+```
+
+If the Franca model includes error enums, then the Callback will also need to implement onFailure for the modeled error:
+
+```java
+@Override
+public void onFailure(<Method>ErrorEnum errorEnum) {
+    switch (errorEnum) {
+    case <ENUM_LITERAL_A>:
+        break;
+    case <ENUM_LITERAL_B>:
+        break;
+    default:
+		 // handle default error case
+        break;
+    }
+
 }
 ```
 
@@ -666,7 +704,8 @@ The subscribeTo method can also be used to update an existing subscription, when
 
 ## Unsubscribing from a broadcast
 
-Unsubscribing from a broadcast subscription requires the **subscriptionId** returned by the ealier subscribe call.
+Unsubscribing from a broadcast subscription requires the **subscriptionId** returned by the earlier
+subscribe call.
 
 ```java
 public void run() {
@@ -687,7 +726,9 @@ public void run() {
 ```
 
 ## The shutdown method
-The shutdown method should be called on exit of the application. Inside the ```shutdown()``` method , the consumer should unsubscribe from any attributes and broadcasts it was subscribed to and terminate the instance.
+The shutdown method should be called on exit of the application. Inside the ```shutdown()```
+method , the consumer should unsubscribe from any attributes and broadcasts it was subscribed to and
+terminate the instance.
 
 ```java
 @Override
@@ -719,7 +760,8 @@ The Java Provider mainly consists of the following classes:
 
 ## The MyProviderApplication class
 
-The provider application class is used to register a provider class for each Franca interface to be supported.
+The provider application class is used to register a provider class for each Franca interface to be
+supported.
 
 ### Required Imports
 
@@ -742,9 +784,12 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 ```
 
 ### The base class
-The class must extend ```AbstractJoynrApplication``` and can theoretically serve multiple Franca interfaces.
+The class must extend ```AbstractJoynrApplication``` and can theoretically serve multiple Franca
+interfaces.
 
-For each Franca interface implemented, the providing application creates an instance of ```My<Interface>Provider```, which implements the service for that particular interface, and registers it as a capability at the Joynr Middleware.
+For each Franca interface implemented, the providing application creates an instance of
+```My<Interface>Provider```, which implements the service for that particular interface, and
+registers it as a capability at the Joynr Middleware.
 
 The example below shows the code for one interface:
 
@@ -799,7 +844,9 @@ public static void main(String[] args) {
 ```
 
 ### The run method
-The run method registers the interface specific provider class instance as capability. From that time on, the provider will be reachable from outside and react on incoming requests (e.g. method RPC etc.). It can be found by consumers through Discovery.
+The run method registers the interface specific provider class instance as capability. From that
+time on, the provider will be reachable from outside and react on incoming requests (e.g. method
+RPC etc.). It can be found by consumers through Discovery.
 Any specific broadcast filters must be added prior to registry.
 
 ```java
@@ -817,7 +864,8 @@ public void run() {
 ```
 
 ### The shutdown method
-The ```shutdown``` method should be called on exit of the application. It should cleanly unregister any capabilities the application had registered earlier.
+The ```shutdown``` method should be called on exit of the application. It should cleanly unregister
+any capabilities the application had registered earlier.
 
 ```java
 @Override
@@ -869,7 +917,8 @@ private static void provisionAccessControl(Properties properties, String domain)
 
 ## The My&lt;Interface>Provider class
 
-The provider class implements the **attributes**, **methods** and **broadcasts** of a particular Franca interface.
+The provider class implements the **attributes**, **methods** and **broadcasts** of a particular
+Franca interface.
 
 ### Required imports
 The following Joynr Java imports are required:
@@ -907,7 +956,10 @@ providerQos.setSupportsOnChangeSubscriptions(true);
 ```
 
 ### The base class
-The provider class must extend the generated class ```<Interface>AbstractProvider``` and implement getter methods for each Franca attribute and a method for each method of the Franca interface. In order to send broadcasts the generated code of the super class ```<Interface>AbstractProvider``` can be used.
+The provider class must extend the generated class ```<Interface>AbstractProvider``` and implement
+getter methods for each Franca attribute and a method for each method of the Franca interface. In
+order to send broadcasts the generated code of the super class ```<Interface>AbstractProvider```
+can be used.
 
 ```java
 package myPackage;
@@ -940,7 +992,11 @@ public class My<Interface>Provider extends <Interface>AbstractProvider {
 ```
 
 ### Providing attribute getters
-The asynchronous getter methods return the current value of an attribute. Since the current thread is blocked while the getter runs, activity should be kept as short as possible. In most cases, when a simple element is returned, the method can resolve the Promise immediately. However, if longer activity is required, it should be done in the background and the deferred should also be resolved by a background thread.
+The asynchronous getter methods return the current value of an attribute. Since the current thread
+is blocked while the getter runs, activity should be kept as short as possible. In most cases, when
+a simple element is returned, the method can resolve the Promise immediately. However, if longer
+activity is required, it should be done in the background and the deferred should also be resolved
+by a background thread.
 
 ```java
 // for any Franca type named "<Type>" used
@@ -965,7 +1021,10 @@ public Promise<Deferred<<AttributeType>>> get<Attribute>() {
 ```
 
 ### Providing attribute setters
-Since the current thread is blocked while the setter runs, activity should be kept as short as possible. In most cases, when a simple element is returned, the method can resolve the Promise immediately. However, if longer activity is required, it should be done in the background and the deferred should also be resolved by a background thread.
+Since the current thread is blocked while the setter runs, activity should be kept as short as
+possible. In most cases, when a simple element is returned, the method can resolve the Promise
+immediately. However, if longer activity is required, it should be done in the background and the
+deferred should also be resolved by a background thread.
 
 ```java
 // for any Franca type named "<Type>" used
@@ -989,7 +1048,10 @@ public Promise<DeferredVoid> set<Attribute>(<AttributeType> <attribute>) {
 ```
 
 ### Implementing a Franca RPC method
-The provider should always implement RPC calls asynchronously in order to not block the main thread longer than required. Also it needs to take care not to overload the server, e.g. it must not accept unlimited amount of RPC requests causing background activity. After exceeding a limit, further calls should be rejected until the number of outstanding activities falls below the limit again.
+The provider should always implement RPC calls asynchronously in order to not block the main thread
+longer than required. Also it needs to take care not to overload the server, e.g. it must not accept
+unlimited amount of RPC requests causing background activity. After exceeding a limit, further calls
+should be rejected until the number of outstanding activities falls below the limit again.
 
 ```java
 // for any Franca type named "<Type>" used
@@ -1038,10 +1100,15 @@ public void fire<Broadcast>Event {
 }
 ```
 ## Selective (filtered) broadcasts
-In contrast to unfiltered broadcasts, to realize selective (filtered) broadcasts, the filter logic has to be implemented and registered by the provider. If multiple filters are registered on the same provider and broadcast, all filters are applied in a chain and the broadcast is only delivered if all filters in the chain return true.
+In contrast to unfiltered broadcasts, to realize selective (filtered) broadcasts, the filter logic
+has to be implemented and registered by the provider. If multiple filters are registered on the same
+provider and broadcast, all filters are applied in a chain and the broadcast is only delivered if
+all filters in the chain return true.
 
 ### The broadcast filter classes
-A broadcast filter class implements a filtering function called ```filter()``` which returns a boolean value indicating whether the broadcast should be delivered. The input parameters of the ```filter()``` method reflect the output values of the broadcast.
+A broadcast filter class implements a filtering function called ```filter()``` which returns a
+boolean value indicating whether the broadcast should be delivered. The input parameters of the
+```filter()``` method reflect the output values of the broadcast.
 
 ```java
 import joynr.<Package>.<Interface>BroadcastInterface.<Broadcast>BroadcastFilterParameters;
