@@ -1,3 +1,13 @@
+#joynr 0.14.0
+
+##Notes
+* **[C++]** libjoynr uses libwebsockets of the libwebsockets project (http://libwebsockets.org)
+  to communicate with the cluster-controller.
+
+##API relevant changes
+
+##Other changes
+
 #joynr 0.13.0
 
 ##Notes
