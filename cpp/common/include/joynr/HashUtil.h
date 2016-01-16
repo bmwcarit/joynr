@@ -20,14 +20,22 @@
 #define HASHUTIL_H
 
 #include <map>
+#include <type_traits>
+#include "joynr/Util.h"
+
 namespace boost
 {
 template <class T, class S>
 std::size_t hash_value(std::map<T, S> const& v);
-}
-#include "boost/functional/hash.hpp"
 
-// include complex Datatype headers.
+template <
+        class T,
+        typename = typename std::enable_if<joynr::IsDerivedFromTemplate<std::map, T>::value>::type>
+std::size_t hash_value(const T& v);
+
+} // namespace boost
+
+#include "boost/functional/hash.hpp"
 
 namespace boost
 {
@@ -36,5 +44,13 @@ std::size_t hash_value(std::map<T, S> const& v)
 {
     return boost::hash_range(v.begin(), v.end());
 }
+template <
+        class T,
+        typename = typename std::enable_if<joynr::IsDerivedFromTemplate<std::map, T>::value>::type>
+std::size_t hash_value(const T& v)
+{
+    return boost::hash_range(v.begin(), v.end());
 }
+
+} // namespace boost
 #endif // HASHUTIL_H
