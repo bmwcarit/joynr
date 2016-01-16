@@ -83,13 +83,17 @@ class CppStdTypeUtil extends CppTypeUtil {
 		"<cstdint>"
 	}
 
+	def getIncludeForByteBuffer() {
+		"\"joynr/TypeUtil.h\""
+	}
+
 	override getIncludesFor(Iterable<FBasicTypeId> datatypes) {
 		var includes = new HashSet<String>;
 		if (datatypes.exists[type | type == FBasicTypeId.STRING]) {
 			includes.add(includeForString);
 		}
 		if (datatypes.exists[type | type == FBasicTypeId.BYTE_BUFFER]) {
-			includes.add(includeForArray);
+			includes.add(includeForByteBuffer);
 		}
 		if (datatypes.exists[type | type == FBasicTypeId.INT8  ||
 									type == FBasicTypeId.UINT8 ||
@@ -98,8 +102,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 									type == FBasicTypeId.INT32 ||
 									type == FBasicTypeId.UINT32||
 									type == FBasicTypeId.INT64 ||
-									type == FBasicTypeId.UINT64||
-									type == FBasicTypeId.BYTE_BUFFER
+									type == FBasicTypeId.UINT64
 		]) {
 			includes.add(includeForInteger)
 		}

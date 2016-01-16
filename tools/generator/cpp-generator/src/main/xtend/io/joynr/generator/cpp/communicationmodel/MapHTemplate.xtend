@@ -24,6 +24,8 @@ import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FMapType
+import org.franca.core.franca.FType
+import org.franca.core.franca.FBasicTypeId
 
 class MapHTemplate implements MapTemplate{
 
@@ -55,7 +57,11 @@ class MapHTemplate implements MapTemplate{
 #include "joynr/Util.h"
 
 // include complex Datatype headers.
-«FOR member: type.typeDependencies»
+«val typeDependencies = type.typeDependencies»
+«FOR member: typeDependencies.filter(typeof(FBasicTypeId)).includesFor»
+	#include «member»
+«ENDFOR»
+«FOR member: typeDependencies.filter(typeof(FType))»
 	#include «member.includeOf»
 «ENDFOR»
 

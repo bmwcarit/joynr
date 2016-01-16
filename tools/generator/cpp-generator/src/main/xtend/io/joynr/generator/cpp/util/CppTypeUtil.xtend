@@ -229,15 +229,15 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		return typeList;
 	}
 
-	def Iterable<FType> getTypeDependencies(FMapType datatype){
-		val typeList = new HashSet<FType>();
+	def Iterable<? extends Object> getTypeDependencies(FMapType datatype){
+		val typeList = new HashSet<Object>();
 		var type = getDatatype(datatype.keyType);
-		if (type instanceof FType){
+		if (type instanceof FType || type instanceof FBasicTypeId){
 			typeList.add(type);
 		}
 
 		type = getDatatype(datatype.valueType)
-		if (type instanceof FType){
+		if (type instanceof FType || type instanceof FBasicTypeId){
 			typeList.add(type);
 		}
 
