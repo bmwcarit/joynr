@@ -20,6 +20,7 @@
 #define CLASSDESERIALIZER_H
 
 #include "joynr/Variant.h"
+#include "joynr/Util.h"
 #include "IDeserializer.h"
 #include "PrimitiveDeserializer.h"
 #include <functional>
@@ -90,23 +91,6 @@ public:
      */
     Variant deserializeVariant(IObject& object) override;
 };
-
-
-/**
- *@brief this meta function allows to check whether a type U is derived from a template T
- */
-template <template<typename...> class T, typename U>
-struct IsDerivedFromTemplate
-{
-private:
-    template<typename... Args>
-    static decltype(static_cast<const T<Args...>&>(std::declval<U>()), std::true_type{}) test(const T<Args...>&);
-    static std::false_type test(...);
-public:
-    static constexpr bool value = decltype(IsDerivedFromTemplate::test(std::declval<U>()))::value;
-};
-
-template <typename...> using void_t = void;
 
 template <typename T, typename = void>
 struct SelectedDeserializer : ClassDeserializer<T> {};

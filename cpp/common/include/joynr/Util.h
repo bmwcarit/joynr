@@ -354,5 +354,21 @@ auto removeAll(std::vector<T>& v, const T& e)
     return v.erase(std::remove(v.begin(), v.end(), e), v.end());
 }
 
+/**
+ *@brief this meta function allows to check whether a type U is derived from a template T
+ */
+template <template <typename...> class T, typename U>
+struct IsDerivedFromTemplate
+{
+private:
+    template <typename... Args>
+    static decltype(static_cast<const T<Args...>&>(std::declval<U>()), std::true_type{}) test(
+            const T<Args...>&);
+    static std::false_type test(...);
+
+public:
+    static constexpr bool value = decltype(IsDerivedFromTemplate::test(std::declval<U>()))::value;
+};
+
 } // namespace joynr
 #endif // UTIL_H_
