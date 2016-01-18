@@ -21,17 +21,28 @@
 
 #include <map>
 #include <type_traits>
+#include <functional>
 #include "joynr/Util.h"
+
+namespace std
+{
+
+inline std::size_t hash_value(const std::vector<bool>::const_reference& r)
+{
+    return std::hash<bool>()(r);
+}
+
+} // namespace std
 
 namespace boost
 {
+
 template <class T, class S>
 std::size_t hash_value(std::map<T, S> const& v);
 
-template <
-        class T,
-        typename = typename std::enable_if<joynr::IsDerivedFromTemplate<std::map, T>::value>::type>
-std::size_t hash_value(const T& v);
+template <class T>
+typename std::enable_if<joynr::IsDerivedFromTemplate<std::map, T>::value, std::size_t>::type
+hash_value(const T& v);
 
 } // namespace boost
 
@@ -44,10 +55,10 @@ std::size_t hash_value(std::map<T, S> const& v)
 {
     return boost::hash_range(v.begin(), v.end());
 }
-template <
-        class T,
-        typename = typename std::enable_if<joynr::IsDerivedFromTemplate<std::map, T>::value>::type>
-std::size_t hash_value(const T& v)
+
+template <class T>
+typename std::enable_if<joynr::IsDerivedFromTemplate<std::map, T>::value, std::size_t>::type
+hash_value(const T& v)
 {
     return boost::hash_range(v.begin(), v.end());
 }
