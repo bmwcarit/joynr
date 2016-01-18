@@ -603,6 +603,15 @@ interface test {
 		String s
 	}
 }
+	broadcast broadcastWithFiltering selective {
+		out {
+			String stringOut
+			String[] stringArrayOut
+			testTypes.TestEnum enumerationOut
+			TEverythingStruct structWithStringArrayOut
+			TEverythingStruct[] structWithStringArrayArrayOut
+		}
+	}
 	enumeration ErrorEnumInterface {
 		BASE_ERROR_INTERFACE
 	}

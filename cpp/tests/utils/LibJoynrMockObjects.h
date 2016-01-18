@@ -65,6 +65,13 @@ public:
      MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
+template <typename T1, typename T2, typename T3, typename T4, typename T5>
+class MockSubscriptionListenerFiveTypes : public joynr::ISubscriptionListener<T1, T2, T3, T4, T5> {
+public:
+     MOCK_METHOD5_T(onReceive, void( const T1& value1, const T2& value2, const T3& value3, const T4& value4, const T5& value5));
+     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
+};
+
 class MockGpsSubscriptionListener : public joynr::ISubscriptionListener<joynr::types::Localisation::GpsLocation> {
 public:
     MOCK_METHOD1(onReceive, void(const joynr::types::Localisation::GpsLocation& value));

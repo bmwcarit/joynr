@@ -79,6 +79,20 @@ public:
     void fireBroadcastWithByteBufferParameter(const joynr::ByteBuffer& byteBufferParameter) override {
         tests::testAbstractProvider::fireBroadcastWithByteBufferParameter(byteBufferParameter);
     }
+
+    void fireBroadcastWithFiltering(
+            const std::string& stringOut,
+            const std::vector<std::string> & stringArrayOut,
+            const joynr::tests::testTypes::TestEnum::Enum& enumerationOut,
+            const joynr::types::TestTypes::TEverythingStruct& structWithStringArrayOut,
+            const std::vector<joynr::types::TestTypes::TEverythingStruct> & structWithStringArrayArrayOut
+    ) {
+        tests::testAbstractProvider::fireBroadcastWithFiltering(stringOut,
+                                                                stringArrayOut,
+                                                                enumerationOut,
+                                                                structWithStringArrayOut,
+                                                                structWithStringArrayArrayOut);
+    }
 };
 
 class End2EndBroadcastTest : public Test {
@@ -337,6 +351,43 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
                                  },
                                  &tests::testProvider::fireBroadcastWithByteBufferParameter,
                                  "broadcastWithByteBufferParameter");
+}
+
+TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithFiltering) {
+    std::string stringOut = "expectedString";
+    std::vector<std::string> stringArrayOut {stringOut};
+    joynr::tests::testTypes::TestEnum::Enum enumerationOut = joynr::tests::testTypes::TestEnum::TWO;
+    joynr::types::TestTypes::TEverythingStruct structWithStringArrayOut;
+    std::vector<joynr::types::TestTypes::TEverythingStruct>  structWithStringArrayArrayOut {structWithStringArrayOut};
+
+    MockSubscriptionListenerFiveTypes<std::string, std::vector<std::string> , joynr::tests::testTypes::TestEnum::Enum, joynr::types::TestTypes::TEverythingStruct, std::vector<joynr::types::TestTypes::TEverythingStruct> >* mockListener =
+            new MockSubscriptionListenerFiveTypes<std::string, std::vector<std::string> , joynr::tests::testTypes::TestEnum::Enum, joynr::types::TestTypes::TEverythingStruct, std::vector<joynr::types::TestTypes::TEverythingStruct> >();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    ON_CALL(*mockListener, onReceive(Eq(stringOut),
+                                     Eq(stringArrayOut),
+                                     Eq(enumerationOut),
+                                     Eq(structWithStringArrayOut),
+                                     Eq(structWithStringArrayArrayOut)))
+            .WillByDefault(ReleaseSemaphore(&semaphore));
+
+    std::shared_ptr<ISubscriptionListener<std::string, std::vector<std::string> , joynr::tests::testTypes::TestEnum::Enum, joynr::types::TestTypes::TEverythingStruct, std::vector<joynr::types::TestTypes::TEverythingStruct>>> subscriptionListener(
+                    mockListener);
+    testOneShotBroadcastSubscription(subscriptionListener,
+                                     [](tests::testProxy* testProxy,
+                                        std::shared_ptr<joynr::ISubscriptionListener<std::string, std::vector<std::string> , joynr::tests::testTypes::TestEnum::Enum, joynr::types::TestTypes::TEverythingStruct, std::vector<joynr::types::TestTypes::TEverythingStruct> > > subscriptionListener,
+                                        const OnChangeSubscriptionQos& subscriptionQos) {
+                                        joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters filterParameters;
+                                        testProxy->subscribeToBroadcastWithFilteringBroadcast(filterParameters, subscriptionListener, subscriptionQos);
+                                     },
+                                     &tests::testProvider::fireBroadcastWithFiltering,
+                                     "broadcastWithFiltering",
+                                     stringOut,
+                                     stringArrayOut,
+                                     enumerationOut,
+                                     structWithStringArrayOut,
+                                     structWithStringArrayArrayOut);
+
 }
 
 TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
