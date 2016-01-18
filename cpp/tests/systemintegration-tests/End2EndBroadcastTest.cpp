@@ -257,7 +257,19 @@ protected:
 
         std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(
                         mockListener);
+        testOneShotBroadcastSubscription(subscriptionListener,
+                                         subscribeTo,
+                                         fireBroadcast,
+                                         broadcastName,
+                                         expectedValue);
+    }
 
+    template <typename FireBroadcast, typename SubscribeTo, typename ...T>
+    void testOneShotBroadcastSubscription(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
+                                          SubscribeTo subscribeTo,
+                                          FireBroadcast fireBroadcast,
+                                          const std::string& broadcastName,
+                                          T... expectedValues) {
         std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
         runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -289,7 +301,7 @@ protected:
         subscribeTo(testProxy, subscriptionListener, subscriptionQos);
         waitForBroadcastSubscriptionArrivedAtProvider(testProvider, broadcastName);
 
-        (*testProvider.*fireBroadcast)(expectedValue);
+        (*testProvider.*fireBroadcast)(expectedValues...);
 
         // Wait for a subscription message to arrive
         ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
