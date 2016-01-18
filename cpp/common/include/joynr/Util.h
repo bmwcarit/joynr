@@ -58,8 +58,12 @@ public:
     template <typename T>
     static typename T::Enum convertVariantToEnum(const Variant& v)
     {
-        std::string enumValueName = v.get<std::string>();
-        return T::getEnum(enumValueName);
+        if (v.is<std::string>()) {
+            std::string enumValueName = v.get<std::string>();
+            return T::getEnum(enumValueName);
+        } else {
+            return v.get<typename T::Enum>();
+        }
     }
 
     template <typename T>
@@ -69,10 +73,7 @@ public:
         std::vector<typename T::Enum> enumVector;
         enumVector.reserve(variantVector.size());
         for (const Variant& variant : variantVector) {
-            if (variant.is<std::string>()) {
-                std::string enumValueName = variant.get<std::string>();
-                enumVector.push_back(T::getEnum(enumValueName));
-            }
+            enumVector.push_back(convertVariantToEnum<T>(variant));
         }
         return enumVector;
     }

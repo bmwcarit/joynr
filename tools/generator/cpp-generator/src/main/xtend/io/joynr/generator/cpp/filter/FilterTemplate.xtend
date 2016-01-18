@@ -35,24 +35,12 @@ class FilterTemplate implements BroadcastTemplate {
 	@Inject extension NamingUtil
 	@Inject extension BroadcastUtil
 
-	def getCommaSeperatedEventArgumentListFromQList(Iterable<FArgument> arguments) {
-		val returnStringBuilder = new StringBuilder();
-		var i = 0
-		for (FArgument argument : arguments) {
-			returnStringBuilder.append("eventValues[");
-			returnStringBuilder.append(i++);
-			returnStringBuilder.append("].get<");
-			returnStringBuilder.append(getTypeName(argument));
-			returnStringBuilder.append(">(),\n");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
+	def getCommaSeperatedEventArgumentListFromVariantList(Iterable<FArgument> arguments)'''
+		«var i = 0»
+		«FOR FArgument argument : arguments SEPARATOR ","»
+			Util::valueOf<«argument.typeName»>(eventValues[«i++»])
+		«ENDFOR»
+''' 
 
 	override generate(FInterface serviceInterface, FBroadcast broadcast)
 '''
@@ -116,7 +104,7 @@ private:
 		params.setFilterParameters(filterParameters.getFilterParameters());
 
 		return filter(
-				«getCommaSeperatedEventArgumentListFromQList(getOutputParameters(broadcast))»,
+				«getCommaSeperatedEventArgumentListFromVariantList(getOutputParameters(broadcast))»,
 				params
 		);
 	}

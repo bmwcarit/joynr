@@ -607,7 +607,7 @@ interface test {
 		out {
 			String stringOut
 			String[] stringArrayOut
-			testTypes.TestEnum enumerationOut
+			testTypes.TestEnum[] enumerationArrayOut
 			TEverythingStruct structWithStringArrayOut
 			TEverythingStruct[] structWithStringArrayArrayOut
 		}
