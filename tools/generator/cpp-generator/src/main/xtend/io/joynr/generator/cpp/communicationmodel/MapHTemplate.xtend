@@ -51,10 +51,8 @@ class MapHTemplate implements MapTemplate{
 
 «getDllExportIncludeStatement()»
 
-#include <string>
 #include <map>
 #include "joynr/HashUtil.h"
-#include "joynr/Util.h"
 
 // include complex Datatype headers.
 «val typeDependencies = type.typeDependencies»
