@@ -58,10 +58,10 @@ public:
      MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
-template <typename T1, typename T2, typename... Ts>
-class MockSubscriptionListenerTwoTypes : public joynr::ISubscriptionListener<T1, T2, Ts...> {
+template <typename T1, typename T2>
+class MockSubscriptionListenerTwoTypes : public joynr::ISubscriptionListener<T1, T2> {
 public:
-     MOCK_METHOD2_T(onReceive, void( const T1& value1, const T2& value2, const Ts&... values));
+     MOCK_METHOD2_T(onReceive, void( const T1& value1, const T2& value2));
      MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
