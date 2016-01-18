@@ -1,5 +1,12 @@
 package io.joynr.dispatching;
 
+import java.util.List;
+import java.util.concurrent.Future;
+
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Futures;
+import com.google.inject.Singleton;
+
 /*
  * #%L
  * %%
@@ -21,25 +28,16 @@ package io.joynr.dispatching;
 
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.ReceiverStatusListener;
-
-import java.util.List;
-import java.util.concurrent.Future;
-
 import joynr.JoynrMessage;
-
-import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Futures;
-import com.google.inject.Singleton;
 
 /**
  * CommunicationManagerMock used in DispatcherTest.java to simulate the HttpCommunicationManager
- * 
+ *
  */
 
 @Singleton
-public class MessageSenderReceiverMock implements MessageReceiver, MessageSender {
+public class MessageReceiverMock implements MessageReceiver {
 
     private List<JoynrMessage> sentMessages = Lists.newArrayList();
     private List<JoynrMessage> receivedMessages = Lists.newArrayList();
@@ -51,27 +49,6 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
     @Override
     public String getChannelId() {
         return "abc";
-    }
-
-    @Override
-    public String getReplyToChannelId() {
-        return "abc";
-    }
-
-    @Override
-    public void sendMessage(String mcid, JoynrMessage message) {
-        sentMessages.add(message);
-
-        String type = message.getType();
-        if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
-            receiveMessage(message);
-
-        } else if (JoynrMessage.MESSAGE_TYPE_REPLY.equals(type)) {
-            receiveMessage(message);
-
-        } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
-            receiveMessage(message);
-        }
     }
 
     public void receiveMessage(JoynrMessage message) {
@@ -122,12 +99,6 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
     public boolean isChannelCreated() {
         // TODO Auto-generated method stub
         return true;
-    }
-
-    @Override
-    public void shutdown() {
-        // TODO Auto-generated method stub
-
     }
 
     public boolean isBlockInitialisation() {

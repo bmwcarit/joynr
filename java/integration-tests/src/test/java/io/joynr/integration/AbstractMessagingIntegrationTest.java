@@ -29,9 +29,9 @@ import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.integration.util.TestMessageListener;
+import io.joynr.messaging.MessageHandlerImpl;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
@@ -68,8 +68,8 @@ public abstract class AbstractMessagingIntegrationTest {
     // The timeout should be achievable in all test environments
     private static final int DEFAULT_TIMEOUT = 8000;
 
-    private MessageSender joynrMessageSender1;
-    private MessageSender joynrMessageSender2;
+    private MessageHandlerImpl joynrMessageSender1;
+    private MessageHandlerImpl joynrMessageSender2;
 
     private String payload1;
     private String payload2;
@@ -111,14 +111,14 @@ public abstract class AbstractMessagingIntegrationTest {
 
         String channelId1 = "1_" + UUID.randomUUID().toString().substring(0, 2);
         Injector injector1 = setupMessageEndpoint(channelId1, localChannelUrlDirectoryClient, localCapDir);
-        joynrMessageSender1 = injector1.getInstance(MessageSender.class);
+        joynrMessageSender1 = injector1.getInstance(MessageHandlerImpl.class);
         messageReceiver1 = injector1.getInstance(MessageReceiver.class);
         //   IMessageReceivers messageReceivers = injector1.getInstance(IMessageReceivers.class);
         // messageReceivers.registerMessageReceiver(messageReceiver1, channelId1);
 
         String channelId2 = "2_" + UUID.randomUUID().toString();
         Injector injector2 = setupMessageEndpoint(channelId2, localChannelUrlDirectoryClient, localCapDir);
-        joynrMessageSender2 = injector2.getInstance(MessageSender.class);
+        joynrMessageSender2 = injector2.getInstance(MessageHandlerImpl.class);
         messageReceiver2 = injector2.getInstance(MessageReceiver.class);
         //   IMessageReceivers messageReceivers2 = injector2.getInstance(IMessageReceivers.class);
         //  messageReceivers2.registerMessageReceiver(messageReceiver2, channelId2);

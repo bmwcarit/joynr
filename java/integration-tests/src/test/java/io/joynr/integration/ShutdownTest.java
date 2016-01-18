@@ -26,7 +26,6 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
@@ -56,8 +55,6 @@ public class ShutdownTest {
 
     @Mock
     private MessageReceiver messageReceiverMock;
-    @Mock
-    private MessageSender messageSenderMock;
 
     @Before
     public void setup() {
@@ -72,7 +69,6 @@ public class ShutdownTest {
                                                                                        @Override
                                                                                        protected void configure() {
                                                                                            bind(MessageReceiver.class).toInstance(messageReceiverMock);
-                                                                                           bind(MessageSender.class).toInstance(messageSenderMock);
                                                                                        }
                                                                                    })).createApplication(DummyJoynrApplication.class);
 

@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class HttpMessageSender {
+public class HttpMessageSender implements IMessageSender {
     private static final Logger logger = LoggerFactory.getLogger(HttpMessageSender.class);
     private final UrlResolver urlResolver;
     private final HttpRequestFactory httpRequestFactory;
@@ -77,6 +77,10 @@ public class HttpMessageSender {
         this.urlResolver = urlResolver;
     }
 
+    /* (non-Javadoc)
+     * @see io.joynr.messaging.http.IMessageSender#sendMessage(io.joynr.messaging.MessageContainer, io.joynr.messaging.http.operation.FailureAction)
+     */
+    @Override
     public void sendMessage(final MessageContainer messageContainer, final FailureAction failureAction) {
         logger.trace("SEND messageId: {} channelId: {}",
                      messageContainer.getMessageId(),

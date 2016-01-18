@@ -48,8 +48,8 @@ import com.google.inject.name.Named;
  * Repeatedly tries to send a message until successful sending or the time to live has expired.
  */
 
-public class HttpMessageSenderImpl implements MessageSender {
-    private static final Logger logger = LoggerFactory.getLogger(HttpMessageSenderImpl.class);
+public class MessageHandlerImpl implements MessageHandler {
+    private static final Logger logger = LoggerFactory.getLogger(MessageHandlerImpl.class);
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
     public static final int THREADPOOLSIZE = 4;
 
@@ -63,11 +63,11 @@ public class HttpMessageSenderImpl implements MessageSender {
     private MessageReceiver messageReceiver;
 
     @Inject
-    public HttpMessageSenderImpl(MessageScheduler sendRequestScheduler,
-                                 @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId,
-                                 MessagingSettings settings,
-                                 ObjectMapper objectMapper,
-                                 MessageReceiver messageReceiver) {
+    public MessageHandlerImpl(MessageScheduler sendRequestScheduler,
+                              @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId,
+                              MessagingSettings settings,
+                              ObjectMapper objectMapper,
+                              MessageReceiver messageReceiver) {
         this.sendRequestScheduler = sendRequestScheduler;
         this.ownChannelId = ownChannelId;
         this.settings = settings;
@@ -75,10 +75,8 @@ public class HttpMessageSenderImpl implements MessageSender {
         this.messageReceiver = messageReceiver;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see io.joynr.messaging.MessageSender#sendMessage(java.lang.String, io.joynr.messaging.JoynrMessage, long)
+    /* (non-Javadoc)
+     * @see io.joynr.messaging.MessageHandler#sendMessage(java.lang.String, joynr.JoynrMessage)
      */
     @Override
     public void sendMessage(final String channelId, final JoynrMessage message) throws JoynrSendBufferFullException,
@@ -176,10 +174,8 @@ public class HttpMessageSenderImpl implements MessageSender {
         sendRequestScheduler.scheduleMessage(messageContainer, 0, failureAction, messageReceiver);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see io.joynr.messaging.MessageSender#shutdown()
+    /* (non-Javadoc)
+     * @see io.joynr.messaging.MessageHandler#shutdown()
      */
     @Override
     public void shutdown() {
@@ -190,10 +186,8 @@ public class HttpMessageSenderImpl implements MessageSender {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see io.joynr.messaging.MessageSender#getChannelId()
+    /* (non-Javadoc)
+     * @see io.joynr.messaging.MessageHandler#getReplyToChannelId()
      */
     @Override
     public String getReplyToChannelId() {

@@ -31,7 +31,6 @@ import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.AtmosphereMessagingModule;
-import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
@@ -70,7 +69,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 public class HttpCommunicationManagerTest {
 
     LongPollingMessageReceiver longpollingMessageReceiver;
-    MessageSender messageSender;
     private String testChannelId = "HttpCommunicationManagerTest-" + UUID.randomUUID().toString();
 
     private static Server server;
@@ -132,7 +130,6 @@ public class HttpCommunicationManagerTest {
                                                  });
 
         longpollingMessageReceiver = injector.getInstance(LongPollingMessageReceiver.class);
-        messageSender = injector.getInstance(MessageSender.class);
     }
 
     @After

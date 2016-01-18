@@ -22,7 +22,7 @@ package io.joynr.messaging.channel;
 import com.google.inject.Inject;
 import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.MessageSender;
+import io.joynr.messaging.MessageHandler;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -32,10 +32,10 @@ import java.io.IOException;
  *  Message stub factory for joynr channel addresses
  */
 public class ChannelMessagingStubFactory extends AbstractMessagingStubFactory<ChannelAddress> {
-    private MessageSender messageSender;
+    private MessageHandler messageSender;
 
     @Inject
-    public ChannelMessagingStubFactory(MessageSender messageSender) {
+    public ChannelMessagingStubFactory(MessageHandler messageSender) {
         this.messageSender = messageSender;
     }
 

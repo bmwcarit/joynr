@@ -33,6 +33,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+
+import io.joynr.messaging.http.HttpMessageSender;
+import io.joynr.messaging.http.IMessageSender;
 import io.joynr.messaging.http.operation.ApacheHttpRequestFactory;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
@@ -44,7 +47,8 @@ public class MessagingModule extends AbstractModule {
     protected void configure() {
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
-        bind(MessageSender.class).to(HttpMessageSenderImpl.class);
+        bind(MessageHandler.class).to(MessageHandlerImpl.class);
+        bind(IMessageSender.class).to(HttpMessageSender.class);
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
     }
 

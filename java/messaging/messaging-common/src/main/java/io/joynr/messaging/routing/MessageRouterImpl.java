@@ -121,23 +121,19 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         String toParticipantId = message.getTo();
         Address address = getAddress(toParticipantId);
         if (address != null) {
-            routeMessageByAddress(message, address);
+            String messageId = message.getId().substring(UUID_TAIL);
+            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}",
+                        new String[]{ messageId, message.getType(),
+                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                                message.getHeader().toString() });
+            logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
+            IMessaging messagingStub = messagingStubFactory.create(address);
+            messagingStub.transmit(message);
         } else {
             throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
                     + toParticipantId);
         }
-    }
-
-    private void routeMessageByAddress(JoynrMessage message, Address address) throws JoynrSendBufferFullException,
-                                                                             JoynrMessageNotSentException, IOException {
-
-        String messageId = message.getId().substring(UUID_TAIL);
-        logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId, message.getType(),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID), message.getHeader().toString() });
-        logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
-        IMessaging messagingStub = messagingStubFactory.create(address);
-        messagingStub.transmit(message);
     }
 
     @Override

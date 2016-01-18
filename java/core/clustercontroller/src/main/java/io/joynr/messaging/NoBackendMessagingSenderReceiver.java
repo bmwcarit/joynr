@@ -32,7 +32,7 @@ import joynr.JoynrMessage;
  */
 
 @Singleton
-public class NoBackendMessagingSenderReceiver implements MessageReceiver, MessageSender {
+public class NoBackendMessagingSenderReceiver implements MessageReceiver, MessageHandler {
 
     @Override
     public String getChannelId() {

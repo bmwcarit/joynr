@@ -1,9 +1,9 @@
-package io.joynr.messaging;
+package io.joynr.messaging.http;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,10 @@ package io.joynr.messaging;
  * #L%
  */
 
-import com.google.inject.AbstractModule;
+import io.joynr.messaging.MessageContainer;
+import io.joynr.messaging.http.operation.FailureAction;
 
-public class NoBackendMessagingModule extends AbstractModule {
+public interface IMessageSender {
 
-    @Override
-    protected void configure() {
-        bind(MessageReceiver.class).to(NoBackendMessagingSenderReceiver.class);
-        bind(MessageHandler.class).to(NoBackendMessagingSenderReceiver.class);
-    }
+    void sendMessage(MessageContainer messageContainer, FailureAction failureAction);
 }
