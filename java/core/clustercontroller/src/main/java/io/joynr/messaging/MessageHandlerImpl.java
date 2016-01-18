@@ -27,7 +27,6 @@ import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -35,6 +34,7 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 
 import joynr.JoynrMessage;
+import joynr.system.RoutingTypes.Address;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,22 +76,10 @@ public class MessageHandlerImpl implements MessageHandler {
      * @see io.joynr.messaging.MessageHandler#sendMessage(java.lang.String, joynr.JoynrMessage)
      */
     @Override
-    public void sendMessage(final String channelId, final JoynrMessage message) throws JoynrSendBufferFullException,
-                                                                               JoynrMessageNotSentException,
-                                                                               JsonGenerationException,
-                                                                               JsonMappingException, IOException {
-        if (Thread.currentThread().getName().startsWith(LongPollingMessageReceiver.MESSAGE_RECEIVER_THREADNAME_PREFIX)) {
-            // throw new
-            // JoynException("It is not allowed to send a joynrMessage in the MessageReceiver Thread. Please create a new Thread when sending messages");
-            logger.error("It is not allowed to send a joynrMessage in the MessageReceiver Thread. This might lead to deadlocks and breaking joynr functionality. Please create a new Thread when sending messages.");
-            StackTraceElement[] st = Thread.currentThread().getStackTrace();
-            StringBuilder sb = new StringBuilder();
-            for (StackTraceElement line : st) {
-                sb.append(line.toString());
-                sb.append("\n");
-            }
-            logger.error(sb.toString());
-        }
+    public void sendMessage(final Address address, final JoynrMessage message) throws JoynrSendBufferFullException,
+                                                                              JoynrMessageNotSentException,
+                                                                              JsonGenerationException,
+                                                                              JsonMappingException, IOException {
 
         if (message.getType().equals(MESSAGE_TYPE_REQUEST)
                 || message.getType().equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
@@ -99,19 +87,6 @@ public class MessageHandlerImpl implements MessageHandler {
             message.setReplyTo(getReplyToChannelId());
         }
 
-        sendMessageViaHttpClient(channelId, message);
-    }
-
-    private void sendMessageViaHttpClient(final String channelId, final JoynrMessage message)
-                                                                                             throws JsonGenerationException,
-                                                                                             JsonMappingException,
-                                                                                             IOException {
-        if (message == null) {
-            //this case should never happen
-            assert false;
-        }
-
-        logger.trace("starting sendMessageViaHttpClient");
         long currentTimeMillis = System.currentTimeMillis();
         long ttlExpirationDate_ms = message.getExpiryDate();
 
@@ -123,7 +98,7 @@ public class MessageHandlerImpl implements MessageHandler {
             throw new JoynrMessageNotSentException(errorMessage);
         }
 
-        final MessageContainer messageContainer = new MessageContainer(channelId,
+        final MessageContainer messageContainer = new MessageContainer(address,
                                                                        message,
                                                                        ttlExpirationDate_ms,
                                                                        objectMapper);
@@ -135,8 +110,8 @@ public class MessageHandlerImpl implements MessageHandler {
                     logger.warn("{}", error.getMessage());
                     return;
                 }
-                logger.error("!!!! ERROR SENDING: messageId: {} on Channel: {}. Error: {}", new String[]{
-                        message.getId(), channelId, error.getMessage() });
+                logger.error("!!!! ERROR SENDING: messageId: {} to Address: {}. Error: {}", new String[]{
+                        message.getId(), address.toString(), error.getMessage() });
 
                 messageContainer.incrementRetries();
                 long delay_ms;

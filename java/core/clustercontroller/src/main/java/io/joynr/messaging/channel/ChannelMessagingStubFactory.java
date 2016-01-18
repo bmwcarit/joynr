@@ -44,7 +44,7 @@ public class ChannelMessagingStubFactory extends AbstractMessagingStubFactory<Ch
         IMessaging messagingStub = new IMessaging() {
             @Override
             public void transmit(JoynrMessage message) throws IOException {
-                messageSender.sendMessage(address.getChannelId(), message);
+                messageSender.sendMessage(address, message);
             }
         };
         return messagingStub;

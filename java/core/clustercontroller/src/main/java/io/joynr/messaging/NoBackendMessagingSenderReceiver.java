@@ -25,6 +25,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.inject.Singleton;
 
 import joynr.JoynrMessage;
+import joynr.system.RoutingTypes.Address;
 
 /**
  * A Dummy implementation that does not perform any backend communication
@@ -45,7 +46,7 @@ public class NoBackendMessagingSenderReceiver implements MessageReceiver, Messag
     }
 
     @Override
-    public void sendMessage(String mcid, JoynrMessage message) {
+    public void sendMessage(Address address, JoynrMessage message) {
         throw new UnsupportedOperationException("The NoBackendMessagingSenderReceiver cannot send messages");
     }
 

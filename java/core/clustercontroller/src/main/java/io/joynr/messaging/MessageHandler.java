@@ -27,12 +27,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import joynr.JoynrMessage;
+import joynr.system.RoutingTypes.Address;
 
 public interface MessageHandler {
-
-    void sendMessage(String channelId, JoynrMessage message) throws JoynrSendBufferFullException,
-                                                            JoynrMessageNotSentException, JsonGenerationException,
-                                                            JsonMappingException, IOException;
+    void sendMessage(Address address, JoynrMessage message) throws JoynrSendBufferFullException,
+                                                           JoynrMessageNotSentException, JsonGenerationException,
+                                                           JsonMappingException, IOException;
 
     void shutdown();
 

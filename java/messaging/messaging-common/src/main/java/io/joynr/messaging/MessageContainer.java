@@ -22,6 +22,7 @@ package io.joynr.messaging;
 import javax.annotation.Nullable;
 
 import joynr.JoynrMessage;
+import joynr.system.RoutingTypes.Address;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class MessageContainer {
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(MessageContainer.class);
 
-    private final String channelId;
+    private final Address address;
     private final String serializedMessage;
     private long expiryDate;
 
@@ -50,11 +51,11 @@ public class MessageContainer {
 
     private int retries = 0;
 
-    public MessageContainer(final String channelId,
+    public MessageContainer(final Address address,
                             final JoynrMessage message,
                             final long expiryDate,
                             ObjectMapper objectMapper) throws JsonProcessingException {
-        this.channelId = channelId;
+        this.address = address;
         this.message = message;
         this.serializedMessage = objectMapper.writeValueAsString(message); // jsonConverter.toJson(message);
         this.expiryDate = expiryDate;
@@ -69,8 +70,8 @@ public class MessageContainer {
         return expiryDate;
     }
 
-    public String getChannelId() {
-        return channelId;
+    public Address getAddress() {
+        return address;
     }
 
     public String getSerializedMessage() {

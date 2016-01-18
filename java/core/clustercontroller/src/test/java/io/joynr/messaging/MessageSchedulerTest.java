@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
 
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.ChannelUrlInformation;
 
 import org.apache.http.HttpException;
@@ -63,6 +64,7 @@ public class MessageSchedulerTest {
 
     private String bounceProxyUrl;
     private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
+    private final ChannelAddress channelAddress = new ChannelAddress(channelId);
 
     private String serviceAddress;
 
@@ -153,7 +155,7 @@ public class MessageSchedulerTest {
         Mockito.when(mockChannelUrlDir.getUrlsForChannel(channelId)).thenReturn(channelUrlInfo);
 
         Mockito.when(mockMessageContainer.getMessageId()).thenReturn(sendMessageId);
-        Mockito.when(mockMessageContainer.getChannelId()).thenReturn(channelId);
+        Mockito.when(mockMessageContainer.getAddress()).thenReturn(channelAddress);
         Mockito.when(mockMessageContainer.isExpired()).thenReturn(false);
         Mockito.when(mockMessageContainer.getSerializedMessage())
                .thenReturn("any message, doesn't matter here if it's JSON or not");

@@ -32,6 +32,7 @@ import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.http.operation.HttpConstants;
 import io.joynr.messaging.http.operation.HttpPost;
 import io.joynr.messaging.http.operation.HttpRequestFactory;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -95,13 +96,13 @@ public class HttpMessageSender implements IMessageSender {
             failureAction.execute(new JoynrDelayMessageException(delay_ms, RECEIVER_NOT_STARTED_REASON));
         }
 
-        logger.trace("SEND messageId: {} channelId: {}",
-                     messageContainer.getMessageId(),
-                     messageContainer.getChannelId());
+        ChannelAddress address = (ChannelAddress) messageContainer.getAddress();
+        String channelId = address.getChannelId();
+
+        logger.trace("SEND messageId: {} channelId: {}", messageContainer.getMessageId(), channelId);
 
         HttpContext context = new BasicHttpContext();
 
-        String channelId = messageContainer.getChannelId();
         String messageId = messageContainer.getMessageId();
 
         if (messageContainer.isExpired()) {
@@ -118,7 +119,7 @@ public class HttpMessageSender implements IMessageSender {
         try {
 
             String serializedMessage = messageContainer.getSerializedMessage();
-            sendUrl = urlResolver.getSendUrl(messageContainer.getChannelId());
+            sendUrl = urlResolver.getSendUrl(address.getChannelId());
             logger.debug("SENDING message channelId: {}, messageId: {} toUrl: {}", new String[]{ channelId, messageId,
                     sendUrl });
             if (sendUrl == null) {

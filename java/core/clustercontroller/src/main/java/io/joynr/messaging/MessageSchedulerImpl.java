@@ -60,9 +60,9 @@ public class MessageSchedulerImpl implements MessageScheduler {
     public synchronized void scheduleMessage(final MessageContainer messageContainer,
                                              long delayMs,
                                              final FailureAction failureAction) {
-        logger.trace("scheduleMessage messageId: {} channelId {}",
+        logger.trace("scheduleMessage messageId: {} address {}",
                      messageContainer.getMessageId(),
-                     messageContainer.getChannelId());
+                     messageContainer.getAddress());
 
         synchronized (scheduler) {
             if (scheduler.isShutdown()) {
