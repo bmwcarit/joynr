@@ -284,9 +284,26 @@ protected:
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName,
                                           T... expectedValues) {
+        testOneShotBroadcastSubscriptionWithFiltering(subscriptionListener,
+                                                      subscribeTo,
+                                                      fireBroadcast,
+                                                      broadcastName,
+                                                      nullptr,
+                                                      expectedValues...);
+    }
+
+    template <typename FireBroadcast, typename SubscribeTo, typename ...T>
+    void testOneShotBroadcastSubscriptionWithFiltering(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
+                                          SubscribeTo subscribeTo,
+                                          FireBroadcast fireBroadcast,
+                                          const std::string& broadcastName,
+                                          std::shared_ptr<IBroadcastFilter> filter,
+                                          T... expectedValues) {
         std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
         runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
-
+        if (filter) {
+            testProvider->addBroadcastFilter(filter);
+        }
         //This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.
         std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
