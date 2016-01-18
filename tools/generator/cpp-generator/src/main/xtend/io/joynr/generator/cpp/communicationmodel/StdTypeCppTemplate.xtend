@@ -49,6 +49,7 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 
 #include <boost/functional/hash.hpp>
 
+#include "joynr/HashUtil.h"
 #include «type.includeOf»
 
 #include "joynr/Reply.h"
