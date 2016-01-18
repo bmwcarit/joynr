@@ -308,6 +308,8 @@ joynrTestRequire(
                                     var numberOfStations = 0;
                                     var failingSyncAttribute = 0;
                                     var failingAsyncAttribute = 0;
+                                    var typeDefForStruct = null;
+                                    var typeDefForPrimitive = null;
 
                                     var providerRegistered, providerUnRegistered, proxyResolved;
 
@@ -403,6 +405,22 @@ joynrTestRequire(
 
                                     radioProvider.failingAsyncAttribute.registerGetter(function() {
                                         return failingAsyncAttribute;
+                                    });
+
+                                    radioProvider.typeDefForStruct.registerSetter(function(value) {
+                                        typeDefForStruct = value;
+                                    });
+
+                                    radioProvider.typeDefForStruct.registerGetter(function(value) {
+                                        return typeDefForStruct;
+                                    });
+
+                                    radioProvider.typeDefForPrimitive.registerSetter(function(value) {
+                                        typeDefForPrimitive = value;
+                                    });
+
+                                    radioProvider.typeDefForPrimitive.registerGetter(function(value) {
+                                        return typeDefForPrimitive;
                                     });
 
                                     // register operation functions
