@@ -40,21 +40,24 @@ import com.google.inject.name.Named;
  * executor.
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that no new messages are scheduled when scheduler is shuting down")
-public class MessageScheduler {
+public class MessageSchedulerImpl implements MessageScheduler {
     private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
     private static final long TERMINATION_TIMEOUT = 5000;
-    private static final Logger logger = LoggerFactory.getLogger(MessageScheduler.class);
-    public static final String SCHEDULEDTHREADPOOL = "io.joynr.messaging.messagescheduler.scheduledthreadpool";
+    private static final Logger logger = LoggerFactory.getLogger(MessageSchedulerImpl.class);
     private final HttpMessageSender httpMessageSender;
     private ScheduledExecutorService scheduler;
 
     @Inject
-    public MessageScheduler(@Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                            HttpMessageSender httpMessageSender) {
+    public MessageSchedulerImpl(@Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                                HttpMessageSender httpMessageSender) {
         this.httpMessageSender = httpMessageSender;
         this.scheduler = scheduler;
     }
 
+    /* (non-Javadoc)
+     * @see io.joynr.messaging.MessageScheduler#scheduleMessage(io.joynr.messaging.MessageContainer, long, io.joynr.messaging.FailureAction, io.joynr.messaging.MessageReceiver)
+     */
+    @Override
     public synchronized void scheduleMessage(final MessageContainer messageContainer,
                                              long delay_ms,
                                              final FailureAction failureAction,
@@ -102,11 +105,10 @@ public class MessageScheduler {
         }
     }
 
-    /**
-     * Stops the scheduler thread pool and the execution thread.
-     *
-     * @throws InterruptedException if the thread has been interrupted
+    /* (non-Javadoc)
+     * @see io.joynr.messaging.MessageScheduler#shutdown()
      */
+    @Override
     public synchronized void shutdown() throws InterruptedException {
         synchronized (scheduler) {
             scheduler.shutdown();

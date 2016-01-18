@@ -47,6 +47,7 @@ public class MessagingModule extends AbstractModule {
     protected void configure() {
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
+        bind(MessageScheduler.class).to(MessageSchedulerImpl.class);
         bind(MessageHandler.class).to(MessageHandlerImpl.class);
         bind(IMessageSender.class).to(HttpMessageSender.class);
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
