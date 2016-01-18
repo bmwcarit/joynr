@@ -21,6 +21,7 @@ package io.joynr.integration.websocket;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
@@ -106,7 +107,13 @@ public class WebsocketTest {
             webSocketMessagingStub = new LibWebSocketMessagingStub(serverAddress,
                     new ObjectMapper(),
                     libWebSocketMessagingSkeleton);
-            webSocketMessagingStub.transmit(msg);
+            webSocketMessagingStub.transmit(msg, new FailureAction() {
+
+                @Override
+                public void execute(Throwable error) {
+                    Assert.fail(error.getMessage());
+                }
+            });
             Mockito.verify(messageRouterMock, Mockito.timeout(1000)).route(msg);
         } catch (IOException e) {
             logger.error("Error: ", e);

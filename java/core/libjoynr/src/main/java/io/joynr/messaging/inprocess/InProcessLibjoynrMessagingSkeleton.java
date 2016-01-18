@@ -20,6 +20,7 @@ package io.joynr.messaging.inprocess;
  */
 
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.messaging.FailureAction;
 import joynr.JoynrMessage;
 
 public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSkeleton {
@@ -31,8 +32,12 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
     }
 
     @Override
-    public void transmit(JoynrMessage message) {
-        dispatcher.messageArrived(message);
+    public void transmit(JoynrMessage message, FailureAction failureAction) {
+        try {
+            dispatcher.messageArrived(message);
+        } catch (Exception exception) {
+            failureAction.execute(exception);
+        }
     }
 
     @Override

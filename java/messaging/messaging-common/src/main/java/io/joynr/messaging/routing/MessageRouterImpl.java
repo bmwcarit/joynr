@@ -21,11 +21,10 @@ package io.joynr.messaging.routing;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
-
-import java.io.IOException;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
@@ -116,8 +115,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
     }
 
     @Override
-    public void route(JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                           IOException {
+    public void route(final JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException {
         String toParticipantId = message.getTo();
         Address address = getAddress(toParticipantId);
         if (address != null) {
@@ -129,7 +127,14 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                                 message.getHeader().toString() });
             logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
             IMessaging messagingStub = messagingStubFactory.create(address);
-            messagingStub.transmit(message);
+            messagingStub.transmit(message, new FailureAction() {
+
+                @Override
+                public void execute(Throwable error) {
+                    //TODO messageHandler / scheduler will later handle the errors and reschedule
+                    logger.error("unable to send " + message, error);
+                }
+            });
         } else {
             throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
                     + toParticipantId);

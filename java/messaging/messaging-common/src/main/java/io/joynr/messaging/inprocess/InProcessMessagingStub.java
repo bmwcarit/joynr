@@ -1,5 +1,7 @@
 package io.joynr.messaging.inprocess;
 
+import io.joynr.messaging.FailureAction;
+
 /*
  * #%L
  * %%
@@ -25,8 +27,6 @@ import javax.inject.Inject;
 
 import joynr.JoynrMessage;
 
-import java.io.IOException;
-
 public class InProcessMessagingStub implements IMessaging {
 
     private final InProcessMessagingSkeleton skeleton;
@@ -37,8 +37,8 @@ public class InProcessMessagingStub implements IMessaging {
     }
 
     @Override
-    public void transmit(JoynrMessage message) throws IOException {
-        skeleton.transmit(message);
+    public void transmit(JoynrMessage message, FailureAction failureAction) {
+        skeleton.transmit(message, failureAction);
     }
 
 }

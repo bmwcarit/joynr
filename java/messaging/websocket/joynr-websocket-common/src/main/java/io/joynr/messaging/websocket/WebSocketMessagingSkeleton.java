@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,7 @@ public abstract class WebSocketMessagingSkeleton extends MessagingSocket impleme
                 @Override
                 public void run() {
                     try {
-                        transmit(message);
+                        messageRouter.route(message);
                     } catch (IOException e) {
                         logger.error("Error: ", e);
                     }
@@ -71,7 +72,11 @@ public abstract class WebSocketMessagingSkeleton extends MessagingSocket impleme
     }
 
     @Override
-    public void transmit(JoynrMessage message) throws IOException {
-        messageRouter.route(message);
+    public void transmit(JoynrMessage message, FailureAction failureAction) {
+        try {
+            messageRouter.route(message);
+        } catch (Exception exception) {
+            failureAction.execute(exception);
+        }
     }
 }

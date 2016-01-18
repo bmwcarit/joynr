@@ -22,6 +22,7 @@ package io.joynr.messaging.channel;
 import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 
@@ -46,13 +47,14 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
     }
 
     @Override
-    public void transmit(JoynrMessage message) {
+    public void transmit(JoynrMessage message, FailureAction failureAction) {
         final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
         addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
         try {
             messageRouter.route(message);
-        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException e) {
+        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException exception) {
             logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader());
+            failureAction.execute(exception);
         }
     }
 

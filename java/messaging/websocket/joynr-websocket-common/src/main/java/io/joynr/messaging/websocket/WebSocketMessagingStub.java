@@ -21,6 +21,7 @@ package io.joynr.messaging.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import joynr.JoynrMessage;
 import org.eclipse.jetty.websocket.api.Session;
@@ -46,10 +47,14 @@ public abstract class WebSocketMessagingStub implements IMessaging {
     protected abstract void initConnection();
 
     @Override
-    public void transmit(JoynrMessage message) throws IOException {
+    public void transmit(JoynrMessage message, FailureAction failureAction) {
         logger.debug("WebSocketMessagingStub.transmit with message " + message);
         long timeout = message.getExpiryDate() - System.currentTimeMillis();
-        sendString(objectMapper.writeValueAsString(message), timeout);
+        try {
+            sendString(objectMapper.writeValueAsString(message), timeout);
+        } catch (IOException error) {
+            failureAction.execute(error);
+        }
     }
 
     protected synchronized void sendString(String string, long timeout) throws IOException {

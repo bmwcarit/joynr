@@ -20,7 +20,11 @@ package io.joynr.messaging.channel;
  */
 
 import com.google.inject.Inject;
+
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.MessageHandler;
 import joynr.JoynrMessage;
@@ -43,8 +47,12 @@ public class ChannelMessagingStubFactory extends AbstractMessagingStubFactory<Ch
     protected IMessaging createInternal(final ChannelAddress address) {
         IMessaging messagingStub = new IMessaging() {
             @Override
-            public void transmit(JoynrMessage message) throws IOException {
-                messageSender.sendMessage(address, message);
+            public void transmit(JoynrMessage message, FailureAction failureAction)  {
+                try {
+                    messageSender.sendMessage(address, message);
+                } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException exception) {
+                    failureAction.execute(exception);
+                }
             }
         };
         return messagingStub;

@@ -19,7 +19,6 @@ package io.joynr.runtime;
  * #L%
  */
 
-import java.io.IOException;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import org.slf4j.Logger;
@@ -38,6 +37,7 @@ import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
@@ -151,11 +151,13 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                     messageReceiver.start(new MessageArrivedListener() {
                         @Override
                         public void messageArrived(JoynrMessage message) {
-                            try {
-                                clusterControllerMessagingSkeleton.transmit(message);
-                            } catch (IOException e) {
-                                logger.error("Failed to transmit message: ", e);
-                            }
+                            clusterControllerMessagingSkeleton.transmit(message, new FailureAction() {
+
+                                @Override
+                                public void execute(Throwable error) {
+                                    logger.error("Failed to transmit message: ", error);
+                                }
+                            });
                         }
 
                         @Override
