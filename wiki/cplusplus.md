@@ -1,5 +1,19 @@
 # Joynr C++ Developer Guide
 
+## FAQ
+
+**Q1: My code throws "TypeId not known" exceptions when deserializing custom types.**
+
+**A1: The type registration in C++ is realized through static initalization.
+  This static initialization can be "optimized" away by the linker when you link against
+  a static library containing the generated joynr code for your interfaces.**
+
+  **There are two options:**
+
+1. build a shared library
+2. disable the linker optimization. For `ld` this can be done through
+   `-Wl,--whole-archive <LIB_CONTAINING_GENERATED_CODE> -Wl,--no-whole-archive`.
+
 ## Conversion of Franca entries
 
 ### Place holders
