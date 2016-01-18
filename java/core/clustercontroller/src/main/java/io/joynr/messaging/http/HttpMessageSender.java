@@ -90,7 +90,7 @@ public class HttpMessageSender implements IMessageSender {
     @Override
     public void sendMessage(final MessageContainer messageContainer, final FailureAction failureAction) {
         // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
-        if (!messageReceiver.isChannelCreated()) {
+        if (!messageReceiver.isReady()) {
             long delay_ms = DELAY_RECEIVER_NOT_STARTED_MS;
             failureAction.execute(new JoynrDelayMessageException(delay_ms, RECEIVER_NOT_STARTED_REASON));
         }

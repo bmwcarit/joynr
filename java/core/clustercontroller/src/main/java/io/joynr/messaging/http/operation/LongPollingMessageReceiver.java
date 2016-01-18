@@ -143,7 +143,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public boolean isChannelCreated() {
+    public boolean isReady() {
         return channelMonitor.isChannelCreated();
     }
 

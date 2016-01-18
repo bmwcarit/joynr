@@ -77,7 +77,7 @@ public class NoBackendMessagingSenderReceiver implements MessageReceiver, Messag
     }
 
     @Override
-    public boolean isChannelCreated() {
+    public boolean isReady() {
         return true;
     }
 

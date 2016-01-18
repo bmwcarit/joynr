@@ -84,7 +84,7 @@ public class MessageSchedulerTest {
 
     @Before
     public void setUp() throws Exception {
-        when(mockMessageReceiver.isChannelCreated()).thenReturn(true);
+        when(mockMessageReceiver.isReady()).thenReturn(true);
 
         String messagePath = CHANNELPATH + channelId + "/message/";
 

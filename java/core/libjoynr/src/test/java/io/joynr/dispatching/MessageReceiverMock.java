@@ -96,7 +96,7 @@ public class MessageReceiverMock implements MessageReceiver {
     }
 
     @Override
-    public boolean isChannelCreated() {
+    public boolean isReady() {
         // TODO Auto-generated method stub
         return true;
     }
