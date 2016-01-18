@@ -23,10 +23,6 @@
 #include <sstream>
 #include <vector>
 
-extern "C" {
-#include <private-libwebsockets.h>
-}
-
 namespace joynr
 {
 
@@ -188,7 +184,7 @@ int WebSocketContext::serviceCallbackHandle(libwebsocket_context* context,
     }
     case LWS_CALLBACK_PROTOCOL_INIT: {
         assert(context != nullptr);
-        JOYNR_LOG_TRACE(logger, "Protocol initialized: {}", context->protocols[0].name);
+        JOYNR_LOG_TRACE(logger, "Protocol initialized");
     }
     case LWS_CALLBACK_WSI_CREATE:
         JOYNR_LOG_TRACE(logger, "WebSocket created.");
@@ -455,8 +451,6 @@ void WebSocketContext::deinitContext()
 {
     auto connection = websocketHandles.begin();
     while (connection != websocketHandles.end()) {
-        libwebsocket_close_and_free_session(
-                websocketContext, connection->second, LWS_CLOSE_STATUS_NORMAL);
         connection = websocketHandles.erase(connection);
     }
 
