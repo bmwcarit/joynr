@@ -1,5 +1,7 @@
 package io.joynr.messaging.http;
 
+import io.joynr.messaging.FailureAction;
+
 /*
  * #%L
  * %%
@@ -20,7 +22,6 @@ package io.joynr.messaging.http;
  */
 
 import io.joynr.messaging.MessageContainer;
-import io.joynr.messaging.http.operation.FailureAction;
 
 public interface IMessageSender {
 

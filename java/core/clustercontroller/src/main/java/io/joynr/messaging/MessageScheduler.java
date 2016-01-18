@@ -22,7 +22,6 @@ package io.joynr.messaging;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.http.HttpMessageSender;
-import io.joynr.messaging.http.operation.FailureAction;
 
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;

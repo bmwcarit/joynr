@@ -25,7 +25,6 @@ import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.http.operation.FailureAction;
 import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 
 import java.io.IOException;

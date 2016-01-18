@@ -1,4 +1,4 @@
-package io.joynr.messaging.http.operation;
+package io.joynr.messaging;
 
 /*
  * #%L

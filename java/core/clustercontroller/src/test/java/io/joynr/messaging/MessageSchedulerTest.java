@@ -22,7 +22,6 @@ package io.joynr.messaging;
 import com.google.inject.Guice;
 import com.google.inject.Singleton;
 import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.messaging.http.operation.FailureAction;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 
 import java.io.IOException;
