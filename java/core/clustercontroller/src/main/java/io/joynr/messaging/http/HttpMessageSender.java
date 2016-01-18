@@ -21,10 +21,12 @@ package io.joynr.messaging.http;
 
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessageContainer;
+import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.http.operation.HttpConstants;
@@ -55,20 +57,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HttpMessageSender implements IMessageSender {
     private static final Logger logger = LoggerFactory.getLogger(HttpMessageSender.class);
+    private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
+    private static final String RECEIVER_NOT_STARTED_REASON = "cannot send until receiver is started";
     private final UrlResolver urlResolver;
     private final HttpRequestFactory httpRequestFactory;
     private final HttpConstants httpConstants;
     private final CloseableHttpClient httpclient;
     private final RequestConfig defaultRequestConfig;
     private final ObjectMapper objectMapper;
+    private MessageReceiver messageReceiver;
 
     @Inject
-    public HttpMessageSender(CloseableHttpClient httpclient,
+    public HttpMessageSender(MessageReceiver messageReceiver,
+                             CloseableHttpClient httpclient,
                              HttpRequestFactory httpRequestFactory,
                              HttpConstants httpConstants,
                              RequestConfig defaultRequestConfig,
                              ObjectMapper objectMapper,
                              UrlResolver urlResolver) {
+        this.messageReceiver = messageReceiver;
         this.httpclient = httpclient;
         this.httpRequestFactory = httpRequestFactory;
         this.httpConstants = httpConstants;
@@ -82,6 +89,12 @@ public class HttpMessageSender implements IMessageSender {
      */
     @Override
     public void sendMessage(final MessageContainer messageContainer, final FailureAction failureAction) {
+        // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
+        if (!messageReceiver.isChannelCreated()) {
+            long delay_ms = DELAY_RECEIVER_NOT_STARTED_MS;
+            failureAction.execute(new JoynrDelayMessageException(delay_ms, RECEIVER_NOT_STARTED_REASON));
+        }
+
         logger.trace("SEND messageId: {} channelId: {}",
                      messageContainer.getMessageId(),
                      messageContainer.getChannelId());

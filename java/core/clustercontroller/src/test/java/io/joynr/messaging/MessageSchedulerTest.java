@@ -19,6 +19,8 @@ package io.joynr.messaging;
  * #L%
  */
 
+import static org.mockito.Mockito.when;
+
 import com.google.inject.Guice;
 import com.google.inject.Singleton;
 import io.joynr.common.JoynrPropertiesModule;
@@ -74,15 +76,15 @@ public class MessageSchedulerTest {
     @Mock
     private FailureAction mockFailureAction;
     @Mock
-    private MessageReceiver mockMessageReceiver;
-
-    @Mock
     private LocalChannelUrlDirectoryClient mockChannelUrlDir;
+    @Mock
+    private MessageReceiver mockMessageReceiver;
 
     private boolean serverResponded = false;
 
     @Before
     public void setUp() throws Exception {
+        when(mockMessageReceiver.isChannelCreated()).thenReturn(true);
 
         String messagePath = CHANNELPATH + channelId + "/message/";
 
@@ -111,20 +113,21 @@ public class MessageSchedulerTest {
             @Override
             protected void configure() {
                 bind(LocalChannelUrlDirectoryClient.class).toInstance(mockChannelUrlDir);
+                bind(MessageReceiver.class).toInstance(mockMessageReceiver);
             }
 
         };
 
         Injector injector = Guice.createInjector(new JoynrPropertiesModule(properties),
-                                                 Modules.override(new MessagingTestModule()).with(mockModule),
+                                                 Modules.override(new AtmosphereMessagingModule(),
+                                                                  new MessagingTestModule()).with(mockModule),
                                                  new AbstractModule() {
                                                      @Override
                                                      protected void configure() {
                                                          bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
                                                                                   .in(Singleton.class);
                                                      }
-                                                 },
-                                                 new AtmosphereMessagingModule());
+                                                 });
         messageScheduler = injector.getInstance(MessageScheduler.class);
     }
 
@@ -155,9 +158,8 @@ public class MessageSchedulerTest {
         Mockito.when(mockMessageContainer.getSerializedMessage())
                .thenReturn("any message, doesn't matter here if it's JSON or not");
         Mockito.when(mockMessageContainer.getExpiryDate()).thenReturn(0l);
-        Mockito.when(mockMessageReceiver.isChannelCreated()).thenReturn(true);
 
-        messageScheduler.scheduleMessage(mockMessageContainer, 0, mockFailureAction, mockMessageReceiver);
+        messageScheduler.scheduleMessage(mockMessageContainer, 0, mockFailureAction);
 
         // There's no way to hook into some MessageScheduler method and to wait
         // until the response has been processed. Only if a failure is expected,

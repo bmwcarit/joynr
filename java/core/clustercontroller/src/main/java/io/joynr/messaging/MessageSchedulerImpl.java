@@ -41,7 +41,6 @@ import com.google.inject.name.Named;
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that no new messages are scheduled when scheduler is shuting down")
 public class MessageSchedulerImpl implements MessageScheduler {
-    private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
     private static final long TERMINATION_TIMEOUT = 5000;
     private static final Logger logger = LoggerFactory.getLogger(MessageSchedulerImpl.class);
     private final HttpMessageSender httpMessageSender;
@@ -59,16 +58,11 @@ public class MessageSchedulerImpl implements MessageScheduler {
      */
     @Override
     public synchronized void scheduleMessage(final MessageContainer messageContainer,
-                                             long delay_ms,
-                                             final FailureAction failureAction,
-                                             final MessageReceiver messageReceiver) {
+                                             long delayMs,
+                                             final FailureAction failureAction) {
         logger.trace("scheduleMessage messageId: {} channelId {}",
                      messageContainer.getMessageId(),
                      messageContainer.getChannelId());
-        // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
-        if (!messageReceiver.isChannelCreated()) {
-            delay_ms = delay_ms > DELAY_RECEIVER_NOT_STARTED_MS ? delay_ms : DELAY_RECEIVER_NOT_STARTED_MS;
-        }
 
         synchronized (scheduler) {
             if (scheduler.isShutdown()) {
@@ -82,22 +76,9 @@ public class MessageSchedulerImpl implements MessageScheduler {
                 scheduler.schedule(new Runnable() {
                     @Override
                     public void run() {
-                        if (!messageReceiver.isChannelCreated()) {
-                            scheduleMessage(messageContainer,
-                                            DELAY_RECEIVER_NOT_STARTED_MS,
-                                            failureAction,
-                                            messageReceiver);
-                            logger.debug("Creation of Channel for channelId {} is still ongoing. Sending messages now could lead to lost replies - delaying sending messageId {}",
-                                         messageReceiver.getChannelId(),
-                                         messageContainer.getMessageId());
-                            return;
-                        }
-
                         httpMessageSender.sendMessage(messageContainer, failureAction);
                     }
-                },
-                                   delay_ms,
-                                   TimeUnit.MILLISECONDS);
+                }, delayMs, TimeUnit.MILLISECONDS);
             } catch (RejectedExecutionException e) {
                 logger.error("Execution rejected while scheduling SendSerializedMessageRequest ", e);
                 throw new JoynrSendBufferFullException(e);

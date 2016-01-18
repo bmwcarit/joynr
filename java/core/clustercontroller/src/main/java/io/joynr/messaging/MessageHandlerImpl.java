@@ -22,6 +22,8 @@ package io.joynr.messaging;
 import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+
+import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -59,19 +61,15 @@ public class MessageHandlerImpl implements MessageHandler {
 
     private final ObjectMapper objectMapper;
 
-    private MessageReceiver messageReceiver;
-
     @Inject
     public MessageHandlerImpl(MessageScheduler sendRequestScheduler,
                               @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId,
                               MessagingSettings settings,
-                              ObjectMapper objectMapper,
-                              MessageReceiver messageReceiver) {
+                              ObjectMapper objectMapper) {
         this.sendRequestScheduler = sendRequestScheduler;
         this.ownChannelId = ownChannelId;
         this.settings = settings;
         this.objectMapper = objectMapper;
-        this.messageReceiver = messageReceiver;
     }
 
     /* (non-Javadoc)
@@ -141,15 +139,20 @@ public class MessageHandlerImpl implements MessageHandler {
                         message.getId(), channelId, error.getMessage() });
 
                 messageContainer.incrementRetries();
-                long delay_ms = settings.getSendMsgRetryIntervalMs();
-                delay_ms += exponentialBackoff(delay_ms, messageContainer.getRetries());
+                long delay_ms;
+                if (error instanceof JoynrDelayMessageException) {
+                    delay_ms = ((JoynrDelayMessageException) error).getDelayMs();
+                } else {
+                    delay_ms = settings.getSendMsgRetryIntervalMs();
+                    delay_ms += exponentialBackoff(delay_ms, messageContainer.getRetries());
+                }
 
                 try {
                     logger.error("Rescheduling messageId: {} with delay " + delay_ms
                                          + " ms, new TTL expiration date: {}",
                                  messageContainer.getMessageId(),
                                  DateFormatter.format(messageContainer.getExpiryDate()));
-                    sendRequestScheduler.scheduleMessage(messageContainer, delay_ms, this, messageReceiver);
+                    sendRequestScheduler.scheduleMessage(messageContainer, delay_ms, this);
                     return;
                 } catch (JoynrSendBufferFullException e) {
                     try {
@@ -170,7 +173,7 @@ public class MessageHandlerImpl implements MessageHandler {
         logger.trace("SEND messageId: {} from: {} to: {} scheduleRequest", new Object[]{ message.getId(),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID) });
-        sendRequestScheduler.scheduleMessage(messageContainer, 0, failureAction, messageReceiver);
+        sendRequestScheduler.scheduleMessage(messageContainer, 0, failureAction);
     }
 
     /* (non-Javadoc)
