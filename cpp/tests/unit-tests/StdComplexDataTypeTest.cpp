@@ -20,6 +20,7 @@
 
 #include "PrettyPrint.h"
 #include <string>
+#include <unordered_set>
 
 #include "joynr/types/TestTypes/Word.h"
 #include "joynr/types/TestTypes/Vowel.h"
@@ -353,5 +354,16 @@ TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType) {
     // currently a compile error
     //    EXPECT_NE(tEverythingExtendedExtended, tEverythingExtended1);
 
+}
+
+TEST_F(StdComplexDataTypeTest, hashCodeImplementation) {
+    std::unordered_set<TestTypes::TEverythingExtendedStruct> unorderedSet;
+
+    auto returnedPair1 = unorderedSet.insert(tEverythingExtended1);
+    EXPECT_TRUE(returnedPair1.second);
+
+    auto returnedPair2 = unorderedSet.insert(tEverythingExtended1);
+    EXPECT_FALSE(returnedPair2.second);
+    EXPECT_EQ(unorderedSet.size(), 1);
 }
 
