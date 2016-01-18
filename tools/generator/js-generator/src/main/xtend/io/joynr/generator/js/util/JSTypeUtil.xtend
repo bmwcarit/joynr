@@ -20,6 +20,7 @@ package io.joynr.generator.js.util
 
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.AbstractTypeUtil
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
@@ -309,5 +310,11 @@ class JSTypeUtil extends AbstractTypeUtil {
 		return datatype.buildPackagePath(File.separator, true)
 					+ File.separator
 					+ datatype.joynrName
+	}
+
+	def getTypeSelectorIncludingErrorTypes() {
+		val selector = TypeSelector::defaultTypeSelector
+		selector.errorTypes(true)
+		return selector
 	}
 }
