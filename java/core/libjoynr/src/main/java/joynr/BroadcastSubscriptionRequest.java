@@ -23,6 +23,10 @@ import io.joynr.pubsub.SubscriptionQos;
 
 public class BroadcastSubscriptionRequest extends SubscriptionRequest {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     private BroadcastFilterParameters filterParameters;
 
     /**
@@ -66,18 +70,23 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (!super.equals(obj))
+        }
+        if (!super.equals(obj)) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         BroadcastSubscriptionRequest other = (BroadcastSubscriptionRequest) obj;
         if (filterParameters == null) {
-            if (other.filterParameters != null)
+            if (other.filterParameters != null) {
                 return false;
-        } else if (!filterParameters.equals(other.filterParameters))
+            }
+        } else if (!filterParameters.equals(other.filterParameters)) {
             return false;
+        }
         return true;
     }
 

@@ -38,6 +38,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * interval, publicationMissed will be called.
  */
 public class PeriodicSubscriptionQos extends SubscriptionQos implements HeartbeatSubscriptionInformation {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger logger = LoggerFactory.getLogger(PeriodicSubscriptionQos.class);
 
     /**
@@ -268,17 +270,22 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (!super.equals(obj))
+        }
+        if (!super.equals(obj)) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         PeriodicSubscriptionQos other = (PeriodicSubscriptionQos) obj;
-        if (alertAfterInterval != other.alertAfterInterval)
+        if (alertAfterInterval != other.alertAfterInterval) {
             return false;
-        if (period != other.period)
+        }
+        if (period != other.period) {
             return false;
+        }
         return true;
     }
 

@@ -22,7 +22,7 @@ package joynr;
 import io.joynr.pubsub.SubscriptionQos;
 
 public class SubscriptionRequest implements JoynrMessageType {
-
+    private static final long serialVersionUID = 1L;
     protected String subscriptionId;
     protected String subscribedToName;
     protected SubscriptionQos qos;
@@ -84,28 +84,37 @@ public class SubscriptionRequest implements JoynrMessageType {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         SubscriptionRequest other = (SubscriptionRequest) obj;
         if (qos == null) {
-            if (other.qos != null)
+            if (other.qos != null) {
                 return false;
-        } else if (!qos.equals(other.qos))
+            }
+        } else if (!qos.equals(other.qos)) {
             return false;
+        }
         if (subscribedToName == null) {
-            if (other.subscribedToName != null)
+            if (other.subscribedToName != null) {
                 return false;
-        } else if (!subscribedToName.equals(other.subscribedToName))
+            }
+        } else if (!subscribedToName.equals(other.subscribedToName)) {
             return false;
+        }
         if (subscriptionId == null) {
-            if (other.subscriptionId != null)
+            if (other.subscriptionId != null) {
                 return false;
-        } else if (!subscriptionId.equals(other.subscriptionId))
+            }
+        } else if (!subscriptionId.equals(other.subscriptionId)) {
             return false;
+        }
         return true;
     }
 

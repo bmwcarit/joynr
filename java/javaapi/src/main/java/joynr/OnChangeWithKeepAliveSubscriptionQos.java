@@ -45,6 +45,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQos implements
         HeartbeatSubscriptionInformation {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger logger = LoggerFactory.getLogger(OnChangeWithKeepAliveSubscriptionQos.class);
 
     private static final long MIN_MAX_INTERVAL = 0L;
@@ -235,6 +237,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *         the subscriptionManager will issue a publicationMissed. If set
      *         to 0 (NO_ALERT_AFTER_INTERVAL), never alert.
      */
+    @Override
     public long getAlertAfterInterval() {
         return alertAfterInterval;
     }
@@ -278,6 +281,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
         this.alertAfterInterval = alertAfterInterval_ms;
     }
 
+    @Override
     @JsonIgnore
     public long getHeartbeat() {
         return maxInterval;
@@ -305,17 +309,22 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         OnChangeWithKeepAliveSubscriptionQos other = (OnChangeWithKeepAliveSubscriptionQos) obj;
-        if (alertAfterInterval != other.alertAfterInterval)
+        if (alertAfterInterval != other.alertAfterInterval) {
             return false;
-        if (maxInterval != other.maxInterval)
+        }
+        if (maxInterval != other.maxInterval) {
             return false;
+        }
         return true;
     }
 

@@ -34,7 +34,7 @@ import io.joynr.pubsub.SubscriptionQos;
  * minInterval can be used to prevent too many messages being sent.
  */
 public class OnChangeSubscriptionQos extends SubscriptionQos {
-
+    private static final long serialVersionUID = 1L;
     private static final long MIN_MIN_INTERVAL = 0L;
     private static final long MAX_MIN_INTERVAL = 2592000000L; // 30 days;
 
@@ -148,15 +148,19 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         OnChangeSubscriptionQos other = (OnChangeSubscriptionQos) obj;
-        if (minInterval != other.minInterval)
+        if (minInterval != other.minInterval) {
             return false;
+        }
         return true;
     }
 

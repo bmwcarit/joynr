@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * Storage class to keep the type, header and payload of a message.
  */
 public class JoynrMessage implements JoynrType {
-
+    private static final long serialVersionUID = 1L;
     public static final String HEADER_NAME_REPLY_CHANNELID = "replyChannelId";
     public static final String HEADER_NAME_CONTENT_TYPE = "contentType";
     public static final String HEADER_NAME_EXPIRY_DATE = "expiryDate";
@@ -102,7 +102,7 @@ public class JoynrMessage implements JoynrType {
     /**
      * Adds header entries to the already existing ones. If a header entry was already set, its value is replaced with
      * the new one.
-     * 
+     *
      * @param newHeaders
      *            the header entries to add
      */
@@ -155,28 +155,37 @@ public class JoynrMessage implements JoynrType {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         JoynrMessage other = (JoynrMessage) obj;
         if (header == null) {
-            if (other.header != null)
+            if (other.header != null) {
                 return false;
-        } else if (!header.equals(other.header))
+            }
+        } else if (!header.equals(other.header)) {
             return false;
+        }
         if (payload == null) {
-            if (other.payload != null)
+            if (other.payload != null) {
                 return false;
-        } else if (!payload.equals(other.payload))
+            }
+        } else if (!payload.equals(other.payload)) {
             return false;
+        }
         if (type == null) {
-            if (other.type != null)
+            if (other.type != null) {
                 return false;
-        } else if (!type.equals(other.type))
+            }
+        } else if (!type.equals(other.type)) {
             return false;
+        }
         return true;
     }
 
@@ -219,7 +228,7 @@ public class JoynrMessage implements JoynrType {
 
     @JsonIgnore
     /**
-     * 
+     *
      * @return sender's ParticipantId
      */
     public String getFrom() {
@@ -228,7 +237,7 @@ public class JoynrMessage implements JoynrType {
 
     @JsonIgnore
     /**
-     * 
+     *
      * @param fromParticipantId sets the sender's ParticipantId
      */
     public void setFrom(String fromParticipantId) {
@@ -237,7 +246,7 @@ public class JoynrMessage implements JoynrType {
 
     @JsonIgnore
     /**
-     * 
+     *
      * @return receiver's ParticipantId
      */
     public String getTo() {
@@ -246,7 +255,7 @@ public class JoynrMessage implements JoynrType {
 
     @JsonIgnore
     /**
-     * Sets the receiver's 
+     * Sets the receiver's
      * @param toParticipantId
      */
     public void setTo(String toParticipantId) {
@@ -255,7 +264,7 @@ public class JoynrMessage implements JoynrType {
 
     @JsonIgnore
     /**
-     * 
+     *
      * @return Absolute time in ms when the message will expire and be discarded
      */
     public long getExpiryDate() {
@@ -267,7 +276,7 @@ public class JoynrMessage implements JoynrType {
     }
 
     /**
-     * 
+     *
      * @param expirationDate
      *            the date/time when the message will expire and be discarded
      */
@@ -277,7 +286,7 @@ public class JoynrMessage implements JoynrType {
     }
 
     /**
-     * 
+     *
      * @param replyToChannelId
      *            the channelId of the cluster controller that is sending the message
      */

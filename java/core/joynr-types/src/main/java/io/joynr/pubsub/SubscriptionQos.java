@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
  * The subscription will automatically expire after the expiry date is reached.
  */
 public abstract class SubscriptionQos implements JoynrType {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionQos.class);
 
     private long expiryDate;
@@ -213,17 +215,22 @@ public abstract class SubscriptionQos implements JoynrType {
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         SubscriptionQos other = (SubscriptionQos) obj;
-        if (expiryDate != other.expiryDate)
+        if (expiryDate != other.expiryDate) {
             return false;
-        if (publicationTtl != other.publicationTtl)
+        }
+        if (publicationTtl != other.publicationTtl) {
             return false;
+        }
         return true;
     }
 
