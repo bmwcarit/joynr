@@ -215,14 +215,6 @@ class ProxyGenerator {
 			});
 		};
 
-		«fInterface.proxyName».getUsedDatatypes = function getUsedDatatypes(){
-			return [
-						«FOR datatype : fInterface.getAllComplexTypes SEPARATOR ','»
-						"«datatype.joynrTypeName»"
-						«ENDFOR»
-					];
-		};
-
 		«IF requireJSSupport»
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
