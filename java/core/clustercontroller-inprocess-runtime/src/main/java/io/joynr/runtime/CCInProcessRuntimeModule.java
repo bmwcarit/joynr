@@ -28,7 +28,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
-import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
@@ -54,10 +54,11 @@ public class CCInProcessRuntimeModule extends ClusterControllerRuntimeModule {
                                       .in(Singleton.class);
     }
 
+    @SuppressWarnings("rawtypes")
     @Provides
     @Singleton
-    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(ChannelMessagingStubFactory channelMessagingStubFactory) {
-        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
+    Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> provideMessagingStubFactories(ChannelMessagingStubFactory channelMessagingStubFactory) {
+        Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> factories = Maps.newHashMap();
         factories.put(ChannelAddress.class, channelMessagingStubFactory);
         return factories;
     }

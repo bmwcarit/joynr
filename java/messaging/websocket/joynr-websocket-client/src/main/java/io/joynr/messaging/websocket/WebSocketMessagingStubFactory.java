@@ -23,11 +23,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
-public class WebSocketMessagingStubFactory extends AbstractMessagingStubFactory<WebSocketAddress> {
+public class WebSocketMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<WebSocketAddress> {
 
     @Inject
     ObjectMapper objectMapper;

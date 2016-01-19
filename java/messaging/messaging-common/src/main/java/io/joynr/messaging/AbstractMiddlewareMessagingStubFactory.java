@@ -24,7 +24,7 @@ import java.util.Map;
 
 import joynr.system.RoutingTypes.Address;
 
-abstract public class AbstractMessagingStubFactory<W extends Address> {
+abstract public class AbstractMiddlewareMessagingStubFactory<W extends Address> {
 
     private Map<W, IMessaging> stubMap = new HashMap<>();
 

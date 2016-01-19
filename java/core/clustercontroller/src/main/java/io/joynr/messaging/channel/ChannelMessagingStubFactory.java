@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.MessageHandler;
@@ -35,7 +35,7 @@ import java.io.IOException;
 /**
  *  Message stub factory for joynr channel addresses
  */
-public class ChannelMessagingStubFactory extends AbstractMessagingStubFactory<ChannelAddress> {
+public class ChannelMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<ChannelAddress> {
     private MessageHandler messageSender;
 
     @Inject

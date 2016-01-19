@@ -19,7 +19,7 @@ package io.joynr.runtime;
  * #L%
  */
 
-import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
@@ -61,8 +61,8 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
 
     @Provides
     @Singleton
-    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(WebSocketMessagingStubFactory webSocketMessagingStubFactory) {
-        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
+    Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> provideMessagingStubFactories(WebSocketMessagingStubFactory webSocketMessagingStubFactory) {
+        Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> factories = Maps.newHashMap();
         factories.put(WebSocketAddress.class, webSocketMessagingStubFactory);
         return factories;
     }

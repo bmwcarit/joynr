@@ -40,7 +40,7 @@ import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
-import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -104,8 +104,8 @@ public class DispatcherTestModule extends AbstractModule {
     @SuppressWarnings("rawtypes")
     @Provides
     @Singleton
-    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories() {
-        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
+    Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> provideMessagingStubFactories() {
+        Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> factories = Maps.newHashMap();
         return factories;
     }
 }

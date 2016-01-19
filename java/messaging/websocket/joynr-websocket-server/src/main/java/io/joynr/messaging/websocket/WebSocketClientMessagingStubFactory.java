@@ -23,7 +23,7 @@ package io.joynr.messaging.websocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import org.eclipse.jetty.websocket.api.Session;
@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * Factory for messaging stubs used on cluster controller side to create a connection to registered clients
  */
-public class WebSocketClientMessagingStubFactory extends AbstractMessagingStubFactory<WebSocketClientAddress> {
+public class WebSocketClientMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<WebSocketClientAddress> {
 
     private Logger logger = LoggerFactory.getLogger(WebSocketClientMessagingStubFactory.class);
     private Map<String, Session> sessionMap = new HashMap<>();

@@ -23,7 +23,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
-import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
@@ -59,9 +59,9 @@ public class CCWebSocketRuntimeModule extends ClusterControllerRuntimeModule {
 
     @Provides
     @Singleton
-    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(WebSocketClientMessagingStubFactory webSocketClientMessagingStubFactory,
-                                                                                              ChannelMessagingStubFactory channelMessagingStubFactory) {
-        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
+    Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> provideMessagingStubFactories(WebSocketClientMessagingStubFactory webSocketClientMessagingStubFactory,
+                                                                                                        ChannelMessagingStubFactory channelMessagingStubFactory) {
+        Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> factories = Maps.newHashMap();
         factories.put(WebSocketClientAddress.class, webSocketClientMessagingStubFactory);
         factories.put(ChannelAddress.class, channelMessagingStubFactory);
         return factories;
