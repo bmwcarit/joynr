@@ -741,7 +741,7 @@ class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::Chann
 public:
     MockChannelUrlDirectoryProxy() :
         ChannelUrlDirectoryProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        ProxyBase(nullptr, nullptr, "domain", "INTERFACE_NAME", joynr::MessagingQos(), false),
+        ProxyBase(nullptr, nullptr, "domain", joynr::MessagingQos(), false),
         ChannelUrlDirectoryProxyBase(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
         ChannelUrlDirectorySyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
         ChannelUrlDirectoryAsyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false){}
@@ -832,7 +832,6 @@ public:
                 nullptr,
                 nullptr,
                 "domain",
-                "INTERFACE_NAME",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerProxyBase(
