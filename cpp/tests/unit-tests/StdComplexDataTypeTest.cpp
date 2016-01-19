@@ -367,3 +367,10 @@ TEST_F(StdComplexDataTypeTest, hashCodeImplementation) {
     EXPECT_EQ(unorderedSet.size(), 1);
 }
 
+TEST_F(StdComplexDataTypeTest, mapTypeListInitialization) {
+    TestTypes::TStringKeyMap map = {{"lorem", "ipsum"}, {"dolor", "sit"}};
+
+    EXPECT_EQ(map.size(), 2);
+    EXPECT_EQ(map["lorem"], "ipsum");
+}
+
