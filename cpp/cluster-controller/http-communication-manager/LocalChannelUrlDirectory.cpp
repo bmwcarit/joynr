@@ -129,7 +129,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDire
         } else {
             JOYNR_LOG_INFO(
                     logger,
-                    "FAILED to receive remote url information for channelId = {}. {}Status: {}",
+                    "FAILED to receive remote url information for channelId = {}. Status: {}",
                     channelIdQT.toStdString(),
                     future->getStatus().toString());
         }
