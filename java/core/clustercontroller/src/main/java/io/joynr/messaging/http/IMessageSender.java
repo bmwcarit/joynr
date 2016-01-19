@@ -22,8 +22,11 @@ import io.joynr.messaging.FailureAction;
  */
 
 import io.joynr.messaging.MessageContainer;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 public interface IMessageSender {
 
     void sendMessage(MessageContainer messageContainer, FailureAction failureAction);
+
+    void sendMessage(ChannelAddress address, String serializedMessage, FailureAction failureAction);
 }

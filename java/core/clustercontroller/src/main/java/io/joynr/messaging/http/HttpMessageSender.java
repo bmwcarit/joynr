@@ -84,39 +84,34 @@ public class HttpMessageSender implements IMessageSender {
         this.urlResolver = urlResolver;
     }
 
-    /* (non-Javadoc)
-     * @see io.joynr.messaging.http.IMessageSender#sendMessage(io.joynr.messaging.MessageContainer, io.joynr.messaging.http.operation.FailureAction)
-     */
     @Override
     public void sendMessage(final MessageContainer messageContainer, final FailureAction failureAction) {
+        sendMessage((ChannelAddress) messageContainer.getAddress(),
+                    messageContainer.getSerializedMessage(),
+                    failureAction);
+    }
+
+    @Override
+    public void sendMessage(ChannelAddress address, String serializedMessage, FailureAction failureAction) {
         // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
         if (!messageReceiver.isReady()) {
             long delay_ms = DELAY_RECEIVER_NOT_STARTED_MS;
             failureAction.execute(new JoynrDelayMessageException(delay_ms, RECEIVER_NOT_STARTED_REASON));
         }
 
-        ChannelAddress address = (ChannelAddress) messageContainer.getAddress();
         String channelId = address.getChannelId();
 
-        logger.trace("SEND messageId: {} channelId: {}", messageContainer.getMessageId(), channelId);
+        logger.trace("SENDING: channelId: {} message: {}", channelId, serializedMessage);
 
         HttpContext context = new BasicHttpContext();
-
-        String messageId = messageContainer.getMessageId();
 
         // execute http command to send
         CloseableHttpResponse response = null;
         String sendUrl = null;
         try {
 
-            String serializedMessage = messageContainer.getSerializedMessage();
             sendUrl = urlResolver.getSendUrl(address.getChannelId());
-            logger.debug("SENDING message channelId: {}, messageId: {} toUrl: {}", new String[]{ channelId, messageId,
-                    sendUrl });
             if (sendUrl == null) {
-                logger.error("SEND executionQueue.run channelId: {}, messageId: {} No channelId found",
-                             messageId,
-                             messageContainer.getExpiryDate());
                 failureAction.execute(new JoynrMessageNotSentException("no channelId found"));
                 return;
             }
@@ -140,14 +135,12 @@ public class HttpMessageSender implements IMessageSender {
             switch (statusCode) {
             case HttpURLConnection.HTTP_OK:
             case HttpURLConnection.HTTP_CREATED:
-                logger.debug("SEND to ChannelId: {} messageId: {} completed successfully", channelId, messageId);
+                logger.trace("SENT: channelId {} message: {}", channelId, serializedMessage);
                 break;
             case HttpURLConnection.HTTP_BAD_REQUEST:
                 HttpEntity entity = response.getEntity();
                 if (entity == null) {
-                    logger.error("SEND to ChannelId: {} messageId: {} completed in error. No further reason found in message body",
-                                 channelId,
-                                 messageId);
+                    failureAction.execute(new JoynrCommunicationException("Error in HttpMessageSender. No further reason found in message body"));
                     return;
                 }
                 String body = EntityUtils.toString(entity, "UTF-8");
@@ -161,24 +154,18 @@ public class HttpMessageSender implements IMessageSender {
                             + statusCode + " error: " + error.getCode() + "reason:" + error.getReason()));
                     break;
                 default:
-                    logger.error("SEND error channelId: {}, messageId: {} url: {} error: {} code: {} reason: {} ",
-                                 new Object[]{ channelId, messageId, sendUrl, statusText, error.getCode(),
-                                         error.getReason() });
-                    failureAction.execute(new JoynrCommunicationException("Http Error while communicating: "
-                            + statusText + body + " error: " + error.getCode() + "reason:" + error.getReason()));
+                    failureAction.execute(new JoynrCommunicationException("Error in HttpMessageSender: " + statusText
+                            + body + " error: " + error.getCode() + "reason:" + error.getReason()));
                     break;
                 }
                 break;
             default:
-                logger.error("SEND to ChannelId: {} messageId: {} - unexpected response code: {} reason: {}",
-                             new Object[]{ channelId, messageId, statusCode, statusText });
+                failureAction.execute(new JoynrCommunicationException("Unknown Error in HttpMessageSender: "
+                        + statusText + " statusCode: " + statusCode));
                 break;
             }
         } catch (Exception e) {
             // An exception occured - this could still be a communication error (e.g Connection refused)
-            logger.error("SEND error channelId: {}, messageId: {} url: {} error: {}", new Object[]{ channelId,
-                    messageId, sendUrl, e.getMessage() });
-
             failureAction.execute(new JoynrCommunicationException(e.getClass().getName()
                     + "Exception while communicating. error: " + e.getMessage()));
         } finally {
