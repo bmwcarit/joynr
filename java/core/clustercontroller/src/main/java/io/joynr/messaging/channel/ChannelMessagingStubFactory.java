@@ -54,6 +54,12 @@ public class ChannelMessagingStubFactory extends AbstractMessagingStubFactory<Ch
                     failureAction.execute(exception);
                 }
             }
+
+            @Override
+            public void transmit(String serializedMessage, FailureAction failureAction) {
+                // TODO Auto-generated method stub
+
+            }
         };
         return messagingStub;
     }

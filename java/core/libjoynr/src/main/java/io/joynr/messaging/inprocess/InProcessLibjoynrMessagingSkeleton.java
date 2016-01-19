@@ -41,6 +41,11 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
     }
 
     @Override
+    public void transmit(String serializedMessage, FailureAction failureAction) {
+        throw new IllegalStateException("InProcessMessagingSkeleton does not handle serialized messages");
+    }
+
+    @Override
     public void init() {
         //do nothing
     }

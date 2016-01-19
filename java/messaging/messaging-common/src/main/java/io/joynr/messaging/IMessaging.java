@@ -24,4 +24,6 @@ import joynr.JoynrMessage;
 public interface IMessaging {
     public void transmit(JoynrMessage message, FailureAction failureAction);
 
+    public void transmit(String serializedMessage, FailureAction failureAction);
+
 }

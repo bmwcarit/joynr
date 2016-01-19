@@ -20,6 +20,7 @@ package io.joynr.messaging.websocket;
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import joynr.system.RoutingTypes.WebSocketAddress;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;

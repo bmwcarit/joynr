@@ -41,4 +41,9 @@ public class InProcessMessagingStub implements IMessaging {
         skeleton.transmit(message, failureAction);
     }
 
+    @Override
+    public void transmit(String serializedMessage, FailureAction failureAction) {
+        throw new IllegalStateException("InProcess messaging should not send serialized messages");
+    }
+
 }

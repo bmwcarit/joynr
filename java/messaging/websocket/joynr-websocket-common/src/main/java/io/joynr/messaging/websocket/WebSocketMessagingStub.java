@@ -57,6 +57,15 @@ public abstract class WebSocketMessagingStub implements IMessaging {
         }
     }
 
+    @Override
+    public void transmit(String serializedMessage, FailureAction failureAction) {
+        try {
+            sendString(serializedMessage, 120000);
+        } catch (IOException error) {
+            failureAction.execute(error);
+        }
+    }
+
     protected synchronized void sendString(String string, long timeout) throws IOException {
         Session session = null;
         if (sessionFuture == null) {

@@ -79,4 +79,9 @@ public abstract class WebSocketMessagingSkeleton extends MessagingSocket impleme
             failureAction.execute(exception);
         }
     }
+
+    @Override
+    public void transmit(String serializedMessage, FailureAction failureAction) {
+        // TODO Auto-generated method stub
+    }
 }

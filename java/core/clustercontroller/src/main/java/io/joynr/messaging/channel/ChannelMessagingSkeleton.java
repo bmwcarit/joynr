@@ -58,6 +58,12 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
         }
     }
 
+    @Override
+    public void transmit(String serializedMessage, FailureAction failureAction) {
+        // TODO Auto-generated method stub
+
+    }
+
     private void addRequestorToMessageRouter(String requestorParticipantId, String replyToChannelId) {
         if (replyToChannelId != null && !replyToChannelId.isEmpty()) {
             messageRouter.addNextHop(requestorParticipantId, new ChannelAddress(replyToChannelId));
