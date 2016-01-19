@@ -23,7 +23,7 @@ public interface MessageScheduler {
 
     String SCHEDULEDTHREADPOOL = "io.joynr.messaging.messagescheduler.scheduledthreadpool";
 
-    void scheduleMessage(MessageContainer messageContainer, long delay_ms, FailureAction failureAction);
+    void scheduleMessage(MessageContainer messageContainer, long delay_ms);
 
     /**
      * Stops the scheduler thread pool and the execution thread.

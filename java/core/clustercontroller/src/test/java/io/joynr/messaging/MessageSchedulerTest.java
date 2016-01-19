@@ -161,7 +161,7 @@ public class MessageSchedulerTest {
                .thenReturn("any message, doesn't matter here if it's JSON or not");
         Mockito.when(mockMessageContainer.getExpiryDate()).thenReturn(0l);
 
-        messageScheduler.scheduleMessage(mockMessageContainer, 0, mockFailureAction);
+        messageScheduler.scheduleMessage(mockMessageContainer, 0);
 
         // There's no way to hook into some MessageScheduler method and to wait
         // until the response has been processed. Only if a failure is expected,
@@ -176,7 +176,6 @@ public class MessageSchedulerTest {
         }
 
         Assert.assertTrue(serverResponded);
-        Mockito.verifyZeroInteractions(mockFailureAction);
     }
 
     @After

@@ -1,5 +1,7 @@
 package io.joynr.messaging;
 
+import io.joynr.exceptions.JoynrDelayMessageException;
+
 /*
  * #%L
  * %%
@@ -22,7 +24,10 @@ package io.joynr.messaging;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.http.HttpMessageSender;
+import joynr.system.RoutingTypes.Address;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -43,14 +48,18 @@ import com.google.inject.name.Named;
 public class MessageSchedulerImpl implements MessageScheduler {
     private static final long TERMINATION_TIMEOUT = 5000;
     private static final Logger logger = LoggerFactory.getLogger(MessageSchedulerImpl.class);
+    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
     private final HttpMessageSender httpMessageSender;
     private ScheduledExecutorService scheduler;
+    private MessagingSettings settings;
 
     @Inject
     public MessageSchedulerImpl(@Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                                HttpMessageSender httpMessageSender) {
+                                HttpMessageSender httpMessageSender,
+                                MessagingSettings settings) {
         this.httpMessageSender = httpMessageSender;
         this.scheduler = scheduler;
+        this.settings = settings;
     }
 
     /* (non-Javadoc)
@@ -58,8 +67,7 @@ public class MessageSchedulerImpl implements MessageScheduler {
      */
     @Override
     public synchronized void scheduleMessage(final MessageContainer messageContainer,
-                                             long delayMs,
-                                             final FailureAction failureAction) {
+                                             long delayMs) {
         logger.trace("scheduleMessage messageId: {} address {}",
                      messageContainer.getMessageId(),
                      messageContainer.getAddress());
@@ -68,9 +76,10 @@ public class MessageSchedulerImpl implements MessageScheduler {
             if (scheduler.isShutdown()) {
                 JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("MessageScheduler is shutting down already. Unable to send message [messageId: "
                         + messageContainer.getMessageId() + "].");
-                failureAction.execute(joynrShutdownEx);
                 throw joynrShutdownEx;
             }
+
+            final FailureAction failureAction = createFailureAction(messageContainer);
 
             try {
                 scheduler.schedule(new Runnable() {
@@ -84,6 +93,53 @@ public class MessageSchedulerImpl implements MessageScheduler {
                 throw new JoynrSendBufferFullException(e);
             }
         }
+    }
+
+    private FailureAction createFailureAction(final MessageContainer messageContainer) {
+        final FailureAction failureAction = new FailureAction() {
+            final String messageId = messageContainer.getMessageId();
+            final Address address = messageContainer.getAddress();
+            final long sendMsgRetryIntervalMs = settings.getSendMsgRetryIntervalMs();
+
+            @Override
+            public void execute(Throwable error) {
+                if (error instanceof JoynrShutdownException) {
+                    logger.warn("{}", error.getMessage());
+                    return;
+                }
+                logger.error("!!!! ERROR SENDING: messageId: {} to Address: {}. Error: {}", new String[]{ messageId,
+                        address.toString(), error.getMessage() });
+
+                messageContainer.incrementRetries();
+                long delay_ms;
+                if (error instanceof JoynrDelayMessageException) {
+                    delay_ms = ((JoynrDelayMessageException) error).getDelayMs();
+                } else {
+                    delay_ms = sendMsgRetryIntervalMs;
+                    delay_ms += exponentialBackoff(delay_ms, messageContainer.getRetries());
+                }
+
+                try {
+                    logger.error("Rescheduling messageId: {} with delay " + delay_ms
+                                         + " ms, new TTL expiration date: {}",
+                                 messageId,
+                                 DateFormatter.format(messageContainer.getExpiryDate()));
+                    scheduleMessage(messageContainer, delay_ms);
+                    return;
+                } catch (JoynrSendBufferFullException e) {
+                    try {
+                        logger.error("Rescheduling message: {} delayed {} ms because send buffer is full",
+                                     delay_ms,
+                                     messageId);
+                        Thread.sleep(delay_ms);
+                        this.execute(e);
+                    } catch (InterruptedException e1) {
+                        return;
+                    }
+                }
+            }
+        };
+        return failureAction;
     }
 
     /* (non-Javadoc)
@@ -101,4 +157,10 @@ public class MessageSchedulerImpl implements MessageScheduler {
         scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
+    private long exponentialBackoff(long delay_ms, int retries) {
+        logger.debug("TRIES: " + retries);
+        long millis = delay_ms + (long) ((2 ^ (retries)) * delay_ms * Math.random());
+        logger.debug("MILLIS: " + millis);
+        return millis;
+    }
 }

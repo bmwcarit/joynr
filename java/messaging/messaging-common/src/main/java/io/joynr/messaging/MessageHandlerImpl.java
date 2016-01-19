@@ -23,15 +23,11 @@ import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
 import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
 
-import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.exceptions.JoynrShutdownException;
 
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
@@ -51,10 +47,8 @@ import com.google.inject.name.Named;
 
 public class MessageHandlerImpl implements MessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(MessageHandlerImpl.class);
-    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
     public static final int THREADPOOLSIZE = 4;
 
-    private final MessagingSettings settings;
     private MessageScheduler sendRequestScheduler;
 
     private final String ownChannelId;
@@ -64,11 +58,9 @@ public class MessageHandlerImpl implements MessageHandler {
     @Inject
     public MessageHandlerImpl(MessageScheduler sendRequestScheduler,
                               @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId,
-                              MessagingSettings settings,
                               ObjectMapper objectMapper) {
         this.sendRequestScheduler = sendRequestScheduler;
         this.ownChannelId = ownChannelId;
-        this.settings = settings;
         this.objectMapper = objectMapper;
     }
 
@@ -103,52 +95,13 @@ public class MessageHandlerImpl implements MessageHandler {
                                                                        ttlExpirationDate_ms,
                                                                        objectMapper);
 
-        final FailureAction failureAction = new FailureAction() {
-            @Override
-            public void execute(Throwable error) {
-                if (error instanceof JoynrShutdownException) {
-                    logger.warn("{}", error.getMessage());
-                    return;
-                }
-                logger.error("!!!! ERROR SENDING: messageId: {} to Address: {}. Error: {}", new String[]{
-                        message.getId(), address.toString(), error.getMessage() });
-
-                messageContainer.incrementRetries();
-                long delay_ms;
-                if (error instanceof JoynrDelayMessageException) {
-                    delay_ms = ((JoynrDelayMessageException) error).getDelayMs();
-                } else {
-                    delay_ms = settings.getSendMsgRetryIntervalMs();
-                    delay_ms += exponentialBackoff(delay_ms, messageContainer.getRetries());
-                }
-
-                try {
-                    logger.error("Rescheduling messageId: {} with delay " + delay_ms
-                                         + " ms, new TTL expiration date: {}",
-                                 messageContainer.getMessageId(),
-                                 DateFormatter.format(messageContainer.getExpiryDate()));
-                    sendRequestScheduler.scheduleMessage(messageContainer, delay_ms, this);
-                    return;
-                } catch (JoynrSendBufferFullException e) {
-                    try {
-                        logger.error("Rescheduling message: {} delayed {} ms because send buffer is full",
-                                     delay_ms,
-                                     messageContainer.getMessageId());
-                        Thread.sleep(delay_ms);
-                        this.execute(e);
-                    } catch (InterruptedException e1) {
-                        return;
-                    }
-                }
-            }
-        };
         // try to schedule a new message once, if the buffer is full, an
         // exception is thrown
 
         logger.trace("SEND messageId: {} from: {} to: {} scheduleRequest", new Object[]{ message.getId(),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID) });
-        sendRequestScheduler.scheduleMessage(messageContainer, 0, failureAction);
+        sendRequestScheduler.scheduleMessage(messageContainer, 0);
     }
 
     /* (non-Javadoc)
@@ -170,12 +123,5 @@ public class MessageHandlerImpl implements MessageHandler {
     public String getReplyToChannelId() {
         // TODO replace ownChannelId with the reply to channelId to support multiple channels
         return ownChannelId;
-    }
-
-    private long exponentialBackoff(long delay_ms, int retries) {
-        logger.debug("TRIES: " + retries);
-        long millis = delay_ms + (long) ((2 ^ (retries)) * delay_ms * Math.random());
-        logger.debug("MILLIS: " + millis);
-        return millis;
     }
 }
