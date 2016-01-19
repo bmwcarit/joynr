@@ -35,7 +35,4 @@ public interface MessageHandler {
                                                            JsonMappingException, IOException;
 
     void shutdown();
-
-    String getReplyToChannelId();
-
 }

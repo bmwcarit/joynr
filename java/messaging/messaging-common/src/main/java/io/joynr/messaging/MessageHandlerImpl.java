@@ -19,10 +19,6 @@ package io.joynr.messaging;
  * #L%
  */
 
-import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
-import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
-import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
-
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 
@@ -49,13 +45,10 @@ public class MessageHandlerImpl implements MessageHandler {
 
     private MessageScheduler sendRequestScheduler;
 
-    private final String ownChannelId;
-
     @Inject
     public MessageHandlerImpl(MessageScheduler sendRequestScheduler,
                               @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId) {
         this.sendRequestScheduler = sendRequestScheduler;
-        this.ownChannelId = ownChannelId;
     }
 
     /* (non-Javadoc)
@@ -66,12 +59,6 @@ public class MessageHandlerImpl implements MessageHandler {
                                                                               JoynrMessageNotSentException,
                                                                               JsonGenerationException,
                                                                               JsonMappingException, IOException {
-
-        if (message.getType().equals(MESSAGE_TYPE_REQUEST)
-                || message.getType().equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
-                || message.getType().equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)) {
-            message.setReplyTo(getReplyToChannelId());
-        }
 
         sendRequestScheduler.scheduleMessage(address, message);
     }
@@ -86,14 +73,5 @@ public class MessageHandlerImpl implements MessageHandler {
         } catch (Throwable e) {
             logger.error("Exception caught while shutting down");
         }
-    }
-
-    /* (non-Javadoc)
-     * @see io.joynr.messaging.MessageHandler#getReplyToChannelId()
-     */
-    @Override
-    public String getReplyToChannelId() {
-        // TODO replace ownChannelId with the reply to channelId to support multiple channels
-        return ownChannelId;
     }
 }

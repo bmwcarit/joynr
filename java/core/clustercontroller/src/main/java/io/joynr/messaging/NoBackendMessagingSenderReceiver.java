@@ -41,11 +41,6 @@ public class NoBackendMessagingSenderReceiver implements MessageReceiver, Messag
     }
 
     @Override
-    public String getReplyToChannelId() {
-        return "null";
-    }
-
-    @Override
     public void sendMessage(Address address, JoynrMessage message) {
         throw new UnsupportedOperationException("The NoBackendMessagingSenderReceiver cannot send messages");
     }
