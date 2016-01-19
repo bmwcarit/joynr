@@ -73,12 +73,6 @@ public class MessageHandlerImpl implements MessageHandler {
             message.setReplyTo(getReplyToChannelId());
         }
 
-        // try to schedule a new message once, if the buffer is full, an
-        // exception is thrown
-
-        logger.trace("SEND messageId: {} from: {} to: {} scheduleRequest", new Object[]{ message.getId(),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID) });
         sendRequestScheduler.scheduleMessage(address, message);
     }
 
