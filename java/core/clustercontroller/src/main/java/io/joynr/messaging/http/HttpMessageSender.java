@@ -23,7 +23,6 @@ import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessageContainer;
 import io.joynr.messaging.MessageReceiver;
@@ -104,14 +103,6 @@ public class HttpMessageSender implements IMessageSender {
         HttpContext context = new BasicHttpContext();
 
         String messageId = messageContainer.getMessageId();
-
-        if (messageContainer.isExpired()) {
-            logger.error("SEND executionQueue.run channelId: {}, messageId: {} TTL expired: ",
-                         messageId,
-                         messageContainer.getExpiryDate());
-            failureAction.execute(new JoynrTimeoutException(messageContainer.getExpiryDate()));
-            return;
-        }
 
         // execute http command to send
         CloseableHttpResponse response = null;

@@ -102,6 +102,13 @@ public class MessageSchedulerImpl implements MessageScheduler {
                 throw joynrShutdownEx;
             }
 
+            if (messageContainer.isExpired()) {
+                logger.error("SEND failed for messageId: {}, expiryDate: {} TTL expired.",
+                             messageContainer.getMessageId(),
+                             messageContainer.getExpiryDate());
+                return;
+            }
+
             final FailureAction failureAction = createFailureAction(messageContainer);
 
             try {
@@ -165,7 +172,9 @@ public class MessageSchedulerImpl implements MessageScheduler {
         return failureAction;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see io.joynr.messaging.MessageScheduler#shutdown()
      */
     @Override
