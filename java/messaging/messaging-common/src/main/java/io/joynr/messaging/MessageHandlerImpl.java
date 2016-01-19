@@ -27,7 +27,6 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
@@ -37,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -53,15 +51,11 @@ public class MessageHandlerImpl implements MessageHandler {
 
     private final String ownChannelId;
 
-    private final ObjectMapper objectMapper;
-
     @Inject
     public MessageHandlerImpl(MessageScheduler sendRequestScheduler,
-                              @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId,
-                              ObjectMapper objectMapper) {
+                              @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId) {
         this.sendRequestScheduler = sendRequestScheduler;
         this.ownChannelId = ownChannelId;
-        this.objectMapper = objectMapper;
     }
 
     /* (non-Javadoc)
@@ -79,29 +73,13 @@ public class MessageHandlerImpl implements MessageHandler {
             message.setReplyTo(getReplyToChannelId());
         }
 
-        long currentTimeMillis = System.currentTimeMillis();
-        long ttlExpirationDate_ms = message.getExpiryDate();
-
-        if (ttlExpirationDate_ms <= currentTimeMillis) {
-            String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} abs_ttl: {1}",
-                                                       currentTimeMillis,
-                                                       ttlExpirationDate_ms);
-            logger.error(errorMessage);
-            throw new JoynrMessageNotSentException(errorMessage);
-        }
-
-        final MessageContainer messageContainer = new MessageContainer(address,
-                                                                       message,
-                                                                       ttlExpirationDate_ms,
-                                                                       objectMapper);
-
         // try to schedule a new message once, if the buffer is full, an
         // exception is thrown
 
         logger.trace("SEND messageId: {} from: {} to: {} scheduleRequest", new Object[]{ message.getId(),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID) });
-        sendRequestScheduler.scheduleMessage(messageContainer, 0);
+        sendRequestScheduler.scheduleMessage(address, message);
     }
 
     /* (non-Javadoc)

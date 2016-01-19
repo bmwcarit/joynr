@@ -23,6 +23,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.inject.Guice;
 import com.google.inject.Singleton;
+
+import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 
@@ -30,6 +32,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
 
+import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.ChannelUrlInformation;
 
@@ -82,6 +85,8 @@ public class MessageSchedulerTest {
     @Mock
     private MessageReceiver mockMessageReceiver;
 
+    private JoynrMessage joynrMessage;
+
     private boolean serverResponded = false;
 
     @Before
@@ -131,6 +136,8 @@ public class MessageSchedulerTest {
                                                      }
                                                  });
         messageScheduler = injector.getInstance(MessageScheduler.class);
+        joynrMessage = new JoynrMessage();
+        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(10000));
     }
 
     @Test
@@ -153,15 +160,7 @@ public class MessageSchedulerTest {
         String[] urls = { bounceProxyUrl + "channels/" + channelId + "/" };
         channelUrlInfo.setUrls(urls);
         Mockito.when(mockChannelUrlDir.getUrlsForChannel(channelId)).thenReturn(channelUrlInfo);
-
-        Mockito.when(mockMessageContainer.getMessageId()).thenReturn(sendMessageId);
-        Mockito.when(mockMessageContainer.getAddress()).thenReturn(channelAddress);
-        Mockito.when(mockMessageContainer.isExpired()).thenReturn(false);
-        Mockito.when(mockMessageContainer.getSerializedMessage())
-               .thenReturn("any message, doesn't matter here if it's JSON or not");
-        Mockito.when(mockMessageContainer.getExpiryDate()).thenReturn(0l);
-
-        messageScheduler.scheduleMessage(mockMessageContainer, 0);
+        messageScheduler.scheduleMessage(channelAddress, joynrMessage);
 
         // There's no way to hook into some MessageScheduler method and to wait
         // until the response has been processed. Only if a failure is expected,

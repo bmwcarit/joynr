@@ -1,5 +1,8 @@
 package io.joynr.messaging;
 
+import joynr.JoynrMessage;
+import joynr.system.RoutingTypes.Address;
+
 /*
  * #%L
  * %%
@@ -23,7 +26,7 @@ public interface MessageScheduler {
 
     String SCHEDULEDTHREADPOOL = "io.joynr.messaging.messagescheduler.scheduledthreadpool";
 
-    void scheduleMessage(MessageContainer messageContainer, long delay_ms);
+    void scheduleMessage(final Address address, JoynrMessage joynrMessage);
 
     /**
      * Stops the scheduler thread pool and the execution thread.
