@@ -20,6 +20,9 @@ package io.joynr.messaging.inprocess;
  */
 
 import io.joynr.messaging.IMessagingSkeleton;
+import joynr.JoynrMessage;
 
 public interface InProcessMessagingSkeleton extends IMessagingSkeleton {
+
+    void transmit(JoynrMessage message);
 }

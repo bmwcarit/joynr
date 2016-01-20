@@ -23,6 +23,8 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
@@ -126,6 +128,14 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
                                 message.getHeader().toString() });
             logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
+
+            // short circuit for inprocess
+            if (address instanceof InProcessAddress) {
+                InProcessMessagingSkeleton skeleton = ((InProcessAddress) address).getSkeleton();
+                skeleton.transmit(message);
+                return;
+            }
+
             IMessaging messagingStub = messagingStubFactory.create(address);
             messagingStub.transmit(message, new FailureAction() {
 

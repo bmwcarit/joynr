@@ -34,10 +34,15 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         try {
-            dispatcher.messageArrived(message);
+            transmit(message);
         } catch (Exception exception) {
             failureAction.execute(exception);
         }
+    }
+
+    @Override
+    public void transmit(JoynrMessage message) {
+        dispatcher.messageArrived(message);
     }
 
     @Override
