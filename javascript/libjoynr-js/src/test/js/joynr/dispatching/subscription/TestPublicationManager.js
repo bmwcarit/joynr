@@ -512,7 +512,7 @@ joynrTestRequire(
                                     });
                                 });
 
-                        it("removes an interval subscription after endDate", function() {
+                        it("removes an interval attribute subscription after endDate", function() {
 
                             runs(function() {
                                 publicationManager.addPublicationProvider(providerId, provider);
@@ -557,42 +557,52 @@ joynrTestRequire(
                             });
                         });
 
-                        it("removes an interval subscription after subscription stop", function() {
-                            runs(function() {
-                                publicationManager.addPublicationProvider(providerId, provider);
-                                publicationManager.handleSubscriptionRequest(
-                                        proxyId,
-                                        providerId,
-                                        intervalSubscriptionRequest);
+                        it(
+                                "removes an interval attribute subscription after subscription stop",
+                                function() {
+                                    runs(function() {
+                                        publicationManager.addPublicationProvider(
+                                                providerId,
+                                                provider);
+                                        publicationManager.handleSubscriptionRequest(
+                                                proxyId,
+                                                providerId,
+                                                intervalSubscriptionRequest);
 
-                                // reset first publication
-                                testAttribute.get.reset();
-                                dispatcherSpy.sendPublication.reset();
+                                        // reset first publication
+                                        testAttribute.get.reset();
+                                        dispatcherSpy.sendPublication.reset();
 
-                                increaseFakeTime(maxInterval + asyncGetterCallDelay);
-                            });
+                                        increaseFakeTime(maxInterval + asyncGetterCallDelay);
+                                    });
 
-                            waitsFor(function() {
-                                return dispatcherSpy.sendPublication.callCount > 0;
-                            }, "timeout dispatcherSpy.sendPublication", asyncGetterCallDelay);
+                                    waitsFor(
+                                            function() {
+                                                return dispatcherSpy.sendPublication.callCount > 0;
+                                            },
+                                            "timeout dispatcherSpy.sendPublication",
+                                            asyncGetterCallDelay);
 
-                            runs(function() {
-                                expect(testAttribute.get).toHaveBeenCalled();
-                                expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
+                                    runs(function() {
+                                        expect(testAttribute.get).toHaveBeenCalled();
+                                        expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
 
-                                // after subscription stop, the methods should not have been called
-                                // again (ie subscription terminated)
-                                publicationManager.handleSubscriptionStop(new SubscriptionStop({
-                                    subscriptionId : intervalSubscriptionRequest.subscriptionId
-                                }));
-                                testAttribute.get.reset();
-                                dispatcherSpy.sendPublication.reset();
+                                        // after subscription stop, the methods should not have been called
+                                        // again (ie subscription terminated)
+                                        publicationManager
+                                                .handleSubscriptionStop(new SubscriptionStop(
+                                                        {
+                                                            subscriptionId : intervalSubscriptionRequest.subscriptionId
+                                                        }));
+                                        testAttribute.get.reset();
+                                        dispatcherSpy.sendPublication.reset();
 
-                                increaseFakeTime(maxInterval + 1);
-                                expect(testAttribute.get).not.toHaveBeenCalled();
-                                expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-                            });
-                        });
+                                        increaseFakeTime(maxInterval + 1);
+                                        expect(testAttribute.get).not.toHaveBeenCalled();
+                                        expect(dispatcherSpy.sendPublication).not
+                                                .toHaveBeenCalled();
+                                    });
+                                });
 
                         it("creates a working onChange subscription", function() {
                             publicationManager.addPublicationProvider(providerId, provider);
@@ -646,7 +656,7 @@ joynrTestRequire(
                                     });
                                 });
 
-                        it("removes an onChange subscription after endDate", function() {
+                        it("removes an onChange attribute subscription after endDate", function() {
 
                             runs(function() {
                                 publicationManager.addPublicationProvider(providerId, provider);
@@ -690,51 +700,58 @@ joynrTestRequire(
                             });
                         });
 
-                        it("removes an onChange subscription after subscription stop", function() {
+                        it(
+                                "removes an onChange attribute subscription after subscription stop",
+                                function() {
 
-                            runs(function() {
-                                publicationManager.addPublicationProvider(providerId, provider);
-                                publicationManager.handleSubscriptionRequest(
-                                        proxyId,
-                                        providerId,
-                                        onChangeSubscriptionRequest);
-                                increaseFakeTime(1);
-                            });
+                                    runs(function() {
+                                        publicationManager.addPublicationProvider(
+                                                providerId,
+                                                provider);
+                                        publicationManager.handleSubscriptionRequest(
+                                                proxyId,
+                                                providerId,
+                                                onChangeSubscriptionRequest);
+                                        increaseFakeTime(1);
+                                    });
 
-                            waitsFor(function() {
-                                return dispatcherSpy.sendPublication.callCount > 0;
-                            }, "timeout dispatcherSpy.sendPublication", 10);
+                                    waitsFor(function() {
+                                        return dispatcherSpy.sendPublication.callCount > 0;
+                                    }, "timeout dispatcherSpy.sendPublication", 10);
 
-                            runs(function() {
-                                // reset first publication
-                                testAttribute.get.reset();
-                                dispatcherSpy.sendPublication.reset();
+                                    runs(function() {
+                                        // reset first publication
+                                        testAttribute.get.reset();
+                                        dispatcherSpy.sendPublication.reset();
 
-                                increaseFakeTime(50);
-                                testAttribute.valueChanged(value);
-                            });
+                                        increaseFakeTime(50);
+                                        testAttribute.valueChanged(value);
+                                    });
 
-                            waitsFor(function() {
-                                return dispatcherSpy.sendPublication.callCount > 0;
-                            }, "timeout dispatcherSpy.sendPublication", 10);
+                                    waitsFor(function() {
+                                        return dispatcherSpy.sendPublication.callCount > 0;
+                                    }, "timeout dispatcherSpy.sendPublication", 10);
 
-                            runs(function() {
-                                expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
+                                    runs(function() {
+                                        expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
 
-                                // after subscription stop, the methods should not have been called
-                                // again (ie subscription terminated)
-                                publicationManager.handleSubscriptionStop(new SubscriptionStop({
-                                    subscriptionId : onChangeSubscriptionRequest.subscriptionId
-                                }));
-                                dispatcherSpy.sendPublication.reset();
+                                        // after subscription stop, the methods should not have been called
+                                        // again (ie subscription terminated)
+                                        publicationManager
+                                                .handleSubscriptionStop(new SubscriptionStop(
+                                                        {
+                                                            subscriptionId : onChangeSubscriptionRequest.subscriptionId
+                                                        }));
+                                        dispatcherSpy.sendPublication.reset();
 
-                                testAttribute.valueChanged(value);
-                                increaseFakeTime(1);
-                                setTimeout(function() {
-                                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-                                }, asyncGetterCallDelay);
-                            });
-                        });
+                                        testAttribute.valueChanged(value);
+                                        increaseFakeTime(1);
+                                        setTimeout(function() {
+                                            expect(dispatcherSpy.sendPublication).not
+                                                    .toHaveBeenCalled();
+                                        }, asyncGetterCallDelay);
+                                    });
+                                });
 
                         it(
                                 "creates a mixed subscription and does not send two publications within mininterval in case async getter calls and valueChanged occur at the same time",
@@ -1334,7 +1351,7 @@ joynrTestRequire(
                                     });
                                 });
 
-                        it("removes a mixed subscription after endDate", function() {
+                        it("removes a mixed attribute subscription after endDate", function() {
                             runs(function() {
                                 publicationManager.addPublicationProvider(providerId, provider);
                                 publicationManager.handleSubscriptionRequest(
@@ -1366,48 +1383,55 @@ joynrTestRequire(
                             });
                         });
 
-                        it("removes a mixed subscription after subscription stop", function() {
-                            runs(function() {
-                                publicationManager.addPublicationProvider(providerId, provider);
-                                publicationManager.handleSubscriptionRequest(
-                                        proxyId,
-                                        providerId,
-                                        mixedSubscriptionRequest);
-                                increaseFakeTime(1);
-                            });
+                        it(
+                                "removes a mixed attribute subscription after subscription stop",
+                                function() {
+                                    runs(function() {
+                                        publicationManager.addPublicationProvider(
+                                                providerId,
+                                                provider);
+                                        publicationManager.handleSubscriptionRequest(
+                                                proxyId,
+                                                providerId,
+                                                mixedSubscriptionRequest);
+                                        increaseFakeTime(1);
+                                    });
 
-                            waitsFor(function() {
-                                return dispatcherSpy.sendPublication.callCount > 0;
-                            }, "dispatcherSpy.sendPublication", asyncGetterCallDelay);
+                                    waitsFor(function() {
+                                        return dispatcherSpy.sendPublication.callCount > 0;
+                                    }, "dispatcherSpy.sendPublication", asyncGetterCallDelay);
 
-                            runs(function() {
-                                // reset first publication
-                                testAttribute.get.reset();
-                                dispatcherSpy.sendPublication.reset();
+                                    runs(function() {
+                                        // reset first publication
+                                        testAttribute.get.reset();
+                                        dispatcherSpy.sendPublication.reset();
 
-                                testAttribute.valueChanged(value); // do change
-                                increaseFakeTime(maxInterval); // increase interval
+                                        testAttribute.valueChanged(value); // do change
+                                        increaseFakeTime(maxInterval); // increase interval
 
-                                // after subscription stop, the methods should not have been called
-                                // again (ie subscription
-                                // terminated)
-                                publicationManager.handleSubscriptionStop(new SubscriptionStop({
-                                    subscriptionId : mixedSubscriptionRequest.subscriptionId
-                                }));
-                                testAttribute.get.reset();
-                                dispatcherSpy.sendPublication.reset();
+                                        // after subscription stop, the methods should not have been called
+                                        // again (ie subscription
+                                        // terminated)
+                                        publicationManager
+                                                .handleSubscriptionStop(new SubscriptionStop(
+                                                        {
+                                                            subscriptionId : mixedSubscriptionRequest.subscriptionId
+                                                        }));
+                                        testAttribute.get.reset();
+                                        dispatcherSpy.sendPublication.reset();
 
-                                increaseFakeTime(maxInterval); // increase interval
-                                testAttribute.valueChanged(value); // do change
-                                increaseFakeTime(maxInterval); // increase interval
+                                        increaseFakeTime(maxInterval); // increase interval
+                                        testAttribute.valueChanged(value); // do change
+                                        increaseFakeTime(maxInterval); // increase interval
 
-                                setTimeout(function() {
-                                    expect(testAttribute.get).not.toHaveBeenCalled();
-                                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-                                    stopSubscription(mixedSubscriptionRequest);
-                                }, asyncGetterCallDelay);
-                            });
-                        });
+                                        setTimeout(function() {
+                                            expect(testAttribute.get).not.toHaveBeenCalled();
+                                            expect(dispatcherSpy.sendPublication).not
+                                                    .toHaveBeenCalled();
+                                            stopSubscription(mixedSubscriptionRequest);
+                                        }, asyncGetterCallDelay);
+                                    });
+                                });
 
                         it(
                                 "removes publication provider",
