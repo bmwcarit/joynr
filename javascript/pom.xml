@@ -17,7 +17,6 @@
 		<module>js-dependencies</module>
 		<module>inter-tab</module>
 		<module>libjoynr-js</module>
-		<module>apps</module>
 	</modules>
 
 	<build>
