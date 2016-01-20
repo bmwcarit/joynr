@@ -24,6 +24,7 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
+import org.franca.core.franca.FAttribute
 
 class CppInterfaceUtil extends InterfaceUtil {
 	@Inject extension NamingUtil
@@ -56,10 +57,20 @@ class CppInterfaceUtil extends InterfaceUtil {
 	* failed with an unexpected modeled exception. It must expect an Error enum as modeled in Franca.
 '''
 
+	def produceSyncGetterSignature(FAttribute attribute, String className)
+'''
+	«val returnType = attribute.typeName»
+	«val attributeName = attribute.joynrName»
+	void «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»(«returnType»& «attributeName»)
+'''
+
+    def produceSyncGetterSignature(FAttribute attribute) {
+    	return produceSyncGetterSignature(attribute, null);
+    }
+
 	def produceSyncGetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
-		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
@@ -68,17 +79,30 @@ class CppInterfaceUtil extends InterfaceUtil {
 		* @param result The result that will be returned to the caller.
 		* @throws JoynrException if the request is not successful
 		*/
-		«IF pure»virtual «ENDIF»void get«attributeName.toFirstUpper»(
-				«returnType»& result
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceSyncGetterSignature(attribute)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 
 	«ENDFOR»
 '''
 
+	def produceAsyncGetterSignature(FAttribute attribute, String className)
+'''
+	«val returnType = attribute.typeName»
+	«val attributeName = attribute.joynrName»
+	«val defaultArg = if(className == null) " = nullptr" else ""»
+	std::shared_ptr<joynr::Future<«returnType»> > «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»Async(
+				std::function<void(const «returnType»& «attributeName»)> onSuccess«defaultArg»,
+				std::function<void(const joynr::exceptions::JoynrException& error)> onError«defaultArg»)
+'''
+
+    def produceAsyncGetterSignature(FAttribute attribute) {
+    	return produceAsyncGetterSignature(attribute, null);
+    }
+
 	def produceAsyncGetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
-		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
@@ -88,59 +112,91 @@ class CppInterfaceUtil extends InterfaceUtil {
 		«printOnRuntimeErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»Async(
-				std::function<void(const «returnType»& «attributeName.toFirstLower»)> onSuccess = nullptr,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceAsyncGetterSignature(attribute)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
+
+
+	def produceSyncSetterSignature(FAttribute attribute, String className)
+'''
+	«val returnType = attribute.typeName»
+	«val attributeName = attribute.joynrName»
+	void «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»(const «returnType»& «attributeName»)
+'''
+
+    def produceSyncSetterSignature(FAttribute attribute) {
+    	return produceSyncSetterSignature(attribute, null);
+    }
 
 	def produceSyncSetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
-		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
 		* @brief Synchronous setter for the «attributeName» attribute.
 		*
-		* @param «attributeName.toFirstLower» The value to set.
+		* @param «attributeName» The value to set.
 		* @throws JoynrException if the request is not successful
 		*/
-		«IF pure»virtual «ENDIF»void set«attributeName.toFirstUpper»(
-				const «returnType»& «attributeName.toFirstLower»
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceSyncSetterSignature(attribute)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
+
+	def produceAsyncSetterSignature(FAttribute attribute, String className)
+'''
+	«val returnType = attribute.typeName»
+	«val attributeName = attribute.joynrName»
+	«val defaultArg = if(className == null) " = nullptr" else ""»
+	std::shared_ptr<joynr::Future<void> > «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»Async(
+				«returnType» «attributeName»,
+				std::function<void(void)> onSuccess«defaultArg»,
+				std::function<void(const joynr::exceptions::JoynrException& error)> onError«defaultArg»)
+'''
+
+    def produceAsyncSetterSignature(FAttribute attribute) {
+    	return produceAsyncSetterSignature(attribute, null);
+    }
 
 	def produceAsyncSetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
-		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
 		* @brief Asynchronous setter for the «attributeName» attribute.
 		*
-		* @param «attributeName.toFirstLower» The value to set.
+		* @param «attributeName» The value to set.
 		«printOnSuccessFctParamDefinition»
 		«printOnRuntimeErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<void> > set«attributeName.toFirstUpper»Async(
-				«returnType» «attributeName.toFirstLower»,
-				std::function<void(void)> onSuccess = nullptr,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceAsyncSetterSignature(attribute)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
+
+
+	def produceSyncMethodSignature(FMethod method, String className)
+'''
+	«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
+	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
+	void «IF className != null»«className»::«ENDIF»«method.joynrName»(
+	«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»)
+'''
+
+    def produceSyncMethodSignature(FMethod method) {
+    	return produceSyncMethodSignature(method, null);
+    }
 
 	def produceSyncMethodDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
-		«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
-
 		/**
 		* @brief Synchronous operation «method.joynrName».
 		*
@@ -153,21 +209,11 @@ class CppInterfaceUtil extends InterfaceUtil {
 		«ENDFOR»
 		* @throws JoynrException if the request is not successful
 		*/
-		«IF pure»virtual «ENDIF»void «method.joynrName»(
-				«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceSyncMethodSignature(method)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
-
-	def produceAsyncReturnValue(FInterface serviceInterface, FMethod method) {
-		var outputParameters = method.commaSeparatedOutputParameterTypes;
-		return "std::shared_ptr<joynr::Future<" + outputParameters + ">>";
-	}
-
-
-	def produceAsyncMethodName(FMethod method) {
-		return method.joynrName + "Async"
-	}
 
 	def getMethodErrorEnum(FInterface serviceInterface, FMethod method) {
     	val methodToErrorEnumName = serviceInterface.methodToErrorEnumName;
@@ -180,17 +226,26 @@ class CppInterfaceUtil extends InterfaceUtil {
     	}
     }
 
-    def produceAsyncMethodParameters(FInterface serviceInterface, FMethod method, boolean useDefaultParam)
+	def produceAsyncMethodSignature(FInterface serviceInterface, FMethod method, String className)
 '''
+	«val outputParameters = method.commaSeparatedOutputParameterTypes»
 	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
-	«val defaultParam = if(useDefaultParam) " = nullptr" else ""»
-				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
-				std::function<void(«outputTypedParamList»)> onSuccess«defaultParam»,
+	«val returnValue = "std::shared_ptr<joynr::Future<" + outputParameters + ">>"»
+	«val defaultArg = if(className == null) " = nullptr" else ""»
+	«returnValue» «IF className != null»«className»::«ENDIF» «method.joynrName»Async(
+	«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
+				std::function<void(«outputTypedParamList»)> onSuccess«defaultArg»,
 				«IF method.hasErrorEnum»
-					std::function<void (const «getMethodErrorEnum(serviceInterface, method)»& errorEnum)> onApplicationError«defaultParam»,
+					std::function<void (const «getMethodErrorEnum(serviceInterface, method)»& errorEnum)> onApplicationError«defaultArg»,
 				«ENDIF»
-				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError«defaultParam»
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError«defaultArg»
+	)
 '''
+
+    def produceAsyncMethodSignature(FInterface serviceInterface, FMethod method) {
+    	return produceAsyncMethodSignature(serviceInterface, method, null);
+    }
+
 
 	def produceAsyncMethodDeclarations(FInterface serviceInterface, boolean pure, boolean useDefaultParam)
 '''
@@ -206,18 +261,9 @@ class CppInterfaceUtil extends InterfaceUtil {
 		«printFutureReturnDefinition»
 		*/
 		«IF pure»virtual «ENDIF»
-		«produceAsyncReturnValue(serviceInterface, method)»
-		«produceAsyncMethodName(method)»
-		(«produceAsyncMethodParameters(serviceInterface, method, useDefaultParam)»)
+		«produceAsyncMethodSignature(serviceInterface, method)»
 		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
-'''
-
-   def produceAsyncMethodBegin(FInterface serviceInterface, FMethod method, String className)
-'''
-	«produceAsyncReturnValue(serviceInterface, method)»
-	«className»::«produceAsyncMethodName(method)»
-	(«produceAsyncMethodParameters(serviceInterface, method, false)»)
 '''
 
 	def produceApplicationRuntimeErrorSplitForOnErrorWrapper(FInterface serviceInterface, FMethod method)

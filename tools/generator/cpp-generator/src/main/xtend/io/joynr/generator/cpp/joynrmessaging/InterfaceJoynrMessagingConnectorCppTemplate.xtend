@@ -404,7 +404,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	}
 
 	«val className = interfaceName + "JoynrMessagingConnector"»
-	«produceAsyncMethodBegin(serviceInterface, method, className)»
+	«produceAsyncMethodSignature(serviceInterface, method, className)»
 	{
 		«produceParameterSetters(method)»
 

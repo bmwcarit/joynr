@@ -345,7 +345,7 @@ void «interfaceName»InProcessConnector::«methodname»(
 }
 
 «val className = interfaceName + "InProcessConnector"»
-«produceAsyncMethodBegin(serviceInterface, method, className)»
+«produceAsyncMethodSignature(serviceInterface, method, className)»
 {
 	assert(address);
 	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
