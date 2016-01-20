@@ -100,13 +100,23 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         @ONLY
     )
     configure_file(
-        "resources/SystemIntegrationTest1.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest1.settings"
+        "resources/HttpSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpSystemIntegrationTest1.settings"
         @ONLY
     )
     configure_file(
-        "resources/SystemIntegrationTest2.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest2.settings"
+        "resources/HttpSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
         @ONLY
     )
     configure_file(
@@ -140,13 +150,23 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         @ONLY
     )
     configure_file(
-        "resources/SystemIntegrationTest1.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest1.settings"
+        "resources/HttpSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/HttpSystemIntegrationTest1.settings"
         @ONLY
     )
     configure_file(
-        "resources/SystemIntegrationTest2.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest2.settings"
+        "resources/HttpSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/HttpSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
         @ONLY
     )
     configure_file(
@@ -181,13 +201,23 @@ else()
         @ONLY
     )
     configure_file(
-        "resources/SystemIntegrationTest1.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest1.settings"
+        "resources/HttpSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/HttpSystemIntegrationTest1.settings"
         @ONLY
     )
     configure_file(
-        "resources/SystemIntegrationTest2.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest2.settings"
+        "resources/HttpSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/HttpSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
         @ONLY
     )
     configure_file(

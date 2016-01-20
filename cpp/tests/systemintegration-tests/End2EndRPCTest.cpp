@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ using namespace ::testing;
 
 using namespace joynr;
 
-class End2EndRPCTest : public Test{
+class End2EndRPCTest : public TestWithParam< std::string >{
 public:
     std::string domain;
     JoynrClusterControllerRuntime* runtime;
@@ -50,7 +50,7 @@ public:
     {
         runtime = new JoynrClusterControllerRuntime(
                     nullptr,
-                    new Settings("test-resources/integrationtest.settings")
+                    new Settings(GetParam())
         );
         domain = "cppEnd2EndRPCTest_Domain_" + Util::createUuid();
     }
@@ -78,7 +78,7 @@ private:
 };
 
 // leadsm to assert failure in GpsInProcessConnector line 185: not yet implemented in connector
-TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
+TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 {
 
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
@@ -109,7 +109,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
 
-TEST_F(End2EndRPCTest, call_void_operation)
+TEST_P(End2EndRPCTest, call_void_operation)
 {
 
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(
@@ -144,7 +144,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
 }
 
 // tests in process subscription
-TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
+TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
@@ -184,3 +184,17 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
+
+INSTANTIATE_TEST_CASE_P(Http,
+        End2EndRPCTest,
+        testing::Values(
+            "test-resources/HttpSystemIntegrationTest1.settings"
+        )
+);
+
+INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+        End2EndRPCTest,
+        testing::Values(
+            "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        )
+);

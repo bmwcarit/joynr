@@ -10,6 +10,8 @@ SUCCESS=0
 echo '####################################################'
 echo '# start services'
 echo '####################################################'
+mosquitto &
+MOSQUITTO_PID=$!
 (
     cd /data/src/cpp/tests
     mvn jetty:run-war --quiet &
@@ -42,6 +44,8 @@ SUCCESS=$?
 echo '####################################################'
 echo '# stop services'
 echo '####################################################'
+kill -TERM $MOSQUITTO_PID
+wait $MOSQUITTO_PID
 (
     cd /data/src/cpp/tests
     mvn jetty:stop --quiet

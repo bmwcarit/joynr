@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,12 +39,13 @@ using namespace joynr;
   *
   */
 
-class End2EndPerformanceTest : public Test {
+class End2EndPerformanceTest : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
+    ADD_LOGGER(End2EndPerformanceTest);
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
-    Settings settings1;
-    Settings settings2;
+    Settings *settings1;
+    Settings *settings2;
     std::string baseUuid;
     std::string uuid;
     std::string domain;
@@ -52,21 +53,19 @@ public:
     End2EndPerformanceTest() :
         runtime1(nullptr),
         runtime2(nullptr),
-        settings1("test-resources/SystemIntegrationTest1.settings"),
-        settings2("test-resources/SystemIntegrationTest2.settings"),
+        settings1(new Settings(std::get<0>(GetParam()))),
+        settings2(new Settings(std::get<1>(GetParam()))),
         baseUuid(Util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domain("cppEnd2EndPerformancesTestDomain" + uuid)
     {
 
-        Settings* settings_1 = new Settings("test-resources/SystemIntegrationTest1.settings");
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
-        Settings::merge(integration1Settings, *settings_1, false);
-        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings_1);
-        Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
+        Settings::merge(integration1Settings, *settings1, false);
+        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings1);
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
-        Settings::merge(integration2Settings, *settings_2, false);
-        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings_2);
+        Settings::merge(integration2Settings, *settings2, false);
+        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings2);
     }
 
     void SetUp() {
@@ -93,8 +92,9 @@ private:
 
 };
 
+INIT_LOGGER(End2EndPerformanceTest);
 
-TEST_F(End2EndPerformanceTest, sendManyRequests) {
+TEST_P(End2EndPerformanceTest, sendManyRequests) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
@@ -144,11 +144,21 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     std::uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
     //check if all Requests were successful
     EXPECT_EQ(numberOfRequests, successfulRequests);
-    Logger logger("End2EndPerformanceTest");
     JOYNR_LOG_INFO(logger, "Required Time for 1000 Requests: {}",(stopTime - startTime));
     // to silence unused-variable compiler warnings
     (void)startTime;
     (void)stopTime;
-    (void)logger;
 }
+INSTANTIATE_TEST_CASE_P(Http,
+        End2EndPerformanceTest,
+        testing::Values(
+            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings","test-resources/HttpSystemIntegrationTest2.settings")
+        )
+);
 
+INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+        End2EndPerformanceTest,
+        testing::Values(
+            std::make_tuple("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings","test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings")
+        )
+);

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,17 +37,18 @@
   * between the two Runtimes via HttpReceiver
   *
   */
-class CombinedEnd2EndTest : public testing::Test {
+class CombinedEnd2EndTest : public testing::TestWithParam< std::tuple<std::string, std::string> >{
 public:
     CombinedEnd2EndTest();
     ~CombinedEnd2EndTest();
 
     void SetUp();
     void TearDown();
-
     joynr::JoynrRuntime* runtime1;
     joynr::JoynrRuntime* runtime2;
     std::string registeredSubscriptionId;
+    std::string messagingSettingsFile1;
+    std::string messagingSettingsFile2;
     joynr::Settings settings1;
     joynr::Settings settings2;
     joynr::MessagingSettings messagingSettings1;

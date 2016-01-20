@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,12 +96,12 @@ public:
     }
 };
 
-class End2EndBroadcastTest : public Test {
+class End2EndBroadcastTest : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
-    Settings settings1;
-    Settings settings2;
+    Settings *settings1;
+    Settings *settings2;
     MessagingSettings messagingSettings1;
     MessagingSettings messagingSettings2;
     std::string baseUuid;
@@ -122,10 +122,10 @@ public:
     End2EndBroadcastTest() :
         runtime1(nullptr),
         runtime2(nullptr),
-        settings1("test-resources/SystemIntegrationTest1.settings"),
-        settings2("test-resources/SystemIntegrationTest2.settings"),
-        messagingSettings1(settings1),
-        messagingSettings2(settings2),
+        settings1(new Settings(std::get<0>(GetParam()))),
+        settings2(new Settings(std::get<1>(GetParam()))),
+        messagingSettings1(*settings1),
+        messagingSettings2(*settings2),
         baseUuid(Util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
@@ -179,17 +179,15 @@ public:
         messagingSettings2.setMessagingPropertiesPersistenceFilename(
                     messagingPropertiesPersistenceFileName2);
 
-        Settings* settings_1 = new Settings("test-resources/SystemIntegrationTest1.settings");
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
-        Settings::merge(integration1Settings, *settings_1, false);
+        Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings_1);
+        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings1);
 
-        Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
-        Settings::merge(integration2Settings, *settings_2, false);
+        Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings_2);
+        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings2);
 
         filterParameters.setCountry("Germany");
         filterParameters.setStartTime("4.00 pm");
@@ -345,7 +343,7 @@ protected:
 
 } // namespace joynr
 
-TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
 
     testOneShotBroadcastSubscription(expectedTestEnum,
@@ -358,7 +356,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
                                  "broadcastWithEnumOutput");
 }
 
-TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
     joynr::ByteBuffer expectedByteBuffer {0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0};
 
     testOneShotBroadcastSubscription(expectedByteBuffer,
@@ -381,7 +379,7 @@ public:
                               const joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters& filterParameters));
 };
 
-TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithFiltering) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithFiltering) {
     std::string stringOut = "expectedString";
     std::vector<std::string> stringArrayOut {stringOut};
     std::vector<joynr::tests::testTypes::TestEnum::Enum> enumerationArrayOut = {joynr::tests::testTypes::TestEnum::TWO};
@@ -433,7 +431,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithFiltering) {
 
 }
 
-TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
+TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -528,7 +526,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     delete testProxyBuilder;
 }
 
-TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
+TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -593,7 +591,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(2)));
 }
 
-TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -666,7 +664,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     delete testProxyBuilder;
 }
 
-TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     MockGpsFloatSubscriptionListener* mockListener = new MockGpsFloatSubscriptionListener();
 
@@ -741,7 +739,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     delete testProxyBuilder;
 }
 
-TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
+TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -824,7 +822,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     delete testProxyBuilder;
 }
 
-TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
+TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -901,7 +899,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     delete testProxyBuilder;
 }
 
-TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     MockGpsSubscriptionListener* mockListenerAttribute = new MockGpsSubscriptionListener();
     MockGpsSubscriptionListener* mockListenerBroadcast = new MockGpsSubscriptionListener();
@@ -982,3 +980,17 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     delete testProxyBuilder;
 }
+
+INSTANTIATE_TEST_CASE_P(Http,
+        End2EndBroadcastTest,
+        testing::Values(
+            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings","test-resources/HttpSystemIntegrationTest2.settings")
+        )
+);
+
+INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+        End2EndBroadcastTest,
+        testing::Values(
+            std::make_tuple("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings","test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings")
+        )
+);

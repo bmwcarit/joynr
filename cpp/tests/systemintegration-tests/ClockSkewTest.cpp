@@ -42,7 +42,7 @@ public:
     MessagingSettings* messagingSettings;
 
     ClockSkewTest() :
-        settings("test-resources/SystemIntegrationTest1.settings"),
+        settings("test-resources/HttpSystemIntegrationTest1.settings"),
         messagingSettings(new MessagingSettings(settings))
     {
     }
