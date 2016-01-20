@@ -129,11 +129,11 @@ public:
                      const std::string& domain,
                      const std::string& interfaceName,
                      std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrException& error)> onError));
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
     MOCK_METHOD3(lookup, void(
                      const std::string& participantId,
                      std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)> callbackFct,
-                     std::function<void(const joynr::exceptions::JoynrException& error)> onError));
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
     MOCK_METHOD0(getLocalChannelId, std::string());
 
 };
@@ -795,7 +795,7 @@ public:
                      const std::string& channelId,
                      joynr::types::ChannelUrlInformation channelUrlInformation,
                      std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrException& error)> onError
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError
                  )
     );
 
@@ -803,7 +803,7 @@ public:
                  std::shared_ptr<joynr::Future<void>>(
                      const std::string& channelId,
                      std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrException& error)> onError
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError
                  )
     );
 
@@ -812,7 +812,7 @@ public:
                      const std::string& channelId,
                      const std::chrono::milliseconds timeout,
                      std::function<void(const joynr::types::ChannelUrlInformation&)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrException& error)> onError
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError
                  )
     );
 };

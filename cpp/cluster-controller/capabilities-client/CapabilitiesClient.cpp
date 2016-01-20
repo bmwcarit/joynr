@@ -102,7 +102,7 @@ void CapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName,
         std::function<void(const std::vector<types::CapabilityInformation>& result)> onSuccess,
-        std::function<void(const exceptions::JoynrException& error)> onError)
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
     assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
                                // the capabilitiesProxy has been set via the init method
@@ -114,7 +114,7 @@ void CapabilitiesClient::lookup(
         const std::string& participantId,
         std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
                 onSuccess,
-        std::function<void(const exceptions::JoynrException& error)> onError)
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
     assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
                                // the capabilitiesProxy has been set via the init method

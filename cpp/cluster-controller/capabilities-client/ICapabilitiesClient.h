@@ -40,17 +40,17 @@ public:
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
     virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
                                                              const std::string& interfaceName) = 0;
-    virtual void lookup(
-            const std::string& domain,
-            const std::string& interfaceName,
-            std::function<void(const std::vector<joynr::types::CapabilityInformation>&
-                                       capabilities)> onSuccess,
-            std::function<void(const exceptions::JoynrException& error)> onError = nullptr) = 0;
-    virtual void lookup(
-            const std::string& participantId,
-            std::function<void(const std::vector<joynr::types::CapabilityInformation>&
-                                       capabilities)> onSuccess,
-            std::function<void(const exceptions::JoynrException& error)> onError = nullptr) = 0;
+    virtual void lookup(const std::string& domain,
+                        const std::string& interfaceName,
+                        std::function<void(const std::vector<joynr::types::CapabilityInformation>&
+                                                   capabilities)> onSuccess,
+                        std::function<void(const exceptions::JoynrRuntimeException& error)>
+                                onError = nullptr) = 0;
+    virtual void lookup(const std::string& participantId,
+                        std::function<void(const std::vector<joynr::types::CapabilityInformation>&
+                                                   capabilities)> onSuccess,
+                        std::function<void(const exceptions::JoynrRuntimeException& error)>
+                                onError = nullptr) = 0;
     virtual std::string getLocalChannelId() = 0;
 };
 

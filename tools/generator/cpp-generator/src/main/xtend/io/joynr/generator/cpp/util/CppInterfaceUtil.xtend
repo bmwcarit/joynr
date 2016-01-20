@@ -93,7 +93,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«val defaultArg = if(className == null) " = nullptr" else ""»
 	std::shared_ptr<joynr::Future<«returnType»> > «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»Async(
 				std::function<void(const «returnType»& «attributeName»)> onSuccess«defaultArg»,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError«defaultArg»)
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»)
 '''
 
     def produceAsyncGetterSignature(FAttribute attribute) {
@@ -155,7 +155,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	std::shared_ptr<joynr::Future<void> > «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»Async(
 				«returnType» «attributeName»,
 				std::function<void(void)> onSuccess«defaultArg»,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError«defaultArg»)
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»)
 '''
 
     def produceAsyncSetterSignature(FAttribute attribute) {

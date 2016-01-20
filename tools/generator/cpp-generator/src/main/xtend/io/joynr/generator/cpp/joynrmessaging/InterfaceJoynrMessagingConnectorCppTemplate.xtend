@@ -178,7 +178,7 @@ bool «className»::usesClusterController() const{
 					[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
 						future->onError(status, error);
 						if (onError){
-							onError(error);
+							onError(static_cast<const exceptions::JoynrRuntimeException&>(error));
 						}
 					};
 
@@ -234,7 +234,7 @@ bool «className»::usesClusterController() const{
 				[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
 					future->onError(status, error);
 					if (onError) {
-						onError(error);
+						onError(static_cast<const exceptions::JoynrRuntimeException&>(error));
 					}
 				};
 

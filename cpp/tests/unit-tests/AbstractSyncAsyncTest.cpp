@@ -280,7 +280,7 @@ public:
         asyncTestFixture->getAttributeWithProviderRuntimeExceptionAsync(
                 [callback] (const std::int32_t& value) {
                     callback->onSuccess(value);
-                }, [callback, expected] (const exceptions::JoynrException& error) {
+                }, [callback, expected] (const exceptions::JoynrRuntimeException& error) {
                     EXPECT_EQ(expected.getTypeName(), error.getTypeName());
                     EXPECT_EQ(expected.getMessage(), error.getMessage());
                     callback->onError(error);
@@ -323,7 +323,7 @@ public:
         asyncTestFixture->getAttributeWithProviderRuntimeExceptionAsync(
                 [callback] (const std::int32_t& value) {
                     callback->onSuccess(value);
-                }, [callback, expected] (const exceptions::JoynrException& error) {
+                }, [callback, expected] (const exceptions::JoynrRuntimeException& error) {
                     EXPECT_EQ(expected.getTypeName(), error.getTypeName());
                     EXPECT_EQ(expected.getMessage(), error.getMessage());
                     callback->onError(error);
@@ -368,7 +368,7 @@ public:
                 value,
                 [callback] () {
                     callback->onSuccess();
-                }, [callback, expected] (const exceptions::JoynrException& error) {
+                }, [callback, expected] (const exceptions::JoynrRuntimeException& error) {
                     EXPECT_EQ(expected.getTypeName(), error.getTypeName());
                     EXPECT_EQ(expected.getMessage(), error.getMessage());
                     callback->onError(error);
@@ -413,7 +413,7 @@ public:
                 value,
                 [callback] () {
                     callback->onSuccess();
-                }, [callback, expected] (const exceptions::JoynrException& error) {
+                }, [callback, expected] (const exceptions::JoynrRuntimeException& error) {
                     EXPECT_EQ(expected.getTypeName(), error.getTypeName());
                     EXPECT_EQ(expected.getMessage(), error.getMessage());
                     callback->onError(error);
@@ -455,7 +455,7 @@ public:
         asyncTestFixture->methodWithProviderRuntimeExceptionAsync(
                 [callback] () {
                     callback->onSuccess();
-                }, [callback, expected] (const exceptions::JoynrException& error) {
+                }, [callback, expected] (const exceptions::JoynrRuntimeException& error) {
                     EXPECT_EQ(expected.getTypeName(), error.getTypeName());
                     EXPECT_EQ(expected.getMessage(), error.getMessage());
                     callback->onError(error);
@@ -496,7 +496,7 @@ public:
         asyncTestFixture->methodWithProviderRuntimeExceptionAsync(
                 [callback] () {
                     callback->onSuccess();
-                }, [callback, expected] (const exceptions::JoynrException& error) {
+                }, [callback, expected] (const exceptions::JoynrRuntimeException& error) {
                     EXPECT_EQ(expected.getTypeName(), error.getTypeName());
                     EXPECT_EQ(expected.getMessage(), error.getMessage());
                     callback->onError(error);

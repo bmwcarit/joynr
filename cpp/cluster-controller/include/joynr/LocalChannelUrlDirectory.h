@@ -63,7 +63,8 @@ public:
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr) override;
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError =
+                    nullptr) override;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
@@ -75,7 +76,8 @@ public:
     std::shared_ptr<Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr) override;
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError =
+                    nullptr) override;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
@@ -92,7 +94,7 @@ public:
             std::chrono::milliseconds timeout,
             std::function<void(const types::ChannelUrlInformation& channelUrls)> onSuccess =
                     nullptr,
-            std::function<void(const exceptions::JoynrException& error)> onError =
+            std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                     nullptr) override;
 
 private:
