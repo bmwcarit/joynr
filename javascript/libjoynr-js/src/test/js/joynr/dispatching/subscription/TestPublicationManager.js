@@ -26,8 +26,10 @@ joynrTestRequire(
             "joynr/dispatching/subscription/PublicationManager",
             "joynr/messaging/MessagingQos",
             "joynr/dispatching/types/SubscriptionRequest",
+            "joynr/dispatching/types/BroadcastSubscriptionRequest",
             "joynr/dispatching/types/SubscriptionStop",
             "joynr/provider/ProviderAttribute",
+            "joynr/provider/ProviderEvent",
             "joynr/proxy/PeriodicSubscriptionQos",
             "joynr/proxy/SubscriptionQos",
             "joynr/proxy/OnChangeSubscriptionQos",
@@ -45,8 +47,10 @@ joynrTestRequire(
                 PublicationManager,
                 MessagingQos,
                 SubscriptionRequest,
+                BroadcastSubscriptionRequest,
                 SubscriptionStop,
                 ProviderAttribute,
+                ProviderEvent,
                 PeriodicSubscriptionQos,
                 SubscriptionQos,
                 OnChangeSubscriptionQos,
@@ -64,18 +68,20 @@ joynrTestRequire(
                     function() {
                         var proxyId, providerId, publicationManager, joynrInstanceId, dispatcherSpy;
                         var provider, asyncGetterCallDelay, fakeTime, intervalSubscriptionRequest;
-                        var onChangeSubscriptionRequest, mixedSubscriptionRequest;
+                        var onChangeSubscriptionRequest, mixedSubscriptionRequest, onChangeBroadcastSubscriptionRequest;
                         var mixedSubscriptionRequestWithAsyncAttribute, testAttributeName;
                         var asyncTestAttributeName, value, minInterval, maxInterval, maxNrOfTimes;
                         var subscriptionLength, asyncTestAttribute, testAttribute, providerSettings;
+                        var testBroadcastName, testBroadcast;
 
                         function createSubscriptionRequest(
-                                requestAttributeName,
+                                isAttribute,
+                                subscribeToName,
                                 period,
                                 subscriptionLength,
                                 onChange,
                                 minInterval) {
-                            var qosSettings, expiryDate;
+                            var qosSettings, expiryDate, request;
                             expiryDate =
                                     subscriptionLength === SubscriptionQos.NO_EXPIRY_DATE
                                             ? SubscriptionQos.NO_EXPIRY_DATE
@@ -105,11 +111,21 @@ joynrTestRequire(
                                 });
                             }
 
-                            return new SubscriptionRequest({
-                                subscriptionId : "subscriptionId" + uuid(),
-                                subscribedToName : requestAttributeName,
-                                qos : qosSettings
-                            });
+                            if (isAttribute) {
+                                request = new SubscriptionRequest({
+                                    subscriptionId : "subscriptionId" + uuid(),
+                                    subscribedToName : subscribeToName,
+                                    qos : qosSettings
+                                });
+                            } else {
+                                request = new BroadcastSubscriptionRequest({
+                                    subscriptionId : "subscriptionId" + uuid(),
+                                    subscribedToName : subscribeToName,
+                                    qos : qosSettings,
+                                    filterParameters : {}
+                                });
+                            }
+                            return request;
                         }
 
                         function resetFakeTime() {
@@ -166,6 +182,7 @@ joynrTestRequire(
                             joynrInstanceId = uuid();
                             fakeTime = 123456789;
                             testAttributeName = "testAttribute";
+                            testBroadcastName = "testBroadcast";
                             asyncTestAttributeName = "asyncTestAttribute";
                             value = "the value";
                             minInterval = 100;
@@ -199,6 +216,17 @@ joynrTestRequire(
                                 }
                             };
 
+                            testBroadcast =
+                                    new ProviderEvent(
+                                            provider,
+                                            providerSettings,
+                                            testBroadcastName,
+                                            [ {
+                                                name : "param1",
+                                                type : "String"
+                                            }
+                                            ],
+                                            {});
                             testAttribute =
                                     new ProviderAttributeNotifyReadWrite(
                                             provider,
@@ -214,6 +242,7 @@ joynrTestRequire(
                                             "Boolean");
 
                             provider[testAttributeName] = testAttribute;
+                            provider[testBroadcastName] = testBroadcast;
                             spyOn(testAttribute, "get").andReturn("attributeValue");
 
                             provider[asyncTestAttributeName] = asyncTestAttribute;
@@ -233,24 +262,35 @@ joynrTestRequire(
 
                             intervalSubscriptionRequest =
                                     createSubscriptionRequest(
+                                            true,
                                             testAttributeName,
                                             maxInterval,
                                             subscriptionLength);
                             onChangeSubscriptionRequest =
                                     createSubscriptionRequest(
+                                            true,
                                             testAttributeName,
                                             undefined,
                                             subscriptionLength,
                                             true);
                             mixedSubscriptionRequest =
                                     createSubscriptionRequest(
+                                            true,
                                             testAttributeName,
                                             maxInterval,
                                             subscriptionLength,
                                             true,
                                             minInterval);
+                            onChangeBroadcastSubscriptionRequest =
+                                    createSubscriptionRequest(
+                                            false,
+                                            testBroadcastName,
+                                            undefined,
+                                            subscriptionLength,
+                                            true);
                             mixedSubscriptionRequestWithAsyncAttribute =
                                     createSubscriptionRequest(
+                                            true,
                                             asyncTestAttributeName,
                                             maxInterval,
                                             subscriptionLength,
@@ -420,6 +460,7 @@ joynrTestRequire(
                                     var largeInterval = Math.pow(2, 40);
                                     var largeIntervalSubscriptionRequest =
                                             createSubscriptionRequest(
+                                                    true,
                                                     testAttributeName,
                                                     largeInterval,
                                                     largeInterval * times);
@@ -1137,6 +1178,7 @@ joynrTestRequire(
                                     runs(function() {
                                         subscriptionRequestWithoutExpiryDate =
                                                 createSubscriptionRequest(
+                                                        true,
                                                         testAttributeName,
                                                         period,
                                                         0,
@@ -1435,7 +1477,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -1459,7 +1505,11 @@ joynrTestRequire(
                                                         {
                                                             subscriptionId : mixedSubscriptionRequest.subscriptionId
                                                         }));
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                         testAttribute.get.reset();
                                         dispatcherSpy.sendPublication.reset();
 
@@ -1472,6 +1522,66 @@ joynrTestRequire(
                                             expect(dispatcherSpy.sendPublication).not
                                                     .toHaveBeenCalled();
                                             stopSubscription(mixedSubscriptionRequest);
+                                        }, asyncGetterCallDelay);
+                                    });
+                                });
+
+                        it(
+                                "removes a mixed broadcast subscription after subscription stop",
+                                function() {
+                                    var broadcastOutputParameters =
+                                            testBroadcast.createBroadcastOutputParameters();
+                                    broadcastOutputParameters.setParam1("param1");
+                                    runs(function() {
+                                        publicationManager.addPublicationProvider(
+                                                providerId,
+                                                provider);
+                                        publicationManager.handleEventSubscriptionRequest(
+                                                proxyId,
+                                                providerId,
+                                                onChangeBroadcastSubscriptionRequest);
+
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderEvent(
+                                                                provider.id,
+                                                                testBroadcastName)).toBeTruthy();
+                                        increaseFakeTime(1);
+
+                                        testBroadcast.fire(broadcastOutputParameters);
+                                        increaseFakeTime(maxInterval); // increase interval
+                                    });
+
+                                    waitsFor(function() {
+                                        return dispatcherSpy.sendPublication.callCount > 0;
+                                    }, "dispatcherSpy.sendPublication", asyncGetterCallDelay);
+
+                                    runs(function() {
+                                        // reset first publication
+                                        dispatcherSpy.sendPublication.reset();
+
+                                        // after subscription stop, the methods should not have been called
+                                        // again (ie subscription
+                                        // terminated)
+                                        publicationManager
+                                                .handleSubscriptionStop(new SubscriptionStop(
+                                                        {
+                                                            subscriptionId : onChangeBroadcastSubscriptionRequest.subscriptionId
+                                                        }));
+
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderEvent(
+                                                                provider.id,
+                                                                testBroadcastName)).toBeFalsy();
+
+                                        increaseFakeTime(maxInterval); // increase interval
+                                        testBroadcast.fire(broadcastOutputParameters);
+                                        increaseFakeTime(maxInterval); // increase interval
+
+                                        setTimeout(function() {
+                                            expect(dispatcherSpy.sendPublication).not
+                                                    .toHaveBeenCalled();
                                         }, asyncGetterCallDelay);
                                     });
                                 });

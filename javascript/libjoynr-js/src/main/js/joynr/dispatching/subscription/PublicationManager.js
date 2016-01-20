@@ -605,7 +605,7 @@ define(
 
                     var subscriptions;
 
-                    if (subscriptionInfo.filterParameter === undefined) {
+                    if (subscriptionInfo.filterParameters === undefined) {
                         // This is an attribute subscription
 
                         var attributeName = subscriptionInfo.subscribedToName;
