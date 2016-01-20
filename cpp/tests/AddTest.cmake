@@ -7,6 +7,7 @@ function(AddTest TARGET)
         ${TARGET}
         PROPERTIES
         COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+        AUTOMOC TRUE
     )
     add_dependencies(${TARGET} googletest)
     add_dependencies(${TARGET} googlemock)
