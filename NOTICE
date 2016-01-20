@@ -152,7 +152,7 @@ This project has dependencies to:
   io.joynr.java:integration-tests under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.java:messaging under The Apache Software License, Version 2.0
-  io.joynr.javascript.apps:radio under The Apache Software License, Version 2.0
+  io.joynr.javascript.apps:radio-js under The Apache Software License, Version 2.0
   io.joynr.javascript.inter-tab:inter-tab-comm under The Apache Software License, Version 2.0
   io.joynr.javascript:apps under The Apache Software License, Version 2.0
   io.joynr.javascript:inter-tab under The Apache Software License, Version 2.0

@@ -14,7 +14,7 @@
 	</parent>
 
 	<modules>
-		<module>radio</module>
+		<module>radio-js</module>
 	</modules>
 
 	<build>
