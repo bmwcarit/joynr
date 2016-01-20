@@ -107,8 +107,8 @@ internalRequestObject.setMethodName("«method.joynrName»");
 «ENDFOR»
 
 «getNamespaceStarter(serviceInterface)»
-
-«interfaceName»JoynrMessagingConnector::«interfaceName»JoynrMessagingConnector(
+«val className = interfaceName + "JoynrMessagingConnector"»
+«className»::«className»(
 		joynr::IJoynrMessageSender* joynrMessageSender,
 		joynr::ISubscriptionManager* subscriptionManager,
 		const std::string &domain,
@@ -121,7 +121,7 @@ internalRequestObject.setMethodName("«method.joynrName»");
 {
 }
 
-bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
+bool «className»::usesClusterController() const{
 	return joynr::AbstractJoynrMessagingConnector::usesClusterController();
 }
 
@@ -129,9 +129,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«val returnType = getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»
 	«IF attribute.readable»
-		void «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
-				«returnType»& «attributeName»
-		) {
+		«produceSyncGetterSignature(attribute, className)»
+		{
 			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
 			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> onSuccess =
@@ -155,10 +154,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			future->get(«attributeName»);
 		}
 
-		std::shared_ptr<joynr::Future<«returnType»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»Async(
-				std::function<void(const «returnType»& «attributeName»)> onSuccess,
-				std::function<void(const exceptions::JoynrException& error)> onError
-		) {
+		«produceAsyncGetterSignature(attribute, className)»
+		{
 			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
 			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> onSuccessWrapper =
@@ -195,11 +192,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 	«ENDIF»
 	«IF attribute.writable»
-		std::shared_ptr<joynr::Future<void>> «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»Async(
-				«returnType» «attributeName»,
-				std::function<void(void)> onSuccess,
-				std::function<void(const exceptions::JoynrException& error)> onError
-		) {
+		«produceAsyncSetterSignature(attribute, className)»
+		{
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isEnum(attribute.type) && isArray(attribute)»
@@ -251,9 +245,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			return future;
 		}
 
-		void «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(
-				const «returnType»& «attributeName»
-		) {
+		«produceSyncSetterSignature(attribute, className)»
+		{
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isEnum(attribute.type) && isArray(attribute)»
@@ -298,7 +291,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 	«ENDIF»
 	«IF attribute.notifiable»
-		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
+		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos
 		) {
@@ -306,7 +299,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
-		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
+		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos,
 					std::string& subscriptionId
@@ -317,7 +310,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
-		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
+		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
@@ -349,7 +342,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			return subscriptionRequest.getSubscriptionId();
 		}
 
-		void «interfaceName»JoynrMessagingConnector::unsubscribeFrom«attributeName.toFirstUpper»(
+		void «className»::unsubscribeFrom«attributeName.toFirstUpper»(
 				std::string& subscriptionId
 		) {
 			joynr::SubscriptionStop subscriptionStop;
@@ -369,14 +362,11 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 
 «FOR method: getMethods(serviceInterface)»
 	«var outputTypedConstParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
-	«val outputTypedParamList = getCommaSeperatedTypedOutputParameterList(method)»
 	«val outputParameters = getCommaSeparatedOutputParameterTypes(method)»
 	«var outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
-	«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
-	«val methodName = method.joynrName»
-	void «interfaceName»JoynrMessagingConnector::«methodName»(
-		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
-	) {
+
+	«produceSyncMethodSignature(method, className)»
+	{
 		«produceParameterSetters(method)»
 		std::shared_ptr<joynr::Future<«outputParameters»> > future(
 				new joynr::Future<«outputParameters»>());
@@ -403,7 +393,6 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
 	}
 
-	«val className = interfaceName + "JoynrMessagingConnector"»
 	«produceAsyncMethodSignature(serviceInterface, method, className)»
 	{
 		«produceParameterSetters(method)»
@@ -446,12 +435,12 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«val returnTypes = getCommaSeparatedOutputParameterTypes(broadcast)»
 	«val broadcastName = broadcast.joynrName»
 	«IF isSelective(broadcast)»
-		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 					const joynr::OnChangeSubscriptionQos& subscriptionQos
 	«ELSE»
-		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 					const joynr::OnChangeSubscriptionQos& subscriptionQos
 	«ENDIF»
@@ -464,13 +453,13 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	}
 
 	«IF isSelective(broadcast)»
-		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 					const joynr::OnChangeSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId
 	«ELSE»
-		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 					const joynr::OnChangeSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId
@@ -484,7 +473,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
 
-	std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+	std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				const joynr::OnChangeSubscriptionQos& subscriptionQos,
 				BroadcastSubscriptionRequest& subscriptionRequest
@@ -517,7 +506,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		return subscriptionRequest.getSubscriptionId();
 	}
 
-	void «interfaceName»JoynrMessagingConnector::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
+	void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
 			std::string& subscriptionId
 	) {
 		joynr::SubscriptionStop subscriptionStop;

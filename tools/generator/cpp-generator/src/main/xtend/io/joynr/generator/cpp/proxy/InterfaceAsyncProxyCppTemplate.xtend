@@ -80,10 +80,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		 * «getAttribute»
 		 */
 
-		std::shared_ptr<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»Async(
-				std::function<void(const «attributeType»& «attributeName»)> onSuccess,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError
-		)
+		«produceAsyncGetterSignature(attribute, asyncClassName)»
 		{
 			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
@@ -108,11 +105,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		/*
 		 * «setAttribute»
 		 */
-		std::shared_ptr<joynr::Future<void>> «asyncClassName»::«setAttribute»Async(
-				«attributeType» «attributeName»,
-				std::function<void(void)> onSuccess,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError
-		)
+		«produceAsyncSetterSignature(attribute, asyncClassName)»
 		{
 			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
