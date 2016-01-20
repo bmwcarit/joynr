@@ -763,6 +763,30 @@ define(
                 };
 
                 /**
+                 * @name PublicationManager#hasSubscriptionsForProviderAttribute
+                 * @function
+                 *
+                 *
+                 * @param {String}
+                 *            providerId
+                 * @param {String}
+                 *            attributeName
+                 * @returns true if a subscription exists for the given attribute
+                 */
+                this.hasSubscriptionsForProviderAttribute = function hasSubscriptionsForProviderAttribute(providerId, attributeName) {
+                    var subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
+                    var subscriptionId;
+                    if (subscriptions !== undefined) {
+                        for (subscriptionId in subscriptions) {
+                            if (subscriptions.hasOwnProperty(subscriptionId)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                };
+
+                /**
                  * Handles SubscriptionRequests
                  *
                  * @name PublicationManager#handleSubscriptionRequest
