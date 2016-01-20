@@ -123,7 +123,7 @@ public:
 	«produceSyncMethods(serviceInterface, false)»
 	«produceAsyncGetters(serviceInterface, false)»
 	«produceAsyncSetters(serviceInterface, false)»
-	«produceAsyncMethods(serviceInterface, false)»
+	«produceAsyncMethods(serviceInterface, false, true)»
 
 	«produceSubscribeUnsubscribeMethods(serviceInterface, false)»
 

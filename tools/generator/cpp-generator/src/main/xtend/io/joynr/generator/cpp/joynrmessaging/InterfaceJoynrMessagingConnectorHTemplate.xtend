@@ -178,7 +178,7 @@ public:
 	«ENDFOR»
 
 	«produceSyncMethods(serviceInterface, false)»
-	«produceAsyncMethods(serviceInterface, false)»
+	«produceAsyncMethods(serviceInterface, false, true)»
 
 	«FOR broadcast: serviceInterface.broadcasts»
 

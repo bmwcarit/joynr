@@ -23,12 +23,14 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
 
 class CppInterfaceUtil extends InterfaceUtil {
 	@Inject extension NamingUtil
 	@Inject extension CppStdTypeUtil
 	@Inject extension AttributeUtil
 	@Inject extension MethodUtil
+	@Inject extension JoynrCppGeneratorExtensions
 
 	def printFutureReturnDefinition()
 '''
@@ -42,10 +44,16 @@ class CppInterfaceUtil extends InterfaceUtil {
 	* finished successfully. It must expect the method out parameters.
 '''
 
-	def printOnErrorFctParamDefinition()
+	def printOnRuntimeErrorFctParamDefinition()
 '''
-	* @param onError A callback function to be called once the asynchronous computation has
-	* failed. It must expect a JoynrException object.
+	* @param onRuntimeError A callback function to be called once the asynchronous computation has
+	* failed with an unexpected non-modeled exception. It must expect a JoynrRuntimeException object.
+'''
+
+	def printOnApplicationErrorFctParamDefinition()
+'''
+	* @param onApplicationError A callback function to be called once the asynchronous computation has
+	* failed with an unexpected modeled exception. It must expect an Error enum as modeled in Franca.
 '''
 
 	def produceSyncGetters(FInterface serviceInterface, boolean pure)
@@ -77,7 +85,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		* @brief Asynchronous getter for the «attributeName» attribute.
 		*
 		«printOnSuccessFctParamDefinition»
-		«printOnErrorFctParamDefinition»
+		«printOnRuntimeErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
 		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»Async(
@@ -116,7 +124,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		*
 		* @param «attributeName.toFirstLower» The value to set.
 		«printOnSuccessFctParamDefinition»
-		«printOnErrorFctParamDefinition»
+		«printOnRuntimeErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
 		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<void> > set«attributeName.toFirstUpper»Async(
@@ -151,24 +159,103 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«ENDFOR»
 '''
 
-	def produceAsyncMethods(FInterface serviceInterface, boolean pure)
+	def produceAsyncReturnValue(FInterface serviceInterface, FMethod method) {
+		var outputParameters = method.commaSeparatedOutputParameterTypes;
+		return "std::shared_ptr<joynr::Future<" + outputParameters + ">>";
+	}
+
+
+	def produceAsyncMethodName(FMethod method) {
+		return method.joynrName + "Async"
+	}
+
+	def getMethodErrorEnum(FInterface serviceInterface, FMethod method) {
+    	val methodToErrorEnumName = serviceInterface.methodToErrorEnumName;
+    	if(method.errors != null) {
+    		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::");
+    		return packagePath + "::" + methodToErrorEnumName.get(method) + "::" + nestedEnumName;
+    	}
+    	else {
+    		return method.errorEnum.typeName;
+    	}
+    }
+
+    def produceAsyncMethodParameters(FInterface serviceInterface, FMethod method, boolean useDefaultParam)
+'''
+	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
+	«val defaultParam = if(useDefaultParam) " = nullptr" else ""»
+				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
+				std::function<void(«outputTypedParamList»)> onSuccess«defaultParam»,
+				«IF method.hasErrorEnum»
+					std::function<void (const «getMethodErrorEnum(serviceInterface, method)»& errorEnum)> onApplicationError«defaultParam»,
+				«ENDIF»
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError«defaultParam»
+'''
+
+	def produceAsyncMethods(FInterface serviceInterface, boolean pure, boolean useDefaultParam)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«var outputParameters = method.commaSeparatedOutputParameterTypes»
-		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
-
 		/**
 		* @brief Asynchronous operation «method.joynrName».
 		*
 		«printOnSuccessFctParamDefinition»
-		«printOnErrorFctParamDefinition»
+		«IF method.hasErrorEnum»
+			«printOnApplicationErrorFctParamDefinition»
+		«ENDIF»
+		«printOnRuntimeErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<«outputParameters»> > «method.joynrName»Async(
-				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
-				std::function<void(«outputTypedParamList»)> onSuccess = nullptr,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceAsyncReturnValue(serviceInterface, method)»
+		«produceAsyncMethodName(method)»
+		(«produceAsyncMethodParameters(serviceInterface, method, useDefaultParam)»)
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
+'''
+
+   def produceAsyncMethodBegin(FInterface serviceInterface, FMethod method, String className)
+'''
+	«produceAsyncReturnValue(serviceInterface, method)»
+	«className»::«produceAsyncMethodName(method)»
+	(«produceAsyncMethodParameters(serviceInterface, method, false)»)
+'''
+
+	def produceApplicationRuntimeErrorSplitForOnErrorWrapper(FInterface serviceInterface, FMethod method)
+'''
+	«IF method.hasErrorEnum»
+		if (const exceptions::JoynrRuntimeException* runtimeError = dynamic_cast<const exceptions::JoynrRuntimeException*>(&error)) {
+			if(onRuntimeError) {
+				onRuntimeError(*runtimeError);
+			}
+		}
+		else if (const exceptions::ApplicationException* applicationError = dynamic_cast<const exceptions::ApplicationException*>(&error)) {
+			if(onApplicationError) {
+				onApplicationError(applicationError->getError<«getMethodErrorEnum(serviceInterface, method)»>());
+			}
+			else {
+				const std::string errorMessage = "An ApplicationException type was received, but but none was expected. Is the provider version incompatible with the consumer?";
+				if (onRuntimeError) {
+					onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
+				}
+				else {
+					JOYNR_LOG_ERROR(logger, errorMessage);
+				}
+			}
+		}
+		else {
+			const std::string errorMessage = "Unknown exception: " + error.getTypeName() + ": " + error.getMessage();
+			if (onRuntimeError) {
+				onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
+			}
+			else {
+				JOYNR_LOG_ERROR(logger, errorMessage);
+			}
+		}
+		
+	«ELSE»
+		if (onRuntimeError) {
+			onRuntimeError(static_cast<const exceptions::JoynrRuntimeException&>(error));
+		}
+	«ENDIF»
 '''
 }

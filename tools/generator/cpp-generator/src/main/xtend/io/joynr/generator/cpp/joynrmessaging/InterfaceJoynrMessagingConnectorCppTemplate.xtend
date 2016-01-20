@@ -18,13 +18,13 @@ package io.joynr.generator.cpp.joynrmessaging
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
@@ -40,7 +40,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
 	@Inject private extension BroadcastUtil
-	@Inject private extension InterfaceUtil
+	@Inject private extension CppInterfaceUtil
 
 	def produceParameterSetters(FMethod method)
 '''
@@ -401,11 +401,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
 	}
 
-	std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»JoynrMessagingConnector::«methodName»Async(
-			«getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
-			std::function<void(«outputTypedConstParamList»)> onSuccess,
-			std::function<void(const exceptions::JoynrException& error)> onError
-	)
+	«val className = interfaceName + "JoynrMessagingConnector"»
+	«produceAsyncMethodBegin(serviceInterface, method, className)»
 	{
 		«produceParameterSetters(method)»
 
@@ -413,7 +410,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				new joynr::Future<«outputParameters»>());
 
 		std::function<void(const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList»)> onSuccessWrapper =
-				[future, onSuccess, onError] (const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList») {
+				[future, onSuccess, onRuntimeError] (const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
 						future->onSuccess(«outputUntypedParamList»);
 						if (onSuccess) {
@@ -422,18 +419,16 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					} else {
 						exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
 						future->onError(status, error);
-						if (onError){
-							onError(error);
+						if (onRuntimeError){
+							onRuntimeError(error);
 						}
 					}
 				};
 
 		std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
-				[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+				[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
 				future->onError(status, error);
-				if (onError) {
-					onError(error);
-				}
+				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(serviceInterface, method)»
 			};
 
 		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(

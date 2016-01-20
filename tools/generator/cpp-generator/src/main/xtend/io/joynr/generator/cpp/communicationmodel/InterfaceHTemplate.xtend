@@ -42,6 +42,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 	override generate(FInterface serviceInterface){
 		var selector = TypeSelector::defaultTypeSelector
+		selector.errorTypes(true)
 		selector.typeDefs(true)
 '''
 «val interfaceName = serviceInterface.joynrName»
@@ -108,7 +109,7 @@ public:
 	~I«interfaceName»Async() override = default;
 	«produceAsyncGetters(serviceInterface,true)»
 	«produceAsyncSetters(serviceInterface,true)»
-	«produceAsyncMethods(serviceInterface,true)»
+	«produceAsyncMethods(serviceInterface,true, true)»
 };
 
 class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {

@@ -18,13 +18,13 @@ package io.joynr.generator.cpp.inprocess
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -33,11 +33,11 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil cppStdTypeUtil
+	@Inject private extension CppInterfaceUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
 	@Inject private extension BroadcastUtil
-	@Inject private extension InterfaceUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 
 	override  generate(FInterface serviceInterface)
@@ -128,7 +128,6 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::function<void(const «returnType»& «attributeName»)> onSuccess,
 				std::function<void(const exceptions::JoynrException& error)> onError
 		) {
-			std::ignore = onError; // not used yet
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
@@ -165,7 +164,6 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::function<void(void)> onSuccess,
 				std::function<void(const exceptions::JoynrException& error)> onError
 		) {
-			std::ignore = onError; // not used yet
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
@@ -345,11 +343,9 @@ void «interfaceName»InProcessConnector::«methodname»(
 	future->get(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
 }
 
-std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»Async(«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
-			std::function<void(«outputTypedConstParamList»)> onSuccess,
-			std::function<void(const exceptions::JoynrException& error)> onError)
+«val className = interfaceName + "InProcessConnector"»
+«produceAsyncMethodBegin(serviceInterface, method, className)»
 {
-	std::ignore = onError; // not used yet
 	assert(address);
 	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 	assert(caller);
@@ -368,11 +364,9 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 			};
 
 	std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-			[future, onError] (const exceptions::JoynrException& error) {
+			[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
 				future->onError(RequestStatusCode::ERROR, error);
-				if (onError) {
-					onError(error);
-				}
+				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(serviceInterface, method)»
 			};
 
 	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper, onErrorWrapper);

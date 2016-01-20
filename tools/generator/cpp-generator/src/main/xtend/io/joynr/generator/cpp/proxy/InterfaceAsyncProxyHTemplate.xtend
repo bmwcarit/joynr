@@ -53,6 +53,7 @@ class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
+
 #include <memory>
 
 «getNamespaceStarter(serviceInterface)»
@@ -80,7 +81,7 @@ public:
 
 	«produceAsyncGetters(serviceInterface, false)»
 	«produceAsyncSetters(serviceInterface, false)»
-	«produceAsyncMethods(serviceInterface, false)»
+	«produceAsyncMethods(serviceInterface, false, true)»
 
 	friend class «className»;
 
