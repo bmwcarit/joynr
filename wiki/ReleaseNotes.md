@@ -1,12 +1,34 @@
 #joynr 0.14.0
 
 ##Notes
+* **[Java,JS,C++]** Franca `ByteBuffer` is supported.
+* **[Java,JS,C++]** Franca `typedef` is supported. For Java and JS, typedefs
+  are ignored and the target datatypes are used instead.
+* **[C++]** libjoynr does not depend on Qt anymore.
 * **[C++]** libjoynr uses libwebsockets of the libwebsockets project (http://libwebsockets.org)
-  to communicate with the cluster-controller.
+  to communicate with the cluster-controller. Due to an incompatibility with Mac OS X,
+  the C++-Websocket-Runtime currently does not work on Mac OS X.
 
 ##API relevant changes
+* **[C++]** The minimum required version of `gcc` is 4.9.
+* **[C++]** The CMake variables when linking against libjoynr have been renamed :
+  * `Joynr_LIB_COMMON_*` contains only generic stuff needed to build generated code.
+  * `Joynr_LIB_INPROCESS_*` contains stuff needed to build in-process including cluster controller.
+* **[C++]** The `onError` callback for async method calls is changed:
+  * The error callback has been renamed to `onRuntimeError`.
+    Its signature expects a `JoynrRuntimeException`.
+  * If the method has an error modeled in Franca, a separate `onApplicationError` callback is
+     generated. The signature of this callback expects the generated error `enum` .
+* **[Java]** Modify async proxy API for error callbacks. If an error enum is defined
+  for methods in Franca, onFailure callback is split into two methods, one for
+  modeled Franca errors (called ApplicationExceptison) and one for joynr runtime
+  exceptions.
 
 ##Other changes
+* **[C++]** The logging syntax is changed to the following format:
+  `JOYNR_LOG_DEBUG(logger, "this {}: {}", "is", "a message");`
+* **[C++]** Fixed bug in filters for broadcast having arrays as output parameters.
+* **[JS]** Set version for node dependency module "ws" to 1.0.1.
 
 #joynr 0.13.0
 
