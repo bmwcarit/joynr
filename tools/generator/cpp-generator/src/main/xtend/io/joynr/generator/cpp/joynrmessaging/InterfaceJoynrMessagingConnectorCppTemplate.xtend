@@ -86,6 +86,8 @@ internalRequestObject.setMethodName("«method.joynrName»");
 #include <chrono>
 #include <cstdint>
 #include "joynr/SubscriptionUtil.h"
+#include "joynr/exceptions/JoynrException.h"
+
 «FOR method : getMethods(serviceInterface)»
 	«IF method.hasErrorEnum»
 		«var enumType = method.errors»

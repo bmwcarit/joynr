@@ -69,6 +69,14 @@ namespace joynr {
 	class InProcessAddress;
 	class ISubscriptionManager;
 	class PublicationManager;
+	template <class ... Ts> class Future;
+
+namespace exceptions
+{
+	class JoynrException;
+	class JoynrRuntimeException;
+} // namespace exceptions
+
 } // namespace joynr
 
 «getNamespaceStarter(serviceInterface)»

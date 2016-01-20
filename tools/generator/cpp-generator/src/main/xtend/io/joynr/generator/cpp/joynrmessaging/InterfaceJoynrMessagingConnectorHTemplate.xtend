@@ -66,6 +66,13 @@ namespace joynr {
 	class MessagingQos;
 	class IJoynrMessageSender;
 	class ISubscriptionManager;
+	template <class ... Ts> class Future;
+
+namespace exceptions
+{
+	class JoynrException;
+	class JoynrRuntimeException;
+} // namespace exceptions
 }
 
 «getNamespaceStarter(serviceInterface)»

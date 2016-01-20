@@ -68,11 +68,18 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 #include <memory>
 #include <functional>
-#include "joynr/exceptions/JoynrException.h"
 
-namespace joynr {
+namespace joynr
+{
 	class RequestStatus;
 	template <class ... Ts> class Future;
+
+namespace exceptions
+{
+	class JoynrException;
+	class JoynrRuntimeException;
+} // namespace exceptions
+
 } // namespace joynr
 
 «getNamespaceStarter(serviceInterface)»

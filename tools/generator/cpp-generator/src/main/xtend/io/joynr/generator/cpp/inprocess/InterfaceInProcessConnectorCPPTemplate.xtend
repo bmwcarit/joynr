@@ -66,6 +66,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
 #include "joynr/SubscriptionUtil.h"
+#include "joynr/exceptions/JoynrException.h"
 
 «getNamespaceStarter(serviceInterface)»
 

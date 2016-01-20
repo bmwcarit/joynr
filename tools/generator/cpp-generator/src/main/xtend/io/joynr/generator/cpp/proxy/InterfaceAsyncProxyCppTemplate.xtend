@@ -54,6 +54,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 #include "joynr/Reply.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
+#include "joynr/exceptions/JoynrException.h"
 #include <cassert>
 
 «getNamespaceStarter(fInterface)»

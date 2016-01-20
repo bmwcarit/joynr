@@ -50,6 +50,17 @@ class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
 
+namespace joynr
+{
+	template <class ... Ts> class Future;
+
+namespace exceptions
+{
+	class JoynrException;
+	class JoynrRuntimeException;
+} // namespace exceptions
+} // namespace joynr
+
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
