@@ -145,10 +145,10 @@ public:
 	/** @brief Destructor */
 	~«interfaceName»JoynrMessagingConnector() override = default;
 
-	«produceSyncGetters(serviceInterface, false)»
-	«produceAsyncGetters(serviceInterface, false)»
-	«produceSyncSetters(serviceInterface, false)»
-	«produceAsyncSetters(serviceInterface, false)»
+	«produceSyncGetterDeclarations(serviceInterface, false)»
+	«produceAsyncGetterDeclarations(serviceInterface, false)»
+	«produceSyncSetterDeclarations(serviceInterface, false)»
+	«produceAsyncSetterDeclarations(serviceInterface, false)»
 	«FOR attribute: getAttributes(serviceInterface)»
 		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
@@ -184,8 +184,8 @@ public:
 		«ENDIF»
 	«ENDFOR»
 
-	«produceSyncMethods(serviceInterface, false)»
-	«produceAsyncMethods(serviceInterface, false, true)»
+	«produceSyncMethodDeclarations(serviceInterface, false)»
+	«produceAsyncMethodDeclarations(serviceInterface, false, true)»
 
 	«FOR broadcast: serviceInterface.broadcasts»
 

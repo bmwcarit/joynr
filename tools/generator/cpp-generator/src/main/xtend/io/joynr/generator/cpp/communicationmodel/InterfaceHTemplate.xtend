@@ -102,9 +102,9 @@ public:
 class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
 public:
 	~I«interfaceName»Sync() override = default;
-	«produceSyncGetters(serviceInterface,true)»
-	«produceSyncSetters(serviceInterface,true)»
-	«produceSyncMethods(serviceInterface,true)»
+	«produceSyncGetterDeclarations(serviceInterface,true)»
+	«produceSyncSetterDeclarations(serviceInterface,true)»
+	«produceSyncMethodDeclarations(serviceInterface,true)»
 };
 
 /**
@@ -114,9 +114,9 @@ public:
 class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
 public:
 	~I«interfaceName»Async() override = default;
-	«produceAsyncGetters(serviceInterface,true)»
-	«produceAsyncSetters(serviceInterface,true)»
-	«produceAsyncMethods(serviceInterface,true, true)»
+	«produceAsyncGetterDeclarations(serviceInterface,true)»
+	«produceAsyncSetterDeclarations(serviceInterface,true)»
+	«produceAsyncMethodDeclarations(serviceInterface,true, true)»
 };
 
 class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {

@@ -56,7 +56,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	* failed with an unexpected modeled exception. It must expect an Error enum as modeled in Franca.
 '''
 
-	def produceSyncGetters(FInterface serviceInterface, boolean pure)
+	def produceSyncGetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
 		«val returnType = attribute.typeName»
@@ -75,7 +75,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«ENDFOR»
 '''
 
-	def produceAsyncGetters(FInterface serviceInterface, boolean pure)
+	def produceAsyncGetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
 		«val returnType = attribute.typeName»
@@ -95,7 +95,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«ENDFOR»
 '''
 
-	def produceSyncSetters(FInterface serviceInterface, boolean pure)
+	def produceSyncSetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
 		«val returnType = attribute.typeName»
@@ -113,7 +113,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«ENDFOR»
 '''
 
-	def produceAsyncSetters(FInterface serviceInterface, boolean pure)
+	def produceAsyncSetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
 		«val returnType = attribute.typeName»
@@ -135,7 +135,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«ENDFOR»
 '''
 
-	def produceSyncMethods(FInterface serviceInterface, boolean pure)
+	def produceSyncMethodDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
 		«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
@@ -192,7 +192,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError«defaultParam»
 '''
 
-	def produceAsyncMethods(FInterface serviceInterface, boolean pure, boolean useDefaultParam)
+	def produceAsyncMethodDeclarations(FInterface serviceInterface, boolean pure, boolean useDefaultParam)
 '''
 	«FOR method: getMethods(serviceInterface)»
 		/**

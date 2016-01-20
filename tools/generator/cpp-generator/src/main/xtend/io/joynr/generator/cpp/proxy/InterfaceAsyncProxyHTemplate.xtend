@@ -90,9 +90,9 @@ public:
 			bool cached
 	);
 
-	«produceAsyncGetters(serviceInterface, false)»
-	«produceAsyncSetters(serviceInterface, false)»
-	«produceAsyncMethods(serviceInterface, false, true)»
+	«produceAsyncGetterDeclarations(serviceInterface, false)»
+	«produceAsyncSetterDeclarations(serviceInterface, false)»
+	«produceAsyncMethodDeclarations(serviceInterface, false, true)»
 
 	friend class «className»;
 

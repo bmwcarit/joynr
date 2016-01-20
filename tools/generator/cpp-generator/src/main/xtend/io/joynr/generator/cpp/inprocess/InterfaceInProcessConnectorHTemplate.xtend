@@ -126,12 +126,12 @@ public:
 	 */
 	bool usesClusterController() const override;
 
-	«produceSyncGetters(serviceInterface, false)»
-	«produceSyncSetters(serviceInterface, false)»
-	«produceSyncMethods(serviceInterface, false)»
-	«produceAsyncGetters(serviceInterface, false)»
-	«produceAsyncSetters(serviceInterface, false)»
-	«produceAsyncMethods(serviceInterface, false, true)»
+	«produceSyncGetterDeclarations(serviceInterface, false)»
+	«produceSyncSetterDeclarations(serviceInterface, false)»
+	«produceSyncMethodDeclarations(serviceInterface, false)»
+	«produceAsyncGetterDeclarations(serviceInterface, false)»
+	«produceAsyncSetterDeclarations(serviceInterface, false)»
+	«produceAsyncMethodDeclarations(serviceInterface, false, true)»
 
 	«produceSubscribeUnsubscribeMethods(serviceInterface, false)»
 
