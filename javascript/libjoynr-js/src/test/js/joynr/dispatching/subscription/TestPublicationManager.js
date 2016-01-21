@@ -315,7 +315,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 onChangeSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -354,7 +358,11 @@ joynrTestRequire(
                                                                     subscriptionId : onChangeSubscriptionRequest.subscriptionId
                                                                 }));
                                         stopSubscription(onChangeSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
 
@@ -369,7 +377,10 @@ joynrTestRequire(
                                         proxyId,
                                         providerId,
                                         onChangeSubscriptionRequest);
-                                expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                expect(
+                                        publicationManager.hasSubscriptionsForProviderAttribute(
+                                                provider.id,
+                                                testAttributeName)).toBeTruthy();
                                 increaseFakeTime(1);
 
                             });
@@ -383,7 +394,10 @@ joynrTestRequire(
                                 expect(dispatcherSpy.sendPublication.callCount).toEqual(1);
                                 // cleanup
                                 stopSubscription(onChangeSubscriptionRequest);
-                                expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                expect(
+                                        publicationManager.hasSubscriptionsForProviderAttribute(
+                                                provider.id,
+                                                testAttributeName)).toBeFalsy();
                             });
 
                         });
@@ -401,7 +415,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 intervalSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -449,7 +467,11 @@ joynrTestRequire(
                                     runs(function() {
                                         // cleanup
                                         stopSubscription(intervalSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
 
@@ -475,7 +497,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 largeIntervalSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -521,7 +547,11 @@ joynrTestRequire(
                                     runs(function() {
                                         // cleanup
                                         stopSubscription(largeIntervalSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
 
@@ -540,7 +570,11 @@ joynrTestRequire(
                                                 providerId,
                                                 intervalSubscriptionRequest);
 
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                         // reset first publication
                                         testAttribute.get.reset();
                                         dispatcherSpy.sendPublication.reset();
@@ -570,7 +604,10 @@ joynrTestRequire(
                                         proxyId,
                                         providerId,
                                         intervalSubscriptionRequest);
-                                expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                expect(
+                                        publicationManager.hasSubscriptionsForProviderAttribute(
+                                                provider.id,
+                                                testAttributeName)).toBeTruthy();
                                 increaseFakeTime(1);
                             });
 
@@ -604,7 +641,11 @@ joynrTestRequire(
                                     expect(testAttribute.get).not.toHaveBeenCalled();
                                     expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
                                     stopSubscription(intervalSubscriptionRequest);
-                                    expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                    expect(
+                                            publicationManager
+                                                    .hasSubscriptionsForProviderAttribute(
+                                                            provider.id,
+                                                            testAttributeName)).toBeFalsy();
                                 }, asyncGetterCallDelay);
                             });
                         });
@@ -621,7 +662,11 @@ joynrTestRequire(
                                                 providerId,
                                                 intervalSubscriptionRequest);
 
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
 
                                         // reset first publication
                                         testAttribute.get.reset();
@@ -648,7 +693,11 @@ joynrTestRequire(
                                                         {
                                                             subscriptionId : intervalSubscriptionRequest.subscriptionId
                                                         }));
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                         testAttribute.get.reset();
                                         dispatcherSpy.sendPublication.reset();
 
@@ -666,7 +715,10 @@ joynrTestRequire(
                                     providerId,
                                     onChangeSubscriptionRequest);
 
-                            expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                            expect(
+                                    publicationManager.hasSubscriptionsForProviderAttribute(
+                                            provider.id,
+                                            testAttributeName)).toBeTruthy();
 
                             // reset first publication
                             testAttribute.get.reset();
@@ -680,7 +732,10 @@ joynrTestRequire(
 
                             // cleanup
                             stopSubscription(onChangeSubscriptionRequest);
-                            expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                            expect(
+                                    publicationManager.hasSubscriptionsForProviderAttribute(
+                                            provider.id,
+                                            testAttributeName)).toBeFalsy();
                         });
 
                         it(
@@ -696,7 +751,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 onChangeSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                         // reset first publication
                                         testAttribute.get.reset();
                                         dispatcherSpy.sendPublication.reset();
@@ -705,14 +764,21 @@ joynrTestRequire(
 
                                         increaseFakeTime(asyncGetterCallDelay);
 
-                                        setTimeout(function() {
-                                            expect(dispatcherSpy.sendPublication).not
-                                                    .toHaveBeenCalled();
+                                        setTimeout(
+                                                function() {
+                                                    expect(dispatcherSpy.sendPublication).not
+                                                            .toHaveBeenCalled();
 
-                                            // cleanup
-                                            stopSubscription(onChangeSubscriptionRequest);
-                                            expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
-                                        }, asyncGetterCallDelay);
+                                                    // cleanup
+                                                    stopSubscription(onChangeSubscriptionRequest);
+                                                    expect(
+                                                            publicationManager
+                                                                    .hasSubscriptionsForProviderAttribute(
+                                                                            provider.id,
+                                                                            testAttributeName))
+                                                            .toBeFalsy();
+                                                },
+                                                asyncGetterCallDelay);
                                     });
                                 });
 
@@ -724,7 +790,10 @@ joynrTestRequire(
                                         proxyId,
                                         providerId,
                                         onChangeSubscriptionRequest);
-                                expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                expect(
+                                        publicationManager.hasSubscriptionsForProviderAttribute(
+                                                provider.id,
+                                                testAttributeName)).toBeTruthy();
                                 increaseFakeTime(1);
                             });
 
@@ -757,7 +826,11 @@ joynrTestRequire(
 
                                 setTimeout(function() {
                                     expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-                                    expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                    expect(
+                                            publicationManager
+                                                    .hasSubscriptionsForProviderAttribute(
+                                                            provider.id,
+                                                            testAttributeName)).toBeFalsy();
                                 }, asyncGetterCallDelay);
                             });
                         });
@@ -774,7 +847,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 onChangeSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -805,7 +882,11 @@ joynrTestRequire(
                                                         {
                                                             subscriptionId : onChangeSubscriptionRequest.subscriptionId
                                                         }));
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                         dispatcherSpy.sendPublication.reset();
 
                                         testAttribute.valueChanged(value);
@@ -830,7 +911,12 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 mixedSubscriptionRequestWithAsyncAttribute);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, asyncTestAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                asyncTestAttributeName))
+                                                .toBeTruthy();
                                         // wait until the first publication occurs
                                         increaseFakeTime(asyncGetterCallDelay);
 
@@ -922,7 +1008,12 @@ joynrTestRequire(
                                         expect(dispatcherSpy.sendPublication.callCount).toEqual(3);
 
                                         stopSubscription(mixedSubscriptionRequestWithAsyncAttribute);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, asyncTestAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                asyncTestAttributeName))
+                                                .toBeFalsy();
                                     });
                                 });
 
@@ -939,7 +1030,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -990,7 +1085,11 @@ joynrTestRequire(
                                     runs(function() {
                                         // cleanup
                                         stopSubscription(mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
 
@@ -1005,7 +1104,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -1051,7 +1154,11 @@ joynrTestRequire(
                                     runs(function() {
                                         // cleanup
                                         stopSubscription(mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
 
@@ -1067,7 +1174,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -1113,7 +1224,11 @@ joynrTestRequire(
                                     runs(function() {
                                         // cleanup
                                         stopSubscription(mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
                         it(
@@ -1128,7 +1243,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -1166,7 +1285,11 @@ joynrTestRequire(
 
                                         // cleanup
                                         stopSubscription(mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
 
@@ -1192,7 +1315,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 subscriptionRequestWithoutExpiryDate);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -1237,7 +1364,11 @@ joynrTestRequire(
                                     runs(function() {
                                         // cleanup
                                         stopSubscription(subscriptionRequestWithoutExpiryDate);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
                         it(
@@ -1253,7 +1384,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         increaseFakeTime(1);
                                     });
 
@@ -1394,7 +1529,11 @@ joynrTestRequire(
 
                                         // after subscription stop => NO publications are sent any more
                                         stopSubscription(mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                         testAttribute.get.reset();
                                         dispatcherSpy.sendPublication.reset();
                                         increaseFakeTime(mixedSubscriptionRequest.qos.minInterval);
@@ -1415,7 +1554,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                         // reset first publication
                                         testAttribute.get.reset();
                                         dispatcherSpy.sendPublication.reset();
@@ -1428,7 +1571,11 @@ joynrTestRequire(
 
                                         // cleanup
                                         stopSubscription(mixedSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
 
@@ -1439,7 +1586,10 @@ joynrTestRequire(
                                         proxyId,
                                         providerId,
                                         mixedSubscriptionRequest);
-                                expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                expect(
+                                        publicationManager.hasSubscriptionsForProviderAttribute(
+                                                provider.id,
+                                                testAttributeName)).toBeTruthy();
                                 increaseFakeTime(1);
                             });
 
@@ -1462,7 +1612,10 @@ joynrTestRequire(
                                 expect(testAttribute.get).not.toHaveBeenCalled();
                                 expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
                                 stopSubscription(mixedSubscriptionRequest);
-                                expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                expect(
+                                        publicationManager.hasSubscriptionsForProviderAttribute(
+                                                provider.id,
+                                                testAttributeName)).toBeFalsy();
                             });
                         });
 
@@ -1605,7 +1758,11 @@ joynrTestRequire(
                                                 proxyId,
                                                 providerId,
                                                 intervalSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeTruthy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeTruthy();
                                         //increase the fake time to ensure proper async processing of the subscription request
                                         increaseFakeTime(1);
                                     });
@@ -1633,7 +1790,11 @@ joynrTestRequire(
                                                                 }));
                                         // cleanup
                                         stopSubscription(intervalSubscriptionRequest);
-                                        expect(publicationManager.hasSubscriptionsForProviderAttribute(provider.id, testAttributeName)).toBeFalsy();
+                                        expect(
+                                                publicationManager
+                                                        .hasSubscriptionsForProviderAttribute(
+                                                                provider.id,
+                                                                testAttributeName)).toBeFalsy();
                                     });
                                 });
                     });
