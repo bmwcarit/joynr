@@ -146,12 +146,12 @@ std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
     }
 }
 
-const int PooledCurlHandle::CONNECTIONS_PER_HANDLE = 3;
+const std::int32_t PooledCurlHandle::CONNECTIONS_PER_HANDLE = 3;
 
 PooledCurlHandle::PooledCurlHandle() : hosts(), handle(nullptr)
 {
     handle = curl_easy_init();
-    curl_easy_setopt(handle, CURLOPT_MAXCONNECTS, (long)CONNECTIONS_PER_HANDLE);
+    curl_easy_setopt(handle, CURLOPT_MAXCONNECTS, CONNECTIONS_PER_HANDLE);
 }
 
 PooledCurlHandle::~PooledCurlHandle()
@@ -193,8 +193,8 @@ void PooledCurlHandle::clearHandle()
     curl_easy_setopt(handle, CURLOPT_POST, 0); // false
     curl_easy_setopt(handle, CURLOPT_TIMEOUT_MS, 0);
     curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT_MS, 0);
-    curl_easy_setopt(handle, CURLOPT_HTTPHEADER, NULL);
-    curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, NULL);
+    curl_easy_setopt(handle, CURLOPT_HTTPHEADER, nullptr);
+    curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, nullptr);
 }
 
 // TODO make this configurable

@@ -19,7 +19,7 @@
 #ifndef WEBSOCKETSETTINGS_H
 #define WEBSOCKETSETTINGS_H
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include <string>
@@ -37,9 +37,9 @@ public:
     static const std::string& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
 
     explicit WebSocketSettings(Settings& settings);
-    WebSocketSettings(const WebSocketSettings& other);
+    WebSocketSettings(const WebSocketSettings& other) = default;
 
-    ~WebSocketSettings();
+    ~WebSocketSettings() = default;
 
     std::string getClusterControllerMessagingUrl() const;
     void setClusterControllerMessagingUrl(const std::string& url);
@@ -53,7 +53,7 @@ private:
     void operator=(const WebSocketSettings& other);
 
     Settings& settings;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketSettings);
     void checkSettings() const;
 };
 

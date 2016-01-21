@@ -30,56 +30,56 @@ namespace joynr
 {
 // Serializes a JoynrRuntimeException
 template <>
-void ClassSerializer<exceptions::JoynrRuntimeException>::serialize(const exceptions::JoynrRuntimeException& exception, std::ostream& o);
+void ClassSerializerImpl<exceptions::JoynrRuntimeException>::serialize(const exceptions::JoynrRuntimeException& exception, std::ostream& o);
 
 // Deserializes a JoynrRuntimeException
 template <>
-void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exceptions::JoynrRuntimeException& t, IObject& o);
+void ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(exceptions::JoynrRuntimeException& t, IObject& o);
 
 // Serializes a JoynrTimeOutException
 template <>
-void ClassSerializer<exceptions::JoynrTimeOutException>::serialize(const exceptions::JoynrTimeOutException& exception, std::ostream& o);
+void ClassSerializerImpl<exceptions::JoynrTimeOutException>::serialize(const exceptions::JoynrTimeOutException& exception, std::ostream& o);
 
 // Deserializes a JoynrTimeOutException
 template <>
-void ClassDeserializer<exceptions::JoynrTimeOutException>::deserialize(exceptions::JoynrTimeOutException& t, IObject& o);
+void ClassDeserializerImpl<exceptions::JoynrTimeOutException>::deserialize(exceptions::JoynrTimeOutException& t, IObject& o);
 
 // Serializes a DiscoveryException
 template <>
-void ClassSerializer<exceptions::DiscoveryException>::serialize(const exceptions::DiscoveryException& exception, std::ostream& o);
+void ClassSerializerImpl<exceptions::DiscoveryException>::serialize(const exceptions::DiscoveryException& exception, std::ostream& o);
 
 // Deserializes a DiscoveryException
 template <>
-void ClassDeserializer<exceptions::DiscoveryException>::deserialize(exceptions::DiscoveryException& t, IObject& o);
+void ClassDeserializerImpl<exceptions::DiscoveryException>::deserialize(exceptions::DiscoveryException& t, IObject& o);
 
 // Serializes a PublicationMissedException
 template <>
-void ClassSerializer<exceptions::PublicationMissedException>::serialize(const exceptions::PublicationMissedException& exception, std::ostream& o);
+void ClassSerializerImpl<exceptions::PublicationMissedException>::serialize(const exceptions::PublicationMissedException& exception, std::ostream& o);
 
 // Deserializes a PublicationMissedException
 template <>
-void ClassDeserializer<exceptions::PublicationMissedException>::deserialize(exceptions::PublicationMissedException& t, IObject& o);
+void ClassDeserializerImpl<exceptions::PublicationMissedException>::deserialize(exceptions::PublicationMissedException& t, IObject& o);
 
 // Serializes a ApplicationException
 template <>
-void ClassSerializer<exceptions::ApplicationException>::serialize(const exceptions::ApplicationException& exception, std::ostream& o);
+void ClassSerializerImpl<exceptions::ApplicationException>::serialize(const exceptions::ApplicationException& exception, std::ostream& o);
 
 // Deserializes a ApplicationException
 template <>
-void ClassDeserializer<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o);
+void ClassDeserializerImpl<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o);
 
 // Serializes a ProviderRuntimeException
 template <>
-void ClassSerializer<exceptions::ProviderRuntimeException>::serialize(const exceptions::ProviderRuntimeException& exception, std::ostream& o);
+void ClassSerializerImpl<exceptions::ProviderRuntimeException>::serialize(const exceptions::ProviderRuntimeException& exception, std::ostream& o);
 // Deserializes a ProviderRuntimeException
 template <>
-void ClassDeserializer<exceptions::ProviderRuntimeException>::deserialize(exceptions::ProviderRuntimeException& t, IObject& o);
+void ClassDeserializerImpl<exceptions::ProviderRuntimeException>::deserialize(exceptions::ProviderRuntimeException& t, IObject& o);
 
 // Serializes a MethodInvocationException
 template <>
-void ClassSerializer<exceptions::MethodInvocationException>::serialize(const exceptions::MethodInvocationException& exception, std::ostream& o);
+void ClassSerializerImpl<exceptions::MethodInvocationException>::serialize(const exceptions::MethodInvocationException& exception, std::ostream& o);
 // Deserializes a MethodInvocationException
 template <>
-void ClassDeserializer<exceptions::MethodInvocationException>::deserialize(exceptions::MethodInvocationException& t, IObject& o);
+void ClassDeserializerImpl<exceptions::MethodInvocationException>::deserialize(exceptions::MethodInvocationException& t, IObject& o);
 } // namespace joynr
 #endif // JOYNREXCEPTIONSERIALIZER_H

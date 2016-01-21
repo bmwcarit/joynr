@@ -34,11 +34,19 @@ class JOYNRCOMMON_EXPORT Optional
 private:
     T value;
     bool invalid;
-    Optional<T>();
+    Optional();
 
 public:
-    Optional<T>(const T& value);
-    static Optional<T> createNull();
+    Optional(const T& value);
+    Optional(T&& value);
+
+    Optional(const Optional&) = default;
+    Optional(Optional&&) = default;
+
+    Optional& operator=(Optional&&) = default;
+    Optional& operator=(const Optional&) = default;
+
+    static Optional createNull();
 
     explicit operator bool() const;
 
@@ -63,6 +71,12 @@ Optional<T>::Optional(const T& value)
 }
 
 template <typename T>
+Optional<T>::Optional(T&& value)
+        : value(std::move(value)), invalid(false)
+{
+}
+
+template <typename T>
 Optional<T> Optional<T>::createNull()
 {
     return Optional();
@@ -80,5 +94,5 @@ T Optional<T>::getValue() const
     assert(!this->invalid && "Optional is not initialized properly, it holds uninitialized value!");
     return value;
 }
-}
+} // namespace joynr
 #endif // JOYNROPTIONAL_H

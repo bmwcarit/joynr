@@ -25,7 +25,7 @@
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/InProcessAddress.h"
 #include "joynr/LibJoynrDirectories.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <string>
 #include <memory>
@@ -39,28 +39,28 @@ class JOYNR_EXPORT InProcessDispatcher : public IDispatcher, public IRequestCall
 {
 public:
     InProcessDispatcher();
-    virtual ~InProcessDispatcher();
+    ~InProcessDispatcher() override;
 
-    virtual void addReplyCaller(const std::string& requestReplyId,
-                                std::shared_ptr<IReplyCaller> replyCaller,
-                                const MessagingQos& qosSettings);
+    void addReplyCaller(const std::string& requestReplyId,
+                        std::shared_ptr<IReplyCaller> replyCaller,
+                        const MessagingQos& qosSettings) override;
 
-    virtual void removeReplyCaller(const std::string& requestReplyId);
+    void removeReplyCaller(const std::string& requestReplyId) override;
 
-    virtual void addRequestCaller(const std::string& participantId,
-                                  std::shared_ptr<RequestCaller> requestCaller);
+    void addRequestCaller(const std::string& participantId,
+                          std::shared_ptr<RequestCaller> requestCaller) override;
 
-    virtual void removeRequestCaller(const std::string& participantId);
+    void removeRequestCaller(const std::string& participantId) override;
 
-    virtual void receive(const JoynrMessage& message);
+    void receive(const JoynrMessage& message) override;
 
-    virtual void registerSubscriptionManager(ISubscriptionManager* subscriptionManager);
+    void registerSubscriptionManager(ISubscriptionManager* subscriptionManager) override;
 
-    virtual void registerPublicationManager(PublicationManager* publicationManager);
+    void registerPublicationManager(PublicationManager* publicationManager) override;
 
-    std::shared_ptr<RequestCaller> lookupRequestCaller(const std::string& participantId);
+    std::shared_ptr<RequestCaller> lookupRequestCaller(const std::string& participantId) override;
 
-    bool containsRequestCaller(const std::string& participantId);
+    bool containsRequestCaller(const std::string& participantId) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessDispatcher);
@@ -68,7 +68,7 @@ private:
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
     ISubscriptionManager* subscriptionManager;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(InProcessDispatcher);
 };
 
 } // namespace joynr

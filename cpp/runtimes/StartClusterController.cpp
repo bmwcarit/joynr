@@ -17,7 +17,7 @@
  * #L%
  */
 #include "cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Util.h"
 #include <string>
 
@@ -26,14 +26,13 @@ using namespace joynr;
 int main(int argc, char* argv[])
 {
     // init a logger
-    joynr_logging::Logger* logger =
-            joynr_logging::Logging::getInstance()->getLogger("ClusterController", "Runtime");
+    Logger logger("Runtime");
 
     // Check the usage
     std::string programName(argv[0]);
     if (argc == 1) {
-        LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
-        LOG_INFO(logger, FormatString("USAGE: %1 <file.settings>...").arg(programName).str());
+        JOYNR_LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
+        JOYNR_LOG_INFO(logger, "USAGE: {}  <file.settings>...", programName);
     }
 
     // Object that holds all the settings
@@ -45,15 +44,12 @@ int main(int argc, char* argv[])
         std::string settingsFileName(argv[i]);
 
         // Read the settings file
-        LOG_INFO(logger, FormatString("Loading settings file: %1").arg(settingsFileName).str());
+        JOYNR_LOG_INFO(logger, "Loading settings file: {}", settingsFileName);
         Settings currentSettings(settingsFileName);
 
         // Check for errors
         if (!currentSettings.isLoaded()) {
-            LOG_FATAL(logger,
-                      FormatString("Settings file \"%1\" doesn't exist.")
-                              .arg(settingsFileName)
-                              .str());
+            JOYNR_LOG_FATAL(logger, "Settings file \"{}\" doesn't exist.", settingsFileName);
             return 1;
         }
 

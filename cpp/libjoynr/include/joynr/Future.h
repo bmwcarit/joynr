@@ -20,12 +20,12 @@
 #define FUTURE_H
 
 #include "joynr/RequestStatus.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <cassert>
 #include <functional>
 #include <joynr/Util.h>
-#include <stdint.h>
+#include <cstdint>
 #include "joynr/TypeUtil.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Semaphore.h"
@@ -73,7 +73,7 @@ struct IndexList<0>
  * @return the new tuple containing the subset
  */
 template <size_t... Indices, typename Tuple>
-auto tupleSubset(const Tuple& tuple, IntegerList<Indices...> indices)
+auto tupleSubset(const Tuple& tuple, IntegerList<Indices...>)
         -> decltype(std::make_tuple(std::get<Indices>(tuple)...))
 {
     return std::make_tuple(std::get<Indices>(tuple)...);
@@ -109,12 +109,9 @@ public:
      * @brief Constructor
      */
     Future<Ts...>()
-            : error(NULL), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
+            : error(nullptr), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
-        LOG_INFO(logger,
-                 FormatString("resultReceived.getStatus():%1")
-                         .arg(resultReceived.getStatus())
-                         .str());
+        JOYNR_LOG_INFO(logger, "resultReceived.getStatus(): {}", resultReceived.getStatus());
     }
 
     /** @brief ResultCopier helper to copy tuple entries to function arguments */
@@ -186,7 +183,7 @@ public:
      * @param values The typed return values from the request.
      * @throws JoynrException if the request is not successful
      */
-    void get(uint16_t timeOut, Ts&... values)
+    void get(std::uint16_t timeOut, Ts&... values)
     {
         wait(timeOut);
 
@@ -217,7 +214,7 @@ public:
      * @throws JoynrTimeOutException if the request does not finish in the
      * expected time.
      */
-    void wait(uint16_t timeOut)
+    void wait(std::uint16_t timeOut)
     {
         if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
             resultReceived.notify();
@@ -232,10 +229,7 @@ public:
      */
     void wait()
     {
-        LOG_INFO(logger,
-                 FormatString("resultReceived.getStatus():%1")
-                         .arg(resultReceived.getStatus())
-                         .str());
+        JOYNR_LOG_INFO(logger, "resultReceived.getStatus():{}", resultReceived.getStatus());
         resultReceived.wait();
         resultReceived.notify();
     }
@@ -256,7 +250,7 @@ public:
      */
     void onSuccess(Ts... results)
     {
-        LOG_INFO(logger, "onSuccess has been invoked");
+        JOYNR_LOG_INFO(logger, "onSuccess has been invoked");
         status.setCode(RequestStatusCode::OK);
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(results...);
@@ -268,11 +262,21 @@ public:
      * @param status The failure status
      * @param error The JoynrException describing the failure
      */
+    void onError(const RequestStatusCode& status, const exceptions::JoynrException& error)
+    {
+        onError(RequestStatus(status), error);
+    }
+
+    /**
+     * @brief Callback which indicates the operation has finished and has failed.
+     * @param status The failure status
+     * @param error The JoynrException describing the failure
+     */
     void onError(const RequestStatus& status, const exceptions::JoynrException& error)
     {
-        LOG_INFO(logger, "onError has been invoked");
+        JOYNR_LOG_INFO(logger, "onError has been invoked");
         this->error.reset(error.clone());
-        this->status = RequestStatus(status);
+        this->status = status;
         resultReceived.notify();
     }
 
@@ -282,12 +286,11 @@ private:
     std::tuple<Ts...> results;
     Semaphore resultReceived;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(Future);
 };
 
 template <class... Ts>
-joynr_logging::Logger* Future<Ts...>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "Future");
+INIT_LOGGER(Future<Ts...>);
 
 template <>
 /**
@@ -297,7 +300,7 @@ class Future<void>
 {
 
 public:
-    Future<void>() : error(NULL), status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
+    Future<void>() : error(nullptr), status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
     {
     }
 
@@ -325,7 +328,7 @@ public:
      * @param timeOut The maximum number of milliseconds to wait before this request times out
      * @throws JoynrException if the request is not successful
      */
-    void get(uint16_t timeOut)
+    void get(std::uint16_t timeOut)
     {
         wait(timeOut);
 
@@ -354,7 +357,7 @@ public:
      * @throws JoynrTimeOutException if the request does not finish in the
      * expected time.
      */
-    void wait(uint16_t timeOut)
+    void wait(std::uint16_t timeOut)
     {
         if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
             resultReceived.notify();
@@ -399,17 +402,27 @@ public:
      * @param status The failure status
      * @param error The JoynrException describing the failure
      */
+    void onError(const RequestStatusCode& status, const exceptions::JoynrException& error)
+    {
+        onError(RequestStatus(status), error);
+    }
+
+    /**
+     * @brief Callback which indicates the operation has finished and has failed.
+     * @param status The failure status
+     * @param error The JoynrException describing the failure
+     */
     void onError(const RequestStatus& status, const exceptions::JoynrException& error)
     {
         this->error.reset(error.clone());
-        this->status = RequestStatus(status);
+        this->status = status;
         resultReceived.notify();
     }
 
 private:
     std::shared_ptr<exceptions::JoynrException> error;
     RequestStatus status;
-    joynr::Semaphore resultReceived;
+    Semaphore resultReceived;
 };
 
 } // namespace joynr

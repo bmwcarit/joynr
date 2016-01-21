@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.13.0)
+project(joynr-0.14.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 13)
+set(JOYNR_MINOR_VERSION 14)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -33,6 +33,8 @@ set_property(
 )
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+include(Sanitizers)
+
 message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
 message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
 message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})
@@ -112,10 +114,11 @@ option(
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
 if(${ENABLE_CLANG_FORMATTER})
-    set(CLANG_FORMAT_PATH "CLANG_FORMAT_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-format' executable")
     LocateProgram(clang-format CLANG_FORMAT_PATH)
+    add_custom_target(format)
 endif(${ENABLE_CLANG_FORMATTER})
 
+include(AddClangFormat)
 #### END clang-format ####
 
 
@@ -133,7 +136,6 @@ if("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
     message(STATUS "option ENABLE_INCLUDE_WHAT_YOU_USE=" ${ENABLE_INCLUDE_WHAT_YOU_USE})
 
     if(${ENABLE_INCLUDE_WHAT_YOU_USE})
-        set(INCLUDE_WHAT_YOU_USE_PATH "INCLUDE_WHAT_YOU_USE_PATH-NOTFOUND" CACHE FILEPATH "Path to 'include-what-you-use' executable")
         LocateProgram(include-what-you-use INCLUDE_WHAT_YOU_USE_PATH)
     endif(${ENABLE_INCLUDE_WHAT_YOU_USE})
 
@@ -163,12 +165,38 @@ message(STATUS "option ENABLE_CLANG_TIDY=" ${ENABLE_CLANG_TIDY})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(${ENABLE_CLANG_TIDY})
-    set(CLANG_TIDY_PATH "CLANG_TIDY_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-tidy' executable")
     LocateProgram(clang-tidy CLANG_TIDY_PATH)
     add_custom_target(tidy)
-endif(${ENABLE_CLANG_TIDY})
 
-set(CLANG_TIDY_OPTIONS -checks=* CACHE LIST "additional options for clang-tidy")
+    set(
+        CLANG_TIDY_OPTIONS
+        -checks=*
+        -header-filter=.*joynr.*
+        CACHE LIST "additional options for clang-tidy")
+
+    set(CLANG_TIDY_TARGET_FILES "" CACHE LIST "files which will be cleaned up by clang-tidy")
+    option(CLANG_TIDY_APPLY_FIXES "files which will be cleaned up by clang-tidy" ON)
+    option(CLANG_TIDY_FORMAT "format files after applying fixes" ON)
+
+    set(CLANG_TIDY_FIXES_PATH "${CMAKE_BINARY_DIR}/tidy-fixes/" CACHE FILEPATH "location of exported fixes from 'clang-tidy'")
+    file(MAKE_DIRECTORY ${CLANG_TIDY_FIXES_PATH})
+
+    if(${CLANG_TIDY_APPLY_FIXES})
+        LocateProgram(clang-apply-replacements CLANG_APPLY_REPLACEMENTS_PATH)
+
+        set(CLANG_APPLY_REPLACEMENTS_OPTIONS "-remove-change-desc-files")
+        if(${CLANG_TIDY_FORMAT})
+            set(CLANG_APPLY_REPLACEMENTS_OPTIONS ${CLANG_APPLY_REPLACEMENTS_OPTIONS} "-format")
+        endif(${CLANG_TIDY_FORMAT})
+
+        add_custom_command(TARGET tidy
+                           POST_BUILD
+                           COMMAND ${CLANG_APPLY_REPLACEMENTS_PATH} ${CLANG_APPLY_REPLACEMENTS_OPTIONS} ${CLANG_TIDY_FIXES_PATH}
+                           VERBATIM
+        )
+    endif(${CLANG_TIDY_APPLY_FIXES})
+
+endif(${ENABLE_CLANG_TIDY})
 
 include(AddClangTidy)
 
@@ -181,16 +209,12 @@ option(
     ON
 )
 
-message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
-
 if(NOT DEFINED JOYNR_SERVER)
     set(JOYNR_SERVER "localhost:8080")
 endif(NOT DEFINED JOYNR_SERVER)
 message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 
 message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
-
-include(AddClangFormat)
 
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
@@ -216,12 +240,6 @@ if(${ENABLE_GCOV})
     #set(LDFLAGS "{$LDFLAGS} -fprofile-arcs -ftest-coverage")
 endif(${ENABLE_GCOV})
 
-message(STATUS "############ Import: Qt5 ############")
-# Find includes in corresponding build directories (Qt MOCs are created in current build dir)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# Tell CMake to run moc when necessary:
-set(CMAKE_AUTOMOC ON)
-
 # Doxygen documentation build
 if(ENABLE_DOXYGEN)
     find_package(Doxygen REQUIRED)
@@ -234,22 +252,47 @@ if(ENABLE_DOXYGEN)
     )
 endif(ENABLE_DOXYGEN)
 
-find_package(Qt5Core REQUIRED)
+message(STATUS "############ Import: Qt5 ############")
 
-message(STATUS "variable Qt5Core_VERSION_STRING=${Qt5Core_VERSION_STRING}")
-message(STATUS "variable Qt5Core_INCLUDE_DIRS=${Qt5Core_INCLUDE_DIRS}")
-get_target_property(Qt5Core_LOCATION Qt5::Core LOCATION)
-message(STATUS "variable Qt5::Core LOCATION=${Qt5Core_LOCATION}")
-message(STATUS "variable Qt5Core_LIBRARIES=${Qt5Core_LIBRARIES}")
-message(STATUS "variable Qt5Core_DEFINITIONS=${Qt5Core_DEFINITIONS}")
+# Find includes in corresponding build directories (Qt MOCs are created in current build dir)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5WebSockets REQUIRED)
-message(STATUS "variable Qt5WebSockets_VERSION_STRING=${Qt5WebSockets_VERSION_STRING}")
-message(STATUS "variable Qt5WebSockets_INCLUDE_DIRS=${Qt5WebSockets_INCLUDE_DIRS}")
-get_target_property(Qt5WebSockets_LOCATION Qt5::WebSockets LOCATION)
-message(STATUS "variable Qt5::WebSockets LOCATION=${Qt5WebSockets_LOCATION}")
-message(STATUS "variable Qt5WebSockets_LIBRARIES=${Qt5WebSockets_LIBRARIES}")
-message(STATUS "variable Qt5WebSockets_DEFINITIONS=${Qt5WebSockets_DEFINITIONS}")
+find_package(Qt5Core)
+find_package(Qt5WebSockets)
+find_package(Qt5Sql)
+
+# Qt-Websockets and Qt-Core is only needed for the Cluster-Controller
+
+IF(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
+
+    message(STATUS "variable Qt5Core_VERSION_STRING=${Qt5Core_VERSION_STRING}")
+    message(STATUS "variable Qt5Core_INCLUDE_DIRS=${Qt5Core_INCLUDE_DIRS}")
+    get_target_property(Qt5Core_LOCATION Qt5::Core LOCATION)
+    message(STATUS "variable Qt5::Core LOCATION=${Qt5Core_LOCATION}")
+    message(STATUS "variable Qt5Core_LIBRARIES=${Qt5Core_LIBRARIES}")
+    message(STATUS "variable Qt5Core_DEFINITIONS=${Qt5Core_DEFINITIONS}")
+
+    message(STATUS "variable Qt5WebSockets_VERSION_STRING=${Qt5WebSockets_VERSION_STRING}")
+    message(STATUS "variable Qt5WebSockets_INCLUDE_DIRS=${Qt5WebSockets_INCLUDE_DIRS}")
+    get_target_property(Qt5WebSockets_LOCATION Qt5::WebSockets LOCATION)
+    message(STATUS "variable Qt5::WebSockets LOCATION=${Qt5WebSockets_LOCATION}")
+    message(STATUS "variable Qt5WebSockets_LIBRARIES=${Qt5WebSockets_LIBRARIES}")
+    message(STATUS "variable Qt5WebSockets_DEFINITIONS=${Qt5WebSockets_DEFINITIONS}")
+
+    message(STATUS "variable Qt5Sql_VERSION_STRING=${Qt5Sql_VERSION_STRING}")
+    message(STATUS "variable Qt5Sql_INCLUDE_DIRS=${Qt5Sql_INCLUDE_DIRS}")
+    get_target_property(Qt5Sql_LOCATION Qt5::Sql LOCATION)
+    message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
+    message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
+    message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
+    
+ELSE(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
+
+    SET(BUILD_CLUSTER_CONTROLLER OFF)
+
+ENDIF(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
+
+message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
 
 find_package(Qt5Test REQUIRED)
 message(STATUS "variable Qt5Test_VERSION_STRING=${Qt5Test_VERSION_STRING}")
@@ -258,18 +301,6 @@ get_target_property(Qt5Test_LOCATION Qt5::Test LOCATION)
 message(STATUS "variable Qt5::Test LOCATION=${Qt5Test_LOCATION}")
 message(STATUS "variable Qt5Test_LIBRARIES=${Qt5Test_LIBRARIES}")
 message(STATUS "variable Qt5Test_DEFINITIONS=${Qt5Test_DEFINITIONS}")
-
-include_directories(
-    SYSTEM ${Qt5Core_INCLUDE_DIRS} ${Qt5WebSockets_INCLUDE_DIRS}
-)
-find_package(Qt5Sql REQUIRED)
-message(STATUS "variable Qt5Sql_VERSION_STRING=${Qt5Sql_VERSION_STRING}")
-message(STATUS "variable Qt5Sql_INCLUDE_DIRS=${Qt5Sql_INCLUDE_DIRS}")
-get_target_property(Qt5Sql_LOCATION Qt5::Sql LOCATION)
-message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
-message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
-message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
-
 
 ######## Add Boost ########
 
@@ -280,7 +311,6 @@ find_package(Boost 1.56.0 REQUIRED
 )
 
 include_directories(${Boost_INCLUDE_DIRS})
-
 
 message(STATUS "############ Import: cURL ############")
 if(${WIN32})
@@ -352,8 +382,6 @@ else(${WIN32})
     find_package(CURL REQUIRED)
 endif(${WIN32})
 
-include(AddExternalProject)
-
 message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
 message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
 message(STATUS "variable CURL_INCLUDE_DIRS=" ${CURL_INCLUDE_DIRS})
@@ -366,6 +394,52 @@ endif()
 include_directories(
    SYSTEM ${CURL_INCLUDE_DIRS}
 )
+
+include(AddExternalProject)
+
+### Add libwebsockets ###########################################################
+if (USE_PLATFORM_LIBWEBSOCKETS)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(libwebsockets REQUIRED libwebsockets)
+else(USE_PLATFORM_LIBWEBSOCKETS)
+    AddExternalProject(
+        libwebsockets
+        GIT_REPOSITORY https://github.com/warmcat/libwebsockets
+        GIT_TAG v1.5-chrome47-firefox41
+        TIMEOUT 10
+        # Disable svn update
+        UPDATE_COMMAND ""
+        PATCH_COMMAND patch -f -d ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets -p1 < ${CMAKE_SOURCE_DIR}/CMake/libwebsockets-FixEmptyExtensions.patch
+        # Configure libwebsockets library features
+        CMAKE_ARGS  -DLWS_WITH_SSL=0
+                    -DLWS_WITHOUT_CLIENT=0
+                    -DLWS_WITHOUT_SERVER=0
+                    -DLWS_WITHOUT_EXTENSIONS=1
+                    -DLWS_WITHOUT_TESTAPPS=1
+                    -DLWS_WITHOUT_TEST_SERVER=1
+                    -DLWS_WITHOUT_TEST_SERVER_EXTPOLL=1
+                    -DLWS_WITHOUT_TEST_PING=1
+                    -DLWS_WITHOUT_TEST_CLIENT=1
+                    -DLWS_WITH_ZLIB=OFF
+                    -DLWS_WITHOUT_TEST_FRAGGLE=1
+                    -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}
+                    -DCMAKE_POSITION_INDEPENDENT_CODE=1
+        BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets.a
+    )
+
+    ExternalProject_Get_Property(libwebsockets SOURCE_DIR)
+    ExternalProject_Get_Property(libwebsockets BINARY_DIR)
+
+    set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets.a )
+    set(libwebsockets_INCLUDE_DIRS
+        ${SOURCE_DIR}/lib
+        ${BINARY_DIR}
+    )
+endif(USE_PLATFORM_LIBWEBSOCKETS)
+
+
+message(STATUS "variable libwebsockets_LIBRARIES=${libwebsockets_LIBRARIES}")
+message(STATUS "variable libwebsockets_INCLUDE_DIRS=${libwebsockets_INCLUDE_DIRS}")
 
 # ---------------------------------------------- Build library --------------------------------------------------
 
@@ -451,16 +525,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -pthread")
     endif(${WIN32})
     # check GNU CXX compiler version
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.7" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.7")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
         message(STATUS "C++11 activated.")
         add_definitions(-D_GLIBCXX_USE_NANOSLEEP)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.3" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.3")
-        message(WARNING "C++0x activated. If you get any errors update to a compiler which fully supports C++11")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
     else()
-        message(FATAL_ERROR "C++11 needed. Therefore a gcc compiler with a version higher than 4.3 is needed.")
-    endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.7" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.7")
+        message(FATAL_ERROR "C++11 and a gcc compiler with a version higher than 4.9 is needed.")
+    endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -511,6 +582,8 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 
 ### Add spdlog ###########################################################
+find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
+
 message(STATUS "############ Download: spdlog ############")
 set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
 set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
@@ -604,16 +677,16 @@ install(
 
 # Create the JoynrConfig.cmake and JoynrConfigVersion files
 set(
-    JoynrConfig_LIBRARIES
+    JoynrConfig_LIB_COMMON_LIBRARIES
     JoynrCommon
     Joynr
     jsonserializer
+    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
-    LIST(
-        APPEND
-        JoynrConfig_LIBRARIES
+    set(
+        JoynrConfig_LIB_INPROCESS_LIBRARIES
         JoynrClusterController
         JoynrClusterControllerRuntime
     )
@@ -621,18 +694,12 @@ endif(${BUILD_CLUSTER_CONTROLLER})
 
 set(
     JoynrConfig_LIB_WS_LIBRARIES
-    JoynrCommon
-    Joynr
-    jsonserializer
     JoynrWsRuntime
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrConfig_LIB_DBUS_LIBRARIES
-        JoynrCommon
-        Joynr
-        jsonserializer
         JoynrDbusRuntime
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -644,19 +711,19 @@ get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLI
 message(STATUS "variable jsonserializer_PUBLIC_INCLUDE_DIRECTORY=" ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY})
 
 set(
-    JoynrConfig_INCLUDE_DIRS
+    JoynrConfig_LIB_COMMON_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_SOURCE_DIR}
+    ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
 if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
     get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
-    LIST(
-        APPEND
-        JoynrConfig_INCLUDE_DIRS
+    set(
+        JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS
         ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
         ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
     )
@@ -692,7 +759,7 @@ file(
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_INCLUDE_DIR}"
 )
-set(JoynrConfig_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
+set(JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_TARGETS_FILE "\${CMAKE_CURRENT_LIST_DIR}/JoynrTargets.cmake")
 file(
     RELATIVE_PATH RELATIVE_INSTALL_BIN_DIR

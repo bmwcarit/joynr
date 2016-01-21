@@ -27,38 +27,26 @@
 
 #include "joynr/JoynrExport.h"
 
-#include <QObject>
 #include <string>
-#include <QDataStream>
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/CommunicationMiddleware.h"
 
 namespace joynr
 {
 
-class JOYNR_EXPORT CapabilityEntry : QObject
+class JOYNR_EXPORT CapabilityEntry
 {
-    Q_OBJECT
-    Q_PROPERTY(std::string interface READ getInterfaceName WRITE setInterfaceName)
-    Q_PROPERTY(std::string domain READ getDomain WRITE setDomain)
-    Q_PROPERTY(joynr::types::ProviderQos qos READ getQos WRITE setQos)
-    Q_PROPERTY(std::string participantId READ getParticipantId WRITE setParticipantId)
-    Q_PROPERTY(std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections READ
-                       getMiddlewareConnections WRITE setMiddlewareConnections)
-    Q_PROPERTY(bool global READ isGlobal)
-
 public:
     CapabilityEntry();
 
-    CapabilityEntry(const CapabilityEntry& other);
+    CapabilityEntry(const CapabilityEntry& other) = default;
 
     CapabilityEntry(const std::string& domain,
                     const std::string& interfaceName,
                     joynr::types::ProviderQos qos,
                     const std::string& participantId,
                     std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
-                    bool isGlobal,
-                    QObject* parent = 0);
+                    bool isGlobal);
 
     CapabilityEntry& operator=(const CapabilityEntry& other);
 
@@ -97,7 +85,5 @@ private:
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::CapabilityEntry)
 
 #endif // CAPABILITYENTRY_H

@@ -26,9 +26,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* MessagingSettings::logger = Logging::getInstance()->getLogger("MSG", "MessagingSettings");
+INIT_LOGGER(MessagingSettings);
 
 MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
 {
@@ -39,10 +37,7 @@ MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
 
 MessagingSettings::MessagingSettings(const MessagingSettings& other) : settings(other.settings)
 {
-}
-
-MessagingSettings::~MessagingSettings()
-{
+    checkSettings();
 }
 
 const std::string& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
@@ -213,9 +208,9 @@ const std::string& MessagingSettings::SETTING_LONGPOLL_TIMEOUT_MS()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS()
 {
-    static const int64_t value(10 * 60 * 1000); // 10 minutes
+    static const std::int64_t value(10 * 60 * 1000); // 10 minutes
     return value;
 }
 
@@ -225,9 +220,9 @@ const std::string& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
 {
-    static const int64_t value(1 * 60 * 1000); // 1 minute
+    static const std::int64_t value(1 * 60 * 1000); // 1 minute
     return value;
 }
 
@@ -237,9 +232,9 @@ const std::string& MessagingSettings::SETTING_BOUNCEPROXY_TIMEOUT_MS()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_BOUNCEPROXY_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_BOUNCEPROXY_TIMEOUT_MS()
 {
-    static const int64_t value(20 * 1000); // 20 seconds
+    static const std::int64_t value(20 * 1000); // 20 seconds
     return value;
 }
 
@@ -249,9 +244,9 @@ const std::string& MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
 {
-    static const int64_t value(40 * 1000); // 40 seconds
+    static const std::int64_t value(40 * 1000); // 40 seconds
     return value;
 }
 
@@ -261,9 +256,9 @@ const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
+std::int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
 {
-    static const int64_t value(10 * 60 * 1000); // 10 minutes
+    static const std::int64_t value(10 * 60 * 1000); // 10 minutes
     return value;
 }
 
@@ -279,7 +274,7 @@ std::string MessagingSettings::getBounceProxyUrlString() const
 
 void MessagingSettings::setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl)
 {
-    std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString().toStdString();
+    std::string url = bounceProxyUrl.getBounceProxyChannelsBaseUrl().toString();
     settings.set(SETTING_BOUNCE_PROXY_URL(), url);
 }
 
@@ -318,12 +313,12 @@ std::string MessagingSettings::getCapabilitiesDirectoryParticipantId() const
     return settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID());
 }
 
-int64_t MessagingSettings::getIndex() const
+std::int64_t MessagingSettings::getIndex() const
 {
-    return settings.get<int64_t>(SETTING_INDEX());
+    return settings.get<std::int64_t>(SETTING_INDEX());
 }
 
-void MessagingSettings::setIndex(int64_t index)
+void MessagingSettings::setIndex(std::int64_t index)
 {
     settings.set(SETTING_INDEX(), index);
 }
@@ -408,52 +403,52 @@ void MessagingSettings::setMessagingPropertiesPersistenceFilename(const std::str
     settings.set(SETTING_PERSISTENCE_FILENAME(), filename);
 }
 
-int64_t MessagingSettings::getLongPollTimeout() const
+std::int64_t MessagingSettings::getLongPollTimeout() const
 {
-    return settings.get<int64_t>(SETTING_LONGPOLL_TIMEOUT_MS());
+    return settings.get<std::int64_t>(SETTING_LONGPOLL_TIMEOUT_MS());
 }
 
-void MessagingSettings::setLongPollTimeout(int64_t timeout_ms)
+void MessagingSettings::setLongPollTimeout(std::int64_t timeout_ms)
 {
     settings.set(SETTING_LONGPOLL_TIMEOUT_MS(), timeout_ms);
 }
 
-int64_t MessagingSettings::getHttpConnectTimeout() const
+std::int64_t MessagingSettings::getHttpConnectTimeout() const
 {
-    return settings.get<int64_t>(SETTING_HTTP_CONNECT_TIMEOUT_MS());
+    return settings.get<std::int64_t>(SETTING_HTTP_CONNECT_TIMEOUT_MS());
 }
 
-void MessagingSettings::setHttpConnectTimeout(int64_t timeout_ms)
+void MessagingSettings::setHttpConnectTimeout(std::int64_t timeout_ms)
 {
     settings.set(SETTING_HTTP_CONNECT_TIMEOUT_MS(), timeout_ms);
 }
 
-int64_t MessagingSettings::getBounceProxyTimeout() const
+std::int64_t MessagingSettings::getBounceProxyTimeout() const
 {
-    return settings.get<int64_t>(SETTING_BOUNCEPROXY_TIMEOUT_MS());
+    return settings.get<std::int64_t>(SETTING_BOUNCEPROXY_TIMEOUT_MS());
 }
 
-void MessagingSettings::setBounceProxyTimeout(int64_t timeout_ms)
+void MessagingSettings::setBounceProxyTimeout(std::int64_t timeout_ms)
 {
     settings.set(SETTING_BOUNCEPROXY_TIMEOUT_MS(), timeout_ms);
 }
 
-int64_t MessagingSettings::getDiscoveryMessagesTtl() const
+std::int64_t MessagingSettings::getDiscoveryMessagesTtl() const
 {
-    return settings.get<int64_t>(SETTING_DISCOVERY_MESSAGES_TTL_MS());
+    return settings.get<std::int64_t>(SETTING_DISCOVERY_MESSAGES_TTL_MS());
 }
 
-void MessagingSettings::setDiscoveryMessagesTtl(int64_t ttl_ms)
+void MessagingSettings::setDiscoveryMessagesTtl(std::int64_t ttl_ms)
 {
     settings.set(SETTING_DISCOVERY_MESSAGES_TTL_MS(), ttl_ms);
 }
 
-int64_t MessagingSettings::getSendMsgMaxTtl() const
+std::int64_t MessagingSettings::getSendMsgMaxTtl() const
 {
-    return settings.get<int64_t>(SETTING_SEND_MESSAGE_MAX_TTL());
+    return settings.get<std::int64_t>(SETTING_SEND_MESSAGE_MAX_TTL());
 }
 
-void MessagingSettings::setSendMsgMaxTtl(int64_t ttl_ms)
+void MessagingSettings::setSendMsgMaxTtl(std::int64_t ttl_ms)
 {
     settings.set(SETTING_SEND_MESSAGE_MAX_TTL(), ttl_ms);
 }
@@ -520,93 +515,74 @@ void MessagingSettings::checkSettings() const
 
 void MessagingSettings::printSettings() const
 {
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_BOUNCE_PROXY_URL())
-                      .arg(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_DISCOVERY_DIRECTORIES_DOMAIN())
-                      .arg(settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CHANNEL_URL_DIRECTORY_URL())
-                      .arg(settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID())
-                      .arg(settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID())
-                      .arg(settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CAPABILITIES_DIRECTORY_URL())
-                      .arg(settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CAPABILITIES_DIRECTORY_CHANNELID())
-                      .arg(settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()))
-                      .str());
-    LOG_DEBUG(
-            logger,
-            FormatString("SETTING: %1 = %2")
-                    .arg(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID())
-                    .arg(settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()))
-                    .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_INDEX())
-                      .arg(settings.get<std::string>(SETTING_INDEX()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CREATE_CHANNEL_RETRY_INTERVAL())
-                      .arg(settings.get<std::string>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_DELETE_CHANNEL_RETRY_INTERVAL())
-                      .arg(settings.get<std::string>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_SEND_MSG_RETRY_INTERVAL())
-                      .arg(settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_LONGPOLL_RETRY_INTERVAL())
-                      .arg(settings.get<std::string>(SETTING_LONGPOLL_RETRY_INTERVAL()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_LOCAL_PROXY_HOST())
-                      .arg(settings.get<std::string>(SETTING_LOCAL_PROXY_HOST()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_LOCAL_PROXY_PORT())
-                      .arg(settings.get<std::string>(SETTING_LOCAL_PROXY_PORT()))
-                      .str());
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_PERSISTENCE_FILENAME())
-                      .arg(settings.get<std::string>(SETTING_PERSISTENCE_FILENAME()))
-                      .str());
-
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_DISCOVERY_MESSAGES_TTL_MS())
-                      .arg(settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()))
-                      .str());
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_BOUNCE_PROXY_URL(),
+                    settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_DISCOVERY_DIRECTORIES_DOMAIN(),
+                    settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CHANNEL_URL_DIRECTORY_URL(),
+                    settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CHANNEL_URL_DIRECTORY_CHANNELID(),
+                    settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID(),
+                    settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CAPABILITIES_DIRECTORY_URL(),
+                    settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CAPABILITIES_DIRECTORY_CHANNELID(),
+                    settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID(),
+                    settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_INDEX(),
+                    settings.get<std::string>(SETTING_INDEX()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_CREATE_CHANNEL_RETRY_INTERVAL(),
+                    settings.get<std::string>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_DELETE_CHANNEL_RETRY_INTERVAL(),
+                    settings.get<std::string>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_SEND_MSG_RETRY_INTERVAL(),
+                    settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_LONGPOLL_RETRY_INTERVAL(),
+                    settings.get<std::string>(SETTING_LONGPOLL_RETRY_INTERVAL()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_LOCAL_PROXY_HOST(),
+                    settings.get<std::string>(SETTING_LOCAL_PROXY_HOST()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_LOCAL_PROXY_PORT(),
+                    settings.get<std::string>(SETTING_LOCAL_PROXY_PORT()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_PERSISTENCE_FILENAME(),
+                    settings.get<std::string>(SETTING_PERSISTENCE_FILENAME()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_DISCOVERY_MESSAGES_TTL_MS(),
+                    settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
 }
 
 } // namespace joynr

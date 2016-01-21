@@ -90,6 +90,7 @@ public class ChildMessageRouterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void passesNextHopToParent() {
         messageRouter.addNextHop(unknownParticipantId, nextHopAddress);
         Mockito.verify(messageRouterParent).addNextHop(Mockito.any(Callback.class),

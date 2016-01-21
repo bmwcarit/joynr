@@ -44,7 +44,7 @@ public:
      * @brief Constructor
      * @param name Name of the thread
      */
-    Thread(const std::string& name);
+    explicit Thread(const std::string& name);
 
     /**
      * @brief Destructor
@@ -87,6 +87,6 @@ private:
     /*! Name of the thread */
     const std::string name;
 };
-}
+} // namespace joynr
 
 #endif // THREAD_H_

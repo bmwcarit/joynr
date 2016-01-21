@@ -23,7 +23,7 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include "joynr/IMessaging.h"
-#include <QString>
+#include "joynr/Logger.h"
 
 // save the GCC diagnostic state
 #pragma GCC diagnostic push
@@ -48,6 +48,7 @@ public:
     virtual void transmit(JoynrMessage& message);
 
 private:
+    ADD_LOGGER(DbusMessagingStubAdapter);
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingStubAdapter);
 };
 

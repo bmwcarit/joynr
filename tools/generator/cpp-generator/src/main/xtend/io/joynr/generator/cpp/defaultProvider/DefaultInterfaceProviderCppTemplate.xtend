@@ -49,18 +49,17 @@ class DefaultInterfaceProviderCppTemplate implements InterfaceTemplate{
 
 #include <chrono>
 #include <cstdint>
+#include <tuple>
 
 #include "joynr/RequestStatus.h"
-#include "joynr/joynrlogging.h"
 
 «getNamespaceStarter(serviceInterface)»
 
-using namespace joynr::joynr_logging;
-
-Logger* Default«interfaceName»Provider::logger = Logging::getInstance()->getLogger("PROV", "Default«interfaceName»Provider");
+INIT_LOGGER(Default«interfaceName»Provider);
 
 Default«interfaceName»Provider::Default«interfaceName»Provider() :
-		«interfaceName»AbstractProvider()«IF !serviceInterface.attributes.empty»,«ENDIF»
+		«interfaceName»AbstractProvider()
+		«IF !serviceInterface.attributes.empty»,«ENDIF»
 		«FOR attribute : serviceInterface.attributes SEPARATOR ","»
 			«attribute.joynrName»()
 		«ENDFOR»
@@ -104,7 +103,9 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		) {
 			(void) onError;
 			this->«attributeName» = «attributeName»;
-			«attributeName»Changed(«attributeName»);
+			«IF attribute.notifiable»
+				«attributeName»Changed(«attributeName»);
+			«ENDIF»
 			onSuccess();
 		}
 
@@ -143,7 +144,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 	) {
 		(void) onError;
 		«FOR inputParameter: getInputParameters(method)»
-			Q_UNUSED(«inputParameter.joynrName»);
+			std::ignore = «inputParameter.joynrName»;
 		«ENDFOR»
 		«FOR argument : method.outputParameters»
 			«val outputParamType = argument.typeName»
@@ -172,9 +173,9 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 				«outputParamType» «argument.joynrName»;
 			«ENDIF»
 		«ENDFOR»
-		LOG_WARN(logger, "**********************************************");
-		LOG_WARN(logger, "* Default«interfaceName»Provider::«methodName» called");
-		LOG_WARN(logger, "**********************************************");
+		JOYNR_LOG_WARN(logger, "**********************************************");
+		JOYNR_LOG_WARN(logger, "* Default«interfaceName»Provider::«methodName» called");
+		JOYNR_LOG_WARN(logger, "**********************************************");
 		onSuccess(
 				«outputUntypedParamList»
 		);

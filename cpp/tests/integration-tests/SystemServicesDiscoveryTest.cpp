@@ -46,11 +46,11 @@ public:
         settings(new Settings(settingsFilename)),
         discoveryDomain(),
         discoveryProviderParticipantId(),
-        runtime(NULL),
+        runtime(nullptr),
         mockMessageReceiver(new MockMessageReceiver()),
         discoveryQos(),
-        discoveryProxyBuilder(NULL),
-        discoveryProxy(NULL)
+        discoveryProxyBuilder(nullptr),
+        discoveryProxy(nullptr)
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
@@ -68,7 +68,7 @@ public:
 
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockMessageReceiver);
+        runtime = new JoynrClusterControllerRuntime(nullptr, settings, mockMessageReceiver);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->registerDiscoveryProvider();
     }

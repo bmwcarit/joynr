@@ -7,57 +7,85 @@ if(${WIN32})
 else()
 endif(${WIN32})
 
-### Add google test ###########################################################
-AddExternalProject(
-    googletest
-    SVN_REPOSITORY http://googletest.googlecode.com/svn/tags/release-1.6.0
-    TIMEOUT 10
-    PATCH_COMMAND svn patch ${CMAKE_SOURCE_DIR}/CMake/gtest-1.6.0-Clang.patch ${CMAKE_BINARY_DIR}/ThirdParty/src/googletest
-    # Force separate output paths for debug and release builds to allow easy
-    # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
-    CMAKE_ARGS #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG:PATH=DebugLibs
-               #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE:PATH=ReleaseLibs
-               -DBUILD_SHARED_LIBS=OFF
-               -Dgtest_force_shared_crt=ON
-               -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/googletest-build/libgtest.a")
-)
 
-# Specify include dir
-ExternalProject_Get_Property(googletest source_dir)
-set(googletest_source_dir ${source_dir})
-message(STATUS "variable googletest_source_dir=${googletest_source_dir}")
-include_directories(SYSTEM ${googletest_source_dir}/include)
+if (USE_PLATFORM_GTEST_GMOCK)
 
-ExternalProject_Get_Property(googletest binary_dir)
-set(googletest_binary_dir ${binary_dir})
-message(STATUS "variable googletest_binary_dir=${googletest_binary_dir}")
+    find_package(GTest REQUIRED)
+    find_package(GMock REQUIRED)
 
-### Add google mock ###########################################################
-AddExternalProject(
-    googlemock
-    SVN_REPOSITORY http://googlemock.googlecode.com/svn/tags/release-1.6.0
-    TIMEOUT 10
-    PATCH_COMMAND svn patch ${CMAKE_SOURCE_DIR}/CMake/gmock-1.6.0-Clang.patch ${CMAKE_BINARY_DIR}/ThirdParty/src/googlemock
-    # Force separate output paths for debug and release builds to allow easy
-    # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
-    CMAKE_ARGS #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG:PATH=DebugLibs
-               #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE:PATH=ReleaseLibs
-               -DBUILD_SHARED_LIBS=OFF
-               -Dgtest_force_shared_crt=ON
-               -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/googlemock-build/libgmock.a")
-)
+else (USE_PLATFORM_GTEST_GMOCK)
 
-# Specify include dir
-ExternalProject_Get_Property(googlemock source_dir)
-set(googlemock_source_dir ${source_dir})
-message(STATUS "variable googlemock_source_dir=${googlemock_source_dir}")
-include_directories(SYSTEM ${googlemock_source_dir}/include)
+    ### clone googletest git repository ###########################################################
 
-ExternalProject_Get_Property(googlemock binary_dir)
-set(googlemock_binary_dir ${binary_dir})
-message(STATUS "variable googlemock_binary_dir=${googlemock_binary_dir}")
+    # this repository contains both googletest and googlemock
+    AddExternalProject(
+        googletest-repo
+        DOWNLOAD_DIR "googletest-repo"
+        TIMEOUT 10
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG ddb8012e # there is no version tag on github; this is to make sure that a working version is used
+        CONFIGURE_COMMAND "" # Disable configuring
+        BUILD_COMMAND "" # Disable building
+    )
+
+    get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
+
+    ### Add google test ###########################################################
+
+    # build googletest library
+    AddExternalProject(
+        googletest
+        DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
+        SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googletest"
+        BUILD_BYPRODUCTS "${EP_PREFIX}/src/googletest-build/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        CMAKE_ARGS -Dgtest_force_shared_crt=ON
+                   -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
+    )
+
+    ExternalProject_Get_Property(googletest binary_dir)
+    set(googletest_binary_dir ${binary_dir})
+    message(STATUS "variable googletest_binary_dir=${googletest_binary_dir}")
+
+    # build googletest AFTER downloading the sources
+    add_dependencies(googletest googletest-repo)
+
+    # Specify include dir
+    ExternalProject_Get_Property(googletest source_dir)
+    set(googletest_source_dir ${source_dir})
+    message(STATUS "variable googletest_source_dir=${googletest_source_dir}")
+    set(GTEST_INCLUDE_DIRS ${googletest_source_dir}/include)
+    set(GTEST_LIBRARIES ${googletest_binary_dir}/libgtest.a)
+
+    ### Add google mock ###########################################################
+
+    # build googlemock library
+    AddExternalProject(
+        googlemock
+        DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
+        SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googlemock"
+        BUILD_BYPRODUCTS "${EP_PREFIX}/src/googlemock-build/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        CMAKE_ARGS -Dgtest_force_shared_crt=ON
+                   -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
+    )
+
+    ExternalProject_Get_Property(googlemock binary_dir)
+    set(googlemock_binary_dir ${binary_dir})
+    message(STATUS "variable googlemock_binary_dir=${googlemock_binary_dir}")
+
+    # build googlemock AFTER downloading the sources
+    add_dependencies(googlemock googletest-repo)
+
+    # Specify include dir
+    ExternalProject_Get_Property(googlemock source_dir)
+    set(googlemock_source_dir ${source_dir})
+    message(STATUS "variable googlemock_source_dir=${googlemock_source_dir}")
+    set(GMOCK_INCLUDE_DIRS ${googlemock_source_dir}/include)
+    set(GMOCK_LIBRARIES ${googlemock_binary_dir}/libgmock.a)
+
+endif(USE_PLATFORM_GTEST_GMOCK)
+
+include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
+include_directories(SYSTEM ${GMOCK_INCLUDE_DIRS})
 
 ### copy test resources and settings ##########################################
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
@@ -118,6 +146,7 @@ file(
 
 set(
     JoynrTest_INCLUDE_DIRECTORIES
+    ${libwebsockets_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
@@ -171,8 +200,8 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 else()
     list(
         APPEND test_TARGET_LIBRARIES
-        ${googletest_binary_dir}/libgtest.a
-        ${googlemock_binary_dir}/libgmock.a
+        ${GTEST_LIBRARIES}
+        ${GMOCK_LIBRARIES}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
@@ -294,8 +323,8 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_include_directories(
         g_UnitTests
         SYSTEM
-        PRIVATE ${googletest_source_dir}/include
-        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${GTEST_INCLUDE_DIRS}
+        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -328,8 +357,8 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_include_directories(
         g_IntegrationTests
         SYSTEM
-        PRIVATE ${googletest_source_dir}/include
-        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${GTEST_INCLUDE_DIRS}
+        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -367,9 +396,13 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_include_directories(
         g_SystemIntegrationTests
         SYSTEM
-        PRIVATE ${googletest_source_dir}/include
-        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${GTEST_INCLUDE_DIRS}
+        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+    )
+
+    install(TARGETS g_UnitTests g_IntegrationTests g_SystemIntegrationTests
+        DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
     )
 
 else()
@@ -400,8 +433,8 @@ else()
     target_include_directories(
         g_UnitTests
         SYSTEM
-        PRIVATE ${googletest_source_dir}/include
-        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${GTEST_INCLUDE_DIRS}
+        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
     )
 
@@ -414,6 +447,7 @@ else()
        "systemintegration-tests/TestConfiguration.h"
        "systemintegration-tests/CombinedEnd2EndTest.h"
        "systemintegration-tests/CombinedEnd2EndTest.cpp"
+       "systemintegration-tests/TestConfiguration.cpp"
     )
 
     AddTest(
@@ -428,16 +462,16 @@ else()
     target_include_directories(
         g_SystemIntegrationTests
         SYSTEM
-        PRIVATE ${googletest_source_dir}/include
-        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${GTEST_INCLUDE_DIRS}
+        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
     )
 
-endif(${BUILD_CLUSTER_CONTROLLER})
-
-install(TARGETS g_UnitTests g_IntegrationTests g_SystemIntegrationTests
+    install(TARGETS g_UnitTests g_SystemIntegrationTests
         DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
-)
+    )
+
+endif(${BUILD_CLUSTER_CONTROLLER})
 
 install(DIRECTORY resources
         DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests

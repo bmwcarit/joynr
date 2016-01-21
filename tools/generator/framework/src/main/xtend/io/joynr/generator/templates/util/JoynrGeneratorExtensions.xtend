@@ -2,7 +2,7 @@ package io.joynr.generator.templates.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import io.joynr.generator.templates.BroadcastTemplate
 import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.EnumTemplate
 import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.MapTemplate
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.StringReader
@@ -40,7 +41,10 @@ import org.franca.core.franca.FModel
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FMapType
-import io.joynr.generator.templates.MapTemplate
+import org.franca.core.franca.FTypeRef
+import org.franca.core.franca.FTypedElement
+import io.joynr.generator.templates.TypeDefTemplate
+import org.franca.core.franca.FTypeDef
 
 abstract class JoynrGeneratorExtensions {
 
@@ -124,9 +128,9 @@ abstract class JoynrGeneratorExtensions {
 	def getDataTypes(FModel fModel) {
 		val referencedFTypes = new HashSet<FType>()
 
-		fModel.typeCollections.forEach[referencedFTypes.addAll(types)]
+		fModel.typeCollections.forEach[typeCollection | referencedFTypes.addAll(typeCollection.types)]
 
-		fModel.interfaces.forEach[referencedFTypes.addAll(types)]
+		fModel.interfaces.forEach[anInterface | referencedFTypes.addAll(anInterface.types)]
 
 		return referencedFTypes
 	}
@@ -141,6 +145,10 @@ abstract class JoynrGeneratorExtensions {
 
 	def getEnumDataTypes(FModel fModel) {
 		getDataTypes(fModel).filter(type | type.isEnum).map(type | type.enumType).filterNull
+	}
+
+	def getTypeDefDataTypes(FModel fModel) {
+		getDataTypes(fModel).filter(type | type.isTypeDef).map(type | type.typeDefType).filterNull
 	}
 
 	def getMapDataTypes(FModel fModel) {
@@ -249,5 +257,77 @@ abstract class JoynrGeneratorExtensions {
 		if (generate) {
 			fsa.generateFile(path, generator.generate(compoundType).toString);
 		}
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		TypeDefTemplate generator,
+		FTypeDef typeDefType
+	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
+		if (generate) {
+			fsa.generateFile(path, generator.generate(typeDefType).toString);
+		}
+	}
+
+	// Convert a data type declaration into a string giving the typename
+	def String getJoynrTypeName(FTypedElement element) {
+		var typeName = getJoynrTypeName(element.type)
+		if (isArray(element)) {
+			typeName += "[]"
+		}
+		return typeName
+	}
+
+	def String getJoynrTypeName(FType type) {
+		buildPackagePath(type, ".", true) + "." + type.joynrName
+	}
+
+	def String getJoynrTypeName(FBasicTypeId predefined) {
+		switch predefined {
+			case isString(predefined) : "String"
+			case isShort(predefined)  : "Short"
+			case isInteger(predefined): "Integer"
+			case isLong(predefined)   : "Long"
+			case isDouble(predefined) : "Double"
+			case isFloat(predefined)  : "Float"
+			case isBool(predefined)   : "Boolean"
+			case isByte(predefined)   : "Byte"
+			case isByteBuffer(predefined)   : "Byte[]"
+			default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
+		}
+	}
+
+	def String getJoynrTypeName(FTypeRef datatypeRef) {
+		if (datatypeRef.isTypeDef) {
+			getJoynrTypeName((datatypeRef.derived as FTypeDef).actualType)
+		} else if (datatypeRef.complex) {
+			getJoynrTypeName(datatypeRef.derived)
+		} else {
+			getJoynrTypeName(datatypeRef.getPrimitive)
+		}
+	}
+
+	def buildPackagePath(FType datatype, String separator) {
+		return buildPackagePath(datatype, separator, false);
+	}
+
+	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
+		if (datatype == null) {
+			return "";
+		}
+		var packagepath = "";
+		try {
+			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
+		} catch (IllegalStateException e){
+			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
+		}
+		if (includeTypeCollection && datatype.partOfTypeCollection) {
+			packagepath += separator + datatype.typeCollectionName;
+		}
+		return packagepath;
 	}
 }

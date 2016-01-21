@@ -24,15 +24,14 @@
 #include <QtNetwork/QAbstractSocket>
 #include <QtWebSockets/qwebsocketprotocol.h>
 
+#include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/MessageRouter.h"
 #include "joynr/IMessaging.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-
-#include "joynr/JoynrExport.h"
 
 class QWebSocketServer;
 class QWebSocket;
@@ -40,17 +39,31 @@ class QWebSocket;
 namespace joynr
 {
 
-class JOYNR_EXPORT WebSocketCcMessagingSkeleton : public QObject, public IMessaging
+/**
+ * @class WebSocketCcMessagingSkeleton
+ * @brief Messaging skeleton for the cluster controller
+ */
+class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT WebSocketCcMessagingSkeleton : public QObject,
+                                                                          public IMessaging
 {
     Q_OBJECT
 public:
+    /**
+     * @brief Constructor
+     * @param messageRouter Router
+     * @param messagingStubFactory Factory
+     * @param serverAddress Address of the server
+     */
     WebSocketCcMessagingSkeleton(MessageRouter& messageRouter,
                                  WebSocketMessagingStubFactory& messagingStubFactory,
                                  const system::RoutingTypes::WebSocketAddress& serverAddress);
 
-    ~WebSocketCcMessagingSkeleton();
+    /**
+     * @brief Destructor
+     */
+    ~WebSocketCcMessagingSkeleton() override;
 
-    virtual void transmit(JoynrMessage& message);
+    void transmit(JoynrMessage& message) override;
 
 private Q_SLOTS:
     void onNewConnection();
@@ -62,10 +75,14 @@ private Q_SLOTS:
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
     bool isInitializationMessage(const QString& message);
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(WebSocketCcMessagingSkeleton);
+    /*! Websocket server listening for incoming connections */
     QWebSocketServer* webSocketServer;
+    /*! List of client connections */
     std::vector<QWebSocket*> clients;
+    /*! Router for incoming messages */
     MessageRouter& messageRouter;
+    /*! Factory to build outgoing messaging stubs */
     WebSocketMessagingStubFactory& messagingStubFactory;
 };
 

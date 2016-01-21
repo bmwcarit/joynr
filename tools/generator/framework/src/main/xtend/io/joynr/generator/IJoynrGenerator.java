@@ -25,6 +25,8 @@ import java.util.Set;
 
 import org.eclipse.xtext.generator.IGenerator;
 
+import com.google.inject.Module;
+
 public interface IJoynrGenerator extends IGenerator {
 
     public String getLanguageId();
@@ -32,4 +34,6 @@ public interface IJoynrGenerator extends IGenerator {
     public void setParameters(Map<String, String> parameter);
 
     public Set<String> supportedParameters();
+
+    public Module getGeneratorModule();
 }

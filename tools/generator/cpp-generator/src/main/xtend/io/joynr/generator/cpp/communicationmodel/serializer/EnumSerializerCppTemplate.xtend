@@ -40,7 +40,7 @@ class EnumSerializerCppTemplate implements EnumTemplate{
 «val joynrName = type.joynrName»
 «val typeName = type.typeName»
 «warning»
-#include "«type.includeOfSerializer»"
+#include «type.includeOfSerializer»
 #include "joynr/SerializerRegistry.h"
 #include "joynr/JoynrTypeId.h"
 
@@ -63,7 +63,7 @@ void PrimitiveDeserializer<«typeName»>::deserialize(«typeName»& «joynrName.
 }
 
 template <>
-void ClassSerializer<«typeName»>::serialize(const «typeName»& «joynrName.toFirstLower», std::ostream& stringstream)
+void ClassSerializerImpl<«typeName»>::serialize(const «typeName»& «joynrName.toFirstLower», std::ostream& stringstream)
 {
 	stringstream << "\""<< «type.typeNameOfContainingClass»::getLiteral(«joynrName.toFirstLower») << "\"";
 }

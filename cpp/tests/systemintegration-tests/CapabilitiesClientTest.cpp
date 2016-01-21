@@ -42,15 +42,14 @@ static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystem
 
 class CapabilitiesClientTest : public Test {
 public:
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(CapabilitiesClientTest);
     JoynrClusterControllerRuntime* runtime;
     Settings settings;
     MessagingSettings messagingSettings;
     std::string channelId;
 
     CapabilitiesClientTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "CapabilitiesClientTest")),
-        runtime(NULL),
+        runtime(nullptr),
         settings(settingsFilename),
         messagingSettings(settings)
     {
@@ -61,7 +60,7 @@ public:
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
-        runtime = new JoynrClusterControllerRuntime(NULL, settings);
+        runtime = new JoynrClusterControllerRuntime(nullptr, settings);
     }
 
     void SetUp() {
@@ -81,6 +80,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClientTest);
 
 };
+
+INIT_LOGGER(CapabilitiesClientTest);
 
 TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
@@ -107,16 +108,16 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::string capParticipantId("testParticipantId");
 
     capabilitiesInformationList.push_back(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
-    LOG_DEBUG(logger,"Registering capabilities");
+    JOYNR_LOG_DEBUG(logger, "Registering capabilities");
     capabilitiesClient->add(capabilitiesInformationList);
-    LOG_DEBUG(logger,"Registered capabilities");
+    JOYNR_LOG_DEBUG(logger, "Registered capabilities");
     //sync methods are not yet implemented
 //    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
     std::shared_ptr<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 
     // use a semaphore to wait for capabilities to be received
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::CapabilityInformation>&>()))
            .WillRepeatedly(
                 DoAll(
@@ -128,11 +129,10 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
                 callback->capabilitiesReceived(capabilities);
             };
 
-    LOG_DEBUG(logger,"get capabilities");
+    JOYNR_LOG_DEBUG(logger, "get capabilities");
     capabilitiesClient->lookup(capDomain, capInterface, onSuccess);
-    semaphore.waitFor(std::chrono::milliseconds(10000));
-    LOG_DEBUG(logger,"finished get capabilities");
-
+    semaphore.waitFor(std::chrono::seconds(10));
+    JOYNR_LOG_DEBUG(logger, "finished get capabilities");
     delete capabilitiesProxyBuilder;
 }
 

@@ -25,23 +25,20 @@
 #include "joynr/Timer.h"
 
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace joynr;
-using namespace std::chrono;
 
 class MessageQueueTest : public ::testing::Test {
 public:
     MessageQueueTest()
         : messageQueue(),
           cleanerTimer(),
-          expiryDate(time_point_cast<milliseconds>(system_clock::now()) + milliseconds(100))
+          expiryDate(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()) + std::chrono::milliseconds(100))
     {
     }
 
-    ~MessageQueueTest()
-    {
-    }
+    ~MessageQueueTest() = default;
 
     void SetUp()
     {
@@ -137,8 +134,8 @@ TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
 
 TEST_F(MessageQueueTest, removeOutdatedMessage) {
     JoynrMessage msg10;
-    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-    msg10.setHeaderExpiryDate(now + milliseconds(10));
+    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+    msg10.setHeaderExpiryDate(now + std::chrono::milliseconds(10));
     EXPECT_EQ(messageQueue.queueMessage(msg10), 1);
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
     EXPECT_EQ(messageQueue.removeOutdatedMessages(), 0);
@@ -148,12 +145,12 @@ TEST_F(MessageQueueTest, removeOutdatedMessage) {
 
 TEST_F(MessageQueueTest, removeOutdatedMessagesWithRunnable) {
     JoynrMessage msg25;
-    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-    msg25.setHeaderExpiryDate(now + milliseconds(25));
+    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+    msg25.setHeaderExpiryDate(now + std::chrono::milliseconds(25));
     JoynrMessage msg250;
-    msg250.setHeaderExpiryDate(now + milliseconds(250));
+    msg250.setHeaderExpiryDate(now + std::chrono::milliseconds(250));
     JoynrMessage msg300;
-    msg300.setHeaderExpiryDate(now + milliseconds(250));
+    msg300.setHeaderExpiryDate(now + std::chrono::milliseconds(250));
     EXPECT_EQ(messageQueue.queueMessage(msg25), 1);
     EXPECT_EQ(messageQueue.queueMessage(msg250), 2);
     EXPECT_EQ(messageQueue.queueMessage(msg300), 3);

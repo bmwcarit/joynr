@@ -31,7 +31,6 @@
 using namespace ::testing;
 
 using namespace joynr;
-using namespace joynr_logging;
 
 
 /*
@@ -51,8 +50,8 @@ public:
     std::string domain;
 
     End2EndPerformanceTest() :
-        runtime1(NULL),
-        runtime2(NULL),
+        runtime1(nullptr),
+        runtime2(nullptr),
         settings1("test-resources/SystemIntegrationTest1.settings"),
         settings2("test-resources/SystemIntegrationTest2.settings"),
         baseUuid(Util::createUuid()),
@@ -63,11 +62,11 @@ public:
         Settings* settings_1 = new Settings("test-resources/SystemIntegrationTest1.settings");
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings_1, false);
-        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
+        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings_1);
         Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings_2, false);
-        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
+        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings_2);
     }
 
     void SetUp() {
@@ -103,7 +102,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
     runtime1->registerProvider<tests::testProvider>(domain, testProvider);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);
@@ -119,11 +118,11 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
-    uint64_t startTime = DispatcherUtils::nowInMilliseconds();
+    std::uint64_t startTime = DispatcherUtils::nowInMilliseconds();
     std::vector<std::shared_ptr<Future<int> > >testFutureList;
-    int numberOfMessages = 150;
-    int successFullMessages = 0;
-    for (int i=0; i<numberOfMessages; i++){
+    int numberOfRequests = 150;
+    int successfulRequests = 0;
+    for (int i=0; i<numberOfRequests; i++){
         std::vector<int> list;
         list.push_back(2);
         list.push_back(4);
@@ -132,20 +131,24 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
         testFutureList.push_back(testProxy->sumIntsAsync(list));
     }
 
-    for (int i=0; i<numberOfMessages; i++){
+    for (int i=0; i<numberOfRequests; i++){
         testFutureList.at(i)->wait();
         int expectedValue = 2+4+8+i;
         if (testFutureList.at(i)->getStatus().successful()) {
-            successFullMessages++;
+            successfulRequests++;
             int actualValue;
             testFutureList.at(i)->get(actualValue);
             EXPECT_EQ(expectedValue, actualValue);
         }
     }
-    uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
-    //check if all Messages were received:
-    EXPECT_EQ(numberOfMessages, successFullMessages);
-    Logger* logger = Logging::getInstance()->getLogger("TEST", "CombinedEnd2EndTest");
-    LOG_INFO(logger,FormatString("Required Time for 1000 Messages: %1").arg((stopTime - startTime)).str());
+    std::uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
+    //check if all Requests were successful
+    EXPECT_EQ(numberOfRequests, successfulRequests);
+    Logger logger("End2EndPerformanceTest");
+    JOYNR_LOG_INFO(logger, "Required Time for 1000 Requests: {}",(stopTime - startTime));
+    // to silence unused-variable compiler warnings
+    (void)startTime;
+    (void)stopTime;
+    (void)logger;
 }
 

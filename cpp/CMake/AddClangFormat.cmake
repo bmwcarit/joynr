@@ -13,5 +13,6 @@ function(AddClangFormat TARGET)
             VERBATIM
         )
         add_dependencies(${TARGET} ${FORMAT_TARGET})
+        add_dependencies(format ${FORMAT_TARGET})
     endif(${ENABLE_CLANG_FORMATTER})
 endfunction(AddClangFormat)

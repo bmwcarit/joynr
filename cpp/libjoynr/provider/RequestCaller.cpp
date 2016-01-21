@@ -26,10 +26,6 @@ RequestCaller::RequestCaller(const std::string& interfaceName) : interfaceName(i
 {
 }
 
-RequestCaller::~RequestCaller()
-{
-}
-
 std::string RequestCaller::getInterfaceName()
 {
     return interfaceName;

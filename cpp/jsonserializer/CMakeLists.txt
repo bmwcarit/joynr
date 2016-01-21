@@ -3,14 +3,19 @@ message(STATUS "Configuring jsonserializer...")
 message(STATUS "#############################################\n")
 
 ### Add jsmn ###########################################################
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+set(JSMN_SOURCE_URL "https://github.com/zserge/jsmn")
+set(JSMN_SOURCE_TYPE "GIT_REPOSITORY")
+if(JSMN_ROOT)
+    set(JSMN_SOURCE_URL "${JSMN_ROOT}")
+    set(JSMN_SOURCE_TYPE "URL")
+endif(JSMN_ROOT)
+message(STATUS "Using source for jsmn: ${JSMN_SOURCE_URL}")
+
 
 set(jsmn_LIBRARY "${CMAKE_BINARY_DIR}/ThirdParty/src/jsmn/libjsmn.a")
 AddExternalProject(
     jsmn
-    GIT_REPOSITORY https://github.com/zserge/jsmn
+    ${JSMN_SOURCE_TYPE} "${JSMN_SOURCE_URL}"
     TIMEOUT 10
     PATCH_COMMAND rm -f config.mk COMMAND git apply ${CMAKE_SOURCE_DIR}/CMake/jsmn-fpic.patch
     # Disable configure step
@@ -29,13 +34,6 @@ set_target_properties(
     PROPERTIES
     PUBLIC_INCLUDE_DIRECTORY "${jsmn_SOURCE_DIR}"
 )
-
-# where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
-
-set(CMAKE_INSTALL_NAME_DIR ${LIB_INSTALL_DIR})
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
@@ -89,16 +87,6 @@ include_directories(
 )
 
 AddIncludeWhatYouUse(jsonserializer)
-
-SET(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
-SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" CACHE STRING "Directory where lib will install")
-SET(CMAKE_MODULES_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/jsonserializer" CACHE PATH "The directory to install find modules to")
-
-message(STATUS "jsonserializer LIB_INSTALL_DIR=${LIB_INSTALL_DIR}")
-message(STATUS "jsonserializer CMAKE_MODULES_INSTALL_DIR=${CMAKE_MODULES_INSTALL_DIR}")
-
-set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib${LIB_SUFFIX}" )
-message(STATUS "jsonserializer LIBRARY_OUTPUT_PATH=${LIBRARY_OUTPUT_PATH}")
 
 target_link_libraries(
     jsonserializer

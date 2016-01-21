@@ -23,6 +23,7 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/Logger.h"
 
 /*
 *   Client for the capabilities directory. Registration and lookup
@@ -34,7 +35,7 @@
 #include <string>
 #include <memory>
 #include <vector>
-
+#include <QObject>
 namespace joynr
 {
 
@@ -57,7 +58,7 @@ public:
         has to be used.
        Todo: Ownership of libjoynr is not transferred, should not be a pointer.
     */
-    CapabilitiesClient(const std::string& localChannelId);
+    explicit CapabilitiesClient(const std::string& localChannelId);
 
     /*
       * The init method has to be caleld before any calls to the CapabilitiesClient are made.
@@ -68,64 +69,54 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList);
+    void add(std::vector<types::CapabilityInformation> capabilitiesInformationList) override;
 
     /*
       Remove previously created capabilities directory entries.
       */
-    virtual void remove(std::vector<std::string> participantIds);
+    void remove(std::vector<std::string> participantIds) override;
 
     /*
       Remove previously created capability directroy entry
      */
-    virtual void remove(const std::string& participantId);
+    void remove(const std::string& participantId) override;
 
     /*
       Synchronous lookup of capabilities for domain and interface.
       */
-    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
-                                                             const std::string& interfaceName);
+    std::vector<types::CapabilityInformation> lookup(const std::string& domain,
+                                                     const std::string& interfaceName) override;
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
       */
-    virtual void lookup(
-            const std::string& domain,
-            const std::string& interfaceName,
-            std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
-                    onSuccess,
-            std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
+    void lookup(const std::string& domain,
+                const std::string& interfaceName,
+                std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                        onSuccess,
+                std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
+                        nullptr) override;
 
-    virtual void lookup(
-            const std::string& participantId,
-            std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
-                    onSuccess,
-            std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
+    void lookup(const std::string& participantId,
+                std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                        onSuccess,
+                std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
+                        nullptr) override;
 
-    virtual ~CapabilitiesClient();
+    ~CapabilitiesClient() override = default;
 
-    virtual std::string getLocalChannelId();
+    std::string getLocalChannelId() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
-    void sendOneWayFunctionCall(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
-                                MessagingQos qosSettings);
-    Reply sendSynchronizedRequestFunctionCall(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
-                                              MessagingQos qosSettings);
-    void sendRequest(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
-                     MessagingQos qosSettings,
-                     std::shared_ptr<IReplyCaller> callBack);
 
-    int64_t defaultRequestTTL;
-    int64_t defaultRequestRoundtripTTL;
-
-    std::string capabilitiesClientParticipantId;
     std::string localChannelId;
 
-    // capabilitiesProxy is a QSP, because ownership is shared between CapabilitiesClient and Joynr
+    // capabilitiesProxy is a shared_ptr, because ownership is shared between CapabilitiesClient and
+    // Joynr
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(CapabilitiesClient);
 };
 
 } // namespace joynr

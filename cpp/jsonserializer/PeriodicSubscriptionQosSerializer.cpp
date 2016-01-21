@@ -31,22 +31,22 @@ static const bool isPeriodicSubscriptionQosSerializerRegistered =
                 "joynr.PeriodicSubscriptionQos");
 
 template <>
-void ClassDeserializer<PeriodicSubscriptionQos>::deserialize(
+void ClassDeserializerImpl<PeriodicSubscriptionQos>::deserialize(
         PeriodicSubscriptionQos& qos,
         IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "expiryDate") {
-            qos.setExpiryDate(field.value().getIntType<int64_t>());
+            qos.setExpiryDate(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "publicationTtl") {
-            qos.setPublicationTtl(field.value().getIntType<int64_t>());
+            qos.setPublicationTtl(field.value().getIntType<std::int64_t>());
         }
     }
 }
 
 template <>
-void ClassSerializer<PeriodicSubscriptionQos>::serialize(
+void ClassSerializerImpl<PeriodicSubscriptionQos>::serialize(
         const PeriodicSubscriptionQos& qos,
         std::ostream& stream)
 {

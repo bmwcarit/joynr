@@ -2,7 +2,7 @@ package io.joynr.generator.cpp
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,17 @@ package io.joynr.generator.cpp
  */
 
 import com.google.common.collect.Sets
-import io.joynr.generator.IJoynrGenerator
+import com.google.inject.AbstractModule
+import io.joynr.generator.AbstractJoynrGenerator
 import io.joynr.generator.cpp.communicationmodel.CommunicationModelGenerator
+import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderGenerator
 import io.joynr.generator.cpp.filter.FilterGenerator
 import io.joynr.generator.cpp.inprocess.InProcessGenerator
 import io.joynr.generator.cpp.joynrmessaging.JoynrMessagingGenerator
 import io.joynr.generator.cpp.provider.ProviderGenerator
 import io.joynr.generator.cpp.proxy.ProxyGenerator
+import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.templates.util.TypeUtil
 import io.joynr.generator.util.FileSystemAccessUtil
 import io.joynr.generator.util.InvocationArguments
 import java.io.File
@@ -36,36 +40,20 @@ import org.franca.core.dsl.FrancaPersistenceManager
 import org.franca.core.franca.FModel
 
 import static com.google.common.base.Preconditions.*
-import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderGenerator
 
-class JoynrCppGenerator implements IJoynrGenerator{
+class JoynrCppGenerator extends AbstractJoynrGenerator{
 
-	@Inject 
-	private FrancaPersistenceManager francaPersistenceManager
+	@Inject private FrancaPersistenceManager francaPersistenceManager
 
-	@Inject 
-	CommunicationModelGenerator communicationModelGenerator
+	@Inject CommunicationModelGenerator communicationModelGenerator
+	@Inject ProxyGenerator proxyGenerator
+	@Inject ProviderGenerator providerGenerator
+	@Inject FilterGenerator filterGenerator;
+	@Inject InProcessGenerator inProcessGenerator
+	@Inject JoynrMessagingGenerator joynrMessagingGenerator
+	@Inject DefaultInterfaceProviderGenerator defaultProviderGenerator
 
-	@Inject
-	ProxyGenerator proxyGenerator
-
-	@Inject
-	ProviderGenerator providerGenerator
-
-	@Inject
-	private FilterGenerator filterGenerator;
-
-	@Inject
-	InProcessGenerator inProcessGenerator
-
-	@Inject
-	JoynrMessagingGenerator joynrMessagingGenerator
-
-	@Inject
-	DefaultInterfaceProviderGenerator defaultProviderGenerator
-
-	@Inject
-	IFileSystemAccess outputHeaderFileSystem;
+	@Inject IFileSystemAccess outputHeaderFileSystem;
 
 	public static final String OUTPUT_HEADER_PATH = "outputHeaderPath";
 	private Map<String, String> parameters;
@@ -78,6 +66,14 @@ class JoynrCppGenerator implements IJoynrGenerator{
 		return "cpp"
 	}
 
+	override getGeneratorModule() {
+		new AbstractModule() {
+			override protected configure() {
+				bind(typeof(TypeUtil)).to(typeof(CppStdTypeUtil))
+			}
+		}
+	}
+
 	/*
 	 * Triggers the generation. In case the parameter "generate" is set to false, the generator is cleaning the generation folder
 	 */
@@ -85,12 +81,12 @@ class JoynrCppGenerator implements IJoynrGenerator{
 		val fModel = getModel(input);
 
 		filterGenerator.doGenerate(fModel, sourceFileSystem, headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "filter"), 
+			getSourceContainerPath(sourceFileSystem, "filter"),
 			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "filter")
 		);
 
 		proxyGenerator.doGenerate(fModel, sourceFileSystem, headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "proxy"), 
+			getSourceContainerPath(sourceFileSystem, "proxy"),
 			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "proxy")
 		);
 

@@ -28,7 +28,7 @@ SubscriptionReply::SubscriptionReply() : subscriptionId()
 {
 }
 SubscriptionReply::SubscriptionReply(const SubscriptionReply& other)
-        : QObject(), subscriptionId(other.getSubscriptionId())
+        : subscriptionId(other.getSubscriptionId())
 {
 }
 

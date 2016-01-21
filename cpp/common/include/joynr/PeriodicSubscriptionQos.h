@@ -62,9 +62,9 @@ public:
      * @see PeriodicSubscriptionQos#setAlertAfterInterval
      * @see SubscriptionQos#setPublicationTtl
      */
-    PeriodicSubscriptionQos(const int64_t& validity,
-                            const int64_t& period,
-                            const int64_t& alertAfterInterval);
+    PeriodicSubscriptionQos(const std::int64_t& validity,
+                            const std::int64_t& period,
+                            const std::int64_t& alertAfterInterval);
 
     /**
      * @brief Gets the period in milliseconds
@@ -74,7 +74,7 @@ public:
      * @return The period in milliseconds. The publisher will send a
      *            notification every period ms.
      */
-    virtual int64_t getPeriod() const;
+    virtual std::int64_t getPeriod() const;
 
     /**
      * @brief Sets the period in milliseconds
@@ -94,7 +94,7 @@ public:
      * @param period
      *            The publisher will send a notification every period ms.
      */
-    virtual void setPeriod(const int64_t& period);
+    virtual void setPeriod(const std::int64_t& period);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds
@@ -105,7 +105,7 @@ public:
      * @return alertAfterInterval (time span in milliseconds after which publicationMissed
      * will be called if no publications were received).
      */
-    virtual int64_t getAlertAfterInterval() const;
+    virtual std::int64_t getAlertAfterInterval() const;
 
     /**
      * @brief Sets the alertAfter interval in milliseconds
@@ -126,7 +126,7 @@ public:
      * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
      */
-    virtual void setAlertAfterInterval(const int64_t& alertAfterInterval);
+    virtual void setAlertAfterInterval(const std::int64_t& alertAfterInterval);
 
     /**
      * @brief Resets alert after interval
@@ -143,31 +143,31 @@ public:
     PeriodicSubscriptionQos& operator=(const PeriodicSubscriptionQos& other);
 
     /** @brief Equality operator */
-    virtual bool operator==(const PeriodicSubscriptionQos& other) const;
+    bool operator==(const PeriodicSubscriptionQos& other) const;
 
     /** @brief Returns the minimum value for the period in milliseconds: 50 */
-    static const int64_t& MIN_PERIOD();
+    static const std::int64_t& MIN_PERIOD();
 
     /**
      * @brief Returns the maximum value for the period in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const int64_t& MAX_PERIOD();
+    static const std::int64_t& MAX_PERIOD();
 
     /**
      * @brief Returns the maximum value for the alertAfter interval in
      * milliseconds: 2 592 000 000 (30 days)
      */
-    static const int64_t& MAX_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& MAX_ALERT_AFTER_INTERVAL();
 
     /**
      * @brief Returns the default value for the alertAfter interval in
      * milliseconds: 0 (NO_ALERT_AFTER_INTERVAL)
      */
-    static const int64_t& DEFAULT_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL();
 
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
-    static const int64_t& NO_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
 
 protected:
     /**
@@ -175,13 +175,13 @@ protected:
      *
      * The provider will send notifications every period milliseconds,
      */
-    int64_t period;
+    std::int64_t period;
 
     /**
      * @brief Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
      */
-    int64_t alertAfterInterval;
+    std::int64_t alertAfterInterval;
 };
 
 } // namespace joynr

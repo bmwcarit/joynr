@@ -19,11 +19,11 @@
 #ifndef ICHANNELDIRECTORYURLCACHE_H_
 #define ICHANNELDIRECTORYURLCACHE_H_
 
-#include "joynr/joynrlogging.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/RequestStatus.h"
 #include <memory>
 #include <string>
+#include <chrono>
 
 namespace joynr
 {
@@ -60,7 +60,7 @@ public:
     */
     virtual std::string obtainUrl(const std::string& channelId,
                                   RequestStatus& status,
-                                  const int64_t& timeout_ms) = 0;
+                                  std::chrono::milliseconds timeout) = 0;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *

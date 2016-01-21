@@ -27,12 +27,12 @@
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/Runnable.h"
 #include "joynr/TimeUtils.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Directory.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/Util.h"
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 using ::testing::A;
 using ::testing::_;
@@ -60,7 +60,7 @@ TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect)
     std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation> > gpslocationCallback(
                 new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
     OnChangeSubscriptionQos qos{};
-    int64_t now = TimeUtils::getCurrentMillisSinceEpoch();
+    std::int64_t now = TimeUtils::getCurrentMillisSinceEpoch();
     qos.setExpiryDate(now + 10000);
     Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     SubscriptionRequest subscriptionRequest;
@@ -163,7 +163,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correctDealingWithReducedExpiryDate) {
@@ -194,7 +194,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
@@ -282,26 +282,25 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsOnNonExistan
 
 class TestRunnable : public Runnable {
 public:
-    virtual ~TestRunnable() {
-
-    }
+    virtual ~TestRunnable() = default;
     TestRunnable()
-        : joynr::Runnable(true)
+        : Runnable(true)
     {
 
     }
     void shutdown() {
-        LOG_TRACE(logger, "shutdown called...");
+        JOYNR_LOG_TRACE(logger, "shutdown called...");
     }
     void run() {
-        LOG_TRACE(logger, "run: entering...");
+        JOYNR_LOG_TRACE(logger, "run: entering...");
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        LOG_TRACE(logger, "run: leaving...");
+        JOYNR_LOG_TRACE(logger, "run: leaving...");
     }
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(TestRunnable);
 };
-joynr_logging::Logger* TestRunnable::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "TestRunnable");
+
+INIT_LOGGER(TestRunnable);
 
 TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
     SingleThreadedDelayedScheduler scheduler("SingleThread");

@@ -31,7 +31,7 @@ bool SubscriptionUtil::isOnChangeSubscription(const Variant& qos)
     return qos.is<OnChangeWithKeepAliveSubscriptionQos>() || qos.is<OnChangeSubscriptionQos>();
 }
 
-int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
+std::int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
 {
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
         const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
@@ -45,7 +45,7 @@ int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
     return -1;
 }
 
-int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
+std::int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
 {
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
         const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
@@ -59,7 +59,7 @@ int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
     return -1;
 }
 
-int64_t SubscriptionUtil::getPeriodicPublicationInterval(const Variant& qos)
+std::int64_t SubscriptionUtil::getPeriodicPublicationInterval(const Variant& qos)
 {
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
         const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =

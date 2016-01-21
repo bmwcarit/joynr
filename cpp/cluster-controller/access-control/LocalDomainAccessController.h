@@ -31,25 +31,22 @@
 #include "joynr/ISubscriptionListener.h"
 #include "AccessControlAlgorithm.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
 #include <string>
 #include <memory>
 #include <vector>
-#include <stdint.h>
+#include <cstdint>
 #include <mutex>
 #include <unordered_map>
+#include <chrono>
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-}
-
 namespace infrastructure
 {
 class GlobalDomainAccessControllerProxy;
-}
+} // namespace infrastructure
 
 class LocalDomainAccessStore;
 
@@ -66,9 +63,7 @@ public:
     class IGetConsumerPermissionCallback
     {
     public:
-        virtual ~IGetConsumerPermissionCallback()
-        {
-        }
+        virtual ~IGetConsumerPermissionCallback() = default;
 
         // Called with the result of a consumer permission request
         virtual void consumerPermission(infrastructure::DacTypes::Permission::Enum permission) = 0;
@@ -458,10 +453,10 @@ private:
             globalDomainAccessControllerProxy;
     LocalDomainAccessStore* localDomainAccessStore;
 
-    static joynr_logging::Logger* logger;
-    static int64_t broadcastMinIntervalMs;
-    static int64_t broadcastSubscriptionValidityMs;
-    static int64_t broadcastPublicationTtlMs;
+    ADD_LOGGER(LocalDomainAccessController);
+    static std::chrono::milliseconds broadcastMinInterval;
+    static std::chrono::milliseconds broadcastSubscriptionValidity;
+    static std::chrono::milliseconds broadcastPublicationTtl;
 
     void initialiseLocalDomainAccessStore(const std::string& userId,
                                           const std::string& domain,

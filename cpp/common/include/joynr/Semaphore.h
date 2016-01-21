@@ -39,9 +39,9 @@ public:
      * @brief Constructor
      * @param initialValue Initial counter value
      * @note If the initial counter value is set to @c 0 the first call to
-     *      @ref lock will block
+     *      @ref wait will block
      */
-    Semaphore(int8_t initialValue = 0);
+    explicit Semaphore(std::int8_t initialValue = 0);
 
     /**
      * @brief Destructor
@@ -56,7 +56,7 @@ public:
 
     /**
      * @brief Increases the internal counter and notifies tasks that are
-     *      waiting in @ref lock or @ref tryLock
+     *      waiting in @ref wait or @ref waitFor
      */
     void notify();
 
@@ -67,7 +67,7 @@ public:
      * @param timeoutMs Number of milliseconds this method is allowed to block
      * @return If @c true the semaphore is accquired, @c false on timeout
      */
-    bool waitFor(std::chrono::milliseconds timeoutMs = std::chrono::milliseconds(0));
+    bool waitFor(std::chrono::milliseconds timeoutMs = std::chrono::milliseconds::zero());
 
     /**
      * Returns the current status of the internal counter

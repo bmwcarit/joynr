@@ -29,7 +29,6 @@ using namespace joynr;
 class MessagingSettingsTest : public testing::Test {
 public:
     MessagingSettingsTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TST", "MessagingSettingsTest")),
         testSettingsFileName("MessagingSettingsTest-testSettings.settings")
     {
     }
@@ -39,9 +38,11 @@ public:
     }
 
 protected:
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(MessagingSettingsTest);
     std::string testSettingsFileName;
 };
+
+INIT_LOGGER(MessagingSettingsTest);
 
 TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
     Settings testSettings(testSettingsFileName);

@@ -248,10 +248,10 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         }
 
         ccAddress = new WebSocketAddress({
-            protocol : provisioning.ccAddress.protocol,
+            protocol : provisioning.ccAddress.protocol || "ws",
             host : provisioning.ccAddress.host,
             port : provisioning.ccAddress.port,
-            path : provisioning.ccAddress.path
+            path : provisioning.ccAddress.path || ""
         });
 
         var joynrState = JoynrStates.SHUTDOWN;

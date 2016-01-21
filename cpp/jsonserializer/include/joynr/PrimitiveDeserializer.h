@@ -58,7 +58,7 @@ template <class T>
 class PrimitiveDeserializer : public IPrimitiveDeserializer
 {
 public:
-    ~PrimitiveDeserializer() = default;
+    ~PrimitiveDeserializer() override = default;
 
     /**
      * @brief deserialize Implementations are generated with the classes T,
@@ -74,14 +74,14 @@ public:
      * @param object
      * @return Variant (ref. IPrimitiveDeserializer)
      */
-    Variant deserializeVariant(IValue& object);
+    Variant deserializeVariant(IValue& object) override;
 };
 
 template <class T>
-Variant PrimitiveDeserializer<T>::deserializeVariant(IValue& o)
+Variant PrimitiveDeserializer<T>::deserializeVariant(IValue& object)
 {
     Variant variant = Variant::make<T>();
-    deserialize(variant.get<T>(), o);
+    deserialize(variant.get<T>(), object);
     return variant;
 }
 

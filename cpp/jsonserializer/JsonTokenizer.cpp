@@ -155,14 +155,14 @@ JsonValue::operator const std::string&() const
     return value.get<std::string>();
 }
 
-int64_t JsonValue::getInt64() const
+std::int64_t JsonValue::getInt64() const
 {
-    if (value.is<int64_t>()) {
-        return value.get<int64_t>();
-    } else if (value.is<uint64_t>()) {
-        return static_cast<int64_t>(value.get<uint64_t>());
+    if (value.is<std::int64_t>()) {
+        return value.get<std::int64_t>();
+    } else if (value.is<std::uint64_t>()) {
+        return static_cast<std::int64_t>(value.get<std::uint64_t>());
     } else {
-        throw std::invalid_argument("Extracting int64_t from non-int JsonValue");
+        throw std::invalid_argument("Extracting std::int64_t from non-int JsonValue");
     }
 }
 
@@ -171,20 +171,20 @@ double JsonValue::getDouble() const
 
     if (value.is<double>()) {
         return value.get<double>();
-    } else if (value.is<int64_t>()) {
-        return static_cast<double>(value.get<int64_t>());
-    } else if (value.is<uint64_t>()) {
-        return static_cast<double>(value.get<uint64_t>());
+    } else if (value.is<std::int64_t>()) {
+        return static_cast<double>(value.get<std::int64_t>());
+    } else if (value.is<std::uint64_t>()) {
+        return static_cast<double>(value.get<std::uint64_t>());
     }
     throw std::invalid_argument("Extracting double from non-double JsonValue");
 }
 
-uint64_t JsonValue::getUInt64() const
+std::uint64_t JsonValue::getUInt64() const
 {
-    if (!value.is<uint64_t>()) {
+    if (!value.is<std::uint64_t>()) {
         throw std::invalid_argument("Extracting uint from non-uint JsonValue");
     }
-    return value.get<uint64_t>();
+    return value.get<std::uint64_t>();
 }
 
 Variant JsonValue::parseJsonPrimitive(const std::string &tokenString)
@@ -226,11 +226,11 @@ Variant JsonValue::parseJsonPrimitive(const std::string &tokenString)
 
     // Convert based on the type of number
     if (numberType == NumberType::INT) {
-        int64_t number = std::stoll(tokenString);
-        return Variant::make<int64_t>(number);
+        std::int64_t number = std::stoll(tokenString);
+        return Variant::make<std::int64_t>(number);
     } else if (numberType == NumberType::UINT){
-        uint64_t number = std::stoull(tokenString);
-        return Variant::make<uint64_t>(number);
+        std::uint64_t number = std::stoull(tokenString);
+        return Variant::make<std::uint64_t>(number);
     } else {
         return Variant::make<double>(tokenizer.stringToDoubleLocaleIndependent(tokenString));
     }

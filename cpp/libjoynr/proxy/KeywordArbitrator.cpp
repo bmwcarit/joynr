@@ -29,13 +29,14 @@
 namespace joynr
 {
 
+INIT_LOGGER(KeywordArbitrator);
+
 KeywordArbitrator::KeywordArbitrator(const std::string& domain,
                                      const std::string& interfaceName,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
-          keyword(discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue()),
-          logger(joynr_logging::Logging::getInstance()->getLogger("KArb", "KeywordArbitrator"))
+          keyword(discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue())
 {
 }
 
@@ -46,13 +47,12 @@ void KeywordArbitrator::attemptArbitration()
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
         receiveCapabilitiesLookupResults(result);
     } catch (exceptions::JoynrException& e) {
-        LOG_ERROR(logger,
-                  FormatString("Unable to lookup provider (domain: %1, interface: %2) "
-                               "from discovery. Error: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .arg(e.getMessage())
-                          .str());
+        JOYNR_LOG_ERROR(
+                logger,
+                "Unable to lookup provider (domain: {}, interface: {}from discovery. Error: {}",
+                domain,
+                interfaceName,
+                e.getMessage());
     }
 }
 
@@ -67,10 +67,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     // Loop through the result list
     for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
-        LOG_TRACE(logger,
-                  FormatString("Looping over capabilitiesEntry: %1")
-                          .arg(discoveryEntry.toString())
-                          .str());
+        JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
 
         // Check that the provider supports onChange subscriptions if this was requested
         if (discoveryQos.getProviderMustSupportOnChange() &&
@@ -84,7 +81,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
             std::string name = parameter.getName();
             if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
                 std::string res = discoveryEntry.getParticipantId();
-                LOG_TRACE(logger, FormatString("setting res to %1").arg(res).str());
+                JOYNR_LOG_TRACE(logger, "setting res to {}", res);
                 joynr::types::CommunicationMiddleware::Enum preferredConnection(
                         selectPreferredCommunicationMiddleware(discoveryEntry.getConnections()));
                 updateArbitrationStatusParticipantIdAndAddress(

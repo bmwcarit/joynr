@@ -60,7 +60,7 @@ import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.proxy.Callback;
+import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 import joynr.JoynrMessage;
 import joynr.OneWay;
@@ -195,7 +195,7 @@ public class RequestReplyManagerTest {
         assertEquals(messageCapture.getValue().getPayload(), objectMapper.writeValueAsString(request1));
     }
 
-    private abstract class ReplyCallback extends Callback<Reply> {
+    private abstract class ReplyCallback extends ProviderCallback<Reply> {
     }
 
     @Test

@@ -32,7 +32,6 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
@@ -43,6 +42,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.publication.BroadcastFilter;
@@ -142,6 +142,15 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Mock
     Callback<Void> callbackVoid;
+
+    @Mock
+    private CallbackWithModeledError<Void, ErrorEnumBase> callbackWithApplicationExceptionErrorEnumBase;
+
+    @Mock
+    private CallbackWithModeledError<Void, MethodWithErrorEnumExtendedErrorEnum> callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum;
+
+    @Mock
+    private CallbackWithModeledError<Void, MethodWithImplicitErrorEnumErrorEnum> callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum;
 
     private TestAsyncProviderImpl providerAsync;
 
@@ -400,6 +409,13 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
 
         @Override
+        public Promise<MethodWithByteBufferDeferred> methodWithByteBuffer(Byte[] input) {
+            MethodWithByteBufferDeferred deferred = new MethodWithByteBufferDeferred();
+            deferred.resolve(input);
+            return new Promise<MethodWithByteBufferDeferred>(deferred);
+        }
+
+        @Override
         public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
             super.registerBroadcastListener(broadcastName, broadcastListener);
             if (!broadcastSubscriptionArrived) {
@@ -527,7 +543,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
 
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
             }
 
@@ -560,7 +576,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         Future<MethodWithMultipleOutputParametersReturned> future = proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
             }
 
@@ -643,7 +659,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             }
 
             @Override
-            public void onFailure(JoynrException error) {
+            public void onFailure(JoynrRuntimeException error) {
                 future.onFailure(error);
             }
 
@@ -689,6 +705,16 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         proxy.setEnumAttribute(TestEnum.TWO);
         TestEnum result = proxy.getEnumAttribute();
         assertEquals(TestEnum.TWO, result);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testByteBufferAttribute() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        Byte[] byteArray = { 1, 2, 3 };
+        proxy.setByteBufferAttribute(byteArray);
+        Byte[] result = proxy.getByteBufferAttribute();
+        assertArrayEquals(byteArray, result);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -865,7 +891,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(ErrorEnumBase.BASE_ERROR_TYPECOLLECTION);
-        Future<Void> future = proxy.methodWithErrorEnum(callbackVoid);
+        Future<Void> future = proxy.methodWithErrorEnum(callbackWithApplicationExceptionErrorEnumBase);
         try {
             future.get();
             fail("Should throw ApplicationException");
@@ -874,7 +900,40 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackVoid).onFailure(expected);
+        verify(callbackWithApplicationExceptionErrorEnumBase).onFailure((ErrorEnumBase)(expected.getError()));
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncMethodCallWithByteBuffer() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        Byte[] input = { 1, 2, 3 };
+        Byte[] result = proxy.methodWithByteBuffer(input);
+        assertArrayEquals(input, result);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void asyncMethodCallWithByteBuffer() throws JoynrWaitExpiredException, JoynrRuntimeException,
+                                               InterruptedException, ApplicationException {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        Byte[] input = { 1, 2, 3 };
+        Future<Byte[]> future = proxy.methodWithByteBuffer(new Callback<Byte[]>() {
+
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                fail("byteBuffer was not returned correctly");
+
+            }
+
+            @Override
+            public void onSuccess(Byte[] result) {
+            }
+        }, input);
+
+        Byte[] result = future.get();
+        assertArrayEquals(input, result);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -899,7 +958,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(MethodWithErrorEnumExtendedErrorEnum.IMPLICIT_ERROR_TYPECOLLECTION);
-        Future<Void> future = proxy.methodWithErrorEnumExtended(callbackVoid);
+        Future<Void> future = proxy.methodWithErrorEnumExtended(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum);
         try {
             future.get();
             fail("Should throw ApplicationException");
@@ -908,7 +967,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackVoid).onFailure(expected);
+        verify(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum).onFailure((MethodWithErrorEnumExtendedErrorEnum)(expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -933,7 +992,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(MethodWithImplicitErrorEnumErrorEnum.IMPLICIT_ERROR);
-        Future<Void> future = proxy.methodWithImplicitErrorEnum(callbackVoid);
+        Future<Void> future = proxy.methodWithImplicitErrorEnum(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum);
         try {
             future.get();
             fail("Should throw ApplicationException");
@@ -942,7 +1001,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackVoid).onFailure(expected);
+        verify(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum).onFailure((MethodWithImplicitErrorEnumErrorEnum)(expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

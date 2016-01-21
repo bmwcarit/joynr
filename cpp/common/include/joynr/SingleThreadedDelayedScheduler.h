@@ -37,8 +37,7 @@ namespace joynr
  * @note This implementation should not be used for runnables that take
  *      substantial time to complete.
  */
-class JOYNRCOMMON_EXPORT SingleThreadedDelayedScheduler : public joynr::DelayedScheduler,
-                                                          private joynr::Thread
+class JOYNRCOMMON_EXPORT SingleThreadedDelayedScheduler : public DelayedScheduler, private Thread
 {
 public:
     /**
@@ -46,7 +45,7 @@ public:
      * @param threadName Name of the thread to be used for debugging reasons
      * @param defaultDelayMs Default delay used by @ref DelayedScheduler::schedule
      */
-    SingleThreadedDelayedScheduler(
+    explicit SingleThreadedDelayedScheduler(
             const std::string& threadName,
             std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
@@ -55,7 +54,7 @@ public:
      * @note Be sure to call @ref shutdown and wait for return before
      *      destroying this object
      */
-    virtual ~SingleThreadedDelayedScheduler();
+    ~SingleThreadedDelayedScheduler() override;
 
     /**
      * @brief Does an ordinary shutdown of @ref SingleThreadedDelayedScheduler
@@ -65,7 +64,7 @@ public:
     void shutdown() override;
 
 private:
-    /* joynr::Thread pure virtual function */
+    /* Thread pure virtual function */
     void run() override;
 
     /*! @ref SingleThreadedDelayedScheduler is not allowed to be copied */
@@ -73,7 +72,7 @@ private:
 
 private:
     /*! Logger */
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(SingleThreadedDelayedScheduler);
 
     /*! Flag signaling @ref Thread to keep running */
     std::atomic_bool keepRunning;
@@ -84,7 +83,6 @@ private:
     /*! Queue of waiting work */
     BlockingQueue queue;
 };
-}
-// namespace joynr
+} // namespace joynr
 
 #endif // SINGLETHREADEDDELAYEDSCHEDULER_H_

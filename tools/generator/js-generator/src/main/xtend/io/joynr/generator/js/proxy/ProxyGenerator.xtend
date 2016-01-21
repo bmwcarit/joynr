@@ -123,7 +123,6 @@ class ProxyGenerator {
 
 			// generated package name
 			this.settings = settings || {};
-			var TypesEnum = settings.proxyElementTypes.TypesEnum;
 
 	«FOR attribute : getAttributes(fInterface)»
 	«val attributeName = attribute.joynrName»
@@ -132,8 +131,7 @@ class ProxyGenerator {
 			 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
 			 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 			*/
-			//TODO: generate type below (TypesEnum)
-			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute«getAttributeCaps(attribute)»(this, settings, "«attributeName»", «attribute.typeNameForParameter»);
+			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute«getAttributeCaps(attribute)»(this, settings, "«attributeName»", "«attribute.joynrTypeName»");
 	«ENDFOR»
 
 	«FOR operationName : getMethodNames(fInterface)»
@@ -157,7 +155,7 @@ class ProxyGenerator {
 					«FOR param: getInputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : «param.typeNameForParameter»
+							type : "«param.joynrTypeName»"
 						}
 					«ENDFOR»
 					],
@@ -165,7 +163,7 @@ class ProxyGenerator {
 						«FOR param: getOutputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : «param.typeNameForParameter»
+							type : "«param.joynrTypeName»"
 						}
 						«ENDFOR»
 					]
@@ -187,7 +185,7 @@ class ProxyGenerator {
 						«FOR param: event.outputParameters SEPARATOR ", "»
 						{
 							name : "«param.joynrName»",
-							type : «param.typeNameForParameter»
+							type : "«param.joynrTypeName»"
 						}
 						«ENDFOR»
 					],
@@ -219,8 +217,8 @@ class ProxyGenerator {
 
 		«fInterface.proxyName».getUsedDatatypes = function getUsedDatatypes(){
 			return [
-						«FOR datatype : fInterface.getAllComplexTypes.filter[a | a instanceof FType] SEPARATOR ','»
-						"«(datatype as FType).toTypesEnum»"
+						«FOR datatype : fInterface.getAllComplexTypes SEPARATOR ','»
+						"«datatype.joynrTypeName»"
 						«ENDFOR»
 					];
 		};
@@ -229,16 +227,16 @@ class ProxyGenerator {
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
 			define(«fInterface.defineName(fInterface.proxyName)»[
-				«FOR datatype : fInterface.getAllComplexTypes.filter[a | a instanceof FType] SEPARATOR ','»
-						"«(datatype as FType).getDependencyPath»"
+				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypes) SEPARATOR ','»
+						"«datatype.getDependencyPath»"
 				«ENDFOR»
 				], function () {
 					return «fInterface.proxyName»;
 				});
 		} else if (typeof exports !== 'undefined' ) {
-			if ((module !== undefined) && module.exports) {				
-				«FOR datatype : getAllComplexTypes(fInterface, false, true, true, true, true, true, false).filter[a | a instanceof FType]»
-					require("«relativePathToBase() + (datatype as FType).getDependencyPath()»");
+			if ((module !== undefined) && module.exports) {
+				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypes)»
+					require("«relativePathToBase() + datatype.getDependencyPath()»");
 				«ENDFOR»
 				exports = module.exports = «fInterface.proxyName»;
 			}

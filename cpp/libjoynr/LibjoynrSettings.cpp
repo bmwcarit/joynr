@@ -18,26 +18,16 @@
  */
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/Settings.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* LibjoynrSettings::logger = Logging::getInstance()->getLogger("MSG", "LibjoynrSettings");
+INIT_LOGGER(LibjoynrSettings);
 
 LibjoynrSettings::LibjoynrSettings(Settings& settings) : settings(settings)
 {
     checkSettings();
-}
-
-LibjoynrSettings::LibjoynrSettings(const LibjoynrSettings& other) : settings(other.settings)
-{
-}
-
-LibjoynrSettings::~LibjoynrSettings()
-{
 }
 
 void LibjoynrSettings::checkSettings() const
@@ -85,12 +75,10 @@ void LibjoynrSettings::setParticipantIdsPersistenceFilename(const std::string& f
 
 void LibjoynrSettings::printSettings() const
 {
-    LOG_DEBUG(
-            logger,
-            FormatString("SETTING: %1 = %2")
-                    .arg(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME())
-                    .arg(settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()))
-                    .str());
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(),
+                    settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
 }
 
 } // namespace joynr

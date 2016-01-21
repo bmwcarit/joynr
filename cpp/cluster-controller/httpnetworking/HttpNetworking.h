@@ -23,6 +23,7 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include <string>
 #include <QByteArray>
+#include <chrono>
 
 namespace joynr
 {
@@ -93,8 +94,8 @@ public:
       * Adds an http header. Only ASCII characters are allowed.
       */
     virtual T* addHeader(const std::string& name, const std::string& value) = 0;
-    virtual T* withConnectTimeout_ms(long timeout_ms) = 0;
-    virtual T* withTimeout_ms(long timeout_ms) = 0;
+    virtual T* withConnectTimeout(std::chrono::milliseconds timeout) = 0;
+    virtual T* withTimeout(std::chrono::milliseconds timeout) = 0;
 };
 
 /**
@@ -136,7 +137,7 @@ public:
      * used.
       */
     virtual IHttpPostBuilder* postContent(const QByteArray& data) = 0;
-    virtual ~IHttpPostBuilder();
+    ~IHttpPostBuilder() override = default;
 };
 
 /**
@@ -161,7 +162,7 @@ public:
      */
     virtual void reset() = 0;
 
-    virtual ~ICurlHandlePool();
+    virtual ~ICurlHandlePool() = default;
 };
 
 /**
@@ -198,7 +199,7 @@ public:
     /**
      * Sets the HTTP connect timeout
      */
-    void setConnectTimeout_ms(long connectTimeout);
+    void setConnectTimeout(std::chrono::milliseconds connectTimeout);
 
     /**
       * Enables HTTP logging if available. The method of logging is dependent on the HTTP library
@@ -231,7 +232,7 @@ private:
     ICurlHandlePool* curlHandlePool;
 
     std::string proxy;
-    long connectTimeout_ms;
+    std::chrono::milliseconds connectTimeout;
     std::string certificateAuthority;
     std::string clientCertificate;
     std::string clientCertificatePassword;

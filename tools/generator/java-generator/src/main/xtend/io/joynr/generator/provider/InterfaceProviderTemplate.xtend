@@ -77,7 +77,7 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 
 	override generate(FInterface serviceInterface) {
 		var methodToDeferredName = new HashMap<FMethod, String>();
-		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName()
+		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
 		init(serviceInterface, methodToDeferredName, uniqueMethodsToCreateDeferreds);
 
@@ -153,8 +153,8 @@ public interface «className» extends JoynrProvider {
 					return super.resolve(values);
 				}
 			««« In the case of single output param that is an array, the varargs resolve gets confused
-			««« and assumes the array is multi-out. Cast to object to prevent this from happening. 				
-			«ELSEIF method.outputParameters.length == 1 && isArray(method.outputParameters.get(0))»
+			««« and assumes the array is multi-out. Cast to object to prevent this from happening.
+			«ELSEIF method.outputParameters.length == 1 && (isArray(method.outputParameters.get(0)) || isByteBuffer(method.outputParameters.get(0).type))»
 				public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {
 					return super.resolve((Object)«method.commaSeperatedUntypedOutputParameterList»);
 				}

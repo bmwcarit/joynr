@@ -35,6 +35,9 @@ typeCollection radiotypes {
 	struct DatatypeForTestLibjoynr {
 		String name
 	}
+
+	typedef TypeDefForPrimitive is UInt16
+	typedef TypeDefForStruct is RadioStation
 }
 
 <** @description : "This is a description about the radio interface" **>
@@ -65,6 +68,9 @@ interface Radio {
 
 	attribute Int32 failingAsyncAttribute readonly
 
+	attribute radiotypes.TypeDefForStruct typeDefForStruct
+
+	attribute radiotypes.TypeDefForPrimitive typeDefForPrimitive
 	/**
 	 * An operation with return value and parameters.
 	 */
@@ -93,6 +99,26 @@ interface Radio {
 		}
 		out {
 			String returnValue
+		}
+	}
+
+	method methodWithByteBuffer{
+		in {
+			ByteBuffer input
+		}
+		out {
+			ByteBuffer result
+		}
+	}
+
+	method  methodWithTypeDef{
+		in {
+			radiotypes.TypeDefForStruct typeDefStructInput
+			radiotypes.TypeDefForPrimitive typeDefPrimitiveInput
+		}
+		out {
+			radiotypes.TypeDefForStruct typeDefStructOutput
+			radiotypes.TypeDefForPrimitive typeDefPrimitiveOutput
 		}
 	}
 
@@ -133,6 +159,7 @@ interface Radio {
 
 	method triggerBroadcasts {
 		in {
+			String broadcastName
 			UInt32 times
 		}
 	}
@@ -141,6 +168,13 @@ interface Radio {
 		out {
 			Country enumOutput
 			Country[] enumArrayOutput
+		}
+	}
+
+	broadcast broadcastWithTypeDefs {
+		out {
+			radiotypes.TypeDefForStruct typeDefStructOutput
+			radiotypes.TypeDefForPrimitive typeDefPrimitiveOutput
 		}
 	}
 

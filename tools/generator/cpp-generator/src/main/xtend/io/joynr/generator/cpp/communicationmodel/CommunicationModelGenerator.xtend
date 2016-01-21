@@ -28,7 +28,6 @@ import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
-import io.joynr.generator.templates.util.TypeUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FEnumerationType
@@ -37,41 +36,24 @@ import org.franca.core.franca.FModel
 
 class CommunicationModelGenerator {
 
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject private extension JoynrCppGeneratorExtensions
+	@Inject private extension CppStdTypeUtil
+	@Inject private extension NamingUtil
+	@Inject private extension InterfaceUtil
 
-	@Inject
-	private extension TypeUtil
+	@Inject InterfaceHTemplate interfaceH;
+	@Inject InterfaceCppTemplate interfaceCpp;
 
-	@Inject
-	private CppStdTypeUtil stdTypeUtil
+	@Inject StdEnumHTemplate stdEnumH;
+	@Inject StdEnumCppTemplate stdEnumCpp;
 
-	@Inject
-	private extension NamingUtil
-
-	@Inject
-	private extension InterfaceUtil
-
-	@Inject
-	InterfaceHTemplate interfaceH;
-
-	@Inject
-	InterfaceCppTemplate interfaceCpp;
-
-	@Inject
-	StdEnumHTemplate stdEnumH;
-
-	@Inject
-	StdEnumCppTemplate stdEnumCpp;
-
-	@Inject
-	StdTypeHTemplate stdTypeH;
-
-	@Inject
-	StdTypeCppTemplate stdTypeCpp;
+	@Inject StdTypeHTemplate stdTypeH;
+	@Inject StdTypeCppTemplate stdTypeCpp;
 
 	@Inject MapHTemplate mapH;
 	@Inject MapCppTemplate mapCpp;
+
+	@Inject TypeDefHTemplate typeDefH;
 
 	@Inject TypeSerializerHTemplate typeSerializerH;
 	@Inject TypeSerializerCppTemplate typeSerializerCpp;
@@ -103,28 +85,28 @@ class CommunicationModelGenerator {
 
 			generateFile(
 				headerFileSystem,
-				headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
+				headerpath + getGenerationTypeName(type) + ".h",
 				stdTypeH,
 				type
 			)
 
 			generateFile(
 				sourceFileSystem,
-				sourcepath + stdTypeUtil.getGenerationTypeName(type) + ".cpp",
+				sourcepath + getGenerationTypeName(type) + ".cpp",
 				stdTypeCpp,
 				type
 			)
 
 			generateFile(
 				headerFileSystem,
-				headerpath + stdTypeUtil.getGenerationTypeName(type) + "Serializer.h",
+				headerpath + getGenerationTypeName(type) + "Serializer.h",
 				typeSerializerH,
 				type
 			)
 
 			generateFile(
 				sourceFileSystem,
-				sourcepath + stdTypeUtil.getGenerationTypeName(type) + "Serializer.cpp",
+				sourcepath + getGenerationTypeName(type) + "Serializer.cpp",
 				typeSerializerCpp,
 				type
 			)
@@ -142,8 +124,8 @@ class CommunicationModelGenerator {
 				headerFileSystem,
 				sourceFileSystem,
 				type,
-				headerpath + stdTypeUtil.getGenerationTypeName(type),
-				sourcepath + stdTypeUtil.getGenerationTypeName(type)
+				headerpath + getGenerationTypeName(type),
+				sourcepath + getGenerationTypeName(type)
 			);
 
 		}
@@ -155,8 +137,8 @@ class CommunicationModelGenerator {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
 			}
-			val headerFilename = headerpath + stdTypeUtil.getGenerationTypeName(type)
-			val sourceFilename = sourcepath + stdTypeUtil.getGenerationTypeName(type)
+			val headerFilename = headerpath + getGenerationTypeName(type)
+			val sourceFilename = sourcepath + getGenerationTypeName(type)
 
 			generateFile(
 				headerFileSystem,
@@ -182,6 +164,22 @@ class CommunicationModelGenerator {
 				sourceFileSystem,
 				sourceFilename + "Serializer.cpp",
 				mapSerializerCpp,
+				type
+			)
+		}
+
+
+		for (type : getTypeDefDataTypes(fModel)) {
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			if (type.isPartOfTypeCollection) {
+				headerpath += type.typeCollectionName + File::separator
+			}
+			val headerFilename = headerpath + getGenerationTypeName(type)
+
+			generateFile(
+				headerFileSystem,
+				headerFilename + ".h",
+				typeDefH,
 				type
 			)
 		}
@@ -228,9 +226,9 @@ class CommunicationModelGenerator {
 			if (enumType != null) {
 				enumType.name = methodToErrorEnumName.get(method);
 				val path = getPackagePathWithJoynrPrefix(enumType, File::separator)
-				val headerFilename = path + File::separator + stdTypeUtil.getGenerationTypeName(enumType)
+				val headerFilename = path + File::separator + getGenerationTypeName(enumType)
 				val sourceFilepath = dataTypePath + getPackageSourceDirectory(fInterface) + File::separator + fInterface.joynrName;
-				val sourceFilename = sourceFilepath + File::separator + stdTypeUtil.getGenerationTypeName(enumType)
+				val sourceFilename = sourceFilepath + File::separator + getGenerationTypeName(enumType)
 
 				generateEnum(
 					headerFileSystem,

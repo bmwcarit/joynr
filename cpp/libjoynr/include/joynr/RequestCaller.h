@@ -32,8 +32,8 @@ class IBroadcastListener;
 class JOYNR_EXPORT RequestCaller
 {
 public:
-    RequestCaller(const std::string& interfaceName);
-    virtual ~RequestCaller();
+    explicit RequestCaller(const std::string& interfaceName);
+    virtual ~RequestCaller() = default;
 
     std::string getInterfaceName();
 

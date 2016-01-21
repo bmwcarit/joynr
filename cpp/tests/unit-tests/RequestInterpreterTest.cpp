@@ -140,7 +140,7 @@ TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProvi
     std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
     EXPECT_CALL(
             *mockCaller,
-            getAttributeWithProviderRuntimeException(A<std::function<void(const int32_t&)>>(),
+            getAttributeWithProviderRuntimeException(A<std::function<void(const std::int32_t&)>>(),
                         A<std::function<void(const exceptions::ProviderRuntimeException&)>>())
     )
             .Times(1);
@@ -150,7 +150,7 @@ TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProvi
     std::vector<Variant> paramValues;
     std::vector<std::string> paramDatatypes;
 
-    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::shared_ptr<MockCallback<std::int32_t>> callback(new MockCallback<std::int32_t>());
     std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
     std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
@@ -170,7 +170,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodWithInvalidArguments) {
     paramValues.push_back(Variant::make<std::string>("invalidParamCannotBeConvertedToInteger[]"));
     paramDatatypes.push_back("Integer[]");
 
-    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::shared_ptr<MockCallback<std::int32_t>> callback(new MockCallback<std::int32_t>());
     std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
     std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
@@ -187,10 +187,10 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments) {
     std::string methodName = "setTestAttribute";
     std::vector<Variant> paramValues;
     std::vector<std::string> paramDatatypes;
-    paramValues.push_back(Variant::make<std::string>("invalidParamCannotBeConvertedToInt32_t"));
+    paramValues.push_back(Variant::make<std::string>("invalidParamCannotBeConvertedTostd::Int32_t"));
     paramDatatypes.push_back("Doesn'tMatter");
 
-    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::shared_ptr<MockCallback<std::int32_t>> callback(new MockCallback<std::int32_t>());
     std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
     std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
@@ -210,7 +210,7 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments2) {
     paramValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(types::Localisation::GpsLocation()));
     paramDatatypes.push_back("Doesn'tMatter");
 
-    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::shared_ptr<MockCallback<std::int32_t>> callback(new MockCallback<std::int32_t>());
     std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
     std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);
@@ -228,7 +228,7 @@ TEST_F(RequestInterpreterTest, execute_callsNonExistingMethod) {
     std::vector<Variant> paramValues;
     std::vector<std::string> paramDatatypes;
 
-    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::shared_ptr<MockCallback<std::int32_t>> callback(new MockCallback<std::int32_t>());
     std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
     std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
         callback->onError(exception);

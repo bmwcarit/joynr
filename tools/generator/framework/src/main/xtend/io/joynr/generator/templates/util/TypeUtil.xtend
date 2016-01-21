@@ -280,6 +280,15 @@ class TypeUtil {
 		}
 	}
 
+	def FTypeDef getTypeDefType(FTypeRef type){
+		if (type==null){
+			return null;
+		}
+		else{
+			return getTypeDefType(type.derived)
+		}
+	}
+
 	def FMapType getMapType(FType type){
 		if (type == null){
 			return null;
@@ -319,6 +328,18 @@ class TypeUtil {
 		}
 	}
 
+	def FTypeDef getTypeDefType(FType type){
+		if (type == null){
+			return null;
+		}
+		if (type instanceof FArrayType){
+			return getTypeDefType(type.elementType)
+		}
+		else if (type instanceof FTypeDef){
+			return type
+		}
+	}
+
 	def boolean isCompound(FType type) {
 		if (type==null){
 			return false
@@ -328,9 +349,6 @@ class TypeUtil {
 		}
 		if (type instanceof FCompoundType){
 			return true
-		}
-		if (type instanceof FTypeDef){
-			return isCompound(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return false
@@ -351,15 +369,29 @@ class TypeUtil {
 		return false
 	}
 
+	def boolean isTypeDef(FType type) {
+		if (type instanceof FTypeDef){
+			return true
+		}
+		return false
+	}
+
+	def boolean isTypeDef(FTypeRef typeRef) {
+		if (typeRef == null){
+			return false;
+		}
+		if (typeRef.derived!=null){
+			return isTypeDef(typeRef.derived)
+		}
+		return false
+	}
+
 	def boolean isMap(FType type) {
 		if (type == null){
 			return false;
 		}
 		if (type instanceof FArrayType){
 			isMap(type.elementType)
-		}
-		if (type instanceof FTypeDef){
-			isMap(type.actualType)
 		}
 		if (type instanceof FMapType){
 			return true;
@@ -376,9 +408,6 @@ class TypeUtil {
 		}
 		if (type instanceof FStructType || type instanceof FUnionType){
 			return false
-		}
-		if (type instanceof FTypeDef){
-			isEnum(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return true
@@ -434,12 +463,28 @@ class TypeUtil {
 		datatype.elements.filter(element | isCompound(element.type));
 	}
 
-	def getComplexMembers(FCompoundType datatype) {
-		datatype.elements.filter(element | isMap(element.type) || isCompound(element.type) || isEnum(element.type) || isArray(element));
+	def isComplex(FTypeRef typeRef) {
+		isMap(typeRef) || isCompound(typeRef) || isEnum(typeRef)
 	}
 
-	def filterComplex(Iterable<Object> iterable) {
-		iterable.filter[type | type instanceof FType && ((type as FType).map || (type as FType).compound || (type as FType).enum || (type as FType).map)]
+	def isComplex(FType type) {
+		isMap(type) || isCompound(type) || isEnum(type)
+	}
+
+	def getComplexMembers(FCompoundType datatype, boolean includeTypeDefs) {
+		datatype.elements.filter(element | (isTypeDef(element.type) && includeTypeDefs) || isMap(element.type) || isCompound(element.type) || isEnum(element.type) || isArray(element));
+	}
+
+	def getComplexMembers(FCompoundType datatype) {
+		getComplexMembers(datatype, false)
+	}
+
+	def filterComplex(Iterable<? extends Object> iterable) {
+		filterComplex(iterable, false)
+	}
+
+	def filterComplex(Iterable<? extends Object> iterable, boolean includeTypeDefs) {
+		iterable.filter(typeof(FType)).filter[type | (type.typeDef && includeTypeDefs) || type.compound || type.enum || type.map]
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {
@@ -465,6 +510,10 @@ class TypeUtil {
 	 */
 	def boolean isArray(FTypedElement typedElement) {
 		return typedElement.array
+	}
+
+	def boolean isArray(FType type) {
+		return type.array
 	}
 
 	def boolean hasExtendsDeclaration(FCompoundType datatype) {

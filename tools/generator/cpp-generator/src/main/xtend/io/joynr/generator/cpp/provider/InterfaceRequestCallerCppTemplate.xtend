@@ -72,7 +72,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	«IF attribute.readable»
 		void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
 				std::function<void(
-						const «returnType»& «attributeName.toFirstLower»
+						const «returnType»& «attributeName»
 				)> onSuccess,
 				std::function<void(
 						const exceptions::ProviderRuntimeException&
@@ -94,14 +94,14 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	«ENDIF»
 	«IF attribute.writable»
 		void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
-				const «returnType»& «attributeName.toFirstLower»,
+				const «returnType»& «attributeName»,
 				std::function<void()> onSuccess,
 				std::function<void(
 						const exceptions::ProviderRuntimeException&
 				)> onError
 		) {
 			try {
-				provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess, onError);
+				provider->set«attributeName.toFirstUpper»(«attributeName», onSuccess, onError);
 			} catch (exceptions::ProviderRuntimeException& e) {
 				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
@@ -204,7 +204,7 @@ def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName)
 		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")
 		packagePath + "::" + methodToErrorEnumName.get(method)
 	} else{
-		buildPackagePath(method.errorEnum, "::", true) + method.errorEnum.joynrName
+		buildPackagePath(method.errorEnum, "::", true) + "::" + method.errorEnum.joynrName
 	}
 }
 }

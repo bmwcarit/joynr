@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(radio-app-0.13.0)
+project(radio-app-0.14.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -26,16 +26,29 @@ message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.13.0 REQUIRED)
-message(STATUS "joynr variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
-message(STATUS "joynr variable JOYNR_LIB_DBUS_INCLUDE_DIRS=${JOYNR_LIB_DBUS_INCLUDE_DIRS}")
-message(STATUS "joynr variable JOYNR_LIB_WS_INCLUDE_DIRS=${JOYNR_LIB_WS_INCLUDE_DIRS}")
-message(STATUS "joynr variable JOYNR_LIBRARIES=${JOYNR_LIBRARIES}")
-message(STATUS "joynr variable JOYNR_LIB_DBUS_LIBRARIES=${JOYNR_LIB_DBUS_LIBRARIES}")
-message(STATUS "joynr variable JOYNR_LIB_WS_LIBRARIES=${JOYNR_LIB_WS_LIBRARIES}")
-message(STATUS "joynr variable JOYNR_EXECUTABLES=${JOYNR_EXECUTABLES}")
-message(STATUS "joynr variable JOYNR_RESOURCES_DIR=${JOYNR_RESOURCES_DIR}")
+find_package(Joynr 0.14.0 REQUIRED)
+message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
+message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
+message(STATUS "joynr variable Joynr_LIB_DBUS_INCLUDE_DIRS=${Joynr_LIB_DBUS_INCLUDE_DIRS}")
+message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
+message(STATUS "joynr variable Joynr_LIB_COMMON_LIBRARIES=${Joynr_LIB_COMMON_LIBRARIES}")
+message(STATUS "joynr variable Joynr_LIB_INPROCESS_LIBRARIES=${Joynr_LIB_INPROCESS_LIBRARIES}")
+message(STATUS "joynr variable Joynr_LIB_DBUS_LIBRARIES=${Joynr_LIB_DBUS_LIBRARIES}")
+message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}")
+message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
+message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
+
+######## Add Boost ########
+
+find_package(Boost 1.56.0 REQUIRED
+    COMPONENTS
+    filesystem
+)
+message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
+message(STATUS "variable Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
+
+include_directories(${Boost_INCLUDE_DIRS})
 
 ##### Helper variables for using generated code ###########
 
@@ -51,11 +64,11 @@ set(GENERATED_INCLUDE_DIRS
 	"src/main/generated-cpp/include"
 )
 
-# Put the JOYNR_INCLUDE_DIRS last so that it is possible to override types
-# defined in libjoyn
+# Put the Joynr_LIB_COMMON_INCLUDE_DIRS last so that it is possible to override types
+# defined in libjoynr
 include_directories(
     ${GENERATED_INCLUDE_DIRS}
-    ${JOYNR_INCLUDE_DIRS}
+    ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 # Use the generated header files for the consumer application
@@ -89,7 +102,8 @@ set(radio-app-provider_SOURCES
 
 # Link with the joynr libraries
 set(radio-app_LIBRARIES
-    ${JOYNR_LIBRARIES}
+    ${Joynr_LIB_COMMON_LIBRARIES}
+    ${Boost_LIBRARIES}
 )
 
 # Put the generated code into a library and put the library in the bin directory
@@ -118,7 +132,9 @@ add_library(radio-app SHARED
     ${GENERATED_SOURCES}
 )
 
-target_link_libraries(radio-app ${JOYNR_LIBRARIES})
+target_link_libraries(radio-app
+    ${radio-app_LIBRARIES}
+)
 
 # Compile the provider application (running in-process with cluster controller)
 add_executable(radio-app-provider-cc
@@ -136,17 +152,19 @@ add_executable(radio-app-consumer-cc
 target_link_libraries(radio-app-provider-cc
     radio-app
     ${radio-app_LIBRARIES}
+    ${Joynr_LIB_INPROCESS_LIBRARIES}
 )
 
 # Link the consumer application
 target_link_libraries(radio-app-consumer-cc
     radio-app
     ${radio-app_LIBRARIES}
+    ${Joynr_LIB_INPROCESS_LIBRARIES}
 )
 
 # copy joynr resources and settings
 file(
-    COPY ${JOYNR_RESOURCES_DIR}
+    COPY ${Joynr_RESOURCES_DIR}
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
@@ -154,7 +172,7 @@ file(
 
 # copy joynr executables
 file(
-    COPY ${JOYNR_EXECUTABLES}
+    COPY ${Joynr_EXECUTABLES}
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
@@ -168,7 +186,8 @@ add_executable(radio-app-provider-ws
 # Link the provider application
 target_link_libraries(radio-app-provider-ws
     radio-app
-    ${JOYNR_LIB_WS_LIBRARIES}
+    ${radio-app_LIBRARIES}
+    ${Joynr_LIB_WS_LIBRARIES}
 )
 
 # Compile the consumer application (requires: running cluster controller)
@@ -181,7 +200,8 @@ add_executable(radio-app-consumer-ws
 # Link the consumer application
 target_link_libraries(radio-app-consumer-ws
     radio-app
-    ${JOYNR_LIB_WS_LIBRARIES}
+    ${radio-app_LIBRARIES}
+    ${Joynr_LIB_WS_LIBRARIES}
 )
 
 install(TARGETS
@@ -203,7 +223,8 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Link the provider application
     target_link_libraries(radio-app-provider-dbus
         radio-app
-        ${JOYNR_LIB_DBUS_LIBRARIES}
+        ${radio-app_LIBRARIES}
+        ${Joynr_LIB_DBUS_LIBRARIES}
     )
 
     # Compile the consumer application (requires: Dbus and running cluster controller)
@@ -216,7 +237,8 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Link the consumer application
     target_link_libraries(radio-app-consumer-dbus
         radio-app
-        ${JOYNR_LIB_DBUS_LIBRARIES}
+        ${radio-app_LIBRARIES}
+        ${Joynr_LIB_DBUS_LIBRARIES}
     )
 
     install(TARGETS

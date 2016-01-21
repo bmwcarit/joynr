@@ -78,9 +78,9 @@ public:
 			bool cached
 	);
 
-	«produceSyncGetters(serviceInterface, false)»
-	«produceSyncSetters(serviceInterface, false)»
-	«produceSyncMethods(serviceInterface, false)»
+	«produceSyncGetterDeclarations(serviceInterface, false)»
+	«produceSyncSetterDeclarations(serviceInterface, false)»
+	«produceSyncMethodDeclarations(serviceInterface, false)»
 
 	friend class «className»;
 

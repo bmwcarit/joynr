@@ -22,11 +22,11 @@
 #include "joynr/vehicle/DefaultRadioProvider.h"
 #include "joynr/vehicle/RadioStation.h"
 #include "joynr/vehicle/Country.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/exceptions/JoynrException.h"
-#include <QList>
-#include <QMap>
-#include <QMutex>
+#include <vector>
+#include <unordered_map>
+#include <mutex>
 
 using namespace joynr;
 /**
@@ -77,12 +77,13 @@ private:
     MyRadioProvider(const MyRadioProvider&);
     void operator=(const MyRadioProvider&);
 
-    int currentStationIndex;                          // Index to the current station
-    QList<joynr::vehicle::RadioStation> stationsList; // List of possible stations
-    QMap<joynr::vehicle::Country::Enum, joynr::vehicle::GeoPosition> countryGeoPositionMap;
-    QMutex mutex; // Providers need to be threadsafe
+    int currentStationIndex;                                // Index to the current station
+    std::vector<joynr::vehicle::RadioStation> stationsList; // List of possible stations
+    std::unordered_map<joynr::vehicle::Country::Enum, joynr::vehicle::GeoPosition>
+            countryGeoPositionMap;
+    std::mutex mutex; // Providers need to be threadsafe
 
-    static joynr::joynr_logging::Logger* logger;
+    ADD_LOGGER(MyRadioProvider);
 };
 
 #endif

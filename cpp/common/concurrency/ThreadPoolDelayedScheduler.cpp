@@ -23,24 +23,27 @@
 #include <cassert>
 #include <functional>
 
-using namespace std::placeholders;
+namespace joynr
+{
 
-joynr::ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(
-        uint8_t numberOfThreads,
-        const std::string& name,
-        std::chrono::milliseconds defaultDelayMs)
-        : joynr::DelayedScheduler(std::bind(&ThreadPool::execute, &threadPool, _1), defaultDelayMs),
+ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(std::uint8_t numberOfThreads,
+                                                       const std::string& name,
+                                                       std::chrono::milliseconds defaultDelayMs)
+        : DelayedScheduler(std::bind(&ThreadPool::execute, &threadPool, std::placeholders::_1),
+                           defaultDelayMs),
           threadPool(name, numberOfThreads)
 {
 }
 
-joynr::ThreadPoolDelayedScheduler::~ThreadPoolDelayedScheduler()
+ThreadPoolDelayedScheduler::~ThreadPoolDelayedScheduler()
 {
     assert(!threadPool.isRunning());
 }
 
-void joynr::ThreadPoolDelayedScheduler::shutdown()
+void ThreadPoolDelayedScheduler::shutdown()
 {
     DelayedScheduler::shutdown();
     threadPool.shutdown();
 }
+
+} // namespace joynr

@@ -16,13 +16,19 @@ set(
     JoynrLib_INCLUDE_DIRECTORIES
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
+    JoynrLib_SYS_INCLUDE_DIRS
+    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${libwebsockets_INCLUDE_DIRS}
+)
+
+set(
     JoynrLib_TARGET_LIBRARIES
+    ${libwebsockets_LIBRARIES}
     JoynrCommon
     jsonserializer
 )
@@ -31,7 +37,6 @@ set(
     JoynrLib_EXPORT_HEADER
     "include/joynr/JoynrExport.h"
 )
-
 
 file(
     GLOB_RECURSE JoynrLib_PUBLIC_HEADERS
@@ -58,7 +63,6 @@ file(
     "LibjoynrSettings.h"
     "JsonExceptionSerializer.h"
 )
-
 
 set(
     JoynrLib_HEADERS
@@ -118,12 +122,19 @@ include_directories(
     ${JoynrLib_INCLUDE_DIRECTORIES}
 )
 
+include_directories(
+    SYSTEM
+    ${JoynrLib_SYS_INCLUDE_DIRS}
+)
+
 add_library(
     Joynr
     SHARED
     ${JoynrLib_HEADERS}
     ${JoynrLib_SOURCES}
 )
+
+add_dependencies(Joynr libwebsockets)
 
 AddClangFormat(Joynr)
 

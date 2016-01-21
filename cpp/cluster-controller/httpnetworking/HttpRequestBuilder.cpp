@@ -25,9 +25,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* HttpRequestBuilder::logger = Logging::getInstance()->getLogger("MSG", "HttpRequestBuilder");
+INIT_LOGGER(HttpRequestBuilder);
 
 HttpRequestBuilder::HttpRequestBuilder(const std::string& url)
         : handle(nullptr), headers(nullptr), content(), built(false)
@@ -99,15 +97,15 @@ HttpRequestBuilder* HttpRequestBuilder::asDelete()
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withTimeout_ms(long timeout_ms)
+HttpRequestBuilder* HttpRequestBuilder::withTimeout(std::chrono::milliseconds timeout)
 {
-    curl_easy_setopt(handle, CURLOPT_TIMEOUT_MS, timeout_ms);
+    curl_easy_setopt(handle, CURLOPT_TIMEOUT_MS, timeout.count());
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withConnectTimeout_ms(long timeout_ms)
+HttpRequestBuilder* HttpRequestBuilder::withConnectTimeout(std::chrono::milliseconds timeout)
 {
-    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT_MS, timeout_ms);
+    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT_MS, timeout.count());
     return this;
 }
 
@@ -133,9 +131,9 @@ HttpRequestBuilder* HttpRequestBuilder::addHeader(const std::string& name, const
 HttpRequest* HttpRequestBuilder::build()
 {
     if (built) {
-        LOG_WARN(logger,
-                 "The method build of HttpBuilder may be called only once on a specific "
-                 "instance. Throwing an Exception from worker thread.");
+        JOYNR_LOG_WARN(logger,
+                       "The method build of HttpBuilder may be called only once on a specific "
+                       "instance. Throwing an Exception from worker thread.");
         throw exceptions::JoynrRuntimeException(
                 "The method build of HttpBuilder may be called only once on a specific instance");
     }

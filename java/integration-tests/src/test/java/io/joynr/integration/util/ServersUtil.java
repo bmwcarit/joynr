@@ -69,6 +69,9 @@ public class ServersUtil {
             return;
         }
         String serverUrl = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
+        if (serverUrl.endsWith("/")) {
+            serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
+        }
         String bounceProxyUrl = serverUrl + BOUNCEPROXY_CONTEXT + "/";
         System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
     }
@@ -80,6 +83,9 @@ public class ServersUtil {
             return;
         }
         String serverUrl = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
+        if (serverUrl.endsWith("/")) {
+            serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
+        }
         String directoriesUrl = serverUrl + DISCOVERY_CONTEXT + "/channels/discoverydirectory_channelid/";
 
         System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);

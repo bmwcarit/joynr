@@ -32,7 +32,7 @@ class InProcessMessagingSkeleton;
 class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::RoutingTypes::Address
 {
 public:
-    InProcessMessagingAddress(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
+    explicit InProcessMessagingAddress(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
     std::shared_ptr<InProcessMessagingSkeleton> getSkeleton() const;
 
 private:

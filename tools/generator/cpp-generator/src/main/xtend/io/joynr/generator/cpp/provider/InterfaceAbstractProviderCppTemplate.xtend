@@ -22,6 +22,7 @@ import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -32,6 +33,7 @@ class InterfaceAbstractProviderCppTemplate implements InterfaceTemplate {
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
 	@Inject private extension BroadcastUtil
 
 	override generate(FInterface serviceInterface)
@@ -66,24 +68,32 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 }
 
 «FOR attribute : serviceInterface.attributes»
-	«var attributeType = attribute.typeName»
-	«var attributeName = attribute.joynrName»
-	void «interfaceName»AbstractProvider::«attributeName»Changed(
-			const «attributeType»& «attributeName»
-	) {
-		onAttributeValueChanged(
-				"«attributeName»",
-				«IF isArray(attribute)»
-					«IF isEnum(attribute.type)»
-						Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
+	«IF attribute.notifiable»
+		«var attributeType = attribute.typeName»
+		«var attributeName = attribute.joynrName»
+		void «interfaceName»AbstractProvider::«attributeName»Changed(
+				const «attributeType»& «attributeName»
+		) {
+			onAttributeValueChanged(
+					"«attributeName»",
+					«IF isEnum(attribute.type) && isArray(attribute)»
+						joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
+					«ELSEIF isEnum(attribute.type)»
+						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+					«ELSEIF isArray(attribute)»
+						joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attribute.joynrName»)
+					«ELSEIF isCompound(attribute.type)»
+						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+					«ELSEIF isMap(attribute.type)»
+						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+					«ELSEIF isByteBuffer(attribute.type)»
+						joynr::TypeUtil::toVariant(«attribute.joynrName»)
 					«ELSE»
-						Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«attribute.joynrName»))
+						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
 					«ENDIF»
-				«ELSE»
-					Variant::make<«getTypeName(attribute.type)»>(«attribute.joynrName»)
-				«ENDIF»
-		);
-	}
+			);
+		}
+	«ENDIF»
 «ENDFOR»
 
 «FOR broadcast : serviceInterface.broadcasts»
@@ -92,16 +102,24 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
 	) {
 		std::vector<Variant> broadcastValues;
-		«FOR parameter: getOutputParameters(broadcast)»
-			«IF isArray(parameter)»
-				«IF isEnum(parameter.type)»
-					broadcastValues.push_back(Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(parameter.type.derived)»>(«parameter.joynrName»)));
-				«ELSE»
-					broadcastValues.push_back(Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«parameter.joynrName»)));
-				«ENDIF»
-			«ELSE»
-				broadcastValues.push_back(Variant::make<«getTypeName(parameter.type)»>(«parameter.joynrName»));
-			«ENDIF»
+		«FOR param: getOutputParameters(broadcast)»
+			broadcastValues.push_back(
+					«IF isEnum(param.type) && isArray(param)»
+						joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.joynrName»))
+					«ELSEIF isEnum(param.type)»
+						Variant::make<«getTypeName(param)»>(«param.joynrName»)
+					«ELSEIF isArray(param)»
+						joynr::TypeUtil::toVariant<«getTypeName(param.type)»>(«param.joynrName»)
+					«ELSEIF isCompound(param.type)»
+						Variant::make<«getTypeName(param)»>(«param.joynrName»)
+					«ELSEIF isMap(param.type)»
+						Variant::make<«getTypeName(param)»>(«param.joynrName»)
+					«ELSEIF isByteBuffer(param.type)»
+						joynr::TypeUtil::toVariant(«param.joynrName»)
+					«ELSE»
+						Variant::make<«getTypeName(param)»>(«param.joynrName»)
+					«ENDIF»
+			);
 		«ENDFOR»
 		fireBroadcast("«broadcastName»", broadcastValues);
 	}

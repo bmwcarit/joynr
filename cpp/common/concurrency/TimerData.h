@@ -18,10 +18,9 @@
  */
 #ifndef TIMERDATA_H_
 #define TIMERDATA_H_
+
 #include <chrono>
 #include <joynr/Timer.h>
-
-using namespace std::chrono;
 
 namespace joynr
 {
@@ -41,14 +40,14 @@ public:
      * @param periodic Flag indicating whether timer is periodic or not
      */
     TimerData(const Timer::TimerId id,
-              std::function<void(joynr::Timer::TimerId)> expiryCallback,
-              std::function<void(joynr::Timer::TimerId)> removeCallback,
+              std::function<void(Timer::TimerId)> expiryCallback,
+              std::function<void(Timer::TimerId)> removeCallback,
               bool periodic);
 
     /**
      * @brief Destructor
      */
-    virtual ~TimerData();
+    virtual ~TimerData() = default;
 
     /**
      * Returns if this timer should be put to queue again
@@ -64,19 +63,19 @@ public:
      *      @ref isPeriodic returns @c false this method will return always the
      *      one expiry date. This date could also be in the past.
      */
-    virtual system_clock::time_point getNextExpiry() = 0;
+    virtual std::chrono::system_clock::time_point getNextExpiry() = 0;
 
     /**
      * Returns the expiry callback
      * @return The function pointer on expiry
      */
-    std::function<void(joynr::Timer::TimerId)> getExpiryCallback() const;
+    std::function<void(Timer::TimerId)> getExpiryCallback() const;
 
     /**
      * Returns the removal callback
      * @return The function pointer on removal
      */
-    std::function<void(joynr::Timer::TimerId)> getRemoveCallback() const;
+    std::function<void(Timer::TimerId)> getRemoveCallback() const;
 
     /**
      * Returns the unique ID
@@ -90,9 +89,9 @@ private:
     /*! Unique ID of the timer */
     const Timer::TimerId id;
     /*! Expiry callback of the timer */
-    std::function<void(joynr::Timer::TimerId)> expiryCallback;
+    std::function<void(Timer::TimerId)> expiryCallback;
     /*! Remove callback of the timer */
-    std::function<void(joynr::Timer::TimerId)> removeCallback;
+    std::function<void(Timer::TimerId)> removeCallback;
 };
 
 /**
@@ -110,16 +109,16 @@ public:
      * @param delay Delay of the timer in milliseconds
      */
     OneShotTimerData(const Timer::TimerId id,
-                     std::function<void(joynr::Timer::TimerId)> expiryCallback,
-                     std::function<void(joynr::Timer::TimerId)> removeCallback,
-                     const milliseconds delay);
-    virtual ~OneShotTimerData();
+                     std::function<void(Timer::TimerId)> expiryCallback,
+                     std::function<void(Timer::TimerId)> removeCallback,
+                     const std::chrono::milliseconds delay);
+    ~OneShotTimerData() override = default;
 
-    virtual system_clock::time_point getNextExpiry();
+    std::chrono::system_clock::time_point getNextExpiry() override;
 
 private:
     /*! Time point of exiry */
-    const system_clock::time_point expiry;
+    const std::chrono::system_clock::time_point expiry;
 };
 
 /**
@@ -138,20 +137,20 @@ public:
      * @param interval Interval of the timer in milliseconds
      */
     PeriodicTimerData(const Timer::TimerId id,
-                      std::function<void(joynr::Timer::TimerId)> expiryCallback,
-                      std::function<void(joynr::Timer::TimerId)> removeCallback,
-                      const milliseconds interval);
-    virtual ~PeriodicTimerData();
+                      std::function<void(Timer::TimerId)> expiryCallback,
+                      std::function<void(Timer::TimerId)> removeCallback,
+                      const std::chrono::milliseconds interval);
+    ~PeriodicTimerData() override = default;
 
-    virtual system_clock::time_point getNextExpiry();
+    std::chrono::system_clock::time_point getNextExpiry() override;
 
 private:
     /*! The regular interval the timer expires */
-    const milliseconds interval;
+    const std::chrono::milliseconds interval;
     /*! Counter the will be increased by each call to @ref getNextExpiry */
     int counter;
     /*! Time point of creation */
-    const system_clock::time_point creation;
+    const std::chrono::system_clock::time_point creation;
 };
 
 } // namespace joynr

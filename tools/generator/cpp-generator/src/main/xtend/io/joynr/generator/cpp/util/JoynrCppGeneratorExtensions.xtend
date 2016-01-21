@@ -28,7 +28,6 @@ import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
-import org.franca.core.franca.FTypedElement
 
 class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -89,29 +88,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		return sb.toString();
 	}
 
-	def buildPackagePath(FType datatype, String separator) {
-		return buildPackagePath(datatype, separator, false);
-	}
-
-	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
-		if (datatype == null) {
-			return "";
-		}
-		var packagepath = "";
-		try {
-			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
-		} catch (IllegalStateException e){
-			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
-		}
-		if (packagepath!="") {
-			packagepath = packagepath + separator;
-		};
-		if (includeTypeCollection && datatype.partOfTypeCollection) {
-			packagepath += datatype.typeCollectionName + separator;
-		}
-		return packagepath;
-	}
-
 	// for classes and methods
 	def appendDoxygenSummaryAndWriteSeeAndDescription(FModelElement element, String prefix)'''
 		«IF element.comment != null»
@@ -164,37 +140,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		return "Enum";
 	}
 
-	// Convert a data type declaration into a string giving the typename
-	def String getJoynrTypeName(FTypedElement element) {
-		var typeName = getJoynrBaseTypeName(element)
-		if (isArray(element)) {
-			typeName += "[]"
-		}
-		return typeName
-	}
-
-	private def String getJoynrBaseTypeName(FTypedElement element) {
-		val datatypeRef = element.type;
-		val datatype = datatypeRef.derived;
-		val predefined = datatypeRef.predefined;
-
-		switch datatype {
-		case isEnum(datatypeRef)  : buildPackagePath(datatype, ".", true) +
-									datatype.joynrName
-		case isString(predefined) : "String"
-		case isShort(predefined)  : "Short"
-		case isInteger(predefined): "Integer"
-		case isLong(predefined)   : "Long"
-		case isDouble(predefined) : "Double"
-		case isFloat(predefined)  : "Float"
-		case isBool(predefined)   : "Boolean"
-		case isByte(predefined)   : "Byte"
-		case datatype != null     : buildPackagePath(datatype, ".", true) +
-									datatype.joynrName
-		default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
-		}
-	}
-
 	// Return a call to a macro that allows classes to be exported and imported
 	// from DLLs when compiling with VC++
 	def String getDllExportMacro() {
@@ -214,10 +159,10 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	}
 
 	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast) {
-		return getPackagePathWithJoynrPrefix(serviceInterface, "/")
+		return "\"" + getPackagePathWithJoynrPrefix(serviceInterface, "/")
 			+ "/" + serviceInterface.name.toFirstUpper
 			+ broadcast.joynrName.toFirstUpper
-			+ "BroadcastFilterParameters.h"
+			+ "BroadcastFilterParameters.h\""
 	}
 
 	def getPackageSourceDirectory(FModelElement fModelElement) {

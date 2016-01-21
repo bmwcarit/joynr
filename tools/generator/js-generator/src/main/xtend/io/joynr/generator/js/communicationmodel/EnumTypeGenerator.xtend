@@ -24,11 +24,13 @@ import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import org.franca.core.franca.FEnumerationType
+import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 
 class EnumTypeGenerator {
 
 	@Inject extension JSTypeUtil
 	@Inject private extension NamingUtil
+	@Inject private extension JoynrJSGeneratorExtensions
 
 	@Inject
 	extension GeneratorParameter
@@ -65,7 +67,7 @@ class EnumTypeGenerator {
 				configurable : false,
 				writable : false,
 				enumerable : true,
-				value : "«type.toTypesEnum»"
+				value : "«type.joynrTypeName»"
 			});
 
 			if (settings !== undefined) {
@@ -86,7 +88,7 @@ class EnumTypeGenerator {
 				«type.joynrName».prototype = new joynr.JoynrObject();
 				«type.joynrName».prototype.constructor = «type.joynrName»;
 				createLiterals();
-				joynr.addType("«type.toTypesEnum»", «type.joynrName», true);
+				joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
 				return «type.joynrName»;
 			});
 		} else if (typeof exports !== 'undefined' ) {
@@ -100,14 +102,14 @@ class EnumTypeGenerator {
 			«type.joynrName».prototype = new joynr.JoynrObject();
 			«type.joynrName».prototype.constructor = «type.joynrName»;
 			createLiterals();
-			joynr.addType("«type.toTypesEnum»", «type.joynrName», true);
+			joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
 		} else {
 			//we assume a correct order of script loading
 			joynr = window.joynr;
 			«type.joynrName».prototype = new joynr.JoynrObject();
 			«type.joynrName».prototype.constructor = «type.joynrName»;
 			createLiterals();
-			joynr.addType("«type.toTypesEnum»", «type.joynrName», true);
+			joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
 			window.«type.joynrName» = «type.joynrName»;
 		}
 		«ELSE»
@@ -115,7 +117,7 @@ class EnumTypeGenerator {
 		«type.joynrName».prototype = new window.joynr.JoynrObject();
 		«type.joynrName».prototype.constructor = «type.joynrName»;
 		createLiterals();
-		window.joynr.addType("«type.toTypesEnum»", «type.joynrName», true);
+		window.joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
 		window.«type.joynrName» = «type.joynrName»;
 		«ENDIF»
 	})();

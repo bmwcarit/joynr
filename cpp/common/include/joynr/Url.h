@@ -22,9 +22,36 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include <string>
+#include <vector>
 
 namespace joynr
 {
+
+/**
+ * @brief The UrlQuery class
+ */
+class UrlQuery
+{
+public:
+    /**
+     * @brief UrlQuery
+     */
+    UrlQuery();
+    /**
+     * @brief addQueryItem
+     * @param itemName
+     * @param itemValue
+     */
+    void addQueryItem(const std::string& itemName, const std::string& itemValue);
+    /**
+     * @brief toString
+     * @return
+     */
+    std::string toString();
+
+private:
+    std::vector<std::string> queryItems;
+};
 
 /**
  * @brief Parses and encapsulates a URL
@@ -32,6 +59,10 @@ namespace joynr
 class JOYNRCOMMON_EXPORT Url
 {
 public:
+    /**
+     * @brief Url
+     */
+    Url();
     /**
      * @brief Create a URL from text
      * @param text Text in a URL format e.g "http://www.name.com/some/path"
@@ -47,7 +78,7 @@ public:
      */
     Url(const std::string& protocol,
         const std::string& host,
-        uint16_t port,
+        std::uint16_t port,
         const std::string& path);
 
     /**
@@ -58,13 +89,17 @@ public:
      * @param host The host
      * @param port The port number
      * @param path The path
+     * @param query The query
+     * @param fragment The fragment
      */
     Url(const std::string& protocol,
         const std::string& user,
         const std::string& password,
         const std::string& host,
-        uint16_t port,
-        const std::string& path);
+        std::uint16_t port,
+        const std::string& path,
+        const std::string& query,
+        const std::string& fragment);
 
     /**
      * @brief Copy a Url
@@ -82,7 +117,7 @@ public:
      * @brief Move constructor
      * @param other The Url to move
      */
-    Url(Url&& other) = default;
+    Url(Url&& other) noexcept = default;
 
     /**
      * @brief Indicate if two Urls are equal
@@ -119,7 +154,7 @@ public:
      * @brief Get the port in the Url
      * @return The port number
      */
-    uint16_t getPort() const;
+    std::uint16_t getPort() const;
 
     /**
      * @brief Get the path part of the Url
@@ -128,22 +163,54 @@ public:
     const std::string& getPath() const;
 
     /**
+     * @brief setPath
+     * @param path
+     */
+    void setPath(const std::string& path);
+
+    /**
+     * @brief Get the query of the Url
+     * @return The query
+     */
+    const std::string& getQuery() const;
+
+    /**
+     * @brief Set the query of the Url
+     * @param The query
+     */
+    void setQuery(UrlQuery query);
+
+    /**
+     * @brief Get the fragment of the Url
+     * @return The fragment
+     */
+    const std::string& getFragment() const;
+
+    /**
      * @brief Indicates if the URL is valid
      * @return true if the URL is valid, false otherwise
      */
     bool isValid() const;
+
+    /**
+     * @brief toString
+     * @return
+     */
+    std::string toString();
 
 private:
     std::string protocol;
     std::string user;
     std::string password;
     std::string host;
-    uint16_t port;
+    std::uint16_t port;
     std::string path;
+    std::string query;
+    std::string fragment;
     bool valid;
 
     void parseUrl(const std::string& text);
-    uint16_t portFromProtocol(const std::string& proto);
+    std::uint16_t portFromProtocol(const std::string& proto);
     void validate();
 };
 

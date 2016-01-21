@@ -31,20 +31,24 @@ class CppStdTypeUtil extends CppTypeUtil {
 	override getTypeName(FBasicTypeId datatype) {
 		switch datatype {
 			case FBasicTypeId::BOOLEAN: "bool"
-			case FBasicTypeId::INT8: "int8_t"
-			case FBasicTypeId::UINT8: "uint8_t"
-			case FBasicTypeId::INT16: "int16_t"
-			case FBasicTypeId::UINT16: "uint16_t"
-			case FBasicTypeId::INT32: "int32_t"
-			case FBasicTypeId::UINT32: "uint32_t"
-			case FBasicTypeId::INT64: "int64_t"
-			case FBasicTypeId::UINT64: "uint64_t"
+			case FBasicTypeId::INT8: "std::int8_t"
+			case FBasicTypeId::UINT8: "std::uint8_t"
+			case FBasicTypeId::INT16: "std::int16_t"
+			case FBasicTypeId::UINT16: "std::uint16_t"
+			case FBasicTypeId::INT32: "std::int32_t"
+			case FBasicTypeId::UINT32: "std::uint32_t"
+			case FBasicTypeId::INT64: "std::int64_t"
+			case FBasicTypeId::UINT64: "std::uint64_t"
 			case FBasicTypeId::FLOAT: "float"
 			case FBasicTypeId::DOUBLE: "double"
 			case FBasicTypeId::STRING: "std::string"
-			case FBasicTypeId::BYTE_BUFFER: "std::vector<uint8_t>"
+			case FBasicTypeId::BYTE_BUFFER: "joynr::ByteBuffer"
 			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.getName)
 		}
+	}
+
+	def getByteBufferElementType() {
+		FBasicTypeId.UINT8.typeName
 	}
 
 	override getTypeNameForList(FType datatype) {
@@ -60,7 +64,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	override getTypeName(FType datatype) {
-		var typeName = buildPackagePath(datatype, "::", true) + datatype.joynrName;
+		var typeName = buildPackagePath(datatype, "::", true) + "::" + datatype.joynrName;
 		if (isEnum(datatype)){
 			typeName += "::" + getNestedEnumName();
 		}
@@ -76,7 +80,11 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	def getIncludeForInteger() {
-		"<stdint.h>"
+		"<cstdint>"
+	}
+
+	def getIncludeForByteBuffer() {
+		"\"joynr/TypeUtil.h\""
 	}
 
 	override getIncludesFor(Iterable<FBasicTypeId> datatypes) {
@@ -85,7 +93,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 			includes.add(includeForString);
 		}
 		if (datatypes.exists[type | type == FBasicTypeId.BYTE_BUFFER]) {
-			includes.add(includeForArray);
+			includes.add(includeForByteBuffer);
 		}
 		if (datatypes.exists[type | type == FBasicTypeId.INT8  ||
 									type == FBasicTypeId.UINT8 ||
@@ -94,8 +102,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 									type == FBasicTypeId.INT32 ||
 									type == FBasicTypeId.UINT32||
 									type == FBasicTypeId.INT64 ||
-									type == FBasicTypeId.UINT64||
-									type == FBasicTypeId.BYTE_BUFFER
+									type == FBasicTypeId.UINT64
 		]) {
 			includes.add(includeForInteger)
 		}
@@ -115,7 +122,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 		if (dataType.isPartOfTypeCollection) {
 			path += "/" + dataType.typeCollectionName
 		}
-		return path + "/" + dataType.joynrName + nameSuffix + ".h";
+		return "\"" + path + "/" + dataType.joynrName + nameSuffix + ".h\"";
 	}
 
 	override getDefaultValue(FTypedElement element) {
@@ -126,5 +133,11 @@ class CppStdTypeUtil extends CppTypeUtil {
 			super.getDefaultValue(element)
 		}
 	}
+
+	def getForwardDeclaration(FType datatype)'''
+«getNamespaceStarter(datatype, true)»
+class «(datatype).joynrName»;
+«getNamespaceEnder(datatype, true)»
+'''
 
 }

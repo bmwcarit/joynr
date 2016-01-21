@@ -20,13 +20,10 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/RequestStatus.h"
 
-#include <algorithm>
-
 namespace joynr
 {
 
-joynr_logging::Logger* CapabilitiesRegistrar::logger =
-        joynr_logging::Logging::getInstance()->getLogger("DIS", "CapabilitiesRegistrar");
+INIT_LOGGER(CapabilitiesRegistrar);
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         std::vector<IDispatcher*> dispatcherList,
@@ -52,25 +49,21 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     try {
         discoveryProxy.remove(participantId);
     } catch (exceptions::JoynrException& e) {
-        LOG_ERROR(logger,
-                  FormatString("Unable to remove provider (participant ID: %1) "
-                               "to discovery. Error: %2.")
-                          .arg(participantId)
-                          .arg(e.getMessage())
-                          .str());
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to remove provider (participant ID: {}) to discovery. Error: {}",
+                        participantId,
+                        e.getMessage());
     }
 
-    std::shared_ptr<joynr::Future<void>> future(new Future<void>());
+    std::shared_ptr<Future<void>> future(new Future<void>());
     auto onSuccess = [future]() { future->onSuccess(); };
     messageRouter->removeNextHop(participantId, onSuccess);
     future->wait();
 
     if (!future->getStatus().successful()) {
-        LOG_ERROR(
-                logger,
-                FormatString("Unable to remove next hop (participant ID: %1) from message router.")
-                        .arg(participantId)
-                        .str());
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to remove next hop (participant ID: {}) from message router.",
+                        participantId);
     }
 }
 

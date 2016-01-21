@@ -51,7 +51,7 @@ LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
 }
 
 void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
-        std::vector<types::CapabilityInformation> results)
+        const std::vector<types::CapabilityInformation>& results)
 {
     QMap<std::string, CapabilityEntry> capabilitiesMap;
     std::vector<CapabilityEntry> mergedEntries;

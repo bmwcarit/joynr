@@ -62,9 +62,9 @@ public:
     /**
      * @brief Returns the status code id.
      *
-     * @return long
+     * @return std::uint32_t
      */
-    uint32_t getId() const;
+    std::uint32_t getId() const;
 
     /**
      * @brief Convenience method to print the object to String.
@@ -77,8 +77,8 @@ public:
     bool operator!=(const RequestStatusCode& requestStatusCode) const;
 
 private:
-    RequestStatusCode(long id, std::string description);
-    uint32_t id;
+    RequestStatusCode(std::uint32_t id, std::string description);
+    std::uint32_t id;
     std::string description;
 };
 

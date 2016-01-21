@@ -35,24 +35,12 @@ class FilterTemplate implements BroadcastTemplate {
 	@Inject extension NamingUtil
 	@Inject extension BroadcastUtil
 
-	def getCommaSeperatedEventArgumentListFromQList(Iterable<FArgument> arguments) {
-		val returnStringBuilder = new StringBuilder();
-		var i = 0
-		for (FArgument argument : arguments) {
-			returnStringBuilder.append("eventValues[");
-			returnStringBuilder.append(i++);
-			returnStringBuilder.append("].get<");
-			returnStringBuilder.append(getTypeName(argument));
-			returnStringBuilder.append(">(),\n");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
+	def getCommaSeperatedEventArgumentListFromVariantList(Iterable<FArgument> arguments)'''
+		«var i = 0»
+		«FOR FArgument argument : arguments SEPARATOR ","»
+			Util::valueOf<«argument.typeName»>(eventValues[«i++»])
+		«ENDFOR»
+''' 
 
 	override generate(FInterface serviceInterface, FBroadcast broadcast)
 '''
@@ -90,7 +78,7 @@ public:
 	}
 
 	/** @brief Destructor */
-	~«className»() {}
+	~«className»() override = default;
 
 	/**
 	 * @brief Filter method to decide whether a broadcast should be delivered.
@@ -108,15 +96,15 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 
-	virtual bool filter(
+	bool filter (
 			const std::vector<Variant>& eventValues,
 			const BroadcastFilterParameters& filterParameters
-	) {
+	) override {
 		«serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters params;
 		params.setFilterParameters(filterParameters.getFilterParameters());
 
 		return filter(
-				«getCommaSeperatedEventArgumentListFromQList(getOutputParameters(broadcast))»,
+				«getCommaSeperatedEventArgumentListFromVariantList(getOutputParameters(broadcast))»,
 				params
 		);
 	}

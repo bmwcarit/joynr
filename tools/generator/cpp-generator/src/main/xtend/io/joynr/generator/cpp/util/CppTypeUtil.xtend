@@ -27,7 +27,6 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.Map
 import java.util.Set
-import java.util.TreeSet
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
@@ -36,7 +35,9 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMapType
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
+import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypedElement
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
 abstract class CppTypeUtil extends AbstractTypeUtil {
 	@Inject
@@ -211,37 +212,49 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		}
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
-		val members = getComplexMembers(datatype);
+	def Iterable<FType> getTypeDependencies(FCompoundType datatype){
+		val members = getComplexMembers(datatype, true);
 
-		val typeList = new TreeSet<String>();
+		val typeList = new HashSet<FType>();
 		if (hasExtendsDeclaration(datatype)){
-			typeList.add(getIncludeOf(getExtendedType(datatype)))
+			typeList.add(datatype.extendedType)
 		}
 
 		for (member : members) {
 			val type = getDatatype(member.type);
 			if (type instanceof FType){
-				typeList.add(getIncludeOf(type));
+				typeList.add(type);
 			}
 		}
 		return typeList;
 	}
 
-    def Iterable<String> getRequiredIncludesFor(FMapType datatype){
-        val typeList = new TreeSet<String>();
-        var type = getDatatype(datatype.keyType);
-        if (type instanceof FType){
-            typeList.add(getIncludeOf(type));
-        }
+	def Iterable<? extends Object> getTypeDependencies(FMapType datatype){
+		val typeList = new HashSet<Object>();
+		var type = getDatatype(datatype.keyType);
+		if (type instanceof FType || type instanceof FBasicTypeId){
+			typeList.add(type);
+		}
 
-        type = getDatatype(datatype.valueType)
-        if (type instanceof FType){
-            typeList.add(getIncludeOf(type));
-        }
-    
-        return typeList;
-    }
+		type = getDatatype(datatype.valueType)
+		if (type instanceof FType || type instanceof FBasicTypeId){
+			typeList.add(type);
+		}
+
+		return typeList;
+	}
+
+	def Iterable<? extends Object> getTypeDependencies(FTypeDef datatype){
+		val typeList = new HashSet<Object>();
+		var type = getDatatype(datatype.actualType);
+		if (type instanceof FType){
+			typeList.add(type);
+		} else if (type instanceof FBasicTypeId){
+			typeList.addAll(type)
+		}
+
+		return typeList;
+	}
 
 	def Set<String> getIncludesFor(Iterable<FBasicTypeId> datatypes)
 
@@ -249,21 +262,18 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	abstract def String getIncludeOf(FType type)
 
+	override getDatatype(FType type){
+		if (type.isTypeDef) {
+			return type
+		}
+		return super.getDatatype(type)
+	}
 	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
-		for(datatype: getAllComplexTypes(
-			serviceInterface,
-			false,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true
-		)){
-			if (datatype instanceof FType){
-				includeSet.add("\"" + getIncludeOf(datatype) + "\"");
-			}
+		val selector = TypeSelector::defaultTypeSelector
+		selector.errorTypes(true)
+		for(datatype: getAllComplexTypes(serviceInterface,selector)){
+			includeSet.add(datatype.includeOf);
 		}
 
 		includeSet.addAll(serviceInterface.allPrimitiveTypes.includesFor)
@@ -273,7 +283,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 		for (broadcast: serviceInterface.broadcasts) {
 			if (isSelective(broadcast)) {
-				includeSet.add("\"" + getIncludeOfFilterParametersContainer(serviceInterface, broadcast) + "\"");
+				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
 			}
 		}
 		return includeSet;
@@ -283,6 +293,6 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	def getTypeNameOfContainingClass (FType datatype) {
 		val packagepath = buildPackagePath(datatype, "::", true);
-		return  packagepath + datatype.generationTypeName
+		return  packagepath + "::" + datatype.generationTypeName
 	}
 }

@@ -26,7 +26,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/ClientQCache.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/JoynrRuntime.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
 
@@ -66,21 +66,21 @@ class LibjoynrSettings;
 namespace infrastructure
 {
 class ChannelUrlDirectoryProxy;
-}
+} // namespace infrastructure
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime
 {
 public:
     JoynrClusterControllerRuntime(QCoreApplication* app,
                                   Settings* settings,
-                                  IMessageReceiver* messageReceiver = NULL,
-                                  IMessageSender* = NULL);
+                                  IMessageReceiver* messageReceiver = nullptr,
+                                  IMessageSender* = nullptr);
 
     static JoynrClusterControllerRuntime* create(Settings* settings);
 
-    virtual ~JoynrClusterControllerRuntime();
+    ~JoynrClusterControllerRuntime() override;
 
-    void unregisterProvider(const std::string& participantId);
+    void unregisterProvider(const std::string& participantId) override;
     void start();
     void stop(bool deleteChannel = false);
 
@@ -146,7 +146,7 @@ protected:
     IPlatformSecurityManager* securityManager;
     bool messagingIsRunning;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(JoynrClusterControllerRuntime);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);

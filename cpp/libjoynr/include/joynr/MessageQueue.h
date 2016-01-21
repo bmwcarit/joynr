@@ -26,7 +26,6 @@
 #include "joynr/ContentWithDecayTime.h"
 
 #include <mutex>
-#include <QRunnable>
 #include <string>
 #include <map>
 #include <cstdint>
@@ -49,7 +48,7 @@ public:
 
     MessageQueueItem* getNextMessageForParticipant(const std::string destinationPartId);
 
-    int64_t removeOutdatedMessages();
+    std::int64_t removeOutdatedMessages();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
@@ -57,6 +56,6 @@ private:
     std::multimap<std::string, MessageQueueItem*>* queue;
     mutable std::mutex queueMutex;
 };
-}
+} // namespace joynr
 
 #endif // MESSAGEQUEUE_H

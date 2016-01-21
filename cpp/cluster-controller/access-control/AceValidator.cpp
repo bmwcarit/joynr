@@ -36,10 +36,6 @@ AceValidator::AceValidator(const Optional<MasterAccessControlEntry>& masterAceOp
 {
 }
 
-AceValidator::~AceValidator()
-{
-}
-
 bool AceValidator::isValid()
 {
     return isOwnerValid();

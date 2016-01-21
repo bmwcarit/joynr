@@ -1,8 +1,12 @@
 package io.joynr.runtime;
 
-import java.io.IOException;
+import io.joynr.capabilities.CapabilitiesStore;
+import io.joynr.capabilities.CapabilityEntry;
+import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.websocket.WebsocketModule;
 
-/*
+import java.io.IOException; /*
  * #%L
  * %%
  * Copyright (C) 2011 - 2015 BMW Car IT GmbH
@@ -20,20 +24,17 @@ import java.io.IOException;
  * limitations under the License.
  * #L%
  */
-
 import java.util.Properties;
 import java.util.Set;
+
+import jline.console.ConsoleReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
-
-import io.joynr.capabilities.CapabilitiesStore;
-import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.websocket.WebsocketModule;
-import jline.console.ConsoleReader;
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 public class ClusterController {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterController.class);
@@ -50,7 +51,20 @@ public class ClusterController {
         Properties ccConfig = new Properties();
         ccConfig.putAll(webSocketConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
-        Injector injectorCC = new JoynrInjectorFactory(ccConfig, new CCWebSocketRuntimeModule()).getInjector();
+        Module runtimeModule = null;
+
+        if (args.length == 1) {
+            if (args[0].equalsIgnoreCase("atmosphere")) {
+                runtimeModule = Modules.override(new CCWebSocketRuntimeModule()).with(new AtmosphereMessagingModule());
+            } else {
+                LOG.error("\n\nUSAGE: java {} [atmosphere]\n\n", ClusterController.class.getName());
+                return;
+            }
+        } else {
+            runtimeModule = new CCWebSocketRuntimeModule();
+        }
+
+        Injector injectorCC = new JoynrInjectorFactory(ccConfig, runtimeModule).getInjector();
 
         runtime = injectorCC.getInstance(JoynrRuntime.class);
         CapabilitiesStore capabilities = injectorCC.getInstance(CapabilitiesStore.class);

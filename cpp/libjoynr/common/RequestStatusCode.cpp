@@ -36,7 +36,7 @@ RequestStatusCode RequestStatusCode::ERROR_CANNOT_PARSE_RETURN_VALUE = RequestSt
         303,
         "Error in ReplyCaller when attempting to cast the return type to the desired type");
 
-RequestStatusCode::RequestStatusCode(long id, std::string description)
+RequestStatusCode::RequestStatusCode(std::uint32_t id, std::string description)
         : id(id), description(description)
 {
 }
@@ -48,7 +48,7 @@ std::string RequestStatusCode::toString() const
     return typeAsString.str();
 }
 
-uint32_t RequestStatusCode::getId() const
+std::uint32_t RequestStatusCode::getId() const
 {
     return id;
 }

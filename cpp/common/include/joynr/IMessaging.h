@@ -34,9 +34,7 @@ class JoynrMessage;
 class JOYNRCOMMON_EXPORT IMessaging
 {
 public:
-    virtual ~IMessaging()
-    {
-    }
+    virtual ~IMessaging() = default;
     // MessagingSkeleton on libjoynr calls Dispatcher.receive
     // MessagingSkeleton on CC calls MessageRouter.route
     virtual void transmit(JoynrMessage& message) = 0;

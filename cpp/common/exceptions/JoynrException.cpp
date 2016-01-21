@@ -73,10 +73,6 @@ JoynrException::JoynrException(const JoynrException& other) noexcept : message(o
 {
 }
 
-JoynrException::~JoynrException() noexcept
-{
-}
-
 const char* JoynrException::what() const noexcept
 {
     return message.c_str();

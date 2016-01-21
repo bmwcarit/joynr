@@ -20,7 +20,7 @@
 #define SUBSCRIPTIONINFORMATION_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/SubscriptionRequest.h"
 
 #include <string>
@@ -42,9 +42,7 @@ public:
                             const std::string& providerParticipantId);
     SubscriptionInformation(const SubscriptionInformation& subscriptionInformation);
     SubscriptionInformation& operator=(const SubscriptionInformation& subscriptionInformation);
-    virtual ~SubscriptionInformation()
-    {
-    }
+    virtual ~SubscriptionInformation() = default;
     bool operator==(const SubscriptionInformation& subscriptionInformation) const;
 
     std::string getProxyId() const;
@@ -57,7 +55,7 @@ private:
     std::string proxyId;
     std::string providerId;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(SubscriptionInformation);
 };
 
 } // namespace joynr

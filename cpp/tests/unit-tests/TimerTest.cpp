@@ -20,21 +20,20 @@
 #include "gmock/gmock.h"
 
 #include "joynr/Timer.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/TimeUtils.h"
 #include "joynr/Semaphore.h"
-#include <stdint.h>
+#include <cstdint>
 #include <unordered_map>
 
 using namespace joynr;
-using namespace joynr_logging;
 
 using namespace ::testing;
 using ::testing::StrictMock;
 
 // Expected accuracy of the timer in milliseconds
-static const int64_t timerAccuracy_ms = 10;
+static const std::int64_t timerAccuracy_ms = 10;
 
 ACTION_P(ReleaseSemaphore, semaphore)
 {
@@ -45,7 +44,7 @@ ACTION_P(ReleaseSemaphore, semaphore)
 class TimerTest : public ::testing::Test {
 public:
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(TimerTest);
 
     TimerTest() :
         ::testing::Test(),
@@ -64,10 +63,10 @@ public:
         timer.shutdown();
     }
 
-    Timer::TimerId addTimer(uint64_t ms, bool periodic)
+    Timer::TimerId addTimer(std::uint64_t ms, bool periodic)
     {
          Timer::TimerId id = timer.addTimer(expired, removed, ms, periodic);
-         uint64_t start = TimeUtils::getCurrentMillisSinceEpoch();
+         std::uint64_t start = TimeUtils::getCurrentMillisSinceEpoch();
          timerStartMapping.emplace(id, start);
          return id;
     }
@@ -77,21 +76,21 @@ public:
 
     void timerExpired(Timer::TimerId id)
     {
-        const uint64_t now_ms   = TimeUtils::getCurrentMillisSinceEpoch();
-        const uint64_t start_ms = timerStartMapping.at(id);
-        const int64_t  diff_ms  = now_ms - start_ms;
+        const std::uint64_t now_ms   = TimeUtils::getCurrentMillisSinceEpoch();
+        const std::uint64_t start_ms = timerStartMapping.at(id);
+        const std::int64_t  diff_ms  = now_ms - start_ms;
 
-        LOG_TRACE(TimerTest::logger, FormatString("Timer %0 expired").arg(id).str());
-        LOG_TRACE(TimerTest::logger, FormatString("  started    : %0").arg(start_ms).str());
-        LOG_TRACE(TimerTest::logger, FormatString("  returned   : %0").arg(now_ms).str());
-        LOG_TRACE(TimerTest::logger, FormatString("  difference : %0").arg(diff_ms).str());
+        JOYNR_LOG_TRACE(logger, "Timer {} expired",id);
+        JOYNR_LOG_TRACE(logger, "  started    : {}",start_ms);
+        JOYNR_LOG_TRACE(logger, "  returned   : {}",now_ms);
+        JOYNR_LOG_TRACE(logger, "  difference : {}",diff_ms);
 
         onTimerExpired(id, diff_ms);
     }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-    MOCK_CONST_METHOD2(onTimerExpired, void (Timer::TimerId, int64_t));
+    MOCK_CONST_METHOD2(onTimerExpired, void (Timer::TimerId, std::int64_t));
     MOCK_CONST_METHOD1(onTimerRemoved, void (Timer::TimerId id));
 #pragma GCC diagnostic pop
 
@@ -104,10 +103,10 @@ private:
     std::function<void(Timer::TimerId)> expired;
     std::function<void(Timer::TimerId)> removed;
 
-    std::unordered_map<Timer::TimerId, uint64_t> timerStartMapping;
+    std::unordered_map<Timer::TimerId, std::uint64_t> timerStartMapping;
 };
 
-joynr_logging::Logger* TimerTest::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "TimerTest");
+INIT_LOGGER(TimerTest);
 
 TEST_F(TimerTest, deinitializationWithoutRun_WaitSomeTime) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -134,7 +133,7 @@ TEST_F(TimerTest, testCallback) {
             .WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*this, onTimerRemoved(id)).Times(0);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
 }
 
 TEST_F(TimerTest, reorganizeTimerByAddingAnEarlierTimer) {

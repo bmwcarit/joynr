@@ -28,6 +28,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/IMessaging.h"
 #include "joynr/Settings.h"
+#include "joynr/Logger.h"
 
 #include <string>
 #include <chrono>
@@ -41,14 +42,13 @@ public:
     std::string settingsFilename;
     Settings settings;
     MessagingSettings* messagingSettings;
-    Logger* logger;
+    ADD_LOGGER(LibJoynrDbusCommunicationTests);
 
     LibJoynrDbusCommunicationTests():
         settingsFilename("test-resources/integrationtest.settings"),
         settings(settingsFilename),
         messagingSettings(new MessagingSettings(settings))
     {
-        logger = Logging::getInstance()->getLogger("TST", "LibJoynrDbusCommunicationTests");
     }
 
     ~LibJoynrDbusCommunicationTests() {
@@ -57,10 +57,12 @@ public:
     void SetUp() {
     }
 
-    void printResult(Logger* logger, const std::string& text, bool result) {
-        if(result) LOG_INFO(logger, FormatString("%1 SUCCESS").arg(text).str()); else LOG_ERROR(logger, FormatString("%1 ERROR").arg(text).str());
+    void printResult(Logger& logger, const std::string& text, bool result) {
+        if(result) JOYNR_LOG_ERROR(logger, "{} SUCCESS", text); else JOYNR_LOG_ERROR(logger, "{} ERROR", text);
     }
 };
+
+INIT_LOGGER(LibJoynrDbusCommunicationTests);
 
 TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     std::string ccMessagingAddress("local:cc.messaging:cc.messaging8");
@@ -135,7 +137,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
     EXPECT_CALL(*msgMock, transmit(A<JoynrMessage&>())).Times(2);
 
     // create the skeleton
-    LOG_INFO(logger, "Register skeleton");
+    JOYNR_LOG_INFO(logger, "Register skeleton");
     auto msgSkeleton = new IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>(*msgMock, ccMessagingAddress);
 
     // create message
@@ -149,23 +151,23 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
     ASSERT_TRUE(msgStub->isProxyAvailable());
 
     // call method
-    LOG_INFO(logger, "Transmit message: should work");
+    JOYNR_LOG_INFO(logger, "Transmit message: should work");
     msgStub->transmit(msg);
 
     // delete skeleton
-    LOG_INFO(logger, "Delete skeleton");
+    JOYNR_LOG_INFO(logger, "Delete skeleton");
     delete msgSkeleton;
 
     // call method
-    LOG_INFO(logger, "Transmit message: should fail");
+    JOYNR_LOG_INFO(logger, "Transmit message: should fail");
     msgStub->transmit(msg);
 
     // register skeleton
-    LOG_INFO(logger, "Register skeleton");
+    JOYNR_LOG_INFO(logger, "Register skeleton");
     msgSkeleton = new IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>(*msgMock, ccMessagingAddress);
 
     // call method
-    LOG_INFO(logger, "Transmit message: should work");
+    JOYNR_LOG_INFO(logger, "Transmit message: should work");
     msgStub->transmit(msg);
 
     delete msgSkeleton;

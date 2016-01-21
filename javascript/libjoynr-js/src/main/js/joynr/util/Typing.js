@@ -19,19 +19,18 @@
 
 define("joynr/util/Typing", [
     "joynr",
-    "joynr/TypesEnum",
     "joynr/types/TypeRegistrySingleton"
-], function(joynr, TypesEnum, TypeRegistrySingleton) {
+], function(joynr, TypeRegistrySingleton) {
 
     var translateJoynrTypeToJavascriptTypeTable = {};
-    translateJoynrTypeToJavascriptTypeTable[TypesEnum.BOOL] = "Boolean";
-    translateJoynrTypeToJavascriptTypeTable[TypesEnum.BYTE] = "Number";
-    translateJoynrTypeToJavascriptTypeTable[TypesEnum.SHORT] = "Number";
-    translateJoynrTypeToJavascriptTypeTable[TypesEnum.INT] = "Number";
-    translateJoynrTypeToJavascriptTypeTable[TypesEnum.LONG] = "Number";
-    translateJoynrTypeToJavascriptTypeTable[TypesEnum.FLOAT] = "Number";
-    translateJoynrTypeToJavascriptTypeTable[TypesEnum.DOUBLE] = "Number";
-    translateJoynrTypeToJavascriptTypeTable[TypesEnum.STRING] = "String";
+    translateJoynrTypeToJavascriptTypeTable.Boolean = "Boolean";
+    translateJoynrTypeToJavascriptTypeTable.Byte = "Number";
+    translateJoynrTypeToJavascriptTypeTable.Short = "Number";
+    translateJoynrTypeToJavascriptTypeTable.Integer = "Number";
+    translateJoynrTypeToJavascriptTypeTable.Long = "Number";
+    translateJoynrTypeToJavascriptTypeTable.Float = "Number";
+    translateJoynrTypeToJavascriptTypeTable.Double = "Number";
+    translateJoynrTypeToJavascriptTypeTable.String = "String";
 
     /**
      * @name Typing
@@ -161,7 +160,7 @@ define("joynr/util/Typing", [
                             if (Constructor.getMemberType !== undefined) {
                                 typedObj[i] =
                                         Typing.augmentTypes(untyped[i], typeRegistry, Constructor
-                                                .getMemberType(i, TypesEnum));
+                                                .getMemberType(i));
                             } else {
                                 typedObj[i] = Typing.augmentTypes(untyped[i], typeRegistry);
                             }

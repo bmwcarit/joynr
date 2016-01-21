@@ -28,11 +28,12 @@ namespace joynr
 JoynrDbusRuntimeExecutor::JoynrDbusRuntimeExecutor(Settings* settings)
         : JoynrRuntimeExecutor(settings)
 {
+    createRuntime();
 }
 
 void JoynrDbusRuntimeExecutor::createRuntime()
 {
-    runtime = new LibJoynrDbusRuntime(settings);
+    runtime = std::unique_ptr<LibJoynrRuntime>(new LibJoynrDbusRuntime(settings));
     runtimeSemaphore.notify();
 }
 

@@ -51,15 +51,15 @@ class MessagingStubFactory : public IMessagingStubFactory
 {
 
 public:
-    virtual ~MessagingStubFactory();
+    ~MessagingStubFactory() override;
     // MessagingStubFactory is created without the necessary skeletons.
     // Those Skeletons must be registered before the MessagingStubFactory is used.
     MessagingStubFactory();
 
     std::shared_ptr<IMessaging> create(
-            const joynr::system::RoutingTypes::Address& destinationAddress);
-    void remove(const joynr::system::RoutingTypes::Address& destinationAddress);
-    bool contains(const joynr::system::RoutingTypes::Address& destinationAddress);
+            const joynr::system::RoutingTypes::Address& destinationAddress) override;
+    void remove(const joynr::system::RoutingTypes::Address& destinationAddress) override;
+    bool contains(const joynr::system::RoutingTypes::Address& destinationAddress) override;
 
     void registerStubFactory(IMiddlewareMessagingStubFactory* factory);
 

@@ -91,8 +91,7 @@ public:
 
     }
 
-    ~AccessControllerTest() {
-    }
+    ~AccessControllerTest() = default;
 
     void invokeOnSuccessCallbackFct (std::string participantId,
                             std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,

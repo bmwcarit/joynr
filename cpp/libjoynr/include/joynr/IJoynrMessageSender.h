@@ -20,7 +20,6 @@
 #define IJOYNRMESSAGESENDER_H
 
 #include "joynr/IPublicationSender.h"
-#include "joynr/joynrlogging.h"
 #include <string>
 
 #include <memory>
@@ -65,9 +64,7 @@ class SubscriptionPublication;
 class IJoynrMessageSender : public IPublicationSender
 {
 public:
-    virtual ~IJoynrMessageSender()
-    {
-    }
+    ~IJoynrMessageSender() override = default;
 
     /*
       * registers Dispatcher. See above comment why this is necessary.

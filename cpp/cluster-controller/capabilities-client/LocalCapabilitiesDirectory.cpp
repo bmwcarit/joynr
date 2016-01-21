@@ -30,22 +30,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* LocalCapabilitiesDirectory::logger =
-        Logging::getInstance()->getLogger("MSG", "LocalCapabilitiesDirectory");
-
-const int64_t& LocalCapabilitiesDirectory::NO_CACHE_FRESHNESS_REQ()
-{
-    static int64_t value(-1);
-    return value;
-}
-
-const int64_t& LocalCapabilitiesDirectory::DONT_USE_CACHE()
-{
-    static int64_t value(0);
-    return value;
-}
+INIT_LOGGER(LocalCapabilitiesDirectory);
 
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                                        ICapabilitiesClient* capabilitiesClientPtr,
@@ -102,11 +87,12 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
 LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 {
     // cleanup
-    interfaceAddress2GlobalCapabilities.cleanup(0);
-    participantId2GlobalCapabilities.cleanup(0);
+    const auto zero = std::chrono::milliseconds::zero();
+    interfaceAddress2GlobalCapabilities.cleanup(zero);
+    participantId2GlobalCapabilities.cleanup(zero);
 
-    interfaceAddress2LocalCapabilities.cleanup(0);
-    participantId2LocalCapability.cleanup(0);
+    interfaceAddress2LocalCapabilities.cleanup(zero);
+    participantId2LocalCapability.cleanup(zero);
 }
 
 void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discoveryEntry)
@@ -204,9 +190,10 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 {
     joynr::types::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
-    std::vector<CapabilityEntry> localCapabilities = searchCache(interfaceAddress, -1, true);
-    std::vector<CapabilityEntry> globalCapabilities =
-            searchCache(interfaceAddress, discoveryQos.getCacheMaxAge(), false);
+    std::vector<CapabilityEntry> localCapabilities =
+            searchCache(interfaceAddress, std::chrono::milliseconds(-1), true);
+    std::vector<CapabilityEntry> globalCapabilities = searchCache(
+            interfaceAddress, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()), false);
 
     return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
@@ -218,9 +205,10 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 {
     joynr::types::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
-    std::vector<CapabilityEntry> localCapabilities = searchCache(participantId, -1, true);
-    std::vector<CapabilityEntry> globalCapabilities =
-            searchCache(participantId, discoveryQos.getCacheMaxAge(), false);
+    std::vector<CapabilityEntry> localCapabilities =
+            searchCache(participantId, std::chrono::milliseconds(-1), true);
+    std::vector<CapabilityEntry> globalCapabilities = searchCache(
+            participantId, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()), false);
 
     return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
@@ -364,22 +352,22 @@ void LocalCapabilitiesDirectory::lookup(const std::string& domain,
 std::vector<CapabilityEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
         const std::string& participantId)
 {
-    return searchCache(participantId, -1, true);
+    return searchCache(participantId, std::chrono::milliseconds(-1), true);
 }
 
 std::vector<CapabilityEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
         const InterfaceAddress& interfaceAddress)
 {
-    return searchCache(interfaceAddress, -1, true);
+    return searchCache(interfaceAddress, std::chrono::milliseconds(-1), true);
 }
 
-void LocalCapabilitiesDirectory::cleanCache(int64_t maxAge_ms)
+void LocalCapabilitiesDirectory::cleanCache(std::chrono::milliseconds maxAge)
 {
     std::lock_guard<std::mutex> lock(cacheLock);
-    interfaceAddress2GlobalCapabilities.cleanup(maxAge_ms);
-    participantId2GlobalCapabilities.cleanup(maxAge_ms);
-    interfaceAddress2LocalCapabilities.cleanup(maxAge_ms);
-    participantId2LocalCapability.cleanup(maxAge_ms);
+    interfaceAddress2GlobalCapabilities.cleanup(maxAge);
+    participantId2GlobalCapabilities.cleanup(maxAge);
+    interfaceAddress2LocalCapabilities.cleanup(maxAge);
+    participantId2LocalCapability.cleanup(maxAge);
 }
 
 void LocalCapabilitiesDirectory::registerReceivedCapabilities(
@@ -435,12 +423,11 @@ void LocalCapabilitiesDirectory::lookup(
     lookup(participantId, future);
     std::vector<CapabilityEntry> capabilities = future->get();
     if (capabilities.size() > 1) {
-        LOG_ERROR(logger,
-                  FormatString("participantId %1 has more than 1 capability entry:\n %2\n %3")
-                          .arg(participantId)
-                          .arg(capabilities[0].toString())
-                          .arg(capabilities[1].toString())
-                          .str());
+        JOYNR_LOG_ERROR(logger,
+                        "participantId {} has more than 1 capability entry:\n {}\n {}",
+                        participantId,
+                        capabilities[0].toString(),
+                        capabilities[1].toString());
     }
 
     types::DiscoveryEntry result;
@@ -512,23 +499,27 @@ void LocalCapabilitiesDirectory::insertInCache(const joynr::types::DiscoveryEntr
     bool foundMatch = false;
     if (localCache) {
         std::vector<CapabilityEntry> entryList =
-                searchCache(discoveryEntry.getParticipantId(), -1, true);
+                searchCache(discoveryEntry.getParticipantId(), std::chrono::milliseconds(-1), true);
         CapabilityEntry newEntry;
         convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, newEntry);
         entry.setGlobal(isGlobal);
         for (CapabilityEntry oldEntry : entryList) {
             if (oldEntry == newEntry) {
                 foundMatch = true;
+                break;
             }
         }
     }
 
-    insertInCache(entry, !foundMatch && localCache, globalCache);
+    // after logic about duplicate entries stated in comment above
+    // TypedClientMultiCache updates the age as stated in comment above
+    bool allowInsertInLocalCache = !foundMatch && localCache;
+    insertInCache(entry, allowInsertInLocalCache, globalCache);
 }
 
 std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
         const InterfaceAddress& interfaceAddress,
-        const int64_t& maxCacheAge,
+        std::chrono::milliseconds maxCacheAge,
         bool localEntries)
 {
     std::lock_guard<std::mutex> lock(cacheLock);
@@ -543,7 +534,7 @@ std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
 
 std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
         const std::string& participantId,
-        const int64_t& maxCacheAge,
+        std::chrono::milliseconds maxCacheAge,
         bool localEntries)
 {
     std::lock_guard<std::mutex> lock(cacheLock);
@@ -608,7 +599,7 @@ LocalCapabilitiesFuture::LocalCapabilitiesFuture() : futureSemaphore(0), capabil
 {
 }
 
-void LocalCapabilitiesFuture::capabilitiesReceived(std::vector<CapabilityEntry> capabilities)
+void LocalCapabilitiesFuture::capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities)
 {
     this->capabilities = capabilities;
     futureSemaphore.notify();
@@ -621,17 +612,9 @@ std::vector<CapabilityEntry> LocalCapabilitiesFuture::get()
     return capabilities;
 }
 
-std::vector<CapabilityEntry> LocalCapabilitiesFuture::get(const int64_t& timeout)
+std::vector<CapabilityEntry> LocalCapabilitiesFuture::get(std::chrono::milliseconds timeout)
 {
-
-    int timeout_int(timeout);
-    // prevent overflow during conversion from int64_t to int
-    int maxint = std::numeric_limits<int>::max();
-    if (timeout > maxint) {
-        timeout_int = maxint;
-    }
-
-    if (futureSemaphore.waitFor(std::chrono::milliseconds(timeout_int))) {
+    if (futureSemaphore.waitFor(timeout)) {
         futureSemaphore.notify();
     }
     return capabilities;

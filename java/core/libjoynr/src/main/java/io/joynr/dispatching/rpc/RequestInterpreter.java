@@ -35,7 +35,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
-import io.joynr.proxy.Callback;
+import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.MethodSignature;
 import joynr.Reply;
 import joynr.Request;
@@ -60,7 +60,7 @@ public class RequestInterpreter {
         return new Reply(request.getRequestReplyId(), response);
     }
 
-    public void execute(final Callback<Reply> callback, RequestCaller requestCaller, final Request request) {
+    public void execute(final ProviderCallback<Reply> callback, RequestCaller requestCaller, final Request request) {
         Promise<? extends AbstractDeferred> promise;
         try {
             promise = (Promise<?>) invokeMethod(requestCaller, request);

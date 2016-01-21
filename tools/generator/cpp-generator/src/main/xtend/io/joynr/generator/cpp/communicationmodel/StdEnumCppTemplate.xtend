@@ -45,7 +45,7 @@ class StdEnumCppTemplate implements EnumTemplate {
 «warning»
 «getDllExportIncludeStatement()»
 
-#include "«type.includeOf»"
+#include «type.includeOf»
 #include <sstream>
 
 «getNamespaceStarter(type, true)»
@@ -79,11 +79,11 @@ std::string «typeName»::getLiteral(const «typeName»::«getNestedEnumName()»
 }
 
 std::string «typeName»::getTypeName() {
-	return "«type.buildPackagePath(".", true) + type.joynrName»";
+	return "«type.buildPackagePath(".", true) + "." + type.joynrName»";
 }
 
-uint32_t «typeName»::getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value) {
-	return static_cast<uint32_t>(«typeName.toFirstLower»Value);
+std::uint32_t «typeName»::getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value) {
+	return static_cast<std::uint32_t>(«typeName.toFirstLower»Value);
 }
 
 // Printing «typeName» with google-test and google-mock.

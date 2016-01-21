@@ -35,9 +35,7 @@ class JoynrMessage;
 class IDispatcher
 {
 public:
-    virtual ~IDispatcher()
-    {
-    }
+    virtual ~IDispatcher() = default;
     virtual void addReplyCaller(const std::string& requestReplyId,
                                 std::shared_ptr<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings) = 0;

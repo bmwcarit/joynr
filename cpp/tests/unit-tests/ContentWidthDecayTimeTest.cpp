@@ -18,27 +18,26 @@
  */
 #include <chrono>
 #include <thread>
-#include <stdint.h>
+#include <cstdint>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/JoynrMessage.h"
 
 using namespace joynr;
-using namespace std::chrono;
 
 TEST(ContentWithDecayTimeTest, messageWithDecayTime)
 {
     JoynrMessage message;
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    JoynrTimePoint decaytime{milliseconds(now + 2000)};
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    JoynrTimePoint decaytime(std::chrono::milliseconds(now + 2000));
     ContentWithDecayTime<JoynrMessage> mwdt =  ContentWithDecayTime<JoynrMessage>(message, decaytime);
     EXPECT_TRUE(!mwdt.isExpired());
     EXPECT_GT(mwdt.getRemainingTtl_ms(), 1500);
     EXPECT_LT(mwdt.getRemainingTtl_ms(), 2500);
     EXPECT_EQ(decaytime, mwdt.getDecayTime());
     EXPECT_EQ(message, mwdt.getContent());
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     EXPECT_GT( mwdt.getRemainingTtl_ms(), 500);
     EXPECT_LT( mwdt.getRemainingTtl_ms(), 1500 );
     EXPECT_TRUE(!mwdt.isExpired());

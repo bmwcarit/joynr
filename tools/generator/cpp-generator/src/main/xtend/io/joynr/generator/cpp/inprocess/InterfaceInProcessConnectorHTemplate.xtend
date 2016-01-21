@@ -25,7 +25,6 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
@@ -37,7 +36,6 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 	@Inject private extension CppInterfaceUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
-	@Inject private extension InterfaceUtil
 	@Inject private extension InterfaceSubscriptionUtil
 
 	override  generate(FInterface serviceInterface)
@@ -58,7 +56,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-
+#include "joynr/Logger.h"
 #include "joynr/TypeUtil.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
@@ -71,7 +69,15 @@ namespace joynr {
 	class InProcessAddress;
 	class ISubscriptionManager;
 	class PublicationManager;
-}
+	template <class ... Ts> class Future;
+
+namespace exceptions
+{
+	class JoynrException;
+	class JoynrRuntimeException;
+} // namespace exceptions
+
+} // namespace joynr
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -118,19 +124,19 @@ public:
 	 * @brief Checks whether cluster controller is used
 	 * @return true, if cluster controller is used
 	 */
-	virtual bool usesClusterController() const;
+	bool usesClusterController() const override;
 
-	«produceSyncGetters(serviceInterface, false)»
-	«produceSyncSetters(serviceInterface, false)»
-	«produceSyncMethods(serviceInterface, false)»
-	«produceAsyncGetters(serviceInterface, false)»
-	«produceAsyncSetters(serviceInterface, false)»
-	«produceAsyncMethods(serviceInterface, false)»
+	«produceSyncGetterDeclarations(serviceInterface, false)»
+	«produceSyncSetterDeclarations(serviceInterface, false)»
+	«produceSyncMethodDeclarations(serviceInterface, false)»
+	«produceAsyncGetterDeclarations(serviceInterface, false)»
+	«produceAsyncSetterDeclarations(serviceInterface, false)»
+	«produceAsyncMethodDeclarations(serviceInterface, false, true)»
 
 	«produceSubscribeUnsubscribeMethods(serviceInterface, false)»
 
 private:
-	static joynr::joynr_logging::Logger* logger;
+	ADD_LOGGER(«interfaceName»InProcessConnector);
 
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»InProcessConnector);
 	std::string proxyParticipantId;

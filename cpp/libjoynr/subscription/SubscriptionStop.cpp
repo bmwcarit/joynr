@@ -28,7 +28,7 @@ SubscriptionStop::SubscriptionStop() : subscriptionId()
 {
 }
 SubscriptionStop::SubscriptionStop(const SubscriptionStop& other)
-        : QObject(), subscriptionId(other.getSubscriptionId())
+        : subscriptionId(other.getSubscriptionId())
 {
 }
 

@@ -22,16 +22,16 @@
 namespace joynr
 {
 
-using namespace std::chrono;
-
 ObjectWithDecayTime::ObjectWithDecayTime(const JoynrTimePoint& decayTime) : decayTime(decayTime)
 {
 }
 
-int64_t ObjectWithDecayTime::getRemainingTtl_ms() const
+std::int64_t ObjectWithDecayTime::getRemainingTtl_ms() const
 {
-    int64_t decayTimeMillis = duration_cast<milliseconds>(decayTime.time_since_epoch()).count();
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    std::int64_t decayTimeMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                           decayTime.time_since_epoch()).count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch()).count();
     return decayTimeMillis - now;
 }
 JoynrTimePoint ObjectWithDecayTime::getDecayTime() const
@@ -41,7 +41,7 @@ JoynrTimePoint ObjectWithDecayTime::getDecayTime() const
 
 bool ObjectWithDecayTime::isExpired() const
 {
-    return system_clock::now() > decayTime;
+    return std::chrono::system_clock::now() > decayTime;
 }
 
 } // namespace joynr

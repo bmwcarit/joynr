@@ -23,7 +23,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/IArbitrationListener.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
 
@@ -36,7 +36,7 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-}
+} // namespace system
 
 /*
  *  Base class for different arbitration strategies.
@@ -45,7 +45,7 @@ class JOYNR_EXPORT ProviderArbitrator
 {
 
 public:
-    virtual ~ProviderArbitrator();
+    virtual ~ProviderArbitrator() = default;
 
     /*
      *  Arbitrate until successful or until a timeout occurs
@@ -116,8 +116,8 @@ private:
     joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
-    joynr::Semaphore listenerSemaphore;
-    static joynr_logging::Logger* logger;
+    Semaphore listenerSemaphore;
+    ADD_LOGGER(ProviderArbitrator);
 };
 
 } // namespace joynr

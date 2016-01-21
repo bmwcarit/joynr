@@ -20,9 +20,6 @@
 #define PRETTYPRINT_H_
 
 #include <gtest/gtest.h>
-#include <QChar>
-#include <QByteArray>
-#include <QtCore/QUrl>
 #include <iostream>
 
 #include "joynr/JsonSerializer.h"
@@ -44,9 +41,9 @@ namespace joynr {
 // The following PrintTo's are defined directly in the file where the type is
 // defined:
 //    class JoynrMessage;
-//    void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
+//    void PrintTo(const JoynrMessage& value, ::std::ostream* os);
 //    class MessagingQos;
-//    void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
+//    void PrintTo(const MessagingQos& value, ::std::ostream* os);
 
 namespace system {
     class DiscoveryEntry;
@@ -55,12 +52,6 @@ namespace system {
     void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
 }
 }
-void PrintTo(const QString& value, ::std::ostream* os);
-void PrintTo(const QChar& value, ::std::ostream* os);
-void PrintTo(const QByteArray& value, ::std::ostream* os);
-void PrintTo(const QUrl& value, ::std::ostream* os);
-//void PrintTo(const QObject& value, ::std::ostream* os);
-//void PrintTo(const QVariant& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatusCode& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatus& value, ::std::ostream* os);
 void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);

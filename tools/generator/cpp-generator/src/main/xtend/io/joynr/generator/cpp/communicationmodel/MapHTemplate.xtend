@@ -24,6 +24,8 @@ import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FMapType
+import org.franca.core.franca.FType
+import org.franca.core.franca.FBasicTypeId
 
 class MapHTemplate implements MapTemplate{
 
@@ -49,14 +51,16 @@ class MapHTemplate implements MapTemplate{
 
 «getDllExportIncludeStatement()»
 
-#include <string>
 #include <map>
 #include "joynr/HashUtil.h"
-#include "joynr/Util.h"
 
 // include complex Datatype headers.
-«FOR member: getRequiredIncludesFor(type)»
-	#include "«member»"
+«val typeDependencies = type.typeDependencies»
+«FOR member: typeDependencies.filter(typeof(FBasicTypeId)).includesFor»
+	#include «member»
+«ENDFOR»
+«FOR member: typeDependencies.filter(typeof(FType))»
+	#include «member.includeOf»
 «ENDFOR»
 
 «getNamespaceStarter(type, true)»
@@ -65,26 +69,15 @@ class MapHTemplate implements MapTemplate{
 
 «getNamespaceEnder(type, true)»
 
-namespace joynr
-{
-template <>
-inline std::vector<«type.typeName»> Util::valueOf<
-		std::vector<«type.typeName»>>(const Variant& variant)
-{
-	return joynr::Util::convertVariantVectorToVector<«type.typeName»>(
-			variant.get<std::vector<Variant>>());
-}
-} // namespace joynr
-
 #endif // «headerGuard»
 '''
 
-private def getTypeDefinition(FMapType type)'''
-typedef std::map<«type.keyType.typeName», «type.valueType.typeName»> «type.joynrName»;
+private def getTypeDefinition(FMapType type)
 '''
-
-def forwardDeclaration(FMapType type){
-//forward declaration is not supported for type definitions
-type.typeDefinition
-}
+«val mapType = "std::map<"  + type.keyType.typeName + ", " + type.valueType.typeName + ">"»
+class «type.joynrName» : public «mapType»
+{
+	using «mapType»::map;
+};
+'''
 }

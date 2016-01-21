@@ -20,7 +20,7 @@
 #define CLASSSERIALIZER
 
 #include "joynr/Variant.h"
-
+#include <vector>
 #include <ostream>
 
 namespace joynr
@@ -32,8 +32,14 @@ namespace joynr
 class IClassSerializer
 {
 public:
-    virtual ~IClassSerializer(){}
+    virtual ~IClassSerializer() = default;
     virtual void serializeVariant(const Variant& variant, std::ostream& stream) = 0;
+};
+
+template <typename T>
+struct ClassSerializerImpl
+{
+    static void serialize(const T& t, std::ostream& stream);
 };
 
 /**
@@ -44,17 +50,38 @@ template <class T>
 class ClassSerializer : public IClassSerializer
 {
 public:
-    virtual ~ClassSerializer() {}
+    ~ClassSerializer()  override= default;
 
     /**
      * @brief Serialize a variant
      */
-    void serializeVariant(const Variant& variant, std::ostream& stream);
+    void serializeVariant(const Variant& variant, std::ostream& stream) override;
 
     /**
      * @brief Serialize the known type T
      */
-    void serialize(const T& t, std::ostream& stream);
+    void serialize(const T& t, std::ostream& stream)
+    {
+        ClassSerializerImpl<T>::serialize(t, stream);
+    }
+};
+
+} // namespace joynr
+
+// include after ClassSerializer has been declared to handle cyclic dependencies
+#include "joynr/ArraySerializer.h"
+
+namespace joynr
+{
+
+// partial specialization for vectors
+template <typename T>
+struct ClassSerializerImpl<std::vector<T>>
+{
+    static void serialize(const std::vector<T>& v, std::ostream& stream)
+    {
+        ArraySerializer::serialize(v, stream);
+    }
 };
 
 // Implementation of generic Variant serializer
@@ -68,7 +95,7 @@ void ClassSerializer<T>::serializeVariant(const Variant& variant, std::ostream& 
 template <>
 void ClassSerializer<Variant>::serializeVariant(const Variant &variant, std::ostream &stream);
 template <>
-void ClassSerializer<Variant>::serialize(const Variant &variant, std::ostream &stream);
+void ClassSerializerImpl<Variant>::serialize(const Variant &variant, std::ostream &stream);
 
 std::string addEscapeForSpecialCharacters(const std::string& str);
 

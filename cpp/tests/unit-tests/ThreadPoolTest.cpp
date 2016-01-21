@@ -17,24 +17,17 @@
  * #L%
  */
 #include "gtest/gtest.h"
-#include "joynr/joynrlogging.h"
 
 #include "joynr/ThreadPool.h"
 #include "utils/MockObjects.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr_logging;
 
 using ::testing::StrictMock;
-
-namespace ThreadPoolTest
-{
-Logger* logger = Logging::getInstance()->getLogger("MSG", "ThreadPoolTest");
-}
 
 TEST(ThreadPoolTest, startAndShutdownWithoutWork)
 {

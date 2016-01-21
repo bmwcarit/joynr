@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/IClientCache.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
@@ -60,15 +60,15 @@ public:
                     domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached);
         }
 
-        LOG_ERROR(logger, "Can not create Connector: Unknown address type.");
-        return NULL;
+        JOYNR_LOG_ERROR(logger, "Can not create Connector: Unknown address type.");
+        return nullptr;
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ConnectorFactory);
     InProcessConnectorFactory* inProcessConnectorFactory;
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ConnectorFactory);
 };
 
 } // namespace joynr

@@ -21,10 +21,10 @@
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
-
+#include "joynr/Logger.h"
 #include "joynr/BlockingQueue.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 #include <set>
 #include <thread>
@@ -34,10 +34,7 @@
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-}
+
 class RunnableProvider;
 class Runnable;
 
@@ -54,7 +51,7 @@ public:
      * @param name Name of the hosted threads
      * @param numberOfThreads Number of threads to be allocated and available
      */
-    ThreadPool(const std::string& name, const uint8_t numberOfThreads);
+    ThreadPool(const std::string& name, const std::uint8_t numberOfThreads);
 
     /**
      * Destructor
@@ -77,7 +74,7 @@ public:
      * Executes work by adding to the queue
      * @param runnable Runnable to be executed
      */
-    void execute(joynr::Runnable* runnable);
+    void execute(Runnable* runnable);
 
 private:
     /*! Disallow copy and assign */
@@ -91,13 +88,13 @@ private:
 
 private:
     /*! Logger */
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ThreadPool);
 
     /*! Worker threads */
     std::vector<std::thread> threads;
 
     /*! FIFO queue of work that could be done right now */
-    joynr::BlockingQueue scheduler;
+    BlockingQueue scheduler;
 
     /*! Flag indicating @ref threads to keep running */
     std::atomic_bool keepRunning;

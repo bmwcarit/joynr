@@ -20,7 +20,7 @@
 #define ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
 
 #include "joynr/OnChangeSubscriptionQos.h"
-#include <stdint.h>
+#include <cstdint>
 
 namespace joynr
 {
@@ -74,10 +74,10 @@ public:
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterInterval
      * @see SubscriptionQos#setPublicationTtl
      */
-    OnChangeWithKeepAliveSubscriptionQos(const int64_t& validity,
-                                         const int64_t& minInterval,
-                                         const int64_t& maxInterval,
-                                         const int64_t& alertAfterInterval);
+    OnChangeWithKeepAliveSubscriptionQos(const std::int64_t& validity,
+                                         const std::int64_t& minInterval,
+                                         const std::int64_t& maxInterval,
+                                         const std::int64_t& alertAfterInterval);
 
     /**
      * @brief Sets minimum interval in milliseconds
@@ -90,7 +90,7 @@ public:
      * @see OnChangeSubscriptionQos#setMinInterval
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
      */
-    virtual void setMinInterval(const int64_t& minInterval);
+    void setMinInterval(const std::int64_t& minInterval) override;
 
     /**
      * @brief Gets the maximum interval in milliseconds
@@ -104,7 +104,7 @@ public:
      * @return maxInterval
      *            The publisher will send a notification at least every maxInterval ms.
      */
-    virtual int64_t getMaxInterval() const;
+    virtual std::int64_t getMaxInterval() const;
 
     /**
      * @brief Sets maximum interval in milliseconds
@@ -123,10 +123,10 @@ public:
      * will be rounded down.
      * </ul>
      *
-     * @param period
+     * @param maxInterval
      *            The publisher will send a notification at least every maxInterval_ms.
      */
-    virtual void setMaxInterval(const int64_t& period);
+    virtual void setMaxInterval(const std::int64_t& maxInterval);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds
@@ -137,7 +137,7 @@ public:
      * @return alertAfterInterval (time span in milliseconds after which a
      * publicationMissed will be called if no publications were received)
      */
-    virtual int64_t getAlertAfterInterval() const;
+    virtual std::int64_t getAlertAfterInterval() const;
 
     /**
      * @brief Sets the alertAfter interval in milliseconds
@@ -158,35 +158,35 @@ public:
      * @param alertAfterInterval Time span in milliseconds after which a
      * publicationMissed will be called if no publications were received.
      */
-    virtual void setAlertAfterInterval(const int64_t& alertAfterInterval);
+    virtual void setAlertAfterInterval(const std::int64_t& alertAfterInterval);
 
     /** @brief Assignment operator */
     OnChangeWithKeepAliveSubscriptionQos& operator=(
             const OnChangeWithKeepAliveSubscriptionQos& other);
 
     /** @brief Equality operator */
-    virtual bool operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const;
+    bool operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const;
 
     /** @brief
      * Returns the maximum value for the maximum interval in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const int64_t& MAX_MAX_INTERVAL();
+    static const std::int64_t& MAX_MAX_INTERVAL();
 
     /**
      * @brief Returns the maximum value for the alertAfter interval in
      * milliseconds: 2 592 000 000 (30 days)
      */
-    static const int64_t& MAX_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& MAX_ALERT_AFTER_INTERVAL();
 
     /**
      * @brief Returns the default value for the alertAfter interval in
      * milliseconds: 0 (NO_ALERT_AFTER_INTERVAL)
      */
-    static const int64_t& DEFAULT_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL();
 
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
-    static const int64_t& NO_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
 
 protected:
     /**
@@ -195,13 +195,13 @@ protected:
      * The provider will send notifications every maximum interval in milliseconds,
      * even if the value didn't change.
      */
-    int64_t maxInterval;
+    std::int64_t maxInterval;
 
     /**
      * @brief time span in milliseconds after which a publicationMissed
      * will be called if no publications were received
      */
-    int64_t alertAfterInterval;
+    std::int64_t alertAfterInterval;
 };
 
 } // namespace joynr

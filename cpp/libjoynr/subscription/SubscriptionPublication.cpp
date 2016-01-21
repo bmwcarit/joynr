@@ -32,10 +32,7 @@ SubscriptionPublication::SubscriptionPublication()
 {
 }
 SubscriptionPublication::SubscriptionPublication(const SubscriptionPublication& other)
-        : QObject(),
-          subscriptionId(other.getSubscriptionId()),
-          response(other.response),
-          error(other.error)
+        : subscriptionId(other.getSubscriptionId()), response(other.response), error(other.error)
 {
 }
 

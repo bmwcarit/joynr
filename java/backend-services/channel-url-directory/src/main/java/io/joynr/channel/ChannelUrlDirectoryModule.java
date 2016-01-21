@@ -21,6 +21,7 @@ package io.joynr.channel;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
@@ -117,7 +118,9 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
                     @Override
                     public void onRejection(JoynrException error) {
                         future.onFailure(error);
-                        callback.onFailure(error);
+                        if (error instanceof JoynrRuntimeException) {
+                            callback.onFailure((JoynrRuntimeException) error);
+                        }
                     }
 
                     @Override
@@ -138,7 +141,9 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
                     @Override
                     public void onRejection(JoynrException error) {
-                        callback.onFailure(error);
+                        if (error instanceof JoynrRuntimeException) {
+                            callback.onFailure((JoynrRuntimeException) error);
+                        }
                         future.onFailure(error);
                     }
 

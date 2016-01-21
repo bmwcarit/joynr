@@ -31,7 +31,7 @@ static const bool isSubscriptionRequestInformationSerializerRegistered =
                 "joynr.SubscriptionRequestInformation");
 
 template <>
-void ClassDeserializer<SubscriptionRequestInformation>::deserialize(
+void ClassDeserializerImpl<SubscriptionRequestInformation>::deserialize(
         SubscriptionRequestInformation& info,
         IObject& o)
 {
@@ -55,7 +55,7 @@ void ClassDeserializer<SubscriptionRequestInformation>::deserialize(
 }
 
 template <>
-void ClassSerializer<SubscriptionRequestInformation>::serialize(
+void ClassSerializerImpl<SubscriptionRequestInformation>::serialize(
         const SubscriptionRequestInformation& info,
         std::ostream& stream)
 {

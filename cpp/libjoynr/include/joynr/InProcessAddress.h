@@ -32,8 +32,8 @@ class RequestCaller;
 class JOYNR_EXPORT InProcessAddress : public joynr::system::RoutingTypes::Address
 {
 public:
-    virtual ~InProcessAddress();
-    InProcessAddress(std::shared_ptr<RequestCaller> requestCaller);
+    ~InProcessAddress() override = default;
+    explicit InProcessAddress(std::shared_ptr<RequestCaller> requestCaller);
     std::shared_ptr<RequestCaller> getRequestCaller() const;
 
 private:

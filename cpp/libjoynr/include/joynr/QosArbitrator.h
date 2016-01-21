@@ -31,11 +31,11 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-}
+} // namespace system
 namespace types
 {
 class DiscoveryEntry;
-}
+} // namespace types
 
 /*
   * The QoS Arbitrator arbitrates according to the QoS of the provider.
@@ -45,9 +45,7 @@ class JOYNR_EXPORT QosArbitrator : public ProviderArbitrator
 {
 
 public:
-    virtual ~QosArbitrator()
-    {
-    }
+    ~QosArbitrator() override = default;
     QosArbitrator(const std::string& domain,
                   const std::string& interfaceName,
                   joynr::system::IDiscoverySync& discoveryProxy,
@@ -56,7 +54,7 @@ public:
     /*
      *  Attempts to arbitrate. This function is called by the ProviderArbitrator
      */
-    void attemptArbitration();
+    void attemptArbitration() override;
 
     /*
      * Made public for testing purposes
@@ -67,7 +65,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(QosArbitrator);
     static int ARBITRATION_RETRY_INTERVAL;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(QosArbitrator);
 };
 
 } // namespace joynr

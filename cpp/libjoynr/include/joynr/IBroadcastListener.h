@@ -33,9 +33,7 @@ class IBroadcastFilter;
 class JOYNR_EXPORT IBroadcastListener
 {
 public:
-    virtual ~IBroadcastListener()
-    {
-    }
+    virtual ~IBroadcastListener() = default;
     virtual void broadcastOccurred(
             const std::vector<Variant>& values,
             const std::vector<std::shared_ptr<IBroadcastFilter>>& filters) = 0;

@@ -26,23 +26,13 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* WebSocketSettings::logger = Logging::getInstance()->getLogger("MSG", "WebSocketSettings");
+INIT_LOGGER(WebSocketSettings);
 
 WebSocketSettings::WebSocketSettings(Settings& settings) : settings(settings)
 {
     Settings defaultWebSocketSettings(DEFAULT_WEBSOCKET_SETTINGS_FILENAME());
     Settings::merge(defaultWebSocketSettings, this->settings, false);
     checkSettings();
-}
-
-WebSocketSettings::WebSocketSettings(const WebSocketSettings& other) : settings(other.settings)
-{
-}
-
-WebSocketSettings::~WebSocketSettings()
-{
 }
 
 void WebSocketSettings::checkSettings() const
@@ -81,7 +71,7 @@ joynr::system::RoutingTypes::WebSocketAddress WebSocketSettings::
     Url url(ccMessagingUrl);
 
     if (!url.isValid()) {
-        LOG_ERROR(logger, FormatString("Could not parse URL: %1").arg(ccMessagingUrl).str());
+        JOYNR_LOG_ERROR(logger, "Could not parse URL: {}", ccMessagingUrl);
         return system::RoutingTypes::WebSocketAddress{};
     }
 
@@ -99,11 +89,10 @@ bool WebSocketSettings::contains(const std::string& key) const
 
 void WebSocketSettings::printSettings() const
 {
-    LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2")
-                      .arg(SETTING_CC_MESSAGING_URL())
-                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_URL()))
-                      .str());
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_CC_MESSAGING_URL(),
+                    settings.get<std::string>(SETTING_CC_MESSAGING_URL()));
 }
 
 } // namespace joynr

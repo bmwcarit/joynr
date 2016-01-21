@@ -22,19 +22,19 @@ namespace joynr
 {
 
 // Register serializers for basic types
-static const bool isInt8SerializerRegistered = SerializerRegistry::registerNativeType<int8_t>("Int8");
-static const bool isUInt8SerializerRegistered = SerializerRegistry::registerNativeType<uint8_t>("UInt8");
-static const bool isInt16SerializerRegistered = SerializerRegistry::registerNativeType<int16_t>("Int16");
-static const bool isUInt16SerializerRegistered = SerializerRegistry::registerNativeType<uint16_t>("UInt16");
+static const bool isInt8SerializerRegistered = SerializerRegistry::registerNativeType<std::int8_t>("Int8");
+static const bool isUInt8SerializerRegistered = SerializerRegistry::registerNativeType<std::uint8_t>("UInt8");
+static const bool isInt16SerializerRegistered = SerializerRegistry::registerNativeType<std::int16_t>("Int16");
+static const bool isUInt16SerializerRegistered = SerializerRegistry::registerNativeType<std::uint16_t>("UInt16");
 static const bool isInt32SerializerRegistered =
-        SerializerRegistry::registerNativeType<int32_t>("Int32");
+        SerializerRegistry::registerNativeType<std::int32_t>("Int32");
 static const bool isIntSerializerRegistered =
         SerializerRegistry::registerNativeType<int>("Integer"); // ambiguous with "Integer", if we use
                                                  // this one only then Dispatcher should
                                                  // be changed
-static const bool isUInt32SerializerRegistered = SerializerRegistry::registerNativeType<uint32_t>("UInt32");
-static const bool isInt64SerializerRegistered = SerializerRegistry::registerNativeType<int64_t>("Int64");
-static const bool isUInt64SerializerRegistered = SerializerRegistry::registerNativeType<uint64_t>("UInt64");
+static const bool isUInt32SerializerRegistered = SerializerRegistry::registerNativeType<std::uint32_t>("UInt32");
+static const bool isInt64SerializerRegistered = SerializerRegistry::registerNativeType<std::int64_t>("Int64");
+static const bool isUInt64SerializerRegistered = SerializerRegistry::registerNativeType<std::uint64_t>("UInt64");
 static const bool isDoubleSerializerRegistered = SerializerRegistry::registerNativeType<double>("Double");
 static const bool isFloatSerializerRegistered = SerializerRegistry::registerNativeType<float>("Float");
 static const bool isBooleanSerializerRegistered = SerializerRegistry::registerNativeType<bool>("Boolean");

@@ -30,12 +30,8 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/joynrlogging.h"
 
 #include <tuple>
-
-#include <QByteArray>
-#include <QScopedPointer>
 
 #include "joynr/JsonSerializer.h"
 
@@ -45,9 +41,8 @@ namespace joynr
 using namespace infrastructure;
 using namespace infrastructure::DacTypes;
 using namespace types;
-using namespace joynr_logging;
 
-Logger* AccessController::logger = Logging::getInstance()->getLogger("MSG", "AccessController");
+INIT_LOGGER(AccessController);
 
 //--------- InternalConsumerPermissionCallbacks --------------------------------
 
@@ -65,8 +60,8 @@ public:
             std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback);
 
     // Callbacks made from the LocalDomainAccessController
-    void consumerPermission(Permission::Enum permission);
-    void operationNeeded();
+    void consumerPermission(Permission::Enum permission) override;
+    void operationNeeded() override;
 
 private:
     AccessController& owningAccessController;
@@ -101,12 +96,11 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
     bool hasPermission = convertToBool(permission);
 
     if (hasPermission == false) {
-        LOG_ERROR(logger,
-                  FormatString("Message %1 to domain %2, interface %3 failed ACL check")
-                          .arg(message.getHeaderMessageId())
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .str());
+        JOYNR_LOG_ERROR(owningAccessController.logger,
+                        "Message {} to domain {}, interface {} failed ACL check",
+                        message.getHeaderMessageId(),
+                        domain,
+                        interfaceName);
     }
     callback->hasConsumerPermission(hasPermission);
 }
@@ -141,7 +135,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     }
 
     if (operation.empty()) {
-        LOG_ERROR(logger, "Could not deserialize request");
+        JOYNR_LOG_ERROR(owningAccessController.logger, "Could not deserialize request");
         callback->hasConsumerPermission(false);
         return;
     }
@@ -154,14 +148,12 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     bool hasPermission = convertToBool(permission);
 
     if (hasPermission == false) {
-        LOG_ERROR(
-                logger,
-                FormatString("Message %1 to domain %2, interface/operation %3/%4 failed ACL check")
-                        .arg(message.getHeaderMessageId())
-                        .arg(domain)
-                        .arg(interfaceName)
-                        .arg(operation)
-                        .str());
+        JOYNR_LOG_ERROR(owningAccessController.logger,
+                        "Message {} to domain {}, interface/operation {}/{} failed ACL check",
+                        message.getHeaderMessageId(),
+                        domain,
+                        interfaceName,
+                        operation);
     }
 
     callback->hasConsumerPermission(hasPermission);
@@ -192,13 +184,13 @@ public:
             : localDomainAccessController(localDomainAccessController)
     {
     }
-    virtual void onProviderAdd(const DiscoveryEntry& discoveryEntry)
+    void onProviderAdd(const DiscoveryEntry& discoveryEntry) override
     {
         std::ignore = discoveryEntry;
         // Ignored
     }
 
-    virtual void onProviderRemove(const DiscoveryEntry& discoveryEntry)
+    void onProviderRemove(const DiscoveryEntry& discoveryEntry) override
     {
         localDomainAccessController.unregisterProvider(
                 discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
@@ -261,10 +253,8 @@ void AccessController::hasConsumerPermission(
     std::function<void(const types::DiscoveryEntry&)> lookupSuccessCallback =
             [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
         if (discoveryEntry.getParticipantId() != participantId) {
-            LOG_ERROR(logger,
-                      FormatString("Failed to get capabilities for participantId %1")
-                              .arg(participantId)
-                              .str());
+            JOYNR_LOG_ERROR(
+                    logger, "Failed to get capabilities for participantId {}", participantId);
             callback->hasConsumerPermission(false);
             return;
         }

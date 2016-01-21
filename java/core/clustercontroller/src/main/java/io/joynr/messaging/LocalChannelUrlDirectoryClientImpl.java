@@ -19,7 +19,6 @@ package io.joynr.messaging;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -77,7 +76,7 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                 }
 
                 @Override
-                public void onFailure(JoynrException e) {
+                public void onFailure(JoynrRuntimeException e) {
                     //Currently not retrying. Using long TTL instead.
                     logger.error("exception while registering channelId: {} reason: {}",
                                  channelId,

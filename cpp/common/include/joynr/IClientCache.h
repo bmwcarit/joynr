@@ -30,9 +30,7 @@ namespace joynr
 class IClientCache
 {
 public:
-    virtual ~IClientCache()
-    {
-    }
+    virtual ~IClientCache() = default;
 
     /*
      * Returns the value stored for the attributeId. If none exists, it return an invalid

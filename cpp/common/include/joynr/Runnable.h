@@ -61,7 +61,7 @@ protected:
      * @param deleteOnExit Flag indicating if destructor should be called when
      *      @ref run has returned
      */
-    Runnable(bool deleteOnExit);
+    explicit Runnable(bool deleteOnExit);
 
 private:
     /*! Flag indicating if object should be deleted after execution */

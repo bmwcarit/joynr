@@ -18,27 +18,26 @@ package io.joynr.generator.cpp.inprocess
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
 
 class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil cppStdTypeUtil
+	@Inject private extension CppInterfaceUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
 	@Inject private extension BroadcastUtil
-	@Inject private extension InterfaceUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 
 	override  generate(FInterface serviceInterface)
@@ -46,15 +45,14 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 «var interfaceName = serviceInterface.joynrName»
 «warning()»
 #include <functional>
+#include <tuple>
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»InProcessConnector.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 «FOR datatype: getAllComplexTypes(serviceInterface)»
-«IF datatype instanceof FType»
 	«IF isCompound(datatype) || isMap(datatype)»
-		#include "«getIncludeOf(datatype)»"
+		#include «getIncludeOf(datatype)»
 	«ENDIF»
-«ENDIF»
 «ENDFOR»
 
 #include "joynr/InProcessAddress.h"
@@ -68,13 +66,14 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
 #include "joynr/SubscriptionUtil.h"
+#include "joynr/exceptions/JoynrException.h"
 
 «getNamespaceStarter(serviceInterface)»
 
-using namespace joynr::joynr_logging;
-Logger* «interfaceName»InProcessConnector::logger = Logging::getInstance()->getLogger("MSG", "«interfaceName»InProcessConnector");
+«val className = interfaceName + "InProcessConnector"»
+INIT_LOGGER(«className»);
 
-«interfaceName»InProcessConnector::«interfaceName»InProcessConnector(
+«className»::«className»(
 			joynr::ISubscriptionManager* subscriptionManager,
 			joynr::PublicationManager* publicationManager,
 			joynr::InProcessPublicationSender* inProcessPublicationSender,
@@ -91,7 +90,7 @@ Logger* «interfaceName»InProcessConnector::logger = Logging::getInstance()->ge
 {
 }
 
-bool «interfaceName»InProcessConnector::usesClusterController() const{
+bool «className»::usesClusterController() const{
 	return false;
 }
 
@@ -101,9 +100,8 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 	«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
 	«IF attribute.readable»
 		«val getAttributeName = "get" + attribute.joynrName.toFirstUpper»
-		void «interfaceName»InProcessConnector::«getAttributeName»(
-					«returnType»& attributeValue
-		) {
+		«produceSyncGetterSignature(attribute, className)»
+		{
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
@@ -124,14 +122,11 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 			//see header for more information
 			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccess, onError);
-			future->get(attributeValue);
+			future->get(«attributeName»);
 		}
 
-		std::shared_ptr<joynr::Future<«returnType»>> «interfaceName»InProcessConnector::«getAttributeName»Async(
-				std::function<void(const «returnType»& «attributeName»)> onSuccess,
-				std::function<void(const exceptions::JoynrException& error)> onError
-		) {
-			std::ignore = onError; // not used yet
+		«produceAsyncGetterSignature(attribute, className)»
+		{
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
@@ -163,12 +158,8 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 	«ENDIF»
 	«IF attribute.writable»
-		std::shared_ptr<joynr::Future<void>> «interfaceName»InProcessConnector::«setAttributeName»Async(
-				«returnType» input,
-				std::function<void(void)> onSuccess,
-				std::function<void(const exceptions::JoynrException& error)> onError
-		) {
-			std::ignore = onError; // not used yet
+		«produceAsyncSetterSignature(attribute, className)»
+		{
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
@@ -193,14 +184,13 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 					};
 
 			//see header for more information
-			LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
-			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccessWrapper, onErrorWrapper);
+			JOYNR_LOG_ERROR(logger, "#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
+			«serviceInterface.interfaceCaller»->«setAttributeName»(«attributeName», onSuccessWrapper, onErrorWrapper);
 			return future;
 		}
 
-		void «interfaceName»InProcessConnector::«setAttributeName»(
-				const «returnType»& input
-		) {
+		«produceSyncSetterSignature(attribute, className)»
+		{
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
@@ -219,13 +209,13 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 					};
 
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccess, onError);
+			«serviceInterface.interfaceCaller»->«setAttributeName»(«attributeName», onSuccess, onError);
 			return future->get();
 		}
 
 	«ENDIF»
 	«IF attribute.notifiable»
-		std::string «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
+		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				const joynr::SubscriptionQos& subscriptionQos,
 				std::string& subscriptionId)
@@ -235,7 +225,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
-		std::string «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
+		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				const joynr::SubscriptionQos& subscriptionQos)
 		{
@@ -243,22 +233,22 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
-		std::string «interfaceName»InProcessConnector::subscribeTo«attributeName.toFirstUpper»(
+		std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				const joynr::SubscriptionQos& subscriptionQos,
 				joynr::SubscriptionRequest& subscriptionRequest)
 		{
 			«IF isEnum(attribute.type)»
-				Q_UNUSED(subscriptionListener);
-				Q_UNUSED(subscriptionQos);
+				std::ignore = subscriptionListener;
+				std::ignore = subscriptionQos;
 				// TODO support enum return values in C++ client
-				LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
+				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 				// Visual C++ requires a return value
 				return std::string();
 			«ELSE»
-				LOG_DEBUG(logger, "Subscribing to «attributeName».");
-				assert(subscriptionManager != NULL);
+				JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
+				assert(subscriptionManager != nullptr);
 				std::string attributeName("«attributeName»");
 				auto subscriptionCallback = std::make_shared<
 						joynr::SubscriptionCallback<«returnType»>
@@ -268,9 +258,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						subscriptionCallback,
 						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
-				LOG_DEBUG(logger, FormatString("Registered subscription: %1")
-						.arg(subscriptionRequest.toString()).str()
-				);
+				JOYNR_LOG_DEBUG(logger, "Registered subscription: {}", subscriptionRequest.toString());
 				assert(address);
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
@@ -278,7 +266,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
 				if(!caller) {
-					assert(publicationManager != NULL);
+					assert(publicationManager != nullptr);
 					/**
 					* Provider not registered yet
 					* Dispatcher will call publicationManger->restore when a new provider is added to activate
@@ -292,21 +280,21 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			«ENDIF»
 		}
 
-		void «interfaceName»InProcessConnector::unsubscribeFrom«attributeName.toFirstUpper»(
+		void «className»::unsubscribeFrom«attributeName.toFirstUpper»(
 				std::string& subscriptionId
 		) {
 			«IF isEnum(attribute.type)»
-				Q_UNUSED(subscriptionId);
+				std::ignore = subscriptionId;
 				// TODO support enum return values in C++ client
-				LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
+				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 			«ELSE»
-				LOG_DEBUG(logger, FormatString("Unsubscribing. Id=%1").arg(subscriptionId).str());
-				assert(publicationManager != NULL);
-				LOG_DEBUG(logger, "Stopping publications by publication manager.");
+				JOYNR_LOG_DEBUG(logger, "Unsubscribing. Id={}", subscriptionId);
+				assert(publicationManager != nullptr);
+				JOYNR_LOG_DEBUG(logger, "Stopping publications by publication manager.");
 				publicationManager->stopPublication(subscriptionId);
-				assert(subscriptionManager != NULL);
-				LOG_DEBUG(logger, "Unregistering attribute subscription.");
+				assert(subscriptionManager != nullptr);
+				JOYNR_LOG_DEBUG(logger, "Unregistering attribute subscription.");
 				subscriptionManager->unregisterSubscription(subscriptionId);
 			«ENDIF»
 		}
@@ -316,16 +304,13 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 «FOR method: getMethods(serviceInterface)»
 «var methodname = method.joynrName»
-«var inputTypedParamList = cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»
 «var outputParameters = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
 «var inputParamList = cppStdTypeUtil.getCommaSeperatedUntypedInputParameterList(method)»
 «var outputTypedConstParamList = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method)»
-«var outputTypedParamList = cppStdTypeUtil.getCommaSeperatedTypedOutputParameterList(method)»
 «var outputUntypedParamList = cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»
 
-void «interfaceName»InProcessConnector::«methodname»(
-		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
-) {
+«produceSyncMethodSignature(method, className)»
+{
 	assert(address);
 	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 	assert(caller);
@@ -350,11 +335,8 @@ void «interfaceName»InProcessConnector::«methodname»(
 	future->get(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
 }
 
-std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»Async(«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
-			std::function<void(«outputTypedConstParamList»)> onSuccess,
-			std::function<void(const exceptions::JoynrException& error)> onError)
+«produceAsyncMethodSignature(serviceInterface, method, className)»
 {
-	std::ignore = onError; // not used yet
 	assert(address);
 	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 	assert(caller);
@@ -373,11 +355,9 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 			};
 
 	std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-			[future, onError] (const exceptions::JoynrException& error) {
+			[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
 				future->onError(RequestStatusCode::ERROR, error);
-				if (onError) {
-					onError(error);
-				}
+				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(serviceInterface, method)»
 			};
 
 	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper, onErrorWrapper);
@@ -391,18 +371,18 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	«val broadcastName = broadcast.joynrName»
 
 	«IF isSelective(broadcast)»
-		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				const joynr::OnChangeSubscriptionQos& subscriptionQos
 	«ELSE»
-		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				const joynr::OnChangeSubscriptionQos& subscriptionQos
 	«ENDIF»
 	) {
-		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
-		assert(subscriptionManager != NULL);
+		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
+		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
@@ -415,13 +395,13 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	}
 
 	«IF isSelective(broadcast)»
-		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				const joynr::OnChangeSubscriptionQos& subscriptionQos,
 				std::string& subscriptionId
 	«ELSE»
-		std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 				const joynr::OnChangeSubscriptionQos& subscriptionQos,
 				std::string& subscriptionId
@@ -438,13 +418,13 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 					subscriptionRequest);
 	}
 
-	std::string «interfaceName»InProcessConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+	std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
 			const joynr::OnChangeSubscriptionQos& subscriptionQos,
 			joynr::BroadcastSubscriptionRequest& subscriptionRequest
 	) {
-		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
-		assert(subscriptionManager != NULL);
+		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
+		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
 
 		auto subscriptionCallback = std::make_shared<
@@ -455,7 +435,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 					subscriptionCallback,
 					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
-		LOG_DEBUG(logger, FormatString("Registered broadcast subscription: %1").arg(subscriptionRequest.toString()).str());
+		JOYNR_LOG_DEBUG(logger, "Registered broadcast subscription: {}", subscriptionRequest.toString());
 		assert(address);
 		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 		assert(caller);
@@ -463,7 +443,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
 		if(!caller) {
-			assert(publicationManager != NULL);
+			assert(publicationManager != nullptr);
 			/**
 			* Provider not registered yet
 			* Dispatcher will call publicationManger->restore when a new provider is added to activate
@@ -481,15 +461,15 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		return subscriptionId;
 	}
 
-	void «interfaceName»InProcessConnector::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
+	void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
 			std::string& subscriptionId
 	) {
-		LOG_DEBUG(logger, FormatString("Unsubscribing broadcast. Id=%1").arg(subscriptionId).str());
-		assert(publicationManager != NULL);
-		LOG_DEBUG(logger, "Stopping publications by publication manager.");
+		JOYNR_LOG_DEBUG(logger, "Unsubscribing broadcast. Id={}", subscriptionId);
+		assert(publicationManager != nullptr);
+		JOYNR_LOG_DEBUG(logger, "Stopping publications by publication manager.");
 		publicationManager->stopPublication(subscriptionId);
-		assert(subscriptionManager != NULL);
-		LOG_DEBUG(logger, "Unregistering broadcast subscription.");
+		assert(subscriptionManager != nullptr);
+		JOYNR_LOG_DEBUG(logger, "Unregistering broadcast subscription.");
 		subscriptionManager->unregisterSubscription(subscriptionId);
 	}
 «ENDFOR»

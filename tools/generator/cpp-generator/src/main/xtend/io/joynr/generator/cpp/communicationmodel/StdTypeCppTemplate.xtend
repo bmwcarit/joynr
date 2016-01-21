@@ -49,12 +49,10 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 
 #include <boost/functional/hash.hpp>
 
-#include <QMetaEnum>
-
-#include "«type.includeOf»"
+#include "joynr/HashUtil.h"
+#include «type.includeOf»
 
 #include "joynr/Reply.h"
-#include "joynr/Util.h"
 
 «getNamespaceStarter(type, true)»
 
@@ -158,17 +156,18 @@ std::string «typeName»::toString() const {
 	«ENDIF»
 	«FOR member: getMembers(type) SEPARATOR "\ntypeAsString << \", \";"»
 		«val memberName = member.joynrName»
+		«val memberType = if (member.type.isTypeDef) member.type.typeDefType.actualType else member.type»
 		«IF isArray(member)»
 			typeAsString << " unprinted List «memberName»  ";
-		«ELSEIF isByteBuffer(member.type)»
+		«ELSEIF isByteBuffer(memberType)»
 			typeAsString << " unprinted ByteBuffer «memberName»  ";
-		«ELSEIF isString(getPrimitive(member.type))»
+		«ELSEIF isString(getPrimitive(memberType))»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»();
-		«ELSEIF isEnum(member.type)»
+		«ELSEIF isEnum(memberType)»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»Internal();
-		«ELSEIF isCompound(member.type)»
+		«ELSEIF isCompound(memberType)»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»().toString();
-		«ELSEIF isMap(member.type)»
+		«ELSEIF isMap(memberType)»
 			typeAsString << " unprinted Map «memberName»  ";
 		«ELSE»
 			typeAsString << "«memberName»:" + std::to_string(get«memberName.toFirstUpper»());

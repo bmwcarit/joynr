@@ -39,9 +39,7 @@ class IMessageReceiver
 {
 
 public:
-    virtual ~IMessageReceiver()
-    {
-    }
+    virtual ~IMessageReceiver() = default;
 
     /**
       * Gets the channel ID of the receive channel for incoming messages.

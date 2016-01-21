@@ -22,46 +22,38 @@
 #include "TrafficServiceBroadcastFilter.h"
 #include "GeocastBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
-#include "joynr/TypeUtil.h"
+#include "joynr/Logger.h"
 
-#include <QString>
-#include <QSettings>
-#include <QFileInfo>
 #include <memory>
 #include <string>
 
 using namespace joynr;
-using joynr_logging::Logger;
-using joynr_logging::Logging;
 
 int main(int argc, char* argv[])
 {
 
     // Get a logger
-    Logger* logger = Logging::getInstance()->getLogger("DEMO", "MyRadioProviderApplication");
+    Logger logger("MyRadioProviderApplication");
 
     // Check the usage
-    QString programName(argv[0]);
+    std::string programName(argv[0]);
     if (argc != 2) {
-        LOG_ERROR(logger,
-                  FormatString("USAGE: %1 <provider-domain>").arg(programName.toStdString()).str());
+        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain>", programName);
         return 1;
     }
 
     // Get the provider domain
     std::string providerDomain(argv[1]);
-    LOG_INFO(logger,
-             FormatString("Registering provider on domain \"%1\"").arg(providerDomain).str());
+    JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
 
     // Get the current program directory
-    QString dir(QFileInfo(programName).absolutePath());
+    std::string dir(MyRadioHelper::getAbsolutePathToExectuable(programName));
 
     // Initialise the JOYn runtime
-    QString pathToMessagingSettings(dir + QString("/resources/radio-app-provider.settings"));
-    QString pathToLibJoynrSettings(dir +
-                                   QString("/resources/radio-app-provider.libjoynr.settings"));
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(
-            TypeUtil::toStd(pathToLibJoynrSettings), TypeUtil::toStd(pathToMessagingSettings));
+    std::string pathToMessagingSettings(dir + "/resources/radio-app-provider.settings");
+    std::string pathToLibJoynrSettings(dir + "/resources/radio-app-provider.libjoynr.settings");
+    JoynrRuntime* runtime =
+            JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
 
     // create provider instance
     std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
@@ -76,9 +68,8 @@ int main(int argc, char* argv[])
     runtime->registerProvider<vehicle::RadioProvider>(providerDomain, provider);
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
-            [logger](const joynr::exceptions::ProviderRuntimeException& exception) {
-        MyRadioHelper::prettyLog(
-                logger, QString("Exception: %1").arg(TypeUtil::toQt(exception.getMessage())));
+            [&](const joynr::exceptions::ProviderRuntimeException& exception) {
+        MyRadioHelper::prettyLog(logger, "Exception: " + exception.getMessage());
     };
 
     // Run until the user hits q
@@ -96,11 +87,11 @@ int main(int argc, char* argv[])
             break;
         default:
             MyRadioHelper::prettyLog(logger,
-                                     QString("USAGE press\n"
-                                             " q\tto quit\n"
-                                             " s\tto shuffle stations\n"
-                                             " w\tto fire weak signal broadcast\n"
-                                             " n\tto fire new station discovered broadcast"));
+                                     "USAGE press\n"
+                                     " q\tto quit\n"
+                                     " s\tto shuffle stations\n"
+                                     " w\tto fire weak signal broadcast\n"
+                                     " n\tto fire new station discovered broadcast");
             break;
         }
     }
@@ -109,6 +100,5 @@ int main(int argc, char* argv[])
     runtime->unregisterProvider<vehicle::RadioProvider>(providerDomain, provider);
 
     delete runtime;
-    delete logger;
     return 0;
 }

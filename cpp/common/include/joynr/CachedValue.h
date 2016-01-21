@@ -19,10 +19,12 @@
 #ifndef CACHEDVALUE_H
 #define CACHEDVALUE_H
 
-#include <cinttypes>
+#include <chrono>
 
 namespace joynr
 {
+
+using TimeStamp = std::chrono::time_point<std::chrono::system_clock>;
 
 template <class T>
 class CachedValue
@@ -30,41 +32,35 @@ class CachedValue
 
 public:
     CachedValue<T>();
-    CachedValue<T>(const CachedValue<T>& other);
-    CachedValue<T>(T value, int64_t timestamp);
+    CachedValue<T>(const CachedValue<T>&) = default;
+    CachedValue<T>(T value, TimeStamp timestamp);
 
     T getValue();
-    int64_t getTimestamp();
+    TimeStamp getTimestamp();
 
-    CachedValue<T>& operator=(const CachedValue<T>& other);
+    CachedValue<T>& operator=(const CachedValue<T>&) = default;
     bool operator==(const CachedValue<T>& other) const;
     bool operator!=(const CachedValue<T>& other) const;
 
 private:
     T value;
-    int64_t timestamp;
+    TimeStamp timestamp;
 };
 
 template <class T>
 CachedValue<T>::CachedValue()
-        : value(T()), timestamp(0)
+        : value(T()), timestamp(TimeStamp::min())
 {
 }
 
 template <class T>
-CachedValue<T>::CachedValue(const CachedValue<T>& other)
-        : value(other.value), timestamp(other.timestamp)
-{
-}
-
-template <class T>
-CachedValue<T>::CachedValue(T value, int64_t timestamp)
+CachedValue<T>::CachedValue(T value, TimeStamp timestamp)
         : value(value), timestamp(timestamp)
 {
 }
 
 template <class T>
-int64_t CachedValue<T>::getTimestamp()
+TimeStamp CachedValue<T>::getTimestamp()
 {
     return timestamp;
 }
@@ -78,24 +74,13 @@ T CachedValue<T>::getValue()
 template <class T>
 bool CachedValue<T>::operator==(const CachedValue<T>& other) const
 {
-    if (other.value == value) {
-        return true;
-    }
-    return false;
+    return other.value == value;
 }
 
 template <class T>
 bool CachedValue<T>::operator!=(const CachedValue<T>& other) const
 {
     return !(*this == other);
-}
-
-template <class T>
-CachedValue<T>& CachedValue<T>::operator=(const CachedValue<T>& other)
-{
-    this->value = other.value;
-    this->timestamp = other.timestamp;
-    return *this;
 }
 
 } // namespace joynr

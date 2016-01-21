@@ -55,7 +55,7 @@ public:
      *
      * @param requestCode What the RequestStatus will be initialised to.
      */
-    RequestStatus(RequestStatusCode requestCode);
+    explicit RequestStatus(RequestStatusCode requestCode);
 
     /**
      * @brief Creates a RequestStatus with the supplied status code and description.

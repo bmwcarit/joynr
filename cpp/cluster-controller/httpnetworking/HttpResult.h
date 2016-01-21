@@ -23,7 +23,7 @@
 #include <QMultiMap>
 #include <string>
 #include <QByteArray>
-
+#include <cstdint>
 #include <memory>
 
 namespace joynr
@@ -37,22 +37,22 @@ namespace joynr
 class JOYNRCLUSTERCONTROLLER_EXPORT HttpResult
 {
 public:
-    HttpResult(long curlError,
-               int statusCode,
+    HttpResult(std::int32_t curlError,
+               std::int32_t statusCode,
                QByteArray* body,
                QMultiMap<std::string, std::string>* headers);
-    ~HttpResult();
+    ~HttpResult() = default;
 
     bool isCurlError() const;
-    int getCurlError() const;
-    int getStatusCode() const;
+    std::int32_t getCurlError() const;
+    std::int32_t getStatusCode() const;
     std::string getErrorMessage() const;
     const QByteArray& getBody() const;
     const QMultiMap<std::string, std::string>& getHeaders() const;
 
 private:
-    int curlError;
-    int statusCode;
+    std::int32_t curlError;
+    std::int32_t statusCode;
     std::shared_ptr<QByteArray> body;
     std::shared_ptr<QMultiMap<std::string, std::string>> headers;
 };

@@ -21,8 +21,6 @@
 #include "joynr/IAttributeListener.h"
 #include "joynr/IBroadcastListener.h"
 
-#include <QVariant>
-
 namespace joynr
 {
 
@@ -36,7 +34,7 @@ AbstractJoynrProvider::~AbstractJoynrProvider()
     // Delete all attribute listeners
     for (auto& mapEntry : attributeListeners) {
         const std::vector<IAttributeListener*>& listeners(mapEntry.second);
-        foreach (IAttributeListener* listener, listeners) {
+        for (IAttributeListener* listener : listeners) {
             delete listener;
         }
     }
@@ -60,16 +58,13 @@ void AbstractJoynrProvider::unregisterAttributeListener(const std::string& attri
     WriteLocker locker(lock);
     std::vector<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
-    // Find and delete the attribute listener
-    auto it = listeners.begin();
-    while (it != listeners.end()) {
-        if (*it == attributeListener) {
-            IAttributeListener* listener = *it;
-            it = listeners.erase(it);
-            delete listener;
-        } else {
-            ++it;
-        }
+    auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), attributeListener);
+    assert(listenerIt != listeners.cend());
+    delete *listenerIt;
+    listeners.erase(listenerIt);
+
+    if (listeners.empty()) {
+        attributeListeners.erase(attributeName);
     }
 }
 
@@ -78,11 +73,13 @@ void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attribute
 {
     ReadLocker locker(lock);
 
-    const std::vector<IAttributeListener*>& listeners = attributeListeners[attributeName];
+    if (attributeListeners.find(attributeName) != attributeListeners.cend()) {
+        const std::vector<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
-    // Inform all the attribute listeners for this attribute
-    for (IAttributeListener* listener : listeners) {
-        listener->attributeValueChanged(value);
+        // Inform all the attribute listeners for this attribute
+        for (IAttributeListener* listener : listeners) {
+            listener->attributeValueChanged(value);
+        }
     }
 }
 
@@ -103,6 +100,10 @@ void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broad
     assert(listenerIt != listeners.cend());
     delete *listenerIt;
     listeners.erase(listenerIt);
+
+    if (listeners.empty()) {
+        broadcastListeners.erase(broadcastName);
+    }
 }
 
 void AbstractJoynrProvider::fireBroadcast(const std::string& broadcastName,

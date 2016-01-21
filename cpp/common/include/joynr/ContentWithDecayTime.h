@@ -21,7 +21,7 @@
 
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/DispatcherUtils.h"
-#include <stdint.h>
+#include <cstdint>
 
 namespace joynr
 {

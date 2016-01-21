@@ -21,23 +21,19 @@
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <map>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <functional>
-
-using namespace std::chrono;
+#include <chrono>
 
 namespace joynr
 {
 class TimerData;
-namespace joynr_logging
-{
-class Logger;
-}
 /**
  * @class Timer
  * @brief Implementation of a single threaded timer container
@@ -46,7 +42,7 @@ class JOYNRCOMMON_EXPORT Timer
 {
 public:
     /*! Identifier for an active timer */
-    typedef uint64_t TimerId;
+    typedef std::uint64_t TimerId;
 
     /**
      * @brief Constructor
@@ -75,7 +71,7 @@ public:
      */
     TimerId addTimer(std::function<void(joynr::Timer::TimerId)> onTimerExpired,
                      std::function<void(joynr::Timer::TimerId)> onActiveTimerRemoved,
-                     uint64_t msToBeExpired,
+                     std::uint64_t msToBeExpired,
                      bool periodic = false);
 
     /**
@@ -99,13 +95,13 @@ private:
 
 private:
     /*! Logger */
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(Timer);
 
     /*! Last published ID to be increased by one for every new timer */
     TimerId currentId;
 
     /*! Sorted map by absolute time_point of active timers */
-    std::map<const system_clock::time_point, TimerData*> timers;
+    std::map<const std::chrono::system_clock::time_point, TimerData*> timers;
 
     /*! Wait condition used as a timer */
     std::condition_variable waitCondition;

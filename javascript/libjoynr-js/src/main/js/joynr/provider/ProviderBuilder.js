@@ -27,7 +27,6 @@ define("joynr/provider/ProviderBuilder", [
     "joynr/provider/ProviderAttributeWrite",
     "joynr/provider/ProviderOperation",
     "joynr/provider/ProviderEvent",
-    "joynr/TypesEnum",
     "joynr/util/uuid"
 ], function(
         ProviderAttributeNotifyReadWrite,
@@ -39,7 +38,6 @@ define("joynr/provider/ProviderBuilder", [
         ProviderAttributeWrite,
         ProviderOperation,
         ProviderEvent,
-        TypesEnum,
         uuid) {
 
     var dependencies = {
@@ -52,7 +50,6 @@ define("joynr/provider/ProviderBuilder", [
         ProviderAttributeWrite : ProviderAttributeWrite,
         ProviderOperation : ProviderOperation,
         ProviderEvent : ProviderEvent,
-        TypesEnum : TypesEnum,
         uuid : uuid
     };
     /**

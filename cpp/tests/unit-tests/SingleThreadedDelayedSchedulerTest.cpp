@@ -17,26 +17,19 @@
  * #L%
  */
 #include "gtest/gtest.h"
-#include "joynr/joynrlogging.h"
 
 #include "joynr/SingleThreadedDelayedScheduler.h"
 
 #include "utils/MockObjects.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 #include <chrono>
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr_logging;
 
 using ::testing::StrictMock;
-
-namespace SingleThreadedDelayedSchedulerTest
-{
-Logger* logger = Logging::getInstance()->getLogger("MSG", "SingleThreadedDelayedSchedulerTest");
-}
 
 TEST(SingleThreadedDelayedSchedulerTest, startAndShutdownWithoutWork)
 {
@@ -102,31 +95,13 @@ TEST(SingleThreadedDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExp
     scheduler.shutdown();
 }
 
-TEST(SingleThreadedDelayedSchedulerTest, testRunnableWithoutDelay)
-{
-    SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", std::chrono::milliseconds::zero());
-
-    StrictMock<MockRunnableWithAccuracy> runnable1(false, 0);
-
-    EXPECT_CALL(runnable1, runCalled()).Times(1);
-    EXPECT_CALL(runnable1, runCalledInTime()).Times(1);
-
-    scheduler.schedule(&runnable1, std::chrono::milliseconds::zero());
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
-
-    scheduler.shutdown();
-
-    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
-}
-
 TEST(SingleThreadedDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 {
     SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", std::chrono::milliseconds::zero());
 
     StrictMock<MockRunnableWithAccuracy> runnable1(false, 5);
 
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
+    DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -145,7 +120,7 @@ TEST(SingleThreadedDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorO
 
     StrictMock<MockRunnableWithAccuracy>* runnable1 = new StrictMock<MockRunnableWithAccuracy>(true, 5u);
 
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
+    DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

@@ -18,8 +18,13 @@ set(
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+)
+
+set(
+    JoynrClusterController_SYS_INCLUDE_DIRECTORIES
+    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
+    ${Qt5Core_INCLUDE_DIRECTORY}
 )
 
 set(
@@ -27,7 +32,7 @@ set(
     Joynr
     JoynrCommon
     ${CURL_LIBRARIES}
-    Qt5::Sql
+    ${Qt5Sql_LIBRARIES}
 )
 
 set(
@@ -118,6 +123,11 @@ include_directories(
         ${JoynrClusterController_INCLUDE_DIRECTORIES}
 )
 
+include_directories(
+    SYSTEM
+    ${JoynrClusterController_SYS_INCLUDE_DIRECTORIES}
+)
+
 add_library(
     JoynrClusterController
     SHARED
@@ -137,6 +147,7 @@ set_target_properties(
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}"
+    AUTOMOC TRUE
 )
 
 generate_export_header(

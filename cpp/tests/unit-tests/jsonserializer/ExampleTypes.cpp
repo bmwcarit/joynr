@@ -48,30 +48,30 @@ static const bool isExampleMasterAccessControlEntrySerializerRegistered =
 
 // A deserializer for the empty type -------------------------------------------
 template <>
-void ClassDeserializer<SomeType>::deserialize(SomeType& t, IObject& o)
+void ClassDeserializerImpl<SomeType>::deserialize(SomeType& t, IObject& o)
 {
 }
 
 template <>
-void ClassSerializer<SomeType>::serialize(const SomeType& t, std::ostream& stream)
+void ClassSerializerImpl<SomeType>::serialize(const SomeType& t, std::ostream& stream)
 {
     // Empty
 }
 
 // A deserializer for the simple type ------------------------------------------
 template <>
-void ClassDeserializer<SomeOtherType>::deserialize(SomeOtherType& t, IObject& o)
+void ClassDeserializerImpl<SomeOtherType>::deserialize(SomeOtherType& t, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "a") {
-            t.setA(field.value().getIntType<int32_t>());
+            t.setA(field.value().getIntType<std::int32_t>());
         }
     }
 }
 
 template <>
-void ClassSerializer<SomeOtherType>::serialize(const SomeOtherType& t, std::ostream& stream)
+void ClassSerializerImpl<SomeOtherType>::serialize(const SomeOtherType& t, std::ostream& stream)
 {
     stream << "{";
     stream << "\"_typeName\":\"" << JoynrTypeId<SomeOtherType>::getTypeName() << "\",";
@@ -97,7 +97,7 @@ ExamplePermission::Enum convertToExamplePermissionEnum(IValue& value)
 }
 
 template <>
-void ClassDeserializer<ExampleMasterAccessControlEntry>::deserialize(
+void ClassDeserializerImpl<ExampleMasterAccessControlEntry>::deserialize(
         ExampleMasterAccessControlEntry& t, IObject& o)
 {
     while (o.hasNextField()) {
@@ -116,7 +116,7 @@ void ClassDeserializer<ExampleMasterAccessControlEntry>::deserialize(
 }
 
 template <>
-void ClassSerializer<ExampleMasterAccessControlEntry>::serialize(const ExampleMasterAccessControlEntry& t, std::ostream& stream)
+void ClassSerializerImpl<ExampleMasterAccessControlEntry>::serialize(const ExampleMasterAccessControlEntry& t, std::ostream& stream)
 {
     // TODO: implement
 }

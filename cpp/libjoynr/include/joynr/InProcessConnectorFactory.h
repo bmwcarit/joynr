@@ -68,9 +68,7 @@ public:
                               IRequestCallerDirectory* requestCallerDirectory);
 
     bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
-    virtual ~InProcessConnectorFactory()
-    {
-    }
+    virtual ~InProcessConnectorFactory() = default;
 
     template <class T>
     T* create(const std::string& proxyParticipantId, const std::string& providerParticipantId)

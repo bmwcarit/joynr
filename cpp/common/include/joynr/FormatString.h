@@ -86,5 +86,5 @@ private:
     template <class T>
     unsigned numDigits(T number);
 };
-}
+} // namespace joynr
 #endif // FORMATSTRING_H

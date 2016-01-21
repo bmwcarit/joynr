@@ -31,13 +31,13 @@ namespace joynr
 
 // Serializes a PeriodicSubscriptionQos
 template <>
-void ClassSerializer<PeriodicSubscriptionQos>::serialize(
+void ClassSerializerImpl<PeriodicSubscriptionQos>::serialize(
         const PeriodicSubscriptionQos& qos,
         std::ostream& o);
 
 // Deserializes a PeriodicSubscriptionQos
 template <>
-void ClassDeserializer<PeriodicSubscriptionQos>::deserialize(
+void ClassDeserializerImpl<PeriodicSubscriptionQos>::deserialize(
         PeriodicSubscriptionQos& qos,
         IObject& o);
 

@@ -21,6 +21,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/Logger.h"
 
 #include <deque>
 #include <mutex>
@@ -30,10 +31,7 @@
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-}
+
 class Runnable;
 
 /**
@@ -73,10 +71,10 @@ public:
 
     /**
      * @brief Take some work
-     * @return Work to be done or @c NULL if scheduler is shutting down
+     * @return Work to be done or @c nullptr if scheduler is shutting down
      *
      * @note This method will block until work is available or the scheduler is
-     *      going to shutdown. If so, this method will return @c NULL.
+     *      going to shutdown. If so, this method will return @c nullptr.
      */
     Runnable* take();
 
@@ -92,7 +90,7 @@ private:
 
 private:
     /*! Logger */
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(BlockingQueue);
 
     /*! Flag indicating scheduler is shutting down */
     std::atomic_bool stoppingScheduler;
@@ -106,5 +104,5 @@ private:
     /*! Mutual exclusion of the @ref queue and for @ref condition */
     mutable std::mutex conditionMutex;
 };
-}
+} // namespace joynr
 #endif // JOYNR_SCHEDULER_H

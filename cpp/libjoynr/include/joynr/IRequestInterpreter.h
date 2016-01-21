@@ -37,9 +37,7 @@ class RequestCaller;
 class IRequestInterpreter
 {
 public:
-    virtual ~IRequestInterpreter()
-    {
-    }
+    virtual ~IRequestInterpreter() = default;
 
     /**
       * Executes method @param methodName with parameters @param methodParams

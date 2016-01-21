@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include "PrettyPrint.h"
-#include <QtDebug>
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/types/Localisation/GpsLocation.h"
@@ -56,20 +55,6 @@ namespace system {
 }
 }
 
-void PrintTo(const QChar& value, ::std::ostream* os) {
-     *os << value.toLatin1();
-}
-
-void PrintTo(const QByteArray& value, std::ostream* os)
-{
-    *os << value.data();
-}
-
-void PrintTo(const QUrl& value, std::ostream* os)
-{
-    *os << value.toString().toStdString();
-}
-
  void PrintTo(const RequestStatusCode& value, ::std::ostream* os) {
      *os << value.toString() << std::endl;
  }
@@ -80,5 +65,5 @@ void PrintTo(const QUrl& value, std::ostream* os)
 
  void PrintTo(const JoynrMessage& value, ::std::ostream* os)
  {
-     *os << joynr::JsonSerializer::serialize(value);
+     *os << JsonSerializer::serialize(value);
  }

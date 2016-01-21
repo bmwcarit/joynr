@@ -76,7 +76,7 @@ public:
 	//They have default implementation for pushing Providers and can be overwritten by pulling Providers.
 
 	/** @brief Destructor */
-	virtual ~«interfaceName»Provider();
+	~«interfaceName»Provider() override;
 
 	static const std::string& INTERFACE_NAME();
 

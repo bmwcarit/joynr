@@ -22,7 +22,6 @@
 joynrTestRequire(
         "joynr/provider/TestProviderAttribute",
         [
-            "joynr/TypesEnum",
             "joynr/provider/ProviderAttribute",
             "joynr/provider/ProviderAttributeNotifyReadWrite",
             "joynr/provider/ProviderAttributeNotifyRead",
@@ -37,7 +36,6 @@ joynrTestRequire(
             "joynr/datatypes/exampleTypes/Country"
         ],
         function(
-                TypesEnum,
                 ProviderAttribute,
                 ProviderAttributeNotifyReadWrite,
                 ProviderAttributeNotifyRead,
@@ -87,49 +85,49 @@ joynrTestRequire(
                                             provider,
                                             implementation,
                                             "isOn",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "NOTIFYREADWRITE");
                             isOnNotifyReadOnly =
                                     new ProviderAttribute(
                                             provider,
                                             implementation,
                                             "isOnNotifyReadOnly",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "NOTIFYREADONLY");
                             isOnNotifyWriteOnly =
                                     new ProviderAttribute(
                                             provider,
                                             implementation,
                                             "isOnNotifyWriteOnly",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "NOTIFYWRITEONLY");
                             isOnNotify =
                                     new ProviderAttribute(
                                             provider,
                                             implementation,
                                             "isOnNotify",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "NOTIFY");
                             isOnReadWrite =
                                     new ProviderAttribute(
                                             provider,
                                             implementation,
                                             "isOnReadWrite",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "READWRITE");
                             isOnReadOnly =
                                     new ProviderAttribute(
                                             provider,
                                             implementation,
                                             "isOnReadOnly",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "READONLY");
                             isOnWriteOnly =
                                     new ProviderAttribute(
                                             provider,
                                             implementation,
                                             "isOnWriteOnly",
-                                            TypesEnum.BOOL,
+                                            "Boolean",
                                             "WRITEONLY");
 
                             isOnProviderAttributeNotifyReadWrite =
@@ -137,43 +135,43 @@ joynrTestRequire(
                                             provider,
                                             implementation,
                                             "isOnProviderAttributeNotifyReadWrite",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProviderAttributeNotifyRead =
                                     new ProviderAttributeNotifyRead(
                                             provider,
                                             implementation,
                                             "isOnProviderAttributeNotifyRead",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProviderAttributeNotifyWrite =
                                     new ProviderAttributeNotifyWrite(
                                             provider,
                                             implementation,
                                             "isOnProviderAttributeNotifyWrite",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProviderAttributeNotify =
                                     new ProviderAttributeNotify(
                                             provider,
                                             implementation,
                                             "isOnProviderAttributeNotify",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProviderAttributeReadWrite =
                                     new ProviderAttributeReadWrite(
                                             provider,
                                             implementation,
                                             "isOnProviderAttributeReadWrite",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProviderAttributeRead =
                                     new ProviderAttributeRead(
                                             provider,
                                             implementation,
                                             "isOnProviderAttributeRead",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
                             isOnProviderAttributeWrite =
                                     new ProviderAttributeWrite(
                                             provider,
                                             implementation,
                                             "isOnProviderAttributeWrite",
-                                            TypesEnum.BOOL);
+                                            "Boolean");
 
                             allAttributes = [
                                 isOn,

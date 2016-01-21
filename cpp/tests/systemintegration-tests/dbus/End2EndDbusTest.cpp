@@ -38,6 +38,7 @@
 
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/Logger.h"
 
 using namespace ::testing;
 
@@ -247,8 +248,8 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
     testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 }
 
 TEST_F(End2EndDbusTest, performance_sendManyRequests) {
@@ -289,6 +290,6 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
     //check if all Messages were received:
     EXPECT_EQ(numberOfMessages, successFullMessages);
-    Logger* logger = Logging::getInstance()->getLogger("TEST", "End2EndDbusTest");
-    LOG_INFO(logger,FormatString("Required Time for %1 Messages: %2").arg(numberOfMessages).arg((stopTime - startTime)).str());
+    Logger logger("End2EndDbusTest");
+    JOYNR_LOG_INFO(logger, "Required Time for {} Messages: ", numberOfMessages, (stopTime - startTime) );
 }

@@ -36,8 +36,6 @@ class JoynrMessage;
 // restore the old GCC diagnostic state
 #pragma GCC diagnostic pop
 
-#include <QString>
-
 namespace joynr
 {
 

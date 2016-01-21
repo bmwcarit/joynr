@@ -23,7 +23,6 @@
 
 #include "joynr/Variant.h"
 
-#include <QObject>
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,16 +30,8 @@
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT Request : public QObject
+class JOYNRCOMMON_EXPORT Request
 {
-    Q_OBJECT
-
-    Q_PROPERTY(std::string requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
-    Q_PROPERTY(std::string methodName READ getMethodName WRITE setMethodName)
-    Q_PROPERTY(std::vector<Variant> params READ getParams WRITE setParams)
-    Q_PROPERTY(std::vector<std::string> paramDatatypes READ getParamDatatypes WRITE
-                       setParamDatatypes)
-
 public:
     Request();
 
@@ -72,7 +63,4 @@ private:
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::Request)
-Q_DECLARE_METATYPE(std::shared_ptr<joynr::Request>)
 #endif // REQUEST_H

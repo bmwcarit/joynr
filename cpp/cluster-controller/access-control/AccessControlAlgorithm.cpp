@@ -29,14 +29,6 @@ namespace joynr
 
 using namespace infrastructure::DacTypes;
 
-AccessControlAlgorithm::AccessControlAlgorithm()
-{
-}
-
-AccessControlAlgorithm::~AccessControlAlgorithm()
-{
-}
-
 Permission::Enum AccessControlAlgorithm::getConsumerPermission(
         const Optional<MasterAccessControlEntry>& masterOptional,
         const Optional<MasterAccessControlEntry>& mediatorOptional,

@@ -25,10 +25,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* InProcessDispatcher::logger =
-        Logging::getInstance()->getLogger("MSG", "InProcessDispatcher");
+INIT_LOGGER(InProcessDispatcher);
 
 InProcessDispatcher::InProcessDispatcher()
         : requestCallerDirectory("InProcessDispatcher-RequestCallerDirectory"),
@@ -41,7 +38,7 @@ InProcessDispatcher::InProcessDispatcher()
 
 InProcessDispatcher::~InProcessDispatcher()
 {
-    LOG_TRACE(logger, "Deleting InProcessDispatcher");
+    JOYNR_LOG_TRACE(logger, "Deleting InProcessDispatcher");
 }
 
 void InProcessDispatcher::addReplyCaller(const std::string& requestReplyId,
@@ -72,7 +69,7 @@ void InProcessDispatcher::removeRequestCaller(const std::string& participantId)
 void InProcessDispatcher::receive(const JoynrMessage& message)
 {
     std::ignore = message;
-    LOG_FATAL(logger, "Not implemented");
+    JOYNR_LOG_FATAL(logger, "Not implemented");
     assert(false);
 }
 

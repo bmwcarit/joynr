@@ -37,10 +37,8 @@ public:
     /**
      * Persist participant ids using the given file
      */
-    ParticipantIdStorage(const std::string& filename);
-    virtual ~ParticipantIdStorage()
-    {
-    }
+    explicit ParticipantIdStorage(const std::string& filename);
+    virtual ~ParticipantIdStorage() = default;
 
     static const std::string& STORAGE_FORMAT_STRING();
 

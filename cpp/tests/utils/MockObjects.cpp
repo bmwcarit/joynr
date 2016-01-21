@@ -19,15 +19,9 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/TimeUtils.h"
 
-#include "joynr/joynrlogging.h"
-
 using namespace joynr;
-using namespace joynr_logging;
 
-namespace MockObjects
-{
-Logger* logger = Logging::getInstance()->getLogger("MSG", "MockObjects");
-}
+INIT_LOGGER(MockGpsProvider);
 
 const std::string& IMockProviderInterface::INTERFACE_NAME()
 {
@@ -40,10 +34,12 @@ std::string MockProvider::getInterfaceName() const
     return INTERFACE_NAME();
 }
 
+INIT_LOGGER(MockRunnableWithAccuracy);
+
 MockRunnableWithAccuracy::MockRunnableWithAccuracy(
     bool deleteMe,
-    const uint64_t delay)
-    : joynr::Runnable(deleteMe),
+    const std::uint64_t delay)
+    : Runnable(deleteMe),
       est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
 {
 }
@@ -57,13 +53,13 @@ void MockRunnableWithAccuracy::run()
 {
     runCalled();
 
-    const uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
+    const std::uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
 
-    const uint64_t diff = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
-    LOG_TRACE(MockObjects::logger, FormatString("Runnable run() is called").str());
-    LOG_TRACE(MockObjects::logger, FormatString(" ETA        : %1").arg(est_ms).str());
-    LOG_TRACE(MockObjects::logger, FormatString(" current    : %1").arg(now_ms).str());
-    LOG_TRACE(MockObjects::logger, FormatString(" difference : %1").arg(diff).str());
+    const std::uint64_t diff = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
+    JOYNR_LOG_TRACE(logger, "Runnable run() is called");
+    JOYNR_LOG_TRACE(logger, " ETA        : {}",est_ms);
+    JOYNR_LOG_TRACE(logger, " current    : {}",now_ms);
+    JOYNR_LOG_TRACE(logger, " difference : {}",diff);
 
     if (diff <= timerAccuracyTolerance_ms)
     {

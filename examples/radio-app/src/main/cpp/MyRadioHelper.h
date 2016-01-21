@@ -19,8 +19,8 @@
 #ifndef MY_RADIO_HELPER_H
 #define MY_RADIO_HELPER_H
 
-#include "joynr/joynrlogging.h"
-#include <QString>
+#include "joynr/Logger.h"
+#include <string>
 
 /**
  * A helper class for use by the MyRadio consumer and provider applications
@@ -35,16 +35,18 @@ public:
      */
     static void pressQToContinue();
 
+    static std::string getAbsolutePathToExectuable(const std::string& executableName);
+
     static int getch();
 
     static const std::string& MISSING_NAME();
     /**
      * Output a prominent log message at level INFO
      */
-    static void prettyLog(joynr::joynr_logging::Logger* logger, const QString& message);
+    static void prettyLog(joynr::Logger& logger, const std::string& message);
 
 private:
-    static joynr::joynr_logging::Logger* logger;
+    ADD_LOGGER(MyRadioHelper);
 };
 
 #endif

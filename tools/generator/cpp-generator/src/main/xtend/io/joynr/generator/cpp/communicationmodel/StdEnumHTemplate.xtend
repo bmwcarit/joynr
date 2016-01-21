@@ -55,7 +55,7 @@ class StdEnumHTemplate implements EnumTemplate {
 #include "joynr/Variant.h"
 
 «IF type.hasExtendsDeclaration»
-	#include "«type.extendedType.includeOf»"
+	#include «type.extendedType.includeOf»
 
 «ENDIF»
 «getNamespaceStarter(type, true)»
@@ -68,7 +68,7 @@ struct «getDllExportMacro()»«typeName» {
 	/**
 	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
 	 */
-	enum «getNestedEnumName()» : uint32_t {
+	enum «getNestedEnumName()» : std::uint32_t {
 		«var ordinal = -1»
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type) SEPARATOR ','»
 			/**
@@ -113,7 +113,7 @@ struct «getDllExportMacro()»«typeName» {
 	 * @param «typeName.toFirstLower»Value The enum
 	 * @return The ordinal number representing the enum
 	 */
-	static uint32_t getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
+	static std::uint32_t getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
 
 	/**
 	 * @brief Get the typeName of the enumeration type
@@ -145,26 +145,26 @@ inline std::vector<«type.typeName»> joynr::Util::valueOf<std::vector<«type.ty
 {
 	return joynr::Util::convertVariantVectorToEnumVector<«type.typeNameOfContainingClass»>(variant.get<std::vector<Variant>>());
 }
-}
+} // namespace «joynrGenerationPrefix»
 
 namespace std {
 
 /**
- * @brief Function object that implements a hash function for «type.buildPackagePath("::", true)»«typeName».
+ * @brief Function object that implements a hash function for «type.buildPackagePath("::", true)»::«typeName».
  *
  * Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
  * std::unordered_map, std::unordered_multimap as default hash function.
  */
 template<>
-struct hash<«type.buildPackagePath("::", true)»«typeName»::«getNestedEnumName()»> {
+struct hash<«type.buildPackagePath("::", true)»::«typeName»::«getNestedEnumName()»> {
 
 	/**
 	 * @brief method overriding default implementation of operator ()
 	 * @param «typeName.toFirstLower»Value the operators argument
 	 * @return the ordinal number representing the enum value
 	 */
-	std::size_t operator()(const «type.buildPackagePath("::", true)»«typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) const {
-		return «type.buildPackagePath("::", true)»«typeName»::getOrdinal(«typeName.toFirstLower»Value);
+	std::size_t operator()(const «type.buildPackagePath("::", true)»::«typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) const {
+		return «type.buildPackagePath("::", true)»::«typeName»::getOrdinal(«typeName.toFirstLower»Value);
 	}
 };
 } // namespace std

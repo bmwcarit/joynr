@@ -37,6 +37,7 @@ joynrTestRequire(
             "joynr/system/RoutingTypes/CommonApiDbusAddress",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/RadioProvider",
+            "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provisioning/provisioning_libjoynr",
@@ -57,6 +58,7 @@ joynrTestRequire(
                 CommonApiDbusAddress,
                 RadioProxy,
                 RadioProvider,
+                RadioStation,
                 Country,
                 StringMap,
                 provisioning,
@@ -306,6 +308,8 @@ joynrTestRequire(
                                     var numberOfStations = 0;
                                     var failingSyncAttribute = 0;
                                     var failingAsyncAttribute = 0;
+                                    var typeDefForStruct = null;
+                                    var typeDefForPrimitive = null;
 
                                     var providerRegistered, providerUnRegistered, proxyResolved;
 
@@ -403,6 +407,22 @@ joynrTestRequire(
                                         return failingAsyncAttribute;
                                     });
 
+                                    radioProvider.typeDefForStruct.registerSetter(function(value) {
+                                        typeDefForStruct = value;
+                                    });
+
+                                    radioProvider.typeDefForStruct.registerGetter(function(value) {
+                                        return typeDefForStruct;
+                                    });
+
+                                    radioProvider.typeDefForPrimitive.registerSetter(function(value) {
+                                        typeDefForPrimitive = value;
+                                    });
+
+                                    radioProvider.typeDefForPrimitive.registerGetter(function(value) {
+                                        return typeDefForPrimitive;
+                                    });
+
                                     // register operation functions
                                     radioProvider.addFavoriteStation.registerOperation(function(
                                             opArgs) {
@@ -473,6 +493,26 @@ joynrTestRequire(
                                         };
                                     });
 
+                                    radioProvider.methodWithByteBuffer.registerOperation(function(opArgs) {
+                                        /* the dummy implementation returns the incoming byteBuffer
+                                         */
+
+                                        return {
+                                            result: opArgs.input
+                                        };
+                                    });
+
+                                    // register operation function "methodWithTypeDef"
+                                    radioProvider.methodWithTypeDef.registerOperation(function(opArgs) {
+                                        /* the dummy implementation returns the incoming data
+                                         */
+
+                                        return {
+                                            typeDefStructOutput: opArgs.typeDefStructInput,
+                                            typeDefPrimitiveOutput: opArgs.typeDefPrimitiveInput
+                                        };
+                                    });
+
                                     radioProvider.methodProvidedImpl.registerOperation(function(
                                             opArgs) {
                                         return {
@@ -481,11 +521,31 @@ joynrTestRequire(
                                     });
 
                                     radioProvider.triggerBroadcasts.registerOperation(function(opArgs) {
-                                        var i, outputParams = radioProvider.broadcastWithEnum.createBroadcastOutputParameters();
-                                        outputParams.setEnumOutput(Country.CANADA);
-                                        outputParams.setEnumArrayOutput([Country.GERMANY, Country.ITALY]);
+                                        var i, outputParams, broadcast;
+                                        if (opArgs.broadcastName === "broadcastWithEnum") {
+                                            //broadcastWithEnum
+                                            broadcast = radioProvider.broadcastWithEnum;
+                                            outputParams = broadcast.createBroadcastOutputParameters();
+                                            outputParams.setEnumOutput(Country.CANADA);
+                                            outputParams.setEnumArrayOutput([Country.GERMANY, Country.ITALY]);
+                                        } else if (opArgs.broadcastName === "weakSignal"){
+                                            //weakSignal
+                                            broadcast = radioProvider.weakSignal;
+                                            outputParams = broadcast.createBroadcastOutputParameters();
+                                            outputParams.setRadioStation("radioStation");
+                                            outputParams.setByteBuffer([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
+                                        } else if (opArgs.broadcastName === "broadcastWithTypeDefs"){
+                                            //broadcastWithTypeDefs
+                                            broadcast = radioProvider.broadcastWithTypeDefs;
+                                            outputParams = broadcast.createBroadcastOutputParameters();
+                                            outputParams.setTypeDefStructOutput(new RadioStation({
+                                                name: "TestEnd2EndCommProviderWorker.broadcastWithTypeDefs.RadioStation",
+                                                byteBuffer: []
+                                            }));
+                                            outputParams.setTypeDefPrimitiveOutput(123456);
+                                        }
                                         for (i = 0; i < opArgs.times; i++) {
-                                            radioProvider.broadcastWithEnum.fire(outputParams);
+                                            broadcast.fire(outputParams);
                                         }
                                     });
 

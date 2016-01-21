@@ -19,8 +19,8 @@
 #include <gtest/gtest.h>
 
 #include "PrettyPrint.h"
-#include "joynr/joynrlogging.h"
 #include <string>
+#include <unordered_set>
 
 #include "joynr/types/TestTypes/Word.h"
 #include "joynr/types/TestTypes/Vowel.h"
@@ -54,6 +54,7 @@ public:
             word(TestTypes::Word()),
             wordArray({TestTypes::Word()}),
             stringMap(),
+            typeDefForTStruct(),
             tEverything1(
                     tInt8,
                     tUInt8,
@@ -74,7 +75,8 @@ public:
                     tStringArray,
                     word,
                     wordArray,
-                    stringMap
+                    stringMap,
+                    typeDefForTStruct
                 ),
             tBooleanExtended(false),
             tStringExtended("extended"),
@@ -99,47 +101,42 @@ public:
                     word,
                     wordArray,
                     stringMap,
+                    typeDefForTStruct,
                     tBooleanExtended,
                     tStringExtended)
     {}
 
-    virtual ~StdComplexDataTypeTest() {
-    }
+    virtual ~StdComplexDataTypeTest() = default;
 
 protected:
-    static joynr::joynr_logging::Logger* logger;
 
-    int8_t tInt8;
-    uint8_t tUInt8;
-    int16_t tInt16;
-    uint16_t tUInt16;
-    int32_t tInt32;
-    uint32_t tUInt32;
-    int64_t tInt64;
-    uint64_t tUInt64;
+    std::int8_t tInt8;
+    std::uint8_t tUInt8;
+    std::int16_t tInt16;
+    std::uint16_t tUInt16;
+    std::int32_t tInt32;
+    std::uint32_t tUInt32;
+    std::int64_t tInt64;
+    std::uint64_t tUInt64;
     double tDouble;
     float tFloat;
     std::string tString;
     bool tBoolean;
-    std::vector<uint8_t> tByteBuffer;
-    std::vector<uint8_t>  tUInt8Array;
+    std::vector<std::uint8_t> tByteBuffer;
+    std::vector<std::uint8_t>  tUInt8Array;
     TestTypes::TEnum::Enum tEnum;
     std::vector<joynr::types::TestTypes::TEnum::Enum>  tEnumArray;
     std::vector<std::string>  tStringArray;
     TestTypes::Word word;
     std::vector<TestTypes::Word>  wordArray;
     TestTypes::TStringKeyMap stringMap;
+    TestTypes::TypeDefForTStruct typeDefForTStruct;
     TestTypes::TEverythingStruct tEverything1;
 
     bool tBooleanExtended;
     std::string tStringExtended;
     TestTypes::TEverythingExtendedStruct tEverythingExtended1;
 };
-
-joynr::joynr_logging::Logger* StdComplexDataTypeTest::logger(
-        joynr::joynr_logging::Logging::getInstance()->getLogger("TST", "StdComplexDataTypeTest")
-);
-
 
 TEST_F(StdComplexDataTypeTest, createComplexDataType) {
     EXPECT_EQ(tEverything1.getTBoolean(), tBoolean);
@@ -346,6 +343,7 @@ TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType) {
             word,
             wordArray,
             stringMap,
+            typeDefForTStruct,
             tBooleanExtended,
             tStringExtended,
             tStringExtendedExtended);
@@ -356,5 +354,23 @@ TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType) {
     // currently a compile error
     //    EXPECT_NE(tEverythingExtendedExtended, tEverythingExtended1);
 
+}
+
+TEST_F(StdComplexDataTypeTest, hashCodeImplementation) {
+    std::unordered_set<TestTypes::TEverythingExtendedStruct> unorderedSet;
+
+    auto returnedPair1 = unorderedSet.insert(tEverythingExtended1);
+    EXPECT_TRUE(returnedPair1.second);
+
+    auto returnedPair2 = unorderedSet.insert(tEverythingExtended1);
+    EXPECT_FALSE(returnedPair2.second);
+    EXPECT_EQ(unorderedSet.size(), 1);
+}
+
+TEST_F(StdComplexDataTypeTest, mapTypeListInitialization) {
+    TestTypes::TStringKeyMap map = {{"lorem", "ipsum"}, {"dolor", "sit"}};
+
+    EXPECT_EQ(map.size(), 2);
+    EXPECT_EQ(map["lorem"], "ipsum");
 }
 

@@ -20,7 +20,7 @@
 #define DUMMYPLATFORMSECURITYMANAGER_H_
 
 #include "joynr/IPlatformSecurityManager.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -28,20 +28,18 @@ namespace joynr
 class DummyPlatformSecurityManager : public IPlatformSecurityManager
 {
 public:
-    DummyPlatformSecurityManager();
+    DummyPlatformSecurityManager() = default;
 
-    virtual ~DummyPlatformSecurityManager()
-    {
-    }
+    ~DummyPlatformSecurityManager() override = default;
 
-    virtual std::string getCurrentProcessUserId() override;
-    virtual JoynrMessage sign(JoynrMessage message) override;
-    virtual bool validate(const JoynrMessage& message) const override;
-    virtual QByteArray encrypt(const QByteArray& unencryptedBytes) override;
-    virtual QByteArray decrypt(const QByteArray& encryptedBytes) override;
+    std::string getCurrentProcessUserId() override;
+    JoynrMessage sign(JoynrMessage message) override;
+    bool validate(const JoynrMessage& message) const override;
+    std::string encrypt(const std::string& unencryptedBytes) override;
+    std::string decrypt(const std::string& encryptedBytes) override;
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(DummyPlatformSecurityManager);
 };
 
 } // namespace joynr

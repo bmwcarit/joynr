@@ -23,20 +23,16 @@
 namespace joynr
 {
 
-MessagingQos::MessagingQos(const MessagingQos& other) : ttl(other.ttl)
+MessagingQos::MessagingQos(std::uint64_t ttl) : ttl(ttl)
 {
 }
 
-MessagingQos::MessagingQos(uint64_t ttl) : ttl(ttl)
-{
-}
-
-uint64_t MessagingQos::getTtl() const
+std::uint64_t MessagingQos::getTtl() const
 {
     return ttl;
 }
 
-void MessagingQos::setTtl(const uint64_t& ttl)
+void MessagingQos::setTtl(const std::uint64_t& ttl)
 {
     this->ttl = ttl;
 }

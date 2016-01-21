@@ -31,7 +31,7 @@ namespace joynr
 
 LibJoynrDbusRuntime::LibJoynrDbusRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
-          dbusMessageRouterAdapter(Q_NULLPTR),
+          dbusMessageRouterAdapter(nullptr),
           dbusSettings(new DbusSettings(*settings)),
           libjoynrMessagingServiceUrl()
 {

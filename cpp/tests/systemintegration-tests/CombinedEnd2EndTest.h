@@ -29,7 +29,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 
  /*
@@ -57,7 +57,7 @@ public:
     std::string domainName;
     joynr::Semaphore semaphore;
 
-    static joynr::joynr_logging::Logger* logger;
+    static joynr::Logger logger;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CombinedEnd2EndTest);

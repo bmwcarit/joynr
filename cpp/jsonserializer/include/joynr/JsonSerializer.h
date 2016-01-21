@@ -19,7 +19,7 @@
 #ifndef JSONSERIALIZER_H
 #define JSONSERIALIZER_H
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include <vector>
 #include <sstream>
 #include "joynr/Variant.h"
@@ -38,7 +38,7 @@ class JsonSerializer
 {
 public:
     /**
-     * @brief Serializes a QObject into JSON format.
+     * @brief Serializes a Variant into JSON format.
      *
      * @param variant the object to serialize.
      * @return std::string the serialized variant in JSON format, UTF-8 encoding.
@@ -76,9 +76,10 @@ public:
 
     template <class T>
     /**
-     * @brief Deserializes a QByteArray in JSON format to the given template type T.
+     * @brief Deserializes a json std::string in JSON format to the given template type T.
      *
-     * Template type T must inherit from QObject. The QByteArray must be a
+     * Template type T must be registered as Variant and supported by appropriate @ref ClassDeserializer.
+     * The json std::string must be a
      * valid JSON representation of the template type T.
      *
      * @param json The JSON representation of template type T.
@@ -118,7 +119,7 @@ public:
     }
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(JsonSerializer);
 };
 
 } // namespace joynr

@@ -1,0 +1,5 @@
+# blacklist file for undefined behaviour sanitizer
+# see http://clang.llvm.org/docs/SanitizerSpecialCaseList.html for more information
+
+# we intentionally use integer overflow in this function
+fun:*getTypeId_split*

@@ -3,7 +3,7 @@ package io.joynr.generator.js
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package io.joynr.generator.js
  * limitations under the License.
  */
 
-import io.joynr.generator.IJoynrGenerator
-import io.joynr.generator.js.communicationmodel.TypesGenerator
+import io.joynr.generator.AbstractJoynrGenerator
 import io.joynr.generator.js.communicationmodel.ErrorEnumTypesGenerator
+import io.joynr.generator.js.communicationmodel.TypesGenerator
 import io.joynr.generator.js.provider.ProviderGenerator
 import io.joynr.generator.js.proxy.ProxyGenerator
 import io.joynr.generator.js.util.GeneratorParameter
@@ -36,25 +36,14 @@ import org.franca.core.franca.FType
 
 import static com.google.common.base.Preconditions.*
 
-class JoynrJSGenerator implements IJoynrGenerator {
+class JoynrJSGenerator extends AbstractJoynrGenerator {
 
-	@Inject
-	private FrancaPersistenceManager francaPersistenceManager
-
-	@Inject
-	private GeneratorParameter parameters
-
-	@Inject
-	private extension ProxyGenerator
-
-	@Inject
-	private extension ProviderGenerator
-
-	@Inject
-	private extension TypesGenerator
-
-	@Inject
-	private extension ErrorEnumTypesGenerator
+	@Inject private FrancaPersistenceManager francaPersistenceManager
+	@Inject private GeneratorParameter parameters
+	@Inject private extension ProxyGenerator
+	@Inject private extension ProviderGenerator
+	@Inject private extension TypesGenerator
+	@Inject private extension ErrorEnumTypesGenerator
 
 	override getLanguageId() {
 		"javascript"

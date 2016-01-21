@@ -21,7 +21,7 @@
 
 #include "joynr/vehicle/RadioNewStationDiscoveredBroadcastFilter.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 using namespace joynr;
 
@@ -36,7 +36,7 @@ public:
             const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters);
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(GeocastBroadcastFilter);
 };
 
 #endif // GEOCASTBROADCASTFILTER_H

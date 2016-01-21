@@ -119,18 +119,18 @@ public:
 protected:
 
     /**
-     * @brief Get the value of the field as an int64_t, covers all int types
+     * @brief Get the value of the field as an std::int64_t, covers all int types
      * @return The value of the field or 0 if conversion
      *         was not possible
      */
-    virtual int64_t getInt64() const = 0;
+    virtual std::int64_t getInt64() const = 0;
 
     /**
-     * @brief Get the value of the field as an uint64_t, covers all uint types
+     * @brief Get the value of the field as an std::uint64_t, covers all uint types
      * @return The value of the field or 0 if conversion
      *         was not possible
      */
-    virtual uint64_t getUInt64() const = 0;
+    virtual std::uint64_t getUInt64() const = 0;
 
     /**
      * @brief Get the value of the field as an double, covers all double and float

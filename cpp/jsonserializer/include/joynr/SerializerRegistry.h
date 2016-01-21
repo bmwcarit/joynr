@@ -73,12 +73,12 @@ template <class T>
 class ClassMetaObjectType : public IMetaObject
 {
 public:
-    std::unique_ptr<IClassDeserializer> createClassDeserializer()
+    std::unique_ptr<IClassDeserializer> createClassDeserializer() override
     {
         return std::unique_ptr<IClassDeserializer>(new ClassDeserializer<T>());
     }
 
-    std::unique_ptr<IClassSerializer> createSerializer()
+    std::unique_ptr<IClassSerializer> createSerializer() override
     {
         return std::unique_ptr<IClassSerializer>(new ClassSerializer<T>());
     }
@@ -91,12 +91,12 @@ template <class T>
 class EnumMetaObjectType : public IMetaObject
 {
 public:
-    std::unique_ptr<IPrimitiveDeserializer> createPrimitiveDeserializer()
+    std::unique_ptr<IPrimitiveDeserializer> createPrimitiveDeserializer() override
     {
         return std::unique_ptr<IPrimitiveDeserializer>(new PrimitiveDeserializer<T>());
     }
 
-    std::unique_ptr<IClassSerializer> createSerializer()
+    std::unique_ptr<IClassSerializer> createSerializer() override
     {
         return std::unique_ptr<IClassSerializer>(new ClassSerializer<T>());
     }
@@ -109,7 +109,7 @@ template <class T>
 class NativeMetaObjectType : public IMetaObject
 {
 public:
-    std::unique_ptr<IClassSerializer> createSerializer()
+    std::unique_ptr<IClassSerializer> createSerializer() override
     {
         return std::unique_ptr<IClassSerializer>(new ClassSerializer<T>());
     }

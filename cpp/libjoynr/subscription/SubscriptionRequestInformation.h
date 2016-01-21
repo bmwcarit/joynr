@@ -30,11 +30,6 @@ namespace joynr
 class JOYNR_EXPORT SubscriptionRequestInformation : public SubscriptionRequest,
                                                     public SubscriptionInformation
 {
-    Q_OBJECT
-
-    Q_PROPERTY(std::string proxyId READ getProxyId WRITE setProxyId)
-    Q_PROPERTY(std::string providerId READ getProviderId WRITE setProviderId)
-
 public:
     SubscriptionRequestInformation();
     SubscriptionRequestInformation(const std::string& proxyParticipantId,
@@ -43,22 +38,15 @@ public:
 
     SubscriptionRequestInformation(
             const SubscriptionRequestInformation& subscriptionRequestInformation);
-    virtual ~SubscriptionRequestInformation()
-    {
-    }
+    ~SubscriptionRequestInformation() override = default;
 
     SubscriptionRequestInformation& operator=(
-            const SubscriptionRequestInformation& subscriptionRequestInformation);
+            const SubscriptionRequestInformation& subscriptionRequestInformation) = default;
     bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
 
     std::string toString() const;
-
-private:
-    static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::SubscriptionRequestInformation)
 
 #endif // SUBSCRIPTIONREQUESTINFORMATION_H

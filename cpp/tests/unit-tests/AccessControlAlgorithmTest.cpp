@@ -38,9 +38,7 @@ public:
     {
     }
 
-    ~AccessControlAlgorithmTest()
-    {
-    }
+    ~AccessControlAlgorithmTest() = default;
 
     void SetUp()
     {

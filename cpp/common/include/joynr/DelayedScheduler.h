@@ -21,6 +21,7 @@
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
 #include "joynr/Timer.h"
 #include "joynr/Optional.h"
@@ -34,10 +35,6 @@
 namespace joynr
 {
 class Runnable;
-namespace joynr_logging
-{
-class Logger;
-}
 
 /**
  * @class DelayedScheduler
@@ -58,8 +55,9 @@ public:
      *      has expired
      * @param defaultDelayMs Default delay used by @ref schedule
      */
-    DelayedScheduler(std::function<void(Runnable*)> onWorkAvailable,
-                     std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
+    explicit DelayedScheduler(
+            std::function<void(Runnable*)> onWorkAvailable,
+            std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
     /**
      * @brief Destructor
@@ -107,6 +105,10 @@ public:
      */
     virtual void shutdown();
 
+protected:
+    /*! Logger */
+    ADD_LOGGER(DelayedScheduler);
+
 private:
     /*! @ref DelayedScheduler is not allowed to be copied */
     DISALLOW_COPY_AND_ASSIGN(DelayedScheduler);
@@ -133,9 +135,6 @@ private:
 
     /*! Timer to delay added @ref Runnable */
     Timer timer;
-
-    /*! Logger */
-    static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr

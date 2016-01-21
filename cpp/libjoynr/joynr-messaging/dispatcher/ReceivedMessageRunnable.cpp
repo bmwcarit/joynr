@@ -23,22 +23,17 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* ReceivedMessageRunnable::logger =
-        Logging::getInstance()->getLogger("MSG", "ReceivedMessageRunnable");
+INIT_LOGGER(ReceivedMessageRunnable);
 
 ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
                                                  Dispatcher& dispatcher)
-        : joynr::Runnable(true),
+        : Runnable(true),
           ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
           dispatcher(dispatcher)
 {
-    LOG_DEBUG(logger,
-              FormatString("Creating ReceivedMessageRunnable for message type: %1")
-                      .arg(message.getType())
-                      .str());
+    JOYNR_LOG_DEBUG(
+            logger, "Creating ReceivedMessageRunnable for message type: {}", message.getType());
 }
 
 void ReceivedMessageRunnable::shutdown()
@@ -47,15 +42,15 @@ void ReceivedMessageRunnable::shutdown()
 
 void ReceivedMessageRunnable::run()
 {
-    LOG_DEBUG(logger,
-              FormatString("Running ReceivedMessageRunnable for message type: %1, msg ID: %2 and "
-                           "payload: %3")
-                      .arg(message.getType())
-                      .arg(message.getHeaderMessageId())
-                      .arg(message.getPayload())
-                      .str());
+    JOYNR_LOG_DEBUG(logger,
+                    "Running ReceivedMessageRunnable for message type: {}, msg ID: {} and "
+                    "payload: {}",
+                    message.getType(),
+                    message.getHeaderMessageId(),
+                    message.getPayload());
     if (isExpired()) {
-        LOG_DEBUG(logger, "Dropping ReceivedMessageRunnable message, because it is expired: ");
+        JOYNR_LOG_DEBUG(
+                logger, "Dropping ReceivedMessageRunnable message, because it is expired: ");
         return;
     }
 
@@ -69,14 +64,14 @@ void ReceivedMessageRunnable::run()
                JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         dispatcher.handleBroadcastSubscriptionRequestReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
-        LOG_FATAL(logger, "subscription reply not yet implemented");
+        JOYNR_LOG_FATAL(logger, "subscription reply not yet implemented");
         assert(false);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
         dispatcher.handlePublicationReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
         dispatcher.handleSubscriptionStopReceived(message);
     } else {
-        LOG_FATAL(logger, FormatString("unknown message type: %1").arg(message.getType()).str());
+        JOYNR_LOG_FATAL(logger, "unknown message type: {}", message.getType());
         assert(false);
     }
 }

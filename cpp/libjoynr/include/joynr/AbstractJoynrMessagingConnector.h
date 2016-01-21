@@ -23,7 +23,7 @@
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/IArbitrationListener.h"
 #include "joynr/IClientCache.h"
@@ -54,10 +54,8 @@ public:
                                     const MessagingQos& qosSettings,
                                     IClientCache* cache,
                                     bool cached);
-    virtual bool usesClusterController() const;
-    virtual ~AbstractJoynrMessagingConnector()
-    {
-    }
+    bool usesClusterController() const override;
+    ~AbstractJoynrMessagingConnector() override = default;
 
     /**
      * @brief Makes a request and returns the received response via the callback.
@@ -74,18 +72,13 @@ public:
         if (cached) {
             Variant entry = cache->lookUp(attributeID);
             if (entry.isEmpty()) {
-                LOG_DEBUG(logger,
-                          FormatString("Cached value for %1 is not valid").arg(methodName).str());
+                JOYNR_LOG_DEBUG(logger, "Cached value for {}  is not valid", methodName);
             } else if (!entry.is<T>()) {
-                LOG_DEBUG(logger,
-                          FormatString("Cached value for %1 cannot be converted to type T")
-                                  .arg(methodName)
-                                  .str());
+                JOYNR_LOG_DEBUG(
+                        logger, "Cached value for {}  cannot be converted to type T", methodName);
                 assert(false);
             } else {
-                LOG_DEBUG(
-                        logger,
-                        FormatString("Returning cached value for method %1").arg(methodName).str());
+                JOYNR_LOG_DEBUG(logger, "Returning cached value for method {}", methodName);
                 std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
                         std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
                 typedReplyCaller->returnValue(entry.get<T>());
@@ -116,7 +109,7 @@ protected:
     MessagingQos qosSettings;
     IClientCache* cache;
     bool cached;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(AbstractJoynrMessagingConnector);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrMessagingConnector);

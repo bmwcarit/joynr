@@ -24,7 +24,6 @@
 #include "joynr/JoynrMessage.h"
 
 #include <string>
-#include <QDateTime>
 #include <memory>
 
 namespace joynr
@@ -33,9 +32,7 @@ namespace joynr
 class IMessageSender
 {
 public:
-    virtual ~IMessageSender()
-    {
-    }
+    virtual ~IMessageSender() = default;
     /**
     * @brief Sends the message to the given channel.
     */
@@ -47,6 +44,6 @@ public:
     virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                       const MessagingSettings& settings) = 0;
 };
-}
+} // namespace joynr
 
 #endif // IMESSAGESENDER_H

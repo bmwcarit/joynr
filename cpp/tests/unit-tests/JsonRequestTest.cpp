@@ -16,8 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include <QVariant>
-#include <QVariantList>
 #include <vector>
 
 
@@ -29,7 +27,6 @@ using ::testing::A;
 using ::testing::_;
 using ::testing::A;
 using ::testing::Eq;
-using ::testing::NotNull;
 using ::testing::AllOf;
 using ::testing::Property;
 using namespace joynr;
@@ -37,7 +34,7 @@ using namespace joynr;
 class MockArgument  {
 public:
     MockArgument() : str1(""), list1(){}
-    virtual ~MockArgument() {}
+    virtual ~MockArgument() = default;
 
     MockArgument(const MockArgument& mockArgument) :
         str1(mockArgument.str1),
@@ -122,7 +119,6 @@ protected:
     std::string valueOfArg3;
 };
 
-Q_DECLARE_METATYPE(MockArgument)
 
 typedef JsonRequestTest JsonRequestDeathTest;
 

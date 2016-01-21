@@ -20,13 +20,10 @@
 #ifndef JOYNRRUNTIMEEXECUTOR_H
 #define JOYNRRUNTIMEEXECUTOR_H
 
-#include <QtCore/QObject>
-#include <QtCore/QThread>
-#include <QtCore/QCoreApplication>
-#include <QtConcurrent/QtConcurrent>
-
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
+
+#include <memory>
 
 namespace joynr
 {
@@ -34,27 +31,19 @@ namespace joynr
 class LibJoynrRuntime;
 class Settings;
 
-class JoynrRuntimeExecutor : public QObject
+class JoynrRuntimeExecutor
 {
-    Q_OBJECT
-
-    QCoreApplication* coreApplication;
-    QThread* runtimeThread;
 
 protected:
     Settings* settings;
-    LibJoynrRuntime* runtime;
-    joynr::Semaphore runtimeSemaphore;
+    std::unique_ptr<LibJoynrRuntime> runtime;
+    Semaphore runtimeSemaphore;
 
 public:
-    JoynrRuntimeExecutor(Settings* settings);
-    virtual ~JoynrRuntimeExecutor();
+    explicit JoynrRuntimeExecutor(Settings* settings);
+    virtual ~JoynrRuntimeExecutor() = default;
 
     LibJoynrRuntime* getRuntime();
-    void stop();
-
-public slots:
-    virtual void createRuntime() = 0;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntimeExecutor);

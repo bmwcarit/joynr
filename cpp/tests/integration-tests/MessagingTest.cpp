@@ -53,7 +53,7 @@ public:
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(MessagingTest);
     std::string senderId;
     std::string senderChannelId;
     std::string receiverId;
@@ -62,7 +62,7 @@ public:
     std::string requestId;
     MessagingQos qos;
     std::shared_ptr<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
-    joynr::Semaphore semaphore;
+    Semaphore semaphore;
 
     JoynrMessageFactory messageFactory;
     std::shared_ptr<MockMessageReceiver> mockMessageReceiver;
@@ -73,7 +73,6 @@ public:
         settingsFileName("MessagingTest.settings"),
         settings(settingsFileName),
         messagingSettings(settings),
-        logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "MessagingTest")),
         senderId("senderParticipantId"),
         senderChannelId("senderChannelId"),
         receiverId("receiverParticipantId"),
@@ -87,7 +86,7 @@ public:
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
         messagingStubFactory(new MessagingStubFactory()),
-        messageRouter(new MessageRouter(messagingStubFactory, NULL))
+        messageRouter(new MessageRouter(messagingStubFactory, nullptr))
     {
         // provision global capabilities directory
         std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(
@@ -110,7 +109,7 @@ public:
     void WaitXTimes(std::uint64_t x)
     {
         for(std::uint64_t i = 0; i<x; ++i) {
-            ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+            ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
         }
     }
 
@@ -120,6 +119,8 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingTest);
 };
+
+INIT_LOGGER(MessagingTest);
 
 TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager)
 {

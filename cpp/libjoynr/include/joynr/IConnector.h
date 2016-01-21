@@ -27,9 +27,7 @@ namespace joynr
 class JOYNR_EXPORT IConnector
 {
 public:
-    virtual ~IConnector()
-    {
-    }
+    virtual ~IConnector() = default;
     virtual bool usesClusterController() const = 0;
 };
 

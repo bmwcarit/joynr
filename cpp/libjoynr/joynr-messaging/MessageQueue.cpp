@@ -24,8 +24,6 @@
 namespace joynr
 {
 
-using namespace std::chrono;
-
 MessageQueue::MessageQueue()
         : queue(new std::multimap<std::string, MessageQueueItem*>()), queueMutex()
 {
@@ -64,14 +62,15 @@ MessageQueueItem* MessageQueue::getNextMessageForParticipant(const std::string d
     return nullptr;
 }
 
-int64_t MessageQueue::removeOutdatedMessages()
+std::int64_t MessageQueue::removeOutdatedMessages()
 {
-    int64_t counter = 0;
+    std::int64_t counter = 0;
     if (queue->empty()) {
         return counter;
     }
 
-    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now());
     {
         std::lock_guard<std::mutex> lock(queueMutex);
         for (auto queueIterator = queue->begin(); queueIterator != queue->end();) {

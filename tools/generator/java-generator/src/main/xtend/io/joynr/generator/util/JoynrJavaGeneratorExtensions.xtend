@@ -29,29 +29,13 @@ import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
+import org.franca.core.franca.FTypedElement
 
 class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.JoynrGeneratorExtensions {
 	@Inject extension JavaTypeUtil
 	@Inject extension InterfaceUtil
 	@Inject extension BroadcastUtil
-
-	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
-		if (datatype == null) {
-			return "";
-		}
-		var packagepath = "";
-		try {
-			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
-		} catch (IllegalStateException e){
-			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
-		}
-		if (packagepath!="") {
-			if (includeTypeCollection && datatype.partOfTypeCollection) {
-				packagepath += separator + datatype.typeCollectionName;
-			}
-		};
-		return packagepath;
-	}
 
 	def String getNamespaceStarter(FInterface interfaceType) {
 		getNamespaceStarter(getPackageNames(interfaceType));
@@ -131,7 +115,14 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 			boolean broadcasts
 	) {
 		val includeSet = new TreeSet<String>();
-		for(datatype : getAllComplexTypes(serviceInterface, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)) {
+		val selector = TypeSelector::defaultTypeSelector
+		selector.methods(methods);
+		selector.readAttributes(readAttributes);
+		selector.writeAttributes(writeAttributes);
+		selector.notifyAttributes(notifyAttributes);
+		selector.broadcasts(broadcasts);
+
+		for(datatype : getAllComplexTypes(serviceInterface, selector)) {
 			if (datatype instanceof FType){
 				val include = getIncludeOf(datatype);
 				if (include != null) {
@@ -190,16 +181,28 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 		«ENDIF»
 	'''
 
-	// for parameters
-	def appendJavadocParameter(FModelElement element, String prefixForNewLines)'''
-		«IF element.comment != null»
-			«FOR comment : element.comment.elements»
-				«IF comment.type == FAnnotationType::DESCRIPTION»
-					«prefixForNewLines» @param «element.joynrName» «ReformatComment(comment, prefixForNewLines)»
-				«ENDIF»
-			«ENDFOR»
-		«ENDIF»
-	'''
+	def appendJavadocParameter(FTypedElement element, String prefixForNewLines) {
+		var description = prefixForNewLines + " @param " + element.joynrName + " ";
+		if (element.comment != null) {
+			for (comment : element.comment.elements) {
+				if (comment.type == FAnnotationType::DESCRIPTION) {
+					description += ReformatComment(comment, prefixForNewLines)
+				}
+			}
+		} else {
+			description += "description missing in Franca model."
+		}
+		if (element.type.isTypeDef) {
+			description += "\n" + prefixForNewLines +
+			" (type resolved from modeled Franca typedef " + 
+			element.type.joynrName +
+			" as " +
+			element.type.typeDefType.actualType.typeName +
+			")";
+		}
+
+		return description;
+	}
 
 	def String getIncludeOf(FType dataType) {
 		return dataType.buildPackagePath(".", true) + "." + dataType.joynrName;

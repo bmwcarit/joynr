@@ -1,6 +1,6 @@
 package io.joynr.proxy;
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import javax.annotation.CheckForNull;
 
@@ -26,6 +26,10 @@ import javax.annotation.CheckForNull;
 public interface ICallback {
     void resolve(@CheckForNull Object... result);
 
-    void onFailure(JoynrException error);
-
+    /**
+     *
+     * @param runtimeException: unexpected non-modeled exception
+     * to be passed back to the consumer.
+     */
+    void onFailure(JoynrRuntimeException runtimeException);
 }

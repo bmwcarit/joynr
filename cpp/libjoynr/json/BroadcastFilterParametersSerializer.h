@@ -32,13 +32,13 @@ class IObject;
 
 // Serializes a BroadcastFilterParameters
 template <>
-void ClassSerializer<BroadcastFilterParameters>::serialize(
+void ClassSerializerImpl<BroadcastFilterParameters>::serialize(
         const BroadcastFilterParameters& parameters,
         std::ostream& o);
 
 // Deserializes a BroadcastFilterParameters
 template <>
-void ClassDeserializer<BroadcastFilterParameters>::deserialize(
+void ClassDeserializerImpl<BroadcastFilterParameters>::deserialize(
         BroadcastFilterParameters& parameters,
         IObject& o);
 

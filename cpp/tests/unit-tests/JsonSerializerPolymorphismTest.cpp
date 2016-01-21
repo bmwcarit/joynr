@@ -24,26 +24,23 @@
 #include "joynr/types/Localisation/GpsFixEnum.h"
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/JsonSerializer.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Util.h"
 
 #include "joynr/types/TestTypes/TStruct.h"
 #include "joynr/types/TestTypes/TStructExtended.h"
 
 using namespace joynr;
-using namespace joynr_logging;
 
 class JsonSerializerPolymorphismTest : public testing::Test {
 public:
-    JsonSerializerPolymorphismTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TST", "JsonSerializerPolymorphismTest"))
-    {
-
-    }
+    JsonSerializerPolymorphismTest() = default;
 
 protected:
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(JsonSerializerPolymorphismTest);
 };
+
+INIT_LOGGER(JsonSerializerPolymorphismTest);
 
 // This test is disabled:
 // The new JSON deserializer uses templates to determine the type (ClassDeserializer<T>), hence
@@ -98,7 +95,7 @@ TEST_F(JsonSerializerPolymorphismTest, DISABLED_serializeDerivedTypeFromSuperTyp
 
     std::string serializedSuper = JsonSerializer::serialize(super);
 
-    LOG_DEBUG(logger, serializedSuper);
+    JOYNR_LOG_DEBUG(logger, serializedSuper);
 
     joynr::types::TestTypes::TStruct* deserializedSuper =
             JsonSerializer::deserialize<joynr::types::TestTypes::TStruct>(serializedSuper);
@@ -106,8 +103,8 @@ TEST_F(JsonSerializerPolymorphismTest, DISABLED_serializeDerivedTypeFromSuperTyp
 
     // this means the deserialized super is actually a derived
     joynr::types::TestTypes::TStructExtended* castedDerived = dynamic_cast<joynr::types::TestTypes::TStructExtended*>(deserializedSuper);
-    EXPECT_TRUE(castedDerived != NULL); // cast successfull?
-    if(castedDerived != NULL) {
+    EXPECT_TRUE(castedDerived != nullptr); // cast successfull?
+    if(castedDerived != nullptr) {
         // causes seg-fault if cast is not successfull
         EXPECT_EQ(derived, *castedDerived);
     }
@@ -149,7 +146,7 @@ TEST_F(JsonSerializerPolymorphismTest, DISABLED_serializeGpsLocationListWithLoca
     std::vector<Variant> variantVector = Util::convertVectorToVariantVector(gpsPositions);
     Variant variant = Variant::make<std::vector<Variant>>(variantVector);
     std::string serializedGpsLocations = JsonSerializer::serialize(variant);
-    LOG_DEBUG(logger, serializedGpsLocations);
+    JOYNR_LOG_DEBUG(logger, serializedGpsLocations);
 
 //    EXPECT_EQ(gpsLocation, *deserializedGpsLocation);
 }

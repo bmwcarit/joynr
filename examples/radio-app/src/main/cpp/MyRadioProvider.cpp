@@ -19,15 +19,14 @@
 
 #include "MyRadioProvider.h"
 
-#include <QDateTime>
+#include <chrono>
 
 #include "MyRadioHelper.h"
 #include "joynr/RequestStatus.h"
 
 using namespace joynr;
 
-joynr_logging::Logger* MyRadioProvider::logger =
-        joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioProvider");
+INIT_LOGGER(MyRadioProvider);
 
 MyRadioProvider::MyRadioProvider()
         : DefaultRadioProvider(),
@@ -39,20 +38,24 @@ MyRadioProvider::MyRadioProvider()
     // Initialise the quality of service settings
     // Set the priority so that the consumer application always uses the most recently
     // started provider
-    providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
 
-    stationsList << vehicle::RadioStation("ABC Trible J", true, vehicle::Country::AUSTRALIA)
-                 << vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY)
-                 << vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA)
-                 << vehicle::RadioStation("Bayern 3", true, vehicle::Country::GERMANY);
-    countryGeoPositionMap.insert(vehicle::Country::AUSTRALIA,
-                                 vehicle::GeoPosition(-37.8141070, 144.9632800)); // Melbourne
+    stationsList.push_back(
+            vehicle::RadioStation("ABC Trible J", true, vehicle::Country::AUSTRALIA));
+    stationsList.push_back(vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY));
+    stationsList.push_back(vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA));
+    stationsList.push_back(vehicle::RadioStation("Bayern 3", true, vehicle::Country::GERMANY));
+    countryGeoPositionMap.insert({vehicle::Country::AUSTRALIA,
+                                  vehicle::GeoPosition(-37.8141070, 144.9632800)}); // Melbourne
     countryGeoPositionMap.insert(
-            vehicle::Country::ITALY, vehicle::GeoPosition(46.4982950, 11.3547580)); // Bolzano
+            {vehicle::Country::ITALY, vehicle::GeoPosition(46.4982950, 11.3547580)}); // Bolzano
     countryGeoPositionMap.insert(
-            vehicle::Country::CANADA, vehicle::GeoPosition(53.5443890, -113.4909270)); // Edmonton
+            {vehicle::Country::CANADA, vehicle::GeoPosition(53.5443890, -113.4909270)}); // Edmonton
     countryGeoPositionMap.insert(
-            vehicle::Country::GERMANY, vehicle::GeoPosition(48.1351250, 11.5819810)); // Munich
+            {vehicle::Country::GERMANY, vehicle::GeoPosition(48.1351250, 11.5819810)}); // Munich
     currentStation = stationsList.at(currentStationIndex);
 }
 
@@ -64,11 +67,9 @@ void MyRadioProvider::getCurrentStation(
         std::function<void(const vehicle::RadioStation&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    QMutexLocker locker(&mutex);
-    (void)onError;
-    MyRadioHelper::prettyLog(logger,
-                             QString("getCurrentStation -> %1")
-                                     .arg(QString::fromStdString(currentStation.toString())));
+    std::lock_guard<std::mutex> locker(mutex);
+    std::ignore = onError;
+    MyRadioHelper::prettyLog(logger, "getCurrentStation -> " + currentStation.toString());
     onSuccess(currentStation);
 }
 
@@ -76,18 +77,17 @@ void MyRadioProvider::shuffleStations(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
 
-    (void)onError;
+    std::ignore = onError;
     vehicle::RadioStation oldStation = currentStation;
     ++currentStationIndex;
     currentStationIndex %= stationsList.size();
     currentStationChanged(stationsList.at(currentStationIndex));
     currentStation = stationsList.at(currentStationIndex);
-    MyRadioHelper::prettyLog(logger,
-                             QString("shuffleStations: %1 -> %2")
-                                     .arg(QString::fromStdString(oldStation.toString()))
-                                     .arg(QString::fromStdString(currentStation.toString())));
+    MyRadioHelper::prettyLog(
+            logger,
+            "shuffleStations: " + oldStation.toString() + " -> " + currentStation.toString());
     onSuccess();
 }
 
@@ -97,7 +97,7 @@ void MyRadioProvider::addFavoriteStation(
         std::function<void(const joynr::vehicle::Radio::AddFavoriteStationErrorEnum::Enum&)>
                 onError)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
 
     if (radioStation.getName().empty()) {
         throw joynr::exceptions::ProviderRuntimeException(MyRadioHelper::MISSING_NAME());
@@ -112,10 +112,8 @@ void MyRadioProvider::addFavoriteStation(
         }
     }
     if (!duplicateFound) {
-        MyRadioHelper::prettyLog(logger,
-                                 QString("addFavoriteStation(%1)")
-                                         .arg(QString::fromStdString(radioStation.toString())));
-        stationsList.append(radioStation);
+        MyRadioHelper::prettyLog(logger, "addFavoriteStation(" + radioStation.toString() + ")");
+        stationsList.push_back(radioStation);
         onSuccess(true);
     }
 }
@@ -125,33 +123,29 @@ void MyRadioProvider::getLocationOfCurrentStation(
                            const joynr::vehicle::GeoPosition& location)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     joynr::vehicle::Country::Enum country(currentStation.getCountry());
-    joynr::vehicle::GeoPosition location(countryGeoPositionMap.value(country));
+    joynr::vehicle::GeoPosition location(countryGeoPositionMap.at(country));
     MyRadioHelper::prettyLog(
             logger,
-            QString("getLocationOfCurrentStation: return country \"%1\" and location \"%2\"")
-                    .arg(QString::fromStdString(
-                            joynr::vehicle::Country::getLiteral(currentStation.getCountry())))
-                    .arg(QString::fromStdString(location.toString())));
+            "getLocationOfCurrentStation: return country \"" +
+                    joynr::vehicle::Country::getLiteral(currentStation.getCountry()) +
+                    "\" and location \"" + location.toString() + "\"");
     onSuccess(country, location);
 }
 
 void MyRadioProvider::fireWeakSignalBroadcast()
 {
-    MyRadioHelper::prettyLog(logger,
-                             QString("fire weakSignalBroadcast: %1")
-                                     .arg(QString::fromStdString(currentStation.toString())));
+    MyRadioHelper::prettyLog(logger, "fire weakSignalBroadcast: " + currentStation.toString());
     fireWeakSignal(currentStation);
 }
 
 void MyRadioProvider::fireNewStationDiscoveredBroadcast()
 {
     vehicle::RadioStation discoveredStation(stationsList.at(currentStationIndex));
-    vehicle::GeoPosition geoPosition(countryGeoPositionMap.value(discoveredStation.getCountry()));
+    vehicle::GeoPosition geoPosition(countryGeoPositionMap.at(discoveredStation.getCountry()));
     MyRadioHelper::prettyLog(logger,
-                             QString("fire newStationDiscoveredBroadcast: %1 at %2")
-                                     .arg(QString::fromStdString(discoveredStation.toString()))
-                                     .arg(QString::fromStdString(geoPosition.toString())));
+                             "fire newStationDiscoveredBroadcast: " + discoveredStation.toString() +
+                                     " at " + geoPosition.toString());
     fireNewStationDiscovered(discoveredStation, geoPosition);
 }

@@ -22,7 +22,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionManager.h"
@@ -35,7 +35,7 @@
 
 #include <string>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 
 namespace joynr
 {
@@ -55,7 +55,7 @@ class JOYNR_EXPORT SubscriptionManager : public ISubscriptionManager
 {
 
 public:
-    ~SubscriptionManager();
+    ~SubscriptionManager() override;
 
     SubscriptionManager();
 
@@ -110,7 +110,7 @@ private:
     ThreadSafeMap<std::string, std::shared_ptr<Subscription>> subscriptions;
 
     DelayedScheduler* missedPublicationScheduler;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(SubscriptionManager);
     /**
       * @class SubscriptionManager::MissedPublicationRunnable
       * @brief
@@ -119,11 +119,11 @@ private:
     {
     public:
         MissedPublicationRunnable(const JoynrTimePoint& expiryDate,
-                                  const int64_t& expectedIntervalMSecs,
+                                  const std::int64_t& expectedIntervalMSecs,
                                   const std::string& subscriptionId,
                                   std::shared_ptr<Subscription> subscription,
                                   SubscriptionManager& subscriptionManager,
-                                  const int64_t& alertAfterInterval);
+                                  const std::int64_t& alertAfterInterval);
 
         void shutdown() override;
 
@@ -136,13 +136,13 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
-        int64_t timeSinceLastExpectedPublication(const int64_t& timeSinceLastPublication);
-        int64_t expectedIntervalMSecs;
+        std::int64_t timeSinceLastExpectedPublication(const std::int64_t& timeSinceLastPublication);
+        std::int64_t expectedIntervalMSecs;
         std::shared_ptr<Subscription> subscription;
         const std::string subscriptionId;
-        int64_t alertAfterInterval;
+        std::int64_t alertAfterInterval;
         SubscriptionManager& subscriptionManager;
-        static joynr_logging::Logger* logger;
+        ADD_LOGGER(MissedPublicationRunnable);
     };
     /**
       * @class SubscriptionManager::SubscriptionEndRunnable
@@ -165,7 +165,7 @@ private:
         DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);
         std::string subscriptionId;
         SubscriptionManager& subscriptionManager;
-        static joynr_logging::Logger* logger;
+        ADD_LOGGER(SubscriptionEndRunnable);
     };
 };
 

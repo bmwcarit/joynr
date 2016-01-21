@@ -21,10 +21,9 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/DispatcherUtils.h"
-#include <QObject>
-#include <stdint.h>
+#include <cstdint>
 
 #include <string>
 
@@ -37,20 +36,15 @@ namespace joynr
   *
   * fields
   *    type (one_way, request, reply, subscription_request, subscription_reply, subscription_stop)
-  *    QVariant header, contains domain, interface, requestId, replyId, sourceParticpantId,
+  *    std::map<std::string, std::string> header, contains domain, interface, requestId, replyId,
+  *sourceParticpantId,
   *        destinationParicipantId, ...
-  *    QVariant payload
+  *    std::string payload
   * JoynrMessages are serialized in JSON format
   */
-class JOYNRCOMMON_EXPORT JoynrMessage : public QObject
+class JOYNRCOMMON_EXPORT JoynrMessage
 {
-    Q_OBJECT
-
     using StringMap = std::map<std::string, std::string>;
-
-    Q_PROPERTY(std::string type READ getType WRITE setType)
-    Q_PROPERTY(StringMap header READ getHeader WRITE setHeader)
-    Q_PROPERTY(std::string payload READ getPayload WRITE setPayload)
 
 public:
     JoynrMessage();
@@ -326,12 +320,10 @@ private:
     std::string type;
     std::map<std::string, std::string> header;
     std::string payload;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(JoynrMessage);
 
     void generateAndSetMsgIdHeaderIfAbsent();
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::JoynrMessage)
 #endif // JOYNRMESSAGE_H_

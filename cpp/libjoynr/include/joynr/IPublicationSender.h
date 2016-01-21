@@ -35,9 +35,7 @@ class MessagingQos;
 class JOYNR_EXPORT IPublicationSender
 {
 public:
-    virtual ~IPublicationSender()
-    {
-    }
+    virtual ~IPublicationSender() = default;
 
     virtual void sendSubscriptionPublication(
             const std::string& senderParticipantId,

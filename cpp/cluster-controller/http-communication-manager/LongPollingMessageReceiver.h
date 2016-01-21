@@ -22,7 +22,7 @@
 
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BounceProxyUrl.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Directory.h"
 #include "joynr/Thread.h"
 
@@ -32,6 +32,9 @@
 #include "joynr/Semaphore.h"
 #include <memory>
 #include <string>
+#include <chrono>
+
+#include <QByteArray>
 
 namespace joynr
 {
@@ -44,27 +47,27 @@ class MessageRouter;
  */
 struct LongPollingMessageReceiverSettings
 {
-    int64_t bounceProxyTimeout_ms;
-    int64_t longPollTimeout_ms;
-    int longPollRetryInterval_ms;
-    int createChannelRetryInterval_ms;
+    std::chrono::milliseconds bounceProxyTimeout;
+    std::chrono::milliseconds longPollTimeout;
+    std::chrono::milliseconds longPollRetryInterval;
+    std::chrono::milliseconds createChannelRetryInterval;
 };
 
 /**
  * Class that makes long polling requests to the bounce proxy
  */
-class LongPollingMessageReceiver : public joynr::Thread
+class LongPollingMessageReceiver : public Thread
 {
 public:
     LongPollingMessageReceiver(const BounceProxyUrl& bounceProxyUrl,
                                const std::string& channelId,
                                const std::string& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
-                               joynr::Semaphore* channelCreatedSemaphore,
+                               Semaphore* channelCreatedSemaphore,
                                std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                                std::shared_ptr<MessageRouter> messageRouter);
-    void stop();
-    void run();
+    void stop() override;
+    void run() override;
     void interrupt();
     bool isInterrupted();
 
@@ -85,8 +88,8 @@ private:
 
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
-    static joynr_logging::Logger* logger;
-    joynr::Semaphore* channelCreatedSemaphore;
+    ADD_LOGGER(LongPollingMessageReceiver);
+    Semaphore* channelCreatedSemaphore;
     std::shared_ptr<MessageRouter> messageRouter;
 };
 

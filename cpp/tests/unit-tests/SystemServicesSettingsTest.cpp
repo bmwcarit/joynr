@@ -27,7 +27,6 @@ using namespace joynr;
 class SystemServicesSettingsTest : public testing::Test {
 public:
     SystemServicesSettingsTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TST", "SystemServicesSettingsTest")),
         testSettingsFileName("SystemServicesSettingsTest-testSettings.settings")
     {
     }
@@ -37,9 +36,11 @@ public:
     }
 
 protected:
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(SystemServicesSettingsTest);
     std::string testSettingsFileName;
 };
+
+INIT_LOGGER(SystemServicesSettingsTest);
 
 TEST_F(SystemServicesSettingsTest, intializedWithDefaultSettings) {
     Settings testSettings(testSettingsFileName);

@@ -1,7 +1,9 @@
+package io.joynr.generator.templates;
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +19,12 @@
  * #L%
  */
 
-#include "joynr/ILocalCapabilitiesCallback.h"
+import org.franca.core.franca.FTypeDef;
 
-namespace joynr
-{
+/*
+ * This interface shall be used by all generation templates which process a Franca typedef type
+ */
+public interface TypeDefTemplate {
 
-// Please see header file for an explanation of why this is defined here
-ILocalCapabilitiesCallback::~ILocalCapabilitiesCallback()
-{
+    public CharSequence generate(FTypeDef typeDefType);
 }
-
-} // namespace joynr

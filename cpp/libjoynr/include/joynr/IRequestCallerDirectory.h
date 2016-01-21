@@ -30,9 +30,7 @@ class RequestCaller;
 class IRequestCallerDirectory
 {
 public:
-    virtual ~IRequestCallerDirectory()
-    {
-    }
+    virtual ~IRequestCallerDirectory() = default;
     virtual std::shared_ptr<RequestCaller> lookupRequestCaller(
             const std::string& participantId) = 0;
     virtual bool containsRequestCaller(const std::string& participantId) = 0;

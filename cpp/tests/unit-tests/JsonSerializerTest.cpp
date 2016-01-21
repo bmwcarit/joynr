@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include <PrettyPrint.h>
-#include <QVariant>
 #include <limits>
 #include "joynr/Util.h"
 #include "joynr/types/TestTypes/TEnum.h"
@@ -33,7 +32,7 @@
 #include "joynr/Request.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/JsonSerializer.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -50,19 +49,8 @@
 #include <sstream>
 
 using namespace joynr;
-using namespace joynr_logging;
-using namespace std::chrono;
-
-// TODO:
-// 1. If the decision is made to use c++11, g++ >= version 5.5 then JSON literals can be
-//    encoded using raw string literals.
 
 class JsonSerializerTest : public testing::Test {
-public:
-    JsonSerializerTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TST", "JsonSerializerTest"))
-    {
-    }
 
 protected:
     template<class T>
@@ -93,10 +81,10 @@ protected:
         Variant responseVariant = receivedReply->getResponse().at(0);
 
         T responseValue;
-        if (responseVariant.is<int64_t>()) {
-            responseValue = static_cast<T>(responseVariant.get<int64_t>());
-        } else if(responseVariant.is<uint64_t>()) {
-            responseValue = static_cast<T>(responseVariant.get<uint64_t>());
+        if (responseVariant.is<std::int64_t>()) {
+            responseValue = static_cast<T>(responseVariant.get<std::int64_t>());
+        } else if(responseVariant.is<std::uint64_t>()) {
+            responseValue = static_cast<T>(responseVariant.get<std::uint64_t>());
         } else {
             responseValue = responseVariant.get<T>();
         }
@@ -106,15 +94,17 @@ protected:
         delete receivedReply;
     }
 
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(JsonSerializerTest);
 };
+
+INIT_LOGGER(JsonSerializerTest);
 
 TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     SubscriptionRequest request;
     Variant subscriptionQos = Variant::make<SubscriptionQos>(SubscriptionQos(5000));
     request.setQos(subscriptionQos);
     std::string result = JsonSerializer::serialize<SubscriptionRequest>(request);
-    LOG_DEBUG(logger, FormatString("result: %1").arg(result).str());
+    JOYNR_LOG_DEBUG(logger, "result: {}", result);
     SubscriptionRequest* desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
     EXPECT_TRUE(request == *desRequest);
 
@@ -131,7 +121,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     request.setFilterParameters(filterParams);
     request.setSubscribeToName("myAttribute");
     std::string requestJson = JsonSerializer::serialize<BroadcastSubscriptionRequest>(request);
-    LOG_DEBUG(logger, requestJson);
+    JOYNR_LOG_DEBUG(logger, requestJson);
     BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(requestJson);
     EXPECT_TRUE(request == *desRequest);
 }
@@ -142,12 +132,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
     expectedRequest.setMethodName("serialize_JoynrMessage");
     expectedRequest.setRequestReplyId("xyz");
     JoynrMessage expectedJoynrMessage;
-    JoynrTimePoint testExpiryDate = time_point_cast<milliseconds>(system_clock::now()) + milliseconds(10000000);
+    JoynrTimePoint testExpiryDate = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()) + std::chrono::milliseconds(10000000);
     expectedJoynrMessage.setHeaderExpiryDate(testExpiryDate);
     expectedJoynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
     expectedJoynrMessage.setPayload(JsonSerializer::serialize(expectedRequest));
     std::string serializedContent(JsonSerializer::serialize(expectedJoynrMessage));
-    LOG_DEBUG(logger, FormatString("serialize_JoynrMessage: actual  : %1").arg(serializedContent).str());
+    JOYNR_LOG_DEBUG(logger, "serialize_JoynrMessage: actual : {}",serializedContent);
 
     std::stringstream expectedStringStream;
     expectedStringStream << R"({"_typeName":"joynr.JoynrMessage","header": )";
@@ -158,15 +148,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
     expectedStringStream << R"("type": "request"})";
 
     std::string expectedString = expectedStringStream.str();
-    LOG_DEBUG(logger, FormatString("serialize_JoynrMessage: expected: %1").arg(expectedString).str());
+    JOYNR_LOG_DEBUG(logger, "serialize_JoynrMessage: expected: {}", expectedString);
     EXPECT_EQ(expectedString, serializedContent);
 
     JoynrMessage* joynrMessage = JsonSerializer::deserialize<JoynrMessage>(serializedContent);
-    LOG_DEBUG(logger, FormatString("joynrMessage->getPayload(): %1").arg(joynrMessage->getPayload()).str());
+    JOYNR_LOG_DEBUG(logger, "joynrMessage->getPayload(): {}", joynrMessage->getPayload());
     Request* request = JsonSerializer::deserialize<Request>(joynrMessage->getPayload());
-    LOG_DEBUG(logger, FormatString("joynrMessage->getType(): %1").arg(joynrMessage->getType()).str());
+    JOYNR_LOG_DEBUG(logger, "joynrMessage->getType(): {}", joynrMessage->getType());
     EXPECT_EQ(joynrMessage->getType(), expectedJoynrMessage.getType());
-    LOG_DEBUG(logger, FormatString("request->getMethodName(): %1").arg(request->getMethodName()).str());
+    JOYNR_LOG_DEBUG(logger, "request->getMethodName(): {}", request->getMethodName());
     EXPECT_EQ(request->getMethodName(), expectedRequest.getMethodName());
     // Clean up
     delete request;
@@ -176,7 +166,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
 TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     // Build a list to test with
-    std::vector<uint8_t> expectedUint8Vector;//{0x01, 0x02, 0x03, 0xff, 0xfe, 0xfd};
+    std::vector<std::uint8_t> expectedUint8Vector;//{0x01, 0x02, 0x03, 0xff, 0xfe, 0xfd};
     expectedUint8Vector.push_back(1);
     expectedUint8Vector.push_back(2);
     expectedUint8Vector.push_back(3);
@@ -203,8 +193,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
                 R"("requestReplyId": ")" << request.getRequestReplyId() << R"("})";
     std::string expectedRequestJson = jsonStringStream.str();
 
-    LOG_DEBUG(logger, FormatString("expected: %1").arg(expectedRequestJson).str());
-    LOG_DEBUG(logger, FormatString("serialized: %1").arg(serializedRequestJson).str());
+    JOYNR_LOG_DEBUG(logger, "expected: {}", expectedRequestJson);
+    JOYNR_LOG_DEBUG(logger, "serialized: {}", serializedRequestJson);
     EXPECT_EQ(expectedRequestJson, serializedRequestJson);
 
     // Deserialize the request
@@ -218,7 +208,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     std::vector<Variant>::const_iterator deserializedIt(deserializedVariantVectorParam.begin());
     while (expectedIt != expectedVariantVectorParam.end() && deserializedIt != deserializedVariantVectorParam.end()) {
         EXPECT_EQ("UInt64", deserializedIt->getTypeName());
-        EXPECT_EQ(expectedIt->get<uint8_t>(), static_cast<uint8_t>(deserializedIt->get<uint64_t>()));
+        EXPECT_EQ(expectedIt->get<std::uint8_t>(), static_cast<std::uint8_t>(deserializedIt->get<std::uint64_t>()));
         expectedIt++;
         deserializedIt++;
     }
@@ -230,75 +220,75 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt8) {
-    // int8_t alias (signed) char
-    int8_t int8MinValue = std::numeric_limits<int8_t>::min();
-    int8_t int8MaxValue = std::numeric_limits<int8_t>::max();
+    // std::int8_t alias (signed) char
+    std::int8_t int8MinValue = std::numeric_limits<std::int8_t>::min();
+    std::int8_t int8MaxValue = std::numeric_limits<std::int8_t>::max();
 
-    serializeDeserializeReply<int8_t>(int8MinValue);
-    serializeDeserializeReply<int8_t>(int8MaxValue);
+    serializeDeserializeReply<std::int8_t>(int8MinValue);
+    serializeDeserializeReply<std::int8_t>(int8MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt8) {
-    // uint8_t alias unsigned char
-    uint8_t unsignedInt8MinValue = std::numeric_limits<uint8_t>::min();
-    uint8_t unsignedInt8MaxValue = std::numeric_limits<uint8_t>::max();
+    // std::uint8_t alias unsigned char
+    std::uint8_t unsignedInt8MinValue = std::numeric_limits<std::uint8_t>::min();
+    std::uint8_t unsignedInt8MaxValue = std::numeric_limits<std::uint8_t>::max();
 
-    serializeDeserializeReply<uint8_t>(unsignedInt8MinValue);
-    serializeDeserializeReply<uint8_t>(unsignedInt8MaxValue);
+    serializeDeserializeReply<std::uint8_t>(unsignedInt8MinValue);
+    serializeDeserializeReply<std::uint8_t>(unsignedInt8MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt16) {
-    // int16_t alias (signed) short
-    int16_t int16MinValue = std::numeric_limits<int16_t>::min();
-    int16_t int16MaxValue = std::numeric_limits<int16_t>::max();
+    // std::int16_t alias (signed) short
+    std::int16_t int16MinValue = std::numeric_limits<std::int16_t>::min();
+    std::int16_t int16MaxValue = std::numeric_limits<std::int16_t>::max();
 
-    serializeDeserializeReply<int16_t>(int16MinValue);
-    serializeDeserializeReply<int16_t>(int16MaxValue);
+    serializeDeserializeReply<std::int16_t>(int16MinValue);
+    serializeDeserializeReply<std::int16_t>(int16MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt16) {
-    // uint16_t alias unsigned short
-    uint16_t unsignedInt16MinValue = std::numeric_limits<uint16_t>::min();
-    uint16_t unsignedInt16MaxValue = std::numeric_limits<uint16_t>::max();
+    // std::uint16_t alias unsigned short
+    std::uint16_t unsignedInt16MinValue = std::numeric_limits<std::uint16_t>::min();
+    std::uint16_t unsignedInt16MaxValue = std::numeric_limits<std::uint16_t>::max();
 
-    serializeDeserializeReply<uint16_t>(unsignedInt16MinValue);
-    serializeDeserializeReply<uint16_t>(unsignedInt16MaxValue);
+    serializeDeserializeReply<std::uint16_t>(unsignedInt16MinValue);
+    serializeDeserializeReply<std::uint16_t>(unsignedInt16MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt32) {
-    // int32_t alias (signed) int
-    int32_t int32MinValue = std::numeric_limits<int32_t>::min();
-    int32_t int32MaxValue = std::numeric_limits<int32_t>::max();
+    // std::int32_t alias (signed) int
+    std::int32_t int32MinValue = std::numeric_limits<std::int32_t>::min();
+    std::int32_t int32MaxValue = std::numeric_limits<std::int32_t>::max();
 
-    serializeDeserializeReply<int32_t>(int32MinValue);
-    serializeDeserializeReply<int32_t>(int32MaxValue);
+    serializeDeserializeReply<std::int32_t>(int32MinValue);
+    serializeDeserializeReply<std::int32_t>(int32MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt32) {
-    // uint32_t alias unsigned int
-    uint32_t unsignedInt32MinValue = std::numeric_limits<uint32_t>::min();
-    uint32_t unsignedInt32MaxValue = std::numeric_limits<uint32_t>::max();
+    // std::uint32_t alias unsigned int
+    std::uint32_t unsignedInt32MinValue = std::numeric_limits<std::uint32_t>::min();
+    std::uint32_t unsignedInt32MaxValue = std::numeric_limits<std::uint32_t>::max();
 
-    serializeDeserializeReply<uint32_t>(unsignedInt32MinValue);
-    serializeDeserializeReply<uint32_t>(unsignedInt32MaxValue);
+    serializeDeserializeReply<std::uint32_t>(unsignedInt32MinValue);
+    serializeDeserializeReply<std::uint32_t>(unsignedInt32MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt64) {
-    // uint8_t alias (signed) long long
-    int64_t int64MinValue = std::numeric_limits<uint8_t>::min();
-    uint8_t int64MaxValue = std::numeric_limits<uint8_t>::max();
+    // std::uint8_t alias (signed) long long
+    std::int64_t int64MinValue = std::numeric_limits<std::uint8_t>::min();
+    std::uint8_t int64MaxValue = std::numeric_limits<std::uint8_t>::max();
 
-    serializeDeserializeReply<uint8_t>(int64MinValue);
-    serializeDeserializeReply<uint8_t>(int64MaxValue);
+    serializeDeserializeReply<std::uint8_t>(int64MinValue);
+    serializeDeserializeReply<std::uint8_t>(int64MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt64) {
-    // uint64_t alias unsigned long long
-    uint64_t unsignedInt64MinValue = std::numeric_limits<uint64_t>::min();
-    uint64_t unsignedInt64MaxValue = std::numeric_limits<uint64_t>::max();
+    // std::uint64_t alias unsigned long long
+    std::uint64_t unsignedInt64MinValue = std::numeric_limits<std::uint64_t>::min();
+    std::uint64_t unsignedInt64MaxValue = std::numeric_limits<std::uint64_t>::max();
 
-    serializeDeserializeReply<uint64_t>(unsignedInt64MinValue);
-    serializeDeserializeReply<uint64_t>(unsignedInt64MaxValue);
+    serializeDeserializeReply<std::uint64_t>(unsignedInt64MinValue);
+    serializeDeserializeReply<std::uint64_t>(unsignedInt64MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
@@ -416,7 +406,7 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
     // Serialize
     std::string serializedContent = JsonSerializer::serialize<infrastructure::DacTypes::MasterAccessControlEntry>(expectedMac);
-    LOG_DEBUG(logger, FormatString("Serialized expectedMac: %1").arg(serializedContent).str());
+    JOYNR_LOG_DEBUG(logger, "Serialized expectedMac: {}", serializedContent);
 
     // Deserialize the result
     infrastructure::DacTypes::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
@@ -433,17 +423,18 @@ void deserializePermission(const std::string& serializedPermission, const Permis
     Variant variant = Variant::make<std::string>(serializedPermission);
 
     // Deserialize the result and compare
-    JsonTokenizer tokenizer("{ \"value\" : \"" + serializedPermission + "\" }");
+    std::string jsonStr = "{ \"value\" : \"" + serializedPermission + "\" }";
+    JsonTokenizer tokenizer(jsonStr);
     Permission::Enum deserializedEnum;
     PrimitiveDeserializer<Permission::Enum>::deserialize(deserializedEnum, tokenizer.nextObject().nextField().value());
     EXPECT_EQ(expectation, deserializedEnum);
     EXPECT_EQ(expectation, joynr::Util::valueOf<Permission::Enum>(variant));
 }
 
-void serializeAndDeserializePermission(const Permission::Enum& input, const std::string& inputAsString, joynr_logging::Logger* logger) {
+void serializeAndDeserializePermission(const Permission::Enum& input, const std::string& inputAsString, Logger& logger) {
     // Serialize
     std::string serializedContent(JsonSerializer::serialize<Permission::Enum>(input));
-    LOG_DEBUG(logger, FormatString("Serialized permission for input %1: %2").arg(inputAsString).arg(serializedContent).str());
+    JOYNR_LOG_DEBUG(logger, "Serialized permission for input: {}, {}", inputAsString, serializedContent);
 
     deserializePermission(serializedContent.substr(1, serializedContent.size()-2 ), input);
 }
@@ -488,8 +479,8 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
 
     std::string expected = expectedStringStream.str();
 
-    LOG_DEBUG(logger, FormatString("Serialized method call: %1").arg(serializedContent).str());
-    LOG_DEBUG(logger, FormatString("Expected method call: %1").arg(expected).str());
+    JOYNR_LOG_DEBUG(logger, "Serialized method call: {}", serializedContent);
+    JOYNR_LOG_DEBUG(logger, "Expected method call: {}", expected);
 
     // Expected literal is:
     // { "_typeName" : "joynr.Request", "methodName" : "methodStringDoubleParameters", "paramDatatypes" : [ "String", "Double" ], "params" : { "doubleParam" : 3.33, "stringParam" : "testStringParam" } }
@@ -515,7 +506,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
                 );
 
     std::string serializedContent = JsonSerializer::serialize<types::TestTypes::TStruct>(tStruct);
-    LOG_DEBUG(logger, serializedContent);
+    JOYNR_LOG_DEBUG(logger, serializedContent);
     EXPECT_EQ(expectedTStruct, serializedContent);
 
     types::TestTypes::TStruct* tStructDeserialized = JsonSerializer::deserialize<types::TestTypes::TStruct>(serializedContent);
@@ -546,7 +537,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
                 );
 
     std::string serializedTStructExt = JsonSerializer::serialize<types::TestTypes::TStructExtended>(tStructExt);
-    LOG_DEBUG(logger, serializedTStructExt);
+    JOYNR_LOG_DEBUG(logger, serializedTStructExt);
 
     EXPECT_EQ(expectedTStructExt, serializedTStructExt);
     types::TestTypes::TStructExtended* deserializedTStructExt = JsonSerializer::deserialize<types::TestTypes::TStructExtended>(serializedTStructExt);
@@ -625,7 +616,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
 
     EXPECT_EQ(expected, jsonReply);
 
-    LOG_DEBUG(logger, FormatString("Serialized Reply: %1").arg(jsonReply).str());
+    JOYNR_LOG_DEBUG(logger, "Serialized Reply: {}", jsonReply);
 
     Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
@@ -686,7 +677,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     std::string expectedReply = expectedReplyStringStream.str();
 
     std::string jsonReply = JsonSerializer::serialize<Reply>(reply);
-    LOG_DEBUG(logger, jsonReply);
+    JOYNR_LOG_DEBUG(logger, jsonReply);
     //EXPECT_EQ(expectedReply, jsonReply);
 
     Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
@@ -705,7 +696,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     while(i_received != receivedReplyResponse.end()) {
         types::Localisation::GpsLocation receivedIterValue = i_received->get<types::Localisation::GpsLocation>();
         types::Localisation::GpsLocation originItervalue = i_origin->get<types::Localisation::GpsLocation>();
-        LOG_DEBUG(logger, receivedIterValue.toString());
+        JOYNR_LOG_DEBUG(logger, receivedIterValue.toString());
         EXPECT_EQ(originItervalue, receivedIterValue);
         i_received++;
         i_origin++;
@@ -800,7 +791,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     request1.setParams(params);
 
     std::string serializedContent = JsonSerializer::serialize(request1);
-    LOG_DEBUG(logger, serializedContent);
+    JOYNR_LOG_DEBUG(logger, serializedContent);
 
     Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
 
@@ -827,7 +818,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     response.push_back(joynr::TypeUtil::toVariant(capabilityInformations));
     reply.setResponse(std::move(response));
     std::string serializedContent = JsonSerializer::serialize<Reply>(reply);
-    LOG_DEBUG(logger, serializedContent);
+    JOYNR_LOG_DEBUG(logger, serializedContent);
 
     Reply* deserializedReply = JsonSerializer::deserialize<Reply>(serializedContent);
 
@@ -906,11 +897,11 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
     std::vector<Variant> paramsReceived = request2->getParams();
 
-    LOG_DEBUG(logger, FormatString("x1%1").arg(paramsReceived.at(0).getTypeName()).str());
+    JOYNR_LOG_DEBUG(logger, "x1 {}", paramsReceived.at(0).getTypeName());
     ASSERT_TRUE(paramsReceived.at(0).is<std::vector<Variant>>()) << "Cannot convert the field of the Param Map to a std::vector<Variant>";
     std::vector<Variant> returnvl = paramsReceived.at(0).get<std::vector<Variant>>();
     ASSERT_TRUE(returnvl.size() == 3) << "list size size != 3";
-    LOG_DEBUG(logger, FormatString("%1").arg(returnvl.at(0).getTypeName()).str());
+    JOYNR_LOG_DEBUG(logger, returnvl.at(0).getTypeName());
 
     ASSERT_TRUE(returnvl.at(0).is<types::Localisation::GpsLocation>()) << "Cannot convert the first entry of the return List to GpsLocation";
 
@@ -941,15 +932,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     request1.setParams(params1);
 
     //Time request serialization
-    JoynrTimePoint start = time_point_cast<milliseconds>(system_clock::now());
+    JoynrTimePoint start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     std::string newSerializedContent = JsonSerializer::serialize<Request>(request1);
-    JoynrTimePoint end = time_point_cast<milliseconds>(system_clock::now());
+    JoynrTimePoint end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int serializationElapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     // Time request deserialization
-    start = time_point_cast<milliseconds>(system_clock::now());
+    start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     Request* deserialized1 = JsonSerializer::deserialize<Request>(newSerializedContent);
-    end = time_point_cast<milliseconds>(system_clock::now());
+    end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int deserializationElapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     // Double the size of the JSON list
@@ -961,34 +952,36 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     Request request2;
     request2.setMethodName("serialize_deserialize_JsonRequestTest_method");
     std::vector<Variant> params2;
-    start = time_point_cast<milliseconds>(system_clock::now());
+    start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     std::vector<Variant> inputv2 = TypeUtil::toVectorOfVariants(inputLocationList);
-    end = time_point_cast<milliseconds>(system_clock::now());
+    end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int convertedElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    LOG_DEBUG(logger, FormatString("converted to vector<Variant> %1 in %2 milliseconds").arg(firstListSize).arg(convertedElapsed).str());
+    JOYNR_LOG_DEBUG(logger, "converted to vector<Variant> {} in {} milliseconds", firstListSize, convertedElapsed);
+    // to silence unused-variable compiler warnings
+    (void)convertedElapsed;
     params2.push_back(Variant::make<std::vector<Variant>>(inputv2));
     request2.setParams(params2);
 
     //Time request serialization with new serializer
-    start = time_point_cast<milliseconds>(system_clock::now());
+    start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     newSerializedContent = JsonSerializer::serialize<Request>(request2);
-    end = time_point_cast<milliseconds>(system_clock::now());
+    end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int serializationElapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     // Time request deserialization with new serializer
-    start = time_point_cast<milliseconds>(system_clock::now());
+    start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     Request* deserialized2 = JsonSerializer::deserialize<Request>(newSerializedContent);
-    end = time_point_cast<milliseconds>(system_clock::now());
+    end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int deserializationElapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-    LOG_DEBUG(logger, FormatString("%1 Objects serialized in %2 milliseconds").arg(firstListSize).arg(serializationElapsed1).str());
-    LOG_DEBUG(logger, FormatString("%1 Objects serialized in %2 milliseconds").arg(firstListSize * 2).arg(serializationElapsed2).str());
-    LOG_DEBUG(logger, FormatString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize).arg(deserializationElapsed1).str());
-    LOG_DEBUG(logger, FormatString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize * 2).arg(deserializationElapsed2).str());
+    JOYNR_LOG_DEBUG(logger, "{} Objects serialized in {} milliseconds", firstListSize, serializationElapsed1);
+    JOYNR_LOG_DEBUG(logger, "{} Objects serialized in {} milliseconds", firstListSize*2, serializationElapsed2);
+    JOYNR_LOG_DEBUG(logger, "{} Objects serialized in {} milliseconds", firstListSize, deserializationElapsed1);
+    JOYNR_LOG_DEBUG(logger, "{} Objects serialized in {} milliseconds", firstListSize*2, deserializationElapsed2);
 
     // Assert O(N) complexity
-    ASSERT_TRUE(serializationElapsed2 < serializationElapsed1 * serializationElapsed1);
-    ASSERT_TRUE(deserializationElapsed2 < deserializationElapsed1 * deserializationElapsed1);
+    ASSERT_TRUE(serializationElapsed2 < (serializationElapsed1 * serializationElapsed1));
+    ASSERT_TRUE(deserializationElapsed2 < (deserializationElapsed1 * deserializationElapsed1));
 
     delete deserialized1;
     delete deserialized2;
@@ -1011,10 +1004,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     std::string wsServerSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::WebSocketAddress>(wsServer);
     std::string wsClientSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::WebSocketClientAddress>(wsClient);
 
-    LOG_DEBUG(logger, FormatString("serialized Joynr address: %1").arg(joynrSerialized).str());
-    LOG_DEBUG(logger, FormatString("serialized Dbus address: %1").arg(dbusSerialized).str());
-    LOG_DEBUG(logger, FormatString("serialized WS server address: %1").arg(wsServerSerialized).str());
-    LOG_DEBUG(logger, FormatString("serialized WS client address: %1").arg(wsClientSerialized).str());
+    JOYNR_LOG_DEBUG(logger, "serialized Joynr address: {}", joynrSerialized);
+    JOYNR_LOG_DEBUG(logger, "serialized Dbus address: {}", dbusSerialized);
+    JOYNR_LOG_DEBUG(logger, "serialized WS server address: {}", wsServerSerialized);
+    JOYNR_LOG_DEBUG(logger, "serialized WS client address: {}", wsClientSerialized);
 
     // deserialize
     joynr::system::RoutingTypes::ChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::ChannelAddress>(joynrSerialized);
@@ -1060,17 +1053,17 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
     capabilityInformation.setChannelId("channeldId");
     capabilityInformation.setDomain("domain");
     capabilityInformation.setProviderQos(qos);
-    LOG_DEBUG(logger,FormatString("capabilityInformation%1").arg(capabilityInformation.toString()).str());
+    JOYNR_LOG_DEBUG(logger, "capabilityInformation {}", capabilityInformation.toString());
 
     std::string serialized = JsonSerializer::serialize<types::CapabilityInformation>(capabilityInformation);
     EXPECT_EQ(expected, serialized);
     // deserialize
-    LOG_DEBUG(logger,FormatString("serialized capabilityInformation%1").arg(serialized).str());
+    JOYNR_LOG_DEBUG(logger, "serialized capabilityInformation {}",serialized);
 
     types::CapabilityInformation* deserializedCI = JsonSerializer::deserialize<types::CapabilityInformation>(serialized);
 
     EXPECT_EQ(capabilityInformation, *deserializedCI);
-    LOG_DEBUG(logger,FormatString("deserialized capabilityInformation%1").arg(deserializedCI->toString()).str());
+    JOYNR_LOG_DEBUG(logger, "deserialized capabilityInformation {}", deserializedCI->toString());
 }
 
 //// Test of ChannelURLInformation which is of type std::Vector<std::string>.
@@ -1082,7 +1075,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
 
     // Serialize the URL Information
     std::string serialized = JsonSerializer::serialize(Variant::make<types::ChannelUrlInformation>(urlInformation));
-    LOG_DEBUG(logger,FormatString("serialized ChannelUrlInformation%1").arg(serialized).str());
+    JOYNR_LOG_DEBUG(logger, "serialized ChannelUrlInformation {}", serialized);
 
     // Expected JSON : { "_typeName" : "joynr.types.ChannelUrlInformation", "urls" : [ "http://example1.com/", "http://example2.com/" ] }
     std::string expected("{\"_typeName\":\"joynr.types.ChannelUrlInformation\",\"urls\": [\"http://example1.com/\",\"http://example2.com/\"]}");
@@ -1150,15 +1143,15 @@ TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
 
 TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
 
-    joynr::OnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
+    OnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
 
-    std::string jsonQos = JsonSerializer::serialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(qos);
-    LOG_DEBUG(logger,FormatString("serialized OnChangeWithKeepAliveSubscriptionQos%1").arg(jsonQos).str());
+    std::string jsonQos = JsonSerializer::serialize<OnChangeWithKeepAliveSubscriptionQos>(qos);
+    JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
-    joynr::OnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
+    OnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
 
-    jsonQos = JsonSerializer::serialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(*desQos);
-    LOG_DEBUG(logger,FormatString("serialized OnChangeWithKeepAliveSubscriptionQos%1").arg(jsonQos).str());
+    jsonQos = JsonSerializer::serialize<OnChangeWithKeepAliveSubscriptionQos>(*desQos);
+    JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
 
     EXPECT_EQ(qos, *desQos);

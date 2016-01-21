@@ -49,7 +49,7 @@ class MapSerializerHTemplate implements MapTemplate{
 
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
-#include "«getIncludeOf(type)»"
+#include «getIncludeOf(type)»
 #include <ostream>
 
 namespace joynr
@@ -63,15 +63,7 @@ using «joynrName» = «type.typeName»;
  * @param stringstream the stream to write the serialized content to
  */
 template <>
-void ClassSerializer<«joynrName»>::serialize(const «joynrName»& «joynrName.toFirstLower», std::ostream& stringstream);
-
-/**
- * @brief Specialized deserialize method for «joynrName».
- * @param «joynrName.toFirstLower» the object to fill during deserialization
- * @param object object containing the parsed json tokens
- */
-template <>
-void ClassDeserializer<«joynrName»>::deserialize(«joynrName»& «joynrName.toFirstLower», IObject& object);
+void ClassSerializerImpl<«joynrName»>::serialize(const «joynrName»& «joynrName.toFirstLower», std::ostream& stringstream);
 
 } // namespace joynr
 

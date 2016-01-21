@@ -43,6 +43,7 @@ import joynr.tests.testTypes.TestEnum;
 import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -58,6 +59,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
@@ -238,6 +240,36 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         Thread.sleep(300);
 
         provider.fireBroadcastWithEnumOutput(expectedTestEnum);
+        broadcastReceived.acquire();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void subscribeToBroadcastWithByteBufferOutput() throws InterruptedException {
+        final Semaphore broadcastReceived = new Semaphore(0);
+        final Byte[] expectedByteBuffer = { 1, 2, 3 };
+
+        long minInterval = 0;
+        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
+        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        proxy.subscribeToBroadcastWithByteBufferParameterBroadcast(new testBroadcastInterface.BroadcastWithByteBufferParameterBroadcastListener() {
+
+                                                                       @Override
+                                                                       public void onError() {
+                                                                           fail("Error while receiving broadcast");
+                                                                       }
+
+                                                                       @Override
+                                                                       public void onReceive(Byte[] byteBufferParameter) {
+                                                                           assertArrayEquals(expectedByteBuffer,
+                                                                                             byteBufferParameter);
+                                                                           broadcastReceived.release();
+                                                                       }
+                                                                   },
+                                                                   subscriptionQos);
+        Thread.sleep(300);
+
+        provider.fireBroadcastWithByteBufferParameter(expectedByteBuffer);
         broadcastReceived.acquire();
     }
 

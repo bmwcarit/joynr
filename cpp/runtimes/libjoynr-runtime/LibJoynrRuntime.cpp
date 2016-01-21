@@ -18,8 +18,6 @@
  */
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
-#include <QtConcurrent/QtConcurrent>
-
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
@@ -69,11 +67,6 @@ LibJoynrRuntime::~LibJoynrRuntime()
     delete libjoynrSettings;
     libjoynrSettings = nullptr;
     delete settings;
-    if (runtimeExecutor != nullptr) {
-        runtimeExecutor->stop();
-        runtimeExecutor->deleteLater();
-        runtimeExecutor = nullptr;
-    }
 }
 
 void LibJoynrRuntime::init(
@@ -189,7 +182,7 @@ void LibJoynrRuntime::unregisterProvider(const std::string& participantId)
 
 void LibJoynrRuntime::setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor)
 {
-    this->runtimeExecutor = runtimeExecutor;
+    this->runtimeExecutor = std::unique_ptr<JoynrRuntimeExecutor>(runtimeExecutor);
 }
 
 LibJoynrRuntime* LibJoynrRuntime::create(JoynrRuntimeExecutor* runtimeExecutor)

@@ -63,7 +63,7 @@ public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider 
 
     private Map<String, List<GetUrlsForChannelDeferred>> pendingDeferredsMap;
 
-    ConcurrentHashMap<String, ChannelUrlInformation> getRegisteredChannels() {
+    public ConcurrentHashMap<String, ChannelUrlInformation> getRegisteredChannels() {
         return registeredChannels;
     }
 

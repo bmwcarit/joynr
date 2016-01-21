@@ -33,11 +33,9 @@ class JoynrMessage;
 class JOYNR_EXPORT InProcessLibJoynrMessagingSkeleton : public InProcessMessagingSkeleton
 {
 public:
-    InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher);
-    virtual ~InProcessLibJoynrMessagingSkeleton()
-    {
-    }
-    void transmit(JoynrMessage& message);
+    explicit InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher);
+    ~InProcessLibJoynrMessagingSkeleton() override = default;
+    void transmit(JoynrMessage& message) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessLibJoynrMessagingSkeleton);

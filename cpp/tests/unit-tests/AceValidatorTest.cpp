@@ -35,9 +35,7 @@ public:
     {
     }
 
-    ~AceValidatorTest()
-    {
-    }
+    ~AceValidatorTest() = default;
 
     void SetUp(){
         std::vector<Permission::Enum> possiblePermissions;

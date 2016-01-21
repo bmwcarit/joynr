@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include <QByteArray>
 
 struct curl_slist;
@@ -36,8 +36,8 @@ class DefaultHttpRequest : public HttpRequest
 {
 public:
     DefaultHttpRequest(void* handle, const QByteArray& content, curl_slist* headers);
-    HttpResult execute();
-    virtual ~DefaultHttpRequest();
+    HttpResult execute() override;
+    ~DefaultHttpRequest() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultHttpRequest);
@@ -48,7 +48,7 @@ private:
     curl_slist* headers;
 
     QByteArray content;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(DefaultHttpRequest);
 };
 
 } // namespace joynr

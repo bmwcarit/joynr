@@ -35,7 +35,7 @@ namespace joynr
  * @brief An implementation of the @ref DelayedScheduler using multiple threads
  *      to execute scheduled @ref Runnable
  */
-class JOYNRCOMMON_EXPORT ThreadPoolDelayedScheduler : public joynr::DelayedScheduler
+class JOYNRCOMMON_EXPORT ThreadPoolDelayedScheduler : public DelayedScheduler
 {
 
 public:
@@ -46,7 +46,7 @@ public:
      * @param defaultDelayMs Default delay for work without delay
      */
     ThreadPoolDelayedScheduler(
-            uint8_t numberOfThreads,
+            std::uint8_t numberOfThreads,
             const std::string& name,
             std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
@@ -54,14 +54,14 @@ public:
      * @brief Destructor
      * @note @ref shutdown must be called before destroying this object
      */
-    virtual ~ThreadPoolDelayedScheduler();
+    ~ThreadPoolDelayedScheduler() override;
 
     /**
      * @brief Does an ordinary shutdown of @ref SingleThreadedDelayedScheduler
      *      and its parent @ref DelayedScheduler and child @ref Thread
      * @note Must be called before destructor is called
      */
-    virtual void shutdown() override;
+    void shutdown() override;
 
 private:
     /*! Disallow copy and assign */

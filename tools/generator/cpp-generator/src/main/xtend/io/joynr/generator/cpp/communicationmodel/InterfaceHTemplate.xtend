@@ -25,34 +25,25 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.FMapTypeAsLastComparator
-import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
 
 class InterfaceHTemplate implements InterfaceTemplate{
 
-	@Inject
-	private extension TemplateBase
+	@Inject private extension TemplateBase
 
-	@Inject
-	private extension CppInterfaceUtil
+	@Inject private extension CppInterfaceUtil
+	@Inject private extension AttributeUtil
+	@Inject private extension NamingUtil
+	@Inject private extension CppStdTypeUtil
 
-	@Inject
-	private extension InterfaceUtil
+	@Inject private extension JoynrCppGeneratorExtensions
 
-	@Inject
-	private extension AttributeUtil
-
-	@Inject
-	private extension NamingUtil
-
-	@Inject extension CppStdTypeUtil
-
-	@Inject
-	private extension JoynrCppGeneratorExtensions
-
-	override generate(FInterface serviceInterface)
+	override generate(FInterface serviceInterface){
+		var selector = TypeSelector::defaultTypeSelector
+		selector.errorTypes(true)
+		selector.typeDefs(true)
 '''
 «val interfaceName = serviceInterface.joynrName»
 «val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"_h").toUpperCase»
@@ -61,15 +52,11 @@ class InterfaceHTemplate implements InterfaceTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(serviceInterface),new FMapTypeAsLastComparator())»
-	«IF datatype instanceof FType»
-		«IF isCompound(datatype)»
-			«getNamespaceStarter(datatype, true)»
-			class «(datatype).joynrName»;
-			«getNamespaceEnder(datatype, true)»
-		«ELSE »
-			#include "«getIncludeOf(datatype)»"
-		«ENDIF»
+«FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(serviceInterface, selector),new FMapTypeAsLastComparator())»
+	«IF isCompound(datatype) || isMap(datatype)»
+		«datatype.forwardDeclaration»
+	«ELSE »
+		#include «datatype.includeOf»
 	«ENDIF»
 «ENDFOR»
 
@@ -81,12 +68,19 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 #include <memory>
 #include <functional>
-#include "joynr/exceptions/JoynrException.h"
 
-namespace joynr {
+namespace joynr
+{
 	class RequestStatus;
 	template <class ... Ts> class Future;
-}
+
+namespace exceptions
+{
+	class JoynrException;
+	class JoynrRuntimeException;
+} // namespace exceptions
+
+} // namespace joynr
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -96,7 +90,7 @@ namespace joynr {
 class «getDllExportMacro()» I«interfaceName»Base {
 public:
 	I«interfaceName»Base();
-	virtual ~I«interfaceName»Base() { }
+	virtual ~I«interfaceName»Base() = default;
 
 	static const std::string& INTERFACE_NAME();
 };
@@ -107,10 +101,10 @@ public:
  */
 class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
 public:
-	virtual ~I«interfaceName»Sync(){ }
-	«produceSyncGetters(serviceInterface,true)»
-	«produceSyncSetters(serviceInterface,true)»
-	«produceSyncMethods(serviceInterface,true)»
+	~I«interfaceName»Sync() override = default;
+	«produceSyncGetterDeclarations(serviceInterface,true)»
+	«produceSyncSetterDeclarations(serviceInterface,true)»
+	«produceSyncMethodDeclarations(serviceInterface,true)»
 };
 
 /**
@@ -119,15 +113,15 @@ public:
  */
 class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
 public:
-	virtual ~I«interfaceName»Async(){ }
-	«produceAsyncGetters(serviceInterface,true)»
-	«produceAsyncSetters(serviceInterface,true)»
-	«produceAsyncMethods(serviceInterface,true)»
+	~I«interfaceName»Async() override = default;
+	«produceAsyncGetterDeclarations(serviceInterface,true)»
+	«produceAsyncSetterDeclarations(serviceInterface,true)»
+	«produceAsyncMethodDeclarations(serviceInterface,true, true)»
 };
 
 class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
 public:
-	virtual ~I«interfaceName»(){ }
+	~I«interfaceName»() override = default;
 	«FOR attribute: getAttributes(serviceInterface)»
 		«val attributeName = attribute.name.toFirstUpper»
 		«IF attribute.readable»
@@ -148,4 +142,5 @@ public:
 «getNamespaceEnder(serviceInterface)»
 #endif // «headerGuard»
 '''
+}
 }

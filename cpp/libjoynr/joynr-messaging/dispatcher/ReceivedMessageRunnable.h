@@ -35,19 +35,19 @@ class Dispatcher;
   *
   */
 
-class ReceivedMessageRunnable : public joynr::Runnable, public ObjectWithDecayTime
+class ReceivedMessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
     ReceivedMessageRunnable(const JoynrMessage& message, Dispatcher& dispatcher);
 
-    void shutdown();
-    void run();
+    void shutdown() override;
+    void run() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ReceivedMessageRunnable);
     JoynrMessage message;
     Dispatcher& dispatcher;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ReceivedMessageRunnable);
 };
 
 } // namespace joynr

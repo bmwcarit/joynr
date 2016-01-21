@@ -36,11 +36,9 @@ class InProcessMessagingSkeleton;
 class JOYNRCOMMON_EXPORT InProcessMessagingStub : public IMessaging
 {
 public:
-    InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
-    virtual ~InProcessMessagingStub()
-    {
-    }
-    virtual void transmit(JoynrMessage& message);
+    explicit InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
+    ~InProcessMessagingStub() override = default;
+    void transmit(JoynrMessage& message) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessMessagingStub);

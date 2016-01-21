@@ -78,14 +78,12 @@ class CommunicationModelGenerator {
 			if (type.isPartOfTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
-			if(type instanceof FMapType) {
-				generateFile(
-					fsa,
-					path + type.joynrName + ".java",
-					mapTemplate,
-					type
-				)
-			}
+			generateFile(
+				fsa,
+				path + type.joynrName + ".java",
+				mapTemplate,
+				type
+			)
 		}
 	}
 }

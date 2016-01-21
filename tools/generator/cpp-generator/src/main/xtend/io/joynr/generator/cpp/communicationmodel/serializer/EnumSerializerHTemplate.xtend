@@ -49,7 +49,7 @@ class EnumSerializerHTemplate implements EnumTemplate{
 
 #include "joynr/PrimitiveDeserializer.h"
 #include "joynr/ClassSerializer.h"
-#include "«getIncludeOf(type)»"
+#include «getIncludeOf(type)»
 
 namespace joynr
 {
@@ -62,7 +62,7 @@ using «joynrName» = «type.typeName»;
  * @param stringstream the stream to write the serialized content to
  */
 template <>
-void ClassSerializer<«joynrName»>::serialize(const «joynrName»& «joynrName.toFirstLower», std::ostream& stringstream);
+void ClassSerializerImpl<«joynrName»>::serialize(const «joynrName»& «joynrName.toFirstLower», std::ostream& stringstream);
 
 /**
  * @brief Specialized deserialize method for «joynrName».

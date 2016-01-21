@@ -24,7 +24,7 @@
 
 #include "joynr/IMessageReceiver.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 
 #include <string>
@@ -53,38 +53,38 @@ class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public IMessageReceiver
 public:
     explicit HttpReceiver(const MessagingSettings& settings,
                           std::shared_ptr<MessageRouter> messageRouter);
-    virtual ~HttpReceiver();
+    ~HttpReceiver() override;
 
     /**
       * Gets the channel ID of the receive channel for incoming messages.
       */
-    virtual const std::string& getReceiveChannelId() const override;
+    const std::string& getReceiveChannelId() const override;
 
     /**
       * Checks the MessageSettings and updates the configuration.
       * Can be called at any time to read settings.
       */
-    virtual void updateSettings() override;
+    void updateSettings() override;
 
     /**
       * Deletes the channel on the bounceproxy. Will only try once
       */
-    virtual bool tryToDeleteChannel() override;
+    bool tryToDeleteChannel() override;
 
     /**
       * Blocks until the ReceiveQue is started.
       */
-    virtual void waitForReceiveQueueStarted() override;
+    void waitForReceiveQueueStarted() override;
 
-    virtual void startReceiveQueue() override;
+    void startReceiveQueue() override;
 
     /**
       * stops the receiveQue. This might ungracefully terminate the thread of the
      * LongPollingMessageReceiver.
       */
-    virtual void stopReceiveQueue() override;
+    void stopReceiveQueue() override;
 
-    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) override;
+    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
@@ -113,7 +113,7 @@ private:
     friend class ::DispatcherIntegrationTest;
     friend class ::CapabilitiesClientTest;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(HttpReceiver);
 };
 
 } // namespace joynr

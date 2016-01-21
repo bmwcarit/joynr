@@ -20,9 +20,8 @@
 #define UTIL_H_
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
-#include <QByteArray>
 #include <cassert>
 #include <cstddef>
 #include <tuple>
@@ -30,6 +29,9 @@
 #include <utility>
 #include <vector>
 #include <set>
+#include <algorithm>
+#include <sstream>
+
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
 
@@ -49,15 +51,19 @@ public:
       * Splits a byte array representation of multiple JSON objects into
       * a list of byte arrays, each containing a single JSON object.
       */
-    static std::vector<QByteArray> splitIntoJsonObjects(const QByteArray& jsonStream);
+    static std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
 
     static std::string attributeGetterFromName(const std::string& attributeName);
 
     template <typename T>
     static typename T::Enum convertVariantToEnum(const Variant& v)
     {
-        std::string enumValueName = v.get<std::string>();
-        return T::getEnum(enumValueName);
+        if (v.is<std::string>()) {
+            std::string enumValueName = v.get<std::string>();
+            return T::getEnum(enumValueName);
+        } else {
+            return v.get<typename T::Enum>();
+        }
     }
 
     template <typename T>
@@ -67,10 +73,7 @@ public:
         std::vector<typename T::Enum> enumVector;
         enumVector.reserve(variantVector.size());
         for (const Variant& variant : variantVector) {
-            if (variant.is<std::string>()) {
-                std::string enumValueName = variant.get<std::string>();
-                enumVector.push_back(T::getEnum(enumValueName));
-            }
+            enumVector.push_back(convertVariantToEnum<T>(variant));
         }
         return enumVector;
     }
@@ -142,9 +145,20 @@ public:
     /**
      * Log a serialized Joynr message
      */
-    static void logSerializedMessage(joynr_logging::Logger* logger,
+    static void logSerializedMessage(Logger& logger,
                                      const std::string& explanation,
-                                     const std::string& message);
+                                     const std::string& message)
+    {
+        if (message.size() > 2048) {
+            JOYNR_LOG_DEBUG(logger,
+                            "{} {}<**truncated, length {}",
+                            explanation,
+                            message.substr(0, 2048),
+                            message.length());
+        } else {
+            JOYNR_LOG_DEBUG(logger, "{} {}, length {}", explanation, message, message.length());
+        }
+    }
 
     static void throwJoynrException(const exceptions::JoynrException& error);
 
@@ -195,9 +209,19 @@ public:
     template <typename... Ts>
     static std::tuple<Ts...> toValueTuple(const std::vector<Variant>& list);
 
-private:
-    static joynr_logging::Logger* logger;
+    template <class... Ts>
+    static std::string packTypeName()
+    {
+        std::string expandedTypeNames[] = {(std::string(typeid(Ts).name()))...};
+        std::stringstream ss;
+        for (std::string typeNameElement : expandedTypeNames) {
+            ss << typeNameElement;
+        }
+        std::string typeName = ss.str();
+        return typeName;
+    }
 
+private:
     template <typename T, typename... Ts>
     static int getTypeId_split()
     {
@@ -221,94 +245,52 @@ private:
     }
 };
 
+// this level of indirection is necessary to allow partial specialization
+template <typename T>
+struct ValueOfImpl
+{
+    static T valueOf(const Variant& variant)
+    {
+        return variant.get<T>();
+    }
+};
+
+// partial specilization for lists of datatypes
+template <typename T>
+struct ValueOfImpl<std::vector<T>>
+{
+    static std::vector<T> valueOf(const Variant& variant)
+    {
+        return Util::convertVariantVectorToVector<T>(variant.get<std::vector<Variant>>());
+    }
+};
+
 template <typename T>
 inline T Util::valueOf(const Variant& variant)
 {
-    return variant.get<T>();
+    return ValueOfImpl<T>::valueOf(variant);
 }
 
 template <>
 inline float Util::valueOf<float>(const Variant& variant)
 {
-    return variant.get<double>();
+    return ValueOfImpl<double>::valueOf(variant);
 }
 
 template <>
 inline std::string Util::valueOf<std::string>(const Variant& variant)
 {
-    return removeEscapeFromSpecialChars(variant.get<std::string>());
-}
-
-// concrete specilization for lists of primitive datatypes
-template <>
-inline std::vector<int8_t> Util::valueOf<std::vector<int8_t>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<int8_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<uint8_t> Util::valueOf<std::vector<uint8_t>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<uint8_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<int16_t> Util::valueOf<std::vector<int16_t>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<int16_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<uint16_t> Util::valueOf<std::vector<uint16_t>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<uint16_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<int32_t> Util::valueOf<std::vector<int32_t>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<int32_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<uint32_t> Util::valueOf<std::vector<uint32_t>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<uint32_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<int64_t> Util::valueOf<std::vector<int64_t>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<int64_t>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<uint64_t> Util::valueOf<std::vector<uint64_t>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<uint64_t>(variant.get<std::vector<Variant>>());
+    return removeEscapeFromSpecialChars(ValueOfImpl<std::string>::valueOf(variant));
 }
 
 template <>
 inline std::vector<float> Util::valueOf<std::vector<float>>(const Variant& variant)
 {
     std::vector<double> doubles =
-            joynr::Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
+            Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
     std::vector<float> floats(doubles.size());
     std::copy(doubles.cbegin(), doubles.cend(), floats.begin());
     return floats;
-}
-
-template <>
-inline std::vector<double> Util::valueOf<std::vector<double>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
-}
-
-template <>
-inline std::vector<std::string> Util::valueOf<std::vector<std::string>>(const Variant& variant)
-{
-    return joynr::Util::convertVariantVectorToVector<std::string>(
-            variant.get<std::vector<Variant>>());
 }
 
 template <typename... Ts>
@@ -372,6 +354,22 @@ auto removeAll(std::vector<T>& v, const T& e)
 {
     return v.erase(std::remove(v.begin(), v.end(), e), v.end());
 }
+
+/**
+ *@brief this meta function allows to check whether a type U is derived from a template T
+ */
+template <template <typename...> class T, typename U>
+struct IsDerivedFromTemplate
+{
+private:
+    template <typename... Args>
+    static decltype(static_cast<const T<Args...>&>(std::declval<U>()), std::true_type{}) test(
+            const T<Args...>&);
+    static std::false_type test(...);
+
+public:
+    static constexpr bool value = decltype(IsDerivedFromTemplate::test(std::declval<U>()))::value;
+};
 
 } // namespace joynr
 #endif // UTIL_H_

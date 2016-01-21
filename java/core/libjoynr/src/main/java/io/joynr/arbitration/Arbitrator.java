@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.proxy.Callback;
@@ -105,8 +104,8 @@ public class Arbitrator {
         localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
 
             @Override
-            public void onFailure(JoynrException error) {
-                Arbitrator.this.onError(new JoynrRuntimeException(error.toString()));
+            public void onFailure(JoynrRuntimeException error) {
+                Arbitrator.this.onError(error);
             }
 
             @Override

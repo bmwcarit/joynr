@@ -21,12 +21,15 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
+#include <chrono>
+
+#include <QMap>
 
 // Forward declare test classes
 class ChannelUrlSelectorTest_punishTest_Test;
@@ -56,7 +59,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelector : public IChannelUrlSelec
 {
 
 public:
-    static const int64_t& TIME_FOR_ONE_RECOUPERATION();
+    static std::chrono::milliseconds TIME_FOR_ONE_RECOUPERATION();
     static const double& PUNISHMENT_FACTOR();
     /**
      * @brief Initialize
@@ -66,18 +69,18 @@ public:
      * @param punishmentFactor
      */
     explicit ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
-                                int64_t timeForOneRecouperation,
+                                std::chrono::milliseconds timeForOneRecouperation,
                                 double punishmentFactor);
 
-    virtual ~ChannelUrlSelector();
+    ~ChannelUrlSelector() override;
 
     /**
     * @brief Uses the ChannelUrlDirectoryProxy to query the remote ChannelUrlDirectory
     *
     * @param channelUrlDirectoryProxy
     */
-    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                      const MessagingSettings& settings) override;
+    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
+              const MessagingSettings& settings) override;
 
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
@@ -89,9 +92,9 @@ public:
     * @param timeout
     * @return std::string
     */
-    virtual std::string obtainUrl(const std::string& channelId,
-                                  RequestStatus& status,
-                                  const int64_t& timeout_ms) override;
+    std::string obtainUrl(const std::string& channelId,
+                          RequestStatus& status,
+                          std::chrono::milliseconds timeout) override;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *
@@ -99,7 +102,7 @@ public:
     * @param channelId
     * @param url
     */
-    virtual void feedback(bool success, const std::string& channelId, std::string url) override;
+    void feedback(bool success, const std::string& channelId, std::string url) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ChannelUrlSelector);
@@ -108,11 +111,11 @@ private:
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     const BounceProxyUrl& bounceProxyUrl;
     QMap<std::string, ChannelUrlSelectorEntry*> entries;
-    int64_t timeForOneRecouperation;
+    std::chrono::milliseconds timeForOneRecouperation;
     double punishmentFactor;
     std::string channelUrlDirectoryUrl;
     bool useDefaultUrl;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ChannelUrlSelector);
 };
 
 /**
@@ -128,7 +131,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelectorEntry
 public:
     ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
                             double punishmentFactor,
-                            int64_t timeForOneRecouperation);
+                            std::chrono::milliseconds timeForOneRecouperation);
     ~ChannelUrlSelectorEntry();
     /**
      * @brief Returns the Url with the higest fitness value.
@@ -167,12 +170,12 @@ private:
     friend class ::ChannelUrlSelectorTest_updateTest_Test;
     friend class ::ChannelUrlSelectorTest_initFittnessTest_Test;
 
-    uint64_t lastUpdate;
+    std::chrono::time_point<std::chrono::system_clock> lastUpdate;
     std::vector<double> fitness;
     types::ChannelUrlInformation urlInformation;
     double punishmentFactor;
-    int64_t timeForOneRecouperation;
-    static joynr_logging::Logger* logger;
+    std::chrono::milliseconds timeForOneRecouperation;
+    ADD_LOGGER(ChannelUrlSelectorEntry);
 };
 
 } // namespace joynr

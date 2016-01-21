@@ -21,16 +21,15 @@
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Settings.h"
 
 #include <chrono>
 #include <gtest/gtest.h>
-#include <QString>
 #include <curl/curl.h>
+#include <regex>
 
 using namespace joynr;
-using namespace joynr_logging;
 
 using namespace ::testing;
 
@@ -87,19 +86,18 @@ size_t getHTTPHeaderDate(void *ptr, size_t size, size_t nmemb, void *userdata) {
 
 // TODO reenable test
 TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
-    Logger* logger = Logging::getInstance()->getLogger("TEST", "ClockSkewTest");
+    Logger logger("ClockSkewTest");
 
     // Get the location of the bounce proxy
-    QUrl bounceurl   = messagingSettings->getBounceProxyUrl().getTimeCheckUrl();
-	ASSERT_TRUE(bounceurl.isValid());
-	QString urlString = bounceurl.toString();
-    QByteArray urlByteArray = urlString.toLatin1();
-    const char *url  = urlByteArray.data();
+    Url bounceurl = messagingSettings->getBounceProxyUrl().getTimeCheckUrl();
+    ASSERT_TRUE(bounceurl.isValid());
+    std::string urlString = bounceurl.toString();
+    const char *url  = urlString.c_str();
 
     // Use libcurl to get the HTTP date from the bounce proxy server
     CURL *curl = curl_easy_init();
     if (!curl) {
-        LOG_ERROR(logger,"unknown error during curl_easy_init");
+        JOYNR_LOG_ERROR(logger, "unknown error during curl_easy_init");
         FAIL();
     }
 
@@ -117,18 +115,18 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     ASSERT_FALSE(datestr[0] == '\0') << "Could not read date from bounce proxy";
 
     // Parse the returned date using curl
-    time_t epochsecs = curl_getdate(datestr, NULL);
+    time_t epochsecs = curl_getdate(datestr, nullptr);
 
     ASSERT_FALSE(epochsecs < -1) << "Could not parse date from bounce proxy.";
 
     // Compare the time with the local time
-    uint64_t now        = DispatcherUtils::nowInMilliseconds();
-    uint64_t remoteTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
+    std::uint64_t now        = DispatcherUtils::nowInMilliseconds();
+    std::uint64_t remoteTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
 
     auto minMaxTime = std::minmax(now, remoteTime);
-    uint64_t diff = minMaxTime.second - minMaxTime.first;
+    std::uint64_t diff = minMaxTime.second - minMaxTime.first;
 
-    LOG_INFO(logger, FormatString("Time difference is %1 msecs").arg(now).str());
+    JOYNR_LOG_INFO(logger, "Time difference is {}  msecs",now);
     EXPECT_TRUE(diff < 2000) << "Time difference between local and remote is over 2 seconds";
 
 }

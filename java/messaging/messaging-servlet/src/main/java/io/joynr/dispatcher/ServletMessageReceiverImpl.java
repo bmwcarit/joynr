@@ -84,6 +84,9 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
         this.channelUrlDirectory = channelUrlDirectory;
         this.longPollingReceiver = longPollingReceiver;
         this.contextRoot = contextRoot;
+        if (hostPath.endsWith("/")) {
+            hostPath = hostPath.substring(0, hostPath.length() - 1);
+        }
         this.hostPath = hostPath;
         this.servletShutdownTimeout_ms = servletShutdownTimeout_ms;
         this.started = false;

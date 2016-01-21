@@ -38,7 +38,7 @@ namespace system
 {
 class DiscoveryQos;
 class DiscoveryProxy;
-}
+} // namespace system
 
 /**
  * @brief The LocalDiscoveryAggregator class is a wrapper for discovery proxies. On
@@ -58,24 +58,24 @@ public:
     LocalDiscoveryAggregator(IRequestCallerDirectory& requestCallerDirectory,
                              const SystemServicesSettings& systemServicesSettings);
 
-    virtual ~LocalDiscoveryAggregator();
+    ~LocalDiscoveryAggregator() override;
 
     void setDiscoveryProxy(joynr::system::IDiscoverySync* discoveryProxy);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void add(const joynr::types::DiscoveryEntry& entry);
+    void add(const joynr::types::DiscoveryEntry& entry) override;
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void lookup(std::vector<joynr::types::DiscoveryEntry>& result,
-                        const std::string& domain,
-                        const std::string& interfaceName,
-                        const joynr::types::DiscoveryQos& discoveryQos);
+    void lookup(std::vector<joynr::types::DiscoveryEntry>& result,
+                const std::string& domain,
+                const std::string& interfaceName,
+                const joynr::types::DiscoveryQos& discoveryQos) override;
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void lookup(joynr::types::DiscoveryEntry& result, const std::string& participantId);
+    void lookup(joynr::types::DiscoveryEntry& result, const std::string& participantId) override;
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void remove(const std::string& participantId);
+    void remove(const std::string& participantId) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);

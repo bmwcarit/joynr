@@ -43,11 +43,10 @@
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr_logging;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
@@ -57,12 +56,11 @@ ACTION_P(ReleaseSemaphore,semaphore)
 static const std::string messagingPropertiesPersistenceFileName1("CombinedEnd2EndTest-runtime1-joynr.settings");
 static const std::string messagingPropertiesPersistenceFileName2("CombinedEnd2EndTest-runtime2-joynr.settings");
 
-joynr_logging::Logger* CombinedEnd2EndTest::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "CombinedEnd2EndTest");
+INIT_LOGGER(CombinedEnd2EndTest);
 
 CombinedEnd2EndTest::CombinedEnd2EndTest() :
-        runtime1(NULL),
-        runtime2(NULL),
+        runtime1(nullptr),
+        runtime2(nullptr),
         settings1("test-resources/SystemIntegrationTest1.settings"),
         settings2("test-resources/SystemIntegrationTest2.settings"),
         messagingSettings1(settings1),
@@ -78,15 +76,15 @@ CombinedEnd2EndTest::CombinedEnd2EndTest() :
 
 void CombinedEnd2EndTest::SetUp()
 {
-    LOG_DEBUG(logger, "SetUp() CombinedEnd2End");
+    JOYNR_LOG_DEBUG(logger, "SetUp() CombinedEnd2End");
 
     // See if the test environment has overridden the configuration files
     tests::Configuration& configuration = tests::Configuration::getInstance();
     std::string systemSettingsFile = configuration.getDefaultSystemSettingsFile();
     std::string websocketSettingsFile = configuration.getDefaultWebsocketSettingsFile();
 
-    LOG_DEBUG(logger, FormatString("Default system settings file: %1").arg(systemSettingsFile.c_str()).str());
-    LOG_DEBUG(logger, FormatString("Default websocket settings file: %1").arg(websocketSettingsFile.c_str()).str());
+    JOYNR_LOG_DEBUG(logger, "Default system settings file: {}",systemSettingsFile.c_str());
+    JOYNR_LOG_DEBUG(logger, "Default websocket settings file: {}",websocketSettingsFile.c_str());
 
     if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
         runtime1 = JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration1.settings",
@@ -120,11 +118,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     //consumer for testinterface
     // Testing Lists
@@ -330,10 +328,21 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
             testProxy->setEnumAttribute(static_cast<tests::testTypes::TestEnum::Enum>(999));
             ASSERT_FALSE(true) << "This line of code should never be reached";
         } catch (joynr::exceptions::MethodInvocationException e) {
-            LOG_DEBUG(logger, FormatString("Expected joynr::exceptions::MethodInvocationException has been thrown. Message: %1").arg(e.getMessage()).str());
+            JOYNR_LOG_DEBUG(logger, "Expected joynr::exceptions::MethodInvocationException has been thrown. Message: {}",e.getMessage());
         } catch (std::exception e) {
             ASSERT_FALSE(true) << "joynr::exceptions::MethodInvocationException is expected, however exception with message " << e.what() << "is thrown";
         }
+
+        // Testing byte buffer
+        joynr::ByteBuffer byteBufferValue {1,2,3};
+        testProxy->setByteBufferAttribute(byteBufferValue);
+        joynr::ByteBuffer actualByteBufferValue;
+        testProxy->getByteBufferAttribute(actualByteBufferValue);
+        EXPECT_EQ(actualByteBufferValue, byteBufferValue);
+
+        joynr::ByteBuffer returnByteBufferValue;
+        testProxy->methodWithByteBuffer(returnByteBufferValue, byteBufferValue);
+        EXPECT_EQ(returnByteBufferValue, byteBufferValue);
     }
 
     // Testing TTL
@@ -420,28 +429,28 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         bool booleanOut;
         double doubleOut;
         float floatOut;
-        int8_t int8Out;
-        int16_t int16Out;
-        int32_t int32Out;
-        int64_t int64Out;
-        uint8_t uint8Out;
-        uint16_t uint16Out;
-        uint32_t uint32Out;
-        uint64_t uint64Out;
+        std::int8_t int8Out;
+        std::int16_t int16Out;
+        std::int32_t int32Out;
+        std::int64_t int64Out;
+        std::uint8_t uint8Out;
+        std::uint16_t uint16Out;
+        std::uint32_t uint32Out;
+        std::uint64_t uint64Out;
         std::string stringOut;
 
         bool booleanArg = true;
         double doubleArg = 1.1;
         float floatArg = 2.2;
-        int8_t int8Arg = 6;
-        int16_t int16Arg = 3;
-        int32_t int32Arg = 4;
-        int64_t int64Arg = 5;
+        std::int8_t int8Arg = 6;
+        std::int16_t int16Arg = 3;
+        std::int32_t int32Arg = 4;
+        std::int64_t int64Arg = 5;
         std::string stringArg = "7";
-        uint16_t uint16Arg = 8;
-        uint32_t uint32Arg = 9;
-        uint64_t uint64Arg = 10;
-        uint8_t uint8Arg = 11;
+        std::uint16_t uint16Arg = 8;
+        std::uint32_t uint32Arg = 9;
+        std::uint64_t uint64Arg = 10;
+        std::uint8_t uint8Arg = 11;
         testProxy->methodWithAllPossiblePrimitiveParameters(booleanOut,
                                                             doubleOut,
                                                             floatOut,
@@ -532,7 +541,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -549,8 +558,8 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 1000;
-    int64_t maxInterval_ms = 2000;
+    std::int64_t minInterval_ms = 1000;
+    std::int64_t maxInterval_ms = 2000;
 
     OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                                     10000,   // validity_ms
@@ -560,8 +569,8 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     testProxy->unsubscribeFromLocation(subscriptionId);
 
@@ -584,7 +593,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -605,7 +614,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     // changes more often. This prevents the consumer from being flooded by updated values.
     // The filtering happens on the provider's side, thus also preventing excessive network traffic.
     // This value is provided in milliseconds. The minimum value for minInterval is 50 ms.
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms);  // minInterval_ms
@@ -613,13 +622,13 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
 
     //This wait is necessary, because subcriptions are async, and an attribute could be changed before
     // before the subscription has started.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     // Change the location once
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     // Change the location 3 times
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
@@ -629,9 +638,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
 
     // Wait for 3 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     delete testProxyBuilder;
 }
@@ -659,7 +668,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     ProxyBuilder<tests::testProxy>* proxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -684,8 +693,8 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     std::string subscriptionId = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     testProxy->unsubscribeFromListOfInts(subscriptionId);
     runtime1->unregisterProvider(providerParticipantId);
@@ -765,7 +774,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
@@ -788,16 +797,16 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     std::string subscriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     gpsProxy->unsubscribeFromLocation(subscriptionId);
 
     // Check that the unsubscribe is eventually successful
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
 
     delete testProxyBuilder;
 }
@@ -810,7 +819,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
+    std::this_thread::sleep_for(std::chrono::seconds(1)); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
@@ -883,7 +892,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    // joynr::Semaphore semaphore(0);
+    // Semaphore semaphore(0);
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -898,15 +907,15 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     tests::testProxy* testProxy = createTestProxy(runtime2, domainName);
     // Subscribe in a background thread
     QtConcurrent::run(subscribeToLocation, subscriptionListener, testProxy, this);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     unsubscribeFromLocation(testProxy, registeredSubscriptionId);
 
@@ -988,7 +997,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     // Shut down the provider
     //runtime1->stopMessaging();
     runtime1->unregisterProvider(domainName, testProvider);
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     // Setup an onError callback function
     std::function<void(const exceptions::JoynrException&)> onError =

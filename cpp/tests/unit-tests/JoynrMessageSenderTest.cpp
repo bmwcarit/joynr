@@ -158,9 +158,9 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     MockDispatcher mockDispatcher;
     std::shared_ptr<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
 
-    int64_t period = 2000;
-    int64_t validity = 100000;
-    int64_t alert = 4000;
+    std::int64_t period = 2000;
+    std::int64_t validity = 100000;
+    std::int64_t alert = 4000;
     Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(validity, period, alert));
 
     SubscriptionRequest subscriptionRequest;
@@ -189,8 +189,8 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     MockDispatcher mockDispatcher;
     std::shared_ptr<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
 
-    int64_t minInterval = 2000;
-    int64_t validity = 100000;
+    std::int64_t minInterval = 2000;
+    std::int64_t validity = 100000;
     OnChangeSubscriptionQos qos{validity, minInterval};
 
     BroadcastSubscriptionRequest subscriptionRequest;

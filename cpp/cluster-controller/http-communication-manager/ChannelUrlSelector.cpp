@@ -20,31 +20,31 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/TypeUtil.h"
+#include "joynr/QtTypeUtil.h"
 #include <boost/algorithm/string/predicate.hpp>
-
+#include <QUrl>
 #include <cmath>
 #include <memory>
+#include <chrono>
 
 namespace joynr
 {
 
-joynr_logging::Logger* ChannelUrlSelector::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "ChannelUrlSelector");
+INIT_LOGGER(ChannelUrlSelector);
 
 const double& ChannelUrlSelector::PUNISHMENT_FACTOR()
 {
     static const double value = 0.4;
     return value;
 }
-const int64_t& ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
+
+std::chrono::milliseconds ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
 {
-    static const int64_t value = 1000 * 60 * 3;
-    return value;
+    return std::chrono::minutes(3);
 }
 
 ChannelUrlSelector::ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
-                                       int64_t timeForOneRecouperation,
+                                       std::chrono::milliseconds timeForOneRecouperation,
                                        double punishmentFactor)
         : channelUrlDirectory(),
           bounceProxyUrl(bounceProxyUrl),
@@ -54,7 +54,7 @@ ChannelUrlSelector::ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
           channelUrlDirectoryUrl(),
           useDefaultUrl(true)
 {
-    LOG_TRACE(logger, "Created ...");
+    JOYNR_LOG_TRACE(logger, "Created ...");
 }
 
 ChannelUrlSelector::~ChannelUrlSelector()
@@ -69,7 +69,7 @@ ChannelUrlSelector::~ChannelUrlSelector()
         }
         ++it;
     }
-    LOG_TRACE(logger, "Destroyed ...");
+    JOYNR_LOG_TRACE(logger, "Destroyed ...");
 }
 
 void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
@@ -82,57 +82,47 @@ void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channel
 
 std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
                                           RequestStatus& status,
-                                          const int64_t& timeout_ms)
+                                          std::chrono::milliseconds timeout)
 {
 
-    LOG_TRACE(logger, "entering obtainUrl ...");
+    JOYNR_LOG_TRACE(logger, "entering obtainUrl ...");
     status.setCode(RequestStatusCode::IN_PROGRESS);
 
     std::string url("");
 
     if (!channelUrlDirectory) {
-        LOG_DEBUG(logger, "obtainUrl: channelUrlDirectoryProxy not available ...");
-        LOG_DEBUG(logger,
-                  "using default url constructed from channelId and BounceproxyUrl instead...");
+        JOYNR_LOG_DEBUG(logger, "obtainUrl: channelUrlDirectoryProxy not available ...");
+        JOYNR_LOG_DEBUG(
+                logger,
+                "using default url constructed from channelId and BounceproxyUrl instead...");
         status.setCode(RequestStatusCode::ERROR);
         url = constructDefaultUrl(channelId);
         return constructUrl(url);
     }
 
     if (entries.contains(channelId)) {
-        LOG_DEBUG(logger,
-                  FormatString("obtainUrl: using cached Urls for id = %1").arg(channelId).str());
+        JOYNR_LOG_DEBUG(logger, "obtainUrl: using cached Urls for id = {}", channelId);
         ChannelUrlSelectorEntry* entry = entries.value(channelId);
         status.setCode(RequestStatusCode::OK);
         return constructUrl(entry->best());
     }
-    LOG_DEBUG(
-            logger,
-            FormatString(
-                    "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = %1")
-                    .arg(channelId)
-                    .str());
+    JOYNR_LOG_DEBUG(logger,
+                    "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = {}",
+                    channelId);
     std::shared_ptr<Future<types::ChannelUrlInformation>> proxyFuture(
-            channelUrlDirectory->getUrlsForChannelAsync(channelId, timeout_ms));
+            channelUrlDirectory->getUrlsForChannelAsync(channelId, timeout));
     status = proxyFuture->getStatus();
 
     if (status.successful()) {
-        LOG_DEBUG(
-                logger,
-                FormatString("obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = %1")
-                        .arg(channelId)
-                        .str());
+        JOYNR_LOG_DEBUG(logger,
+                        "obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = {}",
+                        channelId);
         types::ChannelUrlInformation urlInformation;
         proxyFuture->get(urlInformation);
         if (urlInformation.getUrls().empty()) {
-            LOG_DEBUG(logger,
-                      FormatString("obtainUrl: empty list of urls obtained from id = %1")
-                              .arg(channelId)
-                              .str());
-            LOG_DEBUG(logger,
-                      FormatString("obtainUrl: constructing default url for id = %1")
-                              .arg(channelId)
-                              .str());
+            JOYNR_LOG_DEBUG(
+                    logger, "obtainUrl: empty list of urls obtained from id = {}", channelId);
+            JOYNR_LOG_DEBUG(logger, "obtainUrl: constructing default url for id = {}", channelId);
             status.setCode(RequestStatusCode::ERROR);
             url = constructDefaultUrl(channelId);
             return constructUrl(url);
@@ -145,11 +135,10 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
         status.setCode(RequestStatusCode::OK);
         return constructUrl(url);
     } else {
-        LOG_DEBUG(logger,
-                  FormatString("obtainUrl: FAILED to obtain Urls from remote ChannelUrlDirectory "
-                               "for id = %1")
-                          .arg(channelId)
-                          .str());
+        JOYNR_LOG_DEBUG(logger,
+                        "obtainUrl: FAILED to obtain Urls from remote ChannelUrlDirectory "
+                        "for id = {}",
+                        channelId);
         status.setCode(RequestStatusCode::ERROR);
         url = constructDefaultUrl(channelId);
         return constructUrl(url);
@@ -159,17 +148,17 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
 
 void ChannelUrlSelector::feedback(bool success, const std::string& channelId, std::string url)
 {
-    LOG_TRACE(logger, "entering feedback ...");
+    JOYNR_LOG_TRACE(logger, "entering feedback ...");
     if (success) {
-        LOG_TRACE(logger, "feedback was positive");
+        JOYNR_LOG_TRACE(logger, "feedback was positive");
         return;
     }
     if (!entries.contains(channelId)) {
-        LOG_DEBUG(logger, "feedback for an unknown channelId");
+        JOYNR_LOG_DEBUG(logger, "feedback for an unknown channelId");
         return;
     }
-    LOG_TRACE(logger, FormatString("feedback: punishing Url = %1").arg(url).str());
-    LOG_TRACE(logger, FormatString(" for channelId= %1").arg(channelId).str());
+    JOYNR_LOG_TRACE(logger, "feedback: punishing Url = {}", url);
+    JOYNR_LOG_TRACE(logger, " for channelId= {}", channelId);
     ChannelUrlSelectorEntry* entry = entries.value(channelId);
     std::string::size_type cutoff = url.find("/" + BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX(), 0);
     url.resize(cutoff);
@@ -183,7 +172,7 @@ std::string ChannelUrlSelector::constructUrl(const std::string& baseUrl)
     QUrl sendUrl(QString::fromStdString(baseUrl));
     std::string path = sendUrl.path().toStdString();
     using boost::algorithm::ends_with;
-    if (!ends_with(path, "/")) {
+    if (!path.empty() && !ends_with(path, "/")) {
         path.append("/");
     }
     path.append(BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX());
@@ -195,12 +184,11 @@ std::string ChannelUrlSelector::constructUrl(const std::string& baseUrl)
 // TODO: needs to be removed in future when directoy is working! OR: declare as default strategy
 std::string ChannelUrlSelector::constructDefaultUrl(const std::string& channelId)
 {
-    LOG_DEBUG(
-            logger,
-            "constructDefaultUrl ... using default Url inferred from channelId and BounceProxyUrl");
-    if (!useDefaultUrl)
-        assert(false);
-    std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString().toStdString() + channelId;
+    JOYNR_LOG_DEBUG(logger,
+                    "constructDefaultUrl ... using default Url inferred from channelId and "
+                    "BounceProxyUrl");
+    assert(useDefaultUrl);
+    std::string url = bounceProxyUrl.getBounceProxyChannelsBaseUrl().toString() + channelId;
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls;
     urls.push_back(url);
@@ -219,31 +207,30 @@ std::string ChannelUrlSelector::constructDefaultUrl(const std::string& channelId
   *
   */
 
-joynr_logging::Logger* ChannelUrlSelectorEntry::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "ChannelUrlSelectorEntry");
+INIT_LOGGER(ChannelUrlSelectorEntry);
 
 ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
                                                  double punishmentFactor,
-                                                 int64_t timeForOneRecouperation)
-        : lastUpdate(DispatcherUtils::nowInMilliseconds()),
+                                                 std::chrono::milliseconds timeForOneRecouperation)
+        : lastUpdate(std::chrono::system_clock::now()),
           fitness(),
           urlInformation(urlInformation),
           punishmentFactor(punishmentFactor),
           timeForOneRecouperation(timeForOneRecouperation)
 {
 
-    LOG_TRACE(logger, "Created ...");
+    JOYNR_LOG_TRACE(logger, "Created ...");
     initFitness();
 }
 
 ChannelUrlSelectorEntry::~ChannelUrlSelectorEntry()
 {
-    LOG_TRACE(logger, "Destroyed ...");
+    JOYNR_LOG_TRACE(logger, "Destroyed ...");
 }
 
 std::string ChannelUrlSelectorEntry::best()
 {
-    LOG_TRACE(logger, "best ...");
+    JOYNR_LOG_TRACE(logger, "best ...");
     updateFitness();
     const std::vector<std::string>& urls = urlInformation.getUrls();
     double temp = fitness[0];
@@ -260,11 +247,11 @@ std::string ChannelUrlSelectorEntry::best()
 
 void ChannelUrlSelectorEntry::punish(const std::string& url)
 {
-    LOG_TRACE(logger, "punish ...");
+    JOYNR_LOG_TRACE(logger, "punish ...");
     const std::string stdUrl = url;
     const std::vector<std::string>& urls = urlInformation.getUrls();
     if (!vectorContains(urls, stdUrl)) {
-        LOG_DEBUG(logger, "Url not contained in cache entry ...");
+        JOYNR_LOG_DEBUG(logger, "Url not contained in cache entry ...");
         return;
     }
     updateFitness();
@@ -277,7 +264,7 @@ void ChannelUrlSelectorEntry::punish(const std::string& url)
 
 void ChannelUrlSelectorEntry::initFitness()
 {
-    LOG_TRACE(logger, "initFitness ...");
+    JOYNR_LOG_TRACE(logger, "initFitness ...");
     const std::vector<std::string>& urls = urlInformation.getUrls();
     double rank = urls.size();
     for (std::size_t i = 0; i < urls.size(); i++) {
@@ -288,11 +275,14 @@ void ChannelUrlSelectorEntry::initFitness()
 
 void ChannelUrlSelectorEntry::updateFitness()
 {
-    LOG_TRACE(logger, "updateFitness ...");
+    JOYNR_LOG_TRACE(logger, "updateFitness ...");
     // Is it time to increase the fitness of all Urls? (counterbalances punishments, forget some
     // history)
-    uint64_t timeSinceLastUpdate = DispatcherUtils::nowInMilliseconds() - lastUpdate;
-    double numberOfIncreases = floor(((double)timeSinceLastUpdate / timeForOneRecouperation));
+    std::chrono::milliseconds timeSinceLastUpdate =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() -
+                                                                  lastUpdate);
+    double numberOfIncreases =
+            floor(((double)timeSinceLastUpdate.count() / timeForOneRecouperation.count()));
     if (numberOfIncreases < 1) {
         return;
     }
@@ -309,7 +299,7 @@ void ChannelUrlSelectorEntry::updateFitness()
         }
         fitness[i] = urlFitness;
     }
-    lastUpdate = DispatcherUtils::nowInMilliseconds();
+    lastUpdate = std::chrono::system_clock::now();
 }
 
 std::vector<double> ChannelUrlSelectorEntry::getFitness()

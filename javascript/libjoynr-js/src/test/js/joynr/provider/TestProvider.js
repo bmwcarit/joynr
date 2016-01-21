@@ -23,6 +23,7 @@ joynrTestRequire(
         "joynr/provider/TestProvider",
         [
             "joynr/vehicle/RadioProvider",
+            "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provider/ProviderAttributeNotifyReadWrite",
@@ -34,11 +35,11 @@ joynrTestRequire(
             "joynr/provider/ProviderAttributeWrite",
             "joynr/provider/ProviderOperation",
             "joynr/provider/ProviderEvent",
-            "joynr/TypesEnum",
             "joynr/util/uuid"
         ],
         function(
                 RadioProvider,
+                RadioStation,
                 Country,
                 StringMap,
                 ProviderAttributeNotifyReadWrite,
@@ -50,7 +51,6 @@ joynrTestRequire(
                 ProviderAttributeWrite,
                 ProviderOperation,
                 ProviderEvent,
-                TypesEnum,
                 uuid) {
             describe(
                     "libjoynr-js.joynr.provider.Provider",
@@ -66,7 +66,6 @@ joynrTestRequire(
                             ProviderAttributeWrite : ProviderAttributeWrite,
                             ProviderOperation : ProviderOperation,
                             ProviderEvent : ProviderEvent,
-                            TypesEnum : TypesEnum,
                             uuid : uuid
                         };
 
@@ -163,12 +162,36 @@ joynrTestRequire(
                                                 return undefined;
                                             }
                                         },
+                                        typeDefForStruct : {
+                                            value : new RadioStation({
+                                                name : "radioStation",
+                                                byteBuffer : []
+                                            }),
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
+                                        typeDefForPrimitive : {
+                                            value : 0,
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
                                         addFavoriteStation : jasmine
                                                 .createSpy("addFavoriteStation"),
                                         weakSignal : jasmine.createSpy("weakSignal"),
                                         triggerBroadcasts : jasmine.createSpy("triggerBroadcasts"),
                                         methodProvidedImpl : jasmine
                                                 .createSpy("methodProvidedImpl"),
+                                        methodWithByteBuffer : jasmine
+                                                .createSpy("methodWithByteBuffer"),
+                                        methodWithTypeDef : jasmine.createSpy("methodWithTypeDef"),
                                         operationWithEnumsAsInputAndOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndOutput"),
                                         operationWithMultipleOutputParameters : jasmine

@@ -30,6 +30,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <cstdint>
 
 namespace joynr
 {
@@ -87,7 +88,7 @@ public:
       * The number of connections that might be mantained by one curl handle at a time.
       * See CURLOPT_MAXCONNECTS in the curl documentation.
       */
-    static const int CONNECTIONS_PER_HANDLE;
+    static const std::int32_t CONNECTIONS_PER_HANDLE;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PooledCurlHandle);

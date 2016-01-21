@@ -20,22 +20,19 @@
 #define BOUNCEPROXYURL_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Url.h"
 
-#include <QObject>
-#include <QUrl>
 #include <string>
 
 namespace joynr
 {
 
-class JOYNR_EXPORT BounceProxyUrl : public QObject
+class JOYNR_EXPORT BounceProxyUrl
 {
-    Q_OBJECT
 public:
-    explicit BounceProxyUrl(const std::string& bounceProxyChannelsBaseUrl, QObject* parent = 0);
+    explicit BounceProxyUrl(const std::string& bounceProxyChannelsBaseUrl);
 
-    BounceProxyUrl(const BounceProxyUrl& other);
+    BounceProxyUrl(const BounceProxyUrl& other) = default;
 
     BounceProxyUrl& operator=(const BounceProxyUrl& bounceProxyUrl);
     bool operator==(const BounceProxyUrl& bounceProxyUrl) const;
@@ -46,17 +43,16 @@ public:
     static const std::string& TIMECHECK_PATH_SUFFIX();
     static const std::string& URL_PATH_SEPARATOR();
 
-    QUrl getCreateChannelUrl(const std::string& mcid) const;
-    QUrl getReceiveUrl(const std::string& channelId) const;
-    QUrl getSendUrl(const std::string& channelId) const;
-    QUrl getBounceProxyBaseUrl() const;
-    QUrl getDeleteChannelUrl(const std::string& mcid) const;
-    QUrl getTimeCheckUrl() const;
+    Url getCreateChannelUrl(const std::string& mcid) const;
+    Url getReceiveUrl(const std::string& channelId) const;
+    Url getSendUrl(const std::string& channelId) const;
+    Url getBounceProxyChannelsBaseUrl() const;
+    Url getDeleteChannelUrl(const std::string& mcid) const;
+    Url getTimeCheckUrl() const;
 
 private:
     std::string bounceProxyBaseUrl;
-    QUrl bounceProxyChannelsBaseUrl;
-    static joynr_logging::Logger* logger;
+    Url bounceProxyChannelsBaseUrl;
 };
 
 } // namespace joynr

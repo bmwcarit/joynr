@@ -27,11 +27,6 @@
 
 namespace joynr
 {
-namespace joynr_logging
-{
-class Logger;
-}
-
 namespace infrastructure
 {
 
@@ -39,8 +34,8 @@ namespace DacTypes
 {
 class MasterAccessControlEntry;
 class OwnerAccessControlEntry;
-}
-}
+} // namespace DacTypes
+} // namespace infrastructure
 
 /**
  * Algorithm that decides if a provider/consumer has access to a service
@@ -48,10 +43,8 @@ class OwnerAccessControlEntry;
 class JOYNRCLUSTERCONTROLLER_EXPORT AccessControlAlgorithm
 {
 public:
-    static joynr_logging::Logger* logger;
-
-    AccessControlAlgorithm();
-    virtual ~AccessControlAlgorithm();
+    AccessControlAlgorithm() = default;
+    virtual ~AccessControlAlgorithm() = default;
 
     /**
      * Get the consumer permission for given combination of control entries and with the given trust

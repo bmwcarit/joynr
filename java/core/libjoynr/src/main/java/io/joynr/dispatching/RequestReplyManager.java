@@ -24,7 +24,7 @@ import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.proxy.Callback;
+import io.joynr.provider.ProviderCallback;
 
 import java.io.IOException;
 
@@ -149,7 +149,7 @@ public interface RequestReplyManager {
 
     public void handleReply(Reply reply);
 
-    public void handleRequest(Callback<Reply> replyCallback,
+    public void handleRequest(ProviderCallback<Reply> replyCallback,
                               String providerParticipant,
                               Request request,
                               long expiryDate);

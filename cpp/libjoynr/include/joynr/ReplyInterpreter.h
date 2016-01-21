@@ -22,7 +22,7 @@
 #include "joynr/IReplyInterpreter.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/Reply.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/Util.h"
 #include <memory>
 
@@ -33,11 +33,9 @@ template <class... Ts>
 class ReplyInterpreter : public IReplyInterpreter
 {
 public:
-    ReplyInterpreter()
-    {
-    }
+    ReplyInterpreter() = default;
 
-    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
+    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply) override
     {
         assert(caller);
 
@@ -51,7 +49,7 @@ public:
         }
 
         if ((reply.getResponse()).empty()) {
-            LOG_ERROR(logger, "Unexpected empty reply object. Calling error callback");
+            JOYNR_LOG_ERROR(logger, "Unexpected empty reply object. Calling error callback");
             caller->returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
             return;
         }
@@ -63,22 +61,19 @@ public:
     }
 
 private:
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ReplyInterpreter);
 };
 
 template <class... Ts>
-joynr_logging::Logger* ReplyInterpreter<Ts...>::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "ReplyInterpreter");
+INIT_LOGGER(ReplyInterpreter<Ts...>);
 
 template <>
 class ReplyInterpreter<void> : public IReplyInterpreter
 {
 public:
-    ReplyInterpreter()
-    {
-    }
+    ReplyInterpreter() = default;
 
-    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
+    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply) override
     {
         assert(caller);
 

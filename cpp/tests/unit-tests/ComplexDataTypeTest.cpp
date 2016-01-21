@@ -28,20 +28,17 @@ using namespace joynr::types;
 class ComplexDataTypeTest : public testing::Test
 {
 public:
-    ComplexDataTypeTest()
-    {
-    }
+    ComplexDataTypeTest() = default;
 
-    virtual ~ComplexDataTypeTest()
-    {
-    }
+    virtual ~ComplexDataTypeTest() = default;
 
 protected:
-    static joynr::joynr_logging::Logger* logger;
+    ADD_LOGGER(ComplexDataTypeTest);
 };
 
-joynr::joynr_logging::Logger* ComplexDataTypeTest::logger(
-        joynr::joynr_logging::Logging::getInstance()->getLogger("TST", "ComplexDataTypeTest"));
+
+
+INIT_LOGGER(ComplexDataTypeTest);
 
 TEST_F(ComplexDataTypeTest, hashCodeFunction)
 {

@@ -65,7 +65,7 @@ public:
         messageFactory(),
         messageSender(mockMessageRouter),
         dispatcher(&messageSender),
-        subscriptionManager(NULL)
+        subscriptionManager(nullptr)
     {
     }
 
@@ -113,7 +113,7 @@ private:
 TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -154,7 +154,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
     ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(250)));
 }
 
@@ -166,7 +166,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
-    joynr::Semaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<const types::Localisation::GpsLocation&>(), A<const double&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -207,6 +207,6 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
     ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(250)));
 }

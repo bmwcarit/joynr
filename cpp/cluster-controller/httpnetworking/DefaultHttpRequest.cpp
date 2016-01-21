@@ -24,8 +24,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* DefaultHttpRequest::logger = Logging::getInstance()->getLogger("MSG", "DefaultHttpRequest");
+INIT_LOGGER(DefaultHttpRequest);
 
 size_t DefaultHttpRequest::writeToQByteArray(void* buffer, size_t size, size_t nmemb, void* userp)
 {
@@ -91,7 +90,7 @@ HttpResult DefaultHttpRequest::execute()
     CURLcode curlError;
     curlError = curl_easy_perform(handle);
 
-    long statusCode;
+    std::int32_t statusCode;
     curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &statusCode);
 
     // Check for internal curl errors

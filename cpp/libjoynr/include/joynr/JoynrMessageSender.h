@@ -23,6 +23,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/IJoynrMessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
+#include "joynr/Logger.h"
 #include <string>
 #include <memory>
 
@@ -58,61 +59,61 @@ class MessageRouter;
 class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender
 {
 public:
-    JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter);
+    explicit JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter);
 
-    virtual ~JoynrMessageSender();
+    ~JoynrMessageSender() override = default;
 
     /*
       * registers Dispatcher. See above comment why this is necessary.
       */
-    void registerDispatcher(IDispatcher* dispatcher);
+    void registerDispatcher(IDispatcher* dispatcher) override;
 
-    virtual void sendRequest(const std::string& senderParticipantId,
-                             const std::string& receiverParticipantId,
-                             const MessagingQos& qos,
-                             const Request& request,
-                             std::shared_ptr<IReplyCaller> callback);
+    void sendRequest(const std::string& senderParticipantId,
+                     const std::string& receiverParticipantId,
+                     const MessagingQos& qos,
+                     const Request& request,
+                     std::shared_ptr<IReplyCaller> callback) override;
     /*
      * Prepares and sends a reply message (an answer to a request)
      */
-    virtual void sendReply(const std::string& senderParticipantId,
-                           const std::string& receiverParticipantId,
-                           const MessagingQos& qos,
-                           const Reply& reply);
+    void sendReply(const std::string& senderParticipantId,
+                   const std::string& receiverParticipantId,
+                   const MessagingQos& qos,
+                   const Reply& reply) override;
 
-    virtual void sendSubscriptionRequest(const std::string& senderParticipantId,
-                                         const std::string& receiverParticipantId,
-                                         const MessagingQos& qos,
-                                         const SubscriptionRequest& subscriptionRequest);
+    void sendSubscriptionRequest(const std::string& senderParticipantId,
+                                 const std::string& receiverParticipantId,
+                                 const MessagingQos& qos,
+                                 const SubscriptionRequest& subscriptionRequest) override;
 
-    virtual void sendBroadcastSubscriptionRequest(
+    void sendBroadcastSubscriptionRequest(
             const std::string& senderParticipantId,
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
-            const BroadcastSubscriptionRequest& subscriptionRequest);
+            const BroadcastSubscriptionRequest& subscriptionRequest) override;
 
-    virtual void sendSubscriptionReply(const std::string& senderParticipantId,
-                                       const std::string& receiverParticipantId,
-                                       const MessagingQos& qos,
-                                       const SubscriptionReply& subscriptionReply);
+    void sendSubscriptionReply(const std::string& senderParticipantId,
+                               const std::string& receiverParticipantId,
+                               const MessagingQos& qos,
+                               const SubscriptionReply& subscriptionReply) override;
 
-    virtual void sendSubscriptionStop(const std::string& senderParticipantId,
-                                      const std::string& receiverParticipantId,
-                                      const MessagingQos& qos,
-                                      const SubscriptionStop& subscriptionStop);
+    void sendSubscriptionStop(const std::string& senderParticipantId,
+                              const std::string& receiverParticipantId,
+                              const MessagingQos& qos,
+                              const SubscriptionStop& subscriptionStop) override;
 
-    virtual void sendSubscriptionPublication(
+    void sendSubscriptionPublication(
             const std::string& senderParticipantId,
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
-            const SubscriptionPublication& subscriptionPublication);
+            const SubscriptionPublication& subscriptionPublication) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageSender);
     IDispatcher* dispatcher;
     std::shared_ptr<MessageRouter> messageRouter;
     JoynrMessageFactory messageFactory;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(JoynrMessageSender);
 };
 
 } // namespace joynr

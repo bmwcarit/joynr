@@ -41,9 +41,9 @@ class InterfaceSubscriptionUtil {
 		 * @param subscriptionQos The subscription quality of service settings
 		 * @return the subscription id as string
 		 */
-		virtual std::string subscribeTo«attribute.joynrName.toFirstUpper»(
+		«IF pure»virtual «ENDIF»std::string subscribeTo«attribute.joynrName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos)«IF pure» = 0«ENDIF»;
+					const joynr::SubscriptionQos& subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
 
 		/**
 		 * @brief updates an existing subscription to attribute «attribute.joynrName.toFirstUpper»
@@ -52,16 +52,16 @@ class InterfaceSubscriptionUtil {
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 * @return the subscription id as string
 		 */
-		virtual std::string subscribeTo«attribute.joynrName.toFirstUpper»(
+		«IF pure»virtual «ENDIF»std::string subscribeTo«attribute.joynrName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos,
-					std::string& subscriptionId)«IF pure» = 0«ENDIF»;
+					std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
 
 		/**
 		 * @brief unsubscribes from attribute «attribute.joynrName.toFirstUpper»
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 */
-		virtual void unsubscribeFrom«attribute.joynrName.toFirstUpper»(std::string& subscriptionId)«IF pure» = 0«ENDIF»;
+		«IF pure»virtual «ENDIF»void unsubscribeFrom«attribute.joynrName.toFirstUpper»(std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
 
 	«ENDFOR»
 	«FOR broadcast: serviceInterface.broadcasts»
@@ -74,10 +74,10 @@ class InterfaceSubscriptionUtil {
 			 * @param subscriptionQos The subscription quality of service settings
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos)«IF pure» = 0«ENDIF»;
+						const joynr::OnChangeSubscriptionQos& subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
 
 			/**
 			 * @brief updates an existing subscription to selective broadcast «broadcast.joynrName.toFirstUpper» with filter parameters
@@ -87,11 +87,11 @@ class InterfaceSubscriptionUtil {
 			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId)«IF pure» = 0«ENDIF»;
+						std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
 		«ELSE»
 			/**
 			 * @brief subscribes to broadcast «broadcast.joynrName.toFirstUpper»
@@ -99,9 +99,9 @@ class InterfaceSubscriptionUtil {
 			 * @param subscriptionQos The subscription quality of service settings
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos)«IF pure» = 0«ENDIF»;
+						const joynr::OnChangeSubscriptionQos& subscriptionQos) «IF pure»= 0«ELSE»override«ENDIF»;
 
 			/**
 			 * @brief updates an existing subscription to broadcast «broadcast.joynrName.toFirstUpper»
@@ -111,17 +111,17 @@ class InterfaceSubscriptionUtil {
 			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
+			«IF pure»virtual «ENDIF»std::string subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId)«IF pure» = 0«ENDIF»;
+						std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
 		«ENDIF»
 
 		/**
 		 * @brief unsubscribes from broadcast «broadcast.joynrName.toFirstUpper»
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 */
-		virtual void unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(std::string& subscriptionId)«IF pure» = 0«ENDIF»;
+		«IF pure»virtual «ENDIF»void unsubscribeFrom«broadcast.joynrName.toFirstUpper»Broadcast(std::string& subscriptionId) «IF pure»= 0«ELSE»override«ENDIF»;
 
 	«ENDFOR»
 '''

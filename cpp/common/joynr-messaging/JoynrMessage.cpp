@@ -24,10 +24,7 @@
 
 namespace joynr
 {
-
-using namespace joynr_logging;
-
-Logger* JoynrMessage::logger = Logging::getInstance()->getLogger("MSG", "JoynrMessage");
+INIT_LOGGER(JoynrMessage);
 
 static bool isJoynrMessageRegistered = Variant::registerType<JoynrMessage>("joynr.JoynrMessage");
 
@@ -89,7 +86,7 @@ JoynrMessage::JoynrMessage() : type(""), header(), payload()
 }
 
 JoynrMessage::JoynrMessage(const JoynrMessage& message)
-        : QObject(), type(message.type), header(message.header), payload(message.payload)
+        : type(message.type), header(message.header), payload(message.payload)
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
@@ -147,8 +144,7 @@ void JoynrMessage::setHeader(const std::map<std::string, std::string>& newHeader
     while (i != newHeaders.end()) {
         if (!containsHeader(i->first)) {
             header.insert(std::pair<std::string, std::string>(i->first, i->second));
-            LOG_DEBUG(logger,
-                      FormatString("insert header: %1=%2").arg(i->first).arg(i->second).str());
+            JOYNR_LOG_DEBUG(logger, "insert header: {} = {}", i->second, i->first);
         }
         i++;
     }
@@ -222,10 +218,7 @@ std::string JoynrMessage::getHeaderCreatorUserId() const
 
 void JoynrMessage::setHeaderCreatorUserId(const std::string& creatorUserId)
 {
-    LOG_TRACE(logger,
-              FormatString("########## header creater user id: %1")
-                      .arg(HEADER_CREATOR_USER_ID())
-                      .str());
+    JOYNR_LOG_TRACE(logger, "########## header creater user id: {}", HEADER_CREATOR_USER_ID());
     setHeaderForKey(HEADER_CREATOR_USER_ID(), creatorUserId);
 }
 

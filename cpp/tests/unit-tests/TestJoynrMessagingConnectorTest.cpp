@@ -97,7 +97,7 @@ public:
     MockSubscriptionManager* mockSubscriptionManager;
     joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;
-    joynr::Semaphore semaphore;
+    Semaphore semaphore;
 
     tests::testJoynrMessagingConnector* createConnector(bool cacheEnabled) {
         return new tests::testJoynrMessagingConnector(
@@ -260,9 +260,9 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    joynr::OnChangeSubscriptionQos qos;
+    OnChangeSubscriptionQos qos;
     connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(2000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 }

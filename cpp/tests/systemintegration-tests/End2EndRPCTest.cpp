@@ -46,10 +46,10 @@ public:
 
     End2EndRPCTest() :
         domain(),
-        runtime(NULL)
+        runtime(nullptr)
     {
         runtime = new JoynrClusterControllerRuntime(
-                    NULL,
+                    nullptr,
                     new Settings("test-resources/integrationtest.settings")
         );
         domain = "cppEnd2EndRPCTest_Domain_" + Util::createUuid();

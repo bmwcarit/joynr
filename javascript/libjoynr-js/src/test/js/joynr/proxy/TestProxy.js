@@ -34,7 +34,6 @@ joynrTestRequire(
             "joynr/proxy/ProxyAttributeWrite",
             "joynr/proxy/ProxyOperation",
             "joynr/proxy/ProxyEvent",
-            "joynr/TypesEnum",
             "joynr/types/TypeRegistrySingleton",
             "joynr/proxy/DiscoveryQos",
             "joynr/messaging/MessagingQos"
@@ -52,7 +51,6 @@ joynrTestRequire(
                 ProxyAttributeWrite,
                 ProxyOperation,
                 ProxyEvent,
-                TypesEnum,
                 TypeRegistrySingleton,
                 DiscoveryQos,
                 MessagingQos) {
@@ -79,8 +77,7 @@ joynrTestRequire(
                                     ProxyAttributeRead : ProxyAttributeRead,
                                     ProxyAttributeWrite : ProxyAttributeWrite,
                                     ProxyOperation : ProxyOperation,
-                                    ProxyEvent : ProxyEvent,
-                                    TypesEnum : TypesEnum
+                                    ProxyEvent : ProxyEvent
                                 },
                                 dependencies : {
                                     subscriptionManager : {}

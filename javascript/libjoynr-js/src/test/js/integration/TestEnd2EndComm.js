@@ -1,4 +1,4 @@
-/*global joynrTestRequire: true, it: true, console: true */
+/*global joynrTestRequire: true, xit: true, console: true */
 /*jslint es5: true, nomen: true */
 
 /*
@@ -451,6 +451,18 @@ joynrTestRequire(
                             getAttribute("enumArrayAttribute", value);
                         });
 
+                        it("sets the typeDef attributes", function() {
+                            var value = new RadioStation({
+                                name: "TestEnd2EndComm.typeDefForStructAttribute.RadioStation",
+                                byteBuffer: []
+                            });
+                            setAttribute("typeDefForStruct", value);
+                            getAttribute("typeDefForStruct", value);
+                            value = 1234543;
+                            setAttribute("typeDefForPrimitive", value);
+                            getAttribute("typeDefForPrimitive", value);
+                        });
+
                         it("sets the attribute", function() {
                             setAttribute("isOn", true);
                             getAttribute("isOn", true);
@@ -508,9 +520,66 @@ joynrTestRequire(
                             });
                         });
 
+                        it("subscribe to complex typedef attribute", function() {
+                            var value = new RadioStation({
+                                name: "TestEnd2EndComm.typeDefForStructAttribute.RadioStation",
+                                byteBuffer: []
+                            });
+                            setAttribute("typeDefForStruct", value);
+                            var spy = setupSubscriptionAndReturnSpy("typeDefForStruct", subscriptionQosOnChange);
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0]).toEqual(value);
+                            });
+                        });
+
+                        it("subscribe to primitive typedef attribute", function() {
+                            var value = 1234543;
+                            setAttribute("typeDefForPrimitive", value);
+                            var spy = setupSubscriptionAndReturnSpy("typeDefForPrimitive", subscriptionQosOnChange);
+                            getAttribute("typeDefForPrimitive", value);
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0]).toEqual(value);
+                            });
+                        });
+
+                        it("subscribe to byteBufferAttribute", function() {
+                            //initialize attribute
+                            setAttribute("byteBufferAttribute", []);
+                            var spy = setupSubscriptionAndReturnSpy("byteBufferAttribute", subscriptionQosOnChange);
+                            expectPublication(spy, function(call) {
+                                expect(call.args[0]).toEqual([]);
+                            });
+                            var i, byteBuffer10k = [], testByteBufferAttribute = function(expectedByteBuffer) {
+                                setAttribute("byteBufferAttribute", expectedByteBuffer);
+                                expectPublication(spy, function(call) {
+                                   expect(call.args[0]).toEqual(expectedByteBuffer);
+                                });
+                            };
+                            testByteBufferAttribute([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
+                            testByteBufferAttribute([255]);
+                            testByteBufferAttribute([2,2,2,2]);
+                            for (i = 0; i < 10000; i++) {
+                                byteBuffer10k.push(i % 256);
+                            }
+                            testByteBufferAttribute(byteBuffer10k);
+                        });
+
+                        it("subscribe to weakSignal broadcast having ByteBuffer as output parameter", function() {
+                            var spy = setupSubscriptionAndReturnSpy("weakSignal", subscriptionQosOnChange);
+                            callOperation("triggerBroadcasts", {
+                                broadcastName: "weakSignal",
+                                times: 1
+                            });
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0].radioStation).toEqual("radioStation");
+                               expect(call.args[0].byteBuffer).toEqual([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
+                            });
+                        });
+
                         it("subscribe to broadcastWithEnum", function() {
                             var spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {
+                                broadcastName: "broadcastWithEnum",
                                 times: 1
                             });
                             expectPublication(spy, function(call) {
@@ -519,10 +588,30 @@ joynrTestRequire(
                             });
                         });
 
+
+                        it("subscribe to type def broadcast", function() {
+                            var typeDefStructOutput = new RadioStation({
+                                name: "TestEnd2EndCommProviderWorker.broadcastWithTypeDefs.RadioStation",
+                                byteBuffer: []
+                            });
+                            var typeDefPrimitiveOutput = 123456;
+
+                            var spy = setupSubscriptionAndReturnSpy("broadcastWithTypeDefs", subscriptionQosOnChange);
+                            callOperation("triggerBroadcasts", {
+                                broadcastName: "broadcastWithTypeDefs",
+                                times: 1
+                            });
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0].typeDefStructOutput).toEqual(typeDefStructOutput);
+                               expect(call.args[0].typeDefPrimitiveOutput).toEqual(typeDefPrimitiveOutput);
+                            });
+                        });
+
                         it("subscribe to broadcastWithEnum and get burst", function() {
                             subscriptionQosOnChange.minInterval = 0;
                             var times = 100, spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {
+                                broadcastName: "broadcastWithEnum",
                                 times: times
                             });
                             expectMultiplePublications(spy, times, 5000, function(calls) {
@@ -721,6 +810,19 @@ joynrTestRequire(
                         });
 
                         it(
+                                "can call an operation (parameter of byteBuffer type",
+                                function() {
+                                    callOperation(
+                                            "methodWithByteBuffer",
+                                            {
+                                                input : [0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]
+                                            },
+                                            {
+                                                result : [0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]
+                                            });
+                               });
+
+                        it(
                                 "can call an operation with working parameters and return type",
                                 function() {
                                     callOperation(
@@ -761,6 +863,26 @@ joynrTestRequire(
                                                 returnValue : false
                                             });
                                 });
+
+                        it(
+                                "can call an operation with typedef arguments",
+                                function() {
+                                    var typeDefStructInput = new RadioStation({
+                                        name: "TestEnd2EndComm.methodWithTypeDef.RadioStation",
+                                        byteBuffer: []
+                                    });
+                                    var typeDefPrimitiveInput = 1234543;
+                                    callOperation(
+                                            "methodWithTypeDef",
+                                            {
+                                                typeDefStructInput : typeDefStructInput,
+                                                typeDefPrimitiveInput : typeDefPrimitiveInput
+                                            },
+                                            {
+                                                typeDefStructOutput : typeDefStructInput,
+                                                typeDefPrimitiveOutput : typeDefPrimitiveInput
+                                            });
+                               });
 
                         it(
                                 "can call an operation with enum arguments and enum return type",

@@ -22,7 +22,6 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/exceptions/JoynrException.h"
 
-#include <QObject>
 #include <string>
 #include <vector>
 #include <memory>
@@ -32,12 +31,8 @@
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT Reply : public QObject
+class JOYNRCOMMON_EXPORT Reply
 {
-    Q_OBJECT
-
-    Q_PROPERTY(std::string requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
-    Q_PROPERTY(std::vector<Variant> response READ getResponse WRITE setResponse)
 public:
     Reply& operator=(const Reply& other);
     bool operator==(const Reply& other) const;
@@ -64,7 +59,4 @@ private:
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::Reply)
-Q_DECLARE_METATYPE(std::shared_ptr<joynr::Reply>)
 #endif // REPLY_H

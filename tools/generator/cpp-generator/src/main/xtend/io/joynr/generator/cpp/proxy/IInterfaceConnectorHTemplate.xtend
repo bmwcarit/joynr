@@ -60,7 +60,7 @@ namespace joynr {
 	class ISubscriptionCallback;
 	class SubscriptionQos;
 	class OnChangeSubscriptionQos;
-}
+} // namespace joynr
 
 «getNamespaceStarter(serviceInterface)»
 class «getDllExportMacro()» I«interfaceName»Subscription{
@@ -70,7 +70,7 @@ class «getDllExportMacro()» I«interfaceName»Subscription{
 	  * out - assignedSubscriptionId    Buffer for the assigned subscriptionId.
 	  */
 public:
-	virtual ~I«interfaceName»Subscription() {}
+	virtual ~I«interfaceName»Subscription() = default;
 
 	«produceSubscribeUnsubscribeMethods(serviceInterface, true)»
 };
@@ -78,7 +78,7 @@ public:
 class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», public joynr::IConnector, virtual public I«interfaceName»Subscription{
 
 public:
-	virtual ~I«interfaceName»Connector() {}
+	~I«interfaceName»Connector() override = default;
 };
 
 «getNamespaceEnder(serviceInterface)»

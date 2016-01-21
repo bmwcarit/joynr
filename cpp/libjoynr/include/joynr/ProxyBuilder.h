@@ -31,10 +31,9 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
 #include "Future.h"
-#include <QCoreApplication>
 #include "joynr/Semaphore.h"
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 #include <joynr/TypeUtil.h>
 #include <cassert>
 #include <memory>
@@ -72,7 +71,7 @@ public:
                  std::shared_ptr<MessageRouter> messageRouter);
 
     /** Destructor */
-    ~ProxyBuilder();
+    ~ProxyBuilder() override;
 
     /**
      * @brief Build the proxy object
@@ -116,12 +115,12 @@ private:
      *
      * @param timeout The timeout value in milliseconds
      */
-    void waitForArbitrationAndCheckStatus(uint16_t timeout);
+    void waitForArbitrationAndCheckStatus(std::uint16_t timeout);
 
     /**
      * @brief Waits predefined time for the arbitration to complete until
      *
-     *  Calls waitForArbitrationAndCheckStatus(uint16_t timeout) using the
+     *  Calls waitForArbitrationAndCheckStatus(std::uint16_t timeout) using the
      * one-way time-to-live value predefined in the MessagingQos.
      */
     void waitForArbitrationAndCheckStatus();
@@ -133,7 +132,7 @@ private:
      *
      * @param arbitrationStatus The arbitration status to set
      */
-    void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
+    void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus) override;
 
     /**
      * @brief Sets the participantId
@@ -143,7 +142,7 @@ private:
      *
      * @param participantId The participant's id
      */
-    void setParticipantId(const std::string& participantId);
+    void setParticipantId(const std::string& participantId) override;
 
     /**
      * @brief Sets the kind of connection
@@ -152,7 +151,7 @@ private:
      *
      * @param connection The kind of connection.
      */
-    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection);
+    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection) override;
 
     /*
      * arbitrationFinished is called when the arbitrationStatus is set to successful and the
@@ -163,17 +162,19 @@ private:
     /**
      * @brief Wait for arbitration to finish until specified time interval is expired
      *
-     * waitForArbitration(uint16_t timeout) is used internally before a remote action is executed to
+     * waitForArbitration(std::uint16_t timeout) is used internally before a remote action is
+     *executed to
      * check whether arbitration is already completed.
      *
      * @param timeout specifies the maximal time to wait in milliseconds.
      */
-    void waitForArbitration(uint16_t timeout);
+    void waitForArbitration(std::uint16_t timeout);
 
     /**
      * @brief Wait for arbitration to finish until predefined time interval is expired
      *
-     * waitForArbitration() has the same functionality as waitForArbitration(uint16_t timeout), but
+     * waitForArbitration() has the same functionality as waitForArbitration(std::uint16_t timeout),
+     *but
      * uses the one-way time-to-live value predefined in the MessagingQos.
      */
     void waitForArbitration();
@@ -185,11 +186,11 @@ private:
     ProxyFactory* proxyFactory;
     joynr::system::IDiscoverySync& discoveryProxy;
     ProviderArbitrator* arbitrator;
-    joynr::Semaphore arbitrationSemaphore;
+    Semaphore arbitrationSemaphore;
     std::string participantId;
     joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
-    int64_t discoveryTimeout;
+    std::int64_t discoveryTimeout;
 
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
@@ -207,7 +208,7 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
           messagingQos(),
           proxyFactory(proxyFactory),
           discoveryProxy(discoveryProxy),
-          arbitrator(NULL),
+          arbitrator(nullptr),
           arbitrationSemaphore(1),
           participantId(""),
           connection(joynr::types::CommunicationMiddleware::NONE),
@@ -221,13 +222,13 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
 template <class T>
 ProxyBuilder<T>::~ProxyBuilder()
 {
-    if (arbitrator != NULL) {
+    if (arbitrator != nullptr) {
         arbitrator->removeArbitationListener();
         // question: it is only safe to delete the arbitrator here, if the proxybuilder will not be
         // deleted
         // before all arbitrations are finished.
         delete arbitrator;
-        arbitrator = NULL;
+        arbitrator = nullptr;
         // TODO delete arbitrator
         // 1. delete arbitrator or
         // 2. (if std::shared_ptr) delete arbitrator
@@ -250,14 +251,12 @@ T* ProxyBuilder<T>::build()
     auto onSuccess = [future]() { future->onSuccess(); };
     messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress, onSuccess);
 
-    // Wait in the Qt event loop until the result becomes available
-    // processEvents() processes all events delivered to this thread
+    // Wait until the result becomes available
     do {
         try {
             future->wait(100);
         } catch (exceptions::JoynrException& e) {
         }
-        QCoreApplication::processEvents();
     } while (future->getStatus().getCode() == RequestStatusCode::IN_PROGRESS);
 
     return proxy;
@@ -334,7 +333,7 @@ void ProxyBuilder<T>::waitForArbitrationAndCheckStatus()
 }
 
 template <class T>
-void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(uint16_t timeout)
+void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(std::uint16_t timeout)
 {
     switch (arbitrationStatus) {
     case ArbitrationStatus::ArbitrationSuccessful:
@@ -357,7 +356,7 @@ void ProxyBuilder<T>::waitForArbitration()
 }
 
 template <class T>
-void ProxyBuilder<T>::waitForArbitration(uint16_t timeout)
+void ProxyBuilder<T>::waitForArbitration(std::uint16_t timeout)
 {
     if (!arbitrationSemaphore.waitFor(std::chrono::milliseconds(timeout))) {
         throw exceptions::DiscoveryException("Arbitration could not be finished in time.");

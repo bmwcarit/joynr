@@ -23,10 +23,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* AbstractJoynrMessagingConnector::logger =
-        Logging::getInstance()->getLogger("AbstractJoynrMessagingConnector",
-                                          "AbstractJoynrMessagingConnector");
+INIT_LOGGER(AbstractJoynrMessagingConnector);
 
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         IJoynrMessageSender* joynrMessageSender,

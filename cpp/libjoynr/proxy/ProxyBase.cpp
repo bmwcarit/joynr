@@ -21,8 +21,7 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-Logger* ProxyBase::logger = Logging::getInstance()->getLogger("ProxyBase", "ProxyBase");
+INIT_LOGGER(ProxyBase);
 
 ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
                      IClientCache* cache,

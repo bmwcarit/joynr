@@ -40,9 +40,7 @@ namespace joynr
 class IReplyCaller : virtual public ITimeoutListener
 {
 public:
-    virtual ~IReplyCaller()
-    {
-    }
+    ~IReplyCaller() override = default;
 
     /**
       * Every Replycaller should have a returnValue<T> method.
@@ -57,7 +55,7 @@ public:
      * After this method is called, the directory will remove
      * this object from its directory.
      */
-    virtual void timeOut() = 0;
+    void timeOut() override = 0;
 
     virtual int getTypeId() const = 0;
 };

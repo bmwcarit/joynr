@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/types/CommunicationMiddleware.h"
 #include <string>
@@ -71,7 +71,7 @@ protected:
     std::string providerParticipantId;
     std::string proxyParticipantId;
     joynr::types::CommunicationMiddleware::Enum* connection;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(ProxyBase);
 };
 
 } // namespace joynr

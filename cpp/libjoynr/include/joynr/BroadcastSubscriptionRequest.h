@@ -27,6 +27,7 @@
 #include <memory>
 
 #include "joynr/Variant.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -38,11 +39,6 @@ namespace joynr
 
 class JOYNR_EXPORT BroadcastSubscriptionRequest : public SubscriptionRequest
 {
-    Q_OBJECT
-
-    Q_PROPERTY(BroadcastFilterParameters filterParameters READ getFilterParameters WRITE
-                       setFilterParameters)
-
 public:
     BroadcastSubscriptionRequest();
     BroadcastSubscriptionRequest(const BroadcastSubscriptionRequest& subscriptionRequest);
@@ -65,11 +61,9 @@ private:
 
     BroadcastFilterParameters filterParameters;
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(BroadcastSubscriptionRequest);
 };
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::BroadcastFilterParameters)
-Q_DECLARE_METATYPE(joynr::BroadcastSubscriptionRequest)
 #endif // BROADCASTSUBSCRIPTIONREQUEST_H

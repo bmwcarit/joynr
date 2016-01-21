@@ -24,16 +24,15 @@
 
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BounceProxyUrl.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Runnable.h"
 
 #include <string>
-#include <QByteArray>
-
 #include <memory>
+#include <chrono>
 
 namespace joynr
 {
@@ -46,14 +45,13 @@ class IChannelUrlSelector;
 class HttpSender : public IMessageSender
 {
 public:
-    static const int64_t& MIN_ATTEMPT_TTL();
-    static const int64_t& MAX_ATTEMPT_TTL();
-    static const int64_t& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
+    static std::chrono::milliseconds MIN_ATTEMPT_TTL();
+    static const std::int64_t& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
     HttpSender(const BounceProxyUrl& bounceProxyUrl,
-               int64_t maxAttemptTtl_ms,
-               int messageSendRetryInterval); // int messageSendRetryInterval
-    virtual ~HttpSender();
+               std::chrono::milliseconds maxAttemptTtl,
+               std::chrono::milliseconds messageSendRetryInterval);
+    ~HttpSender() override;
     /**
     * @brief Sends the message to the given channel.
     */
@@ -69,9 +67,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
     const BounceProxyUrl bounceProxyUrl;
     IChannelUrlSelector* channelUrlCache;
-    const int64_t maxAttemptTtl_ms;
-    const int messageSendRetryInterval;
-    static joynr_logging::Logger* logger;
+    const std::chrono::milliseconds maxAttemptTtl;
+    const std::chrono::milliseconds messageSendRetryInterval;
+    ADD_LOGGER(HttpSender);
 
     /**
      * @brief @ref ThreadPool used to send messages once an URL is known
@@ -90,7 +88,7 @@ private:
      */
     ThreadPoolDelayedScheduler channelUrlContactorDelayedScheduler;
 
-    class SendMessageRunnable : public joynr::Runnable, public ObjectWithDecayTime
+    class SendMessageRunnable : public Runnable, public ObjectWithDecayTime
     {
     public:
         SendMessageRunnable(HttpSender* messageSender,
@@ -98,10 +96,10 @@ private:
                             const JoynrTimePoint& decayTime,
                             std::string&& data,
                             DelayedScheduler& delayedScheduler,
-                            int64_t maxAttemptTtl_ms);
-        ~SendMessageRunnable();
+                            std::chrono::milliseconds maxAttemptTtl);
+        ~SendMessageRunnable() override;
 
-        void shutdown();
+        void shutdown() override;
 
         /**
          * @brief run
@@ -113,19 +111,20 @@ private:
          * During this procedure, the ChannelUrlSelector decides if it is appropriate
          * to try an alternative Url (depending on the history of feedback).
          */
-        void run();
+        void run() override;
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SendMessageRunnable);
-        HttpResult buildRequestAndSend(const std::string& url, int64_t curlTimeout);
-        std::string resolveUrlForChannelId(int64_t curlTimeout);
+        HttpResult buildRequestAndSend(const std::string& url,
+                                       std::chrono::milliseconds curlTimeout);
+        std::string resolveUrlForChannelId(std::chrono::milliseconds curlTimeout);
         std::string channelId;
         std::string data;
         DelayedScheduler& delayedScheduler;
         HttpSender* messageSender;
-        int64_t maxAttemptTtl_ms;
+        std::chrono::milliseconds maxAttemptTtl;
 
-        static joynr_logging::Logger* logger;
+        ADD_LOGGER(SendMessageRunnable);
         static int messageRunnableCounter;
     };
 };

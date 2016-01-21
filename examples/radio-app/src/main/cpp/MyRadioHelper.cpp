@@ -18,14 +18,14 @@
  */
 
 #include "MyRadioHelper.h"
-#include <QTextStream>
 #include <termios.h>
 #include <unistd.h>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 using namespace joynr;
 
-joynr_logging::Logger* MyRadioHelper::logger =
-        joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioHelper");
+INIT_LOGGER(MyRadioHelper);
 
 MyRadioHelper::MyRadioHelper()
 {
@@ -54,17 +54,24 @@ const std::string& MyRadioHelper::MISSING_NAME()
 
 void MyRadioHelper::pressQToContinue()
 {
-    LOG_INFO(logger, "*****************************************************");
-    LOG_INFO(logger, "Please press \"q\" to quit the application\n");
-    LOG_INFO(logger, "*****************************************************");
+    JOYNR_LOG_INFO(logger, "*****************************************************");
+    JOYNR_LOG_INFO(logger, "Please press \"q\" to quit the application\n");
+    JOYNR_LOG_INFO(logger, "*****************************************************");
 
     while (getch() != 'q')
         ;
 }
 
-void MyRadioHelper::prettyLog(joynr_logging::Logger* logger, const QString& message)
+std::string MyRadioHelper::getAbsolutePathToExectuable(const std::string& executableName)
 {
-    LOG_INFO(logger, "--------------------------------------------------");
-    LOG_INFO(logger, message.toStdString());
-    LOG_INFO(logger, "--------------------------------------------------");
+    boost::filesystem::path fullPath =
+            boost::filesystem::system_complete(boost::filesystem::path(executableName));
+    return fullPath.parent_path().string();
+}
+
+void MyRadioHelper::prettyLog(joynr::Logger& logger, const std::string& message)
+{
+    JOYNR_LOG_INFO(logger, "--------------------------------------------------");
+    JOYNR_LOG_INFO(logger, message);
+    JOYNR_LOG_INFO(logger, "--------------------------------------------------");
 }

@@ -135,7 +135,6 @@ class ProviderGenerator {
 			}
 
 			var implementation = passedImplementation || {};
-			var TypesEnum = dependencies.TypesEnum;
 
 			// defining provider members
 			«FOR attribute: getAttributes(fInterface)»
@@ -146,7 +145,7 @@ class ProviderGenerator {
 				 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 				 */
 				this.«attributeName» = new dependencies.ProviderAttribute«getAttributeCaps(attribute)»
-					(this, implementation.«attributeName», "«attributeName»", «attribute.typeNameForParameter»);
+					(this, implementation.«attributeName», "«attributeName»", "«attribute.joynrTypeName»");
 				if (implementation.«attributeName») {
 					implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
 				}
@@ -173,7 +172,7 @@ class ProviderGenerator {
 							«FOR param: getInputParameters(operation) SEPARATOR ","»
 							{
 								name : "«param.joynrName»",
-								type : «param.typeNameForParameter»
+								type : "«param.joynrTypeName»"
 							}
 							«ENDFOR»
 						],
@@ -184,7 +183,7 @@ class ProviderGenerator {
 							«FOR param: getOutputParameters(operation) SEPARATOR ","»
 							{
 								name : "«param.joynrName»",
-								type : «param.typeNameForParameter»
+								type : "«param.joynrTypeName»"
 							}
 							«ENDFOR»
 						]
@@ -208,7 +207,7 @@ class ProviderGenerator {
 						«FOR param : getOutputParameters(event) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : «param.typeNameForParameter»
+							type : "«param.joynrTypeName»"
 						}
 						«ENDFOR»
 					],
@@ -247,8 +246,8 @@ class ProviderGenerator {
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
 			define(«fInterface.defineName(fInterface.providerName)»[
-				«FOR datatype : fInterface.getAllComplexTypes.filter[a | a instanceof FType] SEPARATOR ','»
-						"«(datatype as FType).getDependencyPath»"
+				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypes) SEPARATOR ','»
+						"«datatype.getDependencyPath»"
 				«ENDFOR»
 				], function () {
 					return «fInterface.providerName»;
@@ -256,8 +255,8 @@ class ProviderGenerator {
 			);
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {
-				«FOR datatype : getAllComplexTypes(fInterface, false, true, true, true, true, true, false).filter[a | a instanceof FType]»
-					require("«relativePathToBase() + (datatype as FType).getDependencyPath()»");
+				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypes)»
+					require("«relativePathToBase() + datatype.getDependencyPath()»");
 				«ENDFOR»
 				exports = module.exports = «fInterface.providerName»;
 			}
@@ -281,7 +280,7 @@ class ProviderGenerator {
 			return getTypeNameForErrorEnumType(method, enumType);
 		}
 		else if (method.errorEnum != null){
-			return method.errorEnum.toTypesEnum;
+			return method.errorEnum.joynrTypeName;
 		}
 		else {
 			return "no error enumeration given"

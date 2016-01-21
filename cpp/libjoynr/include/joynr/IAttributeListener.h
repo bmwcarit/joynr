@@ -29,9 +29,7 @@ class Variant;
 class JOYNR_EXPORT IAttributeListener
 {
 public:
-    virtual ~IAttributeListener()
-    {
-    }
+    virtual ~IAttributeListener() = default;
     virtual void attributeValueChanged(const Variant& value) = 0;
 };
 

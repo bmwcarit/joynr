@@ -26,10 +26,9 @@ joynrTestRequire(
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
             "joynr/types/TypeRegistrySingleton",
-            "joynr/TypesEnum",
             "joynr/util/Typing"
         ],
-        function(RequestReplyManager, Request, Reply, TypeRegistrySingleton, TypesEnum, Typing) {
+        function(RequestReplyManager, Request, Reply, TypeRegistrySingleton, Typing) {
 
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
@@ -135,25 +134,25 @@ joynrTestRequire(
                         var testData =
                                 [
                                     {
-                                        paramDatatype : [ TypesEnum.BOOL
+                                        paramDatatype : [ "Boolean"
                                         ],
                                         params : [ true
                                         ]
                                     },
                                     {
-                                        paramDatatype : [ TypesEnum.INT
+                                        paramDatatype : [ "Integer"
                                         ],
                                         params : [ 123456789
                                         ]
                                     },
                                     {
-                                        paramDatatype : [ TypesEnum.DOUBLE
+                                        paramDatatype : [ "Double"
                                         ],
                                         params : [ -123.456789
                                         ]
                                     },
                                     {
-                                        paramDatatype : [ TypesEnum.STRING
+                                        paramDatatype : [ "String"
                                         ],
                                         params : [ "lalala"
                                         ]
@@ -188,7 +187,7 @@ joynrTestRequire(
                                     {
                                         paramDatatype : [
                                             "joynr.vehicle.radiotypes.RadioStation",
-                                            TypesEnum.STRING
+                                            "String"
                                         ],
                                         params : [
                                             tripleJ,
@@ -447,7 +446,7 @@ joynrTestRequire(
                         }
 
                         var testParam = "myTestParameter";
-                        var testParamDatatype = TypesEnum.STRING;
+                        var testParamDatatype = "String";
 
                         it("calls attribute getter correctly", function() {
                             var test =

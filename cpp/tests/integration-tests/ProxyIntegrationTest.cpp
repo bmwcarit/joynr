@@ -30,7 +30,6 @@ using ::testing::A;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::Eq;
-using ::testing::NotNull;
 using ::testing::AllOf;
 using ::testing::Property;
 using ::testing::Invoke;
@@ -89,9 +88,9 @@ typedef ProxyIntegrationTest GpsProxyDeathTest;
 
 TEST_F(ProxyIntegrationTest, proxyInitialisation)
 {
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, NULL);
+    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, nullptr);
     ConnectorFactory* connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
     vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, mockClientCache, domain, messagingQos, false);
-    ASSERT_TRUE(proxy != NULL);
+    ASSERT_TRUE(proxy != nullptr);
 }

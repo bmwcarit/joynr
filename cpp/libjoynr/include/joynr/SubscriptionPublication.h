@@ -22,7 +22,6 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/exceptions/JoynrException.h"
 
-#include <QObject>
 #include <vector>
 
 #include <memory>
@@ -32,12 +31,8 @@
 namespace joynr
 {
 
-class JOYNR_EXPORT SubscriptionPublication : public QObject
+class JOYNR_EXPORT SubscriptionPublication
 {
-    Q_OBJECT
-
-    Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
-    Q_PROPERTY(std::vector<Variant> response READ getResponse WRITE setResponse)
 public:
     SubscriptionPublication& operator=(const SubscriptionPublication& other);
     bool operator==(const SubscriptionPublication& other) const;
@@ -64,8 +59,5 @@ private:
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::SubscriptionPublication)
-Q_DECLARE_METATYPE(std::shared_ptr<joynr::SubscriptionPublication>)
 
 #endif // SUBSCRIPTIONPUBLICATION_H

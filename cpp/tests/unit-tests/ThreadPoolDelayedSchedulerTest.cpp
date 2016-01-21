@@ -17,25 +17,18 @@
  * #L%
  */
 #include "gtest/gtest.h"
-#include "joynr/joynrlogging.h"
 
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "utils/MockObjects.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 #include <chrono>
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr_logging;
 
 using ::testing::StrictMock;
-
-namespace ThreadPoolDelayedSchedulerTest
-{
-Logger* logger = Logging::getInstance()->getLogger("MSG", "ThreadPoolDelayedSchedulerTest");
-}
 
 // Expected accuracy of the timer in milliseconds
 
@@ -103,24 +96,6 @@ TEST(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpired
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     scheduler.shutdown();
-}
-
-TEST(ThreadPoolDelayedSchedulerTest, testRunnableWithoutDelay)
-{
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
-
-    StrictMock<MockRunnableWithAccuracy> runnable1(false, 0);
-
-    EXPECT_CALL(runnable1, runCalled()).Times(1);
-    EXPECT_CALL(runnable1, runCalledInTime()).Times(1);
-
-    scheduler.schedule(&runnable1, std::chrono::milliseconds::zero());
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-    scheduler.shutdown();
-
-    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
 }
 
 TEST(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)

@@ -18,21 +18,36 @@
  */
 
 #include "joynr/Url.h"
+#include <sstream>
+#include <boost/algorithm/string/join.hpp>
 
 namespace joynr
 {
 
+Url::Url()
+        : protocol(), user(), password(), host(), port(), path(), query(), fragment(), valid(false)
+{
+}
+
 Url::Url(const std::string& text)
-        : protocol(), user(), password(), host(), port(), path(), valid(false)
+        : protocol(), user(), password(), host(), port(), path(), query(), fragment(), valid(false)
 {
     parseUrl(text);
 }
 
 Url::Url(const std::string& protocol,
          const std::string& host,
-         uint16_t port,
+         std::uint16_t port,
          const std::string& path)
-        : protocol(protocol), user(), password(), host(host), port(port), path(path), valid(false)
+        : protocol(protocol),
+          user(),
+          password(),
+          host(host),
+          port(port),
+          path(path),
+          query(),
+          fragment(),
+          valid(false)
 {
     // Set valid to true if member variables are valid
     validate();
@@ -42,14 +57,18 @@ Url::Url(const std::string& protocol,
          const std::string& user,
          const std::string& password,
          const std::string& host,
-         uint16_t port,
-         const std::string& path)
+         std::uint16_t port,
+         const std::string& path,
+         const std::string& query,
+         const std::string& fragment)
         : protocol(protocol),
           user(user),
           password(password),
           host(host),
           port(port),
           path(path),
+          query(query),
+          fragment(fragment),
           valid(false)
 {
     // Set valid to true if member variables are valid
@@ -63,7 +82,8 @@ bool Url::operator==(const Url& other) const
     }
 
     return (port == other.port && protocol == other.protocol && user == other.user &&
-            password == other.password && host == other.host && path == other.path);
+            password == other.password && host == other.host && path == other.path &&
+            query == other.query && fragment == other.fragment);
 }
 
 const std::string& Url::getProtocol() const
@@ -86,7 +106,7 @@ const std::string& Url::getHost() const
     return host;
 }
 
-uint16_t Url::getPort() const
+std::uint16_t Url::getPort() const
 {
     return port;
 }
@@ -94,6 +114,28 @@ uint16_t Url::getPort() const
 const std::string& Url::getPath() const
 {
     return path;
+}
+
+void Url::setPath(const std::string& path)
+{
+    this->path = path;
+    validate();
+}
+
+const std::string& Url::getQuery() const
+{
+    return query;
+}
+
+void Url::setQuery(UrlQuery query)
+{
+    this->query = query.toString();
+    validate();
+}
+
+const std::string& Url::getFragment() const
+{
+    return fragment;
 }
 
 bool Url::isValid() const
@@ -104,7 +146,18 @@ bool Url::isValid() const
 void Url::parseUrl(const std::string& text)
 {
     // scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]
-    enum class State { SCHEME, SCHEME_SEP, USER, PASSWORD, HOST, PORT, PATH, TERMINATE };
+    enum class State {
+        SCHEME,
+        SCHEME_SEP,
+        USER,
+        PASSWORD,
+        HOST,
+        PORT,
+        PATH,
+        QUERY,
+        FRAGMENT,
+        TERMINATE
+    };
     State state = State::SCHEME;
 
     std::string portString;
@@ -174,10 +227,25 @@ void Url::parseUrl(const std::string& text)
             }
             break;
         case State::PATH:
-            if (ch == '?' || ch == '#') {
-                state = State::TERMINATE;
+            if (ch == '?') {
+                state = State::QUERY;
+            } else if (ch == '#') {
+                state = State::FRAGMENT;
             } else {
                 path += ch;
+            }
+            break;
+        case State::QUERY:
+            if (ch == '#') {
+                state = State::FRAGMENT;
+            } else {
+                query += ch;
+            }
+            break;
+        case State::FRAGMENT:
+            fragment += ch;
+            if (i == text.size()) {
+                state = State::TERMINATE;
             }
             break;
         case State::TERMINATE:
@@ -197,7 +265,35 @@ void Url::parseUrl(const std::string& text)
     validate();
 }
 
-uint16_t Url::portFromProtocol(const std::string& proto)
+std::string Url::toString()
+{
+    std::stringstream stringBuilder;
+    stringBuilder << protocol << "://";
+    if (!user.empty()) {
+        stringBuilder << user;
+        if (!password.empty()) {
+            stringBuilder << ":" << password;
+        }
+        stringBuilder << "@";
+    }
+    stringBuilder << host;
+    if (port != 0) {
+        stringBuilder << ":" << port;
+    }
+    if (!path.empty()) {
+        stringBuilder << path;
+    }
+    if (!query.empty()) {
+        stringBuilder << "?" << query;
+    }
+    if (!fragment.empty()) {
+        stringBuilder << "#" << fragment;
+    }
+
+    return stringBuilder.str();
+}
+
+std::uint16_t Url::portFromProtocol(const std::string& proto)
 {
     if (proto == "http") {
         return 80;
@@ -225,6 +321,25 @@ void Url::validate()
 
     // Assume success
     valid = true;
+}
+
+UrlQuery::UrlQuery() : queryItems()
+{
+}
+
+void UrlQuery::addQueryItem(const std::string& itemName, const std::string& itemValue)
+{
+    std::string queryItem = itemName + "=" + itemValue;
+    queryItems.push_back(queryItem);
+}
+
+std::string UrlQuery::toString()
+{
+    if (queryItems.empty())
+        return "";
+
+    std::string result = boost::algorithm::join(queryItems, "&");
+    return result;
 }
 
 } // namespace joynr

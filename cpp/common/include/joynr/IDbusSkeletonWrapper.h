@@ -22,7 +22,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/TypeUtil.h"
 
 #include <string>
@@ -33,20 +33,15 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
 template <class _SkeletonClass, class _CallBackClass>
 class JOYNRCOMMON_EXPORT IDbusSkeletonWrapper
 {
 public:
     IDbusSkeletonWrapper(_CallBackClass& callBack, std::string serviceAddress)
             : // factory(NULL),
-              serviceAddress(serviceAddress),
-              logger(Logging::getInstance()->getLogger("MSG", "DbusSkeletonWrapper"))
+              serviceAddress(serviceAddress)
     {
-        LOG_INFO(
-                logger,
-                FormatString("Registering dbus skeleton on address: %1").arg(serviceAddress).str());
+        JOYNR_LOG_INFO(logger, "Registering dbus skeleton on address: {}", serviceAddress);
 
         // create the skeleton
         std::shared_ptr<_SkeletonClass> skeleton = std::make_shared<_SkeletonClass>(callBack);
@@ -59,20 +54,15 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            LOG_INFO(logger,
-                     FormatString("registering service %1: SUCCESS").arg(serviceAddress).str());
+            JOYNR_LOG_INFO(logger, "registering service {}: SUCCESS", serviceAddress);
         } else {
-            LOG_FATAL(logger,
-                      FormatString("registering service %1: ERROR").arg(serviceAddress).str());
+            JOYNR_LOG_FATAL(logger, "registering service {} : ERROR", serviceAddress);
         }
     }
 
     ~IDbusSkeletonWrapper()
     {
-        LOG_INFO(logger,
-                 FormatString("Unregistering dbus skeleton from address: %1")
-                         .arg(serviceAddress)
-                         .str());
+        JOYNR_LOG_INFO(logger, "Unregistering dbus skeleton from address: {}", serviceAddress);
 
         auto runtime = CommonAPI::Runtime::load("DBus");
         bool success = runtime->getServicePublisher()->unregisterService(serviceAddress);
@@ -80,29 +70,25 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            LOG_INFO(logger,
-                     FormatString("unregistering service %1: SUCCESS").arg(serviceAddress).str());
+            JOYNR_LOG_INFO(logger, "unregistering service {}: SUCCESS", serviceAddress);
         } else {
-            LOG_FATAL(logger,
-                      FormatString("unregistering service %1: ERROR").arg(serviceAddress).str());
+            JOYNR_LOG_FATAL(logger, "unregistering service {}: ERROR", serviceAddress);
         }
     }
 
     void logMethodCall(const std::string& method, const std::string& adapter)
     {
-        LOG_INFO(logger,
-                 FormatString("Call method %1:%2-> %3")
-                         .arg(adapter)
-                         .arg(serviceAddress)
-                         .arg(method)
-                         .str());
+        JOYNR_LOG_INFO(logger, "Call method {}:{}-> {}", adapter, serviceAddress, method);
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(IDbusSkeletonWrapper);
     std::string serviceAddress;
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(IDbusSkeletonWrapper);
 };
+
+template <class _SkeletonClass, class _CallBackClass>
+INIT_LOGGER(SINGLE_MACRO_ARG(IDbusSkeletonWrapper<_SkeletonClass, _CallBackClass>));
 
 } // namespace joynr
 #endif // DBUSSKELETONWRAPPER_H

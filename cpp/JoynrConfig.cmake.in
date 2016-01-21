@@ -1,22 +1,33 @@
 # - Config file for the Joynr package
 # It defines the following variables
-#   JOYNR_INCLUDE_DIRS          - default include directories for Joynr (default)
-#                                 this includes also header files needed to build the cluster controller
-#   JOYNR_LIBRARIES             - default libraries to link against (default)
-#                                 this includes also libraries needed to build the cluster controller
+#   Joynr_EXECUTABLES                  - The Joynr executables.
+#   Joynr_RESOURCES_DIR                - Directory containing resource and settings files for Joynr
+#                                        executables.
+#   Joynr_LIB_COMMON_INCLUDE_DIRS      - Common include directories needed for generated code.
+#   Joynr_LIB_COMMON_LIBRARIES         - Common libraries needed for generated code.
 #
-#   JOYNR_EXECUTABLES           - the Joynr executables
-#   JOYNR_RESOURCES_DIR         - directory containing resource and settigns files for Joynr executables
+#   Joynr_LIB_INPROCESS_INCLUDE_DIRS   - Include directories for libJoynr with in-process
+#                                        communication.
+#                                        This includes also header files needed to build the cluster
+#                                        controller.
+#   Joynr_LIB_INPROCESS_LIBRARIES      - Libraries needed for libJoynr with in-process
+#                                        communication.
+#                                        This includes also libraries needed to build the cluster
+#                                        controller.
 #
-#   JOYNR_LIB_WS_LIBRARIES      - libraries needed for standalone libJoynr
-#                                 (without cluster controller, uses WebSockets)
-#   JOYNR_LIB_WS_INCLUDE_DIRS   - include directories for for standalone libJoynr
-#                                 (without cluster controller, uses WebSockets)
+#   Joynr_LIB_WS_INCLUDE_DIRS          - Include directories for standalone libJoynr with WebSocket
+#                                        communication.
+#                                        (without cluster controller)
+#   Joynr_LIB_WS_LIBRARIES             - Libraries needed for standalone libJoynr with WebSocket
+#                                        communication.
+#                                        (without cluster controller)
 #
-#   JOYNR_LIB_DBUS_LIBRARIES    - libraries needed for standalone libJoynr
-#                                 (without cluster controller, needs Dbus)
-#   JOYNR_LIB_DBUS_INCLUDE_DIRS - include directories for for standalone libJoynr
-#                                 (without cluster controller, needs Dbus)
+#   Joynr_LIB_DBUS_INCLUDE_DIRS        - Include directories for standalone libJoynr with DBus
+#                                        communication.
+#                                        (without cluster controller)
+#   Joynr_LIB_DBUS_LIBRARIES           - Libraries needed for standalone libJoynr with DBus
+#                                        communication.
+#                                        (without cluster controller)
 
 # This file is derived from a CMake tutorial (http://www.cmake.org/Wiki/CMake/)
 # that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/). 
@@ -28,11 +39,9 @@ set(
 )
 
 # QT5
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
 find_package(Qt5Core REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
-find_package(Qt5WebSockets REQUIRED)
+find_package(Qt5WebSockets)
 find_package(Qt5Sql REQUIRED)
 
 # Boost
@@ -50,61 +59,69 @@ get_filename_component(JOYNR_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
 # default configuration
 set(
-    JOYNR_INCLUDE_DIRS
-    "${Qt5Core_INCLUDE_DIRS}"
-    "${Qt5WebSockets_INCLUDE_DIRS}"
-    "${Qt5Sql_INCLUDE_DIRS}"
+    Joynr_LIB_COMMON_INCLUDE_DIRS
     "${Boost_INCLUDE_DIRS}"
-    @JoynrConfig_INCLUDE_DIRS@
+    @JoynrConfig_LIB_COMMON_INCLUDE_DIRS@
 )
 
 set(
-    JOYNR_LIBRARIES
-    @JoynrConfig_LIBRARIES@
-    "${Qt5Core_LIBRARIES}"
-    "${Qt5WebSockets_LIBRARIES}"
-    "${Qt5Sql_LIBRARIES}"
+    Joynr_LIB_COMMON_LIBRARIES
     "${Boost_LIBRARIES}"
+    @JoynrConfig_LIB_COMMON_LIBRARIES@
 )
 
-set(JOYNR_EXECUTABLES)
+set(Joynr_EXECUTABLES)
 set(
-    JOYNR_RESOURCES_DIR
+    Joynr_RESOURCES_DIR
     @JoynrConfig_INSTALL_BIN_DIR@/resources
 )
 
+# in-process configuration
 set(
-    JOYNR_LIB_WS_INCLUDE_DIRS
+    Joynr_LIB_INPROCESS_INCLUDE_DIRS
     "${Qt5Core_INCLUDE_DIRS}"
-    "${Qt5WebSockets_INCLUDE_DIRS}"
+    "${Qt5Sql_INCLUDE_DIRS}"
+    "${Joynr_LIB_COMMON_INCLUDE_DIRS}"
+    @JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS@
+)
+
+set(
+    Joynr_LIB_INPROCESS_LIBRARIES
+    "${Qt5Core_LIBRARIES}"
+    "${Qt5Sql_LIBRARIES}"
+    "${Joynr_LIB_COMMON_LIBRARIES}"
+    @JoynrConfig_LIB_INPROCESS_LIBRARIES@
+)
+
+# WebSockets configuration
+set(
+    Joynr_LIB_WS_INCLUDE_DIRS
+    "${Joynr_LIB_COMMON_INCLUDE_DIRS}"
     @JoynrConfig_LIB_WS_INCLUDE_DIRS@
 )
 
 set(
-    JOYNR_LIB_WS_LIBRARIES
+    Joynr_LIB_WS_LIBRARIES
+    "${Joynr_LIB_COMMON_LIBRARIES}"
     @JoynrConfig_LIB_WS_LIBRARIES@
-    "${Qt5Core_LIBRARIES}"
-    "${Qt5WebSockets_LIBRARIES}"
 )
 
-# configuration if dbus is used
+# Dbus configuration
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
-        JOYNR_LIB_DBUS_INCLUDE_DIRS
-        "${Qt5Core_INCLUDE_DIRS}"
-        "${Qt5WebSockets_INCLUDE_DIRS}"
+        Joynr_LIB_DBUS_INCLUDE_DIRS
+        "${Joynr_LIB_COMMON_INCLUDE_DIRS}"
         @JoynrConfig_LIB_DBUS_INCLUDE_DIRS@
     )
 
     set(
-        JOYNR_LIB_DBUS_LIBRARIES
+        Joynr_LIB_DBUS_LIBRARIES
+        "${Joynr_LIB_COMMON_LIBRARIES}"
         @JoynrConfig_LIB_DBUS_LIBRARIES@
-        "${Qt5Core_LIBRARIES}"
-        "${Qt5WebSockets_LIBRARIES}"
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 list(
-    APPEND JOYNR_EXECUTABLES
+    APPEND Joynr_EXECUTABLES
     @JoynrConfig_INSTALL_BIN_DIR@/cluster-controller
 )

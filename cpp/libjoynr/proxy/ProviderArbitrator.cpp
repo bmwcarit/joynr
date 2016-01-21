@@ -20,7 +20,7 @@
 #include <chrono>
 #include "joynr/ProviderArbitrator.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/system/IDiscovery.h"
 
 #include "joynr/TypeUtil.h"
@@ -32,8 +32,7 @@
 namespace joynr
 {
 
-joynr_logging::Logger* ProviderArbitrator::logger =
-        joynr_logging::Logging::getInstance()->getLogger("Arb", "ProviderArbitrator");
+INIT_LOGGER(ProviderArbitrator);
 
 ProviderArbitrator::ProviderArbitrator(const std::string& domain,
                                        const std::string& interfaceName,
@@ -54,13 +53,9 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
 {
 }
 
-ProviderArbitrator::~ProviderArbitrator()
-{
-}
-
 void ProviderArbitrator::startArbitration()
 {
-    joynr::Semaphore semaphore;
+    Semaphore semaphore;
 
     // Arbitrate until successful or timed out
     while (true) {
@@ -191,10 +186,8 @@ void ProviderArbitrator::setArbitrationStatus(
             assert(listener != nullptr);
             listener->setArbitrationStatus(arbitrationStatus);
         } catch (exceptions::DiscoveryException& e) {
-            LOG_ERROR(logger,
-                      FormatString("Exception while setting arbitration status: %1")
-                              .arg(e.getMessage())
-                              .str());
+            JOYNR_LOG_ERROR(
+                    logger, "Exception while setting arbitration status: {}", e.getMessage());
             listenerSemaphore.notify();
             throw;
         }

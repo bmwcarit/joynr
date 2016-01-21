@@ -28,13 +28,13 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
+#include "joynr/tests/TestBroadcastWithFilteringBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr_logging;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
@@ -50,31 +50,49 @@ namespace joynr {
 
 class MyTestProvider : public tests::DefaulttestProvider {
 public:
-    virtual void locationChanged(const joynr::types::Localisation::GpsLocation& location) {
+    void locationChanged(const joynr::types::Localisation::GpsLocation& location) override {
         tests::testAbstractProvider::locationChanged(location);
     }
 
-    virtual void fireLocation(const joynr::types::Localisation::GpsLocation& location) {
+    void fireLocation(const joynr::types::Localisation::GpsLocation& location) override {
         tests::testAbstractProvider::fireLocation(location);
     }
 
-    virtual void fireBroadcastWithEnumOutput(const joynr::tests::testTypes::TestEnum::Enum& testEnum) {
+    void fireBroadcastWithEnumOutput(const joynr::tests::testTypes::TestEnum::Enum& testEnum) override {
         tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum);
     }
 
-    virtual void fireLocationUpdate(const joynr::types::Localisation::GpsLocation& location) {
+    void fireLocationUpdate(const joynr::types::Localisation::GpsLocation& location) override {
         tests::testAbstractProvider::fireLocationUpdate(location);
     }
 
-    virtual void fireLocationUpdateWithSpeed(
+    void fireLocationUpdateWithSpeed(
             const joynr::types::Localisation::GpsLocation& location,
-            const double& currentSpeed
-    ) {
+            const float& currentSpeed
+    ) override {
         tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed);
     }
 
-    virtual void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) {
+    void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) override {
         tests::testAbstractProvider::fireLocationUpdateSelective(location);
+    }
+
+    void fireBroadcastWithByteBufferParameter(const joynr::ByteBuffer& byteBufferParameter) override {
+        tests::testAbstractProvider::fireBroadcastWithByteBufferParameter(byteBufferParameter);
+    }
+
+    void fireBroadcastWithFiltering(
+            const std::string& stringOut,
+            const std::vector<std::string> & stringArrayOut,
+            const std::vector<joynr::tests::testTypes::TestEnum::Enum>& enumerationArrayOut,
+            const joynr::types::TestTypes::TEverythingStruct& structWithStringArrayOut,
+            const std::vector<joynr::types::TestTypes::TEverythingStruct> & structWithStringArrayArrayOut
+    ) {
+        tests::testAbstractProvider::fireBroadcastWithFiltering(stringOut,
+                                                                stringArrayOut,
+                                                                enumerationArrayOut,
+                                                                structWithStringArrayOut,
+                                                                structWithStringArrayArrayOut);
     }
 };
 
@@ -89,8 +107,8 @@ public:
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
-    joynr::Semaphore semaphore;
-    joynr::Semaphore altSemaphore;
+    Semaphore semaphore;
+    Semaphore altSemaphore;
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter;
     unsigned long registerProviderWait;
@@ -102,8 +120,8 @@ public:
     joynr::types::Localisation::GpsLocation gpsLocation4;
 
     End2EndBroadcastTest() :
-        runtime1(NULL),
-        runtime2(NULL),
+        runtime1(nullptr),
+        runtime2(nullptr),
         settings1("test-resources/SystemIntegrationTest1.settings"),
         settings2("test-resources/SystemIntegrationTest2.settings"),
         messagingSettings1(settings1),
@@ -165,13 +183,13 @@ public:
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings_1, false);
 
-        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
+        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings_1);
 
         Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings_2, false);
 
-        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
+        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings_2);
 
         filterParameters.setCountry("Germany");
         filterParameters.setStartTime("4.00 pm");
@@ -239,61 +257,180 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTest);
 
+protected:
+    template <typename FireBroadcast, typename SubscribeTo, typename T>
+    void testOneShotBroadcastSubscription(const T& expectedValue,
+                                          SubscribeTo subscribeTo,
+                                          FireBroadcast fireBroadcast,
+                                          const std::string& broadcastName) {
+        MockSubscriptionListenerOneType<T>* mockListener =
+                new MockSubscriptionListenerOneType<T>();
+
+        // Use a semaphore to count and wait on calls to the mock listener
+        ON_CALL(*mockListener, onReceive(Eq(expectedValue)))
+                .WillByDefault(ReleaseSemaphore(&semaphore));
+
+        std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(
+                        mockListener);
+        testOneShotBroadcastSubscription(subscriptionListener,
+                                         subscribeTo,
+                                         fireBroadcast,
+                                         broadcastName,
+                                         expectedValue);
+    }
+
+    template <typename FireBroadcast, typename SubscribeTo, typename ...T>
+    void testOneShotBroadcastSubscription(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
+                                          SubscribeTo subscribeTo,
+                                          FireBroadcast fireBroadcast,
+                                          const std::string& broadcastName,
+                                          T... expectedValues) {
+        testOneShotBroadcastSubscriptionWithFiltering(subscriptionListener,
+                                                      subscribeTo,
+                                                      fireBroadcast,
+                                                      broadcastName,
+                                                      nullptr,
+                                                      expectedValues...);
+    }
+
+    template <typename FireBroadcast, typename SubscribeTo, typename ...T>
+    void testOneShotBroadcastSubscriptionWithFiltering(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
+                                          SubscribeTo subscribeTo,
+                                          FireBroadcast fireBroadcast,
+                                          const std::string& broadcastName,
+                                          std::shared_ptr<IBroadcastFilter> filter,
+                                          T... expectedValues) {
+        std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+        runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+        if (filter) {
+            testProvider->addBroadcastFilter(filter);
+        }
+        //This wait is necessary, because registerProvider is async, and a lookup could occur
+        // before the register has finished.
+        std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
+
+        ProxyBuilder<tests::testProxy>* testProxyBuilder
+                = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeout(1000);
+        discoveryQos.setRetryInterval(250);
+
+        std::int64_t qosRoundTripTTL = 500;
+
+        // Send a message and expect to get a result
+        tests::testProxy* testProxy = testProxyBuilder
+                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                ->setCached(false)
+                ->setDiscoveryQos(discoveryQos)
+                ->build();
+
+        std::int64_t minInterval_ms = 50;
+        OnChangeSubscriptionQos subscriptionQos(
+                    500000,   // validity_ms
+                    minInterval_ms);  // minInterval_ms
+
+        subscribeTo(testProxy, subscriptionListener, subscriptionQos);
+        waitForBroadcastSubscriptionArrivedAtProvider(testProvider, broadcastName);
+
+        (*testProvider.*fireBroadcast)(expectedValues...);
+
+        // Wait for a subscription message to arrive
+        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+
+        delete testProxyBuilder;
+        delete testProxy;
+    }
 };
 
 } // namespace joynr
 
 TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
-    MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>* mockListener =
-            new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>();
+
+    testOneShotBroadcastSubscription(expectedTestEnum,
+                                 [](tests::testProxy* testProxy,
+                                    std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
+                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    testProxy->subscribeToBroadcastWithEnumOutputBroadcast(subscriptionListener, subscriptionQos);
+                                 },
+                                 &tests::testProvider::fireBroadcastWithEnumOutput,
+                                 "broadcastWithEnumOutput");
+}
+
+TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
+    joynr::ByteBuffer expectedByteBuffer {0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0};
+
+    testOneShotBroadcastSubscription(expectedByteBuffer,
+                                 [](tests::testProxy* testProxy,
+                                    std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
+                                    const OnChangeSubscriptionQos& subscriptionQos) {
+                                    testProxy->subscribeToBroadcastWithByteBufferParameterBroadcast(subscriptionListener, subscriptionQos);
+                                 },
+                                 &tests::testProvider::fireBroadcastWithByteBufferParameter,
+                                 "broadcastWithByteBufferParameter");
+}
+
+class MockTestBroadcastWithFilteringBroadcastFilter : public joynr::tests::TestBroadcastWithFilteringBroadcastFilter {
+public:
+    MOCK_METHOD6(filter, bool(const std::string& stringOut,
+                              const std::vector<std::string> & stringArrayOut,
+                              const std::vector<joynr::tests::testTypes::TestEnum::Enum>& enumerationArrayOut,
+                              const joynr::types::TestTypes::TEverythingStruct& structWithStringArrayOut,
+                              const std::vector<joynr::types::TestTypes::TEverythingStruct> & structWithStringArrayArrayOut,
+                              const joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters& filterParameters));
+};
+
+TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithFiltering) {
+    std::string stringOut = "expectedString";
+    std::vector<std::string> stringArrayOut {stringOut};
+    std::vector<joynr::tests::testTypes::TestEnum::Enum> enumerationArrayOut = {joynr::tests::testTypes::TestEnum::TWO};
+    joynr::types::TestTypes::TEverythingStruct structWithStringArrayOut;
+    std::vector<joynr::types::TestTypes::TEverythingStruct>  structWithStringArrayArrayOut {structWithStringArrayOut};
+
+    MockSubscriptionListenerFiveTypes<std::string, std::vector<std::string> , std::vector<joynr::tests::testTypes::TestEnum::Enum>, joynr::types::TestTypes::TEverythingStruct, std::vector<joynr::types::TestTypes::TEverythingStruct> >* mockListener =
+            new MockSubscriptionListenerFiveTypes<std::string, std::vector<std::string> , std::vector<joynr::tests::testTypes::TestEnum::Enum>, joynr::types::TestTypes::TEverythingStruct, std::vector<joynr::types::TestTypes::TEverythingStruct> >();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    ON_CALL(*mockListener, onReceive(Eq(expectedTestEnum)))
+    ON_CALL(*mockListener, onReceive(Eq(stringOut),
+                                     Eq(stringArrayOut),
+                                     Eq(enumerationArrayOut),
+                                     Eq(structWithStringArrayOut),
+                                     Eq(structWithStringArrayArrayOut)))
             .WillByDefault(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<std::string, std::vector<std::string> , std::vector<joynr::tests::testTypes::TestEnum::Enum>, joynr::types::TestTypes::TEverythingStruct, std::vector<joynr::types::TestTypes::TEverythingStruct>>> subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    //This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
+    std::shared_ptr<MockTestBroadcastWithFilteringBroadcastFilter> filter(new MockTestBroadcastWithFilteringBroadcastFilter());
+    ON_CALL(*filter, filter(Eq(stringOut),
+                            Eq(stringArrayOut),
+                            Eq(enumerationArrayOut),
+                            Eq(structWithStringArrayOut),
+                            Eq(structWithStringArrayArrayOut),
+                            _))
+           .WillByDefault(DoAll(ReleaseSemaphore(&altSemaphore), Return(true)));
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder
-            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
-    discoveryQos.setRetryInterval(250);
-
-    qlonglong qosRoundTripTTL = 500;
-
-    // Send a message and expect to get a result
-    tests::testProxy* testProxy = testProxyBuilder
-            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
-            ->setDiscoveryQos(discoveryQos)
-            ->build();
-
-    int64_t minInterval_ms = 50;
-    OnChangeSubscriptionQos subscriptionQos(
-                500000,   // validity_ms
-                minInterval_ms);  // minInterval_ms
-
-    testProxy->subscribeToBroadcastWithEnumOutputBroadcast(subscriptionListener, subscriptionQos);
-
-    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "broadcastWithEnumOutput");
-
-    testProvider->fireBroadcastWithEnumOutput(expectedTestEnum);
+    testOneShotBroadcastSubscriptionWithFiltering(subscriptionListener,
+                                     [](tests::testProxy* testProxy,
+                                        std::shared_ptr<joynr::ISubscriptionListener<std::string, std::vector<std::string> , std::vector<joynr::tests::testTypes::TestEnum::Enum>, joynr::types::TestTypes::TEverythingStruct, std::vector<joynr::types::TestTypes::TEverythingStruct> > > subscriptionListener,
+                                        const OnChangeSubscriptionQos& subscriptionQos) {
+                                        joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters filterParameters;
+                                        testProxy->subscribeToBroadcastWithFilteringBroadcast(filterParameters, subscriptionListener, subscriptionQos);
+                                     },
+                                     &tests::testProvider::fireBroadcastWithFiltering,
+                                     "broadcastWithFiltering",
+                                     filter,
+                                     stringOut,
+                                     stringArrayOut,
+                                     enumerationArrayOut,
+                                     structWithStringArrayOut,
+                                     structWithStringArrayArrayOut);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
 
-    delete testProxyBuilder;
-    delete testProxy;
 }
 
 TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
@@ -341,7 +478,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -356,7 +493,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                 gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between   occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -365,7 +502,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // update subscription, much longer minInterval_ms
     subscriptionQos.setMinInterval(5000);
@@ -374,7 +511,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
     testProvider->fireLocationUpdate(gpsLocation2);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -384,9 +521,9 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_FALSE(altSemaphore.waitFor(std::chrono::seconds(1)));
     //the "old" semaphore shall not be touced, as listener has been replaced with listener2 as callback
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
 
     delete testProxyBuilder;
 }
@@ -428,7 +565,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -442,7 +579,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -453,7 +590,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     testProvider->fireLocationUpdate(gpsLocation3);
 //     Wait for a subscription message to arrive
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(2000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(2)));
 }
 
 TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
@@ -496,7 +633,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -508,7 +645,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -516,7 +653,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     testProvider->fireLocationUpdate(gpsLocation3);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -524,7 +661,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     testProvider->fireLocationUpdate(gpsLocation4);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     delete testProxyBuilder;
 }
@@ -569,7 +706,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -583,7 +720,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     testProvider->fireLocationUpdateWithSpeed(gpsLocation2, 100);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -591,7 +728,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation3, 200);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -599,7 +736,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation4, 300);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     delete testProxyBuilder;
 }
@@ -647,7 +784,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -664,7 +801,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     testProvider->fireLocationUpdateSelective(gpsLocation2);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -673,7 +810,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     testProvider->fireLocationUpdateSelective(gpsLocation3);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -682,7 +819,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     testProvider->fireLocationUpdateSelective(gpsLocation4);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     delete testProxyBuilder;
 }
@@ -724,7 +861,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -810,7 +947,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms

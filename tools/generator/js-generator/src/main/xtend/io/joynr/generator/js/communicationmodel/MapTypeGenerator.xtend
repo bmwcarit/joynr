@@ -24,11 +24,13 @@ import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import org.franca.core.franca.FMapType
+import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 
 class MapTypeGenerator {
 
 	@Inject extension JSTypeUtil
 	@Inject private extension NamingUtil
+	@Inject private extension JoynrJSGeneratorExtensions
 
 	@Inject
 	extension GeneratorParameter
@@ -65,7 +67,7 @@ class MapTypeGenerator {
 				configurable : false,
 				writable : false,
 				enumerable : true,
-				value : "«type.toTypesEnum»"
+				value : "«type.joynrTypeName»"
 			});
 
 			if (settings !== undefined) {
@@ -95,8 +97,8 @@ class MapTypeGenerator {
 
 			Object.defineProperty(this, 'get', {
 				enumerable: false,
-				value: function (key, value) {
-					this[key] = value;
+				value: function (key) {
+					return this[key];
 				}
 			});
 
@@ -114,7 +116,7 @@ class MapTypeGenerator {
 			define(«type.defineName»["joynr"], function (joynr) {
 				«type.joynrName».prototype = new joynr.JoynrObject();
 				«type.joynrName».prototype.constructor = «type.joynrName»;
-				joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+				joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 				return «type.joynrName»;
 			});
 		} else if (typeof exports !== 'undefined' ) {
@@ -127,20 +129,20 @@ class MapTypeGenerator {
 			var joynr = requirejs("joynr");
 			«type.joynrName».prototype = new joynr.JoynrObject();
 			«type.joynrName».prototype.constructor = «type.joynrName»;
-			joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+			joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 		} else {
 			//we assume a correct order of script loading
 			joynr = window.joynr;
 			«type.joynrName».prototype = new joynr.JoynrObject();
 			«type.joynrName».prototype.constructor = «type.joynrName»;
-			joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+			joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 			window.«type.joynrName» = «type.joynrName»;
 		}
 		«ELSE»
 		//we assume a correct order of script loading
 		«type.joynrName».prototype = new window.joynr.JoynrObject();
 		«type.joynrName».prototype.constructor = «type.joynrName»;
-		window.joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+		window.joynr.addType("«type.joynrTypeName»", «type.joynrName»);
 		window.«type.joynrName» = «type.joynrName»;
 		«ENDIF»
 	})();

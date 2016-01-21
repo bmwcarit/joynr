@@ -20,6 +20,8 @@
 #include "joynr/Util.h"
 
 #include "joynr/Settings.h"
+#include "joynr/FormatString.h"
+
 #include <algorithm>
 
 namespace joynr

@@ -30,12 +30,13 @@ namespace joynr
 
 // Serializes a SubscriptionRequest
 template <>
-void ClassSerializer<SubscriptionRequest>::serialize(const SubscriptionRequest& subscriptionRequest,
-                                                     std::ostream& o);
+void ClassSerializerImpl<SubscriptionRequest>::serialize(
+        const SubscriptionRequest& subscriptionRequest,
+        std::ostream& o);
 
 // Deserializes a SubscriptionRequest
 template <>
-void ClassDeserializer<SubscriptionRequest>::deserialize(SubscriptionRequest& t, IObject& o);
+void ClassDeserializerImpl<SubscriptionRequest>::deserialize(SubscriptionRequest& t, IObject& o);
 
 } // namespace joynr
 #endif // SUBSCRIPTIONREQUESTSERIALIZER_H

@@ -30,11 +30,11 @@ namespace joynr
 {
 // Serializes a request
 template <>
-void ClassSerializer<JoynrMessage>::serialize(const JoynrMessage& request, std::ostream& o);
+void ClassSerializerImpl<JoynrMessage>::serialize(const JoynrMessage& request, std::ostream& o);
 
 // Deserializes a request
 template <>
-void ClassDeserializer<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o);
+void ClassDeserializerImpl<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o);
 
 } // namespace joynr
 #endif // JOYNRMESSAGESERIALIZER_H

@@ -18,13 +18,13 @@
  */
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
-#include "joynr/TypeUtil.h"
+#include "joynr/QtTypeUtil.h"
+#include <QString>
 
 namespace joynr
 {
 
-joynr_logging::Logger* LocalChannelUrlDirectory::logger =
-        joynr_logging::Logging::getInstance()->getLogger("MSG", "LocalChannelUrlDirectory");
+INIT_LOGGER(LocalChannelUrlDirectory);
 
 LocalChannelUrlDirectory::LocalChannelUrlDirectory(
         MessagingSettings& messagingSettings,
@@ -34,12 +34,12 @@ LocalChannelUrlDirectory::LocalChannelUrlDirectory(
           localCache()
 {
     init();
-    LOG_TRACE(logger, "Created ...");
+    JOYNR_LOG_TRACE(logger, "Created ...");
 }
 
 LocalChannelUrlDirectory::~LocalChannelUrlDirectory()
 {
-    LOG_TRACE(logger, "Destroyed ...");
+    JOYNR_LOG_TRACE(logger, "Destroyed ...");
 }
 
 void LocalChannelUrlDirectory::init()
@@ -51,13 +51,12 @@ void LocalChannelUrlDirectory::init()
     std::string channelUrlDirectoryUrl = messagingSettings.getChannelUrlDirectoryUrl();
     channelUrlDirectoryUrls.push_back(channelUrlDirectoryUrl);
     channelUrlDirectoryUrlInformation.setUrls(channelUrlDirectoryUrls);
-    localCache.insert(TypeUtil::toQt(messagingSettings.getChannelUrlDirectoryChannelId()),
+    localCache.insert(QtTypeUtil::toQt(messagingSettings.getChannelUrlDirectoryChannelId()),
                       channelUrlDirectoryUrlInformation);
-    LOG_TRACE(logger,
-              FormatString("Provisioned Global Channel URL Directory URL (%1) into Local "
-                           "Channel URL Directory")
-                      .arg(channelUrlDirectoryUrl)
-                      .str());
+    JOYNR_LOG_TRACE(logger,
+                    "Provisioned Global Channel URL Directory URL ({}) into Local "
+                    "Channel URL Directory",
+                    channelUrlDirectoryUrl);
 
     // provisioning of Global Capabilities Directory URL
     types::ChannelUrlInformation capabilitiesDirectoryUrlInformation;
@@ -65,53 +64,48 @@ void LocalChannelUrlDirectory::init()
     std::string capabilitiesDirectoryUrl = messagingSettings.getCapabilitiesDirectoryUrl();
     capabilitiesDirectoryUrls.push_back(capabilitiesDirectoryUrl);
     capabilitiesDirectoryUrlInformation.setUrls(capabilitiesDirectoryUrls);
-    localCache.insert(TypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryChannelId()),
+    localCache.insert(QtTypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryChannelId()),
                       capabilitiesDirectoryUrlInformation);
-    LOG_TRACE(logger,
-              FormatString("Provisioned Global Capabilities Directory URL (%1) into Local "
-                           "Channel URL Directory")
-                      .arg(capabilitiesDirectoryUrl)
-                      .str());
+    JOYNR_LOG_TRACE(logger,
+                    "Provisioned Global Capabilities Directory URL ({}) into Local "
+                    "Channel URL Directory",
+                    capabilitiesDirectoryUrl);
 }
 
-std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::registerChannelUrlsAsync(
+std::shared_ptr<Future<void>> LocalChannelUrlDirectory::registerChannelUrlsAsync(
         const std::string& channelId,
         types::ChannelUrlInformation channelUrlInformation,
         std::function<void(void)> onSuccess,
-        std::function<void(const exceptions::JoynrException& error)> onError)
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    LOG_INFO(logger, FormatString("registering Urls for id=%1").arg(channelId).str());
+    JOYNR_LOG_INFO(logger, "registering Urls for id={}", channelId);
     return channelUrlDirectoryProxy->registerChannelUrlsAsync(
             channelId, channelUrlInformation, onSuccess, onError);
 }
 
-std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannelUrlsAsync(
+std::shared_ptr<Future<void>> LocalChannelUrlDirectory::unregisterChannelUrlsAsync(
         const std::string& channelId,
         std::function<void(void)> onSuccess,
-        std::function<void(const exceptions::JoynrException& error)> onError)
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    LOG_TRACE(logger, FormatString("unregistering ALL Urls for id=%1").arg(channelId).str());
+    JOYNR_LOG_TRACE(logger, "unregistering ALL Urls for id={}", channelId);
     return channelUrlDirectoryProxy->unregisterChannelUrlsAsync(channelId, onSuccess, onError);
 }
 
-std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDirectory::
+std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDirectory::
         getUrlsForChannelAsync(
                 const std::string& channelId,
-                const int64_t& timeout_ms,
+                std::chrono::milliseconds timeout,
                 std::function<void(const types::ChannelUrlInformation& channelUrls)> onSuccess,
-                std::function<void(const exceptions::JoynrException& error)> onError)
+                std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
     QString channelIdQT = QString::fromStdString(channelId);
-    LOG_TRACE(logger,
-              FormatString("trying to getUrlsForChannel for id=%1")
-                      .arg(channelIdQT.toStdString())
-                      .str());
+    JOYNR_LOG_TRACE(logger, "trying to getUrlsForChannel for id = {}", channelIdQT.toStdString());
 
     if (localCache.contains(channelIdQT)) {
-        LOG_TRACE(logger,
-                  FormatString("using cached Urls for id=%1").arg(channelIdQT.toStdString()).str());
-        std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
-                new joynr::Future<joynr::types::ChannelUrlInformation>());
+        JOYNR_LOG_TRACE(logger, "using cached Urls for id = {}", channelIdQT.toStdString());
+        std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(
+                new Future<joynr::types::ChannelUrlInformation>());
         future->onSuccess(localCache.value(channelIdQT));
         if (onSuccess) {
             onSuccess(localCache.value(channelIdQT));
@@ -119,38 +113,32 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
         return future;
     }
     assert(channelUrlDirectoryProxy);
-    std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
+    std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(
             channelUrlDirectoryProxy->getUrlsForChannelAsync(channelId, onSuccess, onError));
     try {
-        future->wait(timeout_ms);
+        future->wait(timeout.count());
         if (future->getStatus().successful()) {
-            LOG_INFO(logger,
-                     FormatString("Received remote url information for channelId=%1")
-                             .arg(channelIdQT.toStdString())
-                             .str());
+            JOYNR_LOG_INFO(logger,
+                           "Received remote url information for channelId = {}",
+                           channelIdQT.toStdString());
             joynr::types::ChannelUrlInformation urls;
             future->get(urls);
             localCache.insert(channelIdQT, urls);
-            LOG_INFO(logger,
-                     FormatString("Stored url information for channelId=%1")
-                             .arg(channelIdQT.toStdString())
-                             .str());
+            JOYNR_LOG_INFO(
+                    logger, "Stored url information for channelId = {}", channelIdQT.toStdString());
         } else {
-            LOG_INFO(logger,
-                     FormatString("FAILED to receive remote url information for channelId=%1 . "
-                                  "Status: %2")
-                             .arg(channelIdQT.toStdString())
-                             .arg(future->getStatus().toString())
-                             .str());
+            JOYNR_LOG_INFO(
+                    logger,
+                    "FAILED to receive remote url information for channelId = {}. Status: {}",
+                    channelIdQT.toStdString(),
+                    future->getStatus().toString());
         }
     } catch (joynr::exceptions::JoynrException& e) {
         // catches exceptions from both wait() and / or get() calls
-        LOG_INFO(logger,
-                 FormatString(
-                         "FAILED to receive remote url information for channelId=%1 . Status: %2")
-                         .arg(channelIdQT.toStdString())
-                         .arg(e.getMessage())
-                         .str());
+        JOYNR_LOG_INFO(logger,
+                       "FAILED to receive remote url information for channelId = {}. Status: {}",
+                       channelIdQT.toStdString(),
+                       e.getMessage());
     }
     return future;
 }

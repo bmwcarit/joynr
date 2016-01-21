@@ -23,7 +23,6 @@
 #include <QtConcurrent/QtConcurrent>
 
 using namespace joynr;
-using namespace joynr_logging;
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
@@ -63,7 +62,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     // There is a race condition where the actual channel url can be set AFTER the dummy data
     // used for testing. Pause for a short time so that the dummy data is always written
     // last
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     // Register new channel URLs
     std::string channelId = "bogus_1";

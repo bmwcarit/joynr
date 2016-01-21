@@ -19,7 +19,7 @@
 #ifndef FIXEDPARTICIPANTARBITRATOR_H
 #define FIXEDPARTICIPANTARBITRATOR_H
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
@@ -31,14 +31,12 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-}
+} // namespace system
 
 class FixedParticipantArbitrator : public ProviderArbitrator
 {
 public:
-    virtual ~FixedParticipantArbitrator()
-    {
-    }
+    ~FixedParticipantArbitrator() override = default;
     FixedParticipantArbitrator(const std::string& domain,
                                const std::string& interfaceName,
                                joynr::system::IDiscoverySync& discoveryProxy,
@@ -47,13 +45,13 @@ public:
     /*
      * Attempt to arbitrate with a set participant id
      */
-    void attemptArbitration();
+    void attemptArbitration() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrator);
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(FixedParticipantArbitrator);
     std::string participantId;
-    int64_t reqCacheDataFreshness;
+    std::int64_t reqCacheDataFreshness;
 };
 
 } // namespace joynr

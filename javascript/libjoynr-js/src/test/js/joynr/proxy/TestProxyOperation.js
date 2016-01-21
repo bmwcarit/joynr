@@ -30,7 +30,6 @@ joynrTestRequire(
             "joynr/dispatching/types/Request",
             "test/data/Operation",
             "global/Promise",
-            "joynr/TypesEnum",
             "joynr/tests/testTypes/TestEnum",
             "joynr/vehicle/radiotypes/RadioStation"
         ],
@@ -42,7 +41,6 @@ joynrTestRequire(
                 Request,
                 testDataOperation,
                 Promise,
-                TypesEnum,
                 TestEnum,
                 RadioStation) {
 
@@ -111,7 +109,8 @@ joynrTestRequire(
                                         name : "radioStation",
                                         type : 'String'
                                     }
-                                    ]
+                                    ],
+                                    outputParameter : []
                                 }
                             ]).buildFunction();
 
@@ -222,6 +221,7 @@ joynrTestRequire(
 
                                     runs(function() {
                                         checkSpy(spy);
+                                        expect(spy.onFulfilled).toHaveBeenCalledWith(undefined);
                                     });
                                 });
 
@@ -284,6 +284,24 @@ joynrTestRequire(
                                 });
 
                         it(
+                                "expect undefined as return value for missing output parameters",
+                                function() {
+                                    testForCorrectReturnValues("testMethodHavingNoOutputParameter",
+                                                                [],
+                                                                [],
+                                                                undefined);
+                                    testForCorrectReturnValues("testMethodHavingNoOutputParameter",
+                                            [],
+                                            ["unexpected value"],
+                                            undefined);
+                                    testForCorrectReturnValues("testMethodWithUndefinedOutputParameter",
+                                            undefined,
+                                            [],
+                                            undefined);
+
+                                });
+
+                        it(
                                 "expect multiple return values",
                                 function() {
                                     /*jslint nomen: true */
@@ -310,7 +328,7 @@ joynrTestRequire(
                                     testForCorrectReturnValues("testMethodHavingEnumArrayAsReturnValue",
                                                                 [ {
                                                                     name : "returnEnum",
-                                                                    // currently, we generate the type of the array element into the signature 
+                                                                    // currently, we generate the type of the array element into the signature
                                                                     type : TestEnum.ZERO._typeName
                                                                 }],
                                                                 [["ZERO", "ONE"]],
@@ -343,6 +361,7 @@ joynrTestRequire(
 
                                     runs(function() {
                                         checkSpy(spy);
+                                        expect(spy.onFulfilled).toHaveBeenCalledWith(undefined);
                                     });
                                 });
 

@@ -25,7 +25,7 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
@@ -35,7 +35,9 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
 
-	override generate(FInterface serviceInterface)
+	override generate(FInterface serviceInterface) {
+		var selector = TypeSelector::defaultTypeSelector
+		selector.transitiveTypes(true)
 '''
 «warning()»
 «val interfaceName = serviceInterface.joynrName»
@@ -56,13 +58,13 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
 
-	«val typeObjs = getAllComplexTypes(serviceInterface, true)»
+	«val typeObjs = getAllComplexTypes(serviceInterface, selector)»
 
 	«IF !typeObjs.isEmpty()»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
 	«ENDIF»
 	«FOR typeobj : typeObjs»
-		«val datatype = typeobj as FType»
+		«val datatype = typeobj»
 
 		// Register metatype «datatype.typeName»
 		«IF isEnum(datatype)»
@@ -93,4 +95,5 @@ const std::string& «interfaceName»Provider::INTERFACE_NAME()
 
 «getNamespaceEnder(serviceInterface)»
 '''
+}
 }

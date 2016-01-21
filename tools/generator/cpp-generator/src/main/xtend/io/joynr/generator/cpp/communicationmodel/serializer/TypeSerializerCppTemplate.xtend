@@ -25,7 +25,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FType
+import org.franca.core.franca.FTypeRef
 
 class TypeSerializerCppTemplate implements CompoundTypeTemplate{
 
@@ -46,7 +46,7 @@ class TypeSerializerCppTemplate implements CompoundTypeTemplate{
 «val joynrName = type.joynrName»
 «val typeName = type.typeName»
 «warning»
-#include "«type.includeOfSerializer»"
+#include «type.includeOfSerializer»
 #include "joynr/ArraySerializer.h"
 #include "joynr/PrimitiveDeserializer.h"
 #include "joynr/SerializerRegistry.h"
@@ -67,7 +67,7 @@ static const bool is«joynrName»SerializerRegistered =
 		SerializerRegistry::registerType<«joynrName»>("«typeName.replace("::", ".")»");
 
 template <>
-void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.toFirstLower»Var, IObject &object)
+void ClassDeserializerImpl<«joynrName»>::deserialize(«joynrName» &«joynrName.toFirstLower»Var, IObject &object)
 {
 	«IF type.membersRecursive.isEmpty»
 		std::ignore = «joynrName.toFirstLower»Var;
@@ -79,22 +79,20 @@ void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.to
 				if (field.name() == "«member.name»") {
 				«IF member.array»
 					«IF member.type.isPrimitive»
-						«deserializePrimitiveArrayValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
+						«deserializePrimitiveArrayValue(member.type.getPrimitive,member.name, joynrName.toFirstLower+"Var", "field")»
 					«ELSE»
-						«val complexType = member.type.derived»
-						«val deserializerType = complexType.deserializer»
+						«val deserializerType = member.type.deserializer»
 						IArray& array = field.value();
-						auto&& converted«member.name.toFirstUpper» = convertArray<«complexType.typeName»>(array, «deserializerType»<«complexType.typeName»>::deserialize);
-						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(std::forward<std::vector<«complexType.typeName»>>(converted«member.name.toFirstUpper»));
+						auto&& converted«member.name.toFirstUpper» = convertArray<«member.type.typeName»>(array, «deserializerType»<«member.type.typeName»>::deserialize);
+						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(std::forward<std::vector<«member.type.typeName»>>(converted«member.name.toFirstUpper»));
 					«ENDIF»
 				«ELSE»
 					«IF member.type.isPrimitive»
-						«deserializePrimitiveValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
+						«deserializePrimitiveValue(member.type.getPrimitive,member.name, joynrName.toFirstLower+"Var", "field")»
 					«ELSE»
-						«val complexType = member.type.derived»
-						«val deserializerType = complexType.deserializer»
-						«complexType.typeName» «member.name»Container;
-						«deserializerType»<«complexType.typeName»>::deserialize(«member.name»Container, field.value());
+						«val deserializerType = member.type.deserializer»
+						«member.type.typeName» «member.name»Container;
+						«deserializerType»<«member.type.typeName»>::deserialize(«member.name»Container, field.value());
 						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(«member.name»Container);
 					«ENDIF»
 				«ENDIF»
@@ -105,23 +103,15 @@ void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.to
 }
 
 template <>
-void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.toFirstLower»Var, std::ostream& stream)
+void ClassSerializerImpl<«joynrName»>::serialize(const «joynrName» &«joynrName.toFirstLower»Var, std::ostream& stream)
 {
-	«IF type.membersRecursive.exists[member | member.type.typeName.equals("double")]»
-		ClassSerializer<double> doubleSerializer;
-	«ENDIF»
-	«IF type.membersRecursive.exists[member | member.type.typeName.equals("float")]»
-		ClassSerializer<float> floatSerializer;
-	«ENDIF»
-	«IF type.membersRecursive.exists[member | member.type.string]»
-		ClassSerializer<std::string> stringSerializer;
-	«ENDIF»
 	«IF type.membersRecursive.isEmpty»
 		std::ignore = «joynrName.toFirstLower»Var;
 	«ENDIF»
+	«val members = type.membersRecursive»
 	stream << "{";
-	stream << "\"_typeName\":\"" << JoynrTypeId<«joynrName»>::getTypeName() << "\",";
-	«FOR member: type.membersRecursive SEPARATOR "\nstream << \",\";"»
+	stream << "\"_typeName\":\"" << JoynrTypeId<«joynrName»>::getTypeName() << "\"«IF !members.empty»,«ENDIF»";
+	«FOR member: members SEPARATOR "\nstream << \",\";"»
 		«IF member.array»
 			«IF member.type.isPrimitive»
 				«serializePrimitiveArrayValue(member.type.predefined, member.name, joynrName.toFirstLower + "Var")»
@@ -134,7 +124,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 				«serializePrimitiveValue(member.type.predefined, member.name, joynrName.toFirstLower + "Var")»
 			«ELSE»
 				stream << "\"«member.name»\": ";
-				ClassSerializer<«member.typeName»> «member.name»Serializer;
+				ClassSerializerImpl<«member.typeName»> «member.name»Serializer;
 				«member.name»Serializer.serialize(«joynrName.toFirstLower»Var.get«member.name.toFirstUpper»(), stream);
 			«ENDIF»
 		«ENDIF»
@@ -146,10 +136,11 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 
 '''
 
-def getDeserializer(FType type) {
-	if (type.isEnum){
+def getDeserializer(FTypeRef type) {
+	val targetType = if (type.isTypeDef) type.typeDefType.actualType else type
+	if (targetType.isEnum){
 		"PrimitiveDeserializer"
-	} else if (type.isCompound || type.isMap) {
+	} else if (targetType.isCompound || targetType.isMap) {
 		"ClassDeserializer"
 	} else {
 		throw new IllegalStateException("No deserializer known for type " + type.class.simpleName)
@@ -193,8 +184,8 @@ def deserializePrimitiveValue(FBasicTypeId basicType, String memberName, String 
 	switch basicType {
 		case BYTE_BUFFER : return '''
 		IArray& array = «fieldName».value();
-		auto&& converted«memberName.toFirstUpper» = convertArray<uint8_t>(array, convertUIntType<uint8_t>);
-		«varName».set«memberName.toFirstUpper»(std::forward<std::vector<uint8_t>>(converted«memberName.toFirstUpper»));
+		auto&& converted«memberName.toFirstUpper» = convertArray<std::uint8_t>(array, convertUIntType<std::uint8_t>);
+		«varName».set«memberName.toFirstUpper»(std::forward<std::vector<std::uint8_t>>(converted«memberName.toFirstUpper»));
 		'''
 		case STRING : '''
 		std::string stringValue;
@@ -202,14 +193,14 @@ def deserializePrimitiveValue(FBasicTypeId basicType, String memberName, String 
 		«varName».set«memberName.toFirstUpper»(stringValue);
 		'''
 		case BOOLEAN : return deserializedValue + ".getBool());"
-		case INT8 : return deserializedValue + ".getIntType<int8_t>());"
-		case INT16 : return deserializedValue + ".getIntType<int16_t>());"
-		case INT32 : return deserializedValue + ".getIntType<int32_t>());"
-		case INT64 : return deserializedValue + ".getIntType<int64_t>());"
-		case UINT8 : return deserializedValue + ".getIntType<uint8_t>());"
-		case UINT16 : return deserializedValue + ".getIntType<uint16_t>());"
-		case UINT32 : return deserializedValue + ".getIntType<uint32_t>());"
-		case UINT64 : return deserializedValue + ".getIntType<uint64_t>());"
+		case INT8 : return deserializedValue + ".getIntType<std::int8_t>());"
+		case INT16 : return deserializedValue + ".getIntType<std::int16_t>());"
+		case INT32 : return deserializedValue + ".getIntType<std::int32_t>());"
+		case INT64 : return deserializedValue + ".getIntType<std::int64_t>());"
+		case UINT8 : return deserializedValue + ".getIntType<std::uint8_t>());"
+		case UINT16 : return deserializedValue + ".getIntType<std::uint16_t>());"
+		case UINT32 : return deserializedValue + ".getIntType<std::uint32_t>());"
+		case UINT64 : return deserializedValue + ".getIntType<std::uint64_t>());"
 		case FLOAT : return deserializedValue + ".getDoubleType<float>());"
 		case DOUBLE : return deserializedValue + ".getDoubleType<double>());"
 		default: throw new IllegalStateException("Type for member " + memberName + " could not be resolved")
@@ -236,15 +227,15 @@ def serializePrimitiveValue(FBasicTypeId basicType, String memberName, String va
 		'''
 		case DOUBLE: return '''
 			stream << "\"«memberName»\": ";
-			doubleSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
+			ClassSerializerImpl<double>::serialize(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		case FLOAT: return '''
 			stream << "\"«memberName»\": ";
-			floatSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
+			ClassSerializerImpl<float>::serialize(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		case STRING: return '''
 			stream << "\"«memberName»\": ";
-			stringSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
+			ClassSerializerImpl<std::string>::serialize(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		case BOOLEAN: 
 		return '''
@@ -258,7 +249,7 @@ def serializePrimitiveValue(FBasicTypeId basicType, String memberName, String va
 		case BYTE_BUFFER:
 		return '''
 			stream << "\"«memberName»\": ";
-			ArraySerializer::serialize<uint8_t>(«varName».get«memberName.toFirstUpper»(), stream);
+			ArraySerializer::serialize<std::uint8_t>(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		default: throw new IllegalStateException("Type for member " + memberName + " could not be resolved")
 	}

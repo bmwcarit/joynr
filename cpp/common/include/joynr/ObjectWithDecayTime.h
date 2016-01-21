@@ -20,8 +20,7 @@
 #define OBJECTWITHDECAYTIME_H
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/DispatcherUtils.h"
-#include <QObject>
-#include <stdint.h>
+#include <cstdint>
 
 namespace joynr
 {
@@ -30,12 +29,10 @@ class JOYNRCOMMON_EXPORT ObjectWithDecayTime
 {
 
 public:
-    virtual ~ObjectWithDecayTime()
-    {
-    }
+    virtual ~ObjectWithDecayTime() = default;
     //    ObjectWithDecayTime();
     explicit ObjectWithDecayTime(const JoynrTimePoint& decayTime);
-    int64_t getRemainingTtl_ms() const;
+    std::int64_t getRemainingTtl_ms() const;
     JoynrTimePoint getDecayTime() const;
     bool isExpired() const;
 

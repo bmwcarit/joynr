@@ -21,11 +21,9 @@
 
 define(
         "joynr/util/MethodUtil",
-        [
-            "joynr/util/Typing",
-            "joynr/TypesEnum"
+        [ "joynr/util/Typing"
         ],
-        function(Typing, TypesEnum) {
+        function(Typing) {
             var MethodUtil = {};
 
             MethodUtil.transformParameterMapToArray =

@@ -34,7 +34,7 @@
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/TypedClientMultiCache.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
@@ -47,9 +47,11 @@
 #include <vector>
 
 #include <memory>
-#include <QVariantMap>
 #include <mutex>
 #include <string>
+#include <chrono>
+
+#include <QMap>
 
 namespace joynr
 {
@@ -68,10 +70,7 @@ public:
                                ICapabilitiesClient* capabilitiesClientPtr,
                                MessageRouter& messageRouter);
 
-    virtual ~LocalCapabilitiesDirectory();
-
-    static const int64_t& NO_CACHE_FRESHNESS_REQ();
-    static const int64_t& DONT_USE_CACHE();
+    ~LocalCapabilitiesDirectory() override;
 
     void add(const joynr::types::DiscoveryEntry& entry);
 
@@ -114,7 +113,7 @@ public:
     /*
      * Performs maintenance on the cache and removes old entries
      */
-    void cleanCache(int64_t maxAge_ms);
+    void cleanCache(std::chrono::milliseconds maxAge);
 
     /*
      * Call back methods which will update the local capabilities cache and call the
@@ -124,27 +123,28 @@ public:
     virtual void registerReceivedCapabilities(QMap<std::string, CapabilityEntry> capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void add(
-            const joynr::types::DiscoveryEntry& discoveryEntry,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+    void add(const joynr::types::DiscoveryEntry& discoveryEntry,
+             std::function<void()> onSuccess,
+             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void lookup(
+    void lookup(
             const std::string& domain,
             const std::string& interfaceName,
             const joynr::types::DiscoveryQos& discoveryQos,
             std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void lookup(
-            const std::string& participantId,
-            std::function<void(const joynr::types::DiscoveryEntry& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+    void lookup(const std::string& participantId,
+                std::function<void(const joynr::types::DiscoveryEntry& result)> onSuccess,
+                std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void remove(
-            const std::string& participantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+    void remove(const std::string& participantId,
+                std::function<void()> onSuccess,
+                std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
 
     /*
      * Objects that wish to receive provider register/unregister events can attach
@@ -153,9 +153,7 @@ public:
     class IProviderRegistrationObserver
     {
     public:
-        virtual ~IProviderRegistrationObserver()
-        {
-        }
+        virtual ~IProviderRegistrationObserver() = default;
         virtual void onProviderAdd(const types::DiscoveryEntry& discoveryEntry) = 0;
         virtual void onProviderRemove(const types::DiscoveryEntry& discoveryEntry) = 0;
     };
@@ -189,10 +187,10 @@ private:
                        bool localCache,
                        bool globalCache);
     std::vector<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress,
-                                             const int64_t& maxCacheAge,
+                                             std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
     std::vector<CapabilityEntry> searchCache(const std::string& participantId,
-                                             const int64_t& maxCacheAge,
+                                             std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
 
     static void convertDiscoveryEntryIntoCapabilityEntry(
@@ -205,7 +203,7 @@ private:
             const std::vector<CapabilityEntry>& capabilityEntries,
             std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
 
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(LocalCapabilitiesDirectory);
     ICapabilitiesClient* capabilitiesClient;
     std::mutex cacheLock;
 
@@ -230,15 +228,13 @@ class LocalCapabilitiesFuture : public ILocalCapabilitiesCallback
 {
 public:
     LocalCapabilitiesFuture();
-    void capabilitiesReceived(std::vector<CapabilityEntry> capabilities);
+    void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) override;
     std::vector<CapabilityEntry> get();
-    std::vector<CapabilityEntry> get(const int64_t& timeout_ms);
-    virtual ~LocalCapabilitiesFuture()
-    {
-    }
+    std::vector<CapabilityEntry> get(std::chrono::milliseconds timeout);
+    ~LocalCapabilitiesFuture() override = default;
 
 private:
-    joynr::Semaphore futureSemaphore;
+    Semaphore futureSemaphore;
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesFuture);
     std::vector<CapabilityEntry> capabilities;
 };

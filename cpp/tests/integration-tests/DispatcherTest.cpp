@@ -45,15 +45,14 @@ using namespace joynr;
 class DispatcherTest : public ::testing::Test {
 public:
     DispatcherTest() :
-        logger(joynr_logging::Logging::getInstance()->getLogger("TST", "DispatcherTest")),
         mockMessageRouter(new MockMessageRouter()),
         mockCallback(new MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
-                [this] (const joynr::RequestStatus& status, const joynr::types::Localisation::GpsLocation& location) {
+                [this] (const RequestStatus& status, const joynr::types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const joynr::RequestStatus& status, const exceptions::JoynrException& exception) {
+                [] (const RequestStatus& status, const exceptions::JoynrException& exception) {
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -83,7 +82,7 @@ public:
     }
 
 protected:
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(DispatcherTest);
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation> > mockCallback;
 
@@ -104,6 +103,7 @@ protected:
     Dispatcher dispatcher;
 };
 
+INIT_LOGGER(DispatcherTest);
 
 // from JoynrDispatcher.receive(Request) to IRequestCaller.operation(params)
 // this test goes a step further and makes sure that the response is visible in Messaging
@@ -150,7 +150,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 reply
     );
 
-    LOG_DEBUG(logger, FormatString("expectedReply.payload()=%1").arg(expectedReply.getPayload()).str());
+    JOYNR_LOG_DEBUG(logger, "expectedReply.payload()={}",expectedReply.getPayload());
     // setup MockMessaging to expect the response
     EXPECT_CALL(
                 *mockMessageRouter,

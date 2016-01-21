@@ -39,6 +39,7 @@ import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryQos;
 import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 
 
 public class LocalDiscoveryAggregator implements DiscoveryAsync {
@@ -51,11 +52,13 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                     @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
                                     @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId,
                                     @Named(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE) CommunicationMiddleware clusterControllerConnection) {
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.LOCAL);
         provisionedDiscoveryEntries.put(systemServicesDomain + DiscoveryProvider.INTERFACE_NAME,
                                         new DiscoveryEntry(systemServicesDomain,
                                                            DiscoveryProvider.INTERFACE_NAME,
                                                            discoveryProviderParticipantId,
-                                                           new ProviderQos(),
+                                                           providerQos,
                                                            new CommunicationMiddleware[]{
                                                                    clusterControllerConnection }));
         //provision routing provider to prevent lookup via discovery proxy during startup.
@@ -63,7 +66,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                         new DiscoveryEntry(systemServicesDomain,
                                                            Routing.INTERFACE_NAME,
                                                            routingProviderParticipantId,
-                                                           new ProviderQos(),
+                                                           providerQos,
                                                            new CommunicationMiddleware[]{
                                                                    clusterControllerConnection }));
     }

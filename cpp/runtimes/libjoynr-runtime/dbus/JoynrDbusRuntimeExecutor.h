@@ -31,18 +31,12 @@ class Settings;
 
 class JoynrDbusRuntimeExecutor : public JoynrRuntimeExecutor
 {
-    Q_OBJECT
-
 public:
-    JoynrDbusRuntimeExecutor(Settings* settings);
-    ~JoynrDbusRuntimeExecutor()
-    {
-    }
-
-public slots:
-    virtual void createRuntime();
+    explicit JoynrDbusRuntimeExecutor(Settings* settings);
+    ~JoynrDbusRuntimeExecutor() override = default;
 
 private:
+    void createRuntime();
     DISALLOW_COPY_AND_ASSIGN(JoynrDbusRuntimeExecutor);
 };
 

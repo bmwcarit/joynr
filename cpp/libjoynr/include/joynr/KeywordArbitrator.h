@@ -23,6 +23,7 @@
 
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
+#include "joynr/Logger.h"
 #include <string>
 namespace joynr
 {
@@ -30,11 +31,11 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-}
+} // namespace system
 namespace types
 {
 class DiscoveryEntry;
-}
+} // namespace types
 
 /**
   * Arbitrator which requests CapabilityEntries for a give interfaceName and domain from
@@ -46,9 +47,7 @@ class JOYNR_EXPORT KeywordArbitrator : public ProviderArbitrator
 {
 
 public:
-    virtual ~KeywordArbitrator()
-    {
-    }
+    ~KeywordArbitrator() override = default;
 
     KeywordArbitrator(const std::string& domain,
                       const std::string& interfaceName,
@@ -58,7 +57,7 @@ public:
     /*
      *  Attempts to the arbitrate. This function is called by the ProviderArbitrator
     */
-    void attemptArbitration();
+    void attemptArbitration() override;
 
     /*
      * The key of the keyword parameter in the provider Qos parameters
@@ -75,7 +74,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(KeywordArbitrator);
     std::string keyword;
     static int ARBITRATION_RETRY_INTERVAL;
-    joynr_logging::Logger* logger;
+    ADD_LOGGER(KeywordArbitrator);
 };
 
 } // namespace joynr

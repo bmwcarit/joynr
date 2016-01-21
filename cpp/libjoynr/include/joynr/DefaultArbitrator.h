@@ -20,7 +20,7 @@
 #define DEFAULTARBITRATOR_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
 #include <string>
@@ -33,7 +33,7 @@ namespace system
 {
 class IDiscoverySync;
 class DiscoveryEntry;
-}
+} // namespace system
 
 class DefaultArbitrator : public ProviderArbitrator
 {
@@ -42,13 +42,13 @@ public:
                       const std::string& interfaceName,
                       joynr::system::IDiscoverySync& discoveryProxy,
                       const DiscoveryQos& discoveryQos);
-    virtual void attemptArbitration();
+    void attemptArbitration() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultArbitrator);
     virtual void receiveCapabilitiesLookupResults(
             const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(DefaultArbitrator);
 };
 
 } // namespace joynr

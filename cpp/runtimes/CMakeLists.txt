@@ -11,6 +11,11 @@ set(
     runtime_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
+set(
+    runtime_PUBLIC_INCLUDE_DIRECTORY
+    "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
+    PARENT_SCOPE
+)
 
 file(
     GLOB_RECURSE runtime_PUBLIC_HEADERS
@@ -55,6 +60,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "*.h"
         "cluster-controller-runtime/*.h"
+        "cluster-controller-runtime/websocket/*.h"
     )
 
     set(
@@ -68,10 +74,17 @@ if(${BUILD_CLUSTER_CONTROLLER})
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "*.cpp"
         "cluster-controller-runtime/*.cpp"
+        "cluster-controller-runtime/websocket/*.cpp"
     )
 
     include_directories(
         ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
+    )
+
+    include_directories(
+        SYSTEM
+        ${Qt5WebSockets_INCLUDE_DIRS}
+        ${Qt5Core_INCLUDE_DIRS}
     )
 
     add_library(
@@ -93,6 +106,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         SOVERSION "${JOYNR_VERSION}"
         VERSION "${JOYNR_VERSION}"
         PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
+        AUTOMOC TRUE
     )
 
     generate_export_header(
@@ -103,6 +117,8 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_link_libraries(
         JoynrClusterControllerRuntime
         ${JoynrClusterControllerRuntime_TARGET_LIBRARIES}
+        ${Qt5WebSockets_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
     )
 
     install(
@@ -161,6 +177,7 @@ set(
 
 include_directories(
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
+    ${libwebsockets_INCLUDE_DIRS}
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 

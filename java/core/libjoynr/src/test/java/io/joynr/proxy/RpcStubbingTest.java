@@ -69,6 +69,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
+import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.runtime.PropertyLoader;
 import joynr.Reply;
@@ -187,7 +188,7 @@ public class RpcStubbingTest {
                     }
                 }
                 final Future<Reply> future = new Future<Reply>();
-                Callback<Reply> callback = new Callback<Reply>() {
+                ProviderCallback<Reply> callback = new ProviderCallback<Reply>() {
 
                     @Override
                     public void onSuccess(Reply result) {

@@ -27,9 +27,9 @@ class DirectoryTest : public ::testing::Test
 {
     public:
     DirectoryTest()
-        : directory(NULL),
-          testValue(NULL),
-          secondTestValue(NULL),
+        : directory(nullptr),
+          testValue(nullptr),
+          secondTestValue(nullptr),
           firstKey(""),
           secondKey("")
     {

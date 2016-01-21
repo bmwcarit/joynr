@@ -900,7 +900,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          common/include/joynr/ClientQCache.h \
                          common/include/joynr/ContentWithDecayTime.h \
                          common/include/joynr/DbusMessagingSkeleton.h \
-                         common/include/joynr/DbusProcessor.h \
                          common/include/joynr/DeclareMetatypeUtil.h \
                          common/include/joynr/Directory.h \
                          common/include/joynr/DispatcherUtils.h \
@@ -1168,7 +1167,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/types/CommunicationMiddleware.h \
                          libjoynr/include/joynr/types/DiscoveryEntry.h \
                          libjoynr/include/joynr/types/DiscoveryQos.h \
-                         libjoynr/include/joynr/WebSocketCcMessagingSkeleton.h \
                          libjoynr/in-process/generated/infrastructure/ChannelUrlDirectoryInProcessConnector.cpp \
                          libjoynr/in-process/generated/infrastructure/GlobalCapabilitiesDirectoryInProcessConnector.cpp \
                          libjoynr/in-process/generated/infrastructure/GlobalDomainAccessControllerInProcessConnector.cpp \
@@ -1285,7 +1283,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/subscription/SubscriptionRequestInformation.cpp \
                          libjoynr/subscription/SubscriptionRequestInformation.h \
                          libjoynr/subscription/SubscriptionStop.cpp \
-                         libjoynr/websocket/WebSocketCcMessagingSkeleton.cpp \
                          libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.cpp \
                          libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h \
                          libjoynr/websocket/WebSocketMessagingStub.cpp \
@@ -1297,6 +1294,8 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.cpp \
                          runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h \
                          runtimes/cluster-controller-runtime/JoynrRuntime.cpp \
+                         runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeleton.h \
+                         runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeleton.cpp \
                          runtimes/include/joynr/JoynrClusterControllerRuntimeExport.h \
                          runtimes/include/joynr/JoynrRuntimeExport.h \
                          runtimes/JoynrMetaTypes.cpp \

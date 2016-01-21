@@ -21,8 +21,6 @@
 #define ISUBSCRIPTIONMANAGER_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/joynrlogging.h"
-
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/ISubscriptionCallback.h"
@@ -48,9 +46,7 @@ class JOYNR_EXPORT ISubscriptionManager
 {
 
 public:
-    virtual ~ISubscriptionManager()
-    {
-    }
+    virtual ~ISubscriptionManager() = default;
 
     /**
      * @brief Subscribe to an attribute. Modifies the subscription request to include all

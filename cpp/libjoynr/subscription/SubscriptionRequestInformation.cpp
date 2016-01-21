@@ -27,10 +27,6 @@ static bool isSubscriptionRequestInformationRegistered =
         Variant::registerType<SubscriptionRequestInformation>(
                 "joynr.SubscriptionRequestInformation");
 
-using namespace joynr_logging;
-Logger* SubscriptionRequestInformation::logger =
-        Logging::getInstance()->getLogger("MSG", "SubscriptionRequestInformation");
-
 SubscriptionRequestInformation::SubscriptionRequestInformation()
 {
 }
@@ -50,14 +46,6 @@ SubscriptionRequestInformation::SubscriptionRequestInformation(
           SubscriptionInformation(subscriptionRequestInformation.getProxyId(),
                                   subscriptionRequestInformation.getProviderId())
 {
-}
-
-SubscriptionRequestInformation& SubscriptionRequestInformation::operator=(
-        const SubscriptionRequestInformation& subscriptionRequestInformation)
-{
-    SubscriptionRequest::operator=(subscriptionRequestInformation);
-    SubscriptionInformation::operator=(subscriptionRequestInformation);
-    return *this;
 }
 
 bool SubscriptionRequestInformation::operator==(

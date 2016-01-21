@@ -20,22 +20,25 @@
 
 #include <cassert>
 
-joynr::Thread::Thread(const std::string& name) : thread(nullptr), name(name)
+namespace joynr
+{
+
+Thread::Thread(const std::string& name) : thread(nullptr), name(name)
 {
 }
 
-joynr::Thread::~Thread()
+Thread::~Thread()
 {
     stop();
 }
 
-bool joynr::Thread::start()
+bool Thread::start()
 {
     if (thread != nullptr) {
         return false;
     }
 
-    thread = new std::thread(&joynr::Thread::run, this);
+    thread = new std::thread(&Thread::run, this);
 
     assert(thread != nullptr);
 
@@ -54,7 +57,7 @@ bool joynr::Thread::start()
     return true;
 }
 
-void joynr::Thread::stop()
+void Thread::stop()
 {
     if (thread != nullptr) {
         if (thread->joinable()) {
@@ -64,3 +67,5 @@ void joynr::Thread::stop()
         thread = nullptr;
     }
 }
+
+} // namespace joynr

@@ -30,14 +30,14 @@ namespace joynr
 
 // Serializes a SubscriptionPublication
 template <>
-void ClassSerializer<SubscriptionPublication>::serialize(
+void ClassSerializerImpl<SubscriptionPublication>::serialize(
         const SubscriptionPublication& subscriptionPublication,
         std::ostream& o);
 
 // Deserializes a SubscriptionPublication
 template <>
-void ClassDeserializer<SubscriptionPublication>::deserialize(SubscriptionPublication& t,
-                                                             IObject& o);
+void ClassDeserializerImpl<SubscriptionPublication>::deserialize(SubscriptionPublication& t,
+                                                                 IObject& o);
 
 } // namespace joynr
 

@@ -28,15 +28,10 @@
 namespace joynr
 {
 
-joynr_logging::Logger* JoynrMessageSender::logger =
-        joynr_logging::Logging::getInstance()->getLogger("JOYNR", "JoynrMessageSender");
+INIT_LOGGER(JoynrMessageSender);
 
 JoynrMessageSender::JoynrMessageSender(std::shared_ptr<MessageRouter> messageRouter)
         : dispatcher(nullptr), messageRouter(messageRouter), messageFactory()
-{
-}
-
-JoynrMessageSender::~JoynrMessageSender()
 {
 }
 

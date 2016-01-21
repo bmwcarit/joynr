@@ -20,7 +20,7 @@
 #define LIBJOYNRSETTINGS_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 
 #include <string>
 
@@ -38,12 +38,12 @@ public:
     static const std::string& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME();
 
     explicit LibjoynrSettings(Settings& settings);
-    LibjoynrSettings(const LibjoynrSettings& other);
+    LibjoynrSettings(const LibjoynrSettings& other) = default;
 
-    ~LibjoynrSettings();
+    ~LibjoynrSettings() = default;
 
     std::string getParticipantIdsPersistenceFilename() const;
-    void setParticipantIdsPersistenceFilename(const std::string& persistenceFilename);
+    void setParticipantIdsPersistenceFilename(const std::string& filename);
 
     void printSettings() const;
 
@@ -51,7 +51,7 @@ private:
     void operator=(const LibjoynrSettings& other);
 
     Settings& settings;
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(LibjoynrSettings);
     void checkSettings() const;
 };
 

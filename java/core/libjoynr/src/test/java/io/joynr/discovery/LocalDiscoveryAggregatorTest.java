@@ -33,7 +33,9 @@ import joynr.system.DiscoveryProxy;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryQos;
+import joynr.types.DiscoveryScope;
 import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalDiscoveryAggregatorTest {
@@ -65,10 +67,12 @@ public class LocalDiscoveryAggregatorTest {
                                                                 "routingProviderParticipantId",
                                                                 clusterControllerConnection);
         localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyMock);
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.LOCAL);
         discoveryProviderEntry = new DiscoveryEntry(systemServicesDomain,
                                                     Discovery.INTERFACE_NAME,
                                                     discoveryProviderParticipantId,
-                                                    new ProviderQos(),
+                                                    providerQos,
                                                     new CommunicationMiddleware[]{ clusterControllerConnection });
 
     }
@@ -87,10 +91,9 @@ public class LocalDiscoveryAggregatorTest {
 
     @Test
     public void findsProvisionedEntry() {
-        localDiscoveryAggregator.lookup(lookupCallback,
-                                        systemServicesDomain,
-                                        Discovery.INTERFACE_NAME,
-                                        new DiscoveryQos());
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
+        localDiscoveryAggregator.lookup(lookupCallback, systemServicesDomain, Discovery.INTERFACE_NAME, discoveryQos);
         Mockito.verify(lookupCallback).resolve(Mockito.eq(new DiscoveryEntry[]{ discoveryProviderEntry }));
     }
 

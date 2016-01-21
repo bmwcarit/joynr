@@ -31,11 +31,11 @@ namespace joynr
 
 // Serializes a SubscriptionQos
 template <>
-void ClassSerializer<SubscriptionQos>::serialize(const SubscriptionQos& subscription, std::ostream& o);
+void ClassSerializerImpl<SubscriptionQos>::serialize(const SubscriptionQos& subscription, std::ostream& o);
 
 // Deserializes a SubscriptionQos
 template <>
-void ClassDeserializer<SubscriptionQos>::deserialize(SubscriptionQos& subscription, IObject& o);
+void ClassDeserializerImpl<SubscriptionQos>::deserialize(SubscriptionQos& subscription, IObject& o);
 
 } // namespace joynr
 #endif // SUBSCRIPTIONQOSSERIALIZER_H

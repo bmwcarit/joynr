@@ -92,7 +92,7 @@ interface test {
 	attribute GpsLocation yourLocation readonly
 	attribute Int32 firstPrime
 
-	
+
 	attribute Int32[] listOfInts
 	attribute GpsLocation[] listOfLocations readonly
 	attribute String[] listOfStrings
@@ -124,6 +124,10 @@ interface test {
 	attribute TEverythingMap EverythingMap
 
 	attribute testTypes.HavingComplexArrayMemberStruct[] attributeArrayOfNestedStructs
+
+	attribute ByteBuffer byteBufferAttribute
+
+	attribute TypeDefForTStruct typeDefForTStruct
 
 	method addNumbers {
 		in {
@@ -160,6 +164,15 @@ interface test {
 		}
 		out {
 			Int32 result
+		}
+	}
+
+	method methodWithByteBuffer{
+		in {
+			ByteBuffer input
+		}
+		out {
+			ByteBuffer result
 		}
 	}
 
@@ -202,6 +215,24 @@ interface test {
 		}
 		out {
 			Int8[] result
+		}
+	}
+
+	method  methodWithPrimitiveTypeDef{
+		in {
+			TypeDefForTStruct input
+		}
+		out {
+			TypeDefForTStruct result
+		}
+	}
+
+	method  methodWithCompoundTypeDef{
+		in {
+			TypeDefForTStruct input
+		}
+		out {
+			TypeDefForTStruct result
 		}
 	}
 
@@ -396,6 +427,15 @@ interface test {
 		error testTypes.ErrorEnumBase
 	}
 
+	method methodWithMultipleOutAndErrorEnum {
+		out {
+			String out1
+			String out2
+		}
+		error testTypes.ErrorEnumBase
+	}
+
+
 	method methodWithErrorEnumExtended {
 		error extends testTypes.ErrorEnumBase {
 			IMPLICIT_ERROR_TYPECOLLECTION
@@ -530,6 +570,13 @@ interface test {
 		}
 	}
 
+	broadcast broadcastWithByteBufferParameter {
+		out {
+			ByteBuffer byteBufferParameter
+		}
+	}
+
+
 	broadcast broadcastWithMapParameters {
 		out {
 			TStringKeyMap mapParam
@@ -556,6 +603,15 @@ interface test {
 		String s
 	}
 }
+	broadcast broadcastWithFiltering selective {
+		out {
+			String stringOut
+			String[] stringArrayOut
+			testTypes.TestEnum[] enumerationArrayOut
+			TEverythingStruct structWithStringArrayOut
+			TEverythingStruct[] structWithStringArrayArrayOut
+		}
+	}
 	enumeration ErrorEnumInterface {
 		BASE_ERROR_INTERFACE
 	}

@@ -24,32 +24,32 @@ using namespace joynr;
 static bool isPeriodicSubscriptionQosRegistered =
         Variant::registerType<PeriodicSubscriptionQos>("joynr.PeriodicSubscriptionQos");
 
-const int64_t& PeriodicSubscriptionQos::MIN_PERIOD()
+const std::int64_t& PeriodicSubscriptionQos::MIN_PERIOD()
 {
-    static int64_t minPeriod = 50;
+    static std::int64_t minPeriod = 50;
     return minPeriod;
 }
 
-const int64_t& PeriodicSubscriptionQos::MAX_PERIOD()
+const std::int64_t& PeriodicSubscriptionQos::MAX_PERIOD()
 {
-    static int64_t maxPeriod = 2592000000UL;
+    static std::int64_t maxPeriod = 2592000000UL;
     return maxPeriod;
 }
 
-const int64_t& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
+const std::int64_t& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
 {
-    static int64_t maxAlertAfterInterval = 2592000000UL;
+    static std::int64_t maxAlertAfterInterval = 2592000000UL;
     return maxAlertAfterInterval;
 }
 
-const int64_t& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
+const std::int64_t& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
 {
     return NO_ALERT_AFTER_INTERVAL();
 }
 
-const int64_t& PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
+const std::int64_t& PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 {
-    static int64_t noAlertAfterInterval = 0;
+    static std::int64_t noAlertAfterInterval = 0;
     return noAlertAfterInterval;
 }
 
@@ -58,9 +58,9 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos()
 {
 }
 
-PeriodicSubscriptionQos::PeriodicSubscriptionQos(const int64_t& validity,
-                                                 const int64_t& period,
-                                                 const int64_t& alertAfterInterval)
+PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t& validity,
+                                                 const std::int64_t& period,
+                                                 const std::int64_t& alertAfterInterval)
         : SubscriptionQos(validity), period(-1), alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
 {
     setPeriod(period);
@@ -74,7 +74,7 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos(const PeriodicSubscriptionQos& 
 {
 }
 
-void PeriodicSubscriptionQos::setPeriod(const int64_t& period)
+void PeriodicSubscriptionQos::setPeriod(const std::int64_t& period)
 {
     this->period = period;
     if (this->period > MAX_PERIOD()) {
@@ -88,12 +88,12 @@ void PeriodicSubscriptionQos::setPeriod(const int64_t& period)
     }
 }
 
-int64_t PeriodicSubscriptionQos::getPeriod() const
+std::int64_t PeriodicSubscriptionQos::getPeriod() const
 {
     return this->period;
 }
 
-void PeriodicSubscriptionQos::setAlertAfterInterval(const int64_t& alertAfterInterval)
+void PeriodicSubscriptionQos::setAlertAfterInterval(const std::int64_t& alertAfterInterval)
 {
     this->alertAfterInterval = alertAfterInterval;
     if (this->alertAfterInterval > MAX_ALERT_AFTER_INTERVAL()) {
@@ -104,7 +104,7 @@ void PeriodicSubscriptionQos::setAlertAfterInterval(const int64_t& alertAfterInt
     }
 }
 
-int64_t PeriodicSubscriptionQos::getAlertAfterInterval() const
+std::int64_t PeriodicSubscriptionQos::getAlertAfterInterval() const
 {
     return alertAfterInterval;
 }

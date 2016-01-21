@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
@@ -28,8 +29,7 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.HashSet
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
-import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
 class InterfaceCppTemplate implements InterfaceTemplate{
 
@@ -57,7 +57,9 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 	@Inject
 	private extension TemplateBase
 
-	override generate(FInterface serviceInterface)
+	override generate(FInterface serviceInterface){
+		var selector = TypeSelector::defaultTypeSelector
+		selector.transitiveTypes(true)
 '''
 «val interfaceName = serviceInterface.joynrName»
 «warning()»
@@ -69,22 +71,18 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 	#include «parameterType»
 «ENDFOR»
 
-#include "joynr/Future.h"
-
 «getNamespaceStarter(serviceInterface)»
 
 I«interfaceName»Base::I«interfaceName»Base()
 {
-	«val typeObjs = getAllComplexTypes(serviceInterface, true)»
+	«val typeObjs = getAllComplexTypes(serviceInterface, selector)»
 	«var replyMetatypes = getReplyMetatypes(serviceInterface)»
 	«var broadcastMetatypes = getBroadcastMetatypes(serviceInterface)»
 
 	«IF !typeObjs.isEmpty() || !replyMetatypes.empty || !broadcastMetatypes.empty»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
 	«ENDIF»
-	«FOR typeobj : typeObjs»
-		«val datatype = typeobj as FType»
-
+	«FOR datatype : typeObjs»
 		// Register metatype «datatype.typeName»
 		«IF isEnum(datatype)»
 		{
@@ -122,6 +120,7 @@ const std::string& I«interfaceName»Base::INTERFACE_NAME()
 
 «getNamespaceEnder(serviceInterface)»
 '''
+}
 def getReplyMetatypes(FInterface serviceInterface) {
 	var replyMetatypes = new HashSet();
 	for (method: serviceInterface.methods) {

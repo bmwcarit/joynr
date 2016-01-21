@@ -61,7 +61,7 @@ public:
 
     JoynrClusterControllerRuntimeTest() :
             settingsFilename("test-resources/integrationtest.settings"),
-            runtime(NULL),
+            runtime(nullptr),
             gpsLocation(
                 1.1,                        // longitude
                 2.2,                        // latitude
@@ -87,7 +87,7 @@ public:
                 .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
 
         runtime = new JoynrClusterControllerRuntime(
-                    NULL,
+                    nullptr,
                     new Settings(settingsFilename),
                     mockMessageReceiver,
                     mockMessageSender
@@ -124,7 +124,7 @@ void TearDown(){
 
 TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntime)
 {
-    ASSERT_TRUE(runtime != NULL);
+    ASSERT_TRUE(runtime != nullptr);
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, startMessagingDoesNotThrow)
@@ -134,7 +134,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, startMessagingDoesNotThrow)
     EXPECT_CALL(*mockMessageReceiver, stopReceiveQueue())
             .Times(1);
 
-    ASSERT_TRUE(runtime != NULL);
+    ASSERT_TRUE(runtime != nullptr);
     runtime->startMessaging();
     runtime->stopMessaging();
 }

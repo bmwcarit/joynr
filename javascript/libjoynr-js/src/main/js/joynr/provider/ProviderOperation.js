@@ -24,7 +24,6 @@ define(
         [
             "joynr/util/Typing",
             "joynr/util/MethodUtil",
-            "joynr/TypesEnum",
             "joynr/types/TypeRegistrySingleton",
             "joynr/exceptions/ApplicationException",
             "joynr/exceptions/ProviderRuntimeException",
@@ -33,7 +32,6 @@ define(
         function(
             Typing,
             MethodUtil,
-            TypesEnum,
             TypeRegistrySingleton,
             ApplicationException,
             ProviderRuntimeException,
@@ -233,9 +231,13 @@ define(
                                                         detailMessage: "Application exception, details see error enum",
                                                         error: exceptionOrErrorEnumValue
                                                     });
+                                                } else if (exceptionOrErrorEnumValue instanceof Error){
+                                                    exception = new ProviderRuntimeException({
+                                                        detailMessage: "Implementation causes unknown error: " + exceptionOrErrorEnumValue.message
+                                                    });
                                                 } else {
                                                     exception = new ProviderRuntimeException({
-                                                        detailMessage: "Implementation references unknown error enum value"
+                                                        detailMessage: "Implementation causes unkown error"
                                                     });
                                                 }
                                             }

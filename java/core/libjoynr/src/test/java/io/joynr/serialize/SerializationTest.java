@@ -77,6 +77,7 @@ import joynr.types.TestTypes.TEverythingExtendedStruct;
 import joynr.types.TestTypes.TEverythingMap;
 import joynr.types.TestTypes.TIntegerKeyMap;
 import joynr.types.TestTypes.TStringKeyMap;
+import joynr.types.TestTypes.TStruct;
 import joynr.types.TestTypes.Vowel;
 import joynr.types.TestTypes.Word;
 
@@ -241,6 +242,7 @@ public class SerializationTest {
         TStringKeyMap tStringMap = new TStringKeyMap();
         tStringMap.put("key1", "value1");
         tStringMap.put("key2", "value2");
+        TStruct typeDefForTStruct = new TStruct();
 
         TEverythingExtendedStruct value = new TEverythingExtendedStruct(tInt8,
                                                                         tUInt8,
@@ -262,6 +264,7 @@ public class SerializationTest {
                                                                         word,
                                                                         wordArray,
                                                                         tStringMap,
+                                                                        typeDefForTStruct,
                                                                         tBooleanExtended,
                                                                         tStringExtended);
         tmap.put(TEnum.TLITERALA, value);

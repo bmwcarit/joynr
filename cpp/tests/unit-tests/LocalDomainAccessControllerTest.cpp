@@ -41,7 +41,7 @@ public:
         sem(0)
     {}
 
-    ~ConsumerPermissionCallback() {}
+    ~ConsumerPermissionCallback() = default;
 
     void consumerPermission(Permission::Enum permission) {
         this->permission = permission;
@@ -69,13 +69,13 @@ public:
 private:
     bool isValid;
     Permission::Enum permission;
-    joynr::Semaphore sem;
+    Semaphore sem;
 };
 
 // Test class
 class LocalDomainAccessControllerTest : public ::testing::Test {
 public:
-    LocalDomainAccessControllerTest() : localDomainAccessStore(NULL), localDomainAccessController(NULL), mockGdacProxy(NULL)
+    LocalDomainAccessControllerTest() : localDomainAccessStore(nullptr), localDomainAccessController(nullptr), mockGdacProxy(nullptr)
     {
     }
 
@@ -271,25 +271,25 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<1>(std::vector<DomainRoleEntry>()),
-                    Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // nullptr pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(masterAcesFromGlobalDac),
-                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(std::vector<MasterAccessControlEntry>()),
-                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(ownerAcesFromGlobalDac),
-                    Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // nullptr pointer
             ));
 
     // Set default return value for Google mock
@@ -343,25 +343,25 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<1>(std::vector<DomainRoleEntry>()),
-                    Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // nullptr pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(masterAcesFromGlobalDac),
-                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<3>(exceptions::JoynrRuntimeException("simulated communication failure")),
-                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(ownerAcesFromGlobalDac),
-                    Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // nullptr pointer
             ));
 
     // Set default return value for Google mock
@@ -403,25 +403,25 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<1>(std::vector<DomainRoleEntry>()),
-                    Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // nullptr pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     SaveArg<2>(&getMasterAcesOnSuccessFct),
-                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(std::vector<MasterAccessControlEntry>()),
-                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // nullptr pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
                     InvokeArgument<2>(ownerAcesFromGlobalDac),
-                    Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // null pointer
+                    Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // nullptr pointer
             ));
 
     // Set default return value for Google mock

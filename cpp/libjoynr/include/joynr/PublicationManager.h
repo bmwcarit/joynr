@@ -22,12 +22,11 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionPublication.h"
 
-#include "joynr/joynrlogging.h"
+#include "joynr/Logger.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadSafeMap.h"
 
-#include <QVariant>
 #include <mutex>
 #include <memory>
 #include <vector>
@@ -51,7 +50,7 @@ class IBroadcastFilter;
 namespace exceptions
 {
 class JoynrException;
-}
+} // namespace exceptions
 class SubscriptionQos;
 
 /**
@@ -65,7 +64,7 @@ class JOYNR_EXPORT PublicationManager
 {
 public:
     explicit PublicationManager(int maxThreads = 2);
-    PublicationManager(DelayedScheduler* scheduler);
+    explicit PublicationManager(DelayedScheduler* scheduler);
     virtual ~PublicationManager();
     /**
      * @brief Adds the SubscriptionRequest and starts runnable to poll attributes.
@@ -197,7 +196,7 @@ private:
     std::mutex queuedBroadcastSubscriptionRequestsMutex;
 
     // Logging
-    static joynr_logging::Logger* logger;
+    ADD_LOGGER(PublicationManager);
 
     // List of subscriptionId's of runnables scheduled with delay <= qos.getMinInterval_ms()
     std::vector<std::string> currentScheduledPublications;
@@ -222,14 +221,14 @@ private:
     void removeBroadcastPublication(const std::string& subscriptionId);
 
     // Helper functions
-    bool publicationExists(const std::string& subscriptionId);
+    bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
     void saveAttributeSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedAttributeSubscriptionRequestsMap();
     void saveBroadcastSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedBroadcastSubscriptionRequestsMap();
 
-    void reschedulePublication(const std::string& subscriptionId, int64_t nextPublication);
+    void reschedulePublication(const std::string& subscriptionId, std::int64_t nextPublication);
 
     bool isPublicationAlreadyScheduled(const std::string& subscriptionId);
 
@@ -242,7 +241,7 @@ private:
      *          amount of ms to wait, if interval was too short;
      *          -1 on error
      */
-    int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication, Variant qos);
+    std::int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication, Variant qos);
 
     void saveSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList,
                                      const std::string& storageFilename);
@@ -255,15 +254,11 @@ private:
                     queuedSubscriptions);
 
     template <class RequestInformationType>
-    std::vector<QVariant> subscriptionMapToListCopy(
-            const std::map<std::string, std::shared_ptr<RequestInformationType>>& map);
-
-    template <class RequestInformationType>
     std::vector<Variant> subscriptionMapToVectorCopy(
             const ThreadSafeMap<std::string, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();
-    int64_t getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
+    std::int64_t getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
     void sendPublication(std::shared_ptr<Publication> publication,
                          std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                          std::shared_ptr<SubscriptionRequest> subscriptionRequest,

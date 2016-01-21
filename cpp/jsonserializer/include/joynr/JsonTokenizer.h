@@ -82,28 +82,28 @@ public:
      * @brief JsonField
      * @param tokenizer
      */
-    JsonField(JsonTokenizer& tokenizer);
+    explicit JsonField(JsonTokenizer& tokenizer);
     JsonField(const JsonField& other) = default;
     JsonField(JsonField&& other) = default;
     JsonField& operator=(const JsonField& other) = default;
     JsonField& operator=(JsonField&& other) = default;
-    ~JsonField() = default;
+    ~JsonField()  override= default;
     /**
      * @brief name get fieldName
      * @return
      */
-    const std::string& name() const;
+    const std::string& name() const override;
     /**
      * @brief value get fieldValue
      * @return
      */
-    IValue& value();
+    IValue& value() override;
 
     /**
      * @brief value get keyValue
      * @return
      */
-    const IValue& key() const;
+    const IValue& key() const override;
 
 private:
     JsonTokenizer& tokenizer;
@@ -121,7 +121,7 @@ public:
      * @brief JsonObject
      * @param tokenizer
      */
-    JsonObject(JsonTokenizer& tokenizer);
+    explicit JsonObject(JsonTokenizer& tokenizer);
     JsonObject(const JsonObject& other) = default;
     JsonObject& operator=(const JsonObject& other) = default;
     JsonObject& operator=(JsonObject&& other) = default;
@@ -132,18 +132,18 @@ public:
      */
     JsonObject(JsonObject&& object) = default;
 
-    ~JsonObject() = default;
+    ~JsonObject()  override= default;
 
     /**
      * @brief hasNextField
      * @return
      */
-    bool hasNextField() const;
+    bool hasNextField() const override;
     /**
      * @brief nextField
      * @return
      */
-    IField& nextField();
+    IField& nextField() override;
 private:
     JsonTokenizer& tokenizer;
     std::size_t size;
@@ -161,7 +161,7 @@ public:
      * @brief JsonArray
      * @param tokenizer
      */
-    JsonArray(JsonTokenizer& tokenizer);
+    explicit JsonArray(JsonTokenizer& tokenizer);
     /**
      * @brief JsonArray
      * @param array
@@ -170,18 +170,18 @@ public:
     JsonArray(const JsonArray& other) = default;
     JsonArray& operator=(const JsonArray& other) = default;
     JsonArray& operator=(JsonArray&& other) = default;
-    ~JsonArray() = default;
+    ~JsonArray()  override= default;
 
     /**
      * @brief hasNextValue
      * @return
      */
-    bool hasNextValue() const;
+    bool hasNextValue() const override;
     /**
      * @brief nextValue
      * @return
      */
-    IValue& nextValue();
+    IValue& nextValue() override;
 private:
     JsonTokenizer& tokenizer;
     std::size_t size;
@@ -201,66 +201,66 @@ public:
      * @brief JsonValue
      * @param tokenizer
      */
-    JsonValue(JsonTokenizer& tokenizer);
+    explicit JsonValue(JsonTokenizer& tokenizer);
     JsonValue(JsonValue&& array) = default;
     JsonValue(const JsonValue& other) = default;
     JsonValue& operator=(const JsonValue& other) = default;
     JsonValue& operator=(JsonValue&& other) = default;
-    ~JsonValue() = default;
+    ~JsonValue()  override= default;
 
     /**
      * @brief operator const std::string &
      */
-    operator const std::string&() const;
+    operator const std::string&() const override;
     /**
      * @brief operator IArray &
      */
-    operator IArray&();
+    operator IArray&() override;
     /**
      * @brief operator IObject &
      */
-    operator IObject&();
+    operator IObject&() override;
     /**
      * @brief getBool converts to bool
      * @return
      */
-    bool getBool() const;
+    bool getBool() const override;
     /**
      * @brief isString
      * @return
      */
-    bool isString() const;
+    bool isString() const override;
     /**
      * @brief isArray
      * @return
      */
-    bool isArray() const;
+    bool isArray() const override;
     /**
      * @brief isObject
      * @return
      */
-    bool isObject() const;
+    bool isObject() const override;
 
     /**
      * @brief Get the value as a variant
      * @return The variant
      */
-    Variant getVariant() const;
+    Variant getVariant() const override;
 
 protected:
     /**
-     * @brief conversion to int64_t, doesn't allow conversion of boolean to int
+     * @brief conversion to std::int64_t, doesn't allow conversion of boolean to int
      */
-    int64_t getInt64() const;
+    std::int64_t getInt64() const override;
     /**
      * @brief conversion to double
      */
-    double getDouble() const;
+    double getDouble() const override;
     /**
-     * @brief conversion to uint64_t
+     * @brief conversion to std::uint64_t
      * @return
      */
-    uint64_t getUInt64() const;
+    std::uint64_t getUInt64() const override;
 private:
     Variant value;
     JsonTokenizer& tokenizer;
@@ -280,12 +280,12 @@ public:
      * @param json The JSON to parse. Must remain valid for the lifetime
      *             of the object.
      */
-    JsonTokenizer(const std::string& json);
+    explicit JsonTokenizer(const std::string& json);
     JsonTokenizer(const JsonTokenizer& other) = default;
     JsonTokenizer(JsonTokenizer&& other) = default;
     JsonTokenizer& operator=(const JsonTokenizer& other) = default;
     JsonTokenizer& operator=(JsonTokenizer&& other) = default;
-    ~JsonTokenizer() = default;
+    ~JsonTokenizer()  override= default;
 
     /**
      * @brief Returns the current token
@@ -302,27 +302,27 @@ public:
      * @brief isValid
      * @return
      */
-    bool isValid() const;
+    bool isValid() const override;
     /**
      * @brief hasNextObject
      * @return
      */
-    bool hasNextObject() const;
+    bool hasNextObject() const override;
     /**
      * @brief nextObject
      * @return
      */
-    IObject& nextObject();
+    IObject& nextObject() override;
     /**
      * @brief hasNextValue sometimes json can contain only value, or array of values
      * @return
      */
-    bool hasNextValue() const;
+    bool hasNextValue() const override;
     /**
      * @brief nextValue sometimes json can contain only value, or array of values
      * @return
      */
-    IValue &nextValue();
+    IValue &nextValue() override;
 
     double stringToDoubleLocaleIndependent(const std::string& doubleStr);
 

@@ -18,37 +18,31 @@
  */
 #include "joynr/TrackableObject.h"
 #include <string>
-#include <boost/format.hpp>
+#include <sstream>
 
 namespace joynr
 {
 
-using namespace joynr_logging;
-
-Logger* TrackableObject::logger = Logging::getInstance()->getLogger("MSG", "TrackableObject");
+INIT_LOGGER(TrackableObject);
 
 int TrackableObject::instances = 0;
 
 TrackableObject::TrackableObject()
 {
     ++instances;
-    std::string address = str(boost::format("%p") % this);
-    LOG_TRACE(logger,
-              FormatString("Creating Traceable Object at address %1 Now we have %2 instances.")
-                      .arg(address)
-                      .arg(instances)
-                      .str());
+    JOYNR_LOG_TRACE(logger,
+                    "Creating Traceable Object at address {}. Now we have {} instances.",
+                    static_cast<const void*>(this),
+                    instances);
 }
 
 TrackableObject::~TrackableObject()
 {
     --instances;
-    std::string address = str(boost::format("%p") % this);
-    LOG_TRACE(logger,
-              FormatString("Deleting Traceable Object at address %1 Now we have %2 instances.")
-                      .arg(address)
-                      .arg(instances)
-                      .str());
+    JOYNR_LOG_TRACE(logger,
+                    "Deleting Traceable Object at address {}. Now we have {} instances.",
+                    static_cast<const void*>(this),
+                    instances);
 }
 
 int TrackableObject::getInstances()

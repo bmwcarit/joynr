@@ -96,6 +96,9 @@ public class Executor {
         if (templateRootInstance instanceof IGenerator) {
             // This is a standard generator
             IGenerator result = (IGenerator) templateRootInstance;
+            if (result instanceof IJoynrGenerator && ((IJoynrGenerator) result).getGeneratorModule() != null) {
+                injector = injector.createChildInjector(((IJoynrGenerator) result).getGeneratorModule());
+            }
             injector.injectMembers(result);
             return result;
         } else {

@@ -35,7 +35,7 @@ public:
     /**
      * Persist message properties to the default persistence file
      */
-    MessagingPropertiesPersistence(const std::string& filename);
+    explicit MessagingPropertiesPersistence(const std::string& filename);
 
     /**
      * Get, and create if needed, the channel Id

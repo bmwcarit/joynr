@@ -53,6 +53,9 @@ public class SingleBounceProxyInformationProvider implements Provider<BounceProx
     @Inject(optional = true)
     public void setHostPath(@Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath,
                             HttpServletRequest request) {
+        if (hostPath.endsWith("/")) {
+            hostPath = hostPath.substring(0, hostPath.length() - 1);
+        }
         this.hostPath = hostPath;
 
         String servletContext = request.getServletContext().getContextPath();

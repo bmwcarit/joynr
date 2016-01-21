@@ -32,28 +32,28 @@ static const bool isOnChangeWithKeepAliveSubscriptionQosSerializerRegistered =
                 "joynr.OnChangeWithKeepAliveSubscriptionQos");
 
 template <>
-void ClassDeserializer<OnChangeWithKeepAliveSubscriptionQos>::deserialize(
+void ClassDeserializerImpl<OnChangeWithKeepAliveSubscriptionQos>::deserialize(
         OnChangeWithKeepAliveSubscriptionQos& qos,
         IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "expiryDate") {
-            qos.setExpiryDate(field.value().getIntType<int64_t>());
+            qos.setExpiryDate(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "publicationTtl") {
-            qos.setPublicationTtl(field.value().getIntType<int64_t>());
+            qos.setPublicationTtl(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "minInterval") {
-            qos.setMinInterval(field.value().getIntType<int64_t>());
+            qos.setMinInterval(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "maxInterval") {
-            qos.setMaxInterval(field.value().getIntType<int64_t>());
+            qos.setMaxInterval(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "alertAfterInterval") {
-            qos.setAlertAfterInterval(field.value().getIntType<int64_t>());
+            qos.setAlertAfterInterval(field.value().getIntType<std::int64_t>());
         }
     }
 }
 
 template <>
-void ClassSerializer<OnChangeWithKeepAliveSubscriptionQos>::serialize(
+void ClassSerializerImpl<OnChangeWithKeepAliveSubscriptionQos>::serialize(
         const OnChangeWithKeepAliveSubscriptionQos& qos,
         std::ostream& stream)
 {

@@ -36,9 +36,7 @@ public:
      * this object from its directory.
      */
     virtual void timeOut() = 0;
-    virtual ~ITimeoutListener()
-    {
-    }
+    virtual ~ITimeoutListener() = default;
 };
 
 } // namespace joynr

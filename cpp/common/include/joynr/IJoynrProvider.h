@@ -31,16 +31,14 @@ class IBroadcastFilter;
 namespace types
 {
 class ProviderQos;
-}
+} // namespace types
 
 /** @brief Interface for the provider */
 class IJoynrProvider
 {
 public:
     /** @brief Destructor */
-    virtual ~IJoynrProvider()
-    {
-    }
+    virtual ~IJoynrProvider() = default;
 
     /**
      * @brief Get the provider quality of service settings

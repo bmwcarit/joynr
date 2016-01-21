@@ -38,7 +38,7 @@ public:
             const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& mediatorAceOptional,
             const Optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerAceOptional);
 
-    ~AceValidator();
+    ~AceValidator() = default;
 
     /**
      * Indicates if the master, mediator and owner entries are compatible with each other

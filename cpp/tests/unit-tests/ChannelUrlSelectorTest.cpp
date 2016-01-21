@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 #include <string>
 #include <memory>
+#include <chrono>
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/BounceProxyUrl.h"
 #include "tests/utils/MockObjects.h"
@@ -38,11 +39,11 @@ using ::testing::WithArgs;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const int64_t& timeout) {
+std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, std::chrono::milliseconds timeout) {
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(new joynr::Future<types::ChannelUrlInformation>());
+    std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(new Future<types::ChannelUrlInformation>());
     future->onSuccess(urlInformation);
     return future;
 }
@@ -58,7 +59,7 @@ TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannel
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
     RequestStatus* status = new RequestStatus();
     std::string channelId = "testChannelId";
-    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
     EXPECT_EQ("http://www.urltest.org/pseudoBp/testChannelId/message/", url);
     delete urlCache;
     delete status;
@@ -85,15 +86,15 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
 
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<const int64_t&>(),
+                    A<std::chrono::milliseconds>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
-                    A<std::function<void(const exceptions::JoynrException& error)>>()))
+                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
     std::string channelId = "testChannelId";
 
-    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
     delete status;
@@ -123,27 +124,27 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<const int64_t&>(),
+                    A<std::chrono::milliseconds>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
-                    A<std::function<void(const exceptions::JoynrException& error)>>()))
+                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
     std::string channelId = "testChannelId";
 
-    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
     urlCache->feedback(false,channelId,url);
-    url = urlCache->obtainUrl(channelId,*status, 20000);
+    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
     urlCache->feedback(false,channelId,url);
-    url = urlCache->obtainUrl(channelId,*status, 20000);
+    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
     urlCache->feedback(false,channelId,url);
-    url = urlCache->obtainUrl(channelId,*status, 20000);
+    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
     EXPECT_EQ("secondUrl/message/", url);
 
     delete status;
@@ -156,7 +157,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
     const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
-    int64_t timeForOneRecouperation = 1000; //half a minute
+    std::chrono::milliseconds timeForOneRecouperation(1000);
     double punishmentFactor = 0.4;//three punishments will lead to a try of the second Url
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
 
@@ -175,23 +176,23 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
 
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<const int64_t&>(),
+                    A<std::chrono::milliseconds>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
-                    A<std::function<void(const exceptions::JoynrException& error)>>()))
+                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
     std::string channelId = "testChannelId";
-    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
 
     urlCache->feedback(false,channelId,url);
     urlCache->feedback(false,channelId,url);
     urlCache->feedback(false,channelId,url);
-    url = urlCache->obtainUrl(channelId,*status, 20000);
+    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
     EXPECT_EQ("secondUrl/message/", url);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation + 100));
-    url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::this_thread::sleep_for(timeForOneRecouperation + std::chrono::milliseconds(100));
+    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
     delete status;
@@ -262,7 +263,7 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
-    int64_t timeForOneRecouperation = 300;
+    std::chrono::milliseconds timeForOneRecouperation(300);
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
                 urlInformation,
                 punishmentFactor,
@@ -278,28 +279,28 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     EXPECT_EQ(2 - punishmentFactor,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor - punishmentFactor,fitness.at(2));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation /3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation.count() /3));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3 - punishmentFactor,fitness.at(0));
     EXPECT_EQ(2 - punishmentFactor,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor - punishmentFactor, fitness.at(2));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation ));
+    std::this_thread::sleep_for(timeForOneRecouperation);
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor,fitness.at(2));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation));
+    std::this_thread::sleep_for(timeForOneRecouperation);
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
     EXPECT_EQ(1,fitness.at(2));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation ));
+    std::this_thread::sleep_for(timeForOneRecouperation);
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
@@ -312,7 +313,7 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     entry->punish("thirdUrl");
     entry->punish("thirdUrl");
 
-    std::this_thread::sleep_for(std::chrono::milliseconds( 2 * timeForOneRecouperation + 10 ));
+    std::this_thread::sleep_for(std::chrono::milliseconds( 2 * timeForOneRecouperation.count() + 10 ));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
@@ -329,7 +330,7 @@ TEST(ChannelUrlSelectorTest, bestTest) {
     std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
-    int64_t timeForOneRecouperation = 300;
+    std::chrono::milliseconds timeForOneRecouperation(300);
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
                 urlInformation,
                 punishmentFactor,
@@ -346,9 +347,9 @@ TEST(ChannelUrlSelectorTest, bestTest) {
     EXPECT_EQ("firstUrl", entry->best());
     entry->punish("firstUrl");
     EXPECT_EQ("secondUrl", entry->best());
-    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation + 100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation.count() + 100));
     EXPECT_EQ("secondUrl", entry->best());
-    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation + 100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation.count() + 100));
     EXPECT_EQ("firstUrl", entry->best());
 
     delete entry;

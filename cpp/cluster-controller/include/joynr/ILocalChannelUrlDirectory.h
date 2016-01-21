@@ -22,7 +22,7 @@
 #include <functional>
 #include <string>
 #include "joynr/exceptions/JoynrException.h"
-#include <QtCore>
+#include <chrono>
 
 namespace joynr
 {
@@ -32,7 +32,7 @@ class Future;
 namespace types
 {
 class ChannelUrlInformation;
-}
+} // namespace types
 
 /**
  * @brief The LocalChannelUrlDirectory is used within the cluster controller (message routing)
@@ -44,9 +44,7 @@ class ILocalChannelUrlDirectory
 {
 
 public:
-    virtual ~ILocalChannelUrlDirectory()
-    {
-    }
+    virtual ~ILocalChannelUrlDirectory() = default;
     /**
      * @brief Register a set of Url's for a channelId.
      *
@@ -55,11 +53,11 @@ public:
      * @param onSuccess
      * @param onError
      */
-    virtual std::shared_ptr<joynr::Future<void>> registerChannelUrlsAsync(
+    virtual std::shared_ptr<Future<void>> registerChannelUrlsAsync(
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError = nullptr) = 0;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
@@ -68,10 +66,10 @@ public:
      * @param onSuccess
      * @param onError
      */
-    virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
+    virtual std::shared_ptr<Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError = nullptr) = 0;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
@@ -82,12 +80,11 @@ public:
      * @param onSuccess
      * @param onError
      */
-    virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
-    getUrlsForChannelAsync(
+    virtual std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> getUrlsForChannelAsync(
             const std::string& channelId,
-            const int64_t& timeout_ms,
+            std::chrono::milliseconds timeout,
             std::function<void(const types::ChannelUrlInformation&)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError = nullptr) = 0;
 };
 
 } // namespace joynr

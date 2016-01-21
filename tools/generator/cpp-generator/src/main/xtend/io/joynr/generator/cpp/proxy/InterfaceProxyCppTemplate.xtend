@@ -55,9 +55,6 @@ class InterfaceProxyCppTemplate implements InterfaceTemplate{
 {
 }
 
-«className»::~«className»()
-{
-}
 «getNamespaceEnder(fInterface)»
 '''
 }

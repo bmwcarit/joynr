@@ -397,6 +397,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          */
         this.handlePublication =
                 function handlePublication(publication) {
+                    if (subscriptionInfos[publication.subscriptionId] === undefined) {
+                        throw new Error("Publication cannot be handled, as no subscription with "
+                                + "subscriptionId " + publication.subscriptionId + " is known.");
+                    }
                     setLastPublicationTime(publication.subscriptionId, Date.now());
                     var subscriptionListener = subscriptionListeners[publication.subscriptionId];
                     if (publication.error) {

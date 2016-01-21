@@ -19,7 +19,6 @@
 #include <gtest/gtest.h>
 
 #include "PrettyPrint.h"
-#include "joynr/joynrlogging.h"
 
 #include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/tests/testTypes/TestEnumExtended.h"
@@ -36,11 +35,9 @@ public:
             testEnumTwo(TestEnum::TWO)
     {}
 
-    virtual ~StdEnumTypeTest() {
-    }
+    virtual ~StdEnumTypeTest() = default;
 
 protected:
-    static joynr::joynr_logging::Logger* logger;
 
     TestEnum::Enum testEnumZero;
     TestEnum::Enum testEnumZeroOther;
@@ -48,10 +45,6 @@ protected:
     TestEnum::Enum testEnumOneOther;
     TestEnum::Enum testEnumTwo;
 };
-
-joynr::joynr_logging::Logger* StdEnumTypeTest::logger(
-        joynr::joynr_logging::Logging::getInstance()->getLogger("TST", "StdEnumTypeTest")
-);
 
 TEST_F(StdEnumTypeTest, createEnum) {
     TestEnum::Enum testEnum(TestEnum::ONE);
@@ -103,7 +96,7 @@ TEST_F(StdEnumTypeTest, lessEqualOperator) {
 TEST_F(StdEnumTypeTest, getEnum) {
     std::string literal = TestEnum::getLiteral(TestEnum::ZERO);
     EXPECT_EQ(TestEnum::ZERO, TestEnum::getEnum(literal));
-    uint32_t ordinal = TestEnum::getOrdinal(TestEnum::ZERO);
+    std::uint32_t ordinal = TestEnum::getOrdinal(TestEnum::ZERO);
     EXPECT_EQ(ordinal, TestEnum::getEnum(literal));
 }
 

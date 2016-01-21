@@ -31,7 +31,6 @@ joynrTestRequire(
             "joynr/provider/ProviderAttributeNotifyReadWrite",
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderScope",
-            "joynr/TypesEnum",
             "uuid",
             "joynr/types/CommunicationMiddleware"
         ],
@@ -43,7 +42,6 @@ joynrTestRequire(
                 ProviderAttributeNotifyReadWrite,
                 DiscoveryEntry,
                 ProviderScope,
-                TypesEnum,
                 uuid,
                 CommunicationMiddleware) {
             describe(
@@ -94,7 +92,7 @@ joynrTestRequire(
                                 dependencies : {
                                     publicationManager : publicationManagerSpy
                                 }
-                            }, "myAttribute", TypesEnum.BOOL);
+                            }, "myAttribute", "Boolean");
 
                             localChannelId = "localChannelId";
                             domain = "testdomain";
