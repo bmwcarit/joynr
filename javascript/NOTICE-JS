@@ -67,8 +67,8 @@ This project has dependencies to:
   License: MIT License (https://github.com/petkaantonov/bluebird/blob/master/LICENSE)
   Webjar: <groupId>org.webjars</groupId>
           <artifactId>bluebird</artifactId>
-          <version>2.9.9</version>
-  npm package: version 2.9.9 (https://www.npmjs.com/package/bluebird)
+          <version>3.1.1</version>
+  npm package: version 3.1.1 (https://www.npmjs.com/package/bluebird)
 
 * jasmine-jstd-adapter (https://github.com/ibolmo/jasmine-jstd-adapter)
   License: MIT License (https://github.com/ibolmo/jasmine-jstd-adapter/blob/master/MIT.LICENSE)
