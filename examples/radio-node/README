@@ -1,0 +1,13 @@
+to try out the Radio example run:
+
+mvn install
+npm install -g npm@latest
+npm install
+
+Then run the node applications by doing the following:
+
+1. ensure a cluster controller allowing to be connected via web socket is running and accessible
+2. start a provider
+   npm run-script startprovider --radio-node:domain=<DOMAIN>
+3. start a consumer
+   npm run-script startconsumer --radio-node:domain=<DOMAIN>
