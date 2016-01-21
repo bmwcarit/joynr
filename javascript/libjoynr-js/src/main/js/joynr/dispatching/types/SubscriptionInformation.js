@@ -32,8 +32,13 @@ define("joynr/dispatching/types/SubscriptionInformation", [
      * @param {Object|SubscriptionRequest}
      *            [request] the subscription request
      */
-    function SubscriptionInfo(proxyParticipantId, providerParticipantId, request) {
+    function SubscriptionInformation(
+            subscriptionType,
+            proxyParticipantId,
+            providerParticipantId,
+            request) {
 
+        this.subscriptionType = subscriptionType;
         this.proxyParticipantId = proxyParticipantId;
         this.providerParticipantId = providerParticipantId;
         this.subscriptionId = request.subscriptionId;
@@ -52,6 +57,9 @@ define("joynr/dispatching/types/SubscriptionInformation", [
         Typing.augmentTypeName(this, "joynr");
     }
 
-    return SubscriptionInfo;
+    SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE = "subscription_type_attribute";
+    SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST = "subscription_type_broadcast";
+
+    return SubscriptionInformation;
 
 });

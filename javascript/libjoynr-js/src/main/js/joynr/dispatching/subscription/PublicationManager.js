@@ -605,7 +605,7 @@ define(
 
                     var subscriptions;
 
-                    if (subscriptionInfo.filterParameters === undefined) {
+                    if (subscriptionInfo.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE) {
                         // This is an attribute subscription
 
                         var attributeName = subscriptionInfo.subscribedToName;
@@ -624,6 +624,7 @@ define(
                             return;
                         }
                     } else {
+                        // subscriptionInfo.type === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
                         // This is a event subscription
                         var eventName = subscriptionInfo.subscribedToName;
 
@@ -808,6 +809,7 @@ define(
                             // construct subscriptionInfo from subscriptionRequest and participantIds
                             var subscriptionInfo =
                                     new SubscriptionInformation(
+                                            SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE,
                                             proxyParticipantId,
                                             providerParticipantId,
                                             subscriptionRequest);
@@ -954,6 +956,7 @@ define(
                             // construct subscriptionInfo from subscriptionRequest and participantIds
                             var subscriptionInfo =
                                     new SubscriptionInformation(
+                                            SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST,
                                             proxyParticipantId,
                                             providerParticipantId,
                                             subscriptionRequest);

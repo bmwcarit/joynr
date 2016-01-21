@@ -123,7 +123,7 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
                                             settings.broadcastParameter));
                                 },
                                 onError : subscribeParameters.onError,
-                                filterParameters : subscribeParameters.filterParameters || {}
+                                filterParameters : subscribeParameters.filterParameters
                             });
                 };
 
