@@ -1319,8 +1319,7 @@ bool callMethodWithExtendedErrorEnumAsync(interlanguagetest::TestInterfaceProxy*
             methodWithExtendedErrorEnumAsyncCallbackDone = true;
         };
 
-        std::function<void(const joynr::exceptions::JoynrException&)> onError =
-                [](const joynr::exceptions::JoynrException& error) {
+        auto onRuntimeError = [](const joynr::exceptions::JoynrRuntimeException& error) {
             if (error.getTypeName() == "joynr.exceptions.ProviderRuntimeException") {
                 if (error.getMessage() == "Exception from methodWithExtendedErrorEnum") {
                     JOYNR_LOG_INFO(
@@ -1349,7 +1348,8 @@ bool callMethodWithExtendedErrorEnumAsync(interlanguagetest::TestInterfaceProxy*
         };
 
         std::shared_ptr<joynr::Future<void>> future =
-                testInterfaceProxy->methodWithExtendedErrorEnumAsync(arg, onSuccess, onError);
+                testInterfaceProxy->methodWithExtendedErrorEnumAsync(
+                        arg, onSuccess, nullptr, onRuntimeError);
 
         try {
             long timeoutInMilliseconds = 8000;
