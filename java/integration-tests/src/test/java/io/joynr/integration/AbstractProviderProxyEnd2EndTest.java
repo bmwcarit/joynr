@@ -144,7 +144,13 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     Callback<Void> callbackVoid;
 
     @Mock
-    private CallbackWithModeledError<Void, Enum<?>> callbackWithApplicationException;
+    private CallbackWithModeledError<Void, ErrorEnumBase> callbackWithApplicationExceptionErrorEnumBase;
+
+    @Mock
+    private CallbackWithModeledError<Void, MethodWithErrorEnumExtendedErrorEnum> callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum;
+
+    @Mock
+    private CallbackWithModeledError<Void, MethodWithImplicitErrorEnumErrorEnum> callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum;
 
     private TestAsyncProviderImpl providerAsync;
 
@@ -885,7 +891,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(ErrorEnumBase.BASE_ERROR_TYPECOLLECTION);
-        Future<Void> future = proxy.methodWithErrorEnum(callbackWithApplicationException);
+        Future<Void> future = proxy.methodWithErrorEnum(callbackWithApplicationExceptionErrorEnumBase);
         try {
             future.get();
             fail("Should throw ApplicationException");
@@ -894,7 +900,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationException).onFailure(expected.getError());
+        verify(callbackWithApplicationExceptionErrorEnumBase).onFailure((ErrorEnumBase)(expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -952,7 +958,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(MethodWithErrorEnumExtendedErrorEnum.IMPLICIT_ERROR_TYPECOLLECTION);
-        Future<Void> future = proxy.methodWithErrorEnumExtended(callbackWithApplicationException);
+        Future<Void> future = proxy.methodWithErrorEnumExtended(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum);
         try {
             future.get();
             fail("Should throw ApplicationException");
@@ -961,7 +967,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationException).onFailure(expected.getError());
+        verify(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum).onFailure((MethodWithErrorEnumExtendedErrorEnum)(expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -986,7 +992,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(MethodWithImplicitErrorEnumErrorEnum.IMPLICIT_ERROR);
-        Future<Void> future = proxy.methodWithImplicitErrorEnum(callbackWithApplicationException);
+        Future<Void> future = proxy.methodWithImplicitErrorEnum(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum);
         try {
             future.get();
             fail("Should throw ApplicationException");
@@ -995,7 +1001,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationException).onFailure(expected.getError());
+        verify(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum).onFailure((MethodWithImplicitErrorEnumErrorEnum)(expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

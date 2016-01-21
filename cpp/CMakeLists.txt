@@ -240,12 +240,6 @@ if(${ENABLE_GCOV})
     #set(LDFLAGS "{$LDFLAGS} -fprofile-arcs -ftest-coverage")
 endif(${ENABLE_GCOV})
 
-message(STATUS "############ Import: Qt5 ############")
-# Find includes in corresponding build directories (Qt MOCs are created in current build dir)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# Tell CMake to run moc when necessary:
-set(CMAKE_AUTOMOC ON)
-
 # Doxygen documentation build
 if(ENABLE_DOXYGEN)
     find_package(Doxygen REQUIRED)
@@ -257,6 +251,11 @@ if(ENABLE_DOXYGEN)
         VERBATIM
     )
 endif(ENABLE_DOXYGEN)
+
+message(STATUS "############ Import: Qt5 ############")
+
+# Find includes in corresponding build directories (Qt MOCs are created in current build dir)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Core)
 find_package(Qt5WebSockets)

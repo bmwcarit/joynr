@@ -57,7 +57,7 @@ public:
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError = nullptr) = 0;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
@@ -69,7 +69,7 @@ public:
     virtual std::shared_ptr<Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError = nullptr) = 0;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
@@ -84,7 +84,7 @@ public:
             const std::string& channelId,
             std::chrono::milliseconds timeout,
             std::function<void(const types::ChannelUrlInformation&)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError = nullptr) = 0;
 };
 
 } // namespace joynr

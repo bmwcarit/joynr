@@ -18,12 +18,12 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -35,7 +35,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
-	@Inject private extension InterfaceUtil
+	@Inject private extension CppInterfaceUtil
 
 	override generate(FInterface fInterface)
 '''
@@ -73,11 +73,10 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 
 «FOR attribute: getAttributes(fInterface)»
 	«var attributeName = attribute.joynrName»
-	«var attributeType = attribute.typeName»
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
 	«IF attribute.readable»
-		void «syncClassName»::«getAttribute»(«attributeType»& result)
+		«produceSyncGetterSignature(attribute, syncClassName)»
 		{
 			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + getAttribute + " because the communication end partner is not (yet) known"»
@@ -86,12 +85,12 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 				throw error;
 			}
 			else{
-				return connector->«getAttribute»(result);
+				return connector->«getAttribute»(«attributeName»);
 			}
 		}
 	«ENDIF»
 	«IF attribute.writable»
-		void «syncClassName»::«setAttribute»(const «attributeType»& value)
+		«produceSyncSetterSignature(attribute, syncClassName)»
 		{
 			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + setAttribute + " because the communication end partner is not (yet) known"»
@@ -100,7 +99,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 				throw error;
 			}
 			else{
-				return connector->«setAttribute»(value);
+				return connector->«setAttribute»(«attributeName»);
 			}
 		}
 	«ENDIF»
@@ -108,16 +107,12 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 «ENDFOR»
 «FOR method: getMethods(fInterface)»
 	«var methodName = method.name»
-	«var inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
-	«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
 	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 	«var params = getCommaSeperatedUntypedInputParameterList(method)»
 	/*
 	 * «methodName»
 	 */
-
-	void «syncClassName»::«methodName»(
-		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»)
+	«produceSyncMethodSignature(method, syncClassName)»
 	{
 		if (connector==nullptr){
 			«val errorMsg = "proxy cannot invoke " + methodName + " because the communication end partner is not (yet) known"»

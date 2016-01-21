@@ -1,0 +1,17 @@
+{
+  "name": "inter-language-test",
+  "version": "0.14.0",
+  "description": "Inter-Language Tests",
+  "main": "src/main/js/consumer.js",
+  "private": true,
+  "dependencies": {
+  },
+  "config": {
+    "domain": "joynr-inter-language-test-domain"
+  },
+  "scripts": {
+    "preinstall": "npm install ../javascript/libjoynr-js/target/classes",
+    "startprovider" : "node src/main/js/provider.js $npm_package_config_domain",
+    "startjasmine" : "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain src/main/js/consumer.spec.js"
+  }
+}

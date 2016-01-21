@@ -23,12 +23,15 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
+import org.franca.core.franca.FAttribute
 
 class CppInterfaceUtil extends InterfaceUtil {
 	@Inject extension NamingUtil
 	@Inject extension CppStdTypeUtil
 	@Inject extension AttributeUtil
 	@Inject extension MethodUtil
+	@Inject extension JoynrCppGeneratorExtensions
 
 	def printFutureReturnDefinition()
 '''
@@ -42,16 +45,32 @@ class CppInterfaceUtil extends InterfaceUtil {
 	* finished successfully. It must expect the method out parameters.
 '''
 
-	def printOnErrorFctParamDefinition()
+	def printOnRuntimeErrorFctParamDefinition()
 '''
-	* @param onError A callback function to be called once the asynchronous computation has
-	* failed. It must expect a JoynrException object.
+	* @param onRuntimeError A callback function to be called once the asynchronous computation has
+	* failed with an unexpected non-modeled exception. It must expect a JoynrRuntimeException object.
 '''
 
-	def produceSyncGetters(FInterface serviceInterface, boolean pure)
+	def printOnApplicationErrorFctParamDefinition()
+'''
+	* @param onApplicationError A callback function to be called once the asynchronous computation has
+	* failed with an unexpected modeled exception. It must expect an Error enum as modeled in Franca.
+'''
+
+	def produceSyncGetterSignature(FAttribute attribute, String className)
+'''
+	«val returnType = attribute.typeName»
+	«val attributeName = attribute.joynrName»
+	void «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»(«returnType»& «attributeName»)
+'''
+
+    def produceSyncGetterSignature(FAttribute attribute) {
+    	return produceSyncGetterSignature(attribute, null);
+    }
+
+	def produceSyncGetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
-		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
@@ -60,79 +79,124 @@ class CppInterfaceUtil extends InterfaceUtil {
 		* @param result The result that will be returned to the caller.
 		* @throws JoynrException if the request is not successful
 		*/
-		«IF pure»virtual «ENDIF»void get«attributeName.toFirstUpper»(
-				«returnType»& result
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceSyncGetterSignature(attribute)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 
 	«ENDFOR»
 '''
 
-	def produceAsyncGetters(FInterface serviceInterface, boolean pure)
+	def produceAsyncGetterSignature(FAttribute attribute, String className)
+'''
+	«val returnType = attribute.typeName»
+	«val attributeName = attribute.joynrName»
+	«val defaultArg = if(className == null) " = nullptr" else ""»
+	std::shared_ptr<joynr::Future<«returnType»> > «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»Async(
+				std::function<void(const «returnType»& «attributeName»)> onSuccess«defaultArg»,
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»)
+'''
+
+    def produceAsyncGetterSignature(FAttribute attribute) {
+    	return produceAsyncGetterSignature(attribute, null);
+    }
+
+	def produceAsyncGetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.readable]»
-		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
 		* @brief Asynchronous getter for the «attributeName» attribute.
 		*
 		«printOnSuccessFctParamDefinition»
-		«printOnErrorFctParamDefinition»
+		«printOnRuntimeErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»Async(
-				std::function<void(const «returnType»& «attributeName.toFirstLower»)> onSuccess = nullptr,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceAsyncGetterSignature(attribute)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
 
-	def produceSyncSetters(FInterface serviceInterface, boolean pure)
+
+	def produceSyncSetterSignature(FAttribute attribute, String className)
+'''
+	«val returnType = attribute.typeName»
+	«val attributeName = attribute.joynrName»
+	void «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»(const «returnType»& «attributeName»)
+'''
+
+    def produceSyncSetterSignature(FAttribute attribute) {
+    	return produceSyncSetterSignature(attribute, null);
+    }
+
+	def produceSyncSetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
-		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
 		* @brief Synchronous setter for the «attributeName» attribute.
 		*
-		* @param «attributeName.toFirstLower» The value to set.
+		* @param «attributeName» The value to set.
 		* @throws JoynrException if the request is not successful
 		*/
-		«IF pure»virtual «ENDIF»void set«attributeName.toFirstUpper»(
-				const «returnType»& «attributeName.toFirstLower»
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceSyncSetterSignature(attribute)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
 
-	def produceAsyncSetters(FInterface serviceInterface, boolean pure)
+	def produceAsyncSetterSignature(FAttribute attribute, String className)
+'''
+	«val returnType = attribute.typeName»
+	«val attributeName = attribute.joynrName»
+	«val defaultArg = if(className == null) " = nullptr" else ""»
+	std::shared_ptr<joynr::Future<void> > «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»Async(
+				«returnType» «attributeName»,
+				std::function<void(void)> onSuccess«defaultArg»,
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»)
+'''
+
+    def produceAsyncSetterSignature(FAttribute attribute) {
+    	return produceAsyncSetterSignature(attribute, null);
+    }
+
+	def produceAsyncSetterDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.writable]»
-		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 
 		/**
 		* @brief Asynchronous setter for the «attributeName» attribute.
 		*
-		* @param «attributeName.toFirstLower» The value to set.
+		* @param «attributeName» The value to set.
 		«printOnSuccessFctParamDefinition»
-		«printOnErrorFctParamDefinition»
+		«printOnRuntimeErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<void> > set«attributeName.toFirstUpper»Async(
-				«returnType» «attributeName.toFirstLower»,
-				std::function<void(void)> onSuccess = nullptr,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceAsyncSetterSignature(attribute)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
 
-	def produceSyncMethods(FInterface serviceInterface, boolean pure)
+
+	def produceSyncMethodSignature(FMethod method, String className)
+'''
+	«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
+	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
+	void «IF className != null»«className»::«ENDIF»«method.joynrName»(
+	«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»)
+'''
+
+    def produceSyncMethodSignature(FMethod method) {
+    	return produceSyncMethodSignature(method, null);
+    }
+
+	def produceSyncMethodDeclarations(FInterface serviceInterface, boolean pure)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
-		«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
-
 		/**
 		* @brief Synchronous operation «method.joynrName».
 		*
@@ -145,30 +209,99 @@ class CppInterfaceUtil extends InterfaceUtil {
 		«ENDFOR»
 		* @throws JoynrException if the request is not successful
 		*/
-		«IF pure»virtual «ENDIF»void «method.joynrName»(
-				«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceSyncMethodSignature(method)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
 
-	def produceAsyncMethods(FInterface serviceInterface, boolean pure)
+	def getMethodErrorEnum(FInterface serviceInterface, FMethod method) {
+    	val methodToErrorEnumName = serviceInterface.methodToErrorEnumName;
+    	if(method.errors != null) {
+    		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::");
+    		return packagePath + "::" + methodToErrorEnumName.get(method) + "::" + nestedEnumName;
+    	}
+    	else {
+    		return method.errorEnum.typeName;
+    	}
+    }
+
+	def produceAsyncMethodSignature(FInterface serviceInterface, FMethod method, String className)
+'''
+	«val outputParameters = method.commaSeparatedOutputParameterTypes»
+	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
+	«val returnValue = "std::shared_ptr<joynr::Future<" + outputParameters + ">>"»
+	«val defaultArg = if(className == null) " = nullptr" else ""»
+	«returnValue» «IF className != null»«className»::«ENDIF» «method.joynrName»Async(
+	«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
+				std::function<void(«outputTypedParamList»)> onSuccess«defaultArg»,
+				«IF method.hasErrorEnum»
+					std::function<void (const «getMethodErrorEnum(serviceInterface, method)»& errorEnum)> onApplicationError«defaultArg»,
+				«ENDIF»
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError«defaultArg»
+	)
+'''
+
+    def produceAsyncMethodSignature(FInterface serviceInterface, FMethod method) {
+    	return produceAsyncMethodSignature(serviceInterface, method, null);
+    }
+
+
+	def produceAsyncMethodDeclarations(FInterface serviceInterface, boolean pure, boolean useDefaultParam)
 '''
 	«FOR method: getMethods(serviceInterface)»
-		«var outputParameters = method.commaSeparatedOutputParameterTypes»
-		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
-
 		/**
 		* @brief Asynchronous operation «method.joynrName».
 		*
 		«printOnSuccessFctParamDefinition»
-		«printOnErrorFctParamDefinition»
+		«IF method.hasErrorEnum»
+			«printOnApplicationErrorFctParamDefinition»
+		«ENDIF»
+		«printOnRuntimeErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<«outputParameters»> > «method.joynrName»Async(
-				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
-				std::function<void(«outputTypedParamList»)> onSuccess = nullptr,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
-		) «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»
+		«produceAsyncMethodSignature(serviceInterface, method)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
+'''
+
+	def produceApplicationRuntimeErrorSplitForOnErrorWrapper(FInterface serviceInterface, FMethod method)
+'''
+	«IF method.hasErrorEnum»
+		if (const exceptions::JoynrRuntimeException* runtimeError = dynamic_cast<const exceptions::JoynrRuntimeException*>(&error)) {
+			if(onRuntimeError) {
+				onRuntimeError(*runtimeError);
+			}
+		}
+		else if (const exceptions::ApplicationException* applicationError = dynamic_cast<const exceptions::ApplicationException*>(&error)) {
+			if(onApplicationError) {
+				onApplicationError(applicationError->getError<«getMethodErrorEnum(serviceInterface, method)»>());
+			}
+			else {
+				const std::string errorMessage = "An ApplicationException type was received, but but none was expected. Is the provider version incompatible with the consumer?";
+				if (onRuntimeError) {
+					onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
+				}
+				else {
+					JOYNR_LOG_ERROR(logger, errorMessage);
+				}
+			}
+		}
+		else {
+			const std::string errorMessage = "Unknown exception: " + error.getTypeName() + ": " + error.getMessage();
+			if (onRuntimeError) {
+				onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
+			}
+			else {
+				JOYNR_LOG_ERROR(logger, errorMessage);
+			}
+		}
+		
+	«ELSE»
+		if (onRuntimeError) {
+			onRuntimeError(static_cast<const exceptions::JoynrRuntimeException&>(error));
+		}
+	«ENDIF»
 '''
 }

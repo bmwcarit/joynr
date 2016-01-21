@@ -1,0 +1,2 @@
+[messaging]
+persistence-file=cpp-ilt-consumer.persistence_file

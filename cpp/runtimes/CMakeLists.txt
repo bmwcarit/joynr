@@ -106,6 +106,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         SOVERSION "${JOYNR_VERSION}"
         VERSION "${JOYNR_VERSION}"
         PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
+        AUTOMOC TRUE
     )
 
     generate_export_header(

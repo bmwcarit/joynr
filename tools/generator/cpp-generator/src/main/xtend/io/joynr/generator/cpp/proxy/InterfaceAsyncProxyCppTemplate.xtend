@@ -18,12 +18,12 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -35,7 +35,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
-	@Inject private extension InterfaceUtil
+	@Inject private extension CppInterfaceUtil
 
 	override generate(FInterface fInterface)
 '''
@@ -54,6 +54,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 #include "joynr/Reply.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
+#include "joynr/exceptions/JoynrException.h"
 #include <cassert>
 
 «getNamespaceStarter(fInterface)»
@@ -79,10 +80,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		 * «getAttribute»
 		 */
 
-		std::shared_ptr<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»Async(
-				std::function<void(const «attributeType»& «attributeName»)> onSuccess,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError
-		)
+		«produceAsyncGetterSignature(attribute, asyncClassName)»
 		{
 			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
@@ -107,12 +105,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		/*
 		 * «setAttribute»
 		 */
-
-		std::shared_ptr<joynr::Future<void>> «asyncClassName»::«setAttribute»Async(
-				«attributeType» «attributeName»,
-				std::function<void(void)> onSuccess,
-				std::function<void(const joynr::exceptions::JoynrException& error)> onError
-		)
+		«produceAsyncSetterSignature(attribute, asyncClassName)»
 		{
 			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
@@ -136,31 +129,26 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 «FOR method: getMethods(fInterface)»
 	«var methodName = method.joynrName»
 	«var outputParameters = method.commaSeparatedOutputParameterTypes»
-	«var outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«var inputParamList = getCommaSeperatedUntypedInputParameterList(method)»
 	/*
 	 * «methodName»
 	 */
-	std::shared_ptr<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»Async(
-			«IF !method.inputParameters.empty»«method.commaSeperatedTypedConstInputParameterList»,«ENDIF»
-			std::function<void(«outputTypedParamList»)> onSuccess,
-			std::function<void(const joynr::exceptions::JoynrException& error)> onError
-	)
+	«produceAsyncMethodSignature(fInterface, method, asyncClassName)»
 	{
 		if (connector==nullptr){
 			«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
 			JOYNR_LOG_WARN(logger, "«errorMsg»");
 			joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
 			exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
-			if (onError) {
-				onError(error);
+			if (onRuntimeError) {
+				onRuntimeError(error);
 			}
 			std::shared_ptr<joynr::Future<«outputParameters»>> future(new joynr::Future<«outputParameters»>());
 			future->onError(status, error);
 			return future;
 		}
 		else{
-			return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess, onError);
+			return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess, «IF method.hasErrorEnum»onApplicationError, «ENDIF»onRuntimeError);
 		}
 	}
 

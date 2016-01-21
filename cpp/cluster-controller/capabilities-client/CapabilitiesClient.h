@@ -94,13 +94,13 @@ public:
                 const std::string& interfaceName,
                 std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
                         onSuccess,
-                std::function<void(const exceptions::JoynrException& error)> onError =
+                std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                         nullptr) override;
 
     void lookup(const std::string& participantId,
                 std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
                         onSuccess,
-                std::function<void(const exceptions::JoynrException& error)> onError =
+                std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                         nullptr) override;
 
     ~CapabilitiesClient() override = default;

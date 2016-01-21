@@ -109,7 +109,8 @@ joynrTestRequire(
                                         name : "radioStation",
                                         type : 'String'
                                     }
-                                    ]
+                                    ],
+                                    outputParameter : []
                                 }
                             ]).buildFunction();
 
@@ -220,6 +221,7 @@ joynrTestRequire(
 
                                     runs(function() {
                                         checkSpy(spy);
+                                        expect(spy.onFulfilled).toHaveBeenCalledWith(undefined);
                                     });
                                 });
 
@@ -282,6 +284,24 @@ joynrTestRequire(
                                 });
 
                         it(
+                                "expect undefined as return value for missing output parameters",
+                                function() {
+                                    testForCorrectReturnValues("testMethodHavingNoOutputParameter",
+                                                                [],
+                                                                [],
+                                                                undefined);
+                                    testForCorrectReturnValues("testMethodHavingNoOutputParameter",
+                                            [],
+                                            ["unexpected value"],
+                                            undefined);
+                                    testForCorrectReturnValues("testMethodWithUndefinedOutputParameter",
+                                            undefined,
+                                            [],
+                                            undefined);
+
+                                });
+
+                        it(
                                 "expect multiple return values",
                                 function() {
                                     /*jslint nomen: true */
@@ -341,6 +361,7 @@ joynrTestRequire(
 
                                     runs(function() {
                                         checkSpy(spy);
+                                        expect(spy.onFulfilled).toHaveBeenCalledWith(undefined);
                                     });
                                 });
 

@@ -42,6 +42,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 	override generate(FInterface serviceInterface){
 		var selector = TypeSelector::defaultTypeSelector
+		selector.errorTypes(true)
 		selector.typeDefs(true)
 '''
 «val interfaceName = serviceInterface.joynrName»
@@ -67,11 +68,18 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 #include <memory>
 #include <functional>
-#include "joynr/exceptions/JoynrException.h"
 
-namespace joynr {
+namespace joynr
+{
 	class RequestStatus;
 	template <class ... Ts> class Future;
+
+namespace exceptions
+{
+	class JoynrException;
+	class JoynrRuntimeException;
+} // namespace exceptions
+
 } // namespace joynr
 
 «getNamespaceStarter(serviceInterface)»
@@ -94,9 +102,9 @@ public:
 class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
 public:
 	~I«interfaceName»Sync() override = default;
-	«produceSyncGetters(serviceInterface,true)»
-	«produceSyncSetters(serviceInterface,true)»
-	«produceSyncMethods(serviceInterface,true)»
+	«produceSyncGetterDeclarations(serviceInterface,true)»
+	«produceSyncSetterDeclarations(serviceInterface,true)»
+	«produceSyncMethodDeclarations(serviceInterface,true)»
 };
 
 /**
@@ -106,9 +114,9 @@ public:
 class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
 public:
 	~I«interfaceName»Async() override = default;
-	«produceAsyncGetters(serviceInterface,true)»
-	«produceAsyncSetters(serviceInterface,true)»
-	«produceAsyncMethods(serviceInterface,true)»
+	«produceAsyncGetterDeclarations(serviceInterface,true)»
+	«produceAsyncSetterDeclarations(serviceInterface,true)»
+	«produceAsyncMethodDeclarations(serviceInterface,true, true)»
 };
 
 class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {

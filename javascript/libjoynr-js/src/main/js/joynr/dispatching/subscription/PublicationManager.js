@@ -605,7 +605,7 @@ define(
 
                     var subscriptions;
 
-                    if (subscriptionInfo.filterParameter === undefined) {
+                    if (subscriptionInfo.filterParameters === undefined) {
                         // This is an attribute subscription
 
                         var attributeName = subscriptionInfo.subscribedToName;
@@ -737,6 +737,54 @@ define(
                     event.unregisterObserver(eventObserverFunctions[key]);
                     eventObserverFunctions[key] = undefined;
                 }
+
+                /**
+                 * @name PublicationManager#hasSubscriptionsForProviderEvent
+                 * @function
+                 *
+                 *
+                 * @param {String}
+                 *            providerId
+                 * @param {String}
+                 *            eventName
+                 * @returns true if a subscription exists for the given event
+                 */
+                this.hasSubscriptionsForProviderEvent = function hasSubscriptionsForProviderEvent(providerId, eventName) {
+                    var subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
+                    var subscriptionId;
+                    if (subscriptions !== undefined) {
+                        for (subscriptionId in subscriptions) {
+                            if (subscriptions.hasOwnProperty(subscriptionId)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                };
+
+                /**
+                 * @name PublicationManager#hasSubscriptionsForProviderAttribute
+                 * @function
+                 *
+                 *
+                 * @param {String}
+                 *            providerId
+                 * @param {String}
+                 *            attributeName
+                 * @returns true if a subscription exists for the given attribute
+                 */
+                this.hasSubscriptionsForProviderAttribute = function hasSubscriptionsForProviderAttribute(providerId, attributeName) {
+                    var subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
+                    var subscriptionId;
+                    if (subscriptions !== undefined) {
+                        for (subscriptionId in subscriptions) {
+                            if (subscriptions.hasOwnProperty(subscriptionId)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                };
 
                 /**
                  * Handles SubscriptionRequests

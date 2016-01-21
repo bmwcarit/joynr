@@ -76,7 +76,7 @@ std::shared_ptr<Future<void>> LocalChannelUrlDirectory::registerChannelUrlsAsync
         const std::string& channelId,
         types::ChannelUrlInformation channelUrlInformation,
         std::function<void(void)> onSuccess,
-        std::function<void(const exceptions::JoynrException& error)> onError)
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
     JOYNR_LOG_INFO(logger, "registering Urls for id={}", channelId);
     return channelUrlDirectoryProxy->registerChannelUrlsAsync(
@@ -86,7 +86,7 @@ std::shared_ptr<Future<void>> LocalChannelUrlDirectory::registerChannelUrlsAsync
 std::shared_ptr<Future<void>> LocalChannelUrlDirectory::unregisterChannelUrlsAsync(
         const std::string& channelId,
         std::function<void(void)> onSuccess,
-        std::function<void(const exceptions::JoynrException& error)> onError)
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
     JOYNR_LOG_TRACE(logger, "unregistering ALL Urls for id={}", channelId);
     return channelUrlDirectoryProxy->unregisterChannelUrlsAsync(channelId, onSuccess, onError);
@@ -97,7 +97,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDire
                 const std::string& channelId,
                 std::chrono::milliseconds timeout,
                 std::function<void(const types::ChannelUrlInformation& channelUrls)> onSuccess,
-                std::function<void(const exceptions::JoynrException& error)> onError)
+                std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
     QString channelIdQT = QString::fromStdString(channelId);
     JOYNR_LOG_TRACE(logger, "trying to getUrlsForChannel for id = {}", channelIdQT.toStdString());
@@ -129,7 +129,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDire
         } else {
             JOYNR_LOG_INFO(
                     logger,
-                    "FAILED to receive remote url information for channelId = {}. {}Status: {}",
+                    "FAILED to receive remote url information for channelId = {}. Status: {}",
                     channelIdQT.toStdString(),
                     future->getStatus().toString());
         }

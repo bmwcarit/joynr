@@ -71,8 +71,6 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 	#include «parameterType»
 «ENDFOR»
 
-#include "joynr/Future.h"
-
 «getNamespaceStarter(serviceInterface)»
 
 I«interfaceName»Base::I«interfaceName»Base()

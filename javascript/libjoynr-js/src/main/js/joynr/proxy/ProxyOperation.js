@@ -266,19 +266,22 @@ define(
                             })
                             .then(
                                     function(response) {
-                                        var responseKey, argumentValue = {};
-                                        for (responseKey in response) {
-                                            if (response.hasOwnProperty(responseKey)) {
-                                                if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
-                                                    argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] =
-                                                        Typing
-                                                        .augmentTypes(
-                                                                response[responseKey],
-                                                                typeRegistry,
-                                                                foundValidOperationSignature.outputParameter[responseKey].type);
-                                                } else {
-                                                    return Promise
-                                                    .reject(new Error("Unexpected response: " + JSONSerializer.stringify(response[responseKey])));
+                                        var responseKey, argumentValue;
+                                        if (foundValidOperationSignature.outputParameter && foundValidOperationSignature.outputParameter.length > 0) {
+                                            argumentValue = {};
+                                            for (responseKey in response) {
+                                                if (response.hasOwnProperty(responseKey)) {
+                                                    if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
+                                                        argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] =
+                                                            Typing
+                                                            .augmentTypes(
+                                                                    response[responseKey],
+                                                                    typeRegistry,
+                                                                    foundValidOperationSignature.outputParameter[responseKey].type);
+                                                    } else {
+                                                        return Promise
+                                                        .reject(new Error("Unexpected response: " + JSONSerializer.stringify(response[responseKey])));
+                                                    }
                                                 }
                                             }
                                         }

@@ -69,6 +69,14 @@ namespace joynr {
 	class InProcessAddress;
 	class ISubscriptionManager;
 	class PublicationManager;
+	template <class ... Ts> class Future;
+
+namespace exceptions
+{
+	class JoynrException;
+	class JoynrRuntimeException;
+} // namespace exceptions
+
 } // namespace joynr
 
 «getNamespaceStarter(serviceInterface)»
@@ -118,12 +126,12 @@ public:
 	 */
 	bool usesClusterController() const override;
 
-	«produceSyncGetters(serviceInterface, false)»
-	«produceSyncSetters(serviceInterface, false)»
-	«produceSyncMethods(serviceInterface, false)»
-	«produceAsyncGetters(serviceInterface, false)»
-	«produceAsyncSetters(serviceInterface, false)»
-	«produceAsyncMethods(serviceInterface, false)»
+	«produceSyncGetterDeclarations(serviceInterface, false)»
+	«produceSyncSetterDeclarations(serviceInterface, false)»
+	«produceSyncMethodDeclarations(serviceInterface, false)»
+	«produceAsyncGetterDeclarations(serviceInterface, false)»
+	«produceAsyncSetterDeclarations(serviceInterface, false)»
+	«produceAsyncMethodDeclarations(serviceInterface, false, true)»
 
 	«produceSubscribeUnsubscribeMethods(serviceInterface, false)»
 
