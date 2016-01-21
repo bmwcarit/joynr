@@ -15,7 +15,7 @@
         "atmosphere-client": "2.2.0",
         "xmlhttprequest" : "1.6.0"
     },
-    "requirejs" : "2.1.14",
+    "requirejs" : "2.1.22",
     "ws" : "1.0.1",
     "bluebird" : "2.9.9",
     "promise": ">=6.0.1"

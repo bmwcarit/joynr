@@ -44,8 +44,8 @@ This project has dependencies to:
   License: MIT License (https://github.com/jrburke/requirejs/blob/master/LICENSE)
   Webjar: <groupId>org.webjars</groupId>
           <artifactId>requirejs</artifactId>
-          <version>2.1.14</version>
-  npm package: version 2.1.14 (https://www.npmjs.com/package/requirejs)
+          <version>2.1.22</version>
+  npm package: version 2.1.22 (https://www.npmjs.com/package/requirejs)
 
 * UUID (https://gist.github.com/jed/982883)
   License: WTF Public License (https://gist.github.com/jed/982883#file-license-txt)
