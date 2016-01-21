@@ -57,7 +57,7 @@ RUN curl -L  http://downloads.sourceforge.net/project/boost/boost/1.56.0/boost_1
 
 RUN cd /opt/boost \
 	&& ./bootstrap.sh --prefix=/usr/local \
-	&& ./b2 --without-wave --without-python --without-mpi --without-iostreams --without-graph_parallel -j8 install \
+	&& ./b2 --without-wave --without-python --without-mpi --without-iostreams --without-graph_parallel -j4 install \
 	&& rm -rf /opt/boost
 
 
@@ -120,6 +120,14 @@ RUN yum update -y \
 RUN yum update -y \
 	&& yum install -y \
 	python-pip \
+	&& yum clean all
+
+###################################################
+# install lcov
+###################################################
+RUN yum update -y \
+	&& yum install -y \
+	lcov \
 	&& yum clean all
 
 RUN pip install gcovr
