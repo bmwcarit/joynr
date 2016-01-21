@@ -122,7 +122,6 @@ public class MessageSchedulerTest {
                 bind(LocalChannelUrlDirectoryClient.class).toInstance(mockChannelUrlDir);
                 bind(MessageReceiver.class).toInstance(mockMessageReceiver);
             }
-
         };
 
         Injector injector = Guice.createInjector(new JoynrPropertiesModule(properties),

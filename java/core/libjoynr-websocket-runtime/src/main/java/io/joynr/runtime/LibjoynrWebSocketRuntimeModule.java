@@ -18,8 +18,6 @@ package io.joynr.runtime;
  * limitations under the License.
  * #L%
  */
-
-import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
@@ -27,7 +25,6 @@ import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.messaging.websocket.WebsocketModule;
 
-import java.util.Map;
 import java.util.UUID;
 
 import joynr.system.RoutingTypes.Address;
@@ -35,7 +32,6 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
 
-import com.google.common.collect.Maps;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -57,14 +53,8 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         bind(WebSocketMessagingStubFactory.class).in(Singleton.class);
         bind(ChildMessageRouter.class).in(Singleton.class);
         bind(MessageRouter.class).to(ChildMessageRouter.class);
-    }
 
-    @Provides
-    @Singleton
-    Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> provideMessagingStubFactories(WebSocketMessagingStubFactory webSocketMessagingStubFactory) {
-        Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> factories = Maps.newHashMap();
-        factories.put(WebSocketAddress.class, webSocketMessagingStubFactory);
-        return factories;
+        messagingStubFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingStubFactory.class);
     }
 
     @Provides

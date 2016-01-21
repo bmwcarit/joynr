@@ -33,17 +33,25 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.MapBinder;
+import com.google.inject.name.Names;
 
+import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.http.HttpMessageSender;
 import io.joynr.messaging.http.IMessageSender;
 import io.joynr.messaging.http.operation.ApacheHttpRequestFactory;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.http.operation.HttpRequestFactory;
+import io.joynr.messaging.routing.MessagingStubFactory;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 public class MessagingModule extends AbstractModule {
 
     @Override
+    @SuppressWarnings("rawtypes")
     protected void configure() {
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
@@ -51,6 +59,12 @@ public class MessagingModule extends AbstractModule {
         bind(MessageHandler.class).to(MessageHandlerImpl.class);
         bind(IMessageSender.class).to(HttpMessageSender.class);
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
+
+        MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> messagingStubFactory;
+        messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
+        }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory>() {
+        }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
+        messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
     }
 
     @Provides

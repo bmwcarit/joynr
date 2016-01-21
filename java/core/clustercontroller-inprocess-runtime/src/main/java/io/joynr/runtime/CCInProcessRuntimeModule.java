@@ -1,9 +1,5 @@
 package io.joynr.runtime;
 
-import java.util.Map;
-
-import javax.inject.Named;
-
 /*
  * #%L
  * %%
@@ -22,22 +18,18 @@ import javax.inject.Named;
  * limitations under the License.
  * #L%
  */
-
-import com.google.common.collect.Maps;
+import javax.inject.Named;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
-import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
-import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 
 /**
  *  Use this module if you want to run libjoynr and cluster controller in one process
@@ -54,20 +46,10 @@ public class CCInProcessRuntimeModule extends ClusterControllerRuntimeModule {
                                       .in(Singleton.class);
     }
 
-    @SuppressWarnings("rawtypes")
-    @Provides
-    @Singleton
-    Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> provideMessagingStubFactories(ChannelMessagingStubFactory channelMessagingStubFactory) {
-        Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> factories = Maps.newHashMap();
-        factories.put(ChannelAddress.class, channelMessagingStubFactory);
-        return factories;
-    }
-
     @Provides
     @Singleton
     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS)
     public Address provideCCMessagingAddress() {
         return new InProcessAddress();
     }
-
 }
