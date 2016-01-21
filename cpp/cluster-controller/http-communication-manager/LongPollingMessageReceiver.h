@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,21 @@
  */
 #ifndef LONGPOLLINGMESSAGERECEIVER_H_
 #define LONGPOLLINGMESSAGERECEIVER_H_
+#include <condition_variable>
+#include <chrono>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <QByteArray>
+
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/Directory.h"
-#include "joynr/Thread.h"
-
-#include <mutex>
-#include <condition_variable>
-
 #include "joynr/Semaphore.h"
-#include <memory>
-#include <string>
-#include <chrono>
-
-#include <QByteArray>
+#include "joynr/Thread.h"
 
 namespace joynr
 {
@@ -65,7 +63,7 @@ public:
                                const LongPollingMessageReceiverSettings& settings,
                                Semaphore* channelCreatedSemaphore,
                                std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                               std::shared_ptr<MessageRouter> messageRouter);
+                               std::function<void(const std::string&)> onTextMessageReceived);
     void stop() override;
     void run() override;
     void interrupt();
@@ -90,7 +88,9 @@ private:
 
     ADD_LOGGER(LongPollingMessageReceiver);
     Semaphore* channelCreatedSemaphore;
-    std::shared_ptr<MessageRouter> messageRouter;
+
+    /*! On text message received callback */
+    std::function<void(const std::string&)> onTextMessageReceived;
 };
 
 } // namespace joynr

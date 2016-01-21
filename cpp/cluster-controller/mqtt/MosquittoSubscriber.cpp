@@ -31,17 +31,16 @@ INIT_LOGGER(MosquittoSubscriber);
 
 MosquittoSubscriber::MosquittoSubscriber(const BrokerUrl& brokerUrl,
                                          const std::string& channelId,
-                                         joynr::Semaphore* channelCreatedSemaphore,
-                                         std::shared_ptr<MessageRouter> messageRouter)
+                                         joynr::Semaphore* channelCreatedSemaphore)
         : joynr::Thread("MosquittoSubscriber"),
           MosquittoConnection(brokerUrl),
           mqttSettings(),
           brokerUrl(brokerUrl),
           channelId(channelId),
           channelCreatedSemaphore(channelCreatedSemaphore),
-          messageRouter(messageRouter),
           isRunning(false),
-          isChannelAvailable(false)
+          isChannelAvailable(false),
+          onTextMessageReceived(nullptr)
 {
 }
 
@@ -89,6 +88,12 @@ void MosquittoSubscriber::registerChannelId(const std::string& channelId)
     isChannelAvailable = true;
 }
 
+void MosquittoSubscriber::registerReceiveCallback(
+        std::function<void(const std::string&)> onTextMessageReceived)
+{
+    this->onTextMessageReceived = onTextMessageReceived;
+}
+
 void MosquittoSubscriber::on_connect(int rc)
 {
     if (rc > 0) {
@@ -128,39 +133,13 @@ void MosquittoSubscriber::on_message(const struct mosquitto_message* message)
 
     JOYNR_LOG_DEBUG(logger, "Received raw message: {}", jsonObject);
 
-    JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
-
-    if (msg == nullptr) {
-        JOYNR_LOG_ERROR(logger, "Unable to deserialize message. Raw message: {}", jsonObject);
-        return;
+    if (onTextMessageReceived) {
+        onTextMessageReceived(jsonObject);
+    } else {
+        JOYNR_LOG_ERROR(
+                logger,
+                "Discarding received message, since onTextMessageReceived callback is empty.");
     }
-
-    if (msg->getType().empty()) {
-        JOYNR_LOG_ERROR(logger, "Received empty message - dropping Messages");
-        return;
-    }
-
-    if (!msg->containsHeaderExpiryDate()) {
-        JOYNR_LOG_ERROR(logger,
-                        "Received message [msgId = {}] without decay time - dropping message",
-                        msg->getHeaderMessageId());
-    }
-
-    if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        // TODO ca: check if replyTo header info is available?
-        std::string replyChannelId = msg->getHeaderReplyChannelId();
-        std::shared_ptr<system::RoutingTypes::MqttAddress> address =
-                std::make_shared<system::RoutingTypes::MqttAddress>(replyChannelId);
-        messageRouter->addNextHop(msg->getHeaderFrom(), address);
-    }
-
-    // messageRouter.route passes the message reference to the MessageRunnable, which copies it.
-    // TODO would be nicer if the pointer would be passed to messageRouter, on to MessageRunnable,
-    // and runnable should delete it.
-    messageRouter->route(*msg);
-    delete msg;
 }
 
 void MosquittoSubscriber::checkServerTime()

@@ -32,13 +32,10 @@
 namespace joynr
 {
 
-class MessageRouter;
-
 class JOYNRCLUSTERCONTROLLER_EXPORT MqttReceiver : public IMessageReceiver
 {
 public:
-    explicit MqttReceiver(const MessagingSettings& settings,
-                          std::shared_ptr<MessageRouter> messageRouter);
+    explicit MqttReceiver(const MessagingSettings& settings);
 
     ~MqttReceiver() override;
 
@@ -73,6 +70,9 @@ public:
 
     void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) override;
 
+    void registerReceiveCallback(
+            std::function<void(const std::string&)> onTextMessageReceived) override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttReceiver);
 
@@ -87,7 +87,6 @@ private:
        of
        createChannel and waitForReceiveQueueStarted works as well. */
     Semaphore* channelCreatedSemaphore;
-    std::shared_ptr<MessageRouter> messageRouter;
     std::string channelId; // currently channelId is used to subscribe
 
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).

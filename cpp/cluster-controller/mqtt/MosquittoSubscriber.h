@@ -44,8 +44,7 @@ class MosquittoSubscriber : public Thread, MosquittoConnection
 public:
     explicit MosquittoSubscriber(const BrokerUrl& brokerUrl,
                                  const std::string& channelId,
-                                 Semaphore* channelCreatedSemaphore,
-                                 std::shared_ptr<MessageRouter> messageRouter);
+                                 Semaphore* channelCreatedSemaphore);
 
     ~MosquittoSubscriber() override = default;
 
@@ -53,6 +52,7 @@ public:
     void run() override;
 
     void registerChannelId(const std::string& channelId);
+    void registerReceiveCallback(std::function<void(const std::string&)> onTextMessageReceived);
 
     void interrupt();
     bool isInterrupted();
@@ -64,10 +64,12 @@ private:
     const BrokerUrl brokerUrl;
     std::string channelId;
     Semaphore* channelCreatedSemaphore;
-    std::shared_ptr<MessageRouter> messageRouter;
 
     std::atomic<bool> isRunning;
     std::atomic<bool> isChannelAvailable;
+
+    /*! On text message received callback */
+    std::function<void(const std::string&)> onTextMessageReceived;
 
     ADD_LOGGER(MqttSubscriber);
 

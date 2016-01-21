@@ -59,6 +59,8 @@ class IDispatcher;
 class InProcessPublicationSender;
 class WebSocketCcMessagingSkeleton;
 class InProcessMessagingSkeleton;
+class HttpMessagingSkeleton;
+class MqttMessagingSkeleton;
 class IPlatformSecurityManager;
 class Settings;
 class LibjoynrSettings;
@@ -124,6 +126,9 @@ protected:
     std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
+
+    std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
+    std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::shared_ptr<IMessageReceiver> httpMessageReceiver;
     std::shared_ptr<IMessageSender> httpMessageSender;

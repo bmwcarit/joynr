@@ -18,18 +18,17 @@
  */
 #ifndef HTTPRECEIVER_H_
 #define HTTPRECEIVER_H_
+#include <memory>
+#include <string>
+
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrClusterControllerExport.h"
-
-#include "joynr/IMessageReceiver.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/Logger.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
-
-#include <string>
+#include "joynr/IMessageReceiver.h"
+#include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/Logger.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/Semaphore.h"
-#include <memory>
 
 class DispatcherIntegrationTest;
 class CapabilitiesClientTest;
@@ -38,7 +37,6 @@ namespace joynr
 {
 
 class LongPollingMessageReceiver;
-class MessageRouter;
 
 /**
   * @class HttpReceiver
@@ -51,8 +49,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public IMessageReceiver
 {
 
 public:
-    explicit HttpReceiver(const MessagingSettings& settings,
-                          std::shared_ptr<MessageRouter> messageRouter);
+    explicit HttpReceiver(const MessagingSettings& settings);
     ~HttpReceiver() override;
 
     /**
@@ -86,6 +83,9 @@ public:
 
     void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) override;
 
+    void registerReceiveCallback(
+            std::function<void(const std::string&)> onTextMessageReceived) override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
     void init();
@@ -110,7 +110,9 @@ private:
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
-    std::shared_ptr<MessageRouter> messageRouter;
+
+    /*! On text message received callback */
+    std::function<void(const std::string&)> onTextMessageReceived;
 
     friend class ::DispatcherIntegrationTest;
     friend class ::CapabilitiesClientTest;

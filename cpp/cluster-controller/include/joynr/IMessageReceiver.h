@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,9 @@ public:
     virtual bool tryToDeleteChannel() = 0;
 
     virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) = 0;
+
+    virtual void registerReceiveCallback(
+            std::function<void(const std::string&)> onTextMessageReceived) = 0;
 };
 
 } // namespace joynr

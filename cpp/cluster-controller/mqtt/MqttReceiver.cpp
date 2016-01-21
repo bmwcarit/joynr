@@ -25,18 +25,13 @@ namespace joynr
 
 INIT_LOGGER(MqttReceiver);
 
-MqttReceiver::MqttReceiver(const MessagingSettings& settings,
-                           std::shared_ptr<MessageRouter> messageRouter)
+MqttReceiver::MqttReceiver(const MessagingSettings& settings)
         : channelCreatedSemaphore(new joynr::Semaphore(0)),
-          messageRouter(messageRouter),
           channelId(),
           receiverId(),
           settings(settings),
           channelUrlDirectory(),
-          mosquittoSubscriber(settings.getBrokerUrl(),
-                              channelId,
-                              channelCreatedSemaphore,
-                              messageRouter),
+          mosquittoSubscriber(settings.getBrokerUrl(), channelId, channelCreatedSemaphore),
           mqttSettings()
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
@@ -94,6 +89,12 @@ const std::string& MqttReceiver::getReceiveChannelId() const
 bool MqttReceiver::tryToDeleteChannel()
 {
     return true;
+}
+
+void MqttReceiver::registerReceiveCallback(
+        std::function<void(const std::string&)> onTextMessageReceived)
+{
+    mosquittoSubscriber.registerReceiveCallback(onTextMessageReceived);
 }
 
 } // namespace joynr

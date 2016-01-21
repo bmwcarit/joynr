@@ -18,28 +18,27 @@
  */
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 
-#include "joynr/Util.h"
-#include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"
+#include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(HttpReceiver);
 
-HttpReceiver::HttpReceiver(const MessagingSettings& settings,
-                           std::shared_ptr<MessageRouter> messageRouter)
+HttpReceiver::HttpReceiver(const MessagingSettings& settings)
         : channelCreatedSemaphore(new Semaphore(0)),
           channelId(),
           receiverId(),
           settings(settings),
           messageReceiver(nullptr),
           channelUrlDirectory(),
-          messageRouter(messageRouter)
+          onTextMessageReceived(nullptr)
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
     channelId = persist.getChannelId();
@@ -97,9 +96,10 @@ HttpReceiver::~HttpReceiver()
 void HttpReceiver::startReceiveQueue()
 {
 
-    if (!messageRouter || !channelUrlDirectory) {
+    if (!onTextMessageReceived || !channelUrlDirectory) {
         JOYNR_LOG_FATAL(
-                logger, "FAIL::receiveQueue started with no messageRouter/channelUrlDirectory.");
+                logger,
+                "FAIL::receiveQueue started with no onTextMessageReceived/channelUrlDirectory.");
     }
 
     // Get the settings specific to long polling
@@ -116,7 +116,7 @@ void HttpReceiver::startReceiveQueue()
                                                      longPollSettings,
                                                      channelCreatedSemaphore,
                                                      channelUrlDirectory,
-                                                     messageRouter);
+                                                     onTextMessageReceived);
     messageReceiver->start();
 }
 
@@ -176,6 +176,12 @@ bool HttpReceiver::tryToDeleteChannel()
                        deleteChannelResult.getStatusCode());
         return false;
     }
+}
+
+void HttpReceiver::registerReceiveCallback(
+        std::function<void(const std::string&)> onTextMessageReceived)
+{
+    this->onTextMessageReceived = onTextMessageReceived;
 }
 
 } // namespace joynr

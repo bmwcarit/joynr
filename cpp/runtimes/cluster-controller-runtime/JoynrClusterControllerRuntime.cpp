@@ -27,6 +27,7 @@
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 #include "cluster-controller/http-communication-manager/HttpSender.h"
+#include "cluster-controller/http-communication-manager/HttpMessagingSkeleton.h"
 #include "joynr/MessagingSettings.h"
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -58,6 +59,7 @@
 #include "joynr/system/RoutingTypes/MqttProtocol.h"
 #include "cluster-controller/mqtt/MqttReceiver.h"
 #include "cluster-controller/mqtt/MqttSender.h"
+#include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
@@ -94,6 +96,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
           cache(),
           channelUrlDirectoryProxy(nullptr),
           libJoynrMessagingSkeleton(nullptr),
+          httpMessagingSkeleton(nullptr),
+          mqttMessagingSkeleton(nullptr),
           httpMessageReceiver(httpMessageReceiver),
           httpMessageSender(httpMessageSender),
           mqttMessageReceiver(mqttMessageReceiver),
@@ -247,9 +251,14 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "The http message receiver supplied is NULL, creating the default "
                            "http MessageReceiver");
 
-            httpMessageReceiver = std::make_shared<HttpReceiver>(*messagingSettings, messageRouter);
+            httpMessageReceiver = std::make_shared<HttpReceiver>(*messagingSettings);
 
             assert(httpMessageReceiver != nullptr);
+
+            httpMessagingSkeleton = std::make_shared<HttpMessagingSkeleton>(*messageRouter);
+            httpMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
+                httpMessagingSkeleton->onTextMessageReceived(msg);
+            });
         }
 
         httpChannelId = httpMessageReceiver->getReceiveChannelId();
@@ -286,12 +295,17 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "The mqtt message receiver supplied is NULL, creating the default "
                            "mqtt MessageReceiver");
 
-            mqttMessageReceiver = std::make_shared<MqttReceiver>(*messagingSettings, messageRouter);
+            mqttMessageReceiver = std::make_shared<MqttReceiver>(*messagingSettings);
 
             assert(mqttMessageReceiver != nullptr);
         }
 
         if (!mqttMessagingIsRunning) {
+            mqttMessagingSkeleton = std::make_shared<MqttMessagingSkeleton>(*messageRouter);
+            mqttMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
+                mqttMessagingSkeleton->onTextMessageReceived(msg);
+            });
+
             mqttMessageReceiver->startReceiveQueue();
             mqttMessagingIsRunning = true;
         }

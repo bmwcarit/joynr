@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
  * limitations under the License.
  * #L%
  */
+#include <algorithm>
+#include <cstdint>
+#include <cstdlib>
+#include <QString>
+
 #include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/DispatcherUtils.h"
-#include <cstdlib>
-#include <cstdint>
 #include "joynr/TypeUtil.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
@@ -32,9 +35,6 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
-
-#include <algorithm>
-#include <QString>
 
 namespace joynr
 {
@@ -48,7 +48,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const LongPollingMessageReceiverSettings& settings,
         Semaphore* channelCreatedSemaphore,
         std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-        std::shared_ptr<MessageRouter> messageRouter)
+        std::function<void(const std::string&)> onTextMessageReceived)
         : Thread("LongPollRecv"),
           brokerUrl(brokerUrl),
           channelId(channelId),
@@ -59,7 +59,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
           interruptedWait(),
           channelUrlDirectory(channelUrlDirectory),
           channelCreatedSemaphore(channelCreatedSemaphore),
-          messageRouter(messageRouter)
+          onTextMessageReceived(onTextMessageReceived)
 {
 }
 
@@ -180,36 +180,13 @@ void LongPollingMessageReceiver::processReceivedInput(const QByteArray& received
 
 void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& jsonObject)
 {
-    JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
-    if (msg == nullptr) {
-        JOYNR_LOG_ERROR(logger, "Unable to deserialize message. Raw message: {}", jsonObject);
-        return;
+    if (onTextMessageReceived) {
+        onTextMessageReceived(jsonObject);
+    } else {
+        JOYNR_LOG_ERROR(
+                logger,
+                "Discarding received message, since onTextMessageReceived callback is empty.");
     }
-    if (msg->getType().empty()) {
-        JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
-        return;
-    }
-    if (!msg->containsHeaderExpiryDate()) {
-        JOYNR_LOG_ERROR(logger,
-                        "received message [msgId=[{}] without decay time - dropping message",
-                        msg->getHeaderMessageId());
-    }
-
-    if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        // TODO ca: check if replyTo header info is available?
-        std::string replyChannelId = msg->getHeaderReplyChannelId();
-        std::shared_ptr<system::RoutingTypes::ChannelAddress> address(
-                new system::RoutingTypes::ChannelAddress(replyChannelId));
-        messageRouter->addNextHop(msg->getHeaderFrom(), address);
-    }
-
-    // messageRouter.route passes the message reference to the MessageRunnable, which copies it.
-    // TODO would be nicer if the pointer would be passed to messageRouter, on to MessageRunnable,
-    // and runnable should delete it.
-    messageRouter->route(*msg);
-    delete msg;
 }
 
 void LongPollingMessageReceiver::checkServerTime()
