@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "log4js": "0.6.21",
-    "node-localstorage": "0.3.4",
+    "node-localstorage": "1.1.2",
     "//": {
         "these dependencies are commented out, but left in the package.json file for an eventual future usage" : "true",
         "atmosphere-client": "2.2.0",

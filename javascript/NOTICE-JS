@@ -84,7 +84,7 @@ This project has dependencies to:
 
 * node-localstorage (https://github.com/lmaccherone/node-localstorage)
   License: MIT License (https://github.com/lmaccherone/node-localstorage#mit-license)
-  npm package: version 0.3.4 (https://www.npmjs.com/package/node-localstorage)
+  npm package: version 1.1.2 (https://www.npmjs.com/package/node-localstorage)
 
 * promise (https://github.com/then/promise)
   License: MIT License (https://github.com/then/promise#license)
