@@ -80,7 +80,7 @@ This project has dependencies to:
 
 * log4js (https://github.com/nomiddlename/log4js-node)
   License: Apache License, Version 2.0 (https://github.com/nomiddlename/log4js-node/blob/master/LICENSE)
-  npm package: version 0.6.21 (https://www.npmjs.com/package/log4js)
+  npm package: version 0.6.29 (https://www.npmjs.com/package/log4js)
 
 * node-localstorage (https://github.com/lmaccherone/node-localstorage)
   License: MIT License (https://github.com/lmaccherone/node-localstorage#mit-license)
