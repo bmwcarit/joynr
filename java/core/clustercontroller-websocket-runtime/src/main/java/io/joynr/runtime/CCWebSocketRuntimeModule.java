@@ -28,6 +28,7 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.WebSocketClientMessageSerializerFactory;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebsocketModule;
 import joynr.system.RoutingTypes.Address;
@@ -52,6 +53,9 @@ public class CCWebSocketRuntimeModule extends ClusterControllerRuntimeModule {
         bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
 
         messagingStubFactory.addBinding(WebSocketClientAddress.class).to(WebSocketClientMessagingStubFactory.class);
+        messageSerializerFactory.addBinding(WebSocketClientAddress.class)
+                                .to(WebSocketClientMessageSerializerFactory.class);
+
     }
 
     @Provides

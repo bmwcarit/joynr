@@ -21,6 +21,7 @@ package io.joynr.runtime;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.WebSocketMessageSerializerFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.messaging.websocket.WebsocketModule;
@@ -55,6 +56,7 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         bind(MessageRouter.class).to(ChildMessageRouter.class);
 
         messagingStubFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingStubFactory.class);
+        messageSerializerFactory.addBinding(WebSocketAddress.class).to(WebSocketMessageSerializerFactory.class);
     }
 
     @Provides

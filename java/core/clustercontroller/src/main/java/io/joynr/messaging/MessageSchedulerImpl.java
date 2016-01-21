@@ -25,6 +25,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.http.HttpMessageSender;
+import io.joynr.messaging.serialize.MessageSerializerFactory;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 
@@ -38,8 +39,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -57,17 +56,17 @@ public class MessageSchedulerImpl implements MessageScheduler {
     private final HttpMessageSender httpMessageSender;
     private ScheduledExecutorService scheduler;
     private MessagingSettings settings;
-    private ObjectMapper objectMapper;
+    private MessageSerializerFactory messageSerializerFactory;
 
     @Inject
     public MessageSchedulerImpl(@Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                 HttpMessageSender httpMessageSender,
                                 MessagingSettings settings,
-                                ObjectMapper objectMapper) {
+                                MessageSerializerFactory messageSerializerFactory) {
         this.httpMessageSender = httpMessageSender;
         this.scheduler = scheduler;
         this.settings = settings;
-        this.objectMapper = objectMapper;
+        this.messageSerializerFactory = messageSerializerFactory;
     }
 
     @Override
@@ -84,11 +83,9 @@ public class MessageSchedulerImpl implements MessageScheduler {
         }
 
         final MessageContainer messageContainer;
-        try {
-            messageContainer = new MessageContainer(address, message, ttlExpirationDate_ms, objectMapper);
-        } catch (JsonProcessingException jsonException) {
-            throw new JoynrMessageNotSentException(jsonException.getMessage());
-        }
+        JoynrMessageSerializer messageSerializer = messageSerializerFactory.create(address);
+        String serializedMessage = messageSerializer.serialize(message);
+        messageContainer = new MessageContainer(address, message, serializedMessage, ttlExpirationDate_ms);
 
         rescheduleMessage(messageContainer, 0);
     }

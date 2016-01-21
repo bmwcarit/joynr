@@ -27,9 +27,6 @@ import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Storage class for all data (channelId, serializedMessage, ttl, time stamp of last sending attempt), needed to send
  * out a message. Besides the serialized version of the original message, the remaining part of the ttl is stored and
@@ -53,11 +50,11 @@ public class MessageContainer {
 
     public MessageContainer(final Address address,
                             final JoynrMessage message,
-                            final long expiryDate,
-                            ObjectMapper objectMapper) throws JsonProcessingException {
+                            final String serializedMessage,
+                            final long expiryDate) {
         this.address = address;
         this.message = message;
-        this.serializedMessage = objectMapper.writeValueAsString(message); // jsonConverter.toJson(message);
+        this.serializedMessage = serializedMessage;
         this.expiryDate = expiryDate;
         this.messageId = message.getHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID);
     }
