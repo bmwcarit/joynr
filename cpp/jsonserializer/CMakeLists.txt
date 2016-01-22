@@ -114,7 +114,7 @@ install(
 )
 # so we install header files manually to preserve directory hierarchy
 install(
-    DIRECTORY .
-    DESTINATION "${INSTALL_INCLUDE_DIR}/jsonserializer"
+    DIRECTORY include/
+    DESTINATION "${INSTALL_INCLUDE_DIR}"
     FILES_MATCHING PATTERN "*.h"
 )
