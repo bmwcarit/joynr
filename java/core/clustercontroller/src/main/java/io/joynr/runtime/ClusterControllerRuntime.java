@@ -21,6 +21,8 @@ package io.joynr.runtime;
 
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessagingStubFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +42,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessageScheduler;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.JoynrMessage;
@@ -76,6 +79,8 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     RequestCallerDirectory requestCallerDirectory,
                                     ReplyCallerDirectory replyCallerDirectory,
                                     Dispatcher dispatcher,
+                                    MessageScheduler messageScheduler,
+                                    MessagingStubFactory messagingStubFactory,
                                     LocalDiscoveryAggregator localDiscoveryAggregator,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -93,6 +98,8 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               requestCallerDirectory,
               replyCallerDirectory,
               dispatcher,
+              messageScheduler,
+              messagingStubFactory,
               localDiscoveryAggregator,
               systemServicesDomain,
               dispatcherAddress,

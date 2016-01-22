@@ -29,8 +29,10 @@ import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessageScheduler;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
+import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -82,6 +84,10 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     protected final ReplyCallerDirectory replyCallerDirectory;
     protected final String discoveryProxyParticipantId;
 
+    private MessageScheduler messageScheduler;
+
+    private MessagingStubFactory messagingStubFactory;
+
     abstract void startReceiver();
 
     // CHECKSTYLE:OFF
@@ -91,6 +97,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             RequestCallerDirectory requestCallerDirectory,
                             ReplyCallerDirectory replyCallerDirectory,
                             Dispatcher dispatcher,
+                            MessageScheduler messageScheduler,
+                            MessagingStubFactory messagingStubFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -103,6 +111,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         this.replyCallerDirectory = replyCallerDirectory;
         this.dispatcher = dispatcher;
         this.objectMapper = objectMapper;
+        this.messageScheduler = messageScheduler;
+        this.messagingStubFactory = messagingStubFactory;
 
         Reflections reflections = new Reflections("joynr");
         Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
@@ -163,32 +173,41 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     @Override
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN runtime");
+        //TODO: this will be inverted, with elements needing shutdown registering themselves
         try {
             capabilitiesRegistrar.shutdown(clear);
         } catch (Exception e) {
             logger.error("error clearing capabiltities while shutting down: {}", e.getMessage());
         }
-
         try {
-            // TODO The channel is deleted but not deregistered from the Channel Url Directory
             requestReplyManager.shutdown();
+        } catch (Exception e) {
+            logger.error("error shutting down requestReplyManager: {}", e.getMessage());
+        }
+        try {
             publicationManager.shutdown();
+        } catch (Exception e) {
+            logger.error("error shutting down publicationManager: {}", e.getMessage());
+        }
+        try {
             dispatcher.shutdown(clear);
         } catch (Exception e) {
             logger.error("error shutting down dispatcher: {}", e.getMessage());
         }
-
         try {
-            requestReplyManager.shutdown();
+            messageScheduler.shutdown();
         } catch (Exception e) {
-            logger.error("error shutting down message sender: {}", e.getMessage());
+            logger.error("error shutting down messageScheduler: {}", e.getMessage());
         }
-
+        try {
+            messagingStubFactory.shutdown();
+        } catch (Exception e) {
+            logger.error("error shutting down messagingStubFactory: {}", e.getMessage());
+        }
         try {
             cleanupScheduler.shutdownNow();
         } catch (Exception e) {
             logger.error("error shutting down queue cleanup scheduler: {}", e.getMessage());
         }
-
     }
 }

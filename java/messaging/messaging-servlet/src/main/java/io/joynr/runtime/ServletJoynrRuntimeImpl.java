@@ -29,7 +29,9 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessageScheduler;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilderFactory;
 
@@ -50,6 +52,8 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
                                    ReplyCallerDirectory replyCallerDirectory,
                                    MessageReceiver messageReceiver,
                                    Dispatcher dispatcher,
+                                   MessageScheduler messageScheduler,
+                                   MessagingStubFactory messagingStubFactory,
                                    LocalDiscoveryAggregator localDiscoveryAggregator,
                                    LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                    @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -67,6 +71,8 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
               requestCallerDirectory,
               replyCallerDirectory,
               dispatcher,
+              messageScheduler,
+              messagingStubFactory,
               localDiscoveryAggregator,
               systemServicesDomain,
               dispatcherAddress,
@@ -86,7 +92,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
     /**
      * Unregistering currently is not receiving any answers, cauing timrout exceptions
      * The reason is that the unregister happens in the ServletContextListener at contextDestroyed
-     * which happens after the servlet has already been destroyed. Since the response to unregister 
+     * which happens after the servlet has already been destroyed. Since the response to unregister
      * would have to arrive via the messaging receiver servlet, this is obviously too late to unregister,
      * but there is no obvious fix (other than create a long polling message receiver for the unregister)
      * since the servelet lifecycle does not consist of any further usful events.
