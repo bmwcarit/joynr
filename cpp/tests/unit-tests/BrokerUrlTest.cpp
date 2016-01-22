@@ -26,7 +26,8 @@ using namespace joynr;
 class BrokerUrlTest : public ::testing::Test {
 public:
     BrokerUrlTest() :
-        brokerUrl(BrokerUrl("http://localhost:8080/bounceproxy/"))
+        brokerUrlHttp(BrokerUrl("http://localhost:8080/bounceproxy/")),
+        brokerUrlMqtt(BrokerUrl("mqtt://localhost:1883/"))
     {}
 
     void SetUp(){
@@ -34,27 +35,34 @@ public:
     void TearDown(){
     }
 protected:
-    BrokerUrl brokerUrl;
+    BrokerUrl brokerUrlHttp;
+    BrokerUrl brokerUrlMqtt;
 };
 
-
-
 TEST_F(BrokerUrlTest, getCreateChannelUrl) {
-    Url createChannelUrl = brokerUrl.getCreateChannelUrl("testMcid");
-    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/?ccid=testMcid", createChannelUrl.toString());
+    Url createChannelUrlHttp = brokerUrlHttp.getCreateChannelUrl("testMcid");
+    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/?ccid=testMcid", createChannelUrlHttp.toString());
+    Url createChannelUrlMqtt = brokerUrlMqtt.getCreateChannelUrl("testMcid");
+    EXPECT_EQ("mqtt://localhost:1883/channels/?ccid=testMcid", createChannelUrlMqtt.toString());
 }
 
 TEST_F(BrokerUrlTest, getSendUrl) {
-    Url sendUrl = brokerUrl.getSendUrl("testMcid");
-    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/message/", sendUrl.toString());
+    Url sendUrlHttp = brokerUrlHttp.getSendUrl("testMcid");
+    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/message/", sendUrlHttp.toString());
+    Url sendUrlMqtt = brokerUrlMqtt.getSendUrl("testMcid");
+    EXPECT_EQ("mqtt://localhost:1883/channels/testMcid/message/", sendUrlMqtt.toString());
 }
 
 TEST_F(BrokerUrlTest, getDeleteChannelUrl){
-    Url deleteUrl = brokerUrl.getDeleteChannelUrl("testMcid");
-    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/", deleteUrl.toString());
+    Url deleteUrlHttp = brokerUrlHttp.getDeleteChannelUrl("testMcid");
+    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/", deleteUrlHttp.toString());
+    Url deleteUrlMqtt = brokerUrlMqtt.getDeleteChannelUrl("testMcid");
+    EXPECT_EQ("mqtt://localhost:1883/channels/testMcid/", deleteUrlMqtt.toString());
 }
 
 TEST_F(BrokerUrlTest, getTimeCheckUrl){
-    Url timeCheckUrl = brokerUrl.getTimeCheckUrl();
-    EXPECT_EQ("http://localhost:8080/bounceproxy/time/", timeCheckUrl.toString());
+    Url timeCheckUrlHttp = brokerUrlHttp.getTimeCheckUrl();
+    EXPECT_EQ("http://localhost:8080/bounceproxy/time/", timeCheckUrlHttp.toString());
+    Url timeCheckUrlMqtt = brokerUrlMqtt.getTimeCheckUrl();
+    EXPECT_EQ("mqtt://localhost:1883/time/", timeCheckUrlMqtt.toString());
 }

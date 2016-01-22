@@ -120,6 +120,21 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         @ONLY
     )
     configure_file(
+        "resources/HttpMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
         "resources/libjoynrSystemIntegration1.settings"
         "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration1.settings"
         @ONLY
@@ -167,6 +182,21 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     configure_file(
         "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
         "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/HttpMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"
         @ONLY
     )
     configure_file(
@@ -218,6 +248,21 @@ else()
     configure_file(
         "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
         "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/HttpMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"
         @ONLY
     )
     configure_file(
@@ -419,6 +464,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     file(
         GLOB g_UnitTests_SOURCES
         "unit-tests/*.cpp"
+        "unit-tests/mqtt/*.cpp"
         "unit-tests/websocket/*.cpp"
         "unit-tests/jsonserializer/*.cpp"
     )
@@ -448,6 +494,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_include_directories(
         g_UnitTests
         SYSTEM
+        PRIVATE ${MOSQUITTO_INCLUDE_DIRS}
         PRIVATE ${GTEST_INCLUDE_DIRS}
         PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}

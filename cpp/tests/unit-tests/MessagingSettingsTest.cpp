@@ -29,29 +29,37 @@ using namespace joynr;
 class MessagingSettingsTest : public testing::Test {
 public:
     MessagingSettingsTest() :
-        testSettingsFileName("MessagingSettingsTest-testSettings.settings")
+        testSettingsFileNameNonExistent("test-resources/MessagingSettingsTest-nonexistent.settings"),
+        testSettingsFileNameHttp("test-resources/HttpMessagingSettingsTest.settings"),
+        testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings"),
+        testSettingsFileNameMqttWithHttpBackend("test-resources/MqttWithHttpBackendMessagingSettingsTest.settings")
     {
     }
 
     virtual void TearDown() {
-        std::remove(testSettingsFileName.c_str());
     }
 
 protected:
     ADD_LOGGER(MessagingSettingsTest);
-    std::string testSettingsFileName;
+    std::string testSettingsFileNameNonExistent;
+    std::string testSettingsFileNameHttp;
+    std::string testSettingsFileNameMqtt;
+    std::string testSettingsFileNameMqttWithHttpBackend;
 };
 
 INIT_LOGGER(MessagingSettingsTest);
 
 TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
-    Settings testSettings(testSettingsFileName);
+    Settings testSettings(testSettingsFileNameNonExistent);
 
+    // file is not loaded because it intentionally does not exist
+    // defaults will be loaded from another file instead
     EXPECT_FALSE(testSettings.isLoaded());
 
     MessagingSettings messagingSettings(testSettings);
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BROKER_URL()));
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BOUNCE_PROXY_URL()));
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
@@ -66,10 +74,85 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
 
 TEST_F(MessagingSettingsTest, overrideDefaultSettings) {
     std::string expectedBrokerUrl("http://localhost:8080/bounceproxy/MessagingSettingsTest-overrideDefaultSettings/");
-    Settings testSettings(testSettingsFileName);
+    Settings testSettings(testSettingsFileNameNonExistent);
+
     testSettings.set(MessagingSettings::SETTING_BROKER_URL(), expectedBrokerUrl);
     MessagingSettings messagingSettings(testSettings);
 
-    std::string brokerUrl = messagingSettings.getBounceProxyUrlString();
+    std::string brokerUrl = messagingSettings.getBrokerUrlString();
     EXPECT_EQ(expectedBrokerUrl, brokerUrl);
+}
+
+void checkBrokerSettings(
+        MessagingSettings messagingSettings,
+        std::string expectedBrokerUrl,
+        std::string expectedBounceProxyUrl) {
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BROKER_URL()));
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BOUNCE_PROXY_URL()));
+
+    std::string brokerUrl = messagingSettings.getBrokerUrlString();
+    EXPECT_EQ(expectedBrokerUrl, brokerUrl);
+
+    std::string bounceProxyUrl = messagingSettings.getBounceProxyUrlString();
+    EXPECT_EQ(expectedBounceProxyUrl, bounceProxyUrl);
+}
+
+void checkDiscoveryDirectorySettings(
+        MessagingSettings messagingSettings,
+        std::string expectedChannelUrlDirectoryChannelId,
+        std::string expectedCapabilitiesDirectoryChannelId) {
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
+
+    std::string channelUrlDirectoryChannelId = messagingSettings.getChannelUrlDirectoryChannelId();
+    EXPECT_EQ(expectedChannelUrlDirectoryChannelId, channelUrlDirectoryChannelId);
+
+    std::string capabilitiesDirectoryChannelId = messagingSettings.getCapabilitiesDirectoryChannelId();
+    EXPECT_EQ(expectedCapabilitiesDirectoryChannelId, capabilitiesDirectoryChannelId);
+}
+
+TEST_F(MessagingSettingsTest, httpOnly) {
+    std::string expectedBrokerUrl("http://localhost:8080/bounceproxy/");
+    std::string expectedChannelUrlDirectoryChannelId("discoverydirectory_channelid");
+    std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
+
+    Settings testSettings(testSettingsFileNameHttp);
+    EXPECT_TRUE(testSettings.isLoaded());
+    MessagingSettings messagingSettings(testSettings);
+
+    // since only brokerUrl is present, bounceProxyUrl is setup identically
+    checkBrokerSettings(messagingSettings, expectedBrokerUrl, expectedBrokerUrl);
+
+    checkDiscoveryDirectorySettings(messagingSettings, expectedChannelUrlDirectoryChannelId, expectedCapabilitiesDirectoryChannelId);
+}
+
+TEST_F(MessagingSettingsTest, mqttWithHttpBackend) {
+    std::string expectedBrokerUrl("mqtt://localhost:1883/");
+    std::string expectedBounceProxyUrl("http://localhost:8080/bounceproxy/");
+    std::string expectedChannelUrlDirectoryChannelId("discoverydirectory_channelid");
+    std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
+
+    Settings testSettings(testSettingsFileNameMqttWithHttpBackend);
+    EXPECT_TRUE(testSettings.isLoaded());
+    MessagingSettings messagingSettings(testSettings);
+
+    // the file contains different settings for brokerUrl and bounceProxyUrl
+    checkBrokerSettings(messagingSettings, expectedBrokerUrl, expectedBounceProxyUrl);
+
+    checkDiscoveryDirectorySettings(messagingSettings, expectedChannelUrlDirectoryChannelId, expectedCapabilitiesDirectoryChannelId);
+}
+
+TEST_F(MessagingSettingsTest, mqttOnly) {
+    std::string expectedBrokerUrl("mqtt://localhost:1883/");
+    std::string expectedChannelUrlDirectoryChannelId("mqtt_discoverydirectory_channelid");
+    std::string expectedCapabilitiesDirectoryChannelId("mqtt_discoverydirectory_channelid");
+
+    Settings testSettings(testSettingsFileNameMqtt);
+    EXPECT_TRUE(testSettings.isLoaded());
+    MessagingSettings messagingSettings(testSettings);
+
+    // since only brokerUrl is present, bounceProxyUrl is setup identically
+    checkBrokerSettings(messagingSettings, expectedBrokerUrl, expectedBrokerUrl);
+
+    checkDiscoveryDirectorySettings(messagingSettings, expectedChannelUrlDirectoryChannelId, expectedCapabilitiesDirectoryChannelId);
 }
