@@ -91,7 +91,11 @@ AddIncludeWhatYouUse(jsonserializer)
 target_link_libraries(
     jsonserializer
     JoynrCommon
-    ${jsmn_LIBRARY}
+)
+
+target_link_libraries(
+    jsonserializer
+    PRIVATE ${jsmn_LIBRARY}
 )
 
 set_target_properties(
