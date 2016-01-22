@@ -10,7 +10,8 @@
   Instead, an enum named "StatusCode::Enum" is returned.
 
 ##Other changes
-None.
+* **[JS]** Updated the versions of joynr dependencies log4js (0.6.29), requirejs (2.1.22),
+  bluebird (3.1.1) and promise (7.1.1). No API impact.
 
 #joynr 0.14.1
 
