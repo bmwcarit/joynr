@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ import java.util.Map;
 /**
  * Factory for messaging stubs used on cluster controller side to create a connection to registered clients
  */
-public class WebSocketClientMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<WebSocketClientAddress> {
+public class WebSocketClientMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<CCWebSocketMessagingStub, WebSocketClientAddress> {
 
     private Logger logger = LoggerFactory.getLogger(WebSocketClientMessagingStubFactory.class);
     private Map<String, Session> sessionMap = new HashMap<>();
@@ -46,7 +45,7 @@ public class WebSocketClientMessagingStubFactory extends AbstractMiddlewareMessa
     ObjectMapper objectMapper;
 
     @Override
-    protected IMessaging createInternal(WebSocketClientAddress address) {
+    protected CCWebSocketMessagingStub createInternal(WebSocketClientAddress address) {
         if (sessionMap.containsKey(address.getId())) {
             return new CCWebSocketMessagingStub(sessionMap.get(address.getId()), objectMapper);
         } else {

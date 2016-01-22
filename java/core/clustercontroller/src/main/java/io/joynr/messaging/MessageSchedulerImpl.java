@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 /**
@@ -49,6 +50,7 @@ import com.google.inject.name.Named;
  * executor.
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that no new messages are scheduled when scheduler is shuting down")
+@Singleton
 public class MessageSchedulerImpl implements MessageScheduler {
     private static final long TERMINATION_TIMEOUT = 5000;
     private static final Logger logger = LoggerFactory.getLogger(MessageSchedulerImpl.class);

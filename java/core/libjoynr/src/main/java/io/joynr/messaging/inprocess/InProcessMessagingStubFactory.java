@@ -20,11 +20,11 @@ package io.joynr.messaging.inprocess;
  */
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
 
-public class InProcessMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<InProcessAddress> {
+public class InProcessMessagingStubFactory extends
+        AbstractMiddlewareMessagingStubFactory<InProcessMessagingStub, InProcessAddress> {
     @Override
-    protected IMessaging createInternal(InProcessAddress address) {
+    protected InProcessMessagingStub createInternal(InProcessAddress address) {
         return new InProcessMessagingStub((address).getSkeleton());
     }
 

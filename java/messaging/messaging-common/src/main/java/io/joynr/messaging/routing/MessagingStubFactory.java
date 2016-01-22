@@ -22,6 +22,7 @@ package io.joynr.messaging.routing;
 import java.util.Map;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -29,6 +30,7 @@ import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import joynr.system.RoutingTypes.Address;
 
+@Singleton
 public class MessagingStubFactory {
 
     public static final String MIDDLEWARE_MESSAGING_STUB_FACTORIES = "MIDDLEWARE_MESSAGING_STUB_FACTORIES";

@@ -1,5 +1,6 @@
 package io.joynr.messaging;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,17 +25,21 @@ import java.util.Map;
 
 import joynr.system.RoutingTypes.Address;
 
-abstract public class AbstractMiddlewareMessagingStubFactory<W extends Address> {
+abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessaging, A extends Address> {
 
-    private Map<W, IMessaging> stubMap = new HashMap<>();
+    private Map<A, S> stubMap = new HashMap<>();
 
-    protected abstract  IMessaging createInternal(W address);
+    protected abstract  S createInternal(A address);
 
-    public IMessaging create(W address) {
+    public IMessaging create(A address) {
         if (!stubMap.containsKey(address)) {
             stubMap.put(address, createInternal(address));
         }
         return stubMap.get(address);
+    }
+
+    protected Collection<S> getAllMessagingStubs() {
+        return stubMap.values();
     }
 
     public abstract void shutdown();

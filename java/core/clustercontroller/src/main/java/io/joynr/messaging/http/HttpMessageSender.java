@@ -177,4 +177,12 @@ public class HttpMessageSender implements IMessageSender {
             }
         }
     }
+
+    public void shutdown() {
+        try {
+            httpclient.close();
+        } catch (IOException e) {
+            logger.error("error closing HTTP client: {}", e.getMessage());
+        }
+    }
 }

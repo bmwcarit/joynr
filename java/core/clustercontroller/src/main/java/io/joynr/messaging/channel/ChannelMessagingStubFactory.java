@@ -21,51 +21,33 @@ package io.joynr.messaging.channel;
 
 import com.google.inject.Inject;
 
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.MessageHandler;
-import joynr.JoynrMessage;
+import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.http.HttpMessageSender;
 import joynr.system.RoutingTypes.ChannelAddress;
-
-import java.io.IOException;
 
 /**
  *  Message stub factory for joynr channel addresses
  */
-public class ChannelMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<ChannelAddress> {
-    private MessageHandler messageSender;
+public class ChannelMessagingStubFactory extends
+        AbstractMiddlewareMessagingStubFactory<ChannelMessagingStub, ChannelAddress> {
+    private HttpMessageSender httpMessageSender;
+    private ChannelMessageSerializerFactory channelMessageSerializerFactory;
 
     @Inject
-    public ChannelMessagingStubFactory(MessageHandler messageSender) {
-        this.messageSender = messageSender;
+    public ChannelMessagingStubFactory(HttpMessageSender httpMessageSender) {
+        this.httpMessageSender = httpMessageSender;
     }
 
     @Override
-    protected IMessaging createInternal(final ChannelAddress address) {
-        IMessaging messagingStub = new IMessaging() {
-            @Override
-            public void transmit(JoynrMessage message, FailureAction failureAction)  {
-                try {
-                    messageSender.sendMessage(address, message);
-                } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException exception) {
-                    failureAction.execute(exception);
-                }
-            }
-
-            @Override
-            public void transmit(String serializedMessage, FailureAction failureAction) {
-                // TODO Auto-generated method stub
-
-            }
-        };
+    protected ChannelMessagingStub createInternal(final ChannelAddress address) {
+        final JoynrMessageSerializer messageSerializer = channelMessageSerializerFactory.create(address);
+        ChannelMessagingStub messagingStub = new ChannelMessagingStub(address, messageSerializer, httpMessageSender);
         return messagingStub;
     }
 
     @Override
     public void shutdown() {
-        messageSender.shutdown();
+        httpMessageSender.shutdown();
     }
 }

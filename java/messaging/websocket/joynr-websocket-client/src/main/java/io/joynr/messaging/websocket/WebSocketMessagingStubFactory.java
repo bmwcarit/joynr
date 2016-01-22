@@ -1,5 +1,7 @@
 package io.joynr.messaging.websocket;
 
+import java.util.concurrent.ExecutionException;
+
 /*
  * #%L
  * %%
@@ -24,10 +26,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
-public class WebSocketMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<WebSocketAddress> {
+public class WebSocketMessagingStubFactory extends
+        AbstractMiddlewareMessagingStubFactory<LibWebSocketMessagingStub, WebSocketAddress> {
 
     @Inject
     ObjectMapper objectMapper;
@@ -36,13 +38,17 @@ public class WebSocketMessagingStubFactory extends AbstractMiddlewareMessagingSt
     WebSocketMessagingSkeleton webSocketMessagingSkeleton;
 
     @Override
-    protected IMessaging createInternal(WebSocketAddress address) {
+    protected LibWebSocketMessagingStub createInternal(WebSocketAddress address) {
         return new LibWebSocketMessagingStub(address, objectMapper, webSocketMessagingSkeleton);
     }
 
     @Override
     public void shutdown() {
-        //do nothing
+        for (LibWebSocketMessagingStub stub : getAllMessagingStubs()) {
+            try {
+                stub.shutdown();
+            } catch (ExecutionException | InterruptedException e) {
+            }
+        }
     }
-
 }
