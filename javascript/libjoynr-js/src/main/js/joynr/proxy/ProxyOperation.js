@@ -31,7 +31,15 @@ define(
             "joynr/dispatching/types/Request",
             "joynr/messaging/MessagingQos"
         ],
-        function(Promise, Util, JSONSerializer, Typing, MethodUtil, TypeRegistrySingleton, Request, MessagingQos) {
+        function(
+                Promise,
+                Util,
+                JSONSerializer,
+                Typing,
+                MethodUtil,
+                TypeRegistrySingleton,
+                Request,
+                MessagingQos) {
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
              * Checks if the given operationSignature is valid to be called for the given operation
@@ -72,10 +80,13 @@ define(
                 var result = {};
 
                 try {
-                    result.signature = {
-                        inputParameter : MethodUtil.transformParameterMapToArray(operationArguments, operationSignature.inputParameter),
-                        outputParameter : operationSignature.outputParameter || []
-                    };
+                    result.signature =
+                            {
+                                inputParameter : MethodUtil.transformParameterMapToArray(
+                                        operationArguments,
+                                        operationSignature.inputParameter),
+                                outputParameter : operationSignature.outputParameter || []
+                            };
                 } catch (error) {
                     result.errorMessage = error.message;
                 }
@@ -258,62 +269,40 @@ define(
 
                         // send it through request reply manager
                         return settings.dependencies.requestReplyManager
-                            .sendRequest({
-                                to : proxyOperation.parent.providerParticipantId,
-                                from : proxyOperation.parent.proxyParticipantId,
-                                messagingQos : messagingQos,
-                                request : request
-                            })
-                            .then(
-                                    function(response) {
-                                        var responseKey, argumentValue;
-                                        if (foundValidOperationSignature.outputParameter && foundValidOperationSignature.outputParameter.length > 0) {
-                                            argumentValue = {};
-                                            for (responseKey in response) {
-                                                if (response.hasOwnProperty(responseKey)) {
-                                                    if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
-                                                        argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] =
-                                                            Typing
-                                                            .augmentTypes(
-                                                                    response[responseKey],
-                                                                    typeRegistry,
-                                                                    foundValidOperationSignature.outputParameter[responseKey].type);
-                                                    } else {
-                                                        return Promise
-                                                        .reject(new Error("Unexpected response: " + JSONSerializer.stringify(response[responseKey])));
+                                .sendRequest({
+                                    to : proxyOperation.parent.providerParticipantId,
+                                    from : proxyOperation.parent.proxyParticipantId,
+                                    messagingQos : messagingQos,
+                                    request : request
+                                })
+                                .then(
+                                        function(response) {
+                                            var responseKey, argumentValue;
+                                            if (foundValidOperationSignature.outputParameter
+                                                && foundValidOperationSignature.outputParameter.length > 0) {
+                                                argumentValue = {};
+                                                for (responseKey in response) {
+                                                    if (response.hasOwnProperty(responseKey)) {
+                                                        if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
+                                                            argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] =
+                                                                    Typing
+                                                                            .augmentTypes(
+                                                                                    response[responseKey],
+                                                                                    typeRegistry,
+                                                                                    foundValidOperationSignature.outputParameter[responseKey].type);
+                                                        } else {
+                                                            return Promise
+                                                                    .reject(new Error(
+                                                                            "Unexpected response: "
+                                                                                + JSONSerializer
+                                                                                        .stringify(response[responseKey])));
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
 
-                                        return argumentValue;
-                                    })
-                                    .catch(
-                                            function(error) {
-                                                if (error instanceof Error) {
-                                                    return error;
-                                                }
-                                                /*
-                                                 * TODO this object sanitizer needs to be removed, by fixing the issue related with
-                                                 * PhantomJs
-                                                 */
-                                                var cleanObjectFromPhantomJsAddons = function(object) {
-                                                    object.sourceId = undefined;
-                                                    object.sourceURL= undefined;
-                                                    object.stack = undefined;
-                                                    object.stackArray = undefined;
-                                                    object.line = undefined;
-                                                    object.isOperational = undefined;
-                                                };
-                                                cleanObjectFromPhantomJsAddons(error);
-                                                if (error.error) {
-                                                    cleanObjectFromPhantomJsAddons(error.error);
-                                                }
-                                                throw Typing.augmentTypes(
-                                                        error,
-                                                        typeRegistry);
-                                            });
-
+                                            return argumentValue;
+                                        });
                     } catch (e) {
                         return Promise
                                 .reject(new Error("error calling operation: " + e.toString()));
