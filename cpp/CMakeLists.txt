@@ -720,7 +720,7 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_SOURCE_DIR}
+    ${jsmn_INCLUDE_DIR}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -738,7 +738,7 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_SOURCE_DIR}
+    ${jsmn_INCLUDE_DIR}
 )
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
@@ -747,7 +747,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_SOURCE_DIR}/include
         ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
-        ${jsmn_SOURCE_DIR}
+        ${jsmn_INCLUDE_DIR}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
