@@ -1,3 +1,14 @@
+#joynr 0.14.1
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Fixed bug in generated proxies with broadcast subscription requests
+  having no filters.
+
 #joynr 0.14.0
 
 ##Notes

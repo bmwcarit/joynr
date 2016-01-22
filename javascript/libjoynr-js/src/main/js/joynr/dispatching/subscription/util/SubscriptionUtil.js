@@ -34,7 +34,6 @@ define("joynr/dispatching/subscription/util/SubscriptionUtil", [], function() {
         var result = [], subscriptionId;
         for (subscriptionId in subscriptions) {
             if (subscriptions.hasOwnProperty(subscriptionId)) {
-                var subscriptionInfo = subscriptions[subscriptionId];
                 result[result.length] = subscriptions[subscriptionId];
             }
         }
