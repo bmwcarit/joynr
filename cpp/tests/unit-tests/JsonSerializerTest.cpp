@@ -761,7 +761,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
     types::Localisation::Trip* trip2 = JsonSerializer::deserialize<types::Localisation::Trip>(serializedContent);
     EXPECT_EQ(trip1, *trip2) << "trips \n trip1: " << trip1.toString().c_str()
                              << " and \n trip2: " << trip2->toString().c_str()
-                             << "\n are not the same";;
+                             << "\n are not the same";
 
     delete trip2;
 }

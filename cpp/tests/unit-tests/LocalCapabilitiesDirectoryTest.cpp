@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
+#include <tuple>
 #include <cstdint>
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
@@ -93,8 +94,8 @@ public:
             const std::string& interfaceName,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(domain);
-        Q_UNUSED(interfaceName);
+        std::ignore = domain;
+        std::ignore = interfaceName;
         std::vector<types::CapabilityInformation> result;
         onSuccess(result);
     }
@@ -103,7 +104,7 @@ public:
             const std::string& participantId,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(participantId);
+        std::ignore = participantId;
         std::vector<types::CapabilityInformation> result;
         onSuccess(result);
     }
@@ -113,8 +114,8 @@ public:
             const std::string& interfaceName,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(domain);
-        Q_UNUSED(interfaceName);
+        std::ignore = domain;
+        std::ignore = interfaceName;
         types::ProviderQos qos;
         std::vector<types::CapabilityInformation> capInfoList;
         capInfoList.push_back(types::CapabilityInformation(
@@ -157,7 +158,7 @@ public:
             const std::string& participantId,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(participantId);
+        std::ignore = participantId;
         types::ProviderQos qos;
         std::vector<types::CapabilityInformation> capInfoList;
         capInfoList.push_back(types::CapabilityInformation(
