@@ -24,7 +24,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.http.HttpMessageSender;
+import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.serialize.MessageSerializerFactory;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
@@ -55,44 +55,46 @@ public class MessageSchedulerImpl implements MessageScheduler {
     private static final long TERMINATION_TIMEOUT = 5000;
     private static final Logger logger = LoggerFactory.getLogger(MessageSchedulerImpl.class);
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
-    private final HttpMessageSender httpMessageSender;
     private ScheduledExecutorService scheduler;
-    private MessagingSettings settings;
     private MessageSerializerFactory messageSerializerFactory;
+    private MessagingStubFactory messagingStubFactory;
+    private long sendMsgRetryIntervalMs;
 
     @Inject
     public MessageSchedulerImpl(@Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                                HttpMessageSender httpMessageSender,
-                                MessagingSettings settings,
+                                @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                                MessagingStubFactory messagingStubFactory,
                                 MessageSerializerFactory messageSerializerFactory) {
-        this.httpMessageSender = httpMessageSender;
         this.scheduler = scheduler;
-        this.settings = settings;
+        this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
+        this.messagingStubFactory = messagingStubFactory;
         this.messageSerializerFactory = messageSerializerFactory;
     }
 
     @Override
     public synchronized void scheduleMessage(final Address address, final JoynrMessage message) {
         long currentTimeMillis = System.currentTimeMillis();
-        long ttlExpirationDate_ms = message.getExpiryDate();
+        long ttlExpirationDateMs = message.getExpiryDate();
 
-        if (ttlExpirationDate_ms <= currentTimeMillis) {
+        if (ttlExpirationDateMs <= currentTimeMillis) {
             String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} abs_ttl: {1}",
                                                        currentTimeMillis,
-                                                       ttlExpirationDate_ms);
+                                                       ttlExpirationDateMs);
             logger.error(errorMessage);
             throw new JoynrMessageNotSentException(errorMessage);
         }
 
-        final MessageContainer messageContainer;
         JoynrMessageSerializer messageSerializer = messageSerializerFactory.create(address);
         String serializedMessage = messageSerializer.serialize(message);
-        messageContainer = new MessageContainer(address, message, serializedMessage, ttlExpirationDate_ms);
+        final MessageContainer messageContainer = new MessageContainer(address,
+                                                                       message,
+                                                                       serializedMessage,
+                                                                       ttlExpirationDateMs);
 
-        rescheduleMessage(messageContainer, 0);
+        scheduleInternal(messageContainer, 0);
     }
 
-    private void rescheduleMessage(final MessageContainer messageContainer, long delayMs) {
+    private void scheduleInternal(final MessageContainer messageContainer, long delayMs) {
         logger.trace("scheduleMessage messageId: {} address {}",
                      messageContainer.getMessageId(),
                      messageContainer.getAddress());
@@ -117,7 +119,8 @@ public class MessageSchedulerImpl implements MessageScheduler {
                 scheduler.schedule(new Runnable() {
                     @Override
                     public void run() {
-                        httpMessageSender.sendMessage(messageContainer, failureAction);
+                        IMessaging messagingStub = messagingStubFactory.create(messageContainer.getAddress());
+                        messagingStub.transmit(messageContainer.getSerializedMessage(), failureAction);
                     }
                 }, delayMs, TimeUnit.MILLISECONDS);
             } catch (RejectedExecutionException e) {
@@ -131,7 +134,6 @@ public class MessageSchedulerImpl implements MessageScheduler {
         final FailureAction failureAction = new FailureAction() {
             final String messageId = messageContainer.getMessageId();
             final Address address = messageContainer.getAddress();
-            final long sendMsgRetryIntervalMs = settings.getSendMsgRetryIntervalMs();
 
             @Override
             public void execute(Throwable error) {
@@ -156,7 +158,7 @@ public class MessageSchedulerImpl implements MessageScheduler {
                                          + " ms, new TTL expiration date: {}",
                                  messageId,
                                  DateFormatter.format(messageContainer.getExpiryDate()));
-                    rescheduleMessage(messageContainer, delayMs);
+                    scheduleInternal(messageContainer, delayMs);
                     return;
                 } catch (JoynrSendBufferFullException e) {
                     try {

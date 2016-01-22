@@ -21,8 +21,7 @@ package io.joynr.messaging.routing;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.MessageScheduler;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
 import io.joynr.provider.DeferredVoid;
@@ -50,14 +49,14 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
     private Logger logger = LoggerFactory.getLogger(MessageRouterImpl.class);
     private final RoutingTable routingTable;
-    private MessagingStubFactory messagingStubFactory;
     private static final int UUID_TAIL = 32;
+    private MessageScheduler messageScheduler;
 
     @Inject
     @Singleton
-    public MessageRouterImpl(RoutingTable routingTable, MessagingStubFactory messagingStubFactory) {
+    public MessageRouterImpl(RoutingTable routingTable, MessageScheduler messageScheduler) {
         this.routingTable = routingTable;
-        this.messagingStubFactory = messagingStubFactory;
+        this.messageScheduler = messageScheduler;
     }
 
     protected Promise<DeferredVoid> addNextHopInternal(String participantId, Address address) {
@@ -136,15 +135,8 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                 return;
             }
 
-            IMessaging messagingStub = messagingStubFactory.create(address);
-            messagingStub.transmit(message, new FailureAction() {
+            messageScheduler.scheduleMessage(address, message);
 
-                @Override
-                public void execute(Throwable error) {
-                    //TODO messageHandler / scheduler will later handle the errors and reschedule
-                    logger.error("unable to send " + message, error);
-                }
-            });
         } else {
             throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
                     + toParticipantId);
@@ -158,7 +150,6 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
     @Override
     public void shutdown() {
-        messagingStubFactory.shutdown();
     }
 
     @Override

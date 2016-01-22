@@ -20,12 +20,10 @@ package io.joynr.messaging;
  */
 
 import io.joynr.messaging.routing.ChildMessageRouter;
-import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.Callback;
 import joynr.JoynrMessage;
 import joynr.system.RoutingProxy;
-import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import org.junit.Before;
@@ -42,7 +40,7 @@ import java.util.UUID;
 public class ChildMessageRouterTest {
 
     @Mock
-    private MessagingStubFactory messagingStubFactory;
+    private MessageScheduler messageScheduler;
     @Mock
     IMessaging messagingStub;
     @Mock
@@ -63,8 +61,7 @@ public class ChildMessageRouterTest {
 
     @Before
     public void setUp() {
-        Mockito.when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
-        messageRouter = new ChildMessageRouter(routingTable, messagingStubFactory);
+        messageRouter = new ChildMessageRouter(routingTable, messageScheduler);
         messageRouter.setIncomingAddress(incommingAddress);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
 

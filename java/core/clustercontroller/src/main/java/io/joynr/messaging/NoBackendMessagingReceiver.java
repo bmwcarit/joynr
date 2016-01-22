@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.inject.Singleton;
 
 import joynr.JoynrMessage;
-import joynr.system.RoutingTypes.Address;
 
 /**
  * A Dummy implementation that does not perform any backend communication
@@ -33,16 +32,11 @@ import joynr.system.RoutingTypes.Address;
  */
 
 @Singleton
-public class NoBackendMessagingSenderReceiver implements MessageReceiver, MessageHandler {
+public class NoBackendMessagingReceiver implements MessageReceiver {
 
     @Override
     public String getChannelId() {
         return "null";
-    }
-
-    @Override
-    public void sendMessage(Address address, JoynrMessage message) {
-        throw new UnsupportedOperationException("The NoBackendMessagingSenderReceiver cannot send messages");
     }
 
     public void receiveMessage(JoynrMessage message) {
@@ -75,10 +69,6 @@ public class NoBackendMessagingSenderReceiver implements MessageReceiver, Messag
     @Override
     public boolean isReady() {
         return true;
-    }
-
-    @Override
-    public void shutdown() {
     }
 
     @Override

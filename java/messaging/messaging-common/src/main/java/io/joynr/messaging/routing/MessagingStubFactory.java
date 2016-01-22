@@ -34,18 +34,17 @@ import joynr.system.RoutingTypes.Address;
 public class MessagingStubFactory {
 
     public static final String MIDDLEWARE_MESSAGING_STUB_FACTORIES = "MIDDLEWARE_MESSAGING_STUB_FACTORIES";
-    @SuppressWarnings("rawtypes")
-    private Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> middlewareMessagingStubFactories;
+    private Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> middlewareMessagingStubFactories;
 
     @Inject
-    @SuppressWarnings("rawtypes")
-    public MessagingStubFactory(@Named(MIDDLEWARE_MESSAGING_STUB_FACTORIES) Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> middlewareMessagingStubFactories) {
+    public MessagingStubFactory(@Named(MIDDLEWARE_MESSAGING_STUB_FACTORIES) Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> middlewareMessagingStubFactories) {
         this.middlewareMessagingStubFactories = middlewareMessagingStubFactories;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public IMessaging create(Address address) {
-        AbstractMiddlewareMessagingStubFactory messagingStubFactory = middlewareMessagingStubFactories.get(address.getClass());
+        @SuppressWarnings("unchecked")
+        AbstractMiddlewareMessagingStubFactory<? extends IMessaging, Address> messagingStubFactory = (AbstractMiddlewareMessagingStubFactory<? extends IMessaging, Address>) middlewareMessagingStubFactories.get(address.getClass());
+
         if (messagingStubFactory == null) {
             throw new JoynrMessageNotSentException("Failed to send Request: Address type not supported: "
                     + address.getClass().getName());
@@ -53,16 +52,14 @@ public class MessagingStubFactory {
         return messagingStubFactory.create(address);
     }
 
-    @SuppressWarnings("rawtypes")
     public void shutdown() {
-        for (AbstractMiddlewareMessagingStubFactory messagingStubFactory : middlewareMessagingStubFactories.values()) {
+        for (AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address> messagingStubFactory : middlewareMessagingStubFactories.values()) {
             messagingStubFactory.shutdown();
         }
     }
 
-    @SuppressWarnings("rawtypes")
     public void register(Class<? extends Address> address,
-                         AbstractMiddlewareMessagingStubFactory middlewareMessagingStubFactory) {
+                         AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address> middlewareMessagingStubFactory) {
         middlewareMessagingStubFactories.put(address, middlewareMessagingStubFactory);
     }
 }

@@ -21,6 +21,7 @@ package io.joynr.messaging.routing;
 
 import com.google.inject.Inject;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessageScheduler;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
@@ -52,8 +53,8 @@ public class ChildMessageRouter extends MessageRouterImpl {
     private List<Runnable> deferredParentHops = new LinkedList<>();
 
     @Inject
-    public ChildMessageRouter(RoutingTable routingTable, MessagingStubFactory messagingStubFactory) {
-        super(routingTable, messagingStubFactory);
+    public ChildMessageRouter(RoutingTable routingTable, MessageScheduler messageScheduler) {
+        super(routingTable, messageScheduler);
     }
 
     @Override

@@ -22,7 +22,9 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
 
@@ -53,7 +55,10 @@ import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JsonMessageSerializerModule;
+import io.joynr.messaging.MessageScheduler;
+import io.joynr.messaging.MessageSchedulerImpl;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -74,25 +79,22 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
-    @SuppressWarnings("rawtypes")
-    MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> messagingStubFactory;
-    @SuppressWarnings("rawtypes")
-    MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory> messageSerializerFactory;
+    MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
+    MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
 
     @Override
-    @SuppressWarnings("rawtypes")
     protected void configure() {
         install(new JsonMessageSerializerModule());
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
                                           .build(ProxyInvocationHandlerFactory.class));
 
         messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory>() {
+        }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
         }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
         messagingStubFactory.addBinding(InProcessAddress.class).to(InProcessMessagingStubFactory.class);
 
         messageSerializerFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory>() {
+        }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
         }, Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
         messageSerializerFactory.addBinding(InProcessAddress.class).to(InProcessMessageSerializerFactory.class);
 
@@ -101,6 +103,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(SubscriptionManager.class).to(SubscriptionManagerImpl.class);
         bind(PublicationManager.class).to(PublicationManagerImpl.class);
         bind(Dispatcher.class).to(DispatcherImpl.class);
+        bind(MessageScheduler.class).to(MessageSchedulerImpl.class);
         bind(LocalDiscoveryAggregator.class).in(Singleton.class);
         bind(DiscoveryAsync.class).to(LocalDiscoveryAggregator.class);
         bind(CapabilitiesRegistrar.class).to(CapabilitiesRegistrarImpl.class);
@@ -146,6 +149,18 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                              @com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
         return getAddress(channelId, domainAccessControllerChannelId);
+    }
+
+    @Provides
+    @Named(MessageScheduler.SCHEDULEDTHREADPOOL)
+    ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
+        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
+                                                                              .build();
+        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
+                                                                                schedulerNamedThreadFactory);
+        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
+        scheduler.allowCoreThreadTimeOut(true);
+        return scheduler;
     }
 
     private Address getAddress(String localChannelId, String targetChannelId) {

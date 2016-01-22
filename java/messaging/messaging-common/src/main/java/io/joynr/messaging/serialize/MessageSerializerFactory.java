@@ -30,18 +30,16 @@ import joynr.system.RoutingTypes.Address;
 public class MessageSerializerFactory {
 
     public static final String MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES = "middleware_message_serializer_factories";
-    @SuppressWarnings("rawtypes")
-    private Map<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory> middlewareMessageSerializerFactories;
+    private Map<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> middlewareMessageSerializerFactories;
 
     @Inject
-    @SuppressWarnings("rawtypes")
-    public MessageSerializerFactory(@Named(MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES) Map<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory> middlewareMessageSerializerFactories) {
+    public MessageSerializerFactory(@Named(MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES) Map<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> middlewareMessageSerializerFactories) {
         this.middlewareMessageSerializerFactories = middlewareMessageSerializerFactories;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public JoynrMessageSerializer create(Address address) {
-        AbstractMiddlewareMessageSerializerFactory messageSerializerFactory = middlewareMessageSerializerFactories.get(address.getClass());
+        @SuppressWarnings("unchecked")
+        AbstractMiddlewareMessageSerializerFactory<Address> messageSerializerFactory = (AbstractMiddlewareMessageSerializerFactory<Address>) middlewareMessageSerializerFactories.get(address.getClass());
         if (messageSerializerFactory == null) {
             throw new JoynrMessageNotSentException("Failed to find serializer. Address type not supported: "
                     + address.getClass().getCanonicalName());
@@ -49,9 +47,8 @@ public class MessageSerializerFactory {
         return messageSerializerFactory.create(address);
     }
 
-    @SuppressWarnings("rawtypes")
     public void register(Class<? extends Address> address,
-                         AbstractMiddlewareMessageSerializerFactory middlewareMessageSerializerFactory) {
+                         AbstractMiddlewareMessageSerializerFactory<? extends Address> middlewareMessageSerializerFactory) {
         middlewareMessageSerializerFactories.put(address, middlewareMessageSerializerFactory);
     }
 }

@@ -35,8 +35,10 @@ public class ChannelMessagingStubFactory extends
     private ChannelMessageSerializerFactory channelMessageSerializerFactory;
 
     @Inject
-    public ChannelMessagingStubFactory(HttpMessageSender httpMessageSender) {
-        this.httpMessageSender = httpMessageSender;
+    public ChannelMessagingStubFactory(ChannelMessageSerializerFactory channelMessageSerializerFactory,
+                                       HttpMessageSender messageSender) {
+        this.channelMessageSerializerFactory = channelMessageSerializerFactory;
+        this.httpMessageSender = messageSender;
     }
 
     @Override

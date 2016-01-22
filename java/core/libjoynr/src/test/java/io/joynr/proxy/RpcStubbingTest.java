@@ -68,6 +68,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
+import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -176,14 +177,13 @@ public class RpcStubbingTest {
                                         new AbstractModule() {
 
                                             @Override
-                                            @SuppressWarnings("rawtypes")
                                             protected void configure() {
                                                 requestStaticInjection(RpcUtils.class);
-                                                MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> messagingStubFactory;
+                                                MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
                                                 messagingStubFactory = MapBinder.newMapBinder(binder(),
                                                                                               new TypeLiteral<Class<? extends Address>>() {
                                                                                               },
-                                                                                              new TypeLiteral<AbstractMiddlewareMessagingStubFactory>() {
+                                                                                              new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
                                                                                               },
                                                                                               Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
                                                 messagingStubFactory.addBinding(InProcessAddress.class)

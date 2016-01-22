@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,171 +19,132 @@ package io.joynr.messaging;
  * #L%
  */
 
-import static org.mockito.Mockito.when;
-
-import com.google.inject.Guice;
-import com.google.inject.Singleton;
-
-import io.joynr.common.ExpiryDate;
-import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
-
-import java.io.IOException;
-import java.util.Properties;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 import java.util.UUID;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
-import joynr.JoynrMessage;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.ChannelUrlInformation;
+import javax.inject.Named;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.localserver.LocalTestServer;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.util.Modules;
+import com.google.inject.Provides;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.MapBinder;
+import com.google.inject.name.Names;
+
+import io.joynr.common.ExpiryDate;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.messaging.channel.ChannelMessageSerializerFactory;
+import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.http.HttpMessageSender;
+import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
+import io.joynr.messaging.serialize.JsonSerializer;
+import io.joynr.messaging.serialize.MessageSerializerFactory;
+import joynr.JoynrMessage;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageSchedulerTest {
 
-    private LocalTestServer server;
-
-    private static final String BOUNCEPROXYPATH = "/bounceproxy/";
-    private static final String CHANNELPATH = BOUNCEPROXYPATH + "channels/";
-
-    private String bounceProxyUrl;
     private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
     private final ChannelAddress channelAddress = new ChannelAddress(channelId);
-
-    private String serviceAddress;
-
-    private int sendMessageResponseCode;
-    private String sendMessageId;
 
     private MessageScheduler messageScheduler;
 
     @Mock
-    private MessageContainer mockMessageContainer;
-    @Mock
-    private FailureAction mockFailureAction;
-    @Mock
-    private LocalChannelUrlDirectoryClient mockChannelUrlDir;
-    @Mock
-    private MessageReceiver mockMessageReceiver;
+    private JsonSerializer jsonSerializer;
 
-    private JoynrMessage joynrMessage;
-
-    private boolean serverResponded = false;
+    @Mock
+    private HttpMessageSender httpMessageSenderMock;
 
     @Before
     public void setUp() throws Exception {
-        when(mockMessageReceiver.isReady()).thenReturn(true);
-
-        String messagePath = CHANNELPATH + channelId + "/message/";
-
-        server = new LocalTestServer(null, null);
-        server.register(messagePath, new HttpRequestHandler() {
-
-            @Override
-            public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException,
-                                                                                               IOException {
-                response.setStatusCode(sendMessageResponseCode);
-                response.setHeader("msgId", sendMessageId);
-                serverResponded = true;
-            }
-        });
-        server.start();
-        serviceAddress = "http://" + server.getServiceAddress().getHostName() + ":"
-                + server.getServiceAddress().getPort();
-        bounceProxyUrl = serviceAddress + BOUNCEPROXYPATH;
-
-        Properties properties = new Properties();
-        properties.put(MessagingPropertyKeys.CHANNELID, channelId);
-        properties.put(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
 
         AbstractModule mockModule = new AbstractModule() {
 
+            private Long msgRetryIntervalMs = 10L;
+            private int maximumParallelSends = 1;
+
             @Override
             protected void configure() {
-                bind(LocalChannelUrlDirectoryClient.class).toInstance(mockChannelUrlDir);
-                bind(MessageReceiver.class).toInstance(mockMessageReceiver);
+                bind(MessageScheduler.class).to(MessageSchedulerImpl.class);
+                bind(JsonSerializer.class).toInstance(jsonSerializer);
+                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.CHANNELID)).toInstance(channelId);
+                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
+                                .toInstance(msgRetryIntervalMs);
+                bind(HttpMessageSender.class).toInstance(httpMessageSenderMock);
+
+                MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
+                messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
+                }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
+                }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
+                messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
+
+                MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
+                messageSerializerFactory = MapBinder.newMapBinder(binder(),
+                                                                  new TypeLiteral<Class<? extends Address>>() {
+                                                                  },
+                                                                  new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
+                                                                  },
+                                                                  Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
+                messageSerializerFactory.addBinding(ChannelAddress.class).to(ChannelMessageSerializerFactory.class);
+            }
+
+            @Provides
+            @Named(MessageScheduler.SCHEDULEDTHREADPOOL)
+            ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
+                ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
+                                                                                      .build();
+                ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
+                                                                                        schedulerNamedThreadFactory);
+                scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
+                scheduler.allowCoreThreadTimeOut(true);
+                return scheduler;
             }
         };
 
-        Injector injector = Guice.createInjector(new JoynrPropertiesModule(properties),
-                                                 Modules.override(new AtmosphereMessagingModule(),
-                                                                  new MessagingTestModule()).with(mockModule),
-                                                 new AbstractModule() {
-                                                     @Override
-                                                     protected void configure() {
-                                                         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
-                                                                                  .in(Singleton.class);
-                                                     }
-                                                 });
+        Injector injector = Guice.createInjector(mockModule);
         messageScheduler = injector.getInstance(MessageScheduler.class);
-        joynrMessage = new JoynrMessage();
+    }
+
+    @Test
+    public void testScheduleMessageOk() {
+        JoynrMessage joynrMessage = new JoynrMessage();
         joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(10000));
-    }
-
-    @Test
-    public void testSendMessageWithResponseCodeCreated() {
-        sendMessageResponseCode = HttpStatus.SC_CREATED;
-        testSendMessage();
-    }
-
-    @Test
-    public void testSendMessageWithResponseCodeOk() {
-        sendMessageResponseCode = HttpStatus.SC_OK;
-        testSendMessage();
-    }
-
-    private void testSendMessage() {
-
-        sendMessageId = "msgId-" + UUID.randomUUID().toString();
-
-        ChannelUrlInformation channelUrlInfo = new ChannelUrlInformation();
-        String[] urls = { bounceProxyUrl + "channels/" + channelId + "/" };
-        channelUrlInfo.setUrls(urls);
-        Mockito.when(mockChannelUrlDir.getUrlsForChannel(channelId)).thenReturn(channelUrlInfo);
         messageScheduler.scheduleMessage(channelAddress, joynrMessage);
-
-        // There's no way to hook into some MessageScheduler method and to wait
-        // until the response has been processed. Only if a failure is expected,
-        // one could wait until failureAction is called.
-        // wait a bit to make sure the request is handled. Thus we just wait a
-        // little bit and check then if the request reached the server at all
-        // and check that no failureAction was called.
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        Assert.assertTrue(serverResponded);
+        verify(jsonSerializer).serialize(eq(joynrMessage));
+        verify(httpMessageSenderMock).sendMessage(eq(channelAddress), any(String.class), any(FailureAction.class));
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Test
+    public void testScheduleExpiredMessageFails() throws InterruptedException {
+        JoynrMessage joynrMessage = new JoynrMessage();
+        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(1));
+        Thread.sleep(5);
         try {
-            server.stop();
-        } catch (Exception e) {
-            // do nothing as we don't want tests to fail only because
-            // stopping of the server did not work
+            messageScheduler.scheduleMessage(channelAddress, joynrMessage);
+        } catch (JoynrMessageNotSentException e) {
+            verify(jsonSerializer, never()).serialize(any(JoynrMessage.class));
+            verify(httpMessageSenderMock, never()).sendMessage(any(ChannelAddress.class),
+                                                               any(String.class),
+                                                               any(FailureAction.class));
+            return;
         }
-        ;
+        fail("scheduling an expired message should throw");
+
     }
 }

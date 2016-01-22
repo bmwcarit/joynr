@@ -38,7 +38,6 @@ public class MessagingTestModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(MessageScheduler.class).to(MessageSchedulerImpl.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(ChannelUrlDirectoryProxy.class).toInstance(mockChannelUrlClient);
     }
