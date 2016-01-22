@@ -584,28 +584,32 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 ### Add spdlog ###########################################################
 find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
 
-message(STATUS "############ Download: spdlog ############")
-set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
-set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
-if(SPDLOG_ROOT)
-    set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
-    set(SPDLOG_SOURCE_TYPE "URL")
-endif(SPDLOG_ROOT)
-message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
+if (USE_PLATFORM_SPDLOG)
+    find_package(spdlog REQUIRED)
+else(USE_PLATFORM_SPDLOG)
+    message(STATUS "############ Download: spdlog ############")
+    set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
+    set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
+    if(SPDLOG_ROOT)
+        set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
+        set(SPDLOG_SOURCE_TYPE "URL")
+    endif(SPDLOG_ROOT)
+    message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
 
 
-AddExternalProject(
-    spdlog
-    ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
-    TIMEOUT 10
-    # Disable configure step
-    CONFIGURE_COMMAND ""
-    # Disable build step
-    BUILD_COMMAND ""
-)
+    AddExternalProject(
+        spdlog
+        ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
+        TIMEOUT 10
+        # Disable configure step
+        CONFIGURE_COMMAND ""
+        # Disable build step
+        BUILD_COMMAND ""
+    )
 
-ExternalProject_Get_Property(spdlog SOURCE_DIR)
-set(spdlog_SOURCE_DIR ${SOURCE_DIR})
+    ExternalProject_Get_Property(spdlog SOURCE_DIR)
+    set(spdlog_SOURCE_DIR ${SOURCE_DIR})
+endif(USE_PLATFORM_SPDLOG)
 
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
