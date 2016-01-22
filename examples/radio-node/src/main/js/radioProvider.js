@@ -107,9 +107,11 @@ joynr.load(provisioning).then(function(loadedJoynr) {
     joynr.capabilities.registerCapability("", domain, radioProvider, providerQos).then(function() {
         log("provider registered successfully");
         runInteractiveConsole(radioProvider);
+        return null;
     }).catch(function(error) {
         log("error registering provider: " + error.toString());
     });
+    return loadedJoynr;
 }).catch(function(error){
     throw error;
 });

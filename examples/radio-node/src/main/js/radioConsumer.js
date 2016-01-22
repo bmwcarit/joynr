@@ -131,20 +131,24 @@ var runInteractiveConsole =
                                         + JSON.stringify(newFavoriteStation)
                                         + ") returned: "
                                         + JSON.stringify(returnValue));
+                                    return returnValue;
                                 }).catch(
                                 function(error) {
                                     prettyLog("RPC: radioProxy.addFavoriteStation("
                                         + JSON.stringify(newFavoriteStation)
                                         + ") failed."
                                         + error);
+                                    return error;
                                 });
                         break;
                     case MODES.SHUFFLE_STATIONS.value:
                         radioProxy.shuffleStations().then(function() {
                             prettyLog("RPC: radioProxy.shuffleStations returned. ");
+                            return null;
                         }).catch(function(error) {
                             prettyLog("RPC: radioProxy.shuffleStations failed: " + error);
-                        });
+                            return error;
+                       });
                         break;
                     case MODES.SUBSCRIBE.value:
                         if (currentStationSubscriptionId === undefined) {
@@ -165,8 +169,10 @@ var runInteractiveConsole =
                                 currentStationSubscriptionId = subscriptionId;
                                 prettyLog("radioProxy.currentStation.subscribe.done",
                                           "Subscription ID: "+ subscriptionId);
+                                return subscriptionId;
                             }).catch(function(error) {
                                 prettyLog("radioProxy.currentStation.subscribe.fail", error);
+                                return error;
                             });
                         }
                         break;
@@ -245,9 +251,11 @@ joynr.load(provisioning).then(function(loadedJoynr) {
             log("exiting...");
             process.exit(0);
         });
+        return radioProxy;
     }).catch(function(error) {
         log("error running radioProxy: " + error);
     });
+    return loadedJoynr;
 }).catch(function(error){
     throw error;
 });
