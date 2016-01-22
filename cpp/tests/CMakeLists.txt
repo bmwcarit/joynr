@@ -124,7 +124,6 @@ include(AddTest.cmake)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
 
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -154,7 +153,7 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_INCLUDE_DIR}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 

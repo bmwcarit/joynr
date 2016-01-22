@@ -3,36 +3,37 @@ message(STATUS "Configuring jsonserializer...")
 message(STATUS "#############################################\n")
 
 ### Add jsmn ###########################################################
-set(JSMN_SOURCE_URL "https://github.com/zserge/jsmn")
-set(JSMN_SOURCE_TYPE "GIT_REPOSITORY")
-if(JSMN_ROOT)
-    set(JSMN_SOURCE_URL "${JSMN_ROOT}")
-    set(JSMN_SOURCE_TYPE "URL")
-endif(JSMN_ROOT)
-message(STATUS "Using source for jsmn: ${JSMN_SOURCE_URL}")
+if(USE_PLATFORM_JSMN)
+    find_package(jsmn REQUIRED)
+else(USE_PLATFORM_JSMN)
+    set(jsmn_LIBRARY "${CMAKE_BINARY_DIR}/ThirdParty/src/jsmn/libjsmn.a")
+    AddExternalProject(
+        jsmn
+        GIT_REPOSITORY https://github.com/zserge/jsmn
+        TIMEOUT 10
+        PATCH_COMMAND rm -f config.mk COMMAND git apply ${CMAKE_SOURCE_DIR}/CMake/jsmn-fpic.patch
+        # Disable configure step
+        CONFIGURE_COMMAND ""
+        # Disable build step
+        BUILD_COMMAND "make"
+        BUILD_IN_SOURCE 1
+        BUILD_BYPRODUCTS ${jsmn_LIBRARY}
+    )
 
+    ExternalProject_Get_Property(jsmn SOURCE_DIR)
+    set(jsmn_INCLUDE_DIR ${SOURCE_DIR})
 
-set(jsmn_LIBRARY "${CMAKE_BINARY_DIR}/ThirdParty/src/jsmn/libjsmn.a")
-AddExternalProject(
-    jsmn
-    ${JSMN_SOURCE_TYPE} "${JSMN_SOURCE_URL}"
-    TIMEOUT 10
-    PATCH_COMMAND rm -f config.mk COMMAND git apply ${CMAKE_SOURCE_DIR}/CMake/jsmn-fpic.patch
-    # Disable configure step
-    CONFIGURE_COMMAND ""
-    # Disable build step
-    BUILD_COMMAND "make"
-    BUILD_IN_SOURCE 1
-    BUILD_BYPRODUCTS ${jsmn_LIBRARY}
-)
+    set_target_properties(
+        jsmn
+        PROPERTIES
+        PUBLIC_INCLUDE_DIRECTORY "${jsmn_INCLUDE_DIR}"
+    )
+endif(USE_PLATFORM_JSMN)
 
-ExternalProject_Get_Property(jsmn SOURCE_DIR)
-set(jsmn_SOURCE_DIR ${SOURCE_DIR})
-
-set_target_properties(
-    jsmn
-    PROPERTIES
-    PUBLIC_INCLUDE_DIRECTORY "${jsmn_SOURCE_DIR}"
+set(
+    jsmn_INCLUDE_DIR
+    "${jsmn_INCLUDE_DIR}"
+    PARENT_SCOPE
 )
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
@@ -40,7 +41,7 @@ get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCL
 set(
     jsonserializer_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    ${jsmn_SOURCE_DIR}
+    ${jsmn_INCLUDE_DIR}
 )
 
 set(
@@ -48,7 +49,7 @@ set(
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_SOURCE_DIR}
+    ${jsmn_INCLUDE_DIR}
 )
 
 file(
