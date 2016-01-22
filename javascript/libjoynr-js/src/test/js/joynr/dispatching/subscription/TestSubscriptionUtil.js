@@ -102,6 +102,7 @@ joynrTestRequire(
                             }
 
                             return new SubscriptionInformation(
+                                    SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE,
                                     proxy,
                                     provider,
                                     new SubscriptionRequest({
@@ -112,7 +113,10 @@ joynrTestRequire(
                         }
 
                         function buildString(info) {
-                            return "{\"proxyParticipantId\":\""
+                            return "{"
+                                + "\"subscriptionType\":\""
+                                + info.subscriptionType
+                                + "\",\"proxyParticipantId\":\""
                                 + info.proxyParticipantId
                                 + "\",\"providerParticipantId\":\""
                                 + info.providerParticipantId
@@ -126,7 +130,7 @@ joynrTestRequire(
                                 + info.qos.maxInterval
                                 + ",\"expiryDate\":"
                                 + info.qos.expiryDate
-                                + ",\"publicationTtl\":1000},\"lastPublication\":0,\"_typeName\":\"joynr.SubscriptionInfo\"}";
+                                + ",\"publicationTtl\":1000},\"lastPublication\":0,\"_typeName\":\"joynr.SubscriptionInformation\"}";
                         }
 
                         /**
