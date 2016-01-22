@@ -20,7 +20,7 @@
 
 #include <limits>
 #include <cassert>
-#include <sstream>
+#include <ctime>
 
 namespace joynr
 {
@@ -82,23 +82,8 @@ std::string DispatcherUtils::convertAbsoluteTimeToTtlString(JoynrTimePoint date)
 
 std::string DispatcherUtils::convertAbsoluteTimeToString(JoynrTimePoint date)
 {
-    std::int64_t ttlTime = convertAbsoluteTimeToTtl(date);
-    char buffer[30];
-    struct timeval tv;
-
-    time_t curtime;
-    struct tm curtimeUtc;
-
-    tv.tv_sec = ttlTime / 1000;
-    tv.tv_usec = (ttlTime * 1000) % 1000000;
-    curtime = tv.tv_sec;
-
-    strftime(buffer, 30, "%m-%d-%Y  %T.", gmtime_r(&curtime, &curtimeUtc));
-    std::stringstream stringStream;
-    stringStream << buffer;
-    stringStream << tv.tv_usec / 1000;
-
-    return stringStream.str();
+    std::time_t time = std::chrono::system_clock::to_time_t(date);
+    return std::string(std::ctime(&time));
 }
 
 std::chrono::system_clock::time_point DispatcherUtils::now()
