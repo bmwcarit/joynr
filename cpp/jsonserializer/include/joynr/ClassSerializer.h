@@ -19,9 +19,10 @@
 #ifndef CLASSSERIALIZER_H
 #define CLASSSERIALIZER_H
 
-#include "joynr/Variant.h"
 #include <vector>
-#include <ostream>
+#include <iosfwd>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {

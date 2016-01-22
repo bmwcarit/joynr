@@ -21,6 +21,8 @@
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/exceptions/JoynrException.h"
+
 #include <vector>
 
 namespace joynr

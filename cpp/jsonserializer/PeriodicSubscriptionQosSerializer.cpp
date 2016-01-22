@@ -18,9 +18,12 @@
  */
 #include "PeriodicSubscriptionQosSerializer.h"
 
+#include <ostream>
+
 #include "joynr/SerializerRegistry.h"
-#include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
+#include "joynr/IDeserializer.h"
+#include "joynr/SubscriptionQos.h"
 
 namespace joynr
 {

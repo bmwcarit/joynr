@@ -17,9 +17,14 @@
  * #L%
  */
 #include "joynr/ClassDeserializer.h"
+
+#include <memory>
+#include <stdexcept>
+
 #include "joynr/SerializerRegistry.h"
 #include "joynr/IDeserializer.h"
 #include "joynr/Util.h"
+
 namespace joynr
 {
 

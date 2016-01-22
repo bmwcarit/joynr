@@ -18,15 +18,17 @@
  */
 #include "joynr/LocalDiscoveryAggregator.h"
 
+#include <utility>
+
+#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/SystemServicesSettings.h"
 
+#include "joynr/types/ProviderQos.h"
 #include "joynr/types/DiscoveryEntry.h"
-#include "joynr/types/DiscoveryQos.h"
 #include "joynr/system/IRouting.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/system/DiscoveryProxy.h"
-#include "joynr/TypeUtil.h"
 
 namespace joynr
 {

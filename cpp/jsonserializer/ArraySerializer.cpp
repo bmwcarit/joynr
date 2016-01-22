@@ -18,6 +18,8 @@
  */
 #include "joynr/ArraySerializer.h"
 
+#include "joynr/Variant.h"
+
 namespace joynr {
 
 template <>

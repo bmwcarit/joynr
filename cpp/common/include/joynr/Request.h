@@ -19,13 +19,11 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
-#include "joynr/JoynrCommonExport.h"
-
-#include "joynr/Variant.h"
-
-#include <memory>
 #include <string>
 #include <vector>
+
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {

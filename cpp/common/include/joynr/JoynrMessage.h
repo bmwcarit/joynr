@@ -19,13 +19,12 @@
 #ifndef JOYNRMESSAGE_H
 #define JOYNRMESSAGE_H
 
-#include "joynr/JoynrCommonExport.h"
-
-#include "joynr/Logger.h"
-#include "joynr/DispatcherUtils.h"
-#include <cstdint>
-
+#include <map>
 #include <string>
+
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/DispatcherUtils.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -44,7 +43,6 @@ namespace joynr
   */
 class JOYNRCOMMON_EXPORT JoynrMessage
 {
-    using StringMap = std::map<std::string, std::string>;
 
 public:
     JoynrMessage();

@@ -19,11 +19,9 @@
 #ifndef PRIMITIVEDESERIALIZER_H
 #define PRIMITIVEDESERIALIZER_H
 
-#include "joynr/Variant.h"
+#include <string>
 
-#include <functional>
-#include <vector>
-#include <utility>
+#include "joynr/Variant.h"
 
 namespace joynr
 {

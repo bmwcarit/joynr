@@ -19,19 +19,19 @@
 #ifndef CLIENTQCACHE_H
 #define CLIENTQCACHE_H
 
-#include "joynr/JoynrCommonExport.h"
-
-#include "joynr/IClientCache.h"
-#include "joynr/CachedValue.h"
-
-#include "joynr/Cache.h"
-
 #include <string>
 #include <mutex>
+
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/IClientCache.h"
+#include "joynr/Cache.h"
 #include "joynr/Variant.h"
 
 namespace joynr
 {
+
+template <class T>
+class CachedValue;
 
 /**
  * Implements IClientCache. Stores objects with a key and a timestamp.

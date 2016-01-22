@@ -17,6 +17,9 @@
  * #L%
  */
 #include "joynr/PrimitiveDeserializer.h"
+
+#include <memory>
+
 #include "joynr/Util.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/IDeserializer.h"

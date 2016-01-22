@@ -19,10 +19,6 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Logger.h"
-
 #include <cstdint>
 #include <map>
 #include <thread>
@@ -30,6 +26,10 @@
 #include <condition_variable>
 #include <functional>
 #include <chrono>
+
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {

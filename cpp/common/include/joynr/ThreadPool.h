@@ -35,7 +35,6 @@
 namespace joynr
 {
 
-class RunnableProvider;
 class Runnable;
 
 /**

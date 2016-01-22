@@ -19,15 +19,17 @@
 #ifndef CLASSDESERIALIZER_H
 #define CLASSDESERIALIZER_H
 
-#include "joynr/Variant.h"
-#include "joynr/Util.h"
-#include "joynr/IDeserializer.h"
-#include "joynr/PrimitiveDeserializer.h"
 #include <functional>
 #include <vector>
 #include <utility>
 #include <map>
 #include <type_traits>
+#include <string>
+
+#include "joynr/Variant.h"
+#include "joynr/Util.h"
+#include "IDeserializer.h"
+#include "PrimitiveDeserializer.h"
 
 namespace joynr
 {

@@ -17,8 +17,6 @@
  * #L%
  */
 #include "joynr/TrackableObject.h"
-#include <string>
-#include <sstream>
 
 namespace joynr
 {

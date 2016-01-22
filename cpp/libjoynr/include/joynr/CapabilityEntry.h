@@ -25,9 +25,10 @@
  * are necessary for determining whether to use the cache or not.
  */
 
-#include "joynr/JoynrExport.h"
-
 #include <string>
+#include <vector>
+
+#include "joynr/JoynrExport.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/CommunicationMiddleware.h"
 

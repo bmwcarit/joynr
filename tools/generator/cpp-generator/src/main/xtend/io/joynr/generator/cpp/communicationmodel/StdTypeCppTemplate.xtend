@@ -47,12 +47,11 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 #include <string>
 #include <typeinfo>
 
+«IF type.hasExtendsDeclaration || getMembers(type).size > 0»
 #include <boost/functional/hash.hpp>
-
+«ENDIF»
 #include "joynr/HashUtil.h"
 #include «type.includeOf»
-
-#include "joynr/Reply.h"
 
 «getNamespaceStarter(type, true)»
 

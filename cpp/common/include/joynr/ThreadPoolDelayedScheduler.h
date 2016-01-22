@@ -19,13 +19,14 @@
 #ifndef THREADPOOLDELAYEDSCHEDULER_H
 #define THREADPOOLDELAYEDSCHEDULER_H
 
+#include <cstdint>
+#include <chrono>
+#include <string>
+
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/DelayedScheduler.h"
 #include "joynr/ThreadPool.h"
-
-#include <chrono>
 
 namespace joynr
 {

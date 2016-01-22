@@ -18,7 +18,6 @@
  */
 
 #include "joynr/JsonTokenizer.h"
-#include "joynr/SerializerRegistry.h"
 
 #include <utility>
 #include <cassert>
@@ -60,7 +59,7 @@ std::string JsonToken::asString() const
     return std::string(start, end);
 }
 
-size_t JsonToken::getSize() const
+std::size_t JsonToken::getSize() const
 {
     return size;
 }
@@ -301,7 +300,7 @@ IValue &JsonField::value()
 
 //--------- JsonTokenizer -----------------------------------------------------
 
-std::atomic<size_t> JsonTokenizer::maxTokens{256};
+std::atomic<std::size_t> JsonTokenizer::maxTokens{256};
 
 JsonTokenizer::JsonTokenizer(const std::string &json) :
     source(json),

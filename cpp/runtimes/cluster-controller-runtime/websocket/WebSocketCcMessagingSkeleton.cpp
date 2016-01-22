@@ -18,12 +18,19 @@
  */
 #include "WebSocketCcMessagingSkeleton.h"
 
-#include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "QWebSocketSendWrapper.h"
-
 #include <QtWebSockets/QWebSocketServer>
 #include <QtWebSockets/QWebSocket>
+
+#include "joynr/JoynrMessage.h"
+#include "joynr/Util.h"
+#include "joynr/MessageRouter.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/IWebSocketSendInterface.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "joynr/system/RoutingTypes/WebSocketProtocol.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "QWebSocketSendWrapper.h"
 
 namespace joynr
 {

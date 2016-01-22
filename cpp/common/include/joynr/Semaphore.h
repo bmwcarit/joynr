@@ -19,12 +19,14 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
-
+#include <cstddef>
+#include <cstdint>
 #include <mutex>
 #include <condition_variable>
 #include <chrono>
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {

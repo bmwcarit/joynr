@@ -63,12 +63,14 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 	#include «parameterType»
 «ENDFOR»
 #include <memory>
+#include <functional>
 
 namespace joynr {
 	class InProcessAddress;
 	class ISubscriptionManager;
 	class PublicationManager;
 	template <class ... Ts> class Future;
+	template <typename... Ts> class ISubscriptionListener;
 
 namespace exceptions
 {

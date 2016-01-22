@@ -19,15 +19,16 @@
 #ifndef SUBSCRIPTIONQOSSERIALIZER_H
 #define SUBSCRIPTIONQOSSERIALIZER_H
 
+#include <iosfwd>
+
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "joynr/SubscriptionQos.h"
-#include "joynr/IDeserializer.h"
-
-#include <ostream>
 
 namespace joynr
 {
+
+class IObject;
 
 // Serializes a SubscriptionQos
 template <>

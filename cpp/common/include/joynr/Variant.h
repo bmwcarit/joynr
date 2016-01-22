@@ -24,9 +24,9 @@
 #include <memory>
 #include <cassert>
 #include <iostream>
-#include <tuple>
 #include <vector>
 #include <tuple>
+#include <string>
 
 #include "joynr/Logger.h"
 

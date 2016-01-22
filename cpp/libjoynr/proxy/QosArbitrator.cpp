@@ -22,7 +22,7 @@
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ProviderQos.h"
-
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/TypeUtil.h"
 
 #include <cassert>

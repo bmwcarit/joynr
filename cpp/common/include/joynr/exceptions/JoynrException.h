@@ -23,7 +23,6 @@
 
 #include <exception>
 #include <string>
-#include <memory>
 #include "joynr/Variant.h"
 
 namespace joynr

@@ -20,6 +20,7 @@
 #include "joynr/Url.h"
 #include <sstream>
 #include <boost/algorithm/string/join.hpp>
+#include <cstddef>
 
 namespace joynr
 {

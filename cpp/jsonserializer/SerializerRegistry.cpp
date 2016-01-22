@@ -18,6 +18,11 @@
  */
 #include "joynr/SerializerRegistry.h"
 
+#include <cstdint>
+#include <stdexcept>
+#include <utility>
+
+
 namespace joynr
 {
 

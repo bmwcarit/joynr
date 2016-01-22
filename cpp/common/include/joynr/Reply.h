@@ -19,13 +19,10 @@
 #ifndef REPLY_H
 #define REPLY_H
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/exceptions/JoynrException.h"
-
 #include <string>
 #include <vector>
-#include <memory>
 
+#include "joynr/JoynrCommonExport.h"
 #include "joynr/Variant.h"
 
 namespace joynr

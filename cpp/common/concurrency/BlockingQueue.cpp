@@ -17,9 +17,8 @@
  * #L%
  */
 #include "joynr/BlockingQueue.h"
-#include "joynr/Runnable.h"
 
-#include <cassert>
+#include "joynr/Runnable.h"
 
 namespace joynr
 {

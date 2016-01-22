@@ -19,9 +19,10 @@
 #ifndef PARTICIPANTIDSTORAGE_H
 #define PARTICIPANTIDSTORAGE_H
 
+#include <string>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
-#include <string>
 
 namespace joynr
 {

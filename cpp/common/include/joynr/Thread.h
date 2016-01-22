@@ -19,16 +19,14 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrCommonExport.h"
-
 #include <string>
 #include <thread>
 
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrCommonExport.h"
+
 namespace joynr
 {
-
-class Runnable;
 
 /**
  * @class Thread

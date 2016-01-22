@@ -18,11 +18,16 @@
  */
 #include "joynr/Util.h"
 
-#include <cstring>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <regex>
+#include <cctype>
+#include <iterator>
+
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+#include "joynr/exceptions/JoynrException.h"
+
 namespace joynr
 {
 

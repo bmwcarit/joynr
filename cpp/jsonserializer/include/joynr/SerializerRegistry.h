@@ -24,10 +24,9 @@
 #include <mutex>
 #include <string>
 
-#include "joynr/JoynrTypeId.h"
 #include "joynr/ClassDeserializer.h"
-#include "joynr/PrimitiveDeserializer.h"
 #include "joynr/ClassSerializer.h"
+#include "joynr/PrimitiveDeserializer.h"
 
 namespace joynr
 {

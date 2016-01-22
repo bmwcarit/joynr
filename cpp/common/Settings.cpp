@@ -18,8 +18,8 @@
  */
 
 #include "joynr/Settings.h"
-
 #include <boost/property_tree/ini_parser.hpp>
+#include <utility>
 
 namespace ptree = boost::property_tree;
 
@@ -115,6 +115,11 @@ void Settings::merge(const boost::property_tree::ptree& from,
             merge(fromEntry.second, toIt->second, overwrite);
         }
     }
+}
+
+boost::property_tree::path Settings::createPath(const std::string& path)
+{
+    return boost::property_tree::path(path, '/');
 }
 
 } // namespace joynr

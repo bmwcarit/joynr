@@ -19,18 +19,20 @@
 #ifndef SINGLETHREADEDDELAYEDSCHEDULER_H
 #define SINGLETHREADEDDELAYEDSCHEDULER_H
 
+#include <chrono>
+#include <atomic>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
-
+#include "joynr/Logger.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Thread.h"
 #include "joynr/BlockingQueue.h"
 
-#include <chrono>
-#include <atomic>
-
 namespace joynr
 {
+
+class Runnable;
 
 /**
  * @brief A single threaded implementation of the @ref DelayedScheduler

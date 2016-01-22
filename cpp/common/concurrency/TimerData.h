@@ -20,7 +20,9 @@
 #define TIMERDATA_H
 
 #include <chrono>
-#include <joynr/Timer.h>
+#include <functional>
+
+#include "joynr/Timer.h"
 
 namespace joynr
 {

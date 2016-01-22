@@ -22,6 +22,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
@@ -35,7 +36,6 @@
 #include "joynr/DBusMessageRouterAdapter.h"
 #include "common/dbus/DbusSettings.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-#include <string>
 
 class QCoreApplication;
 class JoynrClusterControllerRuntimeTest;
@@ -43,14 +43,12 @@ class JoynrClusterControllerRuntimeTest;
 namespace joynr
 {
 
-class InProcessClusterControllerMessagingSkeleton;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class IMessageReceiver;
 class IMessageSender;
 class ICapabilitiesClient;
 class SubscriptionManager;
-class InProcessDispatcher;
 class ConnectorFactory;
 class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
@@ -62,6 +60,8 @@ class InProcessMessagingSkeleton;
 class IPlatformSecurityManager;
 class Settings;
 class LibjoynrSettings;
+class JoynrMessageSender;
+class IMessaging;
 
 namespace infrastructure
 {

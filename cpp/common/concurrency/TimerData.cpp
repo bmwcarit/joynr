@@ -16,7 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include <concurrency/TimerData.h>
+#include "TimerData.h"
+
 #include "joynr/TimeUtils.h"
 
 namespace joynr

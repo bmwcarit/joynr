@@ -18,8 +18,6 @@
  */
 #include "joynr/ThreadPoolDelayedScheduler.h"
 
-#include "joynr/Runnable.h"
-
 #include <cassert>
 #include <functional>
 

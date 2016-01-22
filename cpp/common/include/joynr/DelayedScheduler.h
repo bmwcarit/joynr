@@ -19,18 +19,16 @@
 #ifndef DELAYEDSCHEDULER_H
 #define DELAYEDSCHEDULER_H
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Logger.h"
-
-#include "joynr/Timer.h"
-#include "joynr/Optional.h"
-
 #include <unordered_map>
 #include <thread>
 #include <mutex>
-#include <condition_variable>
 #include <chrono>
+#include <functional>
+
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
+#include "joynr/Timer.h"
 
 namespace joynr
 {
@@ -70,8 +68,7 @@ public:
      * @brief Schedule a @ref Runnable to be added to execution queue
      * @param runnable Runnable to be added to queue
      * @param delay Number of milliseconds to delay adding the @ref Runnable
-     *      to the queue. This parameter is @ref Optional and
-     *      if it's value is std::chrono::duration::zero() it will be directly added to the queue.
+     *      to the queue.
      *      If this parameter value is invalid (aka null) its default value will be used.
      * @return Handle referencing the given @ref Runnable in this scheduler. If
      *      @ref INVALID_RUNNABLE_HANDLE is returned, the @ref Runnable either

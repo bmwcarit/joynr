@@ -19,15 +19,16 @@
 #ifndef ONCHANGESUBSCRIPTIONQOSSERIALIZER_H
 #define ONCHANGESUBSCRIPTIONQOSSERIALIZER_H
 
+#include <iosfwd>
+
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/IDeserializer.h"
-
-#include <ostream>
 
 namespace joynr
 {
+
+class IObject;
 
 /**
  * @brief Specialized serialize method for OnChangeSubscriptionQos.

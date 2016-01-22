@@ -17,6 +17,15 @@
  * #L%
  */
 #include "JoynrClusterControllerRuntime.h"
+
+#include <cassert>
+#include <cstdint>
+#include <chrono>
+#include <functional>
+
+#include <QCoreApplication>
+#include <QThread>
+
 #include "joynr/Dispatcher.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
@@ -44,17 +53,31 @@
 #include "websocket/WebSocketCcMessagingSkeleton.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
+#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "joynr/BounceProxyUrl.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/IDispatcher.h"
+#include "joynr/IMessageReceiver.h"
+#include "joynr/IMessageSender.h"
+#include "joynr/IRequestCallerDirectory.h"
+#include "joynr/InProcessAddress.h"
+#include "joynr/MessageRouter.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/ParticipantIdStorage.h"
+#include "joynr/ProxyBuilder.h"
+#include "joynr/ProxyFactory.h"
+#include "joynr/SystemServicesSettings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
+#include "joynr/system/DiscoveryProvider.h"
+#include "joynr/system/RoutingProvider.h"
 
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/system/DiscoveryRequestCaller.h"
 #include "joynr/system/DiscoveryInProcessConnector.h"
-#include <QCoreApplication>
-#include <QThread>
-#include <cassert>
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"

@@ -20,7 +20,12 @@
 
 #include <iostream>
 #include <string>
+#include <utility>
+#include <memory>
+#include <chrono>
+
 #include "joynr/Util.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {

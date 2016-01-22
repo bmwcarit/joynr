@@ -19,6 +19,10 @@
 
 #include "joynr/Reply.h"
 
+#include <utility>
+
+#include "joynr/exceptions/JoynrException.h"
+
 namespace joynr
 {
 

@@ -17,12 +17,12 @@
  * #L%
  */
 #include "joynr/ParticipantIdStorage.h"
-#include "joynr/Util.h"
-
-#include "joynr/Settings.h"
-#include "joynr/FormatString.h"
 
 #include <algorithm>
+
+#include "joynr/Util.h"
+#include "joynr/Settings.h"
+#include "joynr/FormatString.h"
 
 namespace joynr
 {

@@ -19,15 +19,14 @@
 #ifndef BLOCKINGQUEUE_H
 #define BLOCKINGQUEUE_H
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/Logger.h"
-
 #include <deque>
 #include <mutex>
 #include <condition_variable>
-#include <utility>
 #include <atomic>
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {

@@ -32,11 +32,16 @@
 #include <algorithm>
 #include <sstream>
 
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
+#include "joynr/JoynrTypeId.h"
 
 namespace joynr
 {
+
+namespace exceptions
+{
+class JoynrException;
+} // namespace exceptions
 
 std::string removeEscapeFromSpecialChars(const std::string& inputStr);
 

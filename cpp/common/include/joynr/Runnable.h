@@ -19,7 +19,6 @@
 #ifndef JOYNRRUNNABLE_H
 #define JOYNRRUNNABLE_H
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
 
 namespace joynr

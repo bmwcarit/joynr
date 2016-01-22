@@ -17,12 +17,18 @@
  * #L%
  */
 #include "joynr/ClassSerializer.h"
-#include "joynr/SerializerRegistry.h"
+
 #include <cstdint>
 #include <string>
 #include <iomanip>
+#include <ostream>
 #include <sstream>
 #include <regex>
+#include <iterator>
+#include <limits>
+
+#include "joynr/SerializerRegistry.h"
+
 
 namespace joynr
 {
