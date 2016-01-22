@@ -499,6 +499,7 @@ joynrTestRequire(
 
                                 }, operationName, [ testData.signature
                                 ]).buildFunction();
+                                requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve(testData.returnParams));
                                 requestReplyManagerSpy.sendRequest.reset();
 
                                 // do operation call
