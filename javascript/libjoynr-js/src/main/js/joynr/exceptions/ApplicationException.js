@@ -78,9 +78,15 @@ define("joynr/exceptions/ApplicationException", [
     defaultSettings = {
         detailMessage : "This is an application exception."
     };
+
     TypeRegistrySingleton.getInstance().addType(
             "joynr.exceptions.ApplicationException",
             ApplicationException);
+
+    ApplicationException.prototype = new Error();
+    ApplicationException.prototype.constructor = ApplicationException;
+    ApplicationException.prototype.name = "ApplicationException";
+
     return ApplicationException;
 
 });

@@ -71,6 +71,10 @@ define("joynr/exceptions/DiscoveryException", [
             "joynr.exceptions.DiscoveryException",
             DiscoveryException);
 
+    DiscoveryException.prototype = new Error();
+    DiscoveryException.prototype.constructor = DiscoveryException;
+    DiscoveryException.prototype.name = "DiscoveryException";
+
     return DiscoveryException;
 
 });

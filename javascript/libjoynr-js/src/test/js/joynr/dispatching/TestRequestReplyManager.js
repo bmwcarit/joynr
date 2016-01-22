@@ -603,12 +603,15 @@ joynrTestRequire(
                                                 .toHaveBeenCalledWith(
                                                         new Reply(
                                                                 {
-                                                                    error : {
-                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
-                                                                        "detailMessage" : 'error handling request: {"paramDatatypes":["String"],"params":["myTestParameter"],"methodName":"testFunction","requestReplyId":"'
-                                                                            + test.request.requestReplyId
-                                                                            + '","_typeName":"joynr.Request"} for providerParticipantId nonExistentProviderId'
-                                                                    },
+                                                                    error : Typing
+                                                                            .augmentTypes(
+                                                                                    {
+                                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                                        "detailMessage" : 'error handling request: {"paramDatatypes":["String"],"params":["myTestParameter"],"methodName":"testFunction","requestReplyId":"'
+                                                                                            + test.request.requestReplyId
+                                                                                            + '","_typeName":"joynr.Request"} for providerParticipantId nonExistentProviderId'
+                                                                                    },
+                                                                                    typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
                                     });
@@ -628,10 +631,13 @@ joynrTestRequire(
                                                 .toHaveBeenCalledWith(
                                                         new Reply(
                                                                 {
-                                                                    error : {
-                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
-                                                                        "detailMessage" : 'Could not find an operation "notExistentOperationOrAttribute" in the provider'
-                                                                    },
+                                                                    error : Typing
+                                                                            .augmentTypes(
+                                                                                    {
+                                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                                        "detailMessage" : 'Could not find an operation "notExistentOperationOrAttribute" in the provider'
+                                                                                    },
+                                                                                    typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
                                     });
@@ -650,10 +656,13 @@ joynrTestRequire(
                                                 .toHaveBeenCalledWith(
                                                         new Reply(
                                                                 {
-                                                                    error : {
-                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
-                                                                        "detailMessage" : 'Could not find an operation "getNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider'
-                                                                    },
+                                                                    error : Typing
+                                                                            .augmentTypes(
+                                                                                    {
+                                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                                        "detailMessage" : 'Could not find an operation "getNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider'
+                                                                                    },
+                                                                                    typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
                                     });
@@ -672,10 +681,13 @@ joynrTestRequire(
                                                 .toHaveBeenCalledWith(
                                                         new Reply(
                                                                 {
-                                                                    error : {
-                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
-                                                                        "detailMessage" : 'Could not find an operation "setNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider'
-                                                                    },
+                                                                    error : Typing
+                                                                            .augmentTypes(
+                                                                                    {
+                                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                                        "detailMessage" : 'Could not find an operation "setNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider'
+                                                                                    },
+                                                                                    typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
                                     });
