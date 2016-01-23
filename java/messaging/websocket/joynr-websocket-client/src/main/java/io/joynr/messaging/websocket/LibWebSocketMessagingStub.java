@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Messaging stub used on libjoynr side. It gets a WebSocketAddress and creates a new connection to it when transmit
@@ -38,6 +39,7 @@ public class LibWebSocketMessagingStub extends WebSocketMessagingStub {
     private static final Logger logger = LoggerFactory.getLogger(LibWebSocketMessagingStub.class);
     private WebSocketAddress address;
     private WebSocketMessagingSkeleton libWebSocketMessagingSkeleton;
+    private WebSocketClient client;
 
     public LibWebSocketMessagingStub(WebSocketAddress address,
                                      ObjectMapper objectMapper,
@@ -54,7 +56,10 @@ public class LibWebSocketMessagingStub extends WebSocketMessagingStub {
         URI uri = URI.create(address.getProtocol() + "://" + address.getHost() + ":" + address.getPort() + ""
                 + address.getPath());
 
-        WebSocketClient client = new WebSocketClient();
+        if (client != null) {
+            shutdownWebSocketClient();
+        }
+        client = new WebSocketClient();
         try {
             client.start();
             // Attempt Connect
@@ -64,8 +69,29 @@ public class LibWebSocketMessagingStub extends WebSocketMessagingStub {
         }
     }
 
+    private void shutdownWebSocketClient() {
+        try {
+            if (client != null) {
+                client.stop();
+            }
+        } catch (Exception e) {
+            logger.error("Failed to stop websocket client: ", e);
+        } finally {
+            if (client != null) {
+                client.destroy();
+            }
+        }
+
+    }
+
     @Override
     public void sendString(String string, long timeout) throws IOException {
         super.sendString(string, timeout);
+    }
+
+    @Override
+    public void shutdown() throws ExecutionException, InterruptedException {
+        shutdownWebSocketClient();
+        super.shutdown();
     }
 }
