@@ -84,6 +84,7 @@ public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
     @Override
     @After
     public void tearDown() throws InterruptedException {
+        super.tearDown();
         ccJoynrRuntime.shutdown(false);
     }
 
