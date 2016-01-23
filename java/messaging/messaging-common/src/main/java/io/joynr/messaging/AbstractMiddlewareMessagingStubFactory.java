@@ -31,7 +31,7 @@ abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessagin
 
     protected abstract  S createInternal(A address);
 
-    public IMessaging create(A address) {
+    public synchronized IMessaging create(A address) {
         if (!stubMap.containsKey(address)) {
             stubMap.put(address, createInternal(address));
         }
