@@ -81,12 +81,12 @@ void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channel
 }
 
 std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
-                                          StatusCode& status,
+                                          StatusCodeEnum& status,
                                           std::chrono::milliseconds timeout)
 {
 
     JOYNR_LOG_TRACE(logger, "entering obtainUrl ...");
-    status = StatusCode::SUCCESS;
+    status = StatusCodeEnum::SUCCESS;
 
     std::string url("");
 
@@ -95,7 +95,7 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
         JOYNR_LOG_DEBUG(
                 logger,
                 "using default url constructed from channelId and BounceproxyUrl instead...");
-        status = StatusCode::ERROR;
+        status = StatusCodeEnum::ERROR;
         url = constructDefaultUrl(channelId);
         return constructUrl(url);
     }
@@ -103,7 +103,7 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
     if (entries.contains(channelId)) {
         JOYNR_LOG_DEBUG(logger, "obtainUrl: using cached Urls for id = {}", channelId);
         ChannelUrlSelectorEntry* entry = entries.value(channelId);
-        status = StatusCode::SUCCESS;
+        status = StatusCodeEnum::SUCCESS;
         return constructUrl(entry->best());
     }
     JOYNR_LOG_DEBUG(logger,
@@ -113,7 +113,7 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
             channelUrlDirectory->getUrlsForChannelAsync(channelId, timeout));
     status = proxyFuture->getStatus();
 
-    if (status.success()) {
+    if (status == StatusCodeEnum::SUCCESS) {
         JOYNR_LOG_DEBUG(logger,
                         "obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = {}",
                         channelId);
@@ -123,7 +123,7 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
             JOYNR_LOG_DEBUG(
                     logger, "obtainUrl: empty list of urls obtained from id = {}", channelId);
             JOYNR_LOG_DEBUG(logger, "obtainUrl: constructing default url for id = {}", channelId);
-            status = StatusCode::ERROR;
+            status = StatusCodeEnum::ERROR;
             url = constructDefaultUrl(channelId);
             return constructUrl(url);
         }
@@ -132,14 +132,14 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
                        new ChannelUrlSelectorEntry(urlInformation,
                                                    punishmentFactor,
                                                    timeForOneRecouperation)); // deleted where?
-        status = StatusCode::SUCCESS;
+        status = StatusCodeEnum::SUCCESS;
         return constructUrl(url);
     } else {
         JOYNR_LOG_DEBUG(logger,
                         "obtainUrl: FAILED to obtain Urls from remote ChannelUrlDirectory "
                         "for id = {}",
                         channelId);
-        status = StatusCode::ERROR;
+        status = StatusCodeEnum::ERROR;
         url = constructDefaultUrl(channelId);
         return constructUrl(url);
     }

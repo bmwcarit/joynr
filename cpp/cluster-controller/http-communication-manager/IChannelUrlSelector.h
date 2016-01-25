@@ -59,7 +59,7 @@ public:
     * @return std::string
     */
     virtual std::string obtainUrl(const std::string& channelId,
-                                  StatusCode& status,
+                                  StatusCodeEnum& status,
                                   std::chrono::milliseconds timeout) = 0;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?

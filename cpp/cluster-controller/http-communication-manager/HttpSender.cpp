@@ -208,13 +208,13 @@ std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(
         std::chrono::milliseconds curlTimeout)
 {
     JOYNR_LOG_TRACE(logger, "obtaining Url with a curlTimeout of : {}", curlTimeout.count());
-    StatusCode status(StatusCode::IN_PROGRESS);
+    StatusCodeEnum status(StatusCodeEnum::IN_PROGRESS);
     // we also use the curl timeout here, to prevent long blocking during shutdown.
     std::string url = messageSender->channelUrlCache->obtainUrl(channelId, status, curlTimeout);
-    if (!status.success()) {
+    if (!(status == StatusCodeEnum::SUCCESS)) {
         JOYNR_LOG_ERROR(logger,
                         "Issue while trying to obtained URl from the ChannelUrlDirectory: {}",
-                        status.toString());
+                        StatusCode::toString(status));
     }
     if (url.empty()) {
         JOYNR_LOG_DEBUG(logger,

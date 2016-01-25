@@ -1,3 +1,17 @@
+#joynr 0.15.0
+
+##Notes
+* **[C++]** libjoynr uses libwebsockets of the libwebsockets project (http://libwebsockets.org)
+  to communicate with the cluster-controller. Due to an incompatibility with Mac OS X,
+  the C++-Websocket-Runtime currently does not work on Mac OS X.
+
+##API relevant changes
+* **[C++]** Removed the RequestStatus object returned by joynr::Future::getStatus().
+  Instead, an enum named "StatusCode::Enum" is returned.
+
+##Other changes
+None.
+
 #joynr 0.14.1
 
 This is a minor bug fix release.

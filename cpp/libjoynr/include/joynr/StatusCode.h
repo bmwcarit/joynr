@@ -37,44 +37,28 @@ namespace joynr
 {
 
 /**
- * @brief This class contains all the possible status codes
+ * @brief This struct contains all the possible status codes
  *
  */
-class JOYNR_EXPORT StatusCode
+enum class StatusCodeEnum : std::uint8_t {
+    /**
+     * @brief
+     */
+    SUCCESS = 0,
+    /**
+     * @brief
+     */
+    IN_PROGRESS = 1,
+    /**
+     * @brief
+     */
+    ERROR = 2
+};
+
+class StatusCode
 {
 public:
-    // success
-    static StatusCode SUCCESS;
-
-    // in progress
-    static StatusCode IN_PROGRESS;
-
-    // error states
-    static StatusCode ERROR;
-
-    /**
-     * @brief Returns the status code id.
-     *
-     * @return std::uint32_t
-     */
-    std::uint32_t getId() const;
-
-    /**
-     * @brief Convenience method to print the object to String.
-     *
-     * @return std::string
-     */
-    std::string toString() const;
-
-    bool operator==(const StatusCode& statusCode) const;
-    bool operator!=(const StatusCode& statusCode) const;
-    bool success() const;
-    bool inProgress() const;
-
-private:
-    StatusCode(std::uint32_t id, std::string description);
-    std::uint32_t id;
-    std::string description;
+    static std::string toString(StatusCodeEnum enumValue);
 };
 
 } // namespace joynr

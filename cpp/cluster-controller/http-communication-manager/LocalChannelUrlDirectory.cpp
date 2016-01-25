@@ -117,7 +117,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDire
             channelUrlDirectoryProxy->getUrlsForChannelAsync(channelId, onSuccess, onError));
     try {
         future->wait(timeout.count());
-        if (future->getStatus().success()) {
+        if (future->isOk()) {
             JOYNR_LOG_INFO(logger,
                            "Received remote url information for channelId = {}",
                            channelIdQT.toStdString());
@@ -131,7 +131,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDire
                     logger,
                     "FAILED to receive remote url information for channelId = {}. Status: {}",
                     channelIdQT.toStdString(),
-                    future->getStatus().toString());
+                    StatusCode::toString(future->getStatus()));
         }
     } catch (joynr::exceptions::JoynrException& e) {
         // catches exceptions from both wait() and / or get() calls

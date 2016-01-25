@@ -55,8 +55,8 @@ namespace system {
 }
 }
 
- void PrintTo(const StatusCode& value, ::std::ostream* os) {
-     *os << value.toString() << std::endl;
+ void PrintTo(const StatusCodeEnum& value, ::std::ostream* os) {
+     *os << StatusCode::toString(value) << std::endl;
  }
 
  void PrintTo(const JoynrMessage& value, ::std::ostream* os)

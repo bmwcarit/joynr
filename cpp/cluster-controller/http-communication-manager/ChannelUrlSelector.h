@@ -93,7 +93,7 @@ public:
     * @return std::string
     */
     std::string obtainUrl(const std::string& channelId,
-                          StatusCode& status,
+                          StatusCodeEnum& status,
                           std::chrono::milliseconds timeout) override;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?

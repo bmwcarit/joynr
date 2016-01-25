@@ -109,7 +109,8 @@ public:
     /**
      * @brief Constructor
      */
-    Future<Ts...>() : error(nullptr), status(StatusCode::IN_PROGRESS), results(), resultReceived(0)
+    Future<Ts...>()
+            : error(nullptr), status(StatusCodeEnum::IN_PROGRESS), results(), resultReceived(0)
     {
         JOYNR_LOG_INFO(logger, "resultReceived.getStatus(): {}", resultReceived.getStatus());
     }
@@ -166,7 +167,7 @@ public:
     {
         wait();
 
-        if (!getStatus().success()) {
+        if (!isOk()) {
             Util::throwJoynrException(*error);
         }
 
@@ -186,7 +187,7 @@ public:
     {
         wait(timeOut);
 
-        if (!getStatus().success()) {
+        if (!isOk()) {
             Util::throwJoynrException(*error);
         }
 
@@ -198,7 +199,7 @@ public:
      *
      * @return joynr::StatusCode
      */
-    StatusCode& getStatus()
+    StatusCodeEnum& getStatus()
     {
         return status;
     }
@@ -239,7 +240,7 @@ public:
      */
     bool isOk()
     {
-        return status.success();
+        return status == StatusCodeEnum::SUCCESS;
     }
 
     /**
@@ -249,7 +250,7 @@ public:
     void onSuccess(Ts... results)
     {
         JOYNR_LOG_INFO(logger, "onSuccess has been invoked");
-        status = StatusCode::SUCCESS;
+        status = StatusCodeEnum::SUCCESS;
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(results...);
         resultReceived.notify();
@@ -263,13 +264,13 @@ public:
     {
         JOYNR_LOG_INFO(logger, "onError has been invoked");
         this->error.reset(error.clone());
-        status = StatusCode::ERROR;
+        status = StatusCodeEnum::ERROR;
         resultReceived.notify();
     }
 
 private:
     std::shared_ptr<exceptions::JoynrException> error;
-    StatusCode status;
+    StatusCodeEnum status;
     std::tuple<Ts...> results;
     Semaphore resultReceived;
 
@@ -287,7 +288,7 @@ class Future<void>
 {
 
 public:
-    Future<void>() : error(nullptr), status(StatusCode::IN_PROGRESS), resultReceived(0)
+    Future<void>() : error(nullptr), status(StatusCodeEnum::IN_PROGRESS), resultReceived(0)
     {
     }
 
@@ -301,7 +302,7 @@ public:
     {
         wait();
 
-        if (!getStatus().success()) {
+        if (!isOk()) {
             Util::throwJoynrException(*error);
         }
     }
@@ -318,7 +319,7 @@ public:
     {
         wait(timeOut);
 
-        if (!getStatus().success()) {
+        if (!isOk()) {
             Util::throwJoynrException(*error);
         }
     }
@@ -328,7 +329,7 @@ public:
      *
      * @return StatusCode
      */
-    StatusCode& getStatus()
+    StatusCodeEnum& getStatus()
     {
         return status;
     }
@@ -370,7 +371,7 @@ public:
      */
     bool isOk()
     {
-        return status.success();
+        return status == StatusCodeEnum::SUCCESS;
     }
 
     /**
@@ -378,7 +379,7 @@ public:
      */
     void onSuccess()
     {
-        status = StatusCode::SUCCESS;
+        status = StatusCodeEnum::SUCCESS;
         resultReceived.notify();
     }
 
@@ -389,13 +390,13 @@ public:
     void onError(const exceptions::JoynrException& error)
     {
         this->error.reset(error.clone());
-        status = StatusCode::ERROR;
+        status = StatusCodeEnum::ERROR;
         resultReceived.notify();
     }
 
 private:
     std::shared_ptr<exceptions::JoynrException> error;
-    StatusCode status;
+    StatusCodeEnum status;
     Semaphore resultReceived;
 };
 

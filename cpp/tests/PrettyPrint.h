@@ -51,6 +51,6 @@ namespace system {
     void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
 }
 }
-void PrintTo(const joynr::StatusCode& value, ::std::ostream* os);
+void PrintTo(const joynr::StatusCodeEnum& value, ::std::ostream* os);
 void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
 #endif // PRETTYPRINT_H_

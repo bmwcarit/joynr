@@ -134,7 +134,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     for (int i=0; i<numberOfRequests; i++){
         testFutureList.at(i)->wait();
         int expectedValue = 2+4+8+i;
-        if (testFutureList.at(i)->getStatus().success()) {
+        if (testFutureList.at(i)->isOk()) {
             successfulRequests++;
             int actualValue;
             testFutureList.at(i)->get(actualValue);

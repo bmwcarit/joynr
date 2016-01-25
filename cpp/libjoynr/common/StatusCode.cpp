@@ -17,51 +17,29 @@
  * #L%
  */
 #include "joynr/StatusCode.h"
-
-#include <sstream>
+#include <stdexcept>
 
 namespace joynr
 {
 
-StatusCode StatusCode::SUCCESS = StatusCode(0, "Success");
-StatusCode StatusCode::IN_PROGRESS = StatusCode(2, "In progress");
-
-StatusCode StatusCode::ERROR = StatusCode(300, "Error");
-
-StatusCode::StatusCode(std::uint32_t id, std::string description) : id(id), description(description)
+std::string StatusCode::toString(StatusCodeEnum enumValue)
 {
-}
-
-std::string StatusCode::toString() const
-{
-    std::ostringstream typeAsString;
-    typeAsString << "[StatusCode id: " << id << " description: " << description << "]";
-    return typeAsString.str();
-}
-
-std::uint32_t StatusCode::getId() const
-{
-    return id;
-}
-
-bool StatusCode::operator==(const StatusCode& statusCode) const
-{
-    return id == statusCode.getId();
-}
-
-bool StatusCode::operator!=(const StatusCode& statusCode) const
-{
-    return !(*this == statusCode);
-}
-
-bool StatusCode::success() const
-{
-    return *this == SUCCESS;
-}
-
-bool StatusCode::inProgress() const
-{
-    return *this == IN_PROGRESS;
+    std::string literal;
+    switch (enumValue) {
+    case StatusCodeEnum::SUCCESS:
+        literal = std::string("SUCCESS");
+        break;
+    case StatusCodeEnum::IN_PROGRESS:
+        literal = std::string("IN_PROGRESS");
+        break;
+    case StatusCodeEnum::ERROR:
+        literal = std::string("ERROR");
+        break;
+    }
+    if (literal.empty()) {
+        throw std::invalid_argument("StatusCodeEnum: No literal found");
+    }
+    return literal;
 }
 
 } // namespace joynr

@@ -59,7 +59,7 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     messageRouter->removeNextHop(participantId, onSuccess);
     future->wait();
 
-    if (!future->getStatus().success()) {
+    if (!future->isOk()) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to remove next hop (participant ID: {}) from message router.",
                         participantId);

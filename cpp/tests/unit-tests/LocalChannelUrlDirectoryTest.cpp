@@ -97,7 +97,7 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
                     [](const types::ChannelUrlInformation& url) {},
                     [](const exceptions::JoynrException& error) {}));
 
-    EXPECT_EQ(StatusCode::SUCCESS, futureUrls->getStatus());
+    EXPECT_EQ(StatusCodeEnum::SUCCESS, futureUrls->getStatus());
 
     types::ChannelUrlInformation channelInf;
     futureUrls->get(channelInf);

@@ -57,7 +57,7 @@ TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannel
                 bounceProxyUrl,
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
-    StatusCode status (StatusCode::IN_PROGRESS);
+    StatusCodeEnum status (StatusCodeEnum::IN_PROGRESS);
     std::string channelId = "testChannelId";
     std::string url = urlCache->obtainUrl(channelId,status, std::chrono::seconds(20));
     EXPECT_EQ("http://www.urltest.org/pseudoBp/testChannelId/message/", url);
@@ -90,7 +90,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
                     A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
-    StatusCode status(StatusCode::IN_PROGRESS);
+    StatusCodeEnum status(StatusCodeEnum::IN_PROGRESS);
     std::string channelId = "testChannelId";
 
     std::string url = urlCache->obtainUrl(channelId,status, std::chrono::seconds(20));
@@ -127,7 +127,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
                     A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
-    StatusCode status (StatusCode::IN_PROGRESS);
+    StatusCodeEnum status (StatusCodeEnum::IN_PROGRESS);
     std::string channelId = "testChannelId";
 
     std::string url = urlCache->obtainUrl(channelId, status, std::chrono::seconds(20));
@@ -178,7 +178,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
                     A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
-    StatusCode status (StatusCode::IN_PROGRESS);
+    StatusCodeEnum status (StatusCodeEnum::IN_PROGRESS);
     std::string channelId = "testChannelId";
     std::string url = urlCache->obtainUrl(channelId, status, std::chrono::seconds(20));
 

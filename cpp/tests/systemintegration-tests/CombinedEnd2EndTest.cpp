@@ -148,7 +148,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         std::shared_ptr<Future<int> >gpsFuture (testProxy->sumIntsAsync(list));
         gpsFuture->wait();
         int expectedValue = 2+4+8;
-        ASSERT_EQ(StatusCode::SUCCESS, gpsFuture->getStatus());
+        ASSERT_EQ(StatusCodeEnum::SUCCESS, gpsFuture->getStatus());
         int actualValue;
         gpsFuture->get(actualValue);
         EXPECT_EQ(expectedValue, actualValue);
@@ -167,7 +167,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputTrip.setLocations(inputLocationList);
         std::shared_ptr<Future<types::Localisation::Trip> > tripFuture (testProxy->optimizeTripAsync(inputTrip));
         tripFuture->wait();
-        ASSERT_EQ(StatusCode::SUCCESS, tripFuture->getStatus());
+        ASSERT_EQ(StatusCodeEnum::SUCCESS, tripFuture->getStatus());
         types::Localisation::Trip actualTrip;
         tripFuture->get(actualTrip);
         EXPECT_EQ(inputTrip, actualTrip);
@@ -205,7 +205,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 //       std::shared_ptr<Future<std::vector<Vowel> > > wordFuture (new std::shared_ptr<Future<std::vector<Vowel> > >());
 //       testProxy->optimizeWord(wordFuture, inputTrip);
 //       wordFuture->wait();
-//        ASSERT_EQ(StatusCode::SUCCESS, wordFuture->getStatus());
+//        ASSERT_EQ(StatusCodeEnum::SUCCESS, wordFuture->getStatus());
 //       inputTrip.push_back("a"); //thats what optimize word does.. appending an a.
 //       EXPECT_EQ(inputTrip, tripFuture->getValue());
 
@@ -220,7 +220,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputGpsLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
         std::shared_ptr<Future<std::vector<types::Localisation::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationListAsync(inputGpsLocationList));
         listLocationFuture->wait();
-        ASSERT_EQ(StatusCode::SUCCESS, tripFuture->getStatus());
+        ASSERT_EQ(StatusCodeEnum::SUCCESS, tripFuture->getStatus());
         std::vector<joynr::types::Localisation::GpsLocation> actualLocation;
         listLocationFuture->get(actualLocation);
         EXPECT_EQ(inputGpsLocationList, actualLocation);
@@ -361,7 +361,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->build());
         std::shared_ptr<Future<int> > testFuture(testProxy->addNumbersAsync(1, 2, 3));
         testFuture->wait();
-        ASSERT_EQ(StatusCode::ERROR, testFuture->getStatus());
+        ASSERT_EQ(StatusCodeEnum::ERROR, testFuture->getStatus());
         //TODO CA: shared pointer for proxy builder?
         delete testProxyBuilder;
     }
@@ -961,7 +961,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
 
     // Wait for the operation to finish and check for a successful callback
     future->wait();
-    ASSERT_EQ(StatusCode::SUCCESS, future->getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, future->getStatus());
 
     delete testProxyBuilder;
 }
@@ -1010,7 +1010,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
 
     // Wait for the operation to finish and check for a failure callback
     future->wait();
-    ASSERT_EQ(StatusCode::ERROR, future->getStatus());
+    ASSERT_EQ(StatusCodeEnum::ERROR, future->getStatus());
     try {
         future->get();
         ADD_FAILURE();

@@ -179,7 +179,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     future->wait(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
-    ASSERT_EQ(StatusCode::SUCCESS, future->getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, future->getStatus());
     joynr::types::Localisation::GpsLocation actualValue;
     future->get(actualValue);
     EXPECT_EQ(gpsLocation, actualValue);
@@ -223,7 +223,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     future->wait(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
-    ASSERT_EQ(StatusCode::SUCCESS, future->getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, future->getStatus());
     int actualValue;
     future->get(actualValue);
     EXPECT_EQ(sum, actualValue);

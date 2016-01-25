@@ -56,17 +56,17 @@ TEST_F(FutureTest, getValueAndStatusAfterResultReceived) {
     // try retrieving the results with timeout
     ASSERT_NO_THROW(intFuture.get(1, actualValue));
     ASSERT_EQ(10, actualValue);
-    ASSERT_EQ(StatusCode::SUCCESS, intFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, intFuture.getStatus());
 
     // try retrieving the results a second time with timeout
     ASSERT_NO_THROW(intFuture.get(2, actualValue));
     ASSERT_EQ(10, actualValue);
-    ASSERT_EQ(StatusCode::SUCCESS, intFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, intFuture.getStatus());
 
     // try retrieving the results a third time without timeout
     ASSERT_NO_THROW(intFuture.get(actualValue));
     ASSERT_EQ(10, actualValue);
-    ASSERT_EQ(StatusCode::SUCCESS, intFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, intFuture.getStatus());
 }
 
 TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
@@ -77,7 +77,7 @@ TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
 
 TEST_F(FutureTest, getStatusAndErrorAfterFailiureReceived) {
     intFuture.onError(exceptions::ProviderRuntimeException("exceptionMessageIntFuture"));
-    ASSERT_EQ(StatusCode::ERROR, intFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::ERROR, intFuture.getStatus());
     int actualValue;
 
     // get error without timeout
@@ -98,7 +98,7 @@ TEST_F(FutureTest, getStatusAndErrorAfterFailiureReceived) {
 }
 
 TEST_F(FutureTest, getValueAndStatusBeforeOperationFinishes) {
-    ASSERT_EQ(StatusCode::IN_PROGRESS, intFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::IN_PROGRESS, intFuture.getStatus());
 
     int value;
     try {
@@ -111,24 +111,24 @@ TEST_F(FutureTest, getValueAndStatusBeforeOperationFinishes) {
 
 TEST_F(FutureTest, getValueAndStatusForVoidAfterResultReceived) {
     voidFuture.onSuccess();
-    ASSERT_EQ(StatusCode::SUCCESS, voidFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 
     // try retrieving the results with timeout
     ASSERT_NO_THROW(voidFuture.get(1));
-    ASSERT_EQ(StatusCode::SUCCESS, voidFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 
     // try retrieving the results a second time with timeout
     ASSERT_NO_THROW(voidFuture.get(2));
-    ASSERT_EQ(StatusCode::SUCCESS, voidFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 
     // try retrieving the results a third time without timeout
     ASSERT_NO_THROW(voidFuture.get());
-    ASSERT_EQ(StatusCode::SUCCESS, voidFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 }
 
 TEST_F(FutureTest, getStatusAndErrorForVoidAfterFailureReceived) {
     voidFuture.onError(exceptions::ProviderRuntimeException("exceptionMessageVoidFuture"));
-    ASSERT_EQ(StatusCode::ERROR, voidFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::ERROR, voidFuture.getStatus());
 
     // get error without timeout
     try {
@@ -148,7 +148,7 @@ TEST_F(FutureTest, getStatusAndErrorForVoidAfterFailureReceived) {
 }
 
 TEST_F(FutureTest, getValueAndStatusForVoidBeforeOperationFinishes) {
-    ASSERT_EQ(StatusCode::IN_PROGRESS, voidFuture.getStatus());
+    ASSERT_EQ(StatusCodeEnum::IN_PROGRESS, voidFuture.getStatus());
 
     try {
             voidFuture.get(1);
@@ -163,7 +163,7 @@ TEST_F(FutureTest, waitForFinishWithTimer) {
         intFuture.wait(5);
         FAIL()<< "expected JoynrTimeOutException";
     } catch (exceptions::JoynrTimeOutException& e) {
-        EXPECT_EQ(StatusCode::IN_PROGRESS, intFuture.getStatus());
+        EXPECT_EQ(StatusCodeEnum::IN_PROGRESS, intFuture.getStatus());
     }
 }
 
@@ -172,6 +172,6 @@ TEST_F(FutureTest, waitForFinishWithTimerForVoid) {
         voidFuture.wait(5);
         FAIL()<< "expected JoynrTimeOutException";
     } catch (exceptions::JoynrTimeOutException& e) {
-        EXPECT_EQ(StatusCode::IN_PROGRESS, voidFuture.getStatus());
+        EXPECT_EQ(StatusCodeEnum::IN_PROGRESS, voidFuture.getStatus());
     }
 }
