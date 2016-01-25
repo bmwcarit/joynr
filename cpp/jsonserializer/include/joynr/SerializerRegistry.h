@@ -25,9 +25,9 @@
 #include <string>
 
 #include "joynr/JoynrTypeId.h"
-#include "ClassDeserializer.h"
-#include "PrimitiveDeserializer.h"
-#include "ClassSerializer.h"
+#include "joynr/ClassDeserializer.h"
+#include "joynr/PrimitiveDeserializer.h"
+#include "joynr/ClassSerializer.h"
 
 namespace joynr
 {

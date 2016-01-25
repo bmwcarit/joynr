@@ -21,8 +21,8 @@
 
 #include "joynr/Variant.h"
 #include "joynr/Util.h"
-#include "IDeserializer.h"
-#include "PrimitiveDeserializer.h"
+#include "joynr/IDeserializer.h"
+#include "joynr/PrimitiveDeserializer.h"
 #include <functional>
 #include <vector>
 #include <utility>
