@@ -39,7 +39,7 @@ public class MessageContainer {
     private static final Logger logger = LoggerFactory.getLogger(MessageContainer.class);
 
     private final Address address;
-    private final String serializedMessage;
+    private String serializedMessage;
     private long expiryDate;
 
     private final String messageId;
@@ -52,9 +52,13 @@ public class MessageContainer {
                             final JoynrMessage message,
                             final String serializedMessage,
                             final long expiryDate) {
+        this(address, message, expiryDate);
+        this.serializedMessage = serializedMessage;
+    }
+
+    public MessageContainer(Address address, JoynrMessage message, long expiryDate) {
         this.address = address;
         this.message = message;
-        this.serializedMessage = serializedMessage;
         this.expiryDate = expiryDate;
         this.messageId = message.getHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID);
     }
@@ -92,5 +96,9 @@ public class MessageContainer {
 
     public void incrementRetries() {
         retries++;
+    }
+
+    public JoynrMessage getMessage() {
+        return message;
     }
 }

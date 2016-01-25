@@ -24,6 +24,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.serialize.MessageSerializerFactory;
 import joynr.JoynrMessage;
@@ -83,13 +84,15 @@ public class MessageSchedulerImpl implements MessageScheduler {
             logger.error(errorMessage);
             throw new JoynrMessageNotSentException(errorMessage);
         }
-
-        JoynrMessageSerializer messageSerializer = messageSerializerFactory.create(address);
-        String serializedMessage = messageSerializer.serialize(message);
-        final MessageContainer messageContainer = new MessageContainer(address,
-                                                                       message,
-                                                                       serializedMessage,
-                                                                       ttlExpirationDateMs);
+        final MessageContainer messageContainer;
+        if (address instanceof InProcessAddress) {
+            // in-process messages are not serialized
+            messageContainer = new MessageContainer(address, message, ttlExpirationDateMs);
+        } else {
+            JoynrMessageSerializer messageSerializer = messageSerializerFactory.create(address);
+            String serializedMessage = messageSerializer.serialize(message);
+            messageContainer = new MessageContainer(address, message, serializedMessage, ttlExpirationDateMs);
+        }
 
         scheduleInternal(messageContainer, 0);
     }
@@ -120,7 +123,11 @@ public class MessageSchedulerImpl implements MessageScheduler {
                     @Override
                     public void run() {
                         IMessaging messagingStub = messagingStubFactory.create(messageContainer.getAddress());
-                        messagingStub.transmit(messageContainer.getSerializedMessage(), failureAction);
+                        if (messageContainer.getAddress() instanceof InProcessAddress) {
+                            messagingStub.transmit(messageContainer.getMessage(), failureAction);
+                        } else {
+                            messagingStub.transmit(messageContainer.getSerializedMessage(), failureAction);
+                        }
                     }
                 }, delayMs, TimeUnit.MILLISECONDS);
             } catch (RejectedExecutionException e) {
