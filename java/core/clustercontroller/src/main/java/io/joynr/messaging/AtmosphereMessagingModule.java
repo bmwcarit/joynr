@@ -27,7 +27,7 @@ public class AtmosphereMessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        install(new MessagingModule());
+        install(new HttpMessagingModule());
         bind(MessageReceiver.class).to(LongPollingMessageReceiver.class).asEagerSingleton();
     }
 }

@@ -32,7 +32,7 @@ public class ServletMessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        install(new MessagingModule());
+        install(new HttpMessagingModule());
         bind(MessageListeners.class).to(MessageListenersImpl.class).asEagerSingleton();
         bind(ServletMessageReceiver.class).to(ServletMessageReceiverImpl.class);
         bind(MessageReceiver.class).to(ServletMessageReceiverImpl.class);

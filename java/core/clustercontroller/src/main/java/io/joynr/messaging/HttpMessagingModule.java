@@ -42,7 +42,7 @@ import io.joynr.messaging.serialize.MessageSerializerFactory;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
-public class MessagingModule extends AbstractModule {
+public class HttpMessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
