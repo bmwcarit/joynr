@@ -9,6 +9,8 @@ function(AddTest TARGET)
         COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
         AUTOMOC TRUE
     )
-    add_dependencies(${TARGET} googletest)
-    add_dependencies(${TARGET} googlemock)
+    if(NOT USE_PLATFORM_GTEST_GMOCK)
+        add_dependencies(${TARGET} googletest)
+        add_dependencies(${TARGET} googlemock)
+    endif(NOT USE_PLATFORM_GTEST_GMOCK)
 endfunction(AddTest)

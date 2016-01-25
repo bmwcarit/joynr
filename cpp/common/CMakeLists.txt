@@ -142,7 +142,9 @@ generate_export_header(
 
 target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
 
-add_dependencies(JoynrCommon spdlog)
+if(NOT USE_PLATFORM_SPDLOG)
+    add_dependencies(JoynrCommon spdlog)
+endif(NOT USE_PLATFORM_SPDLOG)
 
 AddClangFormat(JoynrCommon)
 

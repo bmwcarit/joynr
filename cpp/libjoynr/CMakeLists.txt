@@ -132,7 +132,9 @@ add_library(
     ${JoynrLib_SOURCES}
 )
 
-add_dependencies(Joynr libwebsockets)
+if(NOT USE_PLATFORM_LIBWEBSOCKETS)
+    add_dependencies(Joynr libwebsockets)
+endif(NOT USE_PLATFORM_LIBWEBSOCKETS)
 
 AddClangFormat(Joynr)
 
