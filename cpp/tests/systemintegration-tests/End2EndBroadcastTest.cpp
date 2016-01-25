@@ -87,7 +87,7 @@ public:
             const std::vector<joynr::tests::testTypes::TestEnum::Enum>& enumerationArrayOut,
             const joynr::types::TestTypes::TEverythingStruct& structWithStringArrayOut,
             const std::vector<joynr::types::TestTypes::TEverythingStruct> & structWithStringArrayArrayOut
-    ) {
+    ) override {
         tests::testAbstractProvider::fireBroadcastWithFiltering(stringOut,
                                                                 stringArrayOut,
                                                                 enumerationArrayOut,
