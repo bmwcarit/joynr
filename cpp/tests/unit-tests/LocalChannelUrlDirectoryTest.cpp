@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
                     [](const types::ChannelUrlInformation& url) {},
                     [](const exceptions::JoynrException& error) {}));
 
-    EXPECT_EQ(true, futureUrls->getStatus().successful());
+    EXPECT_EQ(StatusCode::SUCCESS, futureUrls->getStatus());
 
     types::ChannelUrlInformation channelInf;
     futureUrls->get(channelInf);

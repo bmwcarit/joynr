@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/IReplyCaller.h"
-#include "joynr/RequestStatus.h"
 #include "tests/utils/MockObjects.h"
 
 using ::testing::A;
@@ -52,19 +51,19 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
     registrar.registerReplyMetaType<types::TestTypes::TEverythingMap>();
 
     // Create a mock callback
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<joynr::types::TestTypes::TEverythingMap>> callback(
-                new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::TestTypes::TEverythingMap>());
+    std::shared_ptr<MockCallbackWithJoynrException<joynr::types::TestTypes::TEverythingMap>> callback(
+                new MockCallbackWithJoynrException<joynr::types::TestTypes::TEverythingMap>());
     types::TestTypes::TEverythingMap responseValue;
     EXPECT_CALL(*callback, onSuccess(Eq(responseValue))).Times(1);
-    EXPECT_CALL(*callback, onError(_,_)).Times(0);
+    EXPECT_CALL(*callback, onError(_)).Times(0);
 
     // Create a reply caller
     std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<types::TestTypes::TEverythingMap>(
-            [callback](const RequestStatus&, const types::TestTypes::TEverythingMap& map) {
+            [callback](const types::TestTypes::TEverythingMap& map) {
                 callback->onSuccess(map);
             },
-            [callback](const RequestStatus& status, const exceptions::JoynrException& error){
-                callback->onError(status, error);
+            [callback](const exceptions::JoynrException& error){
+                callback->onError(error);
             }));
 
     // Create a reply
@@ -83,19 +82,19 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     registrar.registerReplyMetaType<types::Localisation::GpsLocation>();
 
     // Create a mock callback
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>> callback(new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>());
+    std::shared_ptr<MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>> callback(new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>());
     int myAltitude = 13;
     EXPECT_CALL(*callback, onSuccess(Property(&types::Localisation::GpsLocation::getAltitude, myAltitude)))
                 .Times(1);
-    EXPECT_CALL(*callback, onError(_,_)).Times(0);
+    EXPECT_CALL(*callback, onError(_)).Times(0);
 
     // Create a reply caller
     std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<types::Localisation::GpsLocation>(
-            [callback](const RequestStatus& status, const types::Localisation::GpsLocation& location) {
+            [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const RequestStatus& status, const exceptions::JoynrException& error){
-                callback->onError(status, error);
+            [callback](const exceptions::JoynrException& error){
+                callback->onError(error);
             }));
 
     // Create a reply
@@ -116,18 +115,18 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void) {
     MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
 
     // Create a mock callback
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<void>> callback(new MockCallbackWithOnErrorHavingRequestStatus<void>());
+    std::shared_ptr<MockCallbackWithJoynrException<void>> callback(new MockCallbackWithJoynrException<void>());
     EXPECT_CALL(*callback, onSuccess())
                 .Times(1);
-    EXPECT_CALL(*callback, onError(_,_)).Times(0);
+    EXPECT_CALL(*callback, onError(_)).Times(0);
 
     // Create a reply caller
     std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<void>(
-            [callback](const RequestStatus& status) {
+            [callback]() {
                 callback->onSuccess();
             },
-            [callback](const RequestStatus& status, const exceptions::JoynrException& error){
-                callback->onError(status, error);
+            [callback](const exceptions::JoynrException& error){
+                callback->onError(error);
             }));
 
     // Create a reply
@@ -149,19 +148,19 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
     reply.setError(Variant::make<exceptions::ProviderRuntimeException>(error));
 
     // Create a mock callback
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>> callback(new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>());
+    std::shared_ptr<MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>> callback(new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>());
     EXPECT_CALL(*callback, onSuccess(_))
                 .Times(0);
-    EXPECT_CALL(*callback, onError(Property(&RequestStatus::getCode, RequestStatusCode::ERROR),joynrException(error)))
+    EXPECT_CALL(*callback, onError(joynrException(error)))
                 .Times(1);
 
     // Create a reply caller
     std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<types::Localisation::GpsLocation>(
-            [callback](const RequestStatus&, const types::Localisation::GpsLocation& location) {
+            [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const RequestStatus& status, const exceptions::JoynrException& error){
-                callback->onError(status, error);
+            [callback](const exceptions::JoynrException& error){
+                callback->onError(error);
             }));
 
     // Interpret the reply
@@ -179,19 +178,18 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
     reply.setError(Variant::make<exceptions::ProviderRuntimeException>(error));
 
     // Create a mock callback
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<void>> callback(new MockCallbackWithOnErrorHavingRequestStatus<void>());
+    std::shared_ptr<MockCallbackWithJoynrException<void>> callback(new MockCallbackWithJoynrException<void>());
     EXPECT_CALL(*callback, onSuccess())
                 .Times(0);
-    EXPECT_CALL(*callback, onError(Property(&RequestStatus::getCode, RequestStatusCode::ERROR),joynrException(error)))
-                .Times(1);
+    EXPECT_CALL(*callback, onError(joynrException(error))).Times(1);
 
     // Create a reply caller
     std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<void>(
-            [callback](const RequestStatus& status) {
+            [callback]() {
                 callback->onSuccess();
             },
-            [callback](const RequestStatus& status, const exceptions::JoynrException& error){
-                callback->onError(status, error);
+            [callback](const exceptions::JoynrException& error){
+                callback->onError(error);
             }));
 
     // Interpret the reply
@@ -207,19 +205,19 @@ TEST_F(ReplyInterpreterTest, execute_empty_reply) {
     exceptions::JoynrRuntimeException error("Reply object had no response.");
 
     // Create a mock callback
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>> callback(new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>());
+    std::shared_ptr<MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>> callback(new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>());
     EXPECT_CALL(*callback, onSuccess(_))
                 .Times(0);
-    EXPECT_CALL(*callback, onError(Property(&RequestStatus::getCode, RequestStatusCode::ERROR),joynrException(error)))
+    EXPECT_CALL(*callback, onError(joynrException(error)))
                 .Times(1);
 
     // Create a reply caller
     std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<types::Localisation::GpsLocation>(
-            [callback](const RequestStatus& status, const types::Localisation::GpsLocation& location) {
+            [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const RequestStatus& status, const exceptions::JoynrException& error){
-                callback->onError(status, error);
+            [callback](const exceptions::JoynrException& error){
+                callback->onError(error);
             }));
 
     // Create a reply

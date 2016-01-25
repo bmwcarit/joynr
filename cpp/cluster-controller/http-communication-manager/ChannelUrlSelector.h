@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ public:
     * @return std::string
     */
     std::string obtainUrl(const std::string& channelId,
-                          RequestStatus& status,
+                          StatusCode& status,
                           std::chrono::milliseconds timeout) override;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     for (int i=0; i<numberOfRequests; i++){
         testFutureList.at(i)->wait();
         int expectedValue = 2+4+8+i;
-        if (testFutureList.at(i)->getStatus().successful()) {
+        if (testFutureList.at(i)->getStatus().success()) {
             successfulRequests++;
             int actualValue;
             testFutureList.at(i)->get(actualValue);

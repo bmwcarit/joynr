@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,15 @@
 #ifndef FUTURE_H
 #define FUTURE_H
 
-#include "joynr/RequestStatus.h"
 #include "joynr/Logger.h"
 
+#include <tuple>
 #include <cassert>
 #include <functional>
 #include <joynr/Util.h>
 #include <cstdint>
 #include "joynr/TypeUtil.h"
+#include "joynr/StatusCode.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Semaphore.h"
 
@@ -108,8 +109,7 @@ public:
     /**
      * @brief Constructor
      */
-    Future<Ts...>()
-            : error(nullptr), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
+    Future<Ts...>() : error(nullptr), status(StatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
         JOYNR_LOG_INFO(logger, "resultReceived.getStatus(): {}", resultReceived.getStatus());
     }
@@ -166,8 +166,7 @@ public:
     {
         wait();
 
-        RequestStatusCode code = getStatus().getCode();
-        if (code != RequestStatusCode::OK) {
+        if (!getStatus().success()) {
             Util::throwJoynrException(*error);
         }
 
@@ -187,8 +186,7 @@ public:
     {
         wait(timeOut);
 
-        RequestStatusCode code = getStatus().getCode();
-        if (code != RequestStatusCode::OK) {
+        if (!getStatus().success()) {
             Util::throwJoynrException(*error);
         }
 
@@ -196,11 +194,11 @@ public:
     }
 
     /**
-     * @brief Returns the current RequestStatus for the given request.
+     * @brief Returns the current status for the given request.
      *
-     * @return RequestStatus
+     * @return joynr::StatusCode
      */
-    RequestStatus& getStatus()
+    StatusCode& getStatus()
     {
         return status;
     }
@@ -241,7 +239,7 @@ public:
      */
     bool isOk()
     {
-        return status.successful();
+        return status.success();
     }
 
     /**
@@ -251,7 +249,7 @@ public:
     void onSuccess(Ts... results)
     {
         JOYNR_LOG_INFO(logger, "onSuccess has been invoked");
-        status.setCode(RequestStatusCode::OK);
+        status = StatusCode::SUCCESS;
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(results...);
         resultReceived.notify();
@@ -259,30 +257,19 @@ public:
 
     /**
      * @brief Callback which indicates the operation has finished and has failed.
-     * @param status The failure status
      * @param error The JoynrException describing the failure
      */
-    void onError(const RequestStatusCode& status, const exceptions::JoynrException& error)
-    {
-        onError(RequestStatus(status), error);
-    }
-
-    /**
-     * @brief Callback which indicates the operation has finished and has failed.
-     * @param status The failure status
-     * @param error The JoynrException describing the failure
-     */
-    void onError(const RequestStatus& status, const exceptions::JoynrException& error)
+    void onError(const exceptions::JoynrException& error)
     {
         JOYNR_LOG_INFO(logger, "onError has been invoked");
         this->error.reset(error.clone());
-        this->status = status;
+        status = StatusCode::ERROR;
         resultReceived.notify();
     }
 
 private:
     std::shared_ptr<exceptions::JoynrException> error;
-    RequestStatus status;
+    StatusCode status;
     std::tuple<Ts...> results;
     Semaphore resultReceived;
 
@@ -300,7 +287,7 @@ class Future<void>
 {
 
 public:
-    Future<void>() : error(nullptr), status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
+    Future<void>() : error(nullptr), status(StatusCode::IN_PROGRESS), resultReceived(0)
     {
     }
 
@@ -314,8 +301,7 @@ public:
     {
         wait();
 
-        RequestStatusCode code = getStatus().getCode();
-        if (code != RequestStatusCode::OK) {
+        if (!getStatus().success()) {
             Util::throwJoynrException(*error);
         }
     }
@@ -332,18 +318,17 @@ public:
     {
         wait(timeOut);
 
-        RequestStatusCode code = getStatus().getCode();
-        if (code != RequestStatusCode::OK) {
+        if (!getStatus().success()) {
             Util::throwJoynrException(*error);
         }
     }
 
     /**
-     * @brief Returns the current RequestStatus for the given request.
+     * @brief Returns the current StatusCode for the given request.
      *
-     * @return RequestStatus
+     * @return StatusCode
      */
-    RequestStatus& getStatus()
+    StatusCode& getStatus()
     {
         return status;
     }
@@ -385,7 +370,7 @@ public:
      */
     bool isOk()
     {
-        return status.successful();
+        return status.success();
     }
 
     /**
@@ -393,35 +378,24 @@ public:
      */
     void onSuccess()
     {
-        status.setCode(RequestStatusCode::OK);
+        status = StatusCode::SUCCESS;
         resultReceived.notify();
     }
 
     /**
      * @brief Callback which indicates the operation has finished and has failed.
-     * @param status The failure status
      * @param error The JoynrException describing the failure
      */
-    void onError(const RequestStatusCode& status, const exceptions::JoynrException& error)
-    {
-        onError(RequestStatus(status), error);
-    }
-
-    /**
-     * @brief Callback which indicates the operation has finished and has failed.
-     * @param status The failure status
-     * @param error The JoynrException describing the failure
-     */
-    void onError(const RequestStatus& status, const exceptions::JoynrException& error)
+    void onError(const exceptions::JoynrException& error)
     {
         this->error.reset(error.clone());
-        this->status = status;
+        status = StatusCode::ERROR;
         resultReceived.notify();
     }
 
 private:
     std::shared_ptr<exceptions::JoynrException> error;
-    RequestStatus status;
+    StatusCode status;
     Semaphore resultReceived;
 };
 

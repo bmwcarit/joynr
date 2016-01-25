@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,7 +182,7 @@ public:
     void testAsync_getAttributeNotCached() {
         asyncTestFixture = createFixture(false);
 
-        MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>();
+        MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation");
         asyncTestFixture->getLocationAsync(
@@ -234,7 +234,7 @@ public:
     void testAsync_getAttributeCached() {
         asyncTestFixture = createFixture(true);
 
-        MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>();
+        MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation").Times(0);
 
@@ -701,7 +701,7 @@ public:
     void testAsync_OperationWithNoArguments() {
         asyncTestFixture = createFixture(false);
 
-        MockCallbackWithOnErrorHavingRequestStatus<int>* callback = new MockCallbackWithOnErrorHavingRequestStatus<int>();
+        MockCallbackWithJoynrException<int>* callback = new MockCallbackWithJoynrException<int>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<int>(), "methodWithNoInputParameters");
 

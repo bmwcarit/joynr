@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.inprocess
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,6 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 #include <memory>
 
 namespace joynr {
-	class RequestStatus;
 	class InProcessAddress;
 	class ISubscriptionManager;
 	class PublicationManager;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #include "joynr/IReplyCaller.h"
 
 #include <typeinfo>
-#include "joynr/RequestStatus.h"
+#include "joynr/StatusCode.h"
 #include <functional>
 #include "joynr/Util.h"
 
@@ -38,9 +38,8 @@ template <class... Ts>
 class ReplyCaller : public IReplyCaller
 {
 public:
-    ReplyCaller(std::function<void(const RequestStatus& status, const Ts&...)> callbackFct,
-                std::function<void(const RequestStatus& status,
-                                   const exceptions::JoynrException& error)> errorFct)
+    ReplyCaller(std::function<void(const Ts&...)> callbackFct,
+                std::function<void(const exceptions::JoynrException& error)> errorFct)
             : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
     {
     }
@@ -50,22 +49,20 @@ public:
     void returnValue(const Ts&... payload)
     {
         if (!hasTimeOutOccurred && callbackFct) {
-            RequestStatus status(RequestStatusCode::OK);
-            callbackFct(status, payload...);
+            callbackFct(payload...);
         }
     }
 
     void returnError(const exceptions::JoynrException& error) override
     {
-        errorFct(RequestStatus(RequestStatusCode::ERROR), error);
+        errorFct(error);
     }
 
     void timeOut() override
     {
         hasTimeOutOccurred = true;
 
-        errorFct(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),
-                 exceptions::JoynrTimeOutException("timeout waiting for the response"));
+        errorFct(exceptions::JoynrTimeOutException("timeout waiting for the response"));
     }
 
     int getTypeId() const override
@@ -74,9 +71,8 @@ public:
     }
 
 private:
-    std::function<void(const RequestStatus& status, const Ts&... returnValue)> callbackFct;
-    std::function<void(const RequestStatus& status, const exceptions::JoynrException& error)>
-            errorFct;
+    std::function<void(const Ts&... returnValue)> callbackFct;
+    std::function<void(const exceptions::JoynrException& error)> errorFct;
     bool hasTimeOutOccurred;
 };
 
@@ -88,9 +84,8 @@ template <>
 class ReplyCaller<void> : public IReplyCaller
 {
 public:
-    ReplyCaller(std::function<void(const RequestStatus& status)> callbackFct,
-                std::function<void(const RequestStatus& status,
-                                   const exceptions::JoynrException& error)> errorFct)
+    ReplyCaller(std::function<void()> callbackFct,
+                std::function<void(const exceptions::JoynrException& error)> errorFct)
             : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
     {
     }
@@ -100,20 +95,19 @@ public:
     void returnValue()
     {
         if (!hasTimeOutOccurred && callbackFct) {
-            callbackFct(RequestStatus(RequestStatusCode::OK));
+            callbackFct();
         }
     }
 
     void returnError(const exceptions::JoynrException& error) override
     {
-        errorFct(RequestStatus(RequestStatusCode::ERROR), error);
+        errorFct(error);
     }
 
     void timeOut() override
     {
         hasTimeOutOccurred = true;
-        errorFct(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),
-                 exceptions::JoynrTimeOutException("timeout waiting for the response"));
+        errorFct(exceptions::JoynrTimeOutException("timeout waiting for the response"));
     }
 
     int getTypeId() const override
@@ -122,9 +116,8 @@ public:
     }
 
 private:
-    std::function<void(const RequestStatus& status)> callbackFct;
-    std::function<void(const RequestStatus& status, const exceptions::JoynrException& error)>
-            errorFct;
+    std::function<void()> callbackFct;
+    std::function<void(const exceptions::JoynrException& error)> errorFct;
     bool hasTimeOutOccurred;
 };
 

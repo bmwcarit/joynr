@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/QtTypeUtil.h"
 
 #include <algorithm>
@@ -93,9 +92,11 @@ void HttpSender::sendMessage(const std::string& channelId, const JoynrMessage& m
     }
 
     /**
-     * NOTE: passing std::string by value into the runnable and thereby relying on the fact that the
+     * NOTE: passing std::string by value into the runnable and thereby relying on the fact that
+     * the
      * std::string internally
-     * uses QSharedDataPointer to manage the string's data, which when copied by value only copies
+     * uses QSharedDataPointer to manage the string's data, which when copied by value only
+     * copies
      * the pointer (but safely)
      */
     scheduler->schedule(new SendMessageRunnable(this,
@@ -155,8 +156,10 @@ void HttpSender::SendMessageRunnable::run()
                     SendMessageRunnable::messageRunnableCounter);
 
     assert(messageSender->channelUrlCache != nullptr);
-    // A channelId can have several Url's. Hence, we cannot use up all the time we have for testing
-    // just one (in case it is not available). So we use just a fraction, yet at least MIN... and
+    // A channelId can have several Url's. Hence, we cannot use up all the time we have for
+    // testing
+    // just one (in case it is not available). So we use just a fraction, yet at least MIN...
+    // and
     // at most MAX... seconds.
     std::int64_t curlTimeout = std::max(
             getRemainingTtl_ms() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
@@ -188,11 +191,11 @@ void HttpSender::SendMessageRunnable::run()
         if (!sendMessageResult.getBody().isNull()) {
             body = std::string(sendMessageResult.getBody().data());
         }
-        JOYNR_LOG_ERROR(
-                logger,
-                "sending message - fail; error message {}; contents {}; rescheduling for retry...",
-                sendMessageResult.getErrorMessage(),
-                body);
+        JOYNR_LOG_ERROR(logger,
+                        "sending message - fail; error message {}; contents {}; rescheduling "
+                        "for retry...",
+                        sendMessageResult.getErrorMessage(),
+                        body);
     } else {
         JOYNR_LOG_DEBUG(logger,
                         "sending message - success; url: {} status code: {} at ",
@@ -205,10 +208,10 @@ std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(
         std::chrono::milliseconds curlTimeout)
 {
     JOYNR_LOG_TRACE(logger, "obtaining Url with a curlTimeout of : {}", curlTimeout.count());
-    RequestStatus status;
+    StatusCode status(StatusCode::IN_PROGRESS);
     // we also use the curl timeout here, to prevent long blocking during shutdown.
     std::string url = messageSender->channelUrlCache->obtainUrl(channelId, status, curlTimeout);
-    if (!status.successful()) {
+    if (!status.success()) {
         JOYNR_LOG_ERROR(logger,
                         "Issue while trying to obtained URl from the ChannelUrlDirectory: {}",
                         status.toString());
@@ -217,7 +220,8 @@ std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(
         JOYNR_LOG_DEBUG(logger,
                         "Url for channelId could not be obtained from the "
                         "ChannelUrlDirectory ... EXITING ...");
-        assert(false); // OR: url = messageSender->bounceProxyUrl.getSendUrl(channelId).toString();
+        assert(false); // OR: url =
+                       // messageSender->bounceProxyUrl.getSendUrl(channelId).toString();
     }
 
     JOYNR_LOG_TRACE(logger,

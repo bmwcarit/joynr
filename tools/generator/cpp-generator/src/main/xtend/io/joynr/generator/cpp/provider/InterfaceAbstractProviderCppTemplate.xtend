@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ class InterfaceAbstractProviderCppTemplate implements InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»AbstractProvider.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/TypeUtil.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»

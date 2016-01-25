@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -257,7 +257,7 @@ T* ProxyBuilder<T>::build()
             future->wait(100);
         } catch (exceptions::JoynrException& e) {
         }
-    } while (future->getStatus().getCode() == RequestStatusCode::IN_PROGRESS);
+    } while (future->getStatus().inProgress());
 
     return proxy;
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDire
             channelUrlDirectoryProxy->getUrlsForChannelAsync(channelId, onSuccess, onError));
     try {
         future->wait(timeout.count());
-        if (future->getStatus().successful()) {
+        if (future->getStatus().success()) {
             JOYNR_LOG_INFO(logger,
                            "Received remote url information for channelId = {}",
                            channelIdQT.toStdString());
@@ -136,7 +136,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDire
     } catch (joynr::exceptions::JoynrException& e) {
         // catches exceptions from both wait() and / or get() calls
         JOYNR_LOG_INFO(logger,
-                       "FAILED to receive remote url information for channelId = {}. Status: {}",
+                       "FAILED to receive remote url information for channelId = {}. Error: {}",
                        channelIdQT.toStdString(),
                        e.getMessage());
     }

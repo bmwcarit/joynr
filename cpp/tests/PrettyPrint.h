@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/RequestStatus.h"
-#include "joynr/RequestStatusCode.h"
+#include "joynr/StatusCode.h"
 #include "joynr/types/DiscoveryEntry.h"
 
 #define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
@@ -52,7 +51,6 @@ namespace system {
     void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
 }
 }
-void PrintTo(const joynr::RequestStatusCode& value, ::std::ostream* os);
-void PrintTo(const joynr::RequestStatus& value, ::std::ostream* os);
+void PrintTo(const joynr::StatusCode& value, ::std::ostream* os);
 void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
 #endif // PRETTYPRINT_H_

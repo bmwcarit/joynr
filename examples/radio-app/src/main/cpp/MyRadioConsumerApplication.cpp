@@ -25,7 +25,6 @@
 #include "joynr/vehicle/RadioProxy.h"
 #include "joynr/vehicle/RadioNewStationDiscoveredBroadcastFilterParameters.h"
 #include "joynr/JoynrRuntime.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"

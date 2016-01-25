@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef REQUESTSTATUSCODE_H
-#define REQUESTSTATUSCODE_H
+#ifndef STATUSCODE_H
+#define STATUSCODE_H
 
 #include "joynr/JoynrExport.h"
 
@@ -37,27 +37,20 @@ namespace joynr
 {
 
 /**
- * @brief This class contains all the possible status codes that a
- * RequestStatus could be set to for a request.
+ * @brief This class contains all the possible status codes
  *
  */
-class JOYNR_EXPORT RequestStatusCode
+class JOYNR_EXPORT StatusCode
 {
 public:
-    // signals that the request has been successfully processed
-    static RequestStatusCode OK;
+    // success
+    static StatusCode SUCCESS;
 
-    // signals that this request has not even started
-    static RequestStatusCode NOT_STARTED;
-
-    // the request has been initiated and is currently in progress
-    static RequestStatusCode IN_PROGRESS;
+    // in progress
+    static StatusCode IN_PROGRESS;
 
     // error states
-    static RequestStatusCode ERROR;
-    static RequestStatusCode ERROR_TIMEOUT_DISCOVERY;
-    static RequestStatusCode ERROR_TIMEOUT_WAITING_FOR_RESPONSE;
-    static RequestStatusCode ERROR_CANNOT_PARSE_RETURN_VALUE;
+    static StatusCode ERROR;
 
     /**
      * @brief Returns the status code id.
@@ -73,14 +66,16 @@ public:
      */
     std::string toString() const;
 
-    bool operator==(const RequestStatusCode& requestStatusCode) const;
-    bool operator!=(const RequestStatusCode& requestStatusCode) const;
+    bool operator==(const StatusCode& statusCode) const;
+    bool operator!=(const StatusCode& statusCode) const;
+    bool success() const;
+    bool inProgress() const;
 
 private:
-    RequestStatusCode(std::uint32_t id, std::string description);
+    StatusCode(std::uint32_t id, std::string description);
     std::uint32_t id;
     std::string description;
 };
 
 } // namespace joynr
-#endif // REQUESTSTATUSCODE_H
+#endif // STATUSCODE_H

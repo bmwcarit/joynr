@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.joynrmessaging
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,8 +81,6 @@ internalRequestObject.setMethodName("«method.joynrName»");
 #include "joynr/TypeUtil.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Future.h"
-#include "joynr/RequestStatus.h"
-#include "joynr/RequestStatusCode.h"
 #include <chrono>
 #include <cstdint>
 #include "joynr/SubscriptionUtil.h"
@@ -133,18 +131,14 @@ bool «className»::usesClusterController() const{
 		{
 			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
-			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> onSuccess =
-					[future] (const joynr::RequestStatus& status, const «returnType»& «attributeName») {
-						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(«attributeName»);
-						} else {
-							future->onError(status, exceptions::JoynrRuntimeException(status.toString()));
-						}
+			std::function<void(const «returnType»& «attributeName»)> onSuccess =
+					[future] (const «returnType»& «attributeName») {
+						future->onSuccess(«attributeName»);
 					};
 
-			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onError =
-					[future] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
-						future->onError(status, error);
+			std::function<void(const exceptions::JoynrException& error)> onError =
+					[future] (const exceptions::JoynrException& error) {
+						future->onError(error);
 					};
 
 			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(
@@ -158,25 +152,17 @@ bool «className»::usesClusterController() const{
 		{
 			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
-			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> onSuccessWrapper =
-					[future, onSuccess, onError] (const joynr::RequestStatus& status, const «returnType»& «attributeName») {
-						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(«attributeName»);
-							if (onSuccess){
-								onSuccess(«attributeName»);
-							}
-						} else {
-							exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
-							future->onError(status, error);
-							if (onError){
-								onError(error);
-							}
+			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
+					[future, onSuccess] (const «returnType»& «attributeName») {
+						future->onSuccess(«attributeName»);
+						if (onSuccess){
+							onSuccess(«attributeName»);
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
-					[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
-						future->onError(status, error);
+			std::function<void(const exceptions::JoynrException& error)> onErrorWrapper =
+					[future, onError] (const exceptions::JoynrException& error) {
+						future->onError(error);
 						if (onError){
 							onError(static_cast<const exceptions::JoynrRuntimeException&>(error));
 						}
@@ -214,25 +200,17 @@ bool «className»::usesClusterController() const{
 
 			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
 
-			std::function<void(const joynr::RequestStatus& status)> onSuccessWrapper =
-					[future, onSuccess, onError] (const joynr::RequestStatus& status) {
-						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess();
-							if (onSuccess) {
-								onSuccess();
-							}
-						} else {
-							exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
-							future->onError(status, error);
-						if (onError){
-								onError(error);
-							}
+			std::function<void()> onSuccessWrapper =
+					[future, onSuccess] () {
+						future->onSuccess();
+						if (onSuccess) {
+							onSuccess();
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
-				[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
-					future->onError(status, error);
+			std::function<void(const exceptions::JoynrException& error)> onErrorWrapper =
+				[future, onError] (const exceptions::JoynrException& error) {
+					future->onError(error);
 					if (onError) {
 						onError(static_cast<const exceptions::JoynrRuntimeException&>(error));
 					}
@@ -267,19 +245,14 @@ bool «className»::usesClusterController() const{
 
 			std::shared_ptr<joynr::Future<void> > future( new joynr::Future<void>());
 
-			std::function<void(const joynr::RequestStatus& status)> onSuccess =
-					[future] (const joynr::RequestStatus& status) {
-						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess();
-						} else {
-							exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
-							future->onError(status, error);
-						}
+			std::function<void()> onSuccess =
+					[future] () {
+						future->onSuccess();
 					};
 
-			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onError =
-					[future] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
-						future->onError(status, error);
+			std::function<void(const exceptions::JoynrException& error)> onError =
+					[future] (const exceptions::JoynrException& error) {
+						future->onError(error);
 					};
 
 			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
@@ -371,19 +344,14 @@ bool «className»::usesClusterController() const{
 		std::shared_ptr<joynr::Future<«outputParameters»> > future(
 				new joynr::Future<«outputParameters»>());
 
-		std::function<void(const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList»)> onSuccess =
-				[future] (const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList») {
-					if (status.getCode() == joynr::RequestStatusCode::OK) {
-						future->onSuccess(«outputUntypedParamList»);
-					} else {
-						exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
-						future->onError(status, error);
-					}
+		std::function<void(«outputTypedConstParamList»)> onSuccess =
+				[future] («outputTypedConstParamList») {
+					future->onSuccess(«outputUntypedParamList»);
 				};
 
-		std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onError =
-			[future] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
-				future->onError(status, error);
+		std::function<void(const exceptions::JoynrException& error)> onError =
+			[future] (const exceptions::JoynrException& error) {
+				future->onError(error);
 			};
 
 		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
@@ -400,25 +368,17 @@ bool «className»::usesClusterController() const{
 		std::shared_ptr<joynr::Future<«outputParameters»> > future(
 				new joynr::Future<«outputParameters»>());
 
-		std::function<void(const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList»)> onSuccessWrapper =
-				[future, onSuccess, onRuntimeError] (const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList») {
-					if (status.getCode() == joynr::RequestStatusCode::OK) {
-						future->onSuccess(«outputUntypedParamList»);
-						if (onSuccess) {
-							onSuccess(«outputUntypedParamList»);
-						}
-					} else {
-						exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
-						future->onError(status, error);
-						if (onRuntimeError){
-							onRuntimeError(error);
-						}
+		std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
+				[future, onSuccess] («outputTypedConstParamList») {
+					future->onSuccess(«outputUntypedParamList»);
+					if (onSuccess) {
+						onSuccess(«outputUntypedParamList»);
 					}
 				};
 
-		std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
-				[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
-				future->onError(status, error);
+		std::function<void(const exceptions::JoynrException& error)> onErrorWrapper =
+				[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
+				future->onError(error);
 				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(serviceInterface, method)»
 			};
 

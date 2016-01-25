@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 
@@ -344,7 +343,6 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const std::st
                                                                    const std::string& interfaceName,
                                                                    const std::string& operation)
 {
-    RequestStatus rs;
     bool success;
     globalDomainAccessControllerProxy->removeMediatorAccessControlEntry(
             success, uid, domain, interfaceName, operation);

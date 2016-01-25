@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -179,7 +179,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     future->wait(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
-    ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
+    ASSERT_EQ(StatusCode::SUCCESS, future->getStatus());
     joynr::types::Localisation::GpsLocation actualValue;
     future->get(actualValue);
     EXPECT_EQ(gpsLocation, actualValue);
@@ -197,8 +197,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     ints.push_back(6);
     ints.push_back(12);
     int sum = 22;
-    RequestStatus requestStatus;
-    requestStatus.setCode(RequestStatusCode::OK);
 
     runtime->startMessaging();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
@@ -225,7 +223,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     future->wait(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
-    ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
+    ASSERT_EQ(StatusCode::SUCCESS, future->getStatus());
     int actualValue;
     future->get(actualValue);
     EXPECT_EQ(sum, actualValue);
