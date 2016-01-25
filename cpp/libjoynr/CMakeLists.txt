@@ -2,7 +2,7 @@ message(STATUS "#############################################")
 message(STATUS "Configuring JoynrLib...")
 message(STATUS "#############################################\n")
 
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
 set(
@@ -21,7 +21,7 @@ set(
 set(
     JoynrLib_SYS_INCLUDE_DIRS
     ${jsmn_INCLUDE_DIR}
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${libwebsockets_INCLUDE_DIRS}
 )
 
@@ -29,7 +29,7 @@ set(
     JoynrLib_TARGET_LIBRARIES
     ${libwebsockets_LIBRARIES}
     JoynrCommon
-    jsonserializer
+    JoynrJsonSerializer
 )
 
 set(

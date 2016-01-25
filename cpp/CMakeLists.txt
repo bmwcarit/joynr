@@ -641,7 +641,7 @@ set(
     JoynrCommon
     Joynr
     JoynrWsRuntime
-    jsonserializer
+    JoynrJsonSerializer
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -684,7 +684,7 @@ set(
     JoynrConfig_LIB_COMMON_LIBRARIES
     JoynrCommon
     Joynr
-    jsonserializer
+    JoynrJsonSerializer
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -711,15 +711,15 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 # ... for the build tree
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
-message(STATUS "variable jsonserializer_PUBLIC_INCLUDE_DIRECTORY=" ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY})
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
+message(STATUS "variable JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY=" ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY})
 
 set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
@@ -737,7 +737,7 @@ set(
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
 )
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -746,7 +746,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_SOURCE_DIR}/include
-        ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+        ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
         ${jsmn_INCLUDE_DIR}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
