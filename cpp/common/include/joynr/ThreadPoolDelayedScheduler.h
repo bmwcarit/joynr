@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef THREADPOOLDELAYEDSCHEDULER_H_
-#define THREADPOOLDELAYEDSCHEDULER_H_
+#ifndef THREADPOOLDELAYEDSCHEDULER_H
+#define THREADPOOLDELAYEDSCHEDULER_H
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -74,4 +74,4 @@ private:
 
 } // namespace joynr
 
-#endif // THREADPOOLDELAYEDSCHEDULER_H_
+#endif // THREADPOOLDELAYEDSCHEDULER_H

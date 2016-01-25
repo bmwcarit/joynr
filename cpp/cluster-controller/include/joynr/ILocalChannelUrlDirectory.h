@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ILOCALCHANNELURLDIRECTORY_H_
-#define ILOCALCHANNELURLDIRECTORY_H_
+#ifndef ILOCALCHANNELURLDIRECTORY_H
+#define ILOCALCHANNELURLDIRECTORY_H
 #include <memory>
 #include <functional>
 #include <string>
@@ -88,4 +88,4 @@ public:
 };
 
 } // namespace joynr
-#endif // ILOCALCHANNELURLDIRECTORY_H_
+#endif // ILOCALCHANNELURLDIRECTORY_H

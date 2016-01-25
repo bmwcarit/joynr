@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef SerializerRegistry_H
-#define SerializerRegistry_H
+#ifndef SERIALIZERREGISTRY_H
+#define SERIALIZERREGISTRY_H
 
 #include <memory>
 #include <unordered_map>
@@ -213,4 +213,4 @@ bool SerializerRegistry::registerEnum(const std::string& typeName)
 }
 
 } // namespace joynr
-#endif // SerializerRegistry_H
+#endif // SERIALIZERREGISTRY_H

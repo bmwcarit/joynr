@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef SINGLETHREADEDDELAYEDSCHEDULER_H_
-#define SINGLETHREADEDDELAYEDSCHEDULER_H_
+#ifndef SINGLETHREADEDDELAYEDSCHEDULER_H
+#define SINGLETHREADEDDELAYEDSCHEDULER_H
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
@@ -85,4 +85,4 @@ private:
 };
 } // namespace joynr
 
-#endif // SINGLETHREADEDDELAYEDSCHEDULER_H_
+#endif // SINGLETHREADEDDELAYEDSCHEDULER_H

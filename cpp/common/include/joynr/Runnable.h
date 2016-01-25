@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNRRUNABLE_H_
-#define JOYNRRUNABLE_H_
+#ifndef JOYNRRUNNABLE_H
+#define JOYNRRUNNABLE_H
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
@@ -70,4 +70,4 @@ private:
 
 } // namespace joynr
 
-#endif // JOYNRRUNABLE_H_
+#endif // JOYNRRUNNABLE_H

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef LOCALCHANNELURLDIRECTORY_H_
-#define LOCALCHANNELURLDIRECTORY_H_
+#ifndef LOCALCHANNELURLDIRECTORY_H
+#define LOCALCHANNELURLDIRECTORY_H
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/JoynrClusterControllerExport.h"
@@ -107,4 +107,4 @@ private:
 };
 
 } // namespace joynr
-#endif // LOCALCHANNELURLDIRECTORY_H_
+#endif // LOCALCHANNELURLDIRECTORY_H

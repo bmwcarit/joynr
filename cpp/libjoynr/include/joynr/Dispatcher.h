@@ -23,8 +23,8 @@
  *      Author: grape
  */
 
-#ifndef DISPATCHER_H_
-#define DISPATCHER_H_
+#ifndef DISPATCHER_H
+#define DISPATCHER_H
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
@@ -96,4 +96,4 @@ private:
 };
 
 } // namespace joynr
-#endif // DISPATCHER_H_
+#endif // DISPATCHER_H

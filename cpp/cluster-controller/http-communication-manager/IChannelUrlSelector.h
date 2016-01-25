@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ICHANNELDIRECTORYURLCACHE_H_
-#define ICHANNELDIRECTORYURLCACHE_H_
+#ifndef ICHANNELURLSELECTOR_H
+#define ICHANNELURLSELECTOR_H
 
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/RequestStatus.h"
@@ -72,4 +72,4 @@ public:
 };
 
 } // namespace joynr
-#endif // ICHANNELDIRECTORYURLCACHE_H_
+#endif // ICHANNELURLSELECTOR_H

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef SEMAPHORE_H_
-#define SEMAPHORE_H_
+#ifndef SEMAPHORE_H
+#define SEMAPHORE_H
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
@@ -88,4 +88,4 @@ private:
 
 } // namespace joynr
 
-#endif // SEMAPHORE_H_
+#endif // SEMAPHORE_H

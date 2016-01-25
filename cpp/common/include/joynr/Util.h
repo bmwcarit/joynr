@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef UTIL_H_
-#define UTIL_H_
+#ifndef UTIL_H
+#define UTIL_H
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/Logger.h"
@@ -372,4 +372,4 @@ public:
 };
 
 } // namespace joynr
-#endif // UTIL_H_
+#endif // UTIL_H

@@ -17,8 +17,8 @@
  * #L%
  */
 
-#ifndef QTTYPEUTIL
-#define QTTYPEUTIL
+#ifndef QTTYPEUTIL_H
+#define QTTYPEUTIL_H
 #include "joynr/JoynrCommonExport.h"
 
 #include <QString>
@@ -517,4 +517,4 @@ public:
     }
 };
 } // namespace joynr
-#endif // QTTYPEUTIL
+#endif // QTTYPEUTIL_H

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TIMER_H_
-#define TIMER_H_
+#ifndef TIMER_H
+#define TIMER_H
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -118,4 +118,4 @@ private:
 
 } // namespace joynr
 
-#endif // TIMER_H_
+#endif // TIMER_H

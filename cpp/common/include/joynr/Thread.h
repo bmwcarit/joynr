@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef THREAD_H_
-#define THREAD_H_
+#ifndef THREAD_H
+#define THREAD_H
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
@@ -89,4 +89,4 @@ private:
 };
 } // namespace joynr
 
-#endif // THREAD_H_
+#endif // THREAD_H

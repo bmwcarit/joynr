@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TIMEUTILS_H_
-#define TIMEUTILS_H_
+#ifndef TIMEUTILS_H
+#define TIMEUTILS_H
 
 #include <chrono>
 #include <cstdint>
@@ -48,4 +48,4 @@ inline static std::uint64_t getCurrentMillisSinceEpoch()
 
 } // namespace joynr
 
-#endif // TIMEUTILS_H_
+#endif // TIMEUTILS_H

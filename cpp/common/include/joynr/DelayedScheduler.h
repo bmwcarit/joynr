@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef DELAYED_SCHEDULER_H_
-#define DELAYED_SCHEDULER_H_
+#ifndef DELAYEDSCHEDULER_H
+#define DELAYEDSCHEDULER_H
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -138,4 +138,4 @@ private:
 };
 
 } // namespace joynr
-#endif // DELAYED_SCHEDULER_H_
+#endif // DELAYEDSCHEDULER_H

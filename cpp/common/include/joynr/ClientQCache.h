@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ClientQCache_H
-#define ClientQCache_H
+#ifndef CLIENTQCACHE_H
+#define CLIENTQCACHE_H
 
 #include "joynr/JoynrCommonExport.h"
 
@@ -64,4 +64,4 @@ private:
 
 } // namespace joynr
 
-#endif // ClientQCache_H
+#endif // CLIENTQCACHE_H

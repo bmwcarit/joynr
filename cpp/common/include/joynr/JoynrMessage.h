@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNRMESSAGE_H_
-#define JOYNRMESSAGE_H_
+#ifndef JOYNRMESSAGE_H
+#define JOYNRMESSAGE_H
 
 #include "joynr/JoynrCommonExport.h"
 
@@ -326,4 +326,4 @@ private:
 };
 
 } // namespace joynr
-#endif // JOYNRMESSAGE_H_
+#endif // JOYNRMESSAGE_H

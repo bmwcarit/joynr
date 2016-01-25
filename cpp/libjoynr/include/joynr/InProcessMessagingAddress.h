@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef INPROCESSMESSAGINGENDPOINTADDRESS_H
-#define INPROCESSMESSAGINGENDPOINTADDRESS_H
+#ifndef INPROCESSMESSAGINGADDRESS_H
+#define INPROCESSMESSAGINGADDRESS_H
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -40,4 +40,4 @@ private:
 };
 
 } // namespace joynr
-#endif // INPROCESSMESSAGINGENDPOINTADDRESS_H
+#endif // INPROCESSMESSAGINGADDRESS_H

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CHANNELDIRECTORYURLCACHE_H_
-#define CHANNELDIRECTORYURLCACHE_H_
+#ifndef CHANNELURLSELECTOR_H
+#define CHANNELURLSELECTOR_H
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrClusterControllerExport.h"
@@ -179,4 +179,4 @@ private:
 };
 
 } // namespace joynr
-#endif // CHANNELDIRECTORYURLCACHE_H_
+#endif // CHANNELURLSELECTOR_H

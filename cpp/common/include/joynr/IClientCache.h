@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CLIENTCACHE_H
-#define CLIENTCACHE_H
+#ifndef ICLIENTCACHE_H
+#define ICLIENTCACHE_H
 
 #include "joynr/Variant.h"
 
@@ -47,4 +47,4 @@ public:
 };
 
 } // namespace joynr
-#endif // CLIENTCACHE_H
+#endif // ICLIENTCACHE_H

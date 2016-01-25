@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef DISPATCHER_H
-#define DISPATCHER_H
+#ifndef IDISPATCHER_H
+#define IDISPATCHER_H
 
 #include <string>
 #include <memory>
@@ -50,4 +50,4 @@ public:
 };
 
 } // namespace joynr
-#endif // DISPATCHER_H
+#endif // IDISPATCHER_H

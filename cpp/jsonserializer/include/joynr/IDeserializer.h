@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef DESERIALIZER
-#define DESERIALIZER
+#ifndef IDESERIALIZER_H
+#define IDESERIALIZER_H
 
 #include <string>
 
@@ -219,5 +219,5 @@ public:
 };
 
 } // namespace joynr
-#endif // DESERIALIZER
+#endif // IDESERIALIZER_H
 
