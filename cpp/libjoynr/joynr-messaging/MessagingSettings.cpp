@@ -30,8 +30,13 @@ INIT_LOGGER(MessagingSettings);
 
 MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
 {
-    Settings defaultMessagingSettings{DEFAULT_MESSAGING_SETTINGS_FILENAME()};
-    Settings::merge(defaultMessagingSettings, this->settings, false);
+    std::string cmakeSettingsPath = CMAKE_JOYNR_SETTINGS_INSTALL_DIR;
+    Settings cmakeDefaultMessagingSettings(cmakeSettingsPath + "/" +
+                                           DEFAULT_MESSAGING_SETTINGS_FILENAME());
+    Settings relativeDefaultMessagingSettings("resources/" + DEFAULT_MESSAGING_SETTINGS_FILENAME());
+
+    Settings::merge(relativeDefaultMessagingSettings, this->settings, false);
+    Settings::merge(cmakeDefaultMessagingSettings, this->settings, false);
     checkSettings();
 }
 
@@ -192,7 +197,7 @@ void MessagingSettings::setClientCertificatePassword(const std::string& clientCe
 
 const std::string& MessagingSettings::DEFAULT_MESSAGING_SETTINGS_FILENAME()
 {
-    static const std::string value("resources/default-messaging.settings");
+    static const std::string value("default-messaging.settings");
     return value;
 }
 
