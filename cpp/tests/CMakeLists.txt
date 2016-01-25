@@ -120,6 +120,11 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         @ONLY
     )
     configure_file(
+        "resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        @ONLY
+    )
+    configure_file(
         "resources/HttpMessagingSettingsTest.settings"
         "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpMessagingSettingsTest.settings"
         @ONLY
@@ -182,6 +187,11 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     configure_file(
         "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
         "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
         @ONLY
     )
     configure_file(
@@ -248,6 +258,11 @@ else()
     configure_file(
         "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
         "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
         @ONLY
     )
     configure_file(
@@ -529,6 +544,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_include_directories(
         g_IntegrationTests
         SYSTEM
+        PRIVATE ${MOSQUITTO_INCLUDE_DIRS}
         PRIVATE ${GTEST_INCLUDE_DIRS}
         PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}

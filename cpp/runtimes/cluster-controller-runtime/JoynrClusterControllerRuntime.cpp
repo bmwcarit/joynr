@@ -275,8 +275,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     std::chrono::milliseconds(messagingSettings->getSendMsgRetryInterval()));
         }
 
-        messagingStubFactory->registerStubFactory(new HttpMessagingStubFactory(
-                httpMessageSender, httpMessageReceiver->getReceiveChannelId()));
+        messagingStubFactory->registerStubFactory(
+                new HttpMessagingStubFactory(httpMessageSender, httpChannelId));
     }
 
     /**
@@ -323,8 +323,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             mqttMessageSender = std::make_shared<MqttSender>(messagingSettings->getBrokerUrl());
         }
 
-        messagingStubFactory->registerStubFactory(new MqttMessagingStubFactory(
-                mqttMessageSender, mqttMessageReceiver->getReceiveChannelId()));
+        messagingStubFactory->registerStubFactory(
+                new MqttMessagingStubFactory(mqttMessageSender, mqttChannelId));
     }
 
     // joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);

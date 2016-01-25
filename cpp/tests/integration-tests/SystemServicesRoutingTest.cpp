@@ -129,7 +129,7 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 }
 
 
-TEST_F(SystemServicesRoutingTest, addNextHop)
+TEST_F(SystemServicesRoutingTest, addNextHopHttp)
 {
     routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
@@ -161,7 +161,7 @@ TEST_F(SystemServicesRoutingTest, addNextHop)
     EXPECT_TRUE(isResolvable);
 }
 
-TEST_F(SystemServicesRoutingTest, removeNextHop)
+TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
 {
     routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
@@ -171,6 +171,83 @@ TEST_F(SystemServicesRoutingTest, removeNextHop)
 
     std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    bool isResolvable = false;
+
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
+    EXPECT_FALSE(isResolvable);
+
+    try {
+        routingProxy->addNextHop(participantId, address);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "addNextHop was not successful";
+    }
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
+    EXPECT_TRUE(isResolvable);
+
+    try {
+        routingProxy->removeNextHop(participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "removeNextHop was not successful";
+    }
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
+    EXPECT_FALSE(isResolvable);
+}
+
+
+TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
+{
+    routingProxy = routingProxyBuilder
+            ->setMessagingQos(MessagingQos(5000))
+            ->setCached(false)
+            ->setDiscoveryQos(discoveryQos)
+            ->build();
+
+    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
+    joynr::system::RoutingTypes::MqttAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    bool isResolvable = false;
+
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
+    EXPECT_FALSE(isResolvable);
+
+    try {
+        routingProxy->addNextHop(participantId, address);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "addNextHop was not successful";
+    }
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
+    EXPECT_TRUE(isResolvable);
+}
+
+TEST_F(SystemServicesRoutingTest, removeNextHopMqtt)
+{
+    routingProxy = routingProxyBuilder
+            ->setMessagingQos(MessagingQos(5000))
+            ->setCached(false)
+            ->setDiscoveryQos(discoveryQos)
+            ->build();
+
+    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
+    joynr::system::RoutingTypes::MqttAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
     try {
