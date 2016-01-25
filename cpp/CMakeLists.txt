@@ -45,7 +45,8 @@ message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation sub directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation sub directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation sub directory for header files")
-set(INSTALL_CMAKE_DIR lib/cmake/Joynr CACHE PATH "Installation sub directory for CMake files")
+set(INSTALL_CMAKE_DIR lib/cmake/joynr CACHE PATH "Installation sub directory for CMake files")
+set(INSTALL_RES_DIR etc/joynr CACHE PATH "Installation sub directory for resource and setting files")
 
 if(NOT INSTALL_TEST_DIR)
     set(INSTALL_TEST_DIR "${INSTALL_BIN_DIR}" CACHE PATH "Installation sub directory for tests")
@@ -622,11 +623,13 @@ if(${BUILD_CLUSTER_CONTROLLER})
     add_subdirectory(cluster-controller)
 else()
     # We still use the websocket default configuration file
+    # copy resources for build tree
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cluster-controller/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings)
+    # ...and for install tree
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
-        DESTINATION ${INSTALL_BIN_DIR}/resources/
+        DESTINATION ${INSTALL_RES_DIR}
     )
 endif(${BUILD_CLUSTER_CONTROLLER})
 add_subdirectory(runtimes)

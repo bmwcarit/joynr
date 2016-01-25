@@ -175,6 +175,6 @@ else()
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
-        DESTINATION ${INSTALL_BIN_DIR}/resources/
+        DESTINATION ${INSTALL_RES_DIR}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
