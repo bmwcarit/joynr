@@ -105,7 +105,7 @@ endif(${USE_PLATFORM_JSMN})
 set(Joynr_EXECUTABLES)
 set(
     Joynr_RESOURCES_DIR
-    @JoynrConfig_INSTALL_BIN_DIR@/resources
+    @JoynrConfig_RESOURCES_DIR@
 )
 
 # in-process configuration
