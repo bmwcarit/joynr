@@ -587,6 +587,7 @@ find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
 
 if (USE_PLATFORM_SPDLOG)
     find_package(spdlog REQUIRED)
+    get_target_property(spdlog_INCLUDE_DIRS spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
 else(USE_PLATFORM_SPDLOG)
     message(STATUS "############ Download: spdlog ############")
     set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
@@ -608,9 +609,11 @@ else(USE_PLATFORM_SPDLOG)
         BUILD_COMMAND ""
     )
 
-    ExternalProject_Get_Property(spdlog SOURCE_DIR)
-    set(spdlog_SOURCE_DIR ${SOURCE_DIR})
+     ExternalProject_Get_Property(spdlog SOURCE_DIR)
+     set(spdlog_INCLUDE_DIRS "${SOURCE_DIR}/include")
 endif(USE_PLATFORM_SPDLOG)
+
+message(STATUS "variable spdlog_INCLUDE_DIRS=" ${spdlog_INCLUDE_DIRS})
 
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -721,7 +724,7 @@ set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_SOURCE_DIR}/include
+    ${spdlog_INCLUDE_DIRS}
     ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
@@ -739,7 +742,7 @@ set(
     JoynrConfig_LIB_WS_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_SOURCE_DIR}/include
+    ${spdlog_INCLUDE_DIRS}
     ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
 )
@@ -748,7 +751,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JoynrConfig_LIB_DBUS_INCLUDE_DIRS
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-        ${spdlog_SOURCE_DIR}/include
+        ${spdlog_INCLUDE_DIRS}
         ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
         ${jsmn_INCLUDE_DIR}
     )

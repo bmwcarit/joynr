@@ -151,7 +151,7 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_SOURCE_DIR}/include
+    ${spdlog_INCLUDE_DIRS}
     ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}

@@ -133,7 +133,7 @@ set_target_properties(
 )
 
 # make spdlog system directory to avoid compiler warnings
-target_include_directories(JoynrCommon SYSTEM PUBLIC $<BUILD_INTERFACE:${spdlog_SOURCE_DIR}/include>)
+target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>")
 
 generate_export_header(
     JoynrCommon
