@@ -309,6 +309,8 @@ void ProxyBuilder<T>::setArbitrationStatus(
                                                  "arbitrator, but either ParticipantId or "
                                                  "MessagingEndpointAddress were empty");
         }
+    } else if (arbitrationStatus == ArbitrationStatus::ArbitrationCanceledForever) {
+        throw exceptions::DiscoveryException("Arbitration canceled forever.");
     } else {
         throw exceptions::DiscoveryException("Arbitration finished without success.");
     }
