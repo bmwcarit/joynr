@@ -29,7 +29,6 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.MessageScheduler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.provider.JoynrProvider;
@@ -52,7 +51,6 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
                                    ReplyCallerDirectory replyCallerDirectory,
                                    MessageReceiver messageReceiver,
                                    Dispatcher dispatcher,
-                                   MessageScheduler messageScheduler,
                                    MessagingStubFactory messagingStubFactory,
                                    LocalDiscoveryAggregator localDiscoveryAggregator,
                                    LocalCapabilitiesDirectory localCapabilitiesDirectory,
@@ -71,7 +69,6 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
               requestCallerDirectory,
               replyCallerDirectory,
               dispatcher,
-              messageScheduler,
               messagingStubFactory,
               localDiscoveryAggregator,
               systemServicesDomain,

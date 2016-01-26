@@ -6,7 +6,6 @@ import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.MessageScheduler;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.proxy.ProxyBuilder;
@@ -50,7 +49,6 @@ public abstract class LibjoynrRuntime<T extends Address> extends JoynrRuntimeImp
                            RequestCallerDirectory requestCallerDirectory,
                            ReplyCallerDirectory replyCallerDirectory,
                            Dispatcher dispatcher,
-                           MessageScheduler messageScheduler,
                            MessagingStubFactory messagingStubFactory,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
                            String systemServicesDomain,
@@ -69,7 +67,6 @@ public abstract class LibjoynrRuntime<T extends Address> extends JoynrRuntimeImp
               requestCallerDirectory,
               replyCallerDirectory,
               dispatcher,
-              messageScheduler,
               messagingStubFactory,
               localDiscoveryAggregator,
               systemServicesDomain,

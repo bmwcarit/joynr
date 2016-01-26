@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 public interface MessageRouter extends RoutingProvider {
+    static final String SCHEDULEDTHREADPOOL = "io.joynr.messaging.scheduledthreadpool";
 
     public void route(JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                            JsonGenerationException, JsonMappingException, IOException;

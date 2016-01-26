@@ -57,13 +57,12 @@ import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JsonMessageSerializerModule;
-import io.joynr.messaging.MessageScheduler;
-import io.joynr.messaging.MessageSchedulerImpl;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessageSerializerFactory;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
@@ -103,7 +102,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(SubscriptionManager.class).to(SubscriptionManagerImpl.class);
         bind(PublicationManager.class).to(PublicationManagerImpl.class);
         bind(Dispatcher.class).to(DispatcherImpl.class);
-        bind(MessageScheduler.class).to(MessageSchedulerImpl.class);
         bind(LocalDiscoveryAggregator.class).in(Singleton.class);
         bind(DiscoveryAsync.class).to(LocalDiscoveryAggregator.class);
         bind(CapabilitiesRegistrar.class).to(CapabilitiesRegistrarImpl.class);
@@ -152,7 +150,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     }
 
     @Provides
-    @Named(MessageScheduler.SCHEDULEDTHREADPOOL)
+    @Named(MessageRouter.SCHEDULEDTHREADPOOL)
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
         ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
                                                                               .build();

@@ -18,12 +18,25 @@ package io.joynr.messaging.routing;
  * limitations under the License.
  * #L%
  */
-
+import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessageScheduler;
+import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.serialize.MessageSerializerFactory;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
+
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
@@ -43,18 +56,32 @@ import joynr.types.ProviderScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.name.Named;
+
 public class MessageRouterImpl extends RoutingAbstractProvider implements MessageRouter {
+    private static final long TERMINATION_TIMEOUT = 5000;
 
     private Logger logger = LoggerFactory.getLogger(MessageRouterImpl.class);
     private final RoutingTable routingTable;
     private static final int UUID_TAIL = 32;
-    private MessageScheduler messageScheduler;
+    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
+    private ScheduledExecutorService scheduler;
+    private long sendMsgRetryIntervalMs;
+    private MessagingStubFactory messagingStubFactory;
+    private MessageSerializerFactory messageSerializerFactory;
 
     @Inject
     @Singleton
-    public MessageRouterImpl(RoutingTable routingTable, MessageScheduler messageScheduler) {
+    public MessageRouterImpl(RoutingTable routingTable,
+                             @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                             @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                             MessagingStubFactory messagingStubFactory,
+                             MessageSerializerFactory messageSerializerFactory) {
         this.routingTable = routingTable;
-        this.messageScheduler = messageScheduler;
+        this.scheduler = scheduler;
+        this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
+        this.messagingStubFactory = messagingStubFactory;
+        this.messageSerializerFactory = messageSerializerFactory;
     }
 
     protected Promise<DeferredVoid> addNextHopInternal(String participantId, Address address) {
@@ -104,6 +131,11 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         return new Promise<ResolveNextHopDeferred>(deferred);
     }
 
+    @Override
+    public void addNextHop(String participantId, Address address) {
+        addNextHopInternal(participantId, address);
+    }
+
     @CheckForNull
     protected Address getAddress(String toParticipantId) {
         Address address = null;
@@ -115,32 +147,125 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
     @Override
     public void route(final JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException {
-        String toParticipantId = message.getTo();
-        Address address = getAddress(toParticipantId);
-        if (address != null) {
-            String messageId = message.getId().substring(UUID_TAIL);
-            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}",
-                        new String[]{ messageId, message.getType(),
+        checkExpiry(message);
+        routeInternal(message, 0, 0);
+    }
+
+    private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
+        if (scheduler.isShutdown()) {
+            JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("MessageScheduler is shutting down already. Unable to send message [messageId: "
+                    + message.getId() + "].");
+            throw joynrShutdownEx;
+        }
+        try {
+            scheduler.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    checkExpiry(message);
+
+                    String toParticipantId = message.getTo();
+                    Address address = getAddress(toParticipantId);
+                    if (address != null) {
+                        String messageId = message.getId().substring(UUID_TAIL);
+                        logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId,
+                                message.getType(),
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
                                 message.getHeader().toString() });
-            logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
+                        logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
+                                message.getPayload() });
 
-            messageScheduler.scheduleMessage(address, message);
+                    } else {
+                        throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
+                                + toParticipantId);
+                    }
 
-        } else {
-            throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
-                    + toParticipantId);
+                    IMessaging messagingStub = messagingStubFactory.create(address);
+                    FailureAction failureAction = createFailureAction(message, retriesCount);
+                    if (address instanceof InProcessAddress) {
+                        messagingStub.transmit(message, failureAction);
+                    } else {
+                        JoynrMessageSerializer messageSerializer = messageSerializerFactory.create(address);
+                        String serializedMessage = messageSerializer.serialize(message);
+                        messagingStub.transmit(serializedMessage, failureAction);
+                    }
+                }
+            },
+                               0,
+                               TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException e) {
+            logger.error("Execution rejected while scheduling SendSerializedMessageRequest ", e);
+            throw new JoynrSendBufferFullException(e);
         }
     }
 
-    @Override
-    public void addNextHop(String participantId, Address address) {
-        addNextHopInternal(participantId, address);
+    private void checkExpiry(final JoynrMessage message) {
+        long currentTimeMillis = System.currentTimeMillis();
+        long ttlExpirationDateMs = message.getExpiryDate();
+
+        if (ttlExpirationDateMs <= currentTimeMillis) {
+            String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} abs_ttl: {1}",
+                                                       currentTimeMillis,
+                                                       ttlExpirationDateMs);
+            logger.error(errorMessage);
+            throw new JoynrMessageNotSentException(errorMessage);
+        }
+    }
+
+    private FailureAction createFailureAction(final JoynrMessage message, final int retriesCount) {
+        final FailureAction failureAction = new FailureAction() {
+            final String messageId = message.getId();
+
+            @Override
+            public void execute(Throwable error) {
+                if (error instanceof JoynrShutdownException) {
+                    logger.warn("{}", error.getMessage());
+                    return;
+                }
+                logger.error("!!!! ERROR SENDING: messageId: {} to Address: {}. Error: {}", new String[]{ messageId,
+                        error.getMessage() });
+
+                long delayMs;
+                if (error instanceof JoynrDelayMessageException) {
+                    delayMs = ((JoynrDelayMessageException) error).getDelayMs();
+                } else {
+                    delayMs = sendMsgRetryIntervalMs;
+                    delayMs += exponentialBackoff(delayMs, retriesCount);
+                }
+
+                try {
+                    logger.error("Rescheduling messageId: {} with delay " + delayMs
+                                         + " ms, new TTL expiration date: {}",
+                                 messageId,
+                                 DateFormatter.format(message.getExpiryDate()));
+                    routeInternal(message, delayMs, retriesCount + 1);
+                    return;
+                } catch (JoynrSendBufferFullException e) {
+                    try {
+                        logger.error("Rescheduling message: {} delayed {} ms because send buffer is full",
+                                     delayMs,
+                                     messageId);
+                        Thread.sleep(delayMs);
+                        this.execute(e);
+                    } catch (InterruptedException e1) {
+                        return;
+                    }
+                }
+            }
+        };
+        return failureAction;
     }
 
     @Override
     public void shutdown() {
+        synchronized (scheduler) {
+            scheduler.shutdown();
+        }
+        try {
+            scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            logger.error("Message Scheduler did not shut down in time: {}", e.getMessage());
+        }
     }
 
     @Override
@@ -149,5 +274,12 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         ProviderQos providerQos = super.getProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
         return providerQos;
+    }
+
+    private long exponentialBackoff(long delayMs, int retries) {
+        logger.debug("TRIES: " + retries);
+        long millis = delayMs + (long) ((2 ^ (retries)) * delayMs * Math.random());
+        logger.debug("MILLIS: " + millis);
+        return millis;
     }
 }

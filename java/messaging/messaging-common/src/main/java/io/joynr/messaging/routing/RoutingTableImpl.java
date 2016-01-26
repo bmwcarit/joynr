@@ -39,6 +39,9 @@ public class RoutingTableImpl implements RoutingTable {
     private static final Logger logger = LoggerFactory.getLogger(RoutingTableImpl.class);
     ConcurrentMap<String, Address> hashMap = Maps.newConcurrentMap();
 
+    RoutingTableImpl() {
+    }
+
     // CHECKSTYLE:OFF
     @Inject
     public RoutingTableImpl(@Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,

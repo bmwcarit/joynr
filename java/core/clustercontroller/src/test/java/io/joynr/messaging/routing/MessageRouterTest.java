@@ -1,4 +1,4 @@
-package io.joynr.messaging;
+package io.joynr.messaging.routing;
 
 /*
  * #%L
@@ -21,6 +21,7 @@ package io.joynr.messaging;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
+
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -46,10 +47,19 @@ import com.google.inject.name.Names;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.channel.ChannelMessageSerializerFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.http.HttpMessageSender;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
 import io.joynr.messaging.serialize.JsonSerializer;
 import io.joynr.messaging.serialize.MessageSerializerFactory;
@@ -58,18 +68,21 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MessageSchedulerTest {
+public class MessageRouterTest {
 
     private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
     private final ChannelAddress channelAddress = new ChannelAddress(channelId);
 
-    private MessageScheduler messageScheduler;
-
     @Mock
     private JsonSerializer jsonSerializer;
 
+    private RoutingTable routingTable = new RoutingTableImpl();
+
     @Mock
     private HttpMessageSender httpMessageSenderMock;
+    private MessageRouter messageRouter;
+    private JoynrMessage joynrMessage;
+    protected String toParticipantId = "toParticipantId";
 
     @Before
     public void setUp() throws Exception {
@@ -81,7 +94,8 @@ public class MessageSchedulerTest {
 
             @Override
             protected void configure() {
-                bind(MessageScheduler.class).to(MessageSchedulerImpl.class);
+                bind(MessageRouter.class).to(MessageRouterImpl.class);
+                bind(RoutingTable.class).toInstance(routingTable);
                 bind(JsonSerializer.class).toInstance(jsonSerializer);
                 bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.CHANNELID)).toInstance(channelId);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
@@ -102,10 +116,14 @@ public class MessageSchedulerTest {
                                                                   },
                                                                   Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
                 messageSerializerFactory.addBinding(ChannelAddress.class).to(ChannelMessageSerializerFactory.class);
+                routingTable.put(toParticipantId, channelAddress);
+                joynrMessage = new JoynrMessage();
+                joynrMessage.setTo(toParticipantId);
+
             }
 
             @Provides
-            @Named(MessageScheduler.SCHEDULEDTHREADPOOL)
+            @Named(MessageRouter.SCHEDULEDTHREADPOOL)
             ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
                 ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
                                                                                       .build();
@@ -118,25 +136,24 @@ public class MessageSchedulerTest {
         };
 
         Injector injector = Guice.createInjector(mockModule);
-        messageScheduler = injector.getInstance(MessageScheduler.class);
+        messageRouter = injector.getInstance(MessageRouter.class);
     }
 
     @Test
-    public void testScheduleMessageOk() {
-        JoynrMessage joynrMessage = new JoynrMessage();
+    public void testScheduleMessageOk() throws Exception {
         joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(10000));
-        messageScheduler.scheduleMessage(channelAddress, joynrMessage);
+        messageRouter.route(joynrMessage);
+        Thread.sleep(1000);
         verify(jsonSerializer).serialize(eq(joynrMessage));
         verify(httpMessageSenderMock).sendMessage(eq(channelAddress), any(String.class), any(FailureAction.class));
     }
 
     @Test
-    public void testScheduleExpiredMessageFails() throws InterruptedException {
-        JoynrMessage joynrMessage = new JoynrMessage();
+    public void testScheduleExpiredMessageFails() throws Exception {
         joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(1));
         Thread.sleep(5);
         try {
-            messageScheduler.scheduleMessage(channelAddress, joynrMessage);
+            messageRouter.route(joynrMessage);
         } catch (JoynrMessageNotSentException e) {
             verify(jsonSerializer, never()).serialize(any(JoynrMessage.class));
             verify(httpMessageSenderMock, never()).sendMessage(any(ChannelAddress.class),

@@ -29,7 +29,6 @@ import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessageScheduler;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessagingStubFactory;
@@ -84,8 +83,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     protected final ReplyCallerDirectory replyCallerDirectory;
     protected final String discoveryProxyParticipantId;
 
-    private MessageScheduler messageScheduler;
-
     private MessagingStubFactory messagingStubFactory;
 
     abstract void startReceiver();
@@ -97,7 +94,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             RequestCallerDirectory requestCallerDirectory,
                             ReplyCallerDirectory replyCallerDirectory,
                             Dispatcher dispatcher,
-                            MessageScheduler messageScheduler,
                             MessagingStubFactory messagingStubFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
@@ -111,7 +107,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         this.replyCallerDirectory = replyCallerDirectory;
         this.dispatcher = dispatcher;
         this.objectMapper = objectMapper;
-        this.messageScheduler = messageScheduler;
         this.messagingStubFactory = messagingStubFactory;
 
         Reflections reflections = new Reflections("joynr");
@@ -193,11 +188,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
             dispatcher.shutdown(clear);
         } catch (Exception e) {
             logger.error("error shutting down dispatcher: {}", e.getMessage());
-        }
-        try {
-            messageScheduler.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down messageScheduler: {}", e.getMessage());
         }
         try {
             messagingStubFactory.shutdown();
