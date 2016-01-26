@@ -24,7 +24,6 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.MessageContainer;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
@@ -82,13 +81,6 @@ public class HttpMessageSender implements IMessageSender {
         this.defaultRequestConfig = defaultRequestConfig;
         this.objectMapper = objectMapper;
         this.urlResolver = urlResolver;
-    }
-
-    @Override
-    public void sendMessage(final MessageContainer messageContainer, final FailureAction failureAction) {
-        sendMessage((ChannelAddress) messageContainer.getAddress(),
-                    messageContainer.getSerializedMessage(),
-                    failureAction);
     }
 
     @Override
