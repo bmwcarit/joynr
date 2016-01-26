@@ -402,6 +402,7 @@ include(AddExternalProject)
 if (USE_PLATFORM_LIBWEBSOCKETS)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(libwebsockets REQUIRED libwebsockets)
+    message(STATUS "linking against ${libwebsockets_LIBRARIES}")
 else(USE_PLATFORM_LIBWEBSOCKETS)
     AddExternalProject(
         libwebsockets
@@ -422,13 +423,13 @@ else(USE_PLATFORM_LIBWEBSOCKETS)
                     -DLWS_WITHOUT_TEST_FRAGGLE=1
                     -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}
                     -DCMAKE_POSITION_INDEPENDENT_CODE=1
-        BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets.a
+        BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets.so
     )
 
     ExternalProject_Get_Property(libwebsockets SOURCE_DIR)
     ExternalProject_Get_Property(libwebsockets BINARY_DIR)
 
-    set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets.a)
+    set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets.so)
     set(libwebsockets_INCLUDE_DIRS
         ${SOURCE_DIR}/lib
         ${BINARY_DIR}
@@ -547,7 +548,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        
+
     add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
