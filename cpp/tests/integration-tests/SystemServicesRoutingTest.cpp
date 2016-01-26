@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,8 @@ public:
     std::string routingDomain;
     std::string routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
-    IMessageReceiver* mockMessageReceiver;
+    IMessageReceiver* mockMessageReceiverHttp;
+    IMessageReceiver* mockMessageReceiverMqtt;
     MockMessageSender* mockMessageSender;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
@@ -48,7 +49,8 @@ public:
             routingDomain(),
             routingProviderParticipantId(),
             runtime(nullptr),
-            mockMessageReceiver(new MockMessageReceiver()),
+            mockMessageReceiverHttp(new MockMessageReceiver()),
+            mockMessageReceiverMqtt(new MockMessageReceiver()),
             mockMessageSender(new MockMessageSender()),
             discoveryQos(),
             routingProxyBuilder(nullptr),
@@ -64,13 +66,22 @@ public:
         discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
 
-        std::string channelId("SystemServicesRoutingTest.ChannelId");
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
+        std::string channelIdHttp("SystemServicesRoutingTest.ChannelId");
+        std::string channelIdMqtt("mqtt_SystemServicesRoutingTest.ChannelId");
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getReceiveChannelId())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdHttp));
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getReceiveChannelId())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdMqtt));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = new JoynrClusterControllerRuntime(nullptr, settings, mockMessageReceiver, mockMessageSender);
+        runtime = new JoynrClusterControllerRuntime(
+                nullptr,
+                settings,
+                mockMessageReceiverHttp,
+                mockMessageSender,
+                mockMessageReceiverMqtt,
+                mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->registerRoutingProvider();
     }

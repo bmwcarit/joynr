@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,8 @@ public:
     std::string discoveryDomain;
     std::string discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
-    IMessageReceiver* mockMessageReceiver;
+    IMessageReceiver* mockMessageReceiverHttp;
+    IMessageReceiver* mockMessageReceiverMqtt;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
     joynr::system::DiscoveryProxy* discoveryProxy;
@@ -47,7 +48,8 @@ public:
         discoveryDomain(),
         discoveryProviderParticipantId(),
         runtime(nullptr),
-        mockMessageReceiver(new MockMessageReceiver()),
+        mockMessageReceiverHttp(new MockMessageReceiver()),
+        mockMessageReceiverMqtt(new MockMessageReceiver()),
         discoveryQos(),
         discoveryProxyBuilder(nullptr),
         discoveryProxy(nullptr)
@@ -62,13 +64,21 @@ public:
         discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
 
-        std::string channelId("SystemServicesDiscoveryTest.ChannelId");
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
+        std::string channelIdHttp("SystemServicesDiscoveryTest.ChannelId");
+        std::string channelIdMqtt("mqtt_SystemServicesRoutingTest.ChannelId");
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getReceiveChannelId())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdHttp));
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getReceiveChannelId())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdMqtt));
 
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = new JoynrClusterControllerRuntime(nullptr, settings, mockMessageReceiver);
+        runtime = new JoynrClusterControllerRuntime(
+                nullptr,
+                settings,
+                mockMessageReceiverHttp,
+                nullptr,
+                mockMessageReceiverMqtt);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->registerDiscoveryProvider();
     }
