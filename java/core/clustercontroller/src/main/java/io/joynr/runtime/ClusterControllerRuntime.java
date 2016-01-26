@@ -133,7 +133,6 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
         }
     }
 
-    @Override
     void startReceiver() {
         if (shutdown) {
             throw new JoynrShutdownException("cannot start receiver: dispatcher is already shutting down");

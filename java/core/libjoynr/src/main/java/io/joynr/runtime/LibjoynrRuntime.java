@@ -89,9 +89,4 @@ public abstract class LibjoynrRuntime<T extends Address> extends JoynrRuntimeImp
     }
 
     protected abstract void initMessagingStub(T libjoynrMessagingAddress, IMessaging messagingStub);
-
-    @Override
-    void startReceiver() {
-        logger.debug("LibJoynr has no receiver. Nothing to start.");
-    }
 }

@@ -112,9 +112,4 @@ public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAdd
             logger.error("Error while sending websocket init message: ", e);
         }
     }
-
-    @Override
-    void startReceiver() {
-        logger.debug("LibJoynr has no receiver. Nothing to start.");
-    }
 }

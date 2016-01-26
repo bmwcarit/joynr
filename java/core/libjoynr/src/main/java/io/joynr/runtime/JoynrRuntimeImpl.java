@@ -85,8 +85,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     private MessagingStubFactory messagingStubFactory;
 
-    abstract void startReceiver();
-
     // CHECKSTYLE:OFF
     @Inject
     public JoynrRuntimeImpl(ObjectMapper objectMapper,
