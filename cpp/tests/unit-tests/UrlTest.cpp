@@ -41,6 +41,10 @@ public:
         expected.push_back(Url("ws","localhost",80,"/"));
         validTestData.push_back("wss://localhost/some/path");
         expected.push_back(Url("wss","localhost",443,"/some/path"));
+        validTestData.push_back("mqtt://localhost:1883");
+        expected.push_back(Url("mqtt","localhost",1883,"/"));
+        validTestData.push_back("mqtts://localhost:1883");
+        expected.push_back(Url("mqtts","localhost",1883,"/"));
         validTestData.push_back("http://bounceproxy.com/script?query");
         expected.push_back(Url("http","","","bounceproxy.com",80,"/script","query",""));
         validTestData.push_back("https://bounceproxy.com/script#fragment");
