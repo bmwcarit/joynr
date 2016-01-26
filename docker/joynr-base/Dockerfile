@@ -1,7 +1,7 @@
 FROM fedora:21
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2015-09-12
+ENV REFRESHED_AT 2016-01-22
 
 ###################################################
 # set timezone
@@ -46,6 +46,7 @@ RUN yum update -y \
 	xcb-util-devel \
 	xcb-util-*-devel \
 	zlib.i686 \
+	hostname.x86_64 \
 	&& yum groupinstall -y 'Development Tools' \
 	&& yum clean all
 

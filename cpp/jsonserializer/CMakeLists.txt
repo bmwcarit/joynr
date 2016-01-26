@@ -10,6 +10,7 @@ else(USE_PLATFORM_JSMN)
     AddExternalProject(
         jsmn
         GIT_REPOSITORY https://github.com/zserge/jsmn
+        GIT_TAG 572ace5 # there are no version tags, hence a SHA is used
         TIMEOUT 10
         PATCH_COMMAND rm -f config.mk COMMAND git apply ${CMAKE_SOURCE_DIR}/CMake/jsmn-fpic.patch
         # Disable configure step
@@ -103,7 +104,9 @@ set_target_properties(
     PUBLIC_INCLUDE_DIRECTORY "${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}"
 )
 
-add_dependencies(JoynrJsonSerializer jsmn)
+if(NOT USE_PLATFORM_JSMN)
+    add_dependencies(JoynrJsonSerializer jsmn)
+endif(NOT USE_PLATFORM_JSMN)
 
 install(
     TARGETS JoynrJsonSerializer EXPORT JoynrTargets

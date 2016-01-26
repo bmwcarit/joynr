@@ -587,18 +587,11 @@ if (USE_PLATFORM_SPDLOG)
     get_target_property(spdlog_INCLUDE_DIRS spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
 else(USE_PLATFORM_SPDLOG)
     message(STATUS "############ Download: spdlog ############")
-    set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
-    set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
-    if(SPDLOG_ROOT)
-        set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
-        set(SPDLOG_SOURCE_TYPE "URL")
-    endif(SPDLOG_ROOT)
-    message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
-
 
     AddExternalProject(
         spdlog
-        ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
+        GIT_REPOSITORY https://github.com/gabime/spdlog
+        GIT_TAG e91e1b8 # there are no version tags, hence a SHA is used
         TIMEOUT 10
         # Disable configure step
         CONFIGURE_COMMAND ""
