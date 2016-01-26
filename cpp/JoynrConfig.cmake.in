@@ -38,6 +38,15 @@ set(
     @USE_DBUS_COMMONAPI_COMMUNICATION@
 )
 
+set(
+    USE_PLATFORM_SPDLOG
+    @USE_PLATFORM_SPDLOG@
+)
+set(
+    USE_PLATFORM_JSMN
+    @USE_PLATFORM_JSMN@
+)
+
 # QT5
 find_package(Qt5Core REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
@@ -51,6 +60,8 @@ find_package(Boost 1.56.0 REQUIRED
     thread
 )
 
+find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
+
 # Our library dependencies (contains definitions for IMPORTED targets)
 include(@JoynrConfig_TARGETS_FILE@)
 
@@ -60,20 +71,60 @@ get_filename_component(JOYNR_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 # default configuration
 set(
     Joynr_LIB_COMMON_INCLUDE_DIRS
-    "${Boost_INCLUDE_DIRS}"
+    ${Boost_INCLUDE_DIRS}
     @JoynrConfig_LIB_COMMON_INCLUDE_DIRS@
 )
 
 set(
     Joynr_LIB_COMMON_LIBRARIES
-    "${Boost_LIBRARIES}"
+    ${Boost_LIBRARIES}
     @JoynrConfig_LIB_COMMON_LIBRARIES@
 )
+
+if(${USE_PLATFORM_SPDLOG})
+    find_package(spdlog REQUIRED)
+    get_target_property(spdlog_INCLUDE_DIRS spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+    list(
+        APPEND Joynr_LIB_COMMON_INCLUDE_DIRS
+        ${spdlog_INCLUDE_DIRS}
+    )
+endif(${USE_PLATFORM_SPDLOG})
+
+if(${USE_PLATFORM_JSMN})
+    find_package(jsmn QUIET)
+
+    # if neither Findjsmn.cmake nor jsmnConfig.cmake is found, try this:
+    if(NOT jsmn_FOUND)
+        find_path(jsmn_INCLUDE_DIR jsmn.h)
+        find_library(jsmn_LIBRARY libjsmn.a)
+
+        include(FindPackageHandleStandardArgs)
+        find_package_handle_standard_args(jsmn DEFAULT_MSG jsmn_LIBRARY jsmn_INCLUDE_DIR)
+        set(jsmn_FOUND ${JSMN_FOUND} CACHE BOOL "TRUE if jsmn was found, FALSE otherwise")
+    endif(NOT jsmn_FOUND)
+
+    if(NOT jsmn_FOUND)
+        message(
+            FATAL_ERROR
+            "could not find jsmn, make sure to install this library (libjsmn.a) and the header "
+            "file (jsmn.h)"
+        )
+    endif(NOT jsmn_FOUND)
+
+    list(
+        APPEND Joynr_LIB_COMMON_INCLUDE_DIRS
+        "${jsmn_INCLUDE_DIR}"
+    )
+    list(
+        APPEND Joynr_LIB_COMMON_LIBRARIES
+        ${jsmn_LIBRARY}
+    )
+endif(${USE_PLATFORM_JSMN})
 
 set(Joynr_EXECUTABLES)
 set(
     Joynr_RESOURCES_DIR
-    @JoynrConfig_INSTALL_BIN_DIR@/resources
+    @JoynrConfig_RESOURCES_DIR@
 )
 
 # in-process configuration

@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.14.1)
+project(joynr-0.14.2)
 set(JOYNR_MAJOR_VERSION 0)
 set(JOYNR_MINOR_VERSION 14)
-set(JOYNR_PATCH_VERSION 1)
+set(JOYNR_PATCH_VERSION 2)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -45,7 +45,8 @@ message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation sub directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation sub directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation sub directory for header files")
-set(INSTALL_CMAKE_DIR lib/cmake/Joynr CACHE PATH "Installation sub directory for CMake files")
+set(INSTALL_CMAKE_DIR lib/cmake/joynr CACHE PATH "Installation sub directory for CMake files")
+set(INSTALL_RES_DIR etc/joynr CACHE PATH "Installation sub directory for resource and setting files")
 
 if(NOT INSTALL_TEST_DIR)
     set(INSTALL_TEST_DIR "${INSTALL_BIN_DIR}" CACHE PATH "Installation sub directory for tests")
@@ -584,28 +585,35 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 ### Add spdlog ###########################################################
 find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
 
-message(STATUS "############ Download: spdlog ############")
-set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
-set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
-if(SPDLOG_ROOT)
-    set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
-    set(SPDLOG_SOURCE_TYPE "URL")
-endif(SPDLOG_ROOT)
-message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
+if (USE_PLATFORM_SPDLOG)
+    find_package(spdlog REQUIRED)
+    get_target_property(spdlog_INCLUDE_DIRS spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+else(USE_PLATFORM_SPDLOG)
+    message(STATUS "############ Download: spdlog ############")
+    set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
+    set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
+    if(SPDLOG_ROOT)
+        set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
+        set(SPDLOG_SOURCE_TYPE "URL")
+    endif(SPDLOG_ROOT)
+    message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
 
 
-AddExternalProject(
-    spdlog
-    ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
-    TIMEOUT 10
-    # Disable configure step
-    CONFIGURE_COMMAND ""
-    # Disable build step
-    BUILD_COMMAND ""
-)
+    AddExternalProject(
+        spdlog
+        ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
+        TIMEOUT 10
+        # Disable configure step
+        CONFIGURE_COMMAND ""
+        # Disable build step
+        BUILD_COMMAND ""
+    )
 
-ExternalProject_Get_Property(spdlog SOURCE_DIR)
-set(spdlog_SOURCE_DIR ${SOURCE_DIR})
+     ExternalProject_Get_Property(spdlog SOURCE_DIR)
+     set(spdlog_INCLUDE_DIRS "${SOURCE_DIR}/include")
+endif(USE_PLATFORM_SPDLOG)
+
+message(STATUS "variable spdlog_INCLUDE_DIRS=" ${spdlog_INCLUDE_DIRS})
 
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -618,11 +626,13 @@ if(${BUILD_CLUSTER_CONTROLLER})
     add_subdirectory(cluster-controller)
 else()
     # We still use the websocket default configuration file
+    # copy resources for build tree
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cluster-controller/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings)
+    # ...and for install tree
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
-        DESTINATION ${INSTALL_BIN_DIR}/resources/
+        DESTINATION ${INSTALL_RES_DIR}
     )
 endif(${BUILD_CLUSTER_CONTROLLER})
 add_subdirectory(runtimes)
@@ -637,7 +647,7 @@ set(
     JoynrCommon
     Joynr
     JoynrWsRuntime
-    jsonserializer
+    JoynrJsonSerializer
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -680,7 +690,7 @@ set(
     JoynrConfig_LIB_COMMON_LIBRARIES
     JoynrCommon
     Joynr
-    jsonserializer
+    JoynrJsonSerializer
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -707,16 +717,16 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 # ... for the build tree
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
-message(STATUS "variable jsonserializer_PUBLIC_INCLUDE_DIRECTORY=" ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY})
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
+message(STATUS "variable JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY=" ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY})
 
 set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_SOURCE_DIR}/include
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_SOURCE_DIR}
+    ${spdlog_INCLUDE_DIRS}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_INCLUDE_DIR}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -732,22 +742,23 @@ set(
     JoynrConfig_LIB_WS_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_SOURCE_DIR}/include
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_SOURCE_DIR}
+    ${spdlog_INCLUDE_DIRS}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_INCLUDE_DIR}
 )
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrConfig_LIB_DBUS_INCLUDE_DIRS
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-        ${spdlog_SOURCE_DIR}/include
-        ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
-        ${jsmn_SOURCE_DIR}
+        ${spdlog_INCLUDE_DIRS}
+        ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
+        ${jsmn_INCLUDE_DIR}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
 set(JoynrConfig_INSTALL_BIN_DIR "${JOYNR_BINARY_DIR}")
+set(JoynrConfig_RESOURCES_DIR "${JoynrConfig_INSTALL_BIN_DIR}/resources")
 
 configure_file(
     JoynrConfig.cmake.in
@@ -759,8 +770,13 @@ file(
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_INCLUDE_DIR}"
 )
+set(JoynrConfig_LIB_COMMON_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
+set(JoynrConfig_LIB_WS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
+set(JoynrConfig_LIB_DBUS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_TARGETS_FILE "\${CMAKE_CURRENT_LIST_DIR}/JoynrTargets.cmake")
+set(JoynrConfig_RESOURCES_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_RES_DIR}")
+
 file(
     RELATIVE_PATH RELATIVE_INSTALL_BIN_DIR
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"

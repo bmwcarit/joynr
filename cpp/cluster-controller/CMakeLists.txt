@@ -4,8 +4,7 @@ message(STATUS "#############################################\n")
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrLib_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY
@@ -18,12 +17,12 @@ set(
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
     JoynrClusterController_SYS_INCLUDE_DIRECTORIES
-    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_INCLUDE_DIR}
     ${Qt5Core_INCLUDE_DIRECTORY}
 )
 
@@ -191,7 +190,6 @@ else()
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
-        DESTINATION ${INSTALL_BIN_DIR}/resources/
+        DESTINATION ${INSTALL_RES_DIR}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-

@@ -2,15 +2,13 @@ message(STATUS "#############################################")
 message(STATUS "Configuring JoynrLib...")
 message(STATUS "#############################################\n")
 
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrLib_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
-
 
 set(
     JoynrLib_INCLUDE_DIRECTORIES
@@ -21,8 +19,8 @@ set(
 
 set(
     JoynrLib_SYS_INCLUDE_DIRS
-    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_INCLUDE_DIR}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${libwebsockets_INCLUDE_DIRS}
 )
 
@@ -30,7 +28,7 @@ set(
     JoynrLib_TARGET_LIBRARIES
     ${libwebsockets_LIBRARIES}
     JoynrCommon
-    jsonserializer
+    JoynrJsonSerializer
 )
 
 set(
@@ -148,6 +146,7 @@ set_target_properties(
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}"
+    COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}/${INSTALL_RES_DIR}"
 )
 
 generate_export_header(
