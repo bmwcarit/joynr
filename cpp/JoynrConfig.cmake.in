@@ -91,7 +91,26 @@ if(${USE_PLATFORM_SPDLOG})
 endif(${USE_PLATFORM_SPDLOG})
 
 if(${USE_PLATFORM_JSMN})
-    find_package(jsmn REQUIRED)
+    find_package(jsmn QUIET)
+
+    # if neither Findjsmn.cmake nor jsmnConfig.cmake is found, try this:
+    if(NOT jsmn_FOUND)
+        find_path(jsmn_INCLUDE_DIR jsmn.h)
+        find_library(jsmn_LIBRARY libjsmn.a)
+
+        include(FindPackageHandleStandardArgs)
+        find_package_handle_standard_args(jsmn DEFAULT_MSG jsmn_LIBRARY jsmn_INCLUDE_DIR)
+        set(jsmn_FOUND ${JSMN_FOUND} CACHE BOOL "TRUE if jsmn was found, FALSE otherwise")
+    endif(NOT jsmn_FOUND)
+
+    if(NOT jsmn_FOUND)
+        message(
+            FATAL_ERROR
+            "could not find jsmn, make sure to install this library (libjsmn.a) and the header "
+            "file (jsmn.h)"
+        )
+    endif(NOT jsmn_FOUND)
+
     list(
         APPEND Joynr_LIB_COMMON_INCLUDE_DIRS
         "${jsmn_INCLUDE_DIR}"
