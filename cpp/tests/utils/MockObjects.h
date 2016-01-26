@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -273,13 +273,43 @@ public:
 
 class MockMessageRouter : public joynr::MessageRouter {
 public:
+    void invokeAddNextHopOnSuccessFct(const std::string& participantId,
+            const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
+            std::function<void()> onSuccess) {
+        if (onSuccess) {
+            onSuccess();
+        }
+    }
+    void invokeRemoveNextHopOnSuccessFct(const std::string& participantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+        if (onSuccess) {
+            onSuccess();
+        }
+    }
+
     MockMessageRouter():
         MessageRouter(nullptr, nullptr, 0) {
-
+        EXPECT_CALL(
+                *this,
+                addNextHop(_,_,_)
+        )
+                .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
+        EXPECT_CALL(
+                *this,
+                removeNextHop(_,_,_)
+        )
+                .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
     }
     MOCK_METHOD1(route, void(const joynr::JoynrMessage& message));
-    MOCK_METHOD2(addNextHop, void(std::string participantId, std::shared_ptr<joynr::system::RoutingTypes::Address> inprocessAddress));
-    MOCK_METHOD1(removeNextHop, void(std::string participantId));
+    MOCK_METHOD3(addNextHop, void(
+            const std::string& participantId,
+            const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
+            std::function<void()> onSuccess));
+    MOCK_METHOD3(removeNextHop, void(
+            const std::string& participantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
