@@ -23,7 +23,7 @@ set(
     JoynrCommon_INCLUDE_DIRECTORIES
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
@@ -129,10 +129,11 @@ set_target_properties(
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}"
+    COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}/${INSTALL_RES_DIR}"
 )
 
 # make spdlog system directory to avoid compiler warnings
-target_include_directories(JoynrCommon SYSTEM PUBLIC $<BUILD_INTERFACE:${spdlog_SOURCE_DIR}/include>)
+target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>")
 
 generate_export_header(
     JoynrCommon
@@ -175,6 +176,6 @@ else()
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
-        DESTINATION ${INSTALL_BIN_DIR}/resources/
+        DESTINATION ${INSTALL_RES_DIR}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")

@@ -30,8 +30,7 @@ INIT_LOGGER(MessagingSettings);
 
 MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
 {
-    Settings defaultMessagingSettings{DEFAULT_MESSAGING_SETTINGS_FILENAME()};
-    Settings::merge(defaultMessagingSettings, this->settings, false);
+    settings.fillEmptySettingsWithDefaults(DEFAULT_MESSAGING_SETTINGS_FILENAME());
     checkSettings();
 }
 
@@ -192,7 +191,7 @@ void MessagingSettings::setClientCertificatePassword(const std::string& clientCe
 
 const std::string& MessagingSettings::DEFAULT_MESSAGING_SETTINGS_FILENAME()
 {
-    static const std::string value("resources/default-messaging.settings");
+    static const std::string value("default-messaging.settings");
     return value;
 }
 

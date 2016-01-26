@@ -1,5 +1,5 @@
 message(STATUS "#############################################")
-message(STATUS "Configuring jsonserializer...")
+message(STATUS "Configuring JoynrJsonSerializer...")
 message(STATUS "#############################################\n")
 
 ### Add jsmn ###########################################################
@@ -39,78 +39,74 @@ set(
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
 set(
-    jsonserializer_PUBLIC_INCLUDE_DIRECTORY
+    JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     ${jsmn_INCLUDE_DIR}
 )
 
 set(
-    jsonserializer_INCLUDE_DIRECTORIES
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    JoynrJsonSerializer_INCLUDE_DIRECTORIES
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
 )
 
 file(
-    GLOB_RECURSE jsonserializer_PUBLIC_HEADERS
+    GLOB_RECURSE JoynrJsonSerializer_PUBLIC_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "include/joynr/*.h"
 )
 
 file(
-    GLOB jsonserializer_PRIVATE_HEADERS
+    GLOB JoynrJsonSerializer_PRIVATE_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "*.h"
     "exceptions/*.h"
 )
 
 set(
-    jsonserializer_HEADERS
-    ${jsonserializer_PUBLIC_HEADERS}
-    ${jsonserializer_PRIVATE_HEADERS}
+    JoynrJsonSerializer_HEADERS
+    ${JoynrJsonSerializer_PUBLIC_HEADERS}
+    ${JoynrJsonSerializer_PRIVATE_HEADERS}
 )
 
 file(
-    GLOB_RECURSE jsonserializer_SOURCES
+    GLOB_RECURSE JoynrJsonSerializer_SOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "*.cpp"
 )
 
 add_library(
-    jsonserializer SHARED
-    ${jsonserializer_HEADERS}
-    ${jsonserializer_SOURCES}
+    JoynrJsonSerializer SHARED
+    ${JoynrJsonSerializer_HEADERS}
+    ${JoynrJsonSerializer_SOURCES}
 )
 
 include_directories(
-    ${jsonserializer_INCLUDE_DIRECTORIES}
+    ${JoynrJsonSerializer_INCLUDE_DIRECTORIES}
 )
 
-AddIncludeWhatYouUse(jsonserializer)
+AddIncludeWhatYouUse(JoynrJsonSerializer)
 
 target_link_libraries(
-    jsonserializer
-    JoynrCommon
-)
-
-target_link_libraries(
-    jsonserializer
+    JoynrJsonSerializer
+    PUBLIC JoynrCommon
     PRIVATE ${jsmn_LIBRARY}
 )
 
 set_target_properties(
-    jsonserializer
+    JoynrJsonSerializer
     PROPERTIES
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
-    PUBLIC_INCLUDE_DIRECTORY "${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}"
+    PUBLIC_INCLUDE_DIRECTORY "${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}"
 )
 
-add_dependencies(jsonserializer jsmn)
+add_dependencies(JoynrJsonSerializer jsmn)
 
 install(
-    TARGETS jsonserializer EXPORT JoynrTargets
+    TARGETS JoynrJsonSerializer EXPORT JoynrTargets
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
     ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT library
     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib

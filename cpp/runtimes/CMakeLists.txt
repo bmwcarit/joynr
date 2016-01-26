@@ -2,7 +2,7 @@ message(STATUS "#############################################")
 message(STATUS "Configuring runtimes...")
 message(STATUS "#############################################\n")
 
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 
@@ -177,7 +177,7 @@ set(
 include_directories(
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
     ${libwebsockets_INCLUDE_DIRS}
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 add_library(
@@ -199,7 +199,7 @@ target_link_libraries(
     JoynrWsRuntime
     JoynrCommon
     Joynr
-    jsonserializer
+    JoynrJsonSerializer
 )
 
 generate_export_header(
