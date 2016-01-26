@@ -714,7 +714,6 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
             = runtime2->createProxyBuilder<tests::testProxy>(nonexistentDomain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
 
     const int arbitrationTimeout = 5000;
 
@@ -747,6 +746,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
         auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
         elapsed = duration.count();
+        if (elapsed < arbitrationTimeout) {
+            JOYNR_LOG_DEBUG(logger, "Expected joynr::exceptions::DiscoveryException has been thrown too early. Message: {}",e.getMessage());
+        }
 	}
 
 	ASSERT_TRUE(haveDiscoveryException);
