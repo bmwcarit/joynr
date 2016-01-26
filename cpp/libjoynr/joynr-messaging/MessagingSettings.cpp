@@ -30,13 +30,7 @@ INIT_LOGGER(MessagingSettings);
 
 MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
 {
-    std::string cmakeSettingsPath = CMAKE_JOYNR_SETTINGS_INSTALL_DIR;
-    Settings cmakeDefaultMessagingSettings(cmakeSettingsPath + "/" +
-                                           DEFAULT_MESSAGING_SETTINGS_FILENAME());
-    Settings relativeDefaultMessagingSettings("resources/" + DEFAULT_MESSAGING_SETTINGS_FILENAME());
-
-    Settings::merge(relativeDefaultMessagingSettings, this->settings, false);
-    Settings::merge(cmakeDefaultMessagingSettings, this->settings, false);
+    settings.fillEmptySettingsWithDefaults(DEFAULT_MESSAGING_SETTINGS_FILENAME());
     checkSettings();
 }
 

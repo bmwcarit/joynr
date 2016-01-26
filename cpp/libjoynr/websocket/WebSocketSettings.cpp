@@ -30,14 +30,7 @@ INIT_LOGGER(WebSocketSettings);
 
 WebSocketSettings::WebSocketSettings(Settings& settings) : settings(settings)
 {
-    std::string cmakeSettingsPath = CMAKE_JOYNR_SETTINGS_INSTALL_DIR;
-    Settings cmakeDefaultWebSocketSettings(cmakeSettingsPath + "/" +
-                                           DEFAULT_WEBSOCKET_SETTINGS_FILENAME());
-    Settings relativeDefaultWebSocketSettings("resources/" + DEFAULT_WEBSOCKET_SETTINGS_FILENAME());
-
-    Settings::merge(relativeDefaultWebSocketSettings, this->settings, false);
-    Settings::merge(cmakeDefaultWebSocketSettings, this->settings, false);
-
+    settings.fillEmptySettingsWithDefaults(DEFAULT_WEBSOCKET_SETTINGS_FILENAME());
     checkSettings();
 }
 

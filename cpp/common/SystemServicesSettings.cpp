@@ -28,15 +28,7 @@ namespace joynr
 INIT_LOGGER(SystemServicesSettings);
 SystemServicesSettings::SystemServicesSettings(Settings& settings) : settings(settings)
 {
-    std::string cmakeSettingsPath = CMAKE_JOYNR_SETTINGS_INSTALL_DIR;
-    Settings cmakeDefaultSystemServicesSettings(cmakeSettingsPath + "/" +
-                                                DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME());
-    Settings relativeDefaultSystemServicesSettings("resources/" +
-                                                   DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME());
-
-    Settings::merge(relativeDefaultSystemServicesSettings, this->settings, false);
-    Settings::merge(cmakeDefaultSystemServicesSettings, this->settings, false);
-
+    settings.fillEmptySettingsWithDefaults(DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME());
     checkSettings();
 }
 

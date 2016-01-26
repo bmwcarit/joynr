@@ -89,6 +89,15 @@ public:
      */
     static void merge(const Settings& from, Settings& to, bool overwrite);
 
+    /**
+     * @brief Any empty setting (any settings which are not already set) will be first filled from
+     * "resources/$defaultsFilename"
+     *        and afterwards from the location given by
+     * "CMAKE_JOYNR_SETTINGS_INSTALL_DIR/$defaultsFilename".
+     * @param defaultsFilename The name of the file where the defaults are read from
+     */
+    void fillEmptySettingsWithDefaults(const std::string& defaultsFilename);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(Settings);
 

@@ -29,14 +29,7 @@ INIT_LOGGER(DbusSettings);
 
 DbusSettings::DbusSettings(Settings& settings) : settings(settings)
 {
-    std::string cmakeSettingsPath = CMAKE_JOYNR_SETTINGS_INSTALL_DIR;
-    Settings cmakeDefaultDbusSettings(cmakeSettingsPath + "/" +
-                                      DEFAULT_DBUS_SETTINGS_FILENAME());
-    Settings relativeDefaultDbusSettings("resources/" + DEFAULT_DBUS_SETTINGS_FILENAME());
-
-    Settings::merge(relativeDefaultDbusSettings, this->settings, false);
-    Settings::merge(cmakeDefaultDbusSettings, this->settings, false);
-
+    settings.fillEmptySettingsWithDefaults(DEFAULT_DBUS_SETTINGS_FILENAME());
     checkSettings();
 }
 
