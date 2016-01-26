@@ -1,14 +1,5 @@
 package io.joynr.messaging.websocket;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingSkeleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /*
  * #%L
  * %%
@@ -28,6 +19,12 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
+import java.io.IOException;
+
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessagingSkeleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.joynr.messaging.routing.MessageRouter;
@@ -39,7 +36,6 @@ import joynr.JoynrMessage;
 public abstract class WebSocketMessagingSkeleton extends MessagingSocket implements IMessagingSkeleton {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
-    private ExecutorService executorThreadPool = Executors.newCachedThreadPool();
 
     ObjectMapper objectMapper;
     private MessageRouter messageRouter;
@@ -55,19 +51,9 @@ public abstract class WebSocketMessagingSkeleton extends MessagingSocket impleme
         logger.debug("Received TEXT message: " + json);
         try {
             final JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
-            executorThreadPool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        messageRouter.route(message);
-                    } catch (IOException e) {
-                        logger.error("Error: ", e);
-                    }
-                }
-            });
-
+            messageRouter.route(message);
         } catch (IOException e) {
-            logger.error("Failed to parse websocket message", e);
+            logger.error("Failed to process websocket message: {}", e.getMessage());
         }
     }
 
