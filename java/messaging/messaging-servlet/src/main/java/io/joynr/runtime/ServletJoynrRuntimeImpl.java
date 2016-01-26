@@ -29,6 +29,7 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.provider.JoynrProvider;
@@ -52,6 +53,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
                                    MessageReceiver messageReceiver,
                                    Dispatcher dispatcher,
                                    MessagingStubFactory messagingStubFactory,
+                                   MessagingSkeletonFactory messagingSkeletonFactory,
                                    LocalDiscoveryAggregator localDiscoveryAggregator,
                                    LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                    @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -70,6 +72,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
               replyCallerDirectory,
               dispatcher,
               messagingStubFactory,
+              messagingSkeletonFactory,
               localDiscoveryAggregator,
               systemServicesDomain,
               dispatcherAddress,

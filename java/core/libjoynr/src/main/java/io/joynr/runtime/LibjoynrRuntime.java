@@ -5,7 +5,7 @@ import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.proxy.ProxyBuilder;
@@ -50,6 +50,7 @@ public abstract class LibjoynrRuntime<T extends Address> extends JoynrRuntimeImp
                            ReplyCallerDirectory replyCallerDirectory,
                            Dispatcher dispatcher,
                            MessagingStubFactory messagingStubFactory,
+                           MessagingSkeletonFactory messagingSkeletonFactory,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
                            String systemServicesDomain,
                            Address dispatcherAddress,
@@ -60,14 +61,14 @@ public abstract class LibjoynrRuntime<T extends Address> extends JoynrRuntimeImp
                            Address ccMessagingAddress,
                            T libjoynrMessagingAddress,
                            ChildMessageRouter messageRouter,
-                           String parentRoutingProviderParticipantId,
-                           IMessagingSkeleton messagingSkeleton) {
+                           String parentRoutingProviderParticipantId) {
         super(objectMapper,
               proxyBuilderFactory,
               requestCallerDirectory,
               replyCallerDirectory,
               dispatcher,
               messagingStubFactory,
+              messagingSkeletonFactory,
               localDiscoveryAggregator,
               systemServicesDomain,
               dispatcherAddress,
@@ -76,7 +77,6 @@ public abstract class LibjoynrRuntime<T extends Address> extends JoynrRuntimeImp
               domainAccessControllerAddress,
               discoveryProviderAddress);
         // CHECKSTYLE:ON
-        messagingSkeleton.init();
         initMessagingStub(libjoynrMessagingAddress, messagingStubFactory.create(ccMessagingAddress));
         ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);
         RoutingProxy routingProxy = proxyBuilder.build();

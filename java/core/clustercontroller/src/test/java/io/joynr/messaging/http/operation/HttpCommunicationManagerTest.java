@@ -34,6 +34,7 @@ import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.messaging.routing.MessageRouter;
 
 import java.util.Properties;
 import java.util.UUID;
@@ -101,6 +102,8 @@ public class HttpCommunicationManagerTest {
 
     @Mock
     private Dispatcher dispatcher;
+    @Mock
+    private MessageRouter mockMessageRouter;
     private String bounceProxyUrlString;
 
     @Before
@@ -126,6 +129,7 @@ public class HttpCommunicationManagerTest {
                                                          bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
                                                                                   .in(Singleton.class);
                                                          bind(LocalChannelUrlDirectoryClient.class).to(DummyLocalChannelUrlDirectoryClient.class);
+                                                         bind(MessageRouter.class).toInstance(mockMessageRouter);
                                                      }
                                                  });
 

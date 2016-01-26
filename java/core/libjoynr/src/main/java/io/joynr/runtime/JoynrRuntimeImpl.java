@@ -29,6 +29,7 @@ import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessagingStubFactory;
@@ -84,6 +85,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     protected final String discoveryProxyParticipantId;
 
     private MessagingStubFactory messagingStubFactory;
+    private MessagingSkeletonFactory messagingSkeletonFactory;
 
     // CHECKSTYLE:OFF
     @Inject
@@ -93,6 +95,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             ReplyCallerDirectory replyCallerDirectory,
                             Dispatcher dispatcher,
                             MessagingStubFactory messagingStubFactory,
+                            MessagingSkeletonFactory messagingSkeletonFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -106,6 +109,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         this.dispatcher = dispatcher;
         this.objectMapper = objectMapper;
         this.messagingStubFactory = messagingStubFactory;
+        this.messagingSkeletonFactory = messagingSkeletonFactory;
 
         Reflections reflections = new Reflections("joynr");
         Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
@@ -135,6 +139,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         ProxyBuilder<DiscoveryProxy> discoveryProxyBuilder = getProxyBuilder(systemServicesDomain, DiscoveryProxy.class);
         discoveryProxyParticipantId = discoveryProxyBuilder.getParticipantId();
         localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyBuilder.build());
+
+        messagingSkeletonFactory.start();
     }
 
     @Override
@@ -167,6 +173,11 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN runtime");
         //TODO: this will be inverted, with elements needing shutdown registering themselves
+        try {
+            messagingSkeletonFactory.shutdown();
+        } catch (Exception e) {
+            logger.error("error shutting down skeletons: {}", e.getMessage());
+        }
         try {
             capabilitiesRegistrar.shutdown(clear);
         } catch (Exception e) {

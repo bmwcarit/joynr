@@ -56,10 +56,13 @@ import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.inprocess.InProcessMessageSerializerFactory;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.routing.MessageRouter;
@@ -80,6 +83,7 @@ import joynr.system.RoutingTypes.ChannelAddress;
 abstract class AbstractRuntimeModule extends AbstractModule {
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
+    MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
 
     @Override
     protected void configure() {
@@ -96,6 +100,11 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
         }, Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
         messageSerializerFactory.addBinding(InProcessAddress.class).to(InProcessMessageSerializerFactory.class);
+
+        messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
+        }, new TypeLiteral<IMessagingSkeleton>() {
+        }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
+        messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessLibjoynrMessagingSkeleton.class);
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
         bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);

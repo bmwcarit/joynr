@@ -7,6 +7,7 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.websocket.LibWebSocketMessagingStub;
@@ -57,6 +58,7 @@ public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAdd
                                     ReplyCallerDirectory replyCallerDirectory,
                                     Dispatcher dispatcher,
                                     MessagingStubFactory messagingStubFactory,
+                                    MessagingSkeletonFactory messagingSkeletonFactory,
                                     LocalDiscoveryAggregator localDiscoveryAggregator,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -75,6 +77,7 @@ public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAdd
               replyCallerDirectory,
               dispatcher,
               messagingStubFactory,
+              messagingSkeletonFactory,
               localDiscoveryAggregator,
               systemServicesDomain,
               dispatcherAddress,
@@ -85,8 +88,7 @@ public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAdd
               ccMessagingAddress,
               libjoynrMessagingAddress,
               messageRouter,
-              parentRoutingProviderParticipantId,
-              webSocketMessagingSkeleton);
+              parentRoutingProviderParticipantId);
         // CHECKSTYLE:ON
     }
 

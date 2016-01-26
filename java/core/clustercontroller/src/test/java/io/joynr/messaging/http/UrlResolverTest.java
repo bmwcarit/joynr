@@ -30,6 +30,7 @@ import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
+import io.joynr.messaging.routing.MessageRouter;
 
 import java.util.Properties;
 import java.util.UUID;
@@ -38,6 +39,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.inject.AbstractModule;
@@ -47,7 +49,8 @@ import com.google.inject.Injector;
 public class UrlResolverTest {
 
     private String channelId = "UrlResolverTest_" + UUID.randomUUID().toString();
-
+    @Mock
+    private MessageRouter mockMessageRouter;
     private UrlResolver urlResolver;
 
     @Before
@@ -65,6 +68,7 @@ public class UrlResolverTest {
                                                          bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
                                                                                   .in(Singleton.class);
                                                          bind(LocalChannelUrlDirectoryClient.class).to(DummyLocalChannelUrlDirectoryClient.class);
+                                                         bind(MessageRouter.class).toInstance(mockMessageRouter);
                                                      }
                                                  });
         urlResolver = injector.getInstance(UrlResolver.class);

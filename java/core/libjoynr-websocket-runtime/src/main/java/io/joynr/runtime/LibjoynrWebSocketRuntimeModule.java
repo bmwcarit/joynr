@@ -55,6 +55,7 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         bind(ChildMessageRouter.class).in(Singleton.class);
         bind(MessageRouter.class).to(ChildMessageRouter.class);
 
+        messagingSkeletonFactory.addBinding(WebSocketAddress.class).to(LibWebSocketMessagingSkeleton.class);
         messagingStubFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingStubFactory.class);
         messageSerializerFactory.addBinding(WebSocketAddress.class).to(WebSocketMessageSerializerFactory.class);
     }

@@ -1,5 +1,7 @@
 package io.joynr.messaging.inprocess;
 
+import com.google.inject.Inject;
+
 /*
  * #%L
  * %%
@@ -27,6 +29,7 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
 
     private final Dispatcher dispatcher;
 
+    @Inject
     public InProcessLibjoynrMessagingSkeleton(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }

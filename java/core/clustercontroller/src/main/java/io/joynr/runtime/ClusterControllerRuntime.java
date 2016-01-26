@@ -42,6 +42,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.JoynrMessage;
@@ -79,6 +80,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     ReplyCallerDirectory replyCallerDirectory,
                                     Dispatcher dispatcher,
                                     MessagingStubFactory messagingStubFactory,
+                                    MessagingSkeletonFactory messagingSkeletonFactory,
                                     LocalDiscoveryAggregator localDiscoveryAggregator,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -97,6 +99,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               replyCallerDirectory,
               dispatcher,
               messagingStubFactory,
+              messagingSkeletonFactory,
               localDiscoveryAggregator,
               systemServicesDomain,
               dispatcherAddress,

@@ -52,6 +52,7 @@ public class CCWebSocketRuntimeModule extends ClusterControllerRuntimeModule {
         bind(WebSocketClientMessagingStubFactory.class).in(Singleton.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
 
+        messagingSkeletonFactory.addBinding(WebSocketClientAddress.class).to(CCWebSocketMessagingSkeleton.class);
         messagingStubFactory.addBinding(WebSocketClientAddress.class).to(WebSocketClientMessagingStubFactory.class);
         messageSerializerFactory.addBinding(WebSocketClientAddress.class)
                                 .to(WebSocketClientMessageSerializerFactory.class);
