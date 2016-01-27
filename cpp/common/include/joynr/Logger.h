@@ -25,57 +25,61 @@
 #include <boost/algorithm/string/erase.hpp>
 #include <spdlog/spdlog.h>
 
+namespace joynr
+{
 enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
+} // namespace joynr
 
 #ifdef JOYNR_MAX_LOG_LEVEL_FATAL
-#define JOYR_LOG_LEVEL LogLevel::Fatal
+#define JOYR_LOG_LEVEL joynr::LogLevel::Fatal
 #endif // JOYNR_MAX_LOG_LEVEL_FATAL
 
 #ifdef JOYNR_MAX_LOG_LEVEL_ERROR
-#define JOYR_LOG_LEVEL LogLevel::Error
+#define JOYR_LOG_LEVEL joynr::LogLevel::Error
 #endif // JOYNR_MAX_LOG_LEVEL_ERROR
 
 #ifdef JOYNR_MAX_LOG_LEVEL_WARN
-#define JOYR_LOG_LEVEL LogLevel::Warn
+#define JOYR_LOG_LEVEL joynr::LogLevel::Warn
 #endif // JOYNR_MAX_LOG_LEVEL_WARN
 
 #ifdef JOYNR_MAX_LOG_LEVEL_INFO
-#define JOYR_LOG_LEVEL LogLevel::Info
+#define JOYR_LOG_LEVEL joynr::LogLevel::Info
 #endif // JOYNR_MAX_LOG_LEVEL_INFO
 
 #ifdef JOYNR_MAX_LOG_LEVEL_DEBUG
-#define JOYR_LOG_LEVEL LogLevel::Debug
+#define JOYR_LOG_LEVEL joynr::LogLevel::Debug
 #endif // JOYNR_MAX_LOG_LEVEL_DEBUG
 
 // default to Trace if no log level is set
 #ifndef JOYR_LOG_LEVEL
-#define JOYR_LOG_LEVEL LogLevel::Trace
+#define JOYR_LOG_LEVEL joynr::LogLevel::Trace
 #endif
 
 #define JOYNR_CONDITIONAL_SPDLOG(level, method, logger, ...)                                       \
     do {                                                                                           \
-        if (JOYR_LOG_LEVEL <= level) {                                                             \
+        joynr::LogLevel logLevel = level;                                                          \
+        if (JOYR_LOG_LEVEL <= logLevel) {                                                          \
             logger.spdlog->method(__VA_ARGS__);                                                    \
         }                                                                                          \
     } while (0)
 
 #define JOYNR_LOG_TRACE(logger, ...)                                                               \
-    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Trace, trace, logger, __VA_ARGS__)
+    JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Trace, trace, logger, __VA_ARGS__)
 
 #define JOYNR_LOG_DEBUG(logger, ...)                                                               \
-    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Debug, debug, logger, __VA_ARGS__)
+    JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Debug, debug, logger, __VA_ARGS__)
 
 #define JOYNR_LOG_INFO(logger, ...)                                                                \
-    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Info, info, logger, __VA_ARGS__)
+    JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Info, info, logger, __VA_ARGS__)
 
 #define JOYNR_LOG_WARN(logger, ...)                                                                \
-    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Warn, warn, logger, __VA_ARGS__)
+    JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Warn, warn, logger, __VA_ARGS__)
 
 #define JOYNR_LOG_ERROR(logger, ...)                                                               \
-    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Error, error, logger, __VA_ARGS__)
+    JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Error, error, logger, __VA_ARGS__)
 
 #define JOYNR_LOG_FATAL(logger, ...)                                                               \
-    JOYNR_CONDITIONAL_SPDLOG(LogLevel::Fatal, emerg, logger, __VA_ARGS__)
+    JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Fatal, emerg, logger, __VA_ARGS__)
 
 #define ADD_LOGGER(T) static joynr::Logger logger
 // this macro allows to pass typenames containing commas (i.e. templates) as a single argument to
