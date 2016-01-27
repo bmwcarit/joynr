@@ -172,7 +172,7 @@ public:
         JOYNR_LOG_INFO(logger, "onSuccess has been invoked");
         status = StatusCodeEnum::SUCCESS;
         // transform variadic templates into a std::tuple
-        this->results = std::make_tuple(results...);
+        this->results = std::make_tuple(std::move(results)...);
         resultReceived.notify();
     }
 
