@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,69 +26,6 @@ provisioning.ccAddress = {
     port : 4242,
     path : ""
 };
-provisioning.bounceProxyBaseUrl = "http://localhost:8080";
-provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
-var discoveryChannelId = "discoverydirectory_channelid";
-provisioning.channelUrls = {};
-provisioning.channelUrls[discoveryChannelId] =
-        [ provisioning.bounceProxyBaseUrl + "/discovery/channels/" + discoveryChannelId + "/"
-        ];
-var globalCapDirCapability = {
-    domain : "io.joynr",
-    interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
-    providerQos : {
-        qos : [],
-        version : 0,
-        priority : 1,
-        isLocalOnly : false,
-        onChangeSubscriptions : true
-    },
-    channelId : discoveryChannelId,
-    participantId : "capabilitiesdirectory_participantid"
-};
-var channelUrlDirCapability = {
-    domain : "io.joynr",
-    interfaceName : "infrastructure/ChannelUrlDirectory",
-    providerQos : {
-        qos : [],
-        version : 0,
-        priority : 1,
-        isLocalOnly : false,
-        onChangeSubscriptions : true
-    },
-    channelId : discoveryChannelId,
-    participantId : "channelurldirectory_participantid"
-};
-var discoveryCapability = {
-    domain : "io.joynr",
-    interfaceName : "system/Discovery",
-    providerQos : {
-        qos : [],
-        version : 0,
-        priority : 1,
-        isLocalOnly : false,
-        onChangeSubscriptions : true
-    },
-    participantId : "CC.DiscoveryProvider.ParticipantId"
-};
-var routingCapability = {
-    domain : "io.joynr",
-    interfaceName : "system/Routing",
-    providerQos : {
-        qos : [],
-        version : 0,
-        priority : 1,
-        isLocalOnly : false,
-        onChangeSubscriptions : true
-    },
-    participantId : "CC.RoutingProvider.ParticipantId"
-};
-provisioning.capabilities = [
-    globalCapDirCapability,
-    channelUrlDirCapability,
-    discoveryCapability,
-    routingCapability
-];
 
 provisioning.logging = {
     configuration : {

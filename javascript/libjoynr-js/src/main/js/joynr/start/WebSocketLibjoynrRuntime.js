@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,9 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "uuid",
     "joynr/system/LoggingManager",
     "joynr/system/LoggerFactory",
+    "joynr/start/settings/defaultSettings",
+    "joynr/start/settings/defaultWebSocketSettings",
+    "joynr/start/settings/defaultLibjoynrSettings",
     "global/LocalStorage"
 ], function(
         Promise,
@@ -108,6 +111,9 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         uuid,
         LoggingManager,
         LoggerFactory,
+        defaultSettings,
+        defaultWebSocketSettings,
+        defaultLibjoynrSettings,
         LocalStorage) {
     var JoynrStates = {
         SHUTDOWN : "shut down",
@@ -248,10 +254,10 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         }
 
         ccAddress = new WebSocketAddress({
-            protocol : provisioning.ccAddress.protocol || "ws",
+            protocol : provisioning.ccAddress.protocol || defaultWebSocketSettings.protocol,
             host : provisioning.ccAddress.host,
             port : provisioning.ccAddress.port,
-            path : provisioning.ccAddress.path || ""
+            path : provisioning.ccAddress.path || defaultWebSocketSettings.path
         });
 
         var joynrState = JoynrStates.SHUTDOWN;
@@ -268,7 +274,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
          */
         this.start =
                 function start() {
-                    var i, routingProxyPromise, discoveryProxyPromise;
+                    var i, j, routingProxyPromise, discoveryProxyPromise;
 
                     if (joynrState !== JoynrStates.SHUTDOWN) {
                         throw new Error("Cannot start libjoynr because it's currently \""
@@ -300,6 +306,10 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     initialRoutingTable = {};
                     untypedCapabilities = provisioning.capabilities || [];
+                    var defaultCapabilities = defaultLibjoynrSettings.capabilities || [];
+
+                    untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
+
                     typedCapabilities = [];
                     if (untypedCapabilities) {
                         for (i = 0; i < untypedCapabilities.length; i++) {
