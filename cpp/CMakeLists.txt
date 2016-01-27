@@ -527,16 +527,16 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif(${WIN32})
     # check GNU CXX compiler version
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
-        message(STATUS "C++11 activated.")
+        message(STATUS "C++14 activated.")
         add_definitions(-D_GLIBCXX_USE_NANOSLEEP)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
     else()
-        message(FATAL_ERROR "C++11 and a gcc compiler with a version higher than 4.9 is needed.")
+        message(FATAL_ERROR "C++14 and a gcc compiler with a version higher than 4.9 is needed.")
     endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -Wno-unknown-pragmas")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++14 -Wno-unknown-pragmas")
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         option(
             USE_STDLIB_LIBCPP

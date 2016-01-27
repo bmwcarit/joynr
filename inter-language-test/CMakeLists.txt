@@ -5,7 +5,7 @@ project(inter-language-test-0.15.0-SNAPSHOT)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
-add_definitions("-std=gnu++0x")
+add_definitions("-std=c++14")
 
 set(
     JOYNR_SERVER
