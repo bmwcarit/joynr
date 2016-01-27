@@ -18,6 +18,8 @@
  */
 #include "runtimes/libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.h"
 
+#include <memory>
+
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
@@ -32,7 +34,7 @@ JoynrWebSocketRuntimeExecutor::JoynrWebSocketRuntimeExecutor(Settings* settings)
 
 void JoynrWebSocketRuntimeExecutor::createRuntime()
 {
-    runtime = std::unique_ptr<LibJoynrRuntime>(new LibJoynrWebSocketRuntime(settings));
+    runtime = std::make_unique<LibJoynrWebSocketRuntime>(settings);
     runtimeSemaphore.notify();
 }
 

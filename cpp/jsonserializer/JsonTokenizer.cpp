@@ -31,14 +31,6 @@ static const bool isJsonArrayRegistered = Variant::registerType<JsonArray>("Json
 static const bool isJsonObjectRegistered = Variant::registerType<JsonObject>("JsonObject");
 static const bool isJsonValueRegistered = Variant::registerType<JsonValue>("JsonValue");
 
-//--------- Utils -------------------------------------------------------------
-
-template<typename T, typename... TArgs>
-std::unique_ptr<T> makeUnique(TArgs&&... args)
-{
-    return std::unique_ptr<T>(new T(std::forward<TArgs>(args)...));
-}
-
 //--------- JsonToken ---------------------------------------------------------
 
 JsonToken::JsonToken(const char *pStr, jsmntok_t jsmnToken) :
@@ -83,7 +75,7 @@ IField &JsonObject::nextField()
 {
     tokenizer.nextToken();
     iterator += 1;
-    currentField = makeUnique<JsonField>(tokenizer);
+    currentField = std::make_unique<JsonField>(tokenizer);
     return *currentField;
 }
 
@@ -106,7 +98,7 @@ IValue &JsonArray::nextValue()
 {
     tokenizer.nextToken();
     iterator += 1;
-    currentValue = makeUnique<JsonValue>(tokenizer);
+    currentValue = std::make_unique<JsonValue>(tokenizer);
     return *currentValue;
 }
 
@@ -278,9 +270,9 @@ JsonField::JsonField(JsonTokenizer &tokenizer) :
     tokenKey(),
     tokenValue()
 {
-    tokenKey = makeUnique<JsonValue>(this->tokenizer);
+    tokenKey = std::make_unique<JsonValue>(this->tokenizer);
     this->tokenizer.nextToken();
-    tokenValue = makeUnique<JsonValue>(this->tokenizer);
+    tokenValue = std::make_unique<JsonValue>(this->tokenizer);
 }
 
 const std::string &JsonField::name() const
@@ -355,7 +347,7 @@ bool JsonTokenizer::hasNextObject() const
 IObject &JsonTokenizer::nextObject()
 {
     assert(hasNextObject());
-    currentObject = makeUnique<JsonObject>(*this);
+    currentObject = std::make_unique<JsonObject>(*this);
     return *currentObject;
 }
 
@@ -369,7 +361,7 @@ bool JsonTokenizer::hasNextValue() const
 IValue &JsonTokenizer::nextValue()
 {
     assert(hasNextValue());
-    currentValue = makeUnique<JsonValue>(*this);
+    currentValue = std::make_unique<JsonValue>(*this);
     return *currentValue;
 }
 
