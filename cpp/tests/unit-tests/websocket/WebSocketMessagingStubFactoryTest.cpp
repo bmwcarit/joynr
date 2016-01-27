@@ -92,8 +92,8 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
 
     factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), clientWebsocket);
     factory.addServer(webSocketServerAddress, wrapper);
-    EXPECT_TRUE(factory.create(webSocketClientAddress).get() != NULL);
-    EXPECT_TRUE(factory.create(webSocketServerAddress).get() != NULL);
+    EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
+    EXPECT_TRUE(factory.create(webSocketServerAddress).get() != nullptr);
 
     // Terminate call is needed if context was created. This is normally done within the runtime
     clientWebsocket->terminate();
@@ -107,14 +107,14 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
     EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
     std::shared_ptr<IMessaging> messagingStub(factory.create(webSocketClientAddress));
     std::shared_ptr<WebSocketMessagingStub> wsMessagingStub(std::dynamic_pointer_cast<WebSocketMessagingStub>(messagingStub));
-    EXPECT_TRUE(messagingStub.get() != NULL);
+    EXPECT_TRUE(messagingStub.get() != nullptr);
 
     EXPECT_CALL(*websocket, dtorCalled());
     std::thread(&MockWebSocketClient::signalDisconnect, websocket).detach();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == NULL);
+    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == nullptr);
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
