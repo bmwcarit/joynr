@@ -876,7 +876,7 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
 void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
-    (void)error;
+    std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of DRE failed!");
 }
 
@@ -906,7 +906,7 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
 void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
-    (void)error;
+    std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of MasterAce failed!");
 }
 
@@ -935,7 +935,7 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
 void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
-    (void)error;
+    std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of MediatorAce failed!");
 }
 
@@ -964,7 +964,7 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
 void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
-    (void)error;
+    std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of OwnerAce failed!");
 }
 

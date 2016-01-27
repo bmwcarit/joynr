@@ -958,7 +958,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     int convertedElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     JOYNR_LOG_DEBUG(logger, "converted to vector<Variant> {} in {} milliseconds", firstListSize, convertedElapsed);
     // to silence unused-variable compiler warnings
-    (void)convertedElapsed;
+    std::ignore = convertedElapsed;
     params2.push_back(Variant::make<std::vector<Variant>>(inputv2));
     request2.setParams(params2);
 

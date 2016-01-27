@@ -281,7 +281,7 @@ void AccessController::hasConsumerPermission(
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> lookupErrorCallback =
             [callback](const joynr::exceptions::ProviderRuntimeException& exception) {
-        (void)exception;
+        std::ignore = exception;
         callback->hasConsumerPermission(false);
     };
     localCapabilitiesDirectory.lookup(participantId, lookupSuccessCallback, lookupErrorCallback);

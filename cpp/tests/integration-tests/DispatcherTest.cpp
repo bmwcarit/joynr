@@ -77,7 +77,7 @@ public:
     void invokeOnSuccessWithGpsLocation(
             std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
-        (void) onError;
+        std::ignore = onError;
         onSuccess(gpsLocation1);
     }
 

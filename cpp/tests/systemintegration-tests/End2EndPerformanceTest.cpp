@@ -147,8 +147,8 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     Logger logger("End2EndPerformanceTest");
     JOYNR_LOG_INFO(logger, "Required Time for 1000 Requests: {}",(stopTime - startTime));
     // to silence unused-variable compiler warnings
-    (void)startTime;
-    (void)stopTime;
-    (void)logger;
+    std::ignore = startTime;
+    std::ignore = stopTime;
+    std::ignore = logger;
 }
 

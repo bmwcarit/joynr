@@ -269,7 +269,7 @@ public:
             )> onSuccess,
             std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
     ) {
-        (void) onError;
+        std::ignore = onError;
         onSuccess(
                 input
         );

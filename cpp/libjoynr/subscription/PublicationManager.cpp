@@ -745,7 +745,7 @@ void PublicationManager::removeOnChangePublication(
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     JOYNR_LOG_DEBUG(logger, "Removing onChange publication for id = {}", subscriptionId);
     // to silence unused-variable compiler warnings
-    (void)subscriptionId;
+    std::ignore = subscriptionId;
 
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         // Unregister and delete the attribute listener

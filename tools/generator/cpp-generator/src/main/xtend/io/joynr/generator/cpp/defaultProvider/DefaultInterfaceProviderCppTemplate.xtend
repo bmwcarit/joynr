@@ -89,7 +89,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 				)> onSuccess,
 				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 		) {
-			(void) onError;
+			std::ignore = onError;
 			onSuccess(«attributeName»);
 		}
 
@@ -100,7 +100,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 				std::function<void()> onSuccess,
 				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 		) {
-			(void) onError;
+			std::ignore = onError;
 			this->«attributeName» = «attributeName»;
 			«IF attribute.notifiable»
 				«attributeName»Changed(«attributeName»);
@@ -141,7 +141,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 			std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			«ENDIF»
 	) {
-		(void) onError;
+		std::ignore = onError;
 		«FOR inputParameter: getInputParameters(method)»
 			std::ignore = «inputParameter.joynrName»;
 		«ENDFOR»
