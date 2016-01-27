@@ -19,15 +19,14 @@
 #ifndef READWRITELOCK_H
 #define READWRITELOCK_H
 
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
+#include <shared_mutex>
 
 namespace joynr
 {
 
-using ReadWriteLock = boost::shared_mutex;
-using ReadLocker = boost::shared_lock<ReadWriteLock>;
-using WriteLocker = boost::unique_lock<ReadWriteLock>;
+using ReadWriteLock = std::shared_timed_mutex;
+using ReadLocker = std::shared_lock<ReadWriteLock>;
+using WriteLocker = std::unique_lock<ReadWriteLock>;
 
 } // namespace joynr
 

@@ -305,11 +305,7 @@ message(STATUS "variable Qt5Test_DEFINITIONS=${Qt5Test_DEFINITIONS}")
 
 ######## Add Boost ########
 
-find_package(Boost 1.56.0 REQUIRED
-    COMPONENTS
-    system
-    thread
-)
+find_package(Boost 1.56.0 REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 

@@ -43,6 +43,7 @@ message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMO
 
 find_package(Boost 1.56.0 REQUIRED
     COMPONENTS
+    system
     filesystem
 )
 message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
