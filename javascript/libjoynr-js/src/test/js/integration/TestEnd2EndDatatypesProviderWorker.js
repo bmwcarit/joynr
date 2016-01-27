@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ importScripts("../joynr/provisioning/provisioning_root.js");
 importScripts("LocalStorageSimulator.js");
 
 importScripts("../../classes/js/joynr.js");
-importScripts("../joynr/provisioning/provisioning_common.js");
 importScripts("../joynr/provisioning/provisioning_cc.js");
 importScripts("provisioning_end2end_common.js");
 

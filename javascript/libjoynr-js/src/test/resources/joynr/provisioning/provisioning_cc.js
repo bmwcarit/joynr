@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,11 +55,13 @@
     // AMD support
     if (typeof define === 'function' && define.amd) {
         define("joynr/provisioning/provisioning_cc",
-            ["joynr/provisioning/provisioning_common"], function(provisioning) {
+            ["joynr/provisioning/provisioning_root"], function(provisioning) {
             return setupProvisionedData(provisioning);
         });
     } else {
         // expect that joynrprovisioning.common has been loaded before
+        window.joynr = window.joynr || {};
+        window.joynr.provisioning = window.joynr.provisioning || {};
         setupProvisionedData(window.joynr.provisioning);
     }
 }());

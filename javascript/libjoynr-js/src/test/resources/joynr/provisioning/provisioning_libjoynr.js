@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
     if (typeof define === 'function' && define.amd) {
         define("joynr/provisioning/provisioning_libjoynr",
             [
-                "joynr/provisioning/provisioning_common"
+                "joynr/provisioning/provisioning_root"
             ],
             function(
                 provisioning
@@ -37,6 +37,8 @@
         });
     } else {
         // expect that joynrprovisioning.common has been loaded before
+        window.joynr = window.joynr || {};
+        window.joynr.provisioning = window.joynr.provisioning || {};
         setupProvisionedData(window.joynr.provisioning);
     }
 }());
