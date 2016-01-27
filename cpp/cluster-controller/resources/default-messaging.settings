@@ -1,5 +1,5 @@
 [messaging]
-broker-url=http://${JOYNR_SERVER}/bounceproxy/
+broker-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/bounceproxy/
 
 discovery-directories-domain=io.joynr
 # TTL in msecs of messages used in communication between local discovery service and backend
@@ -10,11 +10,11 @@ discovery-directories-domain=io.joynr
 # 1814400 = 21 days
 discovery-messages-ttl=1814400
 
-channel-url-directory-url=http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/
+channel-url-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/discovery/channels/discoverydirectory_channelid/
 channel-url-directory-channelid=discoverydirectory_channelid
 channel-url-directory-participantid=channelurldirectory_participantid
 
-capabilities-directory-url=http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/
+capabilities-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/discovery/channels/discoverydirectory_channelid/
 capabilities-directory-channelid=discoverydirectory_channelid
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
