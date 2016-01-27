@@ -110,6 +110,7 @@ public:
     static std::vector<T> convertVariantVectorToVector(const std::vector<Variant>& variantVector)
     {
         std::vector<T> typeVector;
+        typeVector.reserve(variantVector.size());
 
         for (Variant variant : variantVector) {
             typeVector.push_back(variant.get<T>());
