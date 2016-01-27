@@ -89,31 +89,127 @@ include_directories(SYSTEM ${GMOCK_INCLUDE_DIRS})
 
 ### copy test resources and settings ##########################################
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/integrationtest.settings")
-    configure_file("resources/sslintegrationtest.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/sslintegrationtest.settings")
-    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest1.settings")
-    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest2.settings")
-    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration1.settings")
-    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration2.settings")
-    configure_file("resources/ca.crt" "${JOYNR_BINARY_DIR}/Debug/test-resources/ca.crt")
-    configure_file("resources/testclient.pem" "${JOYNR_BINARY_DIR}/Debug/test-resources/testclient.pem")
-    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/integrationtest.settings")
-    configure_file("resources/sslintegrationtest.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/sslintegrationtest.settings")
-    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest1.settings")
-    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest2.settings")
-    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration1.settings")
-    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration2.settings")
-    configure_file("resources/ca.crt" "${JOYNR_BINARY_DIR}/Release/test-resources/ca.crt")
-    configure_file("resources/testclient.pem" "${JOYNR_BINARY_DIR}/Release/test-resources/testclient.pem")
+    configure_file(
+        "resources/integrationtest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/integrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/sslintegrationtest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/sslintegrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/SystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/SystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration1.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration2.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/ca.crt"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/ca.crt"
+        @ONLY
+    )
+    configure_file(
+        "resources/testclient.pem"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/testclient.pem"
+        @ONLY
+    )
+    configure_file(
+        "resources/integrationtest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/integrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/sslintegrationtest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/sslintegrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/SystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/SystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration1.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration2.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/ca.crt"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/ca.crt"
+        @ONLY
+    )
+    configure_file(
+        "resources/testclient.pem"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/testclient.pem"
+        @ONLY
+    )
 else()
-    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/test-resources/integrationtest.settings")
-    configure_file("resources/sslintegrationtest.settings" "${JOYNR_BINARY_DIR}/test-resources/sslintegrationtest.settings")
-    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest1.settings")
-    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest2.settings")
-    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration1.settings")
-    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration2.settings")
-    configure_file("resources/ca.crt" "${JOYNR_BINARY_DIR}/test-resources/ca.crt")
-    configure_file("resources/testclient.pem" "${JOYNR_BINARY_DIR}/test-resources/testclient.pem")
+    configure_file(
+        "resources/integrationtest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/integrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/sslintegrationtest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/sslintegrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/SystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/SystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration1.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration2.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/ca.crt"
+        "${JOYNR_BINARY_DIR}/test-resources/ca.crt"
+        @ONLY
+    )
+    configure_file(
+        "resources/testclient.pem"
+        "${JOYNR_BINARY_DIR}/test-resources/testclient.pem"
+        @ONLY
+    )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 

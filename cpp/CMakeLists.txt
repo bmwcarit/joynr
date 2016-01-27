@@ -632,7 +632,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     add_subdirectory(cluster-controller)
 else()
     # We still use the websocket default configuration file
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cluster-controller/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cluster-controller/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings @ONLY)
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings

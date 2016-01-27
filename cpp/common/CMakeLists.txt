@@ -11,6 +11,7 @@ configure_file(
 configure_file(
     "RuntimeConfig.h.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/RuntimeConfig.h"
+    @ONLY
 )
 
 
@@ -166,11 +167,23 @@ install(
 
 # Visual Studio compiles to Debug and Release directories
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-system-services.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-system-services.settings)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-system-services.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-system-services.settings
+        @ONLY
+    )
 else()
     # copy resources for build tree
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
+        @ONLY
+    )
     # ...and for install tree
     install(
         FILES
