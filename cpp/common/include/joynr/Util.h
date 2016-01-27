@@ -181,13 +181,6 @@ public:
                                                             FunctionClass& funcClass,
                                                             Tuple& tuple,
                                                             Arguments&... args)
-                -> decltype(ExpandTupleIntoFunctionArguments<
-                        TupleSize - 1>::expandTupleIntoFunctionArguments(func,
-                                                                         funcClass,
-                                                                         tuple,
-                                                                         std::get<TupleSize - 1>(
-                                                                                 tuple),
-                                                                         args...))
         {
 
             return ExpandTupleIntoFunctionArguments<
@@ -203,8 +196,6 @@ public:
     static inline auto expandTupleIntoFunctionArguments(Function& func,
                                                         FunctionClass& funcClass,
                                                         Tuple& tuple)
-            -> decltype(ExpandTupleIntoFunctionArguments<std::tuple_size<typename std::decay<
-                    Tuple>::type>::value>::expandTupleIntoFunctionArguments(func, funcClass, tuple))
     {
 
         return ExpandTupleIntoFunctionArguments<std::tuple_size<typename std::decay<
@@ -318,7 +309,6 @@ struct Util::ExpandTupleIntoFunctionArguments<0>
                                                         FunctionClass& funcClass,
                                                         Tuple& tuple,
                                                         Arguments&... args)
-            -> decltype(func(funcClass, args...))
     {
         std::ignore = tuple;
         return func(funcClass, args...);
@@ -355,7 +345,6 @@ bool vectorContains(const std::vector<T>& v, const T& e)
 
 template <typename T>
 auto removeAll(std::vector<T>& v, const T& e)
-        -> decltype(v.erase(std::remove(v.begin(), v.end(), e), v.end()))
 {
     return v.erase(std::remove(v.begin(), v.end(), e), v.end());
 }
