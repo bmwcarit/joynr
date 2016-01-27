@@ -25,6 +25,7 @@
 #include <cassert>
 #include <functional>
 #include <joynr/Util.h>
+#include <utility>
 #include <cstdint>
 #include "joynr/TypeUtil.h"
 #include "joynr/StatusCode.h"
@@ -33,63 +34,6 @@
 
 namespace joynr
 {
-
-/**
- * @brief IntegerList
- */
-template <size_t... N>
-struct IntegerList
-{
-    /**
-     * @brief struct PushBack
-     */
-    template <size_t M>
-    struct PushBack
-    {
-        /** @brief the Pushback's Type */
-        typedef IntegerList<N..., M> Type;
-    };
-};
-
-/** @brief IndexList */
-template <size_t MAX>
-struct IndexList
-{
-    /** @brief The IndexList's Type */
-    typedef typename IndexList<MAX - 1>::Type::template PushBack<MAX>::Type Type;
-};
-
-/** @brief IndexList */
-template <>
-struct IndexList<0>
-{
-    /** @brief The IndexList's Type */
-    typedef IntegerList<> Type;
-};
-
-/**
- * @brief Create a tuple subset by indices
- * @param tuple Input tuple to select from
- * @param indices The indices
- * @return the new tuple containing the subset
- */
-template <size_t... Indices, typename Tuple>
-auto tupleSubset(const Tuple& tuple, IntegerList<Indices...>)
-        -> decltype(std::make_tuple(std::get<Indices>(tuple)...))
-{
-    return std::make_tuple(std::get<Indices>(tuple)...);
-}
-
-/**
- * @brief Create a tuple containing the tail of the input tuple
- * @param tuple Input tuple to select from
- * @return The tail of input tuple
- */
-template <typename Head, typename... Tail>
-std::tuple<Tail...> tail(const std::tuple<Head, Tail...>& tuple)
-{
-    return tupleSubset(tuple, typename IndexList<sizeof...(Tail)>::Type());
-}
 
 template <class... Ts>
 /**
@@ -115,45 +59,21 @@ public:
         JOYNR_LOG_INFO(logger, "resultReceived.getStatus(): {}", resultReceived.getStatus());
     }
 
-    /** @brief ResultCopier helper to copy tuple entries to function arguments */
-    template <typename T, typename Head, typename... Tail>
-    struct ResultCopier;
-
-    /** @brief ResultCopier helper to copy tuple entries to function arguments */
-    template <typename Head, typename... Tail>
-    struct ResultCopier<std::tuple<Head, Tail...>, Head, Tail...>
+    template <typename T>
+    void copyResultsImpl(T& dest, const T& value) const
     {
-        /**
-         * @brief Copy function copies first element of tuple results to function argument value
-         *        and then recursively invoke the method with the tail of the results tuple
-         *        and all function arguments expect the first
-         * @param results The results to copy from
-         * @param value The value to copy to
-         * @param values The values to copy to
-         */
-        static void copy(const std::tuple<Head, Tail...>& results, Head& value, Tail&... values)
-        {
-            value = std::get<0>(results);
-            ResultCopier<std::tuple<Tail...>, Tail...>::copy(
-                    tail<Head, Tail...>(results), values...);
-        }
-    };
+        dest = value;
+    }
 
-    /** @brief ResultCopier variadic template termination for one single function argument */
-    template <typename Head>
-    struct ResultCopier<std::tuple<Head>, Head>
+    template <std::size_t... Indices>
+    void copyResults(const std::tuple<Ts&...>& destination, std::index_sequence<Indices...>) const
     {
-
-        /**
-         * @brief Copy function copies single element of tuple results to function argument value
-         * @param results The results to copy from
-         * @param value destination to copy to
-         */
-        static void copy(const std::tuple<Head>& results, Head& value)
-        {
-            value = std::get<0>(results);
-        }
-    };
+        auto l = {
+                0,
+                (void(copyResultsImpl(std::get<Indices>(destination), std::get<Indices>(results))),
+                 0)...};
+        std::ignore = l;
+    }
 
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
@@ -171,7 +91,7 @@ public:
             Util::throwJoynrException(*error);
         }
 
-        ResultCopier<std::tuple<Ts...>, Ts...>::copy(results, values...);
+        copyResults(std::tie(values...), std::index_sequence_for<Ts...>{});
     }
 
     /**
@@ -191,7 +111,7 @@ public:
             Util::throwJoynrException(*error);
         }
 
-        ResultCopier<std::tuple<Ts...>, Ts...>::copy(results, values...);
+        copyResults(std::tie(values...), std::index_sequence_for<Ts...>{});
     }
 
     /**
