@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,9 @@ define(
             "joynr/system/LoggingManager",
             "uuid",
             "joynr/system/LoggerFactory",
+            "joynr/start/settings/defaultSettings",
+            "joynr/start/settings/defaultLibjoynrSettings",
+            "joynr/start/settings/defaultClusterControllerSettings",
             "global/LocalStorage"
         ],
         function(
@@ -109,6 +112,9 @@ define(
                 LoggingManager,
                 uuid,
                 LoggerFactory,
+                defaultSettings,
+                defaultLibjoynrSettings,
+                defaultClusterControllerSettings,
                 LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
@@ -265,7 +271,7 @@ define(
                  */
                 this.start =
                         function start() {
-                            var i;
+                            var i,j;
 
                             if (joynrState !== JoynrStates.SHUTDOWN) {
                                 throw new Error("Cannot start libjoynr because it's currently \""
@@ -307,15 +313,22 @@ define(
                             persistency.setItem("joynr.channels.channelId.1", channelId);
 
                             untypedCapabilities = provisioning.capabilities || [];
+                            var defaultLibjoynrCapabilities = defaultLibjoynrSettings.capabilities || [];
+                            var defaultClusterControllerCapabilities = defaultClusterControllerSettings.capabilities || [];
+
+                            untypedCapabilities = untypedCapabilities.concat(defaultLibjoynrCapabilities, defaultClusterControllerCapabilities);
+
                             typedCapabilities = [];
                             if (untypedCapabilities) {
                                 for (i = 0; i < untypedCapabilities.length; i++) {
                                     var capability =
                                             new CapabilityInformation(untypedCapabilities[i]);
-                                    initialRoutingTable[capability.participantId] =
+                                    if (capability.channelId) {
+                                        initialRoutingTable[capability.participantId] =
                                             new ChannelAddress({
                                                 channelId : capability.channelId
                                             });
+                                    }
                                     typedCapabilities.push(capability);
                                 }
                             }
@@ -347,9 +360,14 @@ define(
                                 return typedChannelUrls;
                             }
 
+                            var mergedChannelUrls = provisioning.channelUrls || {};
+                            mergedChannelUrls[defaultClusterControllerSettings.discoveryChannel] =
+                                mergedChannelUrls[defaultClusterControllerSettings.discoveryChannel] ||
+                                defaultClusterControllerSettings.getDefaultDiscoveryChannelUrls(
+                                        provisioning.bounceProxyBaseUrl);
                             localChannelUrlDirectory = new LocalChannelUrlDirectory({
                                 channelUrlDirectoryProxy : channelUrlDirectoryStub,
-                                provisionedChannelUrls : typeChannelUrls(provisioning.channelUrls)
+                                provisionedChannelUrls : typeChannelUrls(mergedChannelUrls)
                             });
 
                             communicationModule = new CommunicationModule();

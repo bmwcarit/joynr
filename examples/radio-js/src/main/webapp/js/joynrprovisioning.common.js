@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,38 +29,7 @@ var queryDomain = window.location.href.match(/domain=([a-zA-Z0-9\-]+)/);
 if(queryDomain !== null) {
     domain = queryDomain[1];
 }
-
-var discoveryChannel = "discoverydirectory_channelid";
-
-provisioning.channelUrls = {};
-provisioning.channelUrls[discoveryChannel] = [ provisioning.bounceProxyBaseUrl + "/discovery/channels/" + discoveryChannel + "/"];
-
-var globalCapDirCapability = {
-    domain : "io.joynr",
-    interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
-    providerQos : {
-        qos : [],
-        version : 0,
-        priority : 1,
-        isLocalOnly : false,
-        onChangeSubscriptions : true
-    },
-    channelId : discoveryChannel,
-    participantId : "capabilitiesdirectory_participantid"
-};
-
-var channelUrlDirCapability = {
-        domain : "io.joynr",
-        interfaceName : "infrastructure/ChannelUrlDirectory",
-        providerQos : {
-            qos : [],
-            version : 0,
-            priority : 1,
-            isLocalOnly : false,
-            onChangeSubscriptions : true
-        },
-        channelId : discoveryChannel,
-        participantId : "channelurldirectory_participantid"
-};
-
-provisioning.capabilities = [ globalCapDirCapability, channelUrlDirCapability ];
+var queryChannelId = window.location.href.match(/channelId=([a-zA-Z0-9\-]+)/);
+if(queryChannelId !== null) {
+    provisioning.channelId = queryChannelId[1];
+}

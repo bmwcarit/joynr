@@ -20,34 +20,7 @@
  */
 
 (function() {
-    var setupProvisionedData = function(provisioning, ProviderScope) {
-        var discoveryCapability = {
-            domain : "io.joynr",
-            interfaceName : "system/Discovery",
-            providerQos : {
-                customParameters: [],
-                providerVersion : 0,
-                priority : 1,
-                scope : ProviderScope.LOCAL,
-                onChangeSubscriptions : true
-            },
-            participantId : "CC.DiscoveryProvider.ParticipantId"
-        };
-
-        var routingCapability = {
-            domain : "io.joynr",
-            interfaceName : "system/Routing",
-            providerQos : {
-                customParameters: [],
-                providerVersion : 0,
-                priority : 1,
-                scope : ProviderScope.LOCAL,
-                onChangeSubscriptions : true
-            },
-            participantId : "CC.RoutingProvider.ParticipantId"
-        };
-
-        provisioning.capabilities = [ discoveryCapability, routingCapability ];
+    var setupProvisionedData = function(provisioning) {
         return provisioning;
     };
 
@@ -55,17 +28,15 @@
     if (typeof define === 'function' && define.amd) {
         define("joynr/provisioning/provisioning_libjoynr",
             [
-                "joynr/provisioning/provisioning_common",
-                "joynr/types/ProviderScope"
+                "joynr/provisioning/provisioning_common"
             ],
             function(
-                provisioning,
-                ProviderScope
+                provisioning
             ){
-            return setupProvisionedData(provisioning, ProviderScope);
+            return setupProvisionedData(provisioning);
         });
     } else {
         // expect that joynrprovisioning.common has been loaded before
-        setupProvisionedData(window.joynr.provisioning, window.ProviderScope);
+        setupProvisionedData(window.joynr.provisioning);
     }
 }());

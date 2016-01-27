@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,9 @@ define(
             "uuid",
             "joynr/system/LoggingManager",
             "joynr/system/LoggerFactory",
+            "joynr/start/settings/defaultSettings",
+            "joynr/start/settings/defaultInterTabSettings",
+            "joynr/start/settings/defaultClusterControllerSettings",
             "global/LocalStorage"
         ],
         function(
@@ -127,6 +130,9 @@ define(
                 uuid,
                 LoggingManager,
                 LoggerFactory,
+                defaultSettings,
+                defaultInterTabSettings,
+                defaultClusterControllerSettings,
                 LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
@@ -291,7 +297,7 @@ define(
                  */
                 this.start =
                         function start() {
-                            var i;
+                            var i,j;
 
                             if (joynrState !== JoynrStates.SHUTDOWN) {
                                 throw new Error("Cannot start libjoynr because it's currently \""
@@ -334,8 +340,7 @@ define(
                                         "bounce proxy base URL not set in provisioning.bounceProxyBaseUrl");
                             }
                             if (Util.checkNullUndefined(provisioning.parentWindow)) {
-                                throw new Error(
-                                        "parent window not set in provisioning.parentWindow, use \"window.opener || window.top\" for example");
+                                log.debug("provisioning.parentWindow not set. Use default setting \"" + defaultInterTabSettings.parentWindow + "\" instead");
                             }
 
                             initialRoutingTable = {};
@@ -349,15 +354,21 @@ define(
                             persistency.setItem("joynr.channels.channelId.1", channelId);
 
                             untypedCapabilities = provisioning.capabilities || [];
+                            var defaultCapabilities = defaultClusterControllerSettings.capabilities || [];
+
+                            untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
+
                             typedCapabilities = [];
                             if (untypedCapabilities) {
                                 for (i = 0; i < untypedCapabilities.length; i++) {
                                     var capability =
                                             new CapabilityInformation(untypedCapabilities[i]);
-                                    initialRoutingTable[capability.participantId] =
+                                    if (capability.channelId !== undefined) {
+                                        initialRoutingTable[capability.participantId] =
                                             new ChannelAddress({
                                                 channelId : capability.channelId
                                             });
+                                    }
                                     typedCapabilities.push(capability);
                                 }
                             }
@@ -389,9 +400,14 @@ define(
                                 return typedChannelUrls;
                             }
 
+                            var mergedChannelUrls = provisioning.channelUrls || {};
+                            mergedChannelUrls[defaultClusterControllerSettings.discoveryChannel] =
+                                mergedChannelUrls[defaultClusterControllerSettings.discoveryChannel] ||
+                                defaultClusterControllerSettings.getDefaultDiscoveryChannelUrls(
+                                        provisioning.bounceProxyBaseUrl);
                             localChannelUrlDirectory = new LocalChannelUrlDirectory({
                                 channelUrlDirectoryProxy : channelUrlDirectoryStub,
-                                provisionedChannelUrls : typeChannelUrls(provisioning.channelUrls)
+                                provisionedChannelUrls : typeChannelUrls(mergedChannelUrls)
                             });
 
                             communicationModule = new CommunicationModule();
@@ -410,17 +426,14 @@ define(
                             }
 
                             webMessagingStub = new WebMessagingStub({
-                                window : provisioning.parentWindow, // parent window variable for
-                                // communication, this should be
-                                // window.opener || window.top
-                                origin : provisioning.parentOrigin
-                            // target origin of the parent window, this will be location.origin in
-                            // most cases
+                                // parent window variable for communication
+                                window : provisioning.parentWindow || defaultInterTabSettings.parentWindow,
+                                // target origin of the parent window
+                                origin : provisioning.parentOrigin || defaultInterTabSettings.parentOrigin
                             });
 
                             webMessagingSkeleton = new WebMessagingSkeleton({
-                                window : provisioning.window
-                            // window variable for communication, this should be window
+                                window : provisioning.window || defaultInterTabSettings.window
                             });
 
                             browserMessagingSkeleton = new BrowserMessagingSkeleton({

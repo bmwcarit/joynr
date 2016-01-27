@@ -20,8 +20,6 @@
 (function(){
     var setupProvisionedData = function(provisioning){
         provisioning.window = window;
-        provisioning.parentWindow = window.opener || window.top;
-        provisioning.parentOrigin = location.origin || (window.location.protocol+'//'+window.location.host);
         return provisioning;
     };
 

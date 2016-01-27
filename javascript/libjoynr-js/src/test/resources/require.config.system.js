@@ -26,6 +26,7 @@
         requirejs.config({
             paths : {
                 "joynr" : "js/joynr",
+                "joynr/start/settings/defaultInterTabSettings" : "../classes/joynr/start/settings/defaultInterTabSettings",
                 "integration": "../test-classes/integration",
                 "joynr/vehicle" : "../test-classes/joynr/vehicle",
                 "joynr/datatypes" : "../test-classes/joynr/datatypes"

@@ -19,46 +19,12 @@
 
 (function() {
     var setupProvisionedData = function(provisioning) {
-        var discoveryChannel = "discoverydirectory_channelid";
         provisioning.bounceProxyBaseUrl = "${joynr.provisioning.bounceProxyBaseUrl}";
         provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
 
         provisioning.internalMessagingQos = {
             ttl : provisioning.ttl
         };
-
-        provisioning.channelUrls = {};
-        provisioning.channelUrls[discoveryChannel] = [ provisioning.bounceProxyBaseUrl + "/discovery/channels/" + discoveryChannel + "/" ];
-        // joynr.provisioning.messaging.maxQueueSizeInKBytes = 10000;
-        var globalCapDirCapability = {
-            domain : "io.joynr",
-            interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
-            providerQos : {
-                qos : [],
-                version : 0,
-                priority : 1,
-                scope : "GLOBAL",
-                onChangeSubscriptions : true
-            },
-            channelId : discoveryChannel,
-            participantId : "capabilitiesdirectory_participantid"
-        };
-
-        var channelUrlDirCapability = {
-            domain : "io.joynr",
-            interfaceName : "infrastructure/ChannelUrlDirectory",
-            providerQos : {
-                qos : [],
-                version : 0,
-                priority : 1,
-                scope : "GLOBAL",
-                onChangeSubscriptions : true
-            },
-            channelId : discoveryChannel,
-            participantId : "channelurldirectory_participantid"
-        };
-
-        provisioning.capabilities = [ globalCapDirCapability, channelUrlDirCapability ];
 
         provisioning.logging = {
             configuration : {
