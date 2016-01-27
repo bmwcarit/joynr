@@ -205,18 +205,6 @@ public:
     template <typename... Ts>
     static std::tuple<Ts...> toValueTuple(const std::vector<Variant>& list);
 
-    template <class... Ts>
-    static std::string packTypeName()
-    {
-        std::string expandedTypeNames[] = {(std::string(typeid(Ts).name()))...};
-        std::stringstream ss;
-        for (std::string typeNameElement : expandedTypeNames) {
-            ss << typeNameElement;
-        }
-        std::string typeName = ss.str();
-        return typeName;
-    }
-
 private:
     template <typename T, typename... Ts>
     static int getTypeId_split()
