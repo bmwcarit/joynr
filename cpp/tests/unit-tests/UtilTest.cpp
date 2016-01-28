@@ -159,23 +159,6 @@ TEST_F(UtilTest, typeIdVector){
     EXPECT_NE(typeIdVectorOfInt, typeIdVectorOfTEverythingStruct);
 }
 
-TEST_F(UtilTest, expandTuple){
-    std::tuple<int, float, std::string> tup = std::make_tuple(23, 24.25, std::string("Test"));
-    auto memberFunction = std::mem_fn(&ExpandTuple::expandIntoThis);
-    bool ret = Util::expandTupleIntoFunctionArguments(memberFunction, expandTuple, tup);
-
-    EXPECT_TRUE(ret);
-}
-
-TEST_F(UtilTest, toValueTuple){
-    std::vector<Variant> list({Variant::make<int>(int(23)), Variant::make<double>(double(24.25)), Variant::make<std::string>(std::string("Test"))});
-    std::tuple<int, float, std::string> tup = Util::toValueTuple<int, float, std::string>(list);
-
-    EXPECT_EQ(int(23), std::get<0>(tup));
-    EXPECT_EQ(float(24.25), std::get<1>(tup));
-    EXPECT_EQ(std::string("Test"), std::get<2>(tup));
-}
-
 TEST_F(UtilTest, valueOfFloatVector){
     std::vector<float> expectedFloatVector = {1.1f, 1.2f, 1.3f};
 

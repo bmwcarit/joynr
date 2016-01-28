@@ -59,17 +59,19 @@ public:
             callback->onError(error);
             return;
         }
-
-        std::shared_ptr<SubscriptionCallback<Ts...>> typedCallbackQsp =
+        std::shared_ptr<SubscriptionCallback<Ts...>> typedCallback =
                 std::dynamic_pointer_cast<SubscriptionCallback<Ts...>>(callback);
-
-        std::tuple<Ts...> values = Util::toValueTuple<Ts...>(response);
-        auto func = std::mem_fn(&SubscriptionCallback<Ts...>::onSuccess);
-
-        Util::expandTupleIntoFunctionArguments(func, typedCallbackQsp, values);
+        callOnSucces(response, typedCallback, std::index_sequence_for<Ts...>{});
     }
 
 private:
+    template <std::size_t... Indices>
+    void callOnSucces(const std::vector<Variant>& response,
+                      const std::shared_ptr<SubscriptionCallback<Ts...>>& typedCallback,
+                      std::index_sequence<Indices...>)
+    {
+        typedCallback->onSuccess(Util::valueOf<Ts>(response[Indices])...);
+    }
     ADD_LOGGER(PublicationInterpreter);
 };
 

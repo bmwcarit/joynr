@@ -174,50 +174,6 @@ public:
     template <typename T>
     static T valueOf(const Variant& variant);
 
-    template <int TupleSize>
-    struct ExpandTupleIntoFunctionArguments
-    {
-        template <typename Function, typename FunctionClass, typename Tuple, typename... Arguments>
-        static inline auto expandTupleIntoFunctionArguments(Function& func,
-                                                            FunctionClass& funcClass,
-                                                            Tuple& tuple,
-                                                            Arguments&... args)
-        {
-
-            return ExpandTupleIntoFunctionArguments<
-                    TupleSize - 1>::expandTupleIntoFunctionArguments(func,
-                                                                     funcClass,
-                                                                     tuple,
-                                                                     std::get<TupleSize - 1>(tuple),
-                                                                     args...);
-        }
-    };
-
-    template <typename Function, typename FunctionClass, typename Tuple>
-    static inline auto expandTupleIntoFunctionArguments(Function& func,
-                                                        FunctionClass& funcClass,
-                                                        Tuple& tuple)
-    {
-
-        return ExpandTupleIntoFunctionArguments<std::tuple_size<typename std::decay<
-                Tuple>::type>::value>::expandTupleIntoFunctionArguments(func, funcClass, tuple);
-    }
-
-    template <typename... Ts>
-    static std::tuple<Ts...> toValueTuple(const std::vector<Variant>& list)
-    {
-        return toValueTupleImpl(list, std::tuple<Ts...>{}, std::index_sequence_for<Ts...>{});
-    }
-
-    template <typename Tuple, std::size_t... Indices>
-    static Tuple toValueTupleImpl(const std::vector<Variant>& list,
-                                  Tuple,
-                                  std::index_sequence<Indices...>)
-    {
-        assert(list.size() == sizeof...(Indices));
-        return std::make_tuple(valueOf<std::tuple_element_t<Indices, Tuple>>(list[Indices])...);
-    }
-
 private:
     template <typename T, typename... Ts>
     static int getTypeId_split()
@@ -286,20 +242,6 @@ inline int Util::getTypeId<>()
 {
     return 0;
 }
-
-template <>
-struct Util::ExpandTupleIntoFunctionArguments<0>
-{
-    template <typename Function, typename FunctionClass, typename Tuple, typename... Arguments>
-    static inline auto expandTupleIntoFunctionArguments(Function& func,
-                                                        FunctionClass& funcClass,
-                                                        Tuple& tuple,
-                                                        Arguments&... args)
-    {
-        std::ignore = tuple;
-        return func(funcClass, args...);
-    }
-};
 
 template <typename T>
 std::set<T> vectorToSet(const std::vector<T>& v)
