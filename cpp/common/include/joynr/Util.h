@@ -204,7 +204,19 @@ public:
     }
 
     template <typename... Ts>
-    static std::tuple<Ts...> toValueTuple(const std::vector<Variant>& list);
+    static std::tuple<Ts...> toValueTuple(const std::vector<Variant>& list)
+    {
+        return toValueTupleImpl(list, std::tuple<Ts...>{}, std::index_sequence_for<Ts...>{});
+    }
+
+    template <typename Tuple, std::size_t... Indices>
+    static Tuple toValueTupleImpl(const std::vector<Variant>& list,
+                                  Tuple,
+                                  std::index_sequence<Indices...>)
+    {
+        assert(list.size() == sizeof...(Indices));
+        return std::make_tuple(valueOf<std::tuple_element_t<Indices, Tuple>>(list[Indices])...);
+    }
 
 private:
     template <typename T, typename... Ts>
@@ -212,21 +224,6 @@ private:
     {
         int prime = 31;
         return JoynrTypeId<T>::getTypeId() + prime * getTypeId<Ts...>();
-    }
-
-    template <std::size_t index, typename T, typename... Ts>
-    static std::tuple<T, Ts...> toValueTuple_split(const std::vector<Variant>& list)
-    {
-        T value = valueOf<T>(list[index]);
-        return std::tuple_cat(std::make_tuple(value), toValueTuple_split<index + 1, Ts...>(list));
-    }
-
-    template <std::size_t index>
-    static std::tuple<> toValueTuple_split(const std::vector<Variant>& list)
-    {
-        assert(list.size() == index);
-        std::ignore = list;
-        return std::make_tuple();
     }
 };
 
@@ -303,12 +300,6 @@ struct Util::ExpandTupleIntoFunctionArguments<0>
         return func(funcClass, args...);
     }
 };
-
-template <typename... Ts>
-inline std::tuple<Ts...> Util::toValueTuple(const std::vector<Variant>& list)
-{
-    return toValueTuple_split<0, Ts...>(list);
-}
 
 template <typename T>
 std::set<T> vectorToSet(const std::vector<T>& v)
