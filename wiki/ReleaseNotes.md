@@ -8,6 +8,7 @@
 ##API relevant changes
 * **[C++]** Removed the RequestStatus object returned by joynr::Future::getStatus().
   Instead, an enum named "StatusCode::Enum" is returned.
+* **[C++]** joynr code now requires C++14
 
 ##Other changes
 * **[JS]** Updated the versions of joynr dependencies log4js (0.6.29), requirejs (2.1.22),
