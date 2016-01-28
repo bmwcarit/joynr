@@ -42,35 +42,24 @@ message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
 message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
 message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(INSTALL_LIB_DIR lib CACHE PATH "Installation sub directory for libraries")
-set(INSTALL_BIN_DIR bin CACHE PATH "Installation sub directory for executables")
-set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation sub directory for header files")
-set(INSTALL_CMAKE_DIR lib/cmake/joynr CACHE PATH "Installation sub directory for CMake files")
-set(INSTALL_RES_DIR etc/joynr CACHE PATH "Installation sub directory for resource and setting files")
+# defines GNU standard installation directories
+include(GNUInstallDirs)
+set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/joynr CACHE PATH "Installation sub directory for CMake files")
+set(INSTALL_RES_DIR ${CMAKE_INSTALL_SYSCONFDIR}/joynr CACHE PATH "Installation sub directory for resource and setting files")
 
 if(NOT INSTALL_TEST_DIR)
-    set(INSTALL_TEST_DIR "${INSTALL_BIN_DIR}" CACHE PATH "Installation sub directory for tests")
+    set(INSTALL_TEST_DIR "${CMAKE_INSTALL_BINDIR}" CACHE PATH "Installation sub directory for tests")
 endif(NOT INSTALL_TEST_DIR)
 
-# Make absolute paths relative (otherwise the export files break for cross-compiling)
-foreach(p LIB BIN INCLUDE CMAKE)
-    set(var INSTALL_${p}_DIR)
-    if(IS_ABSOLUTE "${${var}}")
-        file(
-            RELATIVE_PATH ${var}
-            "${CMAKE_INSTALL_PREFIX}"
-            "${${var}}"
-        )
-    endif()
-endforeach()
-
 message(STATUS "----------------- INSTALL LOCATIONS -----------------")
-message(STATUS "CMAKE_INSTALL_PREFIX = ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "INSTALL_LIB_DIR      = ${INSTALL_LIB_DIR}")
-message(STATUS "INSTALL_BIN_DIR      = ${INSTALL_BIN_DIR}")
-message(STATUS "INSTALL_TEST_DIR     = ${INSTALL_TEST_DIR}")
-message(STATUS "INSTALL_INCLUDE_DIR  = ${INSTALL_INCLUDE_DIR}")
-message(STATUS "INSTALL_CMAKE_DIR    = ${INSTALL_CMAKE_DIR}")
+message(STATUS "CMAKE_INSTALL_PREFIX     = ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "CMAKE_INSTALL_BINDIR     = ${CMAKE_INSTALL_BINDIR}")
+message(STATUS "INSTALL_TEST_DIR         = ${INSTALL_TEST_DIR}")
+message(STATUS "CMAKE_INSTALL_LIBDIR     = ${CMAKE_INSTALL_LIBDIR}")
+message(STATUS "INSTALL_CMAKE_DIR        = ${INSTALL_CMAKE_DIR}")
+message(STATUS "CMAKE_INSTALL_INCLUDEDIR = ${CMAKE_INSTALL_INCLUDEDIR}")
+message(STATUS "CMAKE_INSTALL_SYSCONFDIR = ${CMAKE_INSTALL_SYSCONFDIR}")
+message(STATUS "INSTALL_RES_DIR          = ${INSTALL_RES_DIR}")
 message(STATUS "-----------------------------------------------------")
 
 # should we use DBUS to communicate between libjoynr and cluster-controller
@@ -218,7 +207,7 @@ message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
 
 # Set the binary directory
-set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/${INSTALL_BIN_DIR})
+set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 message(STATUS "variable JOYNR_BINARY_DIR=" ${JOYNR_BINARY_DIR})
 
 if(${ENABLE_GCOV})
@@ -759,7 +748,7 @@ configure_file(
 file(
     RELATIVE_PATH RELATIVE_INSTALL_INCLUDE_DIR
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"
-    "${CMAKE_INSTALL_PREFIX}/${INSTALL_INCLUDE_DIR}"
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}"
 )
 set(JoynrConfig_LIB_COMMON_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
@@ -771,7 +760,7 @@ set(JoynrConfig_RESOURCES_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_RES_DIR}")
 file(
     RELATIVE_PATH RELATIVE_INSTALL_BIN_DIR
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"
-    "${CMAKE_INSTALL_PREFIX}/${INSTALL_BIN_DIR}"
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
 )
 set(JoynrConfig_INSTALL_BIN_DIR "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_BIN_DIR}")
 configure_file(

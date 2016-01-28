@@ -159,15 +159,15 @@ target_link_libraries(JoynrClusterController ${JoynrClusterController_TARGET_LIB
 install(
     TARGETS JoynrClusterController
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of headder files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
 )
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )
 
