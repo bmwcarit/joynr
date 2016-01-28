@@ -31,19 +31,20 @@ namespace joynr
 class JOYNRCOMMON_EXPORT Reply
 {
 public:
-    Reply& operator=(const Reply& other);
+    Reply();
+    Reply(const Reply& other) = default;
+    ~Reply() = default;
+
+    Reply& operator=(const Reply&) = default;
     bool operator==(const Reply& other) const;
     bool operator!=(const Reply& other) const;
 
     const static Reply NULL_RESPONSE;
 
-    Reply(const Reply& other);
-    Reply();
-
-    std::string getRequestReplyId() const;
+    const std::string& getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
 
-    std::vector<Variant> getResponse() const;
+    const std::vector<Variant>& getResponse() const;
     void setResponse(std::vector<Variant> response);
 
     const Variant& getError() const;
