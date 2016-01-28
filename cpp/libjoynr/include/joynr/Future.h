@@ -19,15 +19,14 @@
 #ifndef FUTURE_H
 #define FUTURE_H
 
-#include "joynr/Logger.h"
-
 #include <tuple>
 #include <cassert>
 #include <functional>
-#include <joynr/Util.h>
 #include <utility>
 #include <cstdint>
-#include "joynr/TypeUtil.h"
+
+#include "joynr/Logger.h"
+#include "joynr/Util.h"
 #include "joynr/StatusCode.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Semaphore.h"
@@ -35,95 +34,10 @@
 namespace joynr
 {
 
-template <class... Ts>
-/**
- * @brief Class for monitoring the status of a request by applications.
- *
- * Applications can periodically ask this class for its status and retrieve
- * descriptions and codes related to the request.
- * This class also contains a method to block until a response is received.
- *
- * Applications get an instance of this class as return value asynchronous
- * proxy method calls and attribute getters/setters.
- */
-class Future
+template <typename Derived>
+class FutureBase
 {
-
 public:
-    /**
-     * @brief Constructor
-     */
-    Future<Ts...>()
-            : error(nullptr), status(StatusCodeEnum::IN_PROGRESS), results(), resultReceived(0)
-    {
-        JOYNR_LOG_INFO(logger, "resultReceived.getStatus(): {}", resultReceived.getStatus());
-    }
-
-    template <typename T>
-    void copyResultsImpl(T& dest, const T& value) const
-    {
-        dest = value;
-    }
-
-    template <std::size_t... Indices>
-    void copyResults(const std::tuple<Ts&...>& destination, std::index_sequence<Indices...>) const
-    {
-        auto l = {
-                0,
-                (void(copyResultsImpl(std::get<Indices>(destination), std::get<Indices>(results))),
-                 0)...};
-        std::ignore = l;
-    }
-
-    /**
-     * @brief This is a blocking call which waits until the request finishes/an error
-     * occurs/or times out. If the request finishes successfully, it retrieves the return value for
-     *the request if one exists, otherwise a JoynrException is thrown.
-     *
-     * @param values The typed return values from the request.
-     * @throws JoynrException if the request is not successful
-     */
-    void get(Ts&... values)
-    {
-        wait();
-
-        if (!isOk()) {
-            Util::throwJoynrException(*error);
-        }
-
-        copyResults(std::tie(values...), std::index_sequence_for<Ts...>{});
-    }
-
-    /**
-     * @brief This is a blocking call which waits until the request finishes/an error
-     * occurs/or times out. If the request finishes successfully, it retrieves the return value for
-     *the request if one exists, otherwise a JoynrException is thrown.
-     *
-     * @param timeOut The maximum number of milliseconds to wait before this request times out
-     * @param values The typed return values from the request.
-     * @throws JoynrException if the request is not successful
-     */
-    void get(std::uint16_t timeOut, Ts&... values)
-    {
-        wait(timeOut);
-
-        if (!isOk()) {
-            Util::throwJoynrException(*error);
-        }
-
-        copyResults(std::tie(values...), std::index_sequence_for<Ts...>{});
-    }
-
-    /**
-     * @brief Returns the current status for the given request.
-     *
-     * @return joynr::StatusCode
-     */
-    StatusCodeEnum& getStatus()
-    {
-        return status;
-    }
-
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
      * occurs/or times out.
@@ -154,26 +68,21 @@ public:
     }
 
     /**
-     * @brief Returns whether the status is Ok or not.
-     *
-     * @return Returns whether the status is Ok or not.
+     * @brief Returns the current status for the given request.
+     * @return joynr::StatusCode
      */
-    bool isOk()
+    StatusCodeEnum getStatus() const
     {
-        return status == StatusCodeEnum::SUCCESS;
+        return status;
     }
 
     /**
-     * @brief Callback which indicates the operation has finished and is successful.
-     * @param results The result of the operation, type T
+     * @brief Returns whether the status is Ok or not.
+     * @return Returns whether the status is Ok or not.
      */
-    void onSuccess(Ts... results)
+    bool isOk() const
     {
-        JOYNR_LOG_INFO(logger, "onSuccess has been invoked");
-        status = StatusCodeEnum::SUCCESS;
-        // transform variadic templates into a std::tuple
-        this->results = std::make_tuple(std::move(results)...);
-        resultReceived.notify();
+        return status == StatusCodeEnum::SUCCESS;
     }
 
     /**
@@ -188,29 +97,124 @@ public:
         resultReceived.notify();
     }
 
-private:
+protected:
+    FutureBase() : error(nullptr), status(StatusCodeEnum::IN_PROGRESS), resultReceived(0)
+    {
+    }
+
+    void checkOk() const
+    {
+        if (!isOk()) {
+            Util::throwJoynrException(*error);
+        }
+    }
+
     std::shared_ptr<exceptions::JoynrException> error;
     StatusCodeEnum status;
-    std::tuple<Ts...> results;
     Semaphore resultReceived;
-
-    ADD_LOGGER(Future);
+    ADD_LOGGER(FutureBase);
 };
 
+template <class Derived>
+INIT_LOGGER(FutureBase<Derived>);
+
 template <class... Ts>
-INIT_LOGGER(Future<Ts...>);
+/**
+ * @brief Class for monitoring the status of a request by applications.
+ *
+ * Applications can periodically ask this class for its status and retrieve
+ * descriptions and codes related to the request.
+ * This class also contains a method to block until a response is received.
+ *
+ * Applications get an instance of this class as return value asynchronous
+ * proxy method calls and attribute getters/setters.
+ */
+class Future : public FutureBase<Future<Ts...>>
+{
+
+public:
+    /**
+     * @brief Constructor
+     */
+    Future<Ts...>() : FutureBase<Future<Ts...>>(), results()
+    {
+    }
+
+    template <typename T>
+    void copyResultsImpl(T& dest, const T& value) const
+    {
+        dest = value;
+    }
+
+    template <std::size_t... Indices>
+    void copyResults(const std::tuple<Ts&...>& destination, std::index_sequence<Indices...>) const
+    {
+        auto l = {
+                0,
+                (void(copyResultsImpl(std::get<Indices>(destination), std::get<Indices>(results))),
+                 0)...};
+        std::ignore = l;
+    }
+
+    /**
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs/or times out. If the request finishes successfully, it retrieves the return value for
+     *the request if one exists, otherwise a JoynrException is thrown.
+     *
+     * @param values The typed return values from the request.
+     * @throws JoynrException if the request is not successful
+     */
+    void get(Ts&... values)
+    {
+        this->wait();
+        this->checkOk();
+
+        copyResults(std::tie(values...), std::index_sequence_for<Ts...>{});
+    }
+
+    /**
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs/or times out. If the request finishes successfully, it retrieves the return value for
+     *the request if one exists, otherwise a JoynrException is thrown.
+     *
+     * @param timeOut The maximum number of milliseconds to wait before this request times out
+     * @param values The typed return values from the request.
+     * @throws JoynrException if the request is not successful
+     */
+    void get(std::uint16_t timeOut, Ts&... values)
+    {
+        this->wait(timeOut);
+        this->checkOk();
+
+        copyResults(std::tie(values...), std::index_sequence_for<Ts...>{});
+    }
+
+    /**
+     * @brief Callback which indicates the operation has finished and is successful.
+     * @param results The result of the operation, type T
+     */
+    void onSuccess(Ts... results)
+    {
+        JOYNR_LOG_INFO(this->logger, "onSuccess has been invoked");
+        this->status = StatusCodeEnum::SUCCESS;
+        // transform variadic templates into a std::tuple
+        this->results = std::make_tuple(std::move(results)...);
+        this->resultReceived.notify();
+    }
+
+private:
+    std::tuple<Ts...> results;
+};
 
 template <>
 /**
  * @brief Class specialization of the void Future class.
  */
-class Future<void>
+class Future<void> : public FutureBase<Future<void>>
 {
 
 public:
-    Future<void>() : error(nullptr), status(StatusCodeEnum::IN_PROGRESS), resultReceived(0)
-    {
-    }
+    Future<void>() = default;
 
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
@@ -220,11 +224,8 @@ public:
      */
     void get()
     {
-        wait();
-
-        if (!isOk()) {
-            Util::throwJoynrException(*error);
-        }
+        this->wait();
+        this->checkOk();
     }
 
     /**
@@ -237,61 +238,8 @@ public:
      */
     void get(std::uint16_t timeOut)
     {
-        wait(timeOut);
-
-        if (!isOk()) {
-            Util::throwJoynrException(*error);
-        }
-    }
-
-    /**
-     * @brief Returns the current StatusCode for the given request.
-     *
-     * @return StatusCode
-     */
-    StatusCodeEnum& getStatus()
-    {
-        return status;
-    }
-
-    /**
-     * @brief This is a blocking call which waits until the request finishes/an error
-     * occurs/or times out.
-     *
-     * @param timeOut The maximum number of milliseconds to wait before this request times out
-     * if no response is received.
-     * @throws JoynrTimeOutException if the request does not finish in the
-     * expected time.
-     */
-    void wait(std::uint16_t timeOut)
-    {
-        if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
-            resultReceived.notify();
-        } else {
-            throw exceptions::JoynrTimeOutException("Request did not finish in time");
-        }
-    }
-
-    /**
-     * @brief This is a blocking call which waits until the request finishes/an error
-     * occurs.
-     *
-     * @return RequestStatus Returns the RequestStatus for the completed request.
-     */
-    void wait()
-    {
-        resultReceived.wait();
-        resultReceived.notify();
-    }
-
-    /**
-     * @brief Returns whether the status is Ok or not.
-     *
-     * @return Returns whether the status is Ok or not.
-     */
-    bool isOk()
-    {
-        return status == StatusCodeEnum::SUCCESS;
+        this->wait(timeOut);
+        this->checkOk();
     }
 
     /**
@@ -299,25 +247,9 @@ public:
      */
     void onSuccess()
     {
-        status = StatusCodeEnum::SUCCESS;
-        resultReceived.notify();
+        this->status = StatusCodeEnum::SUCCESS;
+        this->resultReceived.notify();
     }
-
-    /**
-     * @brief Callback which indicates the operation has finished and has failed.
-     * @param error The JoynrException describing the failure
-     */
-    void onError(const exceptions::JoynrException& error)
-    {
-        this->error.reset(error.clone());
-        status = StatusCodeEnum::ERROR;
-        resultReceived.notify();
-    }
-
-private:
-    std::shared_ptr<exceptions::JoynrException> error;
-    StatusCodeEnum status;
-    Semaphore resultReceived;
 };
 
 } // namespace joynr
