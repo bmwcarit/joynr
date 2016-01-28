@@ -218,7 +218,7 @@ message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
 
 # Set the binary directory
-set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
+set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/${INSTALL_BIN_DIR})
 message(STATUS "variable JOYNR_BINARY_DIR=" ${JOYNR_BINARY_DIR})
 
 if(${ENABLE_GCOV})
