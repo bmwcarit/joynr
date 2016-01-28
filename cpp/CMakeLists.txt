@@ -62,6 +62,48 @@ message(STATUS "CMAKE_INSTALL_SYSCONFDIR = ${CMAKE_INSTALL_SYSCONFDIR}")
 message(STATUS "INSTALL_RES_DIR          = ${INSTALL_RES_DIR}")
 message(STATUS "-----------------------------------------------------")
 
+option(
+    USE_PLATFORM_DEPENDENCIES
+    "Resolve all dependencies (link libraries) from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_DEPENDENCIES=" ${USE_PLATFORM_DEPENDENCIES})
+
+if(USE_PLATFORM_DEPENDENCIES)
+    set(USE_PLATFORM_LIBWEBSOCKETS ON)
+    set(USE_PLATFORM_SPDLOG ON)
+    set(USE_PLATFORM_JSMN ON)
+    set(USE_PLATFORM_GTEST_GMOCK ON)
+endif(USE_PLATFORM_DEPENDENCIES)
+
+option(
+    USE_PLATFORM_LIBWEBSOCKETS
+    "Resolve dependency to libwebsocket from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_LIBWEBSOCKETS=" ${USE_PLATFORM_LIBWEBSOCKETS})
+
+option(
+    USE_PLATFORM_SPDLOG
+    "Resolve dependency to spdlog from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_SPDLOG=" ${USE_PLATFORM_SPDLOG})
+
+option(
+    USE_PLATFORM_JSMN
+    "Resolve dependency to jsmn from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_JSMN=" ${USE_PLATFORM_JSMN})
+
+option(
+    USE_PLATFORM_GTEST_GMOCK
+    "Resolve dependency to gtest and gmock from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
+
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(
     USE_DBUS_COMMONAPI_COMMUNICATION
