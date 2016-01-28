@@ -195,11 +195,15 @@ AddIncludeWhatYouUse(JoynrWsRuntime)
 
 AddClangTidy(JoynrWsRuntime)
 
+# zlib is required for libwebsockets extensions
+find_package(ZLIB REQUIRED)
+
 target_link_libraries(
     JoynrWsRuntime
     JoynrCommon
     Joynr
     JoynrJsonSerializer
+    ${ZLIB_LIBRARIES}
 )
 
 generate_export_header(
