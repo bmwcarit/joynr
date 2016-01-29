@@ -20,3 +20,4 @@ derby.log
 /build/
 javascript/joynr.properties
 javascript/apps/radio/joynr.properties
+java/core/clustercontroller-standalone/joynr.properties
