@@ -22,8 +22,6 @@
 var provisioning = {};
 provisioning.ccAddress = {
     protocol : "ws",
-    host : "localhost",
-    port : 4242,
     path : ""
 };
 

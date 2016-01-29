@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,7 +217,7 @@ var runInteractiveConsole =
             rl.prompt();
         };
 
-if (process.argv.length !== 3) {
+if (process.argv.length < 3) {
     log("please pass a domain as argument");
     process.exit(0);
 }
@@ -225,6 +225,15 @@ var domain = process.argv[2];
 log("domain: " + domain);
 
 var provisioning = require("./provisioning_common.js");
+
+if (process.argv.length >= 4) {
+    provisioning.ccAddress.host = process.argv[3];
+}
+
+if (process.argv.length >= 5) {
+    provisioning.ccAddress.port = process.argv[4];
+}
+
 RadioStation = require("../generated/js/joynr/vehicle/RadioStation");
 Country = require("../generated/js/joynr/vehicle/Country");
 require("../generated/js/joynr/vehicle/GeoPosition");
