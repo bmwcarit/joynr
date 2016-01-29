@@ -177,7 +177,7 @@ private:
     bool getLocalAndCachedCapabilities(const std::string& participantId,
                                        const joynr::types::DiscoveryQos& discoveryQos,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
-    bool callRecieverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
+    bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
                                 std::vector<CapabilityEntry>& localCapabilities,
                                 std::vector<CapabilityEntry>& globalCapabilities,
                                 std::shared_ptr<ILocalCapabilitiesCallback> callback);

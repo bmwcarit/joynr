@@ -198,7 +198,7 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
     std::vector<CapabilityEntry> globalCapabilities = searchCache(
             interfaceAddress, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()), false);
 
-    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
+    return callReceiverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
 
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
@@ -213,10 +213,10 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
     std::vector<CapabilityEntry> globalCapabilities = searchCache(
             participantId, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()), false);
 
-    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
+    return callReceiverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
 
-bool LocalCapabilitiesDirectory::callRecieverIfPossible(
+bool LocalCapabilitiesDirectory::callReceiverIfPossible(
         joynr::types::DiscoveryScope::Enum& scope,
         std::vector<CapabilityEntry>& localCapabilities,
         std::vector<CapabilityEntry>& globalCapabilities,
@@ -314,7 +314,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     // get the local and cached entries
     bool receiverCalled = getLocalAndCachedCapabilities(participantId, discoveryQos, callback);
 
-    // if no reciever is called, use the global capabilities directory
+    // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
         auto onSuccess = [this, participantId, callback](
@@ -338,7 +338,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& domain,
     // get the local and cached entries
     bool receiverCalled = getLocalAndCachedCapabilities(interfaceAddress, discoveryQos, callback);
 
-    // if no reciever is called, use the global capabilities directory
+    // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
         auto onSuccess = [this, interfaceAddress, callback, discoveryQos](
