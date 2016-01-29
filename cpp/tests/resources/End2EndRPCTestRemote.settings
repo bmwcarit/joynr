@@ -1,9 +1,0 @@
-[messaging]
-broker-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/bounceproxy
-channel-url-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/channelurldirectory/channels
-create-channel-retry-interval=500
-send-msg-retry-interval=500
-local-proxy-host=
-local-proxy-port=
-index=0
-longpoll-retry-interval=5000
