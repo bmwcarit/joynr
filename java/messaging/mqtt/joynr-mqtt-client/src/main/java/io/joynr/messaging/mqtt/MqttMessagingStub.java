@@ -1,5 +1,9 @@
 package io.joynr.messaging.mqtt;
 
+import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
+import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
+import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+
 /*
  * #%L
  * %%
@@ -33,15 +37,21 @@ public class MqttMessagingStub implements IMessaging {
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
     private JoynrMessageSerializer messageSerializer;
+    private MqttAddress replyToMqttAddress;
 
-    public MqttMessagingStub(MqttAddress address, JoynrMqttClient mqttClient, JoynrMessageSerializer messageSerializer) {
+    public MqttMessagingStub(MqttAddress address,
+                             MqttAddress replyToMqttAddress,
+                             JoynrMqttClient mqttClient,
+                             JoynrMessageSerializer messageSerializer) {
         this.address = address;
+        this.replyToMqttAddress = replyToMqttAddress;
         this.mqttClient = mqttClient;
         this.messageSerializer = messageSerializer;
     }
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
+        setReplyTo(message);
         String serializeMessage = messageSerializer.serialize(message);
         transmit(serializeMessage, failureAction);
     }
@@ -53,6 +63,15 @@ public class MqttMessagingStub implements IMessaging {
             mqttClient.publishMessage(topic, serializedMessage);
         } catch (Throwable error) {
             failureAction.execute(error);
+        }
+    }
+
+    private void setReplyTo(JoynrMessage message) {
+        String type = message.getType();
+        if (type != null
+                && message.getReplyTo() == null
+                && (type.equals(MESSAGE_TYPE_REQUEST) || type.equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST) || type.equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST))) {
+            message.setReplyTo(replyToMqttAddress.getBrokerUri() + "/" + replyToMqttAddress.getTopic());
         }
     }
 }

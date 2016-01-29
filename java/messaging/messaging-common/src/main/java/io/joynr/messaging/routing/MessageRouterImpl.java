@@ -25,9 +25,6 @@ import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.JoynrMessageSerializer;
-import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.serialize.MessageSerializerFactory;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
@@ -68,20 +65,17 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
     private MessagingStubFactory messagingStubFactory;
-    private MessageSerializerFactory messageSerializerFactory;
 
     @Inject
     @Singleton
     public MessageRouterImpl(RoutingTable routingTable,
                              @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                              @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                             MessagingStubFactory messagingStubFactory,
-                             MessageSerializerFactory messageSerializerFactory) {
+                             MessagingStubFactory messagingStubFactory) {
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
         this.messagingStubFactory = messagingStubFactory;
-        this.messageSerializerFactory = messageSerializerFactory;
     }
 
     protected Promise<DeferredVoid> addNextHopInternal(String participantId, Address address) {
@@ -161,33 +155,32 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
             scheduler.schedule(new Runnable() {
                 @Override
                 public void run() {
-                    checkExpiry(message);
+                    try {
+                        checkExpiry(message);
 
-                    String toParticipantId = message.getTo();
-                    Address address = getAddress(toParticipantId);
-                    if (address != null) {
-                        String messageId = message.getId().substring(UUID_TAIL);
-                        logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId,
-                                message.getType(),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                                message.getHeader().toString() });
-                        logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
-                                message.getPayload() });
+                        String toParticipantId = message.getTo();
+                        Address address = getAddress(toParticipantId);
+                        if (address != null) {
+                            String messageId = message.getId().substring(UUID_TAIL);
+                            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId,
+                                    message.getType(),
+                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                                    message.getHeader().toString() });
+                            logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
+                                    message.getPayload() });
 
-                    } else {
-                        throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
-                                + toParticipantId);
-                    }
+                        } else {
+                            throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
+                                    + toParticipantId);
+                        }
 
-                    IMessaging messagingStub = messagingStubFactory.create(address);
-                    FailureAction failureAction = createFailureAction(message, retriesCount);
-                    if (address instanceof InProcessAddress) {
+                        IMessaging messagingStub = messagingStubFactory.create(address);
+                        FailureAction failureAction = createFailureAction(message, retriesCount);
                         messagingStub.transmit(message, failureAction);
-                    } else {
-                        JoynrMessageSerializer messageSerializer = messageSerializerFactory.create(address);
-                        String serializedMessage = messageSerializer.serialize(message);
-                        messagingStub.transmit(serializedMessage, failureAction);
+                    } catch (Throwable error) {
+                        logger.error("error in scheduled message router thread: {}" + error.getMessage());
+                        throw error;
                     }
                 }
             },

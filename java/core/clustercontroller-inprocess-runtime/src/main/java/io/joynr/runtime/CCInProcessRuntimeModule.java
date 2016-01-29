@@ -26,6 +26,7 @@ import com.google.inject.name.Names;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
+import io.joynr.messaging.http.HttpGlobalAddressFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
@@ -44,6 +45,7 @@ public class CCInProcessRuntimeModule extends ClusterControllerRuntimeModule {
         bind(IMessagingSkeleton.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON))
                                       .to(ChannelMessagingSkeleton.class)
                                       .in(Singleton.class);
+        globalAddresses.addBinding().to(HttpGlobalAddressFactory.class);
     }
 
     @Provides

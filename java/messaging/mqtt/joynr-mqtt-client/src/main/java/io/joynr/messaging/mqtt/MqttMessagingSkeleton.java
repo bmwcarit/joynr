@@ -32,6 +32,7 @@ import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 /**
  * Connects to the MQTT broker
@@ -68,6 +69,10 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         try {
+            String replyToMqttAddress = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
+            if (replyToMqttAddress != null && !replyToMqttAddress.isEmpty()) {
+                messageRouter.addNextHop(message.getFrom(), RoutingTypesUtil.fromAddressString(replyToMqttAddress));
+            }
             messageRouter.route(message);
         } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException e) {
             failureAction.execute(e);

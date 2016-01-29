@@ -35,6 +35,7 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.arbitration.ArbitratorFactory;
@@ -65,6 +66,7 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.inprocess.InProcessMessageSerializerFactory;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
+import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
@@ -84,6 +86,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+    Multibinder<GlobalAddressFactory> globalAddresses;
 
     @Override
     protected void configure() {
@@ -105,6 +108,16 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         }, new TypeLiteral<IMessagingSkeleton>() {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
         messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessLibjoynrMessagingSkeleton.class);
+
+        // default implementation with a dummy address holder: no global communication. other address types must be
+        // added to the multibinder to support global addressing
+        globalAddresses = Multibinder.newSetBinder(binder(), GlobalAddressFactory.class);
+        globalAddresses.addBinding().toInstance(new GlobalAddressFactory() {
+            @Override
+            public Address create() {
+                return new Address();
+            }
+        });
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
         bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);

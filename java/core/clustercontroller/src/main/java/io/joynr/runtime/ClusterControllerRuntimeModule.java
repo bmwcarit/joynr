@@ -1,5 +1,7 @@
 package io.joynr.runtime;
 
+import java.util.Set;
+
 /*
  * #%L
  * %%
@@ -29,11 +31,16 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.NoBackendMessagingModule;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
+import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.security.DummyPlatformSecurityManager;
 import io.joynr.security.PlatformSecurityManager;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 
-abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModule {
+public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModule {
+    public static final String GLOBAL_ADDRESS = "clustercontroller_global_address";
 
     @Override
     protected void configure() {
@@ -49,5 +56,31 @@ abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModule {
     @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON)
     IMessaging getClusterControllerMessagingSkeleton(MessageRouter messageRouter) {
         return new ChannelMessagingSkeleton(messageRouter);
+    }
+
+    @Provides
+    @Named(GLOBAL_ADDRESS)
+    public Address provideGlobalAddress(Set<GlobalAddressFactory> addressFactories) {
+        Address mqttAddress = null;
+        Address channelAddress = null;
+        Address otherAddress = null;
+        for (GlobalAddressFactory addressFactory : addressFactories) {
+            Address address = addressFactory.create();
+            if (address instanceof MqttAddress) {
+                mqttAddress = address;
+            } else if (address instanceof ChannelAddress) {
+                channelAddress = address;
+            } else {
+                otherAddress = address;
+            }
+        }
+
+        if (mqttAddress != null) {
+            return mqttAddress;
+        }
+        if (channelAddress != null) {
+            return channelAddress;
+        }
+        return otherAddress;
     }
 }

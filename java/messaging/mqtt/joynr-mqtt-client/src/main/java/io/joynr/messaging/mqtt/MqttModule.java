@@ -25,13 +25,14 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
 import io.joynr.messaging.serialize.MessageSerializerFactory;
@@ -46,9 +47,8 @@ public class MqttModule extends AbstractModule {
 
     @Provides
     @Named(PROPERTY_MQTT_ADDRESS)
-    public MqttAddress provideMqttOwnAddress(@Named(PROPERTY_KEY_MQTT_BROKER_URI) String brokerUri,
-                                             @Named(MessagingPropertyKeys.CHANNELID) String localChannelId) {
-        return new MqttAddress(brokerUri, localChannelId);
+    public MqttAddress provideMqttOwnAddress(MqttGlobalAddressFactory globalAddressFactory) {
+        return (MqttAddress) globalAddressFactory.create();
     }
 
     @Override
@@ -70,5 +70,10 @@ public class MqttModule extends AbstractModule {
         }, new TypeLiteral<IMessagingSkeleton>() {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
         messagingSkeletonFactory.addBinding(MqttAddress.class).to(MqttMessagingSkeleton.class);
+
+        Multibinder<GlobalAddressFactory> globalAddresses = Multibinder.newSetBinder(binder(),
+                                                                                     GlobalAddressFactory.class);
+        globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
+
     }
 }

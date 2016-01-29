@@ -24,7 +24,6 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.serialize.MessageSerializerFactory;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
@@ -40,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.CheckForNull;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -60,9 +60,8 @@ public class ChildMessageRouter extends MessageRouterImpl {
     public ChildMessageRouter(RoutingTable routingTable,
                               @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                               @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                              MessagingStubFactory messagingStubFactory,
-                              MessageSerializerFactory messageSerializerFactory) {
-        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory, messageSerializerFactory);
+                              MessagingStubFactory messagingStubFactory) {
+        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory);
     }
 
     @Override

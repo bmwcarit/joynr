@@ -24,7 +24,6 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.messaging.serialize.MessageSerializerFactory;
 import io.joynr.proxy.Callback;
 import joynr.JoynrMessage;
 import joynr.system.RoutingProxy;
@@ -61,8 +60,6 @@ public class ChildMessageRouterTest {
     private WebSocketAddress incommingAddress;
     @Mock
     private MessagingStubFactory messagingStubFactory;
-    @Mock
-    private MessageSerializerFactory messageSerializerFactory;
 
     private JoynrMessage message;
     private ChildMessageRouter messageRouter;
@@ -78,8 +75,7 @@ public class ChildMessageRouterTest {
         messageRouter = new ChildMessageRouter(routingTable,
                                                provideMessageSchedulerThreadPoolExecutor(),
                                                sendMsgRetryIntervalMs,
-                                               messagingStubFactory,
-                                               messageSerializerFactory);
+                                               messagingStubFactory);
         messageRouter.setIncomingAddress(incommingAddress);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
 
