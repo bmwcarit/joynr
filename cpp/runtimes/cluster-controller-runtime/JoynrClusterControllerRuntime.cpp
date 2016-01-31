@@ -313,9 +313,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             mqttMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
                 mqttMessagingSkeleton->onTextMessageReceived(msg);
             });
-
-            mqttMessageReceiver->startReceiveQueue();
-            mqttMessagingIsRunning = true;
         }
 
         mqttChannelId = mqttMessageReceiver->getReceiveChannelId();
@@ -326,9 +323,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "The mqtt message sender supplied is NULL, creating the default "
                            "mqtt MessageSender");
 
-            mqttMessageReceiver->waitForReceiveQueueStarted();
-
             mqttMessageSender = std::make_shared<MqttSender>(messagingSettings->getBrokerUrl());
+
+            mqttMessageSender->registerReceiveQueueStartedCallback(
+                    [&](void) { mqttMessageReceiver->waitForReceiveQueueStarted(); });
         }
 
         messagingStubFactory->registerStubFactory(
@@ -467,7 +465,11 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         httpMessageReceiver->init(channelUrlDirectory);
         httpMessageSender->init(channelUrlDirectory, *messagingSettings);
     }
-    // MQTT already initialized
+
+    if (doMqttMessaging) {
+        mqttMessageReceiver->init(channelUrlDirectory);
+        mqttMessageSender->init(channelUrlDirectory, *messagingSettings);
+    }
 }
 
 ConnectorFactory* JoynrClusterControllerRuntime::createConnectorFactory(
@@ -548,7 +550,13 @@ void JoynrClusterControllerRuntime::startMessaging()
             httpMessagingIsRunning = true;
         }
     }
-    // MQTT already started
+    if (doMqttMessaging) {
+        assert(mqttMessageReceiver != nullptr);
+        if (!mqttMessagingIsRunning) {
+            mqttMessageReceiver->startReceiveQueue();
+            mqttMessagingIsRunning = true;
+        }
+    }
 }
 
 void JoynrClusterControllerRuntime::stopMessaging()
@@ -613,7 +621,7 @@ void JoynrClusterControllerRuntime::waitForChannelCreation()
     if (doHttpMessaging) {
         httpMessageReceiver->waitForReceiveQueueStarted();
     }
-    // MQTT already started
+    // Nothing to do for MQTT
 }
 
 void JoynrClusterControllerRuntime::deleteChannel()

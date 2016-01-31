@@ -27,7 +27,7 @@ namespace joynr
 INIT_LOGGER(MqttSender);
 
 MqttSender::MqttSender(const BrokerUrl& brokerUrl)
-        : mosquittoPublisher(brokerUrl), brokerUrl(brokerUrl)
+        : mosquittoPublisher(brokerUrl), brokerUrl(brokerUrl), waitForReceiveQueueStarted(nullptr)
 {
     mosquittoPublisher.start();
 }
@@ -46,17 +46,24 @@ void MqttSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirec
 
 void MqttSender::sendMessage(const std::string& channelId, const JoynrMessage& message)
 {
-    JOYNR_LOG_TRACE(logger, "sendMessage: ...");
+    JOYNR_LOG_DEBUG(logger, "sendMessage: ...");
+
+    waitForReceiveQueueStarted();
+
     std::string serializedMessage = JsonSerializer::serialize(message);
 
     const int payloadLength = serializedMessage.length();
     const void* payload = serializedMessage.c_str();
 
-    // TODO utf8, encoding ???
-
     Util::logSerializedMessage(logger, "Sending Message: ", serializedMessage);
 
     mosquittoPublisher.publishMessage(channelId, message.getHeaderTo(), payloadLength, payload);
+}
+
+void MqttSender::registerReceiveQueueStartedCallback(
+        std::function<void(void)> waitForReceiveQueueStarted)
+{
+    this->waitForReceiveQueueStarted = waitForReceiveQueueStarted;
 }
 
 } // namespace joynr

@@ -246,4 +246,10 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(
     return sendMessageRequest->execute();
 }
 
+void HttpSender::registerReceiveQueueStartedCallback(
+        std::function<void(void)> waitForReceiveQueueStarted)
+{
+    std::ignore = waitForReceiveQueueStarted;
+}
+
 } // namespace joynr

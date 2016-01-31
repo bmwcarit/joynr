@@ -75,8 +75,6 @@ int MosquittoPublisher::publishMessage(const std::string& channelId,
 {
     std::string topic = channelId + "/" + getMqttPrio() + "/" + participantId;
 
-    // std::string* data = static_cast<std::string*>(const_cast<void *>(payload));
-
     JOYNR_LOG_DEBUG(logger, "Publish to {}", topic);
 
     return publish(nullptr, topic.c_str(), payloadlen, payload, getMqttQos(), isMqttRetain());

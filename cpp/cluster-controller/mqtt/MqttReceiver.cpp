@@ -29,6 +29,7 @@ INIT_LOGGER(MqttReceiver);
 
 MqttReceiver::MqttReceiver(const MessagingSettings& settings)
         : channelCreatedSemaphore(new joynr::Semaphore(0)),
+          isChannelCreated(false),
           channelIdForMqttTopic(),
           channelIdForCapabilitiesDirectory(),
           receiverId(),
@@ -64,7 +65,7 @@ void MqttReceiver::init()
 
 void MqttReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory)
 {
-    (void)channelUrlDirectory;
+    std::ignore = channelUrlDirectory;
 }
 
 void MqttReceiver::updateSettings()
@@ -80,8 +81,12 @@ void MqttReceiver::startReceiveQueue()
 
 void MqttReceiver::waitForReceiveQueueStarted()
 {
-    JOYNR_LOG_TRACE(logger, "waiting for ReceiveQueue to be started.");
-    channelCreatedSemaphore->wait();
+    JOYNR_LOG_DEBUG(logger, "waiting for ReceiveQueue to be started.");
+
+    if (!isChannelCreated) {
+        channelCreatedSemaphore->wait();
+        isChannelCreated = true;
+    }
 }
 
 void MqttReceiver::stopReceiveQueue()

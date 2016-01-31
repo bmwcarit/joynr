@@ -112,8 +112,6 @@ public:
                 .Times(1);
         EXPECT_CALL(*mockMqttMessageReceiver, getReceiveChannelId())
                 .Times(1);
-        EXPECT_CALL(*mockMqttMessageReceiver, startReceiveQueue())
-                .Times(1);
 
         runtime = new JoynrClusterControllerRuntime(
                     nullptr,
@@ -195,6 +193,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, startMessagingHttpDoesNotThrow)
 TEST_F(JoynrClusterControllerRuntimeTest, startMessagingMqttWithHttpBackendDoesNotThrow)
 {
     createRuntimeMqttWithHttpBackend();
+    EXPECT_CALL(*mockMqttMessageReceiver, startReceiveQueue())
+            .Times(1);
     EXPECT_CALL(*mockMqttMessageReceiver, stopReceiveQueue())
             .Times(1);
     startMessagingDoesNotThrow();

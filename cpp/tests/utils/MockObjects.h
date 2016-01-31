@@ -542,6 +542,7 @@ class MockMessageSender : public joynr::IMessageSender
 public:
     MOCK_METHOD2(sendMessage,void(const std::string&, const joynr::JoynrMessage&));
     MOCK_METHOD2(init,void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
+    MOCK_METHOD1(registerReceiveQueueStartedCallback, void(std::function<void(void)> waitForReceiveQueueStarted));
 };
 
 /*

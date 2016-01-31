@@ -53,12 +53,17 @@ public:
     void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
               const MessagingSettings& settings) override;
 
+    void registerReceiveQueueStartedCallback(std::function<void(void)> waitForReceiveQueueStarted);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttSender);
 
     MosquittoPublisher mosquittoPublisher;
 
     const BrokerUrl brokerUrl;
+
+    /* Wait for ReceiveQueueStarted callback */
+    std::function<void(void)> waitForReceiveQueueStarted;
 
     ADD_LOGGER(MqttSender);
 };
