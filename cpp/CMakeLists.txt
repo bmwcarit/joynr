@@ -446,6 +446,8 @@ else(USE_PLATFORM_LIBWEBSOCKETS)
         CMAKE_ARGS  -DLWS_WITH_SSL=0
                     -DLWS_WITHOUT_CLIENT=0
                     -DLWS_WITHOUT_SERVER=0
+                    -DLWS_WITHOUT_EXTENSIONS=0
+                    -DLWS_WITH_ZLIB=ON
                     -DLWS_WITHOUT_TESTAPPS=1
                     -DLWS_WITHOUT_TEST_SERVER=1
                     -DLWS_WITHOUT_TEST_SERVER_EXTPOLL=1
