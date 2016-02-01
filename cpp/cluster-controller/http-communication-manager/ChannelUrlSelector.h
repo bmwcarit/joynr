@@ -18,18 +18,18 @@
  */
 #ifndef CHANNELURLSELECTOR_H
 #define CHANNELURLSELECTOR_H
-#include "joynr/PrivateCopyAssign.h"
 
+#include <cstdint>
+#include <memory>
+#include <chrono>
+#include <map>
+
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
-#include <cstdint>
-#include <memory>
-#include <chrono>
-
-#include <QMap>
 
 // Forward declare test classes
 class ChannelUrlSelectorTest_punishTest_Test;
@@ -110,7 +110,7 @@ private:
     std::string constructUrl(const std::string& baseUrl);
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     const BounceProxyUrl& bounceProxyUrl;
-    QMap<std::string, ChannelUrlSelectorEntry*> entries;
+    std::map<std::string, ChannelUrlSelectorEntry*> entries;
     std::chrono::milliseconds timeForOneRecouperation;
     double punishmentFactor;
     std::string channelUrlDirectoryUrl;

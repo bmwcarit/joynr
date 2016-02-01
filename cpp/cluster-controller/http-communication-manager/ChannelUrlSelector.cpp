@@ -17,15 +17,17 @@
  * #L%
  */
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/Future.h"
-#include "joynr/DispatcherUtils.h"
-#include "joynr/QtTypeUtil.h"
-#include <boost/algorithm/string/predicate.hpp>
-#include <QUrl>
+
 #include <cmath>
 #include <memory>
 #include <chrono>
+
+#include <QUrl>
+#include <boost/algorithm/string/predicate.hpp>
+
+#include "joynr/MessagingSettings.h"
+#include "joynr/Future.h"
+#include "joynr/DispatcherUtils.h"
 
 namespace joynr
 {
@@ -63,7 +65,7 @@ ChannelUrlSelector::~ChannelUrlSelector()
     auto it = entries.begin();
     ChannelUrlSelectorEntry* v;
     while (it != entries.end()) {
-        v = *it;
+        v = it->second;
         if (v) {
             delete v;
         }
@@ -100,9 +102,10 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
         return constructUrl(url);
     }
 
-    if (entries.contains(channelId)) {
+    auto entryIt = entries.find(channelId);
+    if (entryIt != entries.cend()) {
         JOYNR_LOG_DEBUG(logger, "obtainUrl: using cached Urls for id = {}", channelId);
-        ChannelUrlSelectorEntry* entry = entries.value(channelId);
+        ChannelUrlSelectorEntry* entry = entryIt->second;
         status = StatusCodeEnum::SUCCESS;
         return constructUrl(entry->best());
     }
@@ -128,10 +131,10 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
             return constructUrl(url);
         }
         url = urlInformation.getUrls().at(0); // return the first, store all
-        entries.insert(channelId,
-                       new ChannelUrlSelectorEntry(urlInformation,
-                                                   punishmentFactor,
-                                                   timeForOneRecouperation)); // deleted where?
+        entries.insert(
+                std::make_pair(channelId,
+                               new ChannelUrlSelectorEntry(
+                                       urlInformation, punishmentFactor, timeForOneRecouperation)));
         status = StatusCodeEnum::SUCCESS;
         return constructUrl(url);
     } else {
@@ -153,13 +156,15 @@ void ChannelUrlSelector::feedback(bool success, const std::string& channelId, st
         JOYNR_LOG_TRACE(logger, "feedback was positive");
         return;
     }
-    if (!entries.contains(channelId)) {
+
+    auto entryIt = entries.find(channelId);
+    if (entryIt == entries.cend()) {
         JOYNR_LOG_DEBUG(logger, "feedback for an unknown channelId");
         return;
     }
     JOYNR_LOG_TRACE(logger, "feedback: punishing Url = {}", url);
     JOYNR_LOG_TRACE(logger, " for channelId= {}", channelId);
-    ChannelUrlSelectorEntry* entry = entries.value(channelId);
+    ChannelUrlSelectorEntry* entry = entryIt->second;
     std::string::size_type cutoff = url.find("/" + BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX(), 0);
     url.resize(cutoff);
     entry->punish(url);
@@ -194,8 +199,9 @@ std::string ChannelUrlSelector::constructDefaultUrl(const std::string& channelId
     urls.push_back(url);
     urlInformation.setUrls(urls);
     entries.insert(
-            channelId,
-            new ChannelUrlSelectorEntry(urlInformation, punishmentFactor, timeForOneRecouperation));
+            std::make_pair(channelId,
+                           new ChannelUrlSelectorEntry(
+                                   urlInformation, punishmentFactor, timeForOneRecouperation)));
     return url;
 }
 
