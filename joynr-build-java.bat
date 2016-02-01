@@ -1,0 +1,1 @@
+mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -Dmaven.test.failure.ignore=true -DskipTests=false -Denforcer.skip=true -Dmaven.junit.fork=true -Dmaven.compile.fork=true
