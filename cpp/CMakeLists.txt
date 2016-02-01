@@ -454,13 +454,13 @@ else(USE_PLATFORM_LIBWEBSOCKETS)
                     -DLWS_WITHOUT_TEST_FRAGGLE=1
                     -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}
                     -DCMAKE_POSITION_INDEPENDENT_CODE=1
-        BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets.so
+        BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets${CMAKE_SHARED_LIBRARY_SUFFIX}
     )
 
     ExternalProject_Get_Property(libwebsockets SOURCE_DIR)
     ExternalProject_Get_Property(libwebsockets BINARY_DIR)
 
-    set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets.so)
+    set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(libwebsockets_INCLUDE_DIRS
         ${SOURCE_DIR}/lib
         ${BINARY_DIR}
