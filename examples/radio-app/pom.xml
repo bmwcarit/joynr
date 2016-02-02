@@ -67,7 +67,11 @@
 			<artifactId>libjoynr-websocket-runtime</artifactId>
 			<version>${joynr.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>joynr-mqtt-client</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
 		<!-- Logging used in the demo app -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
