@@ -258,9 +258,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
     @Override
     public void shutdown() {
-        synchronized (scheduler) {
-            scheduler.shutdown();
-        }
+        scheduler.shutdown();
         try {
             scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
