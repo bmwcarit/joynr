@@ -63,8 +63,7 @@ public class ChannelMessageSerializerFactory extends AbstractMiddlewareMessageSe
 
             @Override
             public JoynrMessage deserialize(String serializedMessage) throws JoynrSerializationException {
-                // TODO Auto-generated method stub
-                return null;
+                return jsonSerializer.deserialize(serializedMessage);
             }
         };
     }

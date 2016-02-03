@@ -47,8 +47,11 @@ public class JsonSerializer implements JoynrMessageSerializer {
 
     @Override
     public JoynrMessage deserialize(String serializedMessage) throws JoynrSerializationException {
-        // TODO Auto-generated method stub
-        return null;
+        try {
+            return objectMapper.readValue(serializedMessage, JoynrMessage.class);
+        } catch (Exception e) {
+            throw new JoynrSerializationException(e.getMessage());
+        }
     }
 
 }
