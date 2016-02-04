@@ -54,11 +54,7 @@ find_package(Qt5WebSockets)
 find_package(Qt5Sql REQUIRED)
 
 # Boost
-find_package(Boost 1.56.0 REQUIRED
-    COMPONENTS
-    system
-    thread
-)
+find_package(Boost 1.56.0 REQUIRED)
 
 find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
 
