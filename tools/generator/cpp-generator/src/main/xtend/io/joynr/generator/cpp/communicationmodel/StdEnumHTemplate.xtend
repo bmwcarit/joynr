@@ -133,18 +133,21 @@ void PrintTo(const «type.typeName»& «typeName.toFirstLower»Value, ::std::ost
 «getNamespaceEnder(type, true)»
 
 namespace «joynrGenerationPrefix» {
+namespace util {
 
 template <>
-inline «type.typeName» joynr::Util::valueOf<«type.typeName»>(const Variant& variant)
+inline «type.typeName» valueOf<«type.typeName»>(const Variant& variant)
 {
-	return «joynrGenerationPrefix»::Util::convertVariantToEnum<«type.typeNameOfContainingClass»>(variant);
+	return convertVariantToEnum<«type.typeNameOfContainingClass»>(variant);
 }
 
 template <>
-inline std::vector<«type.typeName»> joynr::Util::valueOf<std::vector<«type.typeName»>>(const Variant& variant)
+inline std::vector<«type.typeName»> valueOf<std::vector<«type.typeName»>>(const Variant& variant)
 {
-	return joynr::Util::convertVariantVectorToEnumVector<«type.typeNameOfContainingClass»>(variant.get<std::vector<Variant>>());
+	return convertVariantVectorToEnumVector<«type.typeNameOfContainingClass»>(variant.get<std::vector<Variant>>());
 }
+
+} // namespace util
 } // namespace «joynrGenerationPrefix»
 
 namespace std {

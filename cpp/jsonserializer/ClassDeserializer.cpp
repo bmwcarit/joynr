@@ -71,7 +71,7 @@ Variant convertVariant(IValue &value)
 
 std::string convertString(IValue &value)
 {
-    return removeEscapeFromSpecialChars(static_cast<std::string>(value));
+    return util::removeEscapeFromSpecialChars(static_cast<std::string>(value));
 }
 
 bool convertBool(IValue &value)

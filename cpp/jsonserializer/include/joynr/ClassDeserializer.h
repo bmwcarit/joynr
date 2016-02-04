@@ -289,7 +289,7 @@ struct TypeConverter<Variant>
 };
 
 template <typename T>
-struct TypeConverter<T, std::enable_if_t<IsDerivedFromTemplate<std::map, T>::value>>
+struct TypeConverter<T, std::enable_if_t<util::IsDerivedFromTemplate<std::map, T>::value>>
 {
     static T convert(IValue& value)
     {
@@ -327,7 +327,7 @@ struct SelectedDeserializer<std::vector<T>>
  * @brief partial specialization for map deserialization
  */
 template <typename T>
-struct ClassDeserializerImpl<T, std::enable_if_t<IsDerivedFromTemplate<std::map, T>::value>>
+struct ClassDeserializerImpl<T, std::enable_if_t<util::IsDerivedFromTemplate<std::map, T>::value>>
 {
     static void deserialize(T& map, IObject& object)
     {

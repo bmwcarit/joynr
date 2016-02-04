@@ -125,7 +125,7 @@ JoynrMessage& JoynrMessage::operator=(JoynrMessage&& message)
 void JoynrMessage::generateAndSetMsgIdHeaderIfAbsent()
 {
     if (!containsHeader(HEADER_MESSAGE_ID())) {
-        std::string msgId = Util::createUuid();
+        std::string msgId = util::createUuid();
         setHeaderForKey(HEADER_MESSAGE_ID(), msgId);
     }
 }

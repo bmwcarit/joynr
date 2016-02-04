@@ -73,7 +73,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
     reply.setResponse(std::move(response));
 
     // Interpret the reply
-    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::TestTypes::TEverythingMap>());
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(util::getTypeId<types::TestTypes::TEverythingMap>());
     interpreter.execute(icaller, reply);
 }
 
@@ -106,7 +106,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     reply.setResponse(std::move(response));
 
     // Interpret the reply
-    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::GpsLocation>());
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(util::getTypeId<types::Localisation::GpsLocation>());
     interpreter.execute(icaller, reply);
 }
 
@@ -133,7 +133,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void) {
     Reply reply;
 
     // Interpret the reply
-    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<void>());
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(util::getTypeId<void>());
     interpreter.execute(icaller, reply);
 }
 
@@ -164,7 +164,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
             }));
 
     // Interpret the reply
-    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::GpsLocation>());
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(util::getTypeId<types::Localisation::GpsLocation>());
     interpreter.execute(icaller, reply);
 }
 
@@ -193,7 +193,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
             }));
 
     // Interpret the reply
-    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<void>());
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(util::getTypeId<void>());
     interpreter.execute(icaller, reply);
 }
 
@@ -224,7 +224,7 @@ TEST_F(ReplyInterpreterTest, execute_empty_reply) {
     Reply reply;
 
     // Interpret the reply
-    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::GpsLocation>());
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(util::getTypeId<types::Localisation::GpsLocation>());
     interpreter.execute(icaller, reply);
 }
 
@@ -236,9 +236,9 @@ TEST_F(ReplyInterpreterTest, create_createsGpsInterpreterOnlyOnce) {
     registrar.registerReplyMetaType<types::Localisation::GpsLocation>();
     registrar.registerReplyMetaType<types::Localisation::Trip>();
 
-    IReplyInterpreter& interpreter1 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::GpsLocation>());
-    IReplyInterpreter& interpreter2 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::GpsLocation>());
-    IReplyInterpreter& interpreter3 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::Trip>());
+    IReplyInterpreter& interpreter1 = registrar.getReplyInterpreter(util::getTypeId<types::Localisation::GpsLocation>());
+    IReplyInterpreter& interpreter2 = registrar.getReplyInterpreter(util::getTypeId<types::Localisation::GpsLocation>());
+    IReplyInterpreter& interpreter3 = registrar.getReplyInterpreter(util::getTypeId<types::Localisation::Trip>());
 
     EXPECT_TRUE(&interpreter1 == &interpreter2);
     EXPECT_TRUE(&interpreter2 != &interpreter3);

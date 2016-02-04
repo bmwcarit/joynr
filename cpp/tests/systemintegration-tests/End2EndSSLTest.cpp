@@ -50,7 +50,7 @@ public:
         Settings::merge(sslSettings, *settings, false);
         Settings::merge(integrationTestSettings, *settings, false);
         runtime = new JoynrClusterControllerRuntime(nullptr, settings);
-        std::string uuid = Util::createUuid();
+        std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
     }
 

@@ -637,7 +637,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
         Variant intListVariant = response[5];
         EXPECT_TRUE(intListVariant.is<std::vector<Variant>>());
         std::vector<Variant> intListParam = intListVariant.get<std::vector<Variant>>();
-        EXPECT_EQ(expectedIntList, joynr::Util::convertVariantVectorToVector<int32_t>(intListParam));
+        EXPECT_EQ(expectedIntList, joynr::util::convertVariantVectorToVector<int32_t>(intListParam));
         EXPECT_EQ(expectedReply.getRequestReplyId(), reply.getRequestReplyId());
     }
 }

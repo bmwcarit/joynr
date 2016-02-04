@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TYPEUTIL_H
-#define TYPEUTIL_H
+#ifndef TypeUtil_H
+#define TypeUtil_H
 
 #include "joynr/JoynrCommonExport.h"
 
@@ -219,4 +219,4 @@ public:
     }
 };
 } // namespace joynr
-#endif // TYPEUTIL_H
+#endif // TypeUtil_H

@@ -45,7 +45,7 @@ MetaTypeRegistrar::MetaTypeRegistrar()
 
     // Register a reply interpreter for void type
     std::lock_guard<std::mutex> lock(replyInterpretersMutex);
-    replyInterpreters.insert({Util::getTypeId<void>(), new ReplyInterpreter<void>()});
+    replyInterpreters.insert({util::getTypeId<void>(), new ReplyInterpreter<void>()});
 }
 
 MetaTypeRegistrar& MetaTypeRegistrar::instance()

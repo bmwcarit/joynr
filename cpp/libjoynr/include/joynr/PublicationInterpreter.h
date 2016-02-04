@@ -70,7 +70,7 @@ private:
                       const std::shared_ptr<SubscriptionCallback<Ts...>>& typedCallback,
                       std::index_sequence<Indices...>)
     {
-        typedCallback->onSuccess(Util::valueOf<Ts>(response[Indices])...);
+        typedCallback->onSuccess(util::valueOf<Ts>(response[Indices])...);
     }
     ADD_LOGGER(PublicationInterpreter);
 };
@@ -109,7 +109,7 @@ public:
         }
 
         typename T::Enum value =
-                Util::convertVariantToEnum<T>(subscriptionPublication.getResponse().front());
+                util::convertVariantToEnum<T>(subscriptionPublication.getResponse().front());
 
         std::shared_ptr<SubscriptionCallback<typename T::Enum>> typedCallbackQsp =
                 std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
@@ -156,7 +156,7 @@ public:
         std::shared_ptr<SubscriptionCallback<std::vector<typename T::Enum>>> typedCallbackQsp =
                 std::dynamic_pointer_cast<SubscriptionCallback<std::vector<typename T::Enum>>>(
                         callback);
-        std::vector<typename T::Enum> valueList = Util::convertVariantVectorToEnumVector<T>(qvList);
+        std::vector<typename T::Enum> valueList = util::convertVariantVectorToEnumVector<T>(qvList);
 
         // value is copied in onSuccess
         typedCallbackQsp->onSuccess(valueList);

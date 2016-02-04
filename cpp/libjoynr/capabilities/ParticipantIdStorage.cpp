@@ -74,7 +74,7 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
     // Lookup the participant id
     if (!settings.contains(providerKey)) {
         // Persist a new participant Id, using the defaultValue if possible
-        participantId = (!defaultValue.empty()) ? defaultValue : Util::createUuid();
+        participantId = (!defaultValue.empty()) ? defaultValue : util::createUuid();
         settings.set(providerKey, participantId);
         settings.sync();
     } else {

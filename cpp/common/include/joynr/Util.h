@@ -19,9 +19,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/Logger.h"
-
 #include <cassert>
 #include <cstddef>
 #include <tuple>
@@ -30,7 +27,6 @@
 #include <vector>
 #include <set>
 #include <algorithm>
-#include <sstream>
 
 #include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
@@ -38,150 +34,134 @@
 namespace joynr
 {
 
+class Logger;
+
 namespace exceptions
 {
 class JoynrException;
 } // namespace exceptions
 
+namespace util
+{
 std::string removeEscapeFromSpecialChars(const std::string& inputStr);
 
 /**
-  * @class Util
-  * @brief Container class for helper methods
+  * Splits a byte array representation of multiple JSON objects into
+  * a list of byte arrays, each containing a single JSON object.
   */
-class JOYNRCOMMON_EXPORT Util
+std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
+
+std::string attributeGetterFromName(const std::string& attributeName);
+
+template <typename T>
+typename T::Enum convertVariantToEnum(const Variant& v)
 {
-public:
-    /**
-      * Splits a byte array representation of multiple JSON objects into
-      * a list of byte arrays, each containing a single JSON object.
-      */
-    static std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
+    if (v.is<std::string>()) {
+        std::string enumValueName = v.get<std::string>();
+        return T::getEnum(enumValueName);
+    } else {
+        return v.get<typename T::Enum>();
+    }
+}
 
-    static std::string attributeGetterFromName(const std::string& attributeName);
+template <typename T>
+std::vector<typename T::Enum> convertVariantVectorToEnumVector(
+        const std::vector<Variant>& variantVector)
+{
+    std::vector<typename T::Enum> enumVector;
+    enumVector.reserve(variantVector.size());
+    for (const Variant& variant : variantVector) {
+        enumVector.push_back(convertVariantToEnum<T>(variant));
+    }
+    return enumVector;
+}
 
-    template <typename T>
-    static typename T::Enum convertVariantToEnum(const Variant& v)
-    {
-        if (v.is<std::string>()) {
-            std::string enumValueName = v.get<std::string>();
-            return T::getEnum(enumValueName);
-        } else {
-            return v.get<typename T::Enum>();
-        }
+template <typename T>
+std::vector<Variant> convertEnumVectorToVariantVector(
+        const std::vector<typename T::Enum>& enumVector)
+{
+    std::vector<Variant> variantVector;
+    variantVector.reserve(enumVector.size());
+    for (const typename T::Enum& enumValue : enumVector) {
+        variantVector.push_back(Variant::make<typename T::Enum>(enumValue));
+    }
+    return variantVector;
+}
+
+template <class T>
+std::vector<Variant> convertVectorToVariantVector(const std::vector<T>& inputVector)
+{
+    std::vector<Variant> variantVector;
+    variantVector.reserve(inputVector.size());
+    for (const T& element : inputVector) {
+        variantVector.push_back(Variant::make<T>(element));
+    }
+    return variantVector;
+}
+
+template <class T>
+std::vector<T> convertVariantVectorToVector(const std::vector<Variant>& variantVector)
+{
+    std::vector<T> typeVector;
+    typeVector.reserve(variantVector.size());
+
+    for (Variant variant : variantVector) {
+        typeVector.push_back(variant.get<T>());
     }
 
-    template <typename T>
-    static std::vector<typename T::Enum> convertVariantVectorToEnumVector(
-            const std::vector<Variant>& variantVector)
-    {
-        std::vector<typename T::Enum> enumVector;
-        enumVector.reserve(variantVector.size());
-        for (const Variant& variant : variantVector) {
-            enumVector.push_back(convertVariantToEnum<T>(variant));
-        }
-        return enumVector;
+    return typeVector;
+}
+
+template <class T>
+std::vector<T> convertIntListToEnumList(const std::vector<int>& inputList)
+{
+    std::vector<T> ret;
+    ret.reserve(inputList.size());
+    for (const int& i : inputList) {
+        ret.push_back((T)i);
     }
+    return ret;
+}
 
-    template <typename T>
-    static std::vector<Variant> convertEnumVectorToVariantVector(
-            const std::vector<typename T::Enum>& enumVector)
-    {
-        std::vector<Variant> variantVector;
-        variantVector.reserve(enumVector.size());
-        for (const typename T::Enum& enumValue : enumVector) {
-            variantVector.push_back(Variant::make<typename T::Enum>(enumValue));
-        }
-        return variantVector;
+template <class T>
+std::vector<int> convertEnumListToIntList(const std::vector<T>& enumList)
+{
+    std::vector<int> enumAsIntList;
+    enumAsIntList.reserve(enumList.size());
+    for (const T& e : enumList) {
+        enumAsIntList.push_back(e);
     }
+    return enumAsIntList;
+}
 
-    template <class T>
-    static std::vector<Variant> convertVectorToVariantVector(const std::vector<T>& inputVector)
-    {
-        std::vector<Variant> variantVector;
-        variantVector.reserve(inputVector.size());
-        for (const T& element : inputVector) {
-            variantVector.push_back(Variant::make<T>(element));
-        }
-        return variantVector;
-    }
+/**
+ * Create a Uuid for use in Joynr.
+ *
+ * This is simply a wrapper around boost::uuid
+ */
+std::string createUuid();
 
-    template <class T>
-    static std::vector<T> convertVariantVectorToVector(const std::vector<Variant>& variantVector)
-    {
-        std::vector<T> typeVector;
-        typeVector.reserve(variantVector.size());
+/**
+ * Log a serialized Joynr message
+ */
+void logSerializedMessage(Logger& logger,
+                          const std::string& explanation,
+                          const std::string& message);
 
-        for (Variant variant : variantVector) {
-            typeVector.push_back(variant.get<T>());
-        }
+void throwJoynrException(const exceptions::JoynrException& error);
 
-        return typeVector;
-    }
+template <typename... Ts>
+int getTypeId();
 
-    template <class T>
-    static std::vector<T> convertIntListToEnumList(const std::vector<int>& inputList)
-    {
-        std::vector<T> ret;
-        ret.reserve(inputList.size());
-        for (const int& i : inputList) {
-            ret.push_back((T)i);
-        }
-        return ret;
-    }
+template <typename T>
+T valueOf(const Variant& variant);
 
-    template <class T>
-    static std::vector<int> convertEnumListToIntList(const std::vector<T>& enumList)
-    {
-        std::vector<int> enumAsIntList;
-        enumAsIntList.reserve(enumList.size());
-        for (const T& e : enumList) {
-            enumAsIntList.push_back(e);
-        }
-        return enumAsIntList;
-    }
-
-    /**
-     * Create a Uuid for use in Joynr.
-     *
-     * This is simply a wrapper around boost::uuid
-     */
-    static std::string createUuid();
-
-    /**
-     * Log a serialized Joynr message
-     */
-    static void logSerializedMessage(Logger& logger,
-                                     const std::string& explanation,
-                                     const std::string& message)
-    {
-        if (message.size() > 2048) {
-            JOYNR_LOG_DEBUG(logger,
-                            "{} {}<**truncated, length {}",
-                            explanation,
-                            message.substr(0, 2048),
-                            message.length());
-        } else {
-            JOYNR_LOG_DEBUG(logger, "{} {}, length {}", explanation, message, message.length());
-        }
-    }
-
-    static void throwJoynrException(const exceptions::JoynrException& error);
-
-    template <typename... Ts>
-    static int getTypeId();
-
-    template <typename T>
-    static T valueOf(const Variant& variant);
-
-private:
-    template <typename T, typename... Ts>
-    static int getTypeId_split()
-    {
-        int prime = 31;
-        return JoynrTypeId<T>::getTypeId() + prime * getTypeId<Ts...>();
-    }
-};
+template <typename T, typename... Ts>
+int getTypeId_split()
+{
+    int prime = 31;
+    return JoynrTypeId<T>::getTypeId() + prime * getTypeId<Ts...>();
+}
 
 // this level of indirection is necessary to allow partial specialization
 template <typename T>
@@ -199,46 +179,46 @@ struct ValueOfImpl<std::vector<T>>
 {
     static std::vector<T> valueOf(const Variant& variant)
     {
-        return Util::convertVariantVectorToVector<T>(variant.get<std::vector<Variant>>());
+        return convertVariantVectorToVector<T>(variant.get<std::vector<Variant>>());
     }
 };
 
 template <typename T>
-inline T Util::valueOf(const Variant& variant)
+T valueOf(const Variant& variant)
 {
     return ValueOfImpl<T>::valueOf(variant);
 }
 
 template <>
-inline float Util::valueOf<float>(const Variant& variant)
+inline float valueOf<float>(const Variant& variant)
 {
     return ValueOfImpl<double>::valueOf(variant);
 }
 
 template <>
-inline std::string Util::valueOf<std::string>(const Variant& variant)
+inline std::string valueOf<std::string>(const Variant& variant)
 {
     return removeEscapeFromSpecialChars(ValueOfImpl<std::string>::valueOf(variant));
 }
 
 template <>
-inline std::vector<float> Util::valueOf<std::vector<float>>(const Variant& variant)
+inline std::vector<float> valueOf<std::vector<float>>(const Variant& variant)
 {
     std::vector<double> doubles =
-            Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
+            convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
     std::vector<float> floats(doubles.size());
     std::copy(doubles.cbegin(), doubles.cend(), floats.begin());
     return floats;
 }
 
 template <typename... Ts>
-inline int Util::getTypeId()
+int getTypeId()
 {
     return getTypeId_split<Ts...>();
 }
 
 template <>
-inline int Util::getTypeId<>()
+inline int getTypeId<>()
 {
     return 0;
 }
@@ -286,6 +266,8 @@ private:
 public:
     static constexpr bool value = decltype(IsDerivedFromTemplate::test(std::declval<U>()))::value;
 };
+
+} // namespace util
 
 } // namespace joynr
 #endif // UTIL_H

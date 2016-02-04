@@ -176,7 +176,7 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
     Optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
     if (dre) {
         std::vector<std::string> domains = dre.getValue().getDomains();
-        if (vectorContains(domains, domain)) {
+        if (util::vectorContains(domains, domain)) {
             hasRole = true;
         }
     }

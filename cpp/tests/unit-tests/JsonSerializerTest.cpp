@@ -325,7 +325,7 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
     EXPECT_EQ(2.2, doubleParam.get<double>());
 
     // Extract the parameters in the same way as a RequestInterpreter
-    tests::testTypes::TestEnum::Enum value = Util::convertVariantToEnum<tests::testTypes::TestEnum>(enumParam);
+    tests::testTypes::TestEnum::Enum value = util::convertVariantToEnum<tests::testTypes::TestEnum>(enumParam);
     EXPECT_EQ(1, value);
 }
 
@@ -412,7 +412,7 @@ void deserializePermission(const std::string& serializedPermission, const Permis
     Permission::Enum deserializedEnum;
     PrimitiveDeserializer<Permission::Enum>::deserialize(deserializedEnum, tokenizer.nextObject().nextField().value());
     EXPECT_EQ(expectation, deserializedEnum);
-    EXPECT_EQ(expectation, joynr::Util::valueOf<Permission::Enum>(variant));
+    EXPECT_EQ(expectation, joynr::util::valueOf<Permission::Enum>(variant));
 }
 
 void serializeAndDeserializePermission(const Permission::Enum& input, const std::string& inputAsString, Logger& logger) {
@@ -872,7 +872,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 
     ASSERT_TRUE(returnvl.at(0).is<types::Localisation::GpsLocation>()) << "Cannot convert the first entry of the return List to GpsLocation";
 
-    std::vector<types::Localisation::GpsLocation> resultLocationList = Util::convertVariantVectorToVector<types::Localisation::GpsLocation>(returnvl);
+    std::vector<types::Localisation::GpsLocation> resultLocationList = util::convertVariantVectorToVector<types::Localisation::GpsLocation>(returnvl);
     EXPECT_EQ(resultLocationList.at(1), types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 317));
 }
 

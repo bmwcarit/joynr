@@ -52,7 +52,7 @@ public:
                     nullptr,
                     new Settings("test-resources/integrationtest.settings")
         );
-        domain = "cppEnd2EndRPCTest_Domain_" + Util::createUuid();
+        domain = "cppEnd2EndRPCTest_Domain_" + util::createUuid();
     }
     // Sets up the test fixture.
     void SetUp(){

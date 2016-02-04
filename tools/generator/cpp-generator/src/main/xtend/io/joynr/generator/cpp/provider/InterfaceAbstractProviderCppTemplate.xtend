@@ -76,7 +76,7 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 			onAttributeValueChanged(
 					"«attributeName»",
 					«IF isEnum(attribute.type) && isArray(attribute)»
-						joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
+						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
 					«ELSEIF isEnum(attribute.type)»
 						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
 					«ELSEIF isArray(attribute)»
@@ -104,7 +104,7 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 		«FOR param: getOutputParameters(broadcast)»
 			broadcastValues.push_back(
 					«IF isEnum(param.type) && isArray(param)»
-						joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.joynrName»))
+						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.joynrName»))
 					«ELSEIF isEnum(param.type)»
 						Variant::make<«getTypeName(param)»>(«param.joynrName»)
 					«ELSEIF isArray(param)»

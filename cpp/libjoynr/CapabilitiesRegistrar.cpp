@@ -73,7 +73,7 @@ void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher)
 
 void CapabilitiesRegistrar::removeDispatcher(IDispatcher* dispatcher)
 {
-    removeAll(dispatcherList, dispatcher);
+    util::removeAll(dispatcherList, dispatcher);
 }
 
 } // namespace joynr

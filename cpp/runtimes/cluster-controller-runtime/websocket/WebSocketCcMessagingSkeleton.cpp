@@ -116,7 +116,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
                        &QWebSocket::disconnected,
                        this,
                        &WebSocketCcMessagingSkeleton::onSocketDisconnected);
-            removeAll(clients, client);
+            util::removeAll(clients, client);
 
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,
@@ -152,8 +152,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
 void WebSocketCcMessagingSkeleton::onSocketDisconnected()
 {
     QWebSocket* client = qobject_cast<QWebSocket*>(sender());
-    if (vectorContains(clients, client)) {
-        removeAll(clients, client);
+    if (util::vectorContains(clients, client)) {
+        util::removeAll(clients, client);
         client->deleteLater();
     }
 }

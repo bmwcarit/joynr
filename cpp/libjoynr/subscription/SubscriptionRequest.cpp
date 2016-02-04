@@ -38,7 +38,7 @@ SubscriptionRequest::SubscriptionRequest()
           subscribedToName(),
           qos(Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos()))
 {
-    subscriptionId = Util::createUuid();
+    subscriptionId = util::createUuid();
 }
 
 std::string SubscriptionRequest::getSubscriptionId() const

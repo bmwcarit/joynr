@@ -39,7 +39,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
                   [this](const std::string& err) { this->onWebSocketError(err); },
                   [](WebSocket*) {}))
 {
-    std::string uuid = Util::createUuid();
+    std::string uuid = util::createUuid();
     // remove dashes
     uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
     std::string libjoynrMessagingId = "libjoynr.messaging.participantid_" + uuid;

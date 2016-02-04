@@ -249,7 +249,7 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(
                     ->build());
     JOYNR_LOG_TRACE(logger, "builtRequest");
 
-    Util::logSerializedMessage(logger, "Sending Message: ", data);
+    util::logSerializedMessage(logger, "Sending Message: ", data);
 
     return sendMessageRequest->execute();
 }

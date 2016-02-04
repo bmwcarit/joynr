@@ -82,7 +82,7 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
     pooledHandle->clearHandle();
     idleHandleMap.insert(QThread::currentThreadId(), pooledHandle);
     // handles most recently used are prepended
-    removeAll(handleOrderList, pooledHandle);
+    util::removeAll(handleOrderList, pooledHandle);
     handleOrderList.insert(handleOrderList.begin(), pooledHandle);
 
     if (!handleOrderList.empty() && handleOrderList.size() + outHandleMap.size() > POOL_SIZE) {
@@ -103,7 +103,7 @@ void PerThreadCurlHandlePool::deleteHandle(void* handle)
     std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     if (pooledHandle) {
-        removeAll(handleOrderList, pooledHandle);
+        util::removeAll(handleOrderList, pooledHandle);
         idleHandleMap.remove(QThread::currentThreadId(), pooledHandle);
     }
 }

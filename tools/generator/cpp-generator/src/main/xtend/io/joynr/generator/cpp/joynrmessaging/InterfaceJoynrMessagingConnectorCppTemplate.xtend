@@ -48,7 +48,7 @@ joynr::Request internalRequestObject;
 internalRequestObject.setMethodName("«method.joynrName»");
 «FOR param : getInputParameters(method)»
 	«IF isEnum(param.type) && isArray(param)»
-		internalRequestObject.addParam(joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.name»)), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.name»)), "«getJoynrTypeName(param)»");
 	«ELSEIF isEnum(param.type)»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isArray(param)»
@@ -183,7 +183,7 @@ bool «className»::usesClusterController() const{
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isEnum(attribute.type) && isArray(attribute)»
-				internalRequestObject.addParam(joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»)), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»)), "«getJoynrTypeName(attribute)»");
 			«ELSEIF isEnum(attribute.type)»
 				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSEIF isArray(attribute)»
@@ -228,7 +228,7 @@ bool «className»::usesClusterController() const{
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isEnum(attribute.type) && isArray(attribute)»
-				internalRequestObject.addParam(joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»)), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»)), "«getJoynrTypeName(attribute)»");
 			«ELSEIF isEnum(attribute.type)»
 				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSEIF isArray(attribute)»

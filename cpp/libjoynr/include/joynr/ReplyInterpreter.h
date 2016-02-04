@@ -67,7 +67,7 @@ private:
                          const std::shared_ptr<ReplyCaller<Ts...>>& typedCaller,
                          std::index_sequence<Indices...>)
     {
-        typedCaller->returnValue(Util::valueOf<Ts>(response[Indices])...);
+        typedCaller->returnValue(util::valueOf<Ts>(response[Indices])...);
     }
 
     ADD_LOGGER(ReplyInterpreter);

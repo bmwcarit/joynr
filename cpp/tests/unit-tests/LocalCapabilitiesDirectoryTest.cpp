@@ -61,9 +61,9 @@ public:
         registerCapabilitiesMetaTypes();
 
         //TODO the participantId should be provided by the provider
-        dummyParticipantId1 = Util::createUuid();
-        dummyParticipantId2 = Util::createUuid();
-        dummyParticipantId3 = Util::createUuid();
+        dummyParticipantId1 = util::createUuid();
+        dummyParticipantId2 = util::createUuid();
+        dummyParticipantId3 = util::createUuid();
         localJoynrMessagingAddress1 = std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress("LOCAL_CHANNEL_ID"));
         callback = std::shared_ptr<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);

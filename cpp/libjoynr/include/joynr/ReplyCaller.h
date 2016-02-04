@@ -67,7 +67,7 @@ public:
 
     int getTypeId() const override
     {
-        return Util::getTypeId<Ts...>();
+        return util::getTypeId<Ts...>();
     }
 
 private:
@@ -112,7 +112,7 @@ public:
 
     int getTypeId() const override
     {
-        return Util::getTypeId<void>();
+        return util::getTypeId<void>();
     }
 
 private:

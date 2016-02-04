@@ -256,7 +256,7 @@ void ChannelUrlSelectorEntry::punish(const std::string& url)
     JOYNR_LOG_TRACE(logger, "punish ...");
     const std::string stdUrl = url;
     const std::vector<std::string>& urls = urlInformation.getUrls();
-    if (!vectorContains(urls, stdUrl)) {
+    if (!util::vectorContains(urls, stdUrl)) {
         JOYNR_LOG_DEBUG(logger, "Url not contained in cache entry ...");
         return;
     }

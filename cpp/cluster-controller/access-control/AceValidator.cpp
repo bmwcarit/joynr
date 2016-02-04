@@ -69,26 +69,26 @@ bool AceValidator::isMediatorValid()
 
     bool isMediatorValid = true;
 
-    auto masterPossiblePermissions = vectorToSet(masterAce.getPossibleConsumerPermissions());
+    auto masterPossiblePermissions = util::vectorToSet(masterAce.getPossibleConsumerPermissions());
     if (!masterPossiblePermissions.count(mediatorAce.getDefaultConsumerPermission())) {
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
         auto mediatorPossiblePermissions =
-                vectorToSet(mediatorAce.getPossibleConsumerPermissions());
-        if (!setContainsSet(masterPossiblePermissions, mediatorPossiblePermissions)) {
+                util::vectorToSet(mediatorAce.getPossibleConsumerPermissions());
+        if (!util::setContainsSet(masterPossiblePermissions, mediatorPossiblePermissions)) {
             isMediatorValid = false;
         }
     }
 
-    auto masterPossibleTrustLevels = vectorToSet(masterAce.getPossibleRequiredTrustLevels());
+    auto masterPossibleTrustLevels = util::vectorToSet(masterAce.getPossibleRequiredTrustLevels());
     if (!masterPossibleTrustLevels.count(mediatorAce.getDefaultRequiredTrustLevel())) {
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
         auto mediatorPossibleTrustLevels =
-                vectorToSet(mediatorAce.getPossibleRequiredTrustLevels());
-        if (!setContainsSet(masterPossibleTrustLevels, mediatorPossibleTrustLevels)) {
+                util::vectorToSet(mediatorAce.getPossibleRequiredTrustLevels());
+        if (!util::setContainsSet(masterPossibleTrustLevels, mediatorPossibleTrustLevels)) {
             isMediatorValid = false;
         }
     }
@@ -106,9 +106,10 @@ bool AceValidator::validateOwner(MasterAccessControlEntry targetMasterAce)
     bool isValid = true;
     auto&& possibleConsumerPermissions = targetMasterAce.getPossibleConsumerPermissions();
     auto&& possibleRequiredTrustLevels = targetMasterAce.getPossibleRequiredTrustLevels();
-    if (!vectorContains(possibleConsumerPermissions, ownerAce.getConsumerPermission())) {
+    if (!util::vectorContains(possibleConsumerPermissions, ownerAce.getConsumerPermission())) {
         isValid = false;
-    } else if (!vectorContains(possibleRequiredTrustLevels, ownerAce.getRequiredTrustLevel())) {
+    } else if (!util::vectorContains(
+                       possibleRequiredTrustLevels, ownerAce.getRequiredTrustLevel())) {
         isValid = false;
     }
 

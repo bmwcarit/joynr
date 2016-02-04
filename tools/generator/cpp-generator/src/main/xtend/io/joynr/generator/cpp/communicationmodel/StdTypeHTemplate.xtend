@@ -186,13 +186,15 @@ std::size_t hash_value(«typeName» const& «typeName.toFirstLower»Value);
 
 namespace joynr
 {
+namespace util {
 template <>
-inline std::vector<«type.typeName»> Util::valueOf<
+inline std::vector<«type.typeName»> valueOf<
 		std::vector<«type.typeName»>>(const Variant& variant)
 {
-	return joynr::Util::convertVariantVectorToVector<«type.typeName»>(
+	return convertVariantVectorToVector<«type.typeName»>(
 			variant.get<std::vector<Variant>>());
 }
+} // namespace util
 } // namespace joynr
 
 namespace std {

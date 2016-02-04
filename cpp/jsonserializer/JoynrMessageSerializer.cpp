@@ -43,7 +43,7 @@ void ClassDeserializerImpl<JoynrMessage>::deserialize(JoynrMessage& t, IObject& 
             auto&& converted = convertMap<std::string>(field.value(), convertString);
             t.setHeader(converted);
         } else if (field.name() == "payload") {
-            t.setPayload(removeEscapeFromSpecialChars(field.value()));
+            t.setPayload(util::removeEscapeFromSpecialChars(field.value()));
         }
     }
 }

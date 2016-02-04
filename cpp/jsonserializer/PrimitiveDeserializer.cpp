@@ -38,7 +38,7 @@ Variant deserialize(IValue& o, std::string typeName)
 
 template <>
 void PrimitiveDeserializer<std::string>::deserialize(std::string& string,const IValue& value) {
-    string = removeEscapeFromSpecialChars(value);
+    string = util::removeEscapeFromSpecialChars(value);
 }
 
 } // namespace joynr

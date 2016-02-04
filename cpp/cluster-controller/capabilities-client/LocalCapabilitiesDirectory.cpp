@@ -457,7 +457,7 @@ void LocalCapabilitiesDirectory::addProviderRegistrationObserver(
 void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
         std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
 {
-    removeAll(observers, observer);
+    util::removeAll(observers, observer);
 }
 
 /**

@@ -232,7 +232,7 @@ void AccessController::addParticipantToWhitelist(const std::string& participantI
 
 bool AccessController::needsPermissionCheck(const JoynrMessage& message)
 {
-    if (vectorContains(whitelistParticipantIds, message.getHeaderTo())) {
+    if (util::vectorContains(whitelistParticipantIds, message.getHeaderTo())) {
         return false;
     }
 

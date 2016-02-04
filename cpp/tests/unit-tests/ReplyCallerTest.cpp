@@ -62,7 +62,7 @@ public:
 typedef ReplyCallerTest ReplyCallerDeathTest;
 
 TEST_F(ReplyCallerTest, getType) {
-    ASSERT_EQ(Util::getTypeId<int>(), intFixture.getTypeId());
+    ASSERT_EQ(util::getTypeId<int>(), intFixture.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeInt64_t) {
@@ -73,7 +73,7 @@ TEST_F(ReplyCallerTest, getTypeInt64_t) {
                 },
                 [](const exceptions::JoynrException& error){
                 });
-    ASSERT_EQ(Util::getTypeId<std::int64_t>(), int64_tReplyCaller.getTypeId());
+    ASSERT_EQ(util::getTypeId<std::int64_t>(), int64_tReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeInt8_t) {
@@ -84,12 +84,12 @@ TEST_F(ReplyCallerTest, getTypeInt8_t) {
                 },
                 [](const exceptions::JoynrException& error){
                 });
-    ASSERT_EQ(Util::getTypeId<std::int8_t>(), int8_tReplyCaller.getTypeId());
+    ASSERT_EQ(util::getTypeId<std::int8_t>(), int8_tReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeForVoid) {
     int typeId = voidFixture.getTypeId();
-    ASSERT_EQ(Util::getTypeId<void>(), typeId);
+    ASSERT_EQ(util::getTypeId<void>(), typeId);
 }
 
 

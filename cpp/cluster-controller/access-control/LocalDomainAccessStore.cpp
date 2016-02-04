@@ -290,14 +290,14 @@ std::vector<T> LocalDomainAccessStore::deserializeEnumList(const QByteArray& ser
     QDataStream stream(serializedEnumList);
     stream >> temp;
 
-    return Util::convertIntListToEnumList<T>(temp.toVector().toStdVector());
+    return util::convertIntListToEnumList<T>(temp.toVector().toStdVector());
 }
 
 template <typename T>
 QByteArray LocalDomainAccessStore::serializeEnumList(const std::vector<T>& enumList)
 {
     // Convert to an int list
-    std::vector<int> ints = Util::convertEnumListToIntList<T>(enumList);
+    std::vector<int> ints = util::convertEnumListToIntList<T>(enumList);
 
     // Serialize to a bytearray
     QByteArray serializedEnumList;

@@ -105,7 +105,7 @@ protected:
     void checkOk() const
     {
         if (!isOk()) {
-            Util::throwJoynrException(*error);
+            util::throwJoynrException(*error);
         }
     }
 
