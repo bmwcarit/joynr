@@ -2,7 +2,7 @@
 # that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/).
 # There are no attributions specified by the author.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 ######## Project settings ########
 project(joynr-0.15.0-SNAPSHOT)
