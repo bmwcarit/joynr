@@ -65,7 +65,9 @@ define(
                                 domain : "io.joynr",
                                 messagingQos : messagingQos,
                                 discoveryQos : new DiscoveryQos({
-                                    discoveryScope : DiscoveryScope.GLOBAL_ONLY
+                                    discoveryScope : DiscoveryScope.GLOBAL_ONLY,
+                                    cacheMaxAge : -1
+                                //invalidate
                                 })
                             }).then(function(newLoggingProxy) {
                                 newAppender.setProxy(newLoggingProxy);
