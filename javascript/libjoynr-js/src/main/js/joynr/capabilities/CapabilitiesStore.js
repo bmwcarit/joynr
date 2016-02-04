@@ -227,7 +227,7 @@ define(
                  */
                 var checkAge = function checkAge(discoveryEntry, maxAge) {
                     var registrationTime = registeredCapabilitiesTime[hashCode(discoveryEntry)];
-                    if (registrationTime === undefined || maxAge === undefined) {
+                    if (registrationTime === undefined || maxAge === undefined || maxAge < 0) {
                         return true;
                     }
                     return (Date.now() - registrationTime <= maxAge);
