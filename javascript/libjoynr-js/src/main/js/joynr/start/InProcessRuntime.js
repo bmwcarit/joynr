@@ -59,6 +59,7 @@ define(
             "joynr/types/ChannelUrlInformation",
             "joynr/types/TypeRegistrySingleton",
             "joynr/util/UtilInternal",
+            "joynr/util/CapabilitiesUtil",
             "joynr/system/DistributedLoggingAppenderConstructorFactory",
             "joynr/system/WebWorkerMessagingAppender",
             "joynr/system/LoggingManager",
@@ -107,6 +108,7 @@ define(
                 ChannelUrlInformation,
                 TypeRegistrySingleton,
                 Util,
+                CapabilitiesUtil,
                 DistributedLoggingAppenderConstructorFactory,
                 WebWorkerMessagingAppender,
                 LoggingManager,
@@ -313,10 +315,9 @@ define(
                             persistency.setItem("joynr.channels.channelId.1", channelId);
 
                             untypedCapabilities = provisioning.capabilities || [];
-                            var defaultLibjoynrCapabilities = defaultLibjoynrSettings.capabilities || [];
                             var defaultClusterControllerCapabilities = defaultClusterControllerSettings.capabilities || [];
 
-                            untypedCapabilities = untypedCapabilities.concat(defaultLibjoynrCapabilities, defaultClusterControllerCapabilities);
+                            untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
 
                             typedCapabilities = [];
                             if (untypedCapabilities) {
@@ -450,8 +451,8 @@ define(
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
 
-                            localCapabilitiesStore = new CapabilitiesStore(typedCapabilities);
-                            globalCapabilitiesCache = new CapabilitiesStore();
+                            localCapabilitiesStore = new CapabilitiesStore(CapabilitiesUtil.toDiscoveryEntries(defaultLibjoynrSettings.capabilities || []));
+                            globalCapabilitiesCache = new CapabilitiesStore(typedCapabilities);
 
                             participantIdStorage = new ParticipantIdStorage(persistency, uuid);
 
@@ -492,7 +493,8 @@ define(
                                 messagingQos : internalMessagingQos,
                                 discoveryQos : new DiscoveryQos(
                                         {
-                                            discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                            discoveryScope : DiscoveryScope.GLOBAL_ONLY,
+                                            cacheMaxAge : -1 //invalidate
                                         })
                             };
 

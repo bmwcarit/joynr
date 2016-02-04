@@ -57,6 +57,7 @@ define(
             "joynr/types/DiscoveryScope",
             "joynr/types/DiscoveryEntry",
             "joynr/util/UtilInternal",
+            "joynr/util/CapabilitiesUtil",
             "joynr/system/DistributedLoggingAppenderConstructorFactory",
             "joynr/system/DistributedLoggingAppender",
             "joynr/system/WebWorkerMessagingAppender",
@@ -104,6 +105,7 @@ define(
                 DiscoveryScope,
                 DiscoveryEntry,
                 Util,
+                CapabilitiesUtil,
                 DistributedLoggingAppenderConstructorFactory,
                 DistributedLoggingAppender,
                 WebWorkerMessagingAppender,
@@ -410,7 +412,7 @@ define(
                                         loggingManager : loggingManager
                                     }));
 
-                            arbitrator = new Arbitrator(discovery, typedCapabilities);
+                            arbitrator = new Arbitrator(discovery, CapabilitiesUtil.toDiscoveryEntries(typedCapabilities));
 
                             providerBuilder = Object.freeze(new ProviderBuilder());
 

@@ -34,7 +34,8 @@ define(
             "joynr/types/DiscoveryScope",
             "joynr/types/ProviderScope",
             "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy",
-            "joynr/system/LoggerFactory"
+            "joynr/system/LoggerFactory",
+            "joynr/util/CapabilitiesUtil"
         ],
         function(
                 Promise,
@@ -45,7 +46,8 @@ define(
                 DiscoveryScope,
                 ProviderScope,
                 GlobalCapabilitiesDirectoryProxy,
-                LoggerFactory) {
+                LoggerFactory,
+                CapabilitiesUtil) {
 
             /**
              * The CapabilitiesDiscovery looks up the local and global capabilities directory
@@ -137,27 +139,6 @@ define(
                 }
 
                 /**
-                 * This method transforms a capabilityInformation into an object of type "DiscoveryEntry"
-                 *
-                 * @function
-                 * @name CapabilityDiscovery#toDiscoveryEntry
-                 *
-                 * @param {CapabilityInformation}
-                 *            capabilityInformation the object to be transformed
-                 *
-                 * @returns {DiscoveryEntry} the transformed object
-                 */
-                function toDiscoveryEntry(capabilityInformation) {
-                    return new DiscoveryEntry({
-                        domain : capabilityInformation.domain,
-                        interfaceName : capabilityInformation.interfaceName,
-                        qos : capabilityInformation.providerQos,
-                        participantId : capabilityInformation.participantId,
-                        connections : []
-                    });
-                }
-
-                /**
                  * This method create a new global capabilities proxy with the provided ttl as messaging QoS
                  *
                  * @function
@@ -176,7 +157,8 @@ define(
                             ttl: ttl
                         },
                         discoveryQos : new DiscoveryQos({
-                            discoveryScope : DiscoveryScope.LOCAL_ONLY
+                            discoveryScope : DiscoveryScope.GLOBAL_ONLY,
+                            cacheMaxAge : -1 //invalidate
                         })
                     }).catch(function(error) {
                         throw new Error("Failed to create global capabilities directory proxy: " + error);
@@ -215,7 +197,7 @@ define(
                                                     {
                                                         channelId : capabilityInformation.channelId
                                                     })));
-                                    capabilities.push(toDiscoveryEntry(capabilityInformation));
+                                    capabilities.push(CapabilitiesUtil.toDiscoveryEntry(capabilityInformation));
                                 }
                             }
                             return Promise.all(messageRouterPromises).then(function() {
@@ -271,7 +253,7 @@ define(
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
                                     if (globalCapabilities.length > 0) {
-                                        return Promise.resolve(globalCapabilities);
+                                        return Promise.resolve(CapabilitiesUtil.toDiscoveryEntries(globalCapabilities));
                                     }
                                     return lookupGlobalCapabilities(
                                             domain,
@@ -298,7 +280,7 @@ define(
                                                 localCapabilities);
                                     }
                                     return Promise.resolve(localCapabilities
-                                            .concat(globalCapabilities));
+                                            .concat(CapabilitiesUtil.toDiscoveryEntries(globalCapabilities)));
 
                                 case DiscoveryScope.GLOBAL_ONLY.value:
                                     globalCapabilities = globalCapabilitiesCache.lookup({
@@ -307,7 +289,7 @@ define(
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
                                     if (globalCapabilities.length > 0) {
-                                        return Promise.resolve(globalCapabilities);
+                                        return Promise.resolve(CapabilitiesUtil.toDiscoveryEntries(globalCapabilities));
                                     }
                                     return lookupGlobalCapabilities(
                                             domain,

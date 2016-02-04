@@ -56,6 +56,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/types/DiscoveryScope",
     "joynr/types/DiscoveryEntry",
     "joynr/util/UtilInternal",
+    "joynr/util/CapabilitiesUtil",
     "joynr/util/Typing",
     "joynr/system/DistributedLoggingAppenderConstructorFactory",
     "joynr/system/DistributedLoggingAppender",
@@ -104,6 +105,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         DiscoveryScope,
         DiscoveryEntry,
         Util,
+        CapabilitiesUtil,
         Typing,
         DistributedLoggingAppenderConstructorFactory,
         DistributedLoggingAppender,
@@ -394,7 +396,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                         loggingManager : loggingManager
                     }));
 
-                    arbitrator = new Arbitrator(discovery, typedCapabilities);
+                    arbitrator = new Arbitrator(discovery, CapabilitiesUtil.toDiscoveryEntries(typedCapabilities));
 
                     providerBuilder = Object.freeze(new ProviderBuilder());
 

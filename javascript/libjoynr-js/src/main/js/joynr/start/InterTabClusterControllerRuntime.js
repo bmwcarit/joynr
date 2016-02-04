@@ -509,8 +509,8 @@ define(
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
 
-                            localCapabilitiesStore = new CapabilitiesStore(typedCapabilities);
-                            globalCapabilitiesCache = new CapabilitiesStore();
+                            localCapabilitiesStore = new CapabilitiesStore();
+                            globalCapabilitiesCache = new CapabilitiesStore(typedCapabilities);
 
                             participantIdStorage = new ParticipantIdStorage(persistency, uuid);
 
@@ -553,7 +553,8 @@ define(
                                 messagingQos : internalMessagingQos,
                                 discoveryQos : new DiscoveryQos(
                                         {
-                                            discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                            discoveryScope : DiscoveryScope.GLOBAL_ONLY,
+                                            cacheMaxAge : -1 //invalidate
                                         })
                             };
 

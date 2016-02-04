@@ -490,7 +490,7 @@ joynrTestRequire(
                                             "02",
                                             DiscoveryScope.LOCAL_THEN_GLOBAL,
                                             [],
-                                            [ discoveryEntries[1]
+                                            [ globalCapInfos[1]
                                             ],
                                             [],
                                             [ discoveryEntries[1]
@@ -519,7 +519,7 @@ joynrTestRequire(
                                             DiscoveryScope.LOCAL_THEN_GLOBAL,
                                             [ discoveryEntries[3]
                                             ],
-                                            [ discoveryEntries[1]
+                                            [ globalCapInfos[1]
                                             ],
                                             [ globalCapInfos[3]
                                             ],
@@ -553,7 +553,7 @@ joynrTestRequire(
                                             "09",
                                             DiscoveryScope.LOCAL_ONLY,
                                             [],
-                                            [ discoveryEntries[5]
+                                            [ globalCapInfos[5]
                                             ],
                                             [],
                                             []);
@@ -561,7 +561,7 @@ joynrTestRequire(
                                             "10",
                                             DiscoveryScope.LOCAL_ONLY,
                                             [],
-                                            [ discoveryEntries[5]
+                                            [ globalCapInfos[5]
                                             ],
                                             [ globalCapInfos[6]
                                             ],
@@ -581,7 +581,7 @@ joynrTestRequire(
                                             DiscoveryScope.LOCAL_ONLY,
                                             [ discoveryEntries[7]
                                             ],
-                                            [ discoveryEntries[1]
+                                            [ globalCapInfos[1]
                                             ],
                                             [ globalCapInfos[7]
                                             ],
@@ -598,7 +598,7 @@ joynrTestRequire(
                                             "14",
                                             DiscoveryScope.GLOBAL_ONLY,
                                             [],
-                                            [ discoveryEntries[9]
+                                            [ globalCapInfos[9]
                                             ],
                                             [],
                                             [ discoveryEntries[9]
@@ -615,7 +615,7 @@ joynrTestRequire(
                                             "16",
                                             DiscoveryScope.GLOBAL_ONLY,
                                             [],
-                                            [ discoveryEntries[10]
+                                            [ globalCapInfos[10]
                                             ],
                                             [ globalCapInfos[10]
                                             ],
@@ -634,7 +634,7 @@ joynrTestRequire(
                                             "18",
                                             DiscoveryScope.GLOBAL_ONLY,
                                             [],
-                                            [ discoveryEntries[11]
+                                            [ globalCapInfos[11]
                                             ],
                                             [ globalCapInfos[11]
                                             ],
@@ -645,7 +645,7 @@ joynrTestRequire(
                                             DiscoveryScope.GLOBAL_ONLY,
                                             [ discoveryEntries[10]
                                             ],
-                                            [ discoveryEntries[11]
+                                            [ globalCapInfos[11]
                                             ],
                                             [ globalCapInfos[11]
                                             ],
@@ -671,7 +671,7 @@ joynrTestRequire(
                                             "22",
                                             DiscoveryScope.LOCAL_AND_GLOBAL,
                                             [],
-                                            [ discoveryEntries[1]
+                                            [ globalCapInfos[1]
                                             ],
                                             [],
                                             [ discoveryEntries[1]
@@ -690,7 +690,7 @@ joynrTestRequire(
                                             DiscoveryScope.LOCAL_AND_GLOBAL,
                                             [ discoveryEntries[3]
                                             ],
-                                            [ discoveryEntries[4]
+                                            [ globalCapInfos[4]
                                             ],
                                             [],
                                             [
@@ -714,7 +714,7 @@ joynrTestRequire(
                                             DiscoveryScope.LOCAL_AND_GLOBAL,
                                             [ discoveryEntries[3]
                                             ],
-                                            [ discoveryEntries[1]
+                                            [ globalCapInfos[1]
                                             ],
                                             [ globalCapInfos[3]
                                             ],
