@@ -153,14 +153,23 @@ void throwJoynrException(const exceptions::JoynrException& error);
 template <typename... Ts>
 int getTypeId();
 
-template <typename T>
-T valueOf(const Variant& variant);
-
 template <typename T, typename... Ts>
 int getTypeId_split()
 {
     int prime = 31;
     return JoynrTypeId<T>::getTypeId() + prime * getTypeId<Ts...>();
+}
+
+template <typename... Ts>
+int getTypeId()
+{
+    return getTypeId_split<Ts...>();
+}
+
+template <>
+inline int getTypeId<>()
+{
+    return 0;
 }
 
 // this level of indirection is necessary to allow partial specialization
@@ -209,18 +218,6 @@ inline std::vector<float> valueOf<std::vector<float>>(const Variant& variant)
     std::vector<float> floats(doubles.size());
     std::copy(doubles.cbegin(), doubles.cend(), floats.begin());
     return floats;
-}
-
-template <typename... Ts>
-int getTypeId()
-{
-    return getTypeId_split<Ts...>();
-}
-
-template <>
-inline int getTypeId<>()
-{
-    return 0;
 }
 
 template <typename T>
