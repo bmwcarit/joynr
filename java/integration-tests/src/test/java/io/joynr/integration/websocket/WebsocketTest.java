@@ -27,6 +27,7 @@ import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.LibWebSocketMessagingStub;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
+import io.joynr.servlet.ServletUtil;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -58,7 +59,7 @@ public class WebsocketTest {
     private static Logger logger = LoggerFactory.getLogger(WebsocketTest.class);
     private LibWebSocketMessagingStub webSocketMessagingStub;
     private CCWebSocketMessagingSkeleton ccWebSocketMessagingSkeleton;
-    private WebSocketAddress serverAddress = new WebSocketAddress(WebSocketProtocol.WS, "localhost", 8080, "/test");
+    private WebSocketAddress serverAddress;
     private WebSocketClientAddress clientAddress = new WebSocketClientAddress(UUID.randomUUID().toString().replace("-",
                                                                                                                    ""));
 
@@ -70,10 +71,13 @@ public class WebsocketTest {
 
     @Mock
     MessageRouter messageRouterMock;
+    private int port;
 
     @Before
     public void init() throws IOException {
         logger.debug("INIT WebsocketTest");
+        port = ServletUtil.findFreePort();
+        serverAddress = new WebSocketAddress(WebSocketProtocol.WS, "localhost", port, "/test");
         Mockito.doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
