@@ -27,8 +27,6 @@ import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
@@ -50,7 +48,6 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
                                    ProxyBuilderFactory builderFactory,
                                    RequestCallerDirectory requestCallerDirectory,
                                    ReplyCallerDirectory replyCallerDirectory,
-                                   MessageReceiver messageReceiver,
                                    Dispatcher dispatcher,
                                    MessagingStubFactory messagingStubFactory,
                                    MessagingSkeletonFactory messagingSkeletonFactory,
@@ -60,7 +57,6 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessagingSkeleton clusterControllerMessagingSkeleton,
                                    @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                    CapabilitiesRegistrar capabilitiesRegistrar,
                                    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
@@ -80,10 +76,8 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
               channelUrlDirectoryAddress,
               domainAccessControllerAddress,
               discoveryProviderAddress,
-              clusterControllerMessagingSkeleton,
               capabilitiesRegistrar,
               localCapabilitiesDirectory,
-              messageReceiver,
               messageRouter);
         // CHECKSTYLE:ON
     }

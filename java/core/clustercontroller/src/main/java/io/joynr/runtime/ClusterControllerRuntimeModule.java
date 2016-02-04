@@ -24,15 +24,10 @@ import java.util.Set;
 import javax.inject.Named;
 
 import com.google.inject.Provides;
-import com.google.inject.Singleton;
 
 import io.joynr.discovery.DiscoveryClientModule;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.NoBackendMessagingModule;
-import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.routing.GlobalAddressFactory;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.security.DummyPlatformSecurityManager;
 import io.joynr.security.PlatformSecurityManager;
 import joynr.system.RoutingTypes.Address;
@@ -49,13 +44,6 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
         install(new NoBackendMessagingModule());
 
         bind(PlatformSecurityManager.class).to(DummyPlatformSecurityManager.class);
-    }
-
-    @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON)
-    IMessaging getClusterControllerMessagingSkeleton(MessageRouter messageRouter) {
-        return new ChannelMessagingSkeleton(messageRouter);
     }
 
     @Provides

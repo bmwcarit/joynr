@@ -21,11 +21,7 @@ package io.joynr.runtime;
 import javax.inject.Named;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Names;
 
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.http.HttpGlobalAddressFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
@@ -42,9 +38,6 @@ public class CCInProcessRuntimeModule extends ClusterControllerRuntimeModule {
         super.configure();
         bind(JoynrRuntime.class).to(ClusterControllerRuntime.class).in(Singleton.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
-        bind(IMessagingSkeleton.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON))
-                                      .to(ChannelMessagingSkeleton.class)
-                                      .in(Singleton.class);
         globalAddresses.addBinding().to(HttpGlobalAddressFactory.class);
     }
 
