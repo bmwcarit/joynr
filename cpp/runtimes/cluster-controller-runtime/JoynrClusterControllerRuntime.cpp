@@ -18,6 +18,7 @@
  */
 #include <QCoreApplication>
 #include <QThread>
+#include <boost/algorithm/string/predicate.hpp>
 #include <cassert>
 
 #include "mosquittopp.h"
@@ -155,27 +156,31 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             new MessageRouter(messagingStubFactory, securityManager));
 
     const BrokerUrl brokerUrl = messagingSettings->getBrokerUrl();
+    assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());
     const BrokerUrl bounceProxyUrl = messagingSettings->getBounceProxyUrl();
+    assert(bounceProxyUrl.getBrokerChannelsBaseUrl().isValid());
 
     // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
-    if (brokerUrl.getBrokerChannelsBaseUrl().isValid()) {
+    const Url url = brokerUrl.getBrokerChannelsBaseUrl();
+    std::string brokerProtocol = url.getProtocol();
+    std::string bounceproxyProtocol = bounceProxyUrl.getBrokerChannelsBaseUrl().getProtocol();
 
-        const Url url = brokerUrl.getBrokerChannelsBaseUrl();
-        std::string protocol = url.getProtocol();
+    std::transform(brokerProtocol.begin(), brokerProtocol.end(), brokerProtocol.begin(), ::toupper);
+    std::transform(bounceproxyProtocol.begin(),
+                   bounceproxyProtocol.end(),
+                   bounceproxyProtocol.begin(),
+                   ::toupper);
 
-        std::transform(protocol.begin(), protocol.end(), protocol.begin(), ::toupper);
-
-        if (protocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
-                                joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT)) {
-            JOYNR_LOG_INFO(logger, "MQTT-Messaging");
-            doMqttMessaging = true;
-        } else {
-            JOYNR_LOG_INFO(logger, "HTTP-Messaging");
-            doHttpMessaging = true;
-        }
+    if (brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
+                                  joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT)) {
+        JOYNR_LOG_INFO(logger, "MQTT-Messaging");
+        doMqttMessaging = true;
+    } else {
+        JOYNR_LOG_INFO(logger, "HTTP-Messaging");
+        doHttpMessaging = true;
     }
 
-    if (!doHttpMessaging && bounceProxyUrl.getBrokerChannelsBaseUrl().isValid()) {
+    if (!doHttpMessaging && boost::starts_with(bounceproxyProtocol, "HTTP")) {
         JOYNR_LOG_INFO(logger, "HTTP-Messaging");
         doHttpMessaging = true;
     }
