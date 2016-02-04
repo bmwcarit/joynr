@@ -313,12 +313,10 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
 
                     typedCapabilities = [];
-                    if (untypedCapabilities) {
-                        for (i = 0; i < untypedCapabilities.length; i++) {
-                            var capability = new CapabilityInformation(untypedCapabilities[i]);
-                            initialRoutingTable[capability.participantId] = ccAddress;
-                            typedCapabilities.push(capability);
-                        }
+                    for (i = 0; i < untypedCapabilities.length; i++) {
+                        var capability = new CapabilityInformation(untypedCapabilities[i]);
+                        initialRoutingTable[capability.participantId] = ccAddress;
+                        typedCapabilities.push(capability);
                     }
 
                     messageQueueSettings = {};

@@ -320,18 +320,16 @@ define(
                             untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
 
                             typedCapabilities = [];
-                            if (untypedCapabilities) {
-                                for (i = 0; i < untypedCapabilities.length; i++) {
-                                    var capability =
-                                            new CapabilityInformation(untypedCapabilities[i]);
-                                    if (capability.channelId) {
-                                        initialRoutingTable[capability.participantId] =
-                                            new ChannelAddress({
-                                                channelId : capability.channelId
-                                            });
-                                    }
-                                    typedCapabilities.push(capability);
+                            for (i = 0; i < untypedCapabilities.length; i++) {
+                                var capability =
+                                        new CapabilityInformation(untypedCapabilities[i]);
+                                if (capability.channelId) {
+                                    initialRoutingTable[capability.participantId] =
+                                        new ChannelAddress({
+                                            channelId : capability.channelId
+                                        });
                                 }
+                                typedCapabilities.push(capability);
                             }
 
                             var channelUrlDirectoryStub = new InProcessStub();
