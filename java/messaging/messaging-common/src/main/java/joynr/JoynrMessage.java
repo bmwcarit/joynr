@@ -287,6 +287,14 @@ public class JoynrMessage implements JoynrType {
 
     /**
      *
+     * @return the channelId of the cluster controller that is sending the message
+     */
+    public String getReplyTo() {
+        return getHeaderValue(HEADER_NAME_REPLY_CHANNELID);
+    }
+
+    /**
+     *
      * @param replyToChannelId
      *            the channelId of the cluster controller that is sending the message
      */
