@@ -30,6 +30,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
@@ -61,13 +63,32 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 mqttClient.setCallback(this);
                 mqttClient.subscribe(ownTopic.getTopic());
                 logger.debug("MQTT Connected client");
-            } catch (Exception e) {
-                // TODO which exceptions are recoverable?
-                logger.error("MQTT Connect failed: {}", e.getMessage());
-                try {
-                    Thread.sleep(reconnectSleepMs);
-                } catch (InterruptedException e1) {
+            } catch (MqttException mqttError) {
+                logger.error("MQTT Connect failed: {}", mqttError.getMessage());
+                switch (mqttError.getReasonCode()) {
+                case MqttException.REASON_CODE_CLIENT_EXCEPTION:
+                case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
+                case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
+                case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
+                case MqttException.REASON_CODE_CLIENT_TIMEOUT:
+                case MqttException.REASON_CODE_CONNECT_IN_PROGRESS:
+                case MqttException.REASON_CODE_CONNECTION_LOST:
+                case MqttException.REASON_CODE_MAX_INFLIGHT:
+                case MqttException.REASON_CODE_NO_MESSAGE_IDS_AVAILABLE:
+                case MqttException.REASON_CODE_SERVER_CONNECT_ERROR:
+                case MqttException.REASON_CODE_SUBSCRIBE_FAILED:
+                case MqttException.REASON_CODE_UNEXPECTED_ERROR:
+                case MqttException.REASON_CODE_WRITE_TIMEOUT:
+                    try {
+                        Thread.sleep(reconnectSleepMs);
+                    } catch (InterruptedException e1) {
+                    }
+                    continue;
+                case MqttException.REASON_CODE_CLIENT_CONNECTED:
+                    continue;
                 }
+            } catch (Exception e) {
+                throw new JoynrIllegalStateException("Unable to start MqttPahoClient: " + e.getMessage());
             }
         }
     }
@@ -84,6 +105,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void publishMessage(String topic, String serializedMessage) {
+        if (messagingSkeleton == null) {
+            throw new JoynrDelayMessageException("MQTT Publish failed: messagingSkeleton has not been set yet");
+        }
         try {
             MqttMessage message = new MqttMessage();
             message.setPayload(serializedMessage.getBytes(Charset.forName("UTF-8")));
@@ -94,6 +118,30 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             mqttClient.publish(topic, message);
         } catch (MqttException e) {
             logger.error("MQTT Publish failed: {}", e.getMessage());
+            switch (e.getReasonCode()) {
+            case MqttException.REASON_CODE_CLIENT_EXCEPTION:
+                Throwable cause = e.getCause();
+                if (cause != null) {
+                    throw new JoynrDelayMessageException("MqttException: " + cause.getMessage());
+                } else {
+                    throw new JoynrDelayMessageException("MqttException: " + e.getMessage());
+                }
+            case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
+            case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
+            case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
+            case MqttException.REASON_CODE_CLIENT_TIMEOUT:
+            case MqttException.REASON_CODE_CONNECTION_LOST:
+            case MqttException.REASON_CODE_MAX_INFLIGHT:
+            case MqttException.REASON_CODE_NO_MESSAGE_IDS_AVAILABLE:
+            case MqttException.REASON_CODE_SERVER_CONNECT_ERROR:
+            case MqttException.REASON_CODE_UNEXPECTED_ERROR:
+            case MqttException.REASON_CODE_WRITE_TIMEOUT:
+            case MqttException.REASON_CODE_CONNECT_IN_PROGRESS:
+                throw new JoynrDelayMessageException("MqttException: " + e.getMessage());
+            default:
+                throw new JoynrMessageNotSentException(e.getMessage());
+            }
+        } catch (Exception e) {
             throw new JoynrMessageNotSentException(e.getMessage());
         }
 
@@ -103,23 +151,41 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     @Override
     public void connectionLost(Throwable error) {
         logger.error("MQTT connection lost: {}", error.getMessage());
-        //TODO which exceptions are recoverable?
         if (error instanceof MqttException) {
-            start();
-        } else {
-            shutdown();
+            MqttException mqttError = (MqttException) error;
+            int reason = mqttError.getReasonCode();
+            switch (reason) {
+            case MqttException.REASON_CODE_CLIENT_EXCEPTION:
+                connectionLost(mqttError.getCause());
+                break;
+            case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
+            case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
+            case MqttException.REASON_CODE_CLIENT_TIMEOUT:
+            case MqttException.REASON_CODE_CONNECTION_LOST:
+            case MqttException.REASON_CODE_SERVER_CONNECT_ERROR:
+            case MqttException.REASON_CODE_UNEXPECTED_ERROR:
+            case MqttException.REASON_CODE_WRITE_TIMEOUT:
+                start();
+                break;
+            default:
+                shutdown();
+                break;
+            }
         }
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken arg0) {
-        // TODO Auto-generated method stub
-
+        // nothing to do here
     }
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
         String serializedMessage = new String(mqttMessage.getPayload(), Charset.forName("UTF-8"));
+        if (messagingSkeleton == null) {
+            logger.error("MQTT message not processed: messagingSkeleton has not been set yet");
+            return;
+        }
         messagingSkeleton.transmit(serializedMessage, new FailureAction() {
 
             @Override
