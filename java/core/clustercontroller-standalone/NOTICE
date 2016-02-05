@@ -42,6 +42,7 @@ This project has dependencies to:
   io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
@@ -66,6 +67,7 @@ This project has dependencies to:
   JLine under The BSD License
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
+  org.eclipse.paho.client.mqttv3 under Eclipse Public License - Version 1.0
   Reflections under WTFPL
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License

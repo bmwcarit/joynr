@@ -18,6 +18,11 @@
             <artifactId>clustercontroller-websocket-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.joynr.java.messaging.mqtt</groupId>
+            <artifactId>joynr-mqtt-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<!-- Console I/O framework used in the demo app -->
 		<dependency>
 			<groupId>jline</groupId>
