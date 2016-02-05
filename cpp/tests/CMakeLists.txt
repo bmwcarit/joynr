@@ -84,9 +84,6 @@ else (USE_PLATFORM_GTEST_GMOCK)
 
 endif(USE_PLATFORM_GTEST_GMOCK)
 
-include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
-include_directories(SYSTEM ${GMOCK_INCLUDE_DIRS})
-
 ### copy test resources and settings ##########################################
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/integrationtest.settings")
@@ -321,9 +318,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     target_include_directories(
         g_UnitTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -355,9 +349,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     target_include_directories(
         g_IntegrationTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -395,10 +386,12 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_include_directories(
         g_SystemIntegrationTests
         SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
+        PRIVATE ${CURL_INCLUDE_DIRS}
+    )
+
+    target_include_directories(
+        g_SystemIntegrationTests
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
-        ${CURL_INCLUDE_DIRS}
     )
 
     install(TARGETS g_UnitTests g_IntegrationTests g_SystemIntegrationTests
@@ -432,9 +425,6 @@ else()
 
     target_include_directories(
         g_UnitTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
     )
 
@@ -461,9 +451,6 @@ else()
 
     target_include_directories(
         g_SystemIntegrationTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
     )
 

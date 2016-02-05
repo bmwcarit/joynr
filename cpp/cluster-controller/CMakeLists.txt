@@ -119,20 +119,23 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-include_directories(
-        ${JoynrClusterController_INCLUDE_DIRECTORIES}
-)
-
-include_directories(
-    SYSTEM
-    ${JoynrClusterController_SYS_INCLUDE_DIRECTORIES}
-)
 
 add_library(
     JoynrClusterController
     SHARED
     ${JoynrClusterController_HEADERS}
     ${JoynrClusterController_SOURCES}
+)
+
+target_include_directories(
+    JoynrClusterController
+    PRIVATE ${JoynrClusterController_INCLUDE_DIRECTORIES}
+)
+
+target_include_directories(
+    JoynrClusterController
+    SYSTEM
+    PRIVATE ${JoynrClusterController_SYS_INCLUDE_DIRECTORIES}
 )
 
 AddClangFormat(JoynrClusterController)

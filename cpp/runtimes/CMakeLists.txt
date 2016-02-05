@@ -27,7 +27,7 @@ set(
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_INCLUDE_DIR}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -35,10 +35,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
     set(
         JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES
-        ${runtime_PUBLIC_INCLUDE_DIRECTORY}
-        "../"
-        ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
-        ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
+        ${JoynrRuntime_INCLUDE_DIRECTORIES}
         ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
     )
 
@@ -76,21 +73,23 @@ if(${BUILD_CLUSTER_CONTROLLER})
         "cluster-controller-runtime/websocket/*.cpp"
     )
 
-    include_directories(
-        ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
-    )
-
-    include_directories(
-        SYSTEM
-        ${Qt5WebSockets_INCLUDE_DIRS}
-        ${Qt5Core_INCLUDE_DIRS}
-    )
-
     add_library(
         JoynrClusterControllerRuntime
         SHARED
         ${JoynrClusterControllerRuntime_HEADERS}
         ${JoynrClusterControllerRuntime_SOURCES}
+    )
+
+    target_include_directories(
+        JoynrClusterControllerRuntime
+        PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
+    )
+
+    target_include_directories(
+        JoynrClusterControllerRuntime
+        SYSTEM
+        PRIVATE ${Qt5WebSockets_INCLUDE_DIRS}
+        PRIVATE ${Qt5Core_INCLUDE_DIRS}
     )
 
     AddClangFormat(JoynrClusterControllerRuntime)
@@ -174,12 +173,6 @@ set(
     "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.cpp"
 )
 
-include_directories(
-    ${JoynrRuntime_INCLUDE_DIRECTORIES}
-    ${libwebsockets_INCLUDE_DIRS}
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
-)
-
 add_library(
     JoynrWsRuntime
     SHARED
@@ -187,6 +180,13 @@ add_library(
     ${JoynrRuntime_SOURCES}
     ${JoynrWsRuntime_PRIVATE_HEADERS}
     ${JoynrWsRuntime_SOURCES}
+)
+
+target_include_directories(
+    JoynrWsRuntime
+    PRIVATE
+    ${JoynrRuntime_INCLUDE_DIRECTORIES}
+    ${libwebsockets_INCLUDE_DIRS}
 )
 
 AddClangFormat(JoynrWsRuntime)
@@ -255,10 +255,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${common_api_PUBLIC_INCLUDE_DIRECTORY}
     )
 
-    include_directories(
-        ${JoynrRuntime_INCLUDE_DIRECTORIES}
-    )
-
     add_library(
         JoynrDbusRuntime
         SHARED
@@ -266,6 +262,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrRuntime_SOURCES}
         ${JoynrDbusRuntime_PRIVATE_HEADERS}
         ${JoynrDbusRuntime_SOURCES}
+    )
+
+    target_include_directories(
+        JoynrDbusRuntime
+        PRIVATE ${JoynrRuntime_INCLUDE_DIRECTORIES}
     )
 
     AddClangFormat(JoynrDbusRuntime)
@@ -341,6 +342,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     target_link_libraries(cluster-controller
         JoynrClusterControllerRuntime
+    )
+
+    target_include_directories(
+        cluster-controller
+        PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
     )
 
     install(

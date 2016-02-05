@@ -116,21 +116,24 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-include_directories(
-    ${JoynrLib_INCLUDE_DIRECTORIES}
-)
-
-include_directories(
-    SYSTEM
-    ${JoynrLib_SYS_INCLUDE_DIRS}
-)
-
 add_library(
     Joynr
     SHARED
     ${JoynrLib_HEADERS}
     ${JoynrLib_SOURCES}
 )
+
+target_include_directories(
+    Joynr
+    PRIVATE ${JoynrLib_INCLUDE_DIRECTORIES}
+)
+
+target_include_directories(
+    Joynr
+    SYSTEM
+    PRIVATE ${JoynrLib_SYS_INCLUDE_DIRS}
+)
+
 
 if(NOT USE_PLATFORM_LIBWEBSOCKETS)
     add_dependencies(Joynr libwebsockets)

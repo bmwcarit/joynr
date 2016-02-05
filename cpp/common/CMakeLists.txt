@@ -43,10 +43,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-include_directories(
-    ${JoynrCommon_INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/../libjoynr/include
-)
-
 set(
     JoynrCommon_EXPORT_HEADER
     "include/joynr/JoynrCommonExport.h"
@@ -134,6 +130,12 @@ set_target_properties(
 
 # make spdlog system directory to avoid compiler warnings
 target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>")
+
+target_include_directories(
+    JoynrCommon
+    PRIVATE ${JoynrCommon_INCLUDE_DIRECTORIES}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../libjoynr/include
+)
 
 generate_export_header(
     JoynrCommon

@@ -84,8 +84,9 @@ add_library(
     ${JoynrJsonSerializer_SOURCES}
 )
 
-include_directories(
-    ${JoynrJsonSerializer_INCLUDE_DIRECTORIES}
+target_include_directories(
+    JoynrJsonSerializer
+    PRIVATE ${JoynrJsonSerializer_INCLUDE_DIRECTORIES}
 )
 
 AddIncludeWhatYouUse(JoynrJsonSerializer)
