@@ -40,10 +40,13 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClientFactory.class);
     private MqttAddress ownAddress;
     private JoynrMqttClient mqttClient = null;
+    private int reconnectSleepMs;
 
     @Inject
-    public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress) {
+    public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs) {
         this.ownAddress = ownAddress;
+        this.reconnectSleepMs = reconnectSleepMs;
     }
 
     @Override
@@ -63,7 +66,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
             MqttClient mqttClient = new MqttClient(ownAddress.getBrokerUri(),
                                                    ownAddress.getTopic(),
                                                    new MemoryPersistence());
-            pahoClient = new MqttPahoClient(mqttClient, new MqttAddress(ownAddress));
+            pahoClient = new MqttPahoClient(mqttClient, new MqttAddress(ownAddress), reconnectSleepMs);
             pahoClient.start();
 
         } catch (MqttException e) {

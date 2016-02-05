@@ -45,10 +45,12 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private MqttClient mqttClient;
     private MqttAddress ownTopic;
     private IMessaging messagingSkeleton;
+    private int reconnectSleepMs;
 
-    public MqttPahoClient(MqttClient mqttClient, MqttAddress ownTopic) throws MqttException {
+    public MqttPahoClient(MqttClient mqttClient, MqttAddress ownTopic, int reconnectSleepMs) throws MqttException {
         this.mqttClient = mqttClient;
         this.ownTopic = ownTopic;
+        this.reconnectSleepMs = reconnectSleepMs;
     }
 
     @Override
@@ -60,8 +62,12 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 mqttClient.subscribe(ownTopic.getTopic());
                 logger.debug("MQTT Connected client");
             } catch (Exception e) {
+                // TODO which exceptions are recoverable?
                 logger.error("MQTT Connect failed: {}", e.getMessage());
-                //TODO wait for reconnect etc.
+                try {
+                    Thread.sleep(reconnectSleepMs);
+                } catch (InterruptedException e1) {
+                }
             }
         }
     }

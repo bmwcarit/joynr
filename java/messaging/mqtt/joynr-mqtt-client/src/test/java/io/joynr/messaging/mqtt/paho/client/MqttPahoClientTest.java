@@ -78,6 +78,7 @@ public class MqttPahoClientTest {
         MockitoAnnotations.initMocks(this);
         Properties properties = new Properties();
         properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
 
         injector = Guice.createInjector(new MqttPahoModule(),
