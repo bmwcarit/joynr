@@ -23,7 +23,7 @@ set(
 set(
     JoynrClusterController_SYS_INCLUDE_DIRECTORIES
     ${jsmn_INCLUDE_DIR}
-    ${Qt5Core_INCLUDE_DIRECTORY}
+    ${Qt5Core_INCLUDE_DIRS}
 )
 
 set(
