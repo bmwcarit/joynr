@@ -91,14 +91,6 @@ void HttpSender::sendMessage(const std::string& channelId, const JoynrMessage& m
         scheduler = &delayedScheduler;
     }
 
-    /**
-     * NOTE: passing std::string by value into the runnable and thereby relying on the fact that
-     * the
-     * std::string internally
-     * uses QSharedDataPointer to manage the string's data, which when copied by value only
-     * copies
-     * the pointer (but safely)
-     */
     scheduler->schedule(new SendMessageRunnable(this,
                                                 channelId,
                                                 message.getHeaderExpiryDate(),
