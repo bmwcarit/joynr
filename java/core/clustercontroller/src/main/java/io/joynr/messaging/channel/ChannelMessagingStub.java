@@ -19,6 +19,10 @@ package io.joynr.messaging.channel;
  * #L%
  */
 
+import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
+import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
+import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JoynrMessageSerializer;
@@ -31,17 +35,21 @@ public class ChannelMessagingStub implements IMessaging {
     private ChannelAddress address;
     private JoynrMessageSerializer messageSerializer;
     private HttpMessageSender httpMessageSender;
+    private ChannelAddress replyToAddress;
 
     public ChannelMessagingStub(ChannelAddress address,
+                                ChannelAddress replyToAddress,
                                 JoynrMessageSerializer messageSerializer,
                                 HttpMessageSender httpMessageSender) {
         this.address = address;
+        this.replyToAddress = replyToAddress;
         this.messageSerializer = messageSerializer;
         this.httpMessageSender = httpMessageSender;
     }
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
+        setReplyTo(message);
         String serializedMessage = messageSerializer.serialize(message);
         transmit(serializedMessage, failureAction);
     }
@@ -51,4 +59,12 @@ public class ChannelMessagingStub implements IMessaging {
         httpMessageSender.sendMessage(address, serializedMessage, failureAction);
     }
 
+    private void setReplyTo(JoynrMessage message) {
+        String type = message.getType();
+        if (type != null
+                && message.getReplyTo() == null
+                && (type.equals(MESSAGE_TYPE_REQUEST) || type.equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST) || type.equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST))) {
+            message.setReplyTo(replyToAddress.getChannelId());
+        }
+    }
 }

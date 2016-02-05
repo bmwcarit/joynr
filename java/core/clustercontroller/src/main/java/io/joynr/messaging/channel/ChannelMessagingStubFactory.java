@@ -23,6 +23,7 @@ import com.google.inject.Inject;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.http.HttpGlobalAddressFactory;
 import io.joynr.messaging.http.HttpMessageSender;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -33,18 +34,24 @@ public class ChannelMessagingStubFactory extends
         AbstractMiddlewareMessagingStubFactory<ChannelMessagingStub, ChannelAddress> {
     private HttpMessageSender httpMessageSender;
     private ChannelMessageSerializerFactory channelMessageSerializerFactory;
+    private ChannelAddress replyToAddress;
 
     @Inject
     public ChannelMessagingStubFactory(ChannelMessageSerializerFactory channelMessageSerializerFactory,
-                                       HttpMessageSender messageSender) {
+                                       HttpMessageSender messageSender,
+                                       HttpGlobalAddressFactory replyToAddressFactory) {
         this.channelMessageSerializerFactory = channelMessageSerializerFactory;
         this.httpMessageSender = messageSender;
+        this.replyToAddress = (ChannelAddress) replyToAddressFactory.create();
     }
 
     @Override
     protected ChannelMessagingStub createInternal(final ChannelAddress address) {
         final JoynrMessageSerializer messageSerializer = channelMessageSerializerFactory.create(address);
-        ChannelMessagingStub messagingStub = new ChannelMessagingStub(address, messageSerializer, httpMessageSender);
+        ChannelMessagingStub messagingStub = new ChannelMessagingStub(address,
+                                                                      replyToAddress,
+                                                                      messageSerializer,
+                                                                      httpMessageSender);
         return messagingStub;
     }
 
