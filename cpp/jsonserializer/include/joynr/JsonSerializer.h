@@ -19,14 +19,15 @@
 #ifndef JSONSERIALIZER_H
 #define JSONSERIALIZER_H
 
-#include "joynr/Logger.h"
 #include <vector>
 #include <sstream>
+#include <iomanip>
+
+#include "joynr/Logger.h"
 #include "joynr/Variant.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/JsonTokenizer.h"
 #include "joynr/ArraySerializer.h"
-#include <iomanip>
 
 namespace joynr
 {
