@@ -130,7 +130,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void addMessageListener(IMessaging messaging) {
+    public void setMessageListener(IMessaging messaging) {
         this.messagingSkeleton = messaging;
 
     }

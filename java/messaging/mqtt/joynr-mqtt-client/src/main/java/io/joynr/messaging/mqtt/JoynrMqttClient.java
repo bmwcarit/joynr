@@ -25,7 +25,7 @@ public interface JoynrMqttClient {
 
     public void start();
 
-    public void addMessageListener(IMessaging messaging);
+    public void setMessageListener(IMessaging messaging);
 
     public void shutdown();
 

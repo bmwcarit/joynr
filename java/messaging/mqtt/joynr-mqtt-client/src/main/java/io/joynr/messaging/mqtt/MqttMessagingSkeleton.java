@@ -57,7 +57,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
     @Override
     public void init() {
         mqttClient = mqttClientFactory.create();
-        mqttClient.addMessageListener(this);
+        mqttClient.setMessageListener(this);
         mqttClient.start();
     }
 

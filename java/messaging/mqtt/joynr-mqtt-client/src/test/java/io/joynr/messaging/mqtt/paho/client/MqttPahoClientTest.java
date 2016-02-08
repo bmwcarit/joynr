@@ -104,7 +104,7 @@ public class MqttPahoClientTest {
 
     @Test
     public void mqqtClientTest() throws Exception {
-        client.addMessageListener(mockReceiver);
+        client.setMessageListener(mockReceiver);
         String serializedMessage = "test";
         client.publishMessage(ownTopic.getTopic(), serializedMessage);
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
