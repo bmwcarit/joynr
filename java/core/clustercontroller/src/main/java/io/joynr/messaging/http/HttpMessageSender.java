@@ -3,7 +3,7 @@ package io.joynr.messaging.http;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ package io.joynr.messaging.http;
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrDelayMessageException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
@@ -104,7 +103,7 @@ public class HttpMessageSender implements IMessageSender {
 
             sendUrl = urlResolver.getSendUrl(address.getChannelId());
             if (sendUrl == null) {
-                failureAction.execute(new JoynrMessageNotSentException("no channelId found"));
+                failureAction.execute(new JoynrDelayMessageException("ChannelId could not be resolved to ChannelUrl"));
                 return;
             }
 
