@@ -20,18 +20,27 @@ package io.joynr.messaging;
  */
 
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.Address;
 
 @Singleton
 public class MessagingSkeletonFactory {
 
+    private static final Logger logger = LoggerFactory.getLogger(MessagingSkeletonFactory.class);
+
     public static final String MIDDLEWARE_MESSAGING_SKELETONS = "MIDDLEWARE_MESSAGING_SKELETONS";
     private Map<Class<? extends Address>, IMessagingSkeleton> messagingSkeletons;
+    private ScheduledExecutorService scheduler;
 
     /**
      * Transport Middleware implementation may be registered for use with a given Address type using guice multibinders.
@@ -43,16 +52,29 @@ public class MessagingSkeletonFactory {
      *  messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessMessagingSkeleton.class);
      * </pre>
      *
-     * @param messagingSkeletons
+     * @param messagingSkeletons a map of all skeletons (message receivers) that are to be started
+     * @param scheduler ExecutorService that schedules all messaging communication
      */
     @Inject
-    public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETONS) Map<Class<? extends Address>, IMessagingSkeleton> messagingSkeletons) {
+    public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETONS) Map<Class<? extends Address>, IMessagingSkeleton> messagingSkeletons,
+                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler) {
         this.messagingSkeletons = messagingSkeletons;
+        this.scheduler = scheduler;
     }
 
     public void start() {
-        for (IMessagingSkeleton messagingSkeleton : messagingSkeletons.values()) {
-            messagingSkeleton.init();
+        for (final IMessagingSkeleton messagingSkeleton : messagingSkeletons.values()) {
+            scheduler.schedule(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        messagingSkeleton.init();
+                    } catch (Exception e) {
+                        logger.error("unable to start skeleton: " + messagingSkeleton.getClass().getSimpleName());
+                    }
+                }
+            }, 0, TimeUnit.MILLISECONDS);
         }
     }
 
