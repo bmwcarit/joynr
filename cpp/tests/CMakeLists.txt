@@ -234,14 +234,14 @@ set(
 )
 
 file(
-    GLOB_RECURSE JsonSerailizerTest_GENSOURCES
+    GLOB_RECURSE JsonSerializerTest_GENSOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     #"gen/*.cpp" uncomment this when generate-test-sources prepared for jsonserializer
     "unit-tests/jsonserializer/generated/*.cpp" #remove this when generate-test-sources prepared for jsonserializer
 )
 
 file(
-    GLOB_RECURSE JsonSerailizerTest_GENHEADERS
+    GLOB_RECURSE JsonSerializerTest_GENHEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     #"gen/*.h" uncomment this when generate-test-sources prepared for jsonserializer
     "unit-tests/jsonserializer/generated/*.h" #remove this when generate-test-sources prepared for jsonserializer
@@ -250,13 +250,13 @@ file(
 set(
     libjsonserializer_test_HEADERS
     "unit-tests/jsonserializer/ExampleTypes.h"
-    ${JsonSerailizerTest_GENHEADERS}
+    ${JsonSerializerTest_GENHEADERS}
 )
 
 set(
     libjsonserializer_test_SOURCES
     "unit-tests/jsonserializer/ExampleTypes.cpp"
-    ${JsonSerailizerTest_GENSOURCES}
+    ${JsonSerializerTest_GENSOURCES}
 )
 
 set(

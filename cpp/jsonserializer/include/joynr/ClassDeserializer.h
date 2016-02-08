@@ -47,7 +47,7 @@ public:
      */
     virtual ~IClassDeserializer() = default;
     /**
-     * @brief deserializeVariant Every deserializer has be able to deserailize to Variant
+     * @brief deserializeVariant Every deserializer has be able to deserialize to Variant
      * @param object
      * @return Deserialized object enclosed in Variant.
      * If given object is not a Variant, returns empty Variant
