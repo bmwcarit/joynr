@@ -19,10 +19,28 @@ package io.joynr.exceptions;
  * #L%
  */
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 public class JoynrDelayMessageException extends JoynrRuntimeException {
     private static final long serialVersionUID = 1L;
 
-    private long delayMs;
+    private static final long DEFAULT_DELAY_MS = 1000;
+
+    //TODO should use @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS)
+    @Inject(optional = true)
+    @Named("joynr.messaging.sendmsgretryintervalms")
+    private long delayMs = DEFAULT_DELAY_MS;
+
+    /**
+     * Uses default delay as injected using property joynr.messaging.sendmsgretryintervalms
+     * or 1 sec if no value was injected.
+     *
+     * @param reason why the message is being delayed
+     */
+    public JoynrDelayMessageException(String reason) {
+        super(reason);
+    }
 
     /**
      *
@@ -30,7 +48,7 @@ public class JoynrDelayMessageException extends JoynrRuntimeException {
      * @param reason why the message is being delayed
      */
     public JoynrDelayMessageException(long delayMs, String reason) {
-        super(reason);
+        this(reason);
         this.delayMs = delayMs;
     }
 
