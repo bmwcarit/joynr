@@ -98,6 +98,7 @@ private:
       */
     QLinkedList<std::string> hosts;
     void* handle;
+    mutable std::mutex hostsMutex;
 };
 
 /**
