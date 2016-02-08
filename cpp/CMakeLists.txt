@@ -423,9 +423,6 @@ if(NOT CURL_FOUND)
     message(FATAL_ERROR "Could not find library: curl.")
 endif()
 
-include_directories(
-   SYSTEM ${CURL_INCLUDE_DIRS}
-)
 
 include(AddExternalProject)
 

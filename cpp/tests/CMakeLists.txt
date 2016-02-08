@@ -398,6 +398,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         PRIVATE ${GTEST_INCLUDE_DIRS}
         PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+        ${CURL_INCLUDE_DIRS}
     )
 
     install(TARGETS g_UnitTests g_IntegrationTests g_SystemIntegrationTests
