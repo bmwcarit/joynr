@@ -239,6 +239,7 @@ bool «className»::usesClusterController() const{
 			«IF isEnum(attribute.type)»
 				std::ignore = subscriptionListener;
 				std::ignore = subscriptionQos;
+				std::ignore = subscriptionRequest;
 				// TODO support enum return values in C++ client
 				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
