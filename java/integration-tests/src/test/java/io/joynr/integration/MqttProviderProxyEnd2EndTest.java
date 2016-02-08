@@ -45,7 +45,8 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
     @BeforeClass
     public static void startBroker() throws Exception {
         mqttBrokerPort = ServletUtil.findFreePort();
-        ProcessBuilder processBuilder = new ProcessBuilder("mosquitto", "-p", Integer.toString(mqttBrokerPort));
+        String path = System.getProperty("path") != null ? System.getProperty("path") : "";
+        ProcessBuilder processBuilder = new ProcessBuilder(path + "mosquitto", "-p", Integer.toString(mqttBrokerPort));
         mosquittoProcess = processBuilder.start();
     }
 
