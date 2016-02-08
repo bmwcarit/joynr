@@ -215,7 +215,7 @@ TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
             ->build();
 
     std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
-    joynr::system::RoutingTypes::MqttAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    joynr::system::RoutingTypes::MqttAddress address("brokerUri", "SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
     try {
@@ -247,7 +247,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHopMqtt)
             ->build();
 
     std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
-    joynr::system::RoutingTypes::MqttAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    joynr::system::RoutingTypes::MqttAddress address("brokerUri", "SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
     try {

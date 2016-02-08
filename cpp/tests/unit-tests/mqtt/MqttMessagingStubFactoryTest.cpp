@@ -38,7 +38,7 @@ namespace joynr {
 class MqttMessagingStubFactoryTest : public testing::Test {
 public:
     MqttMessagingStubFactoryTest() :
-        mqttAddress("clientId"),
+        mqttAddress("brokerUri", "clientId"),
         webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS, "localhost", 42, "path"),
         webSocketClientAddress("clientId"),
         channelAddress("channelId"),

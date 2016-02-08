@@ -39,8 +39,9 @@ void MqttMessagingSkeleton::transmit(JoynrMessage& message)
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
         std::string replyChannelId = message.getHeaderReplyChannelId();
+
         std::shared_ptr<system::RoutingTypes::MqttAddress> address(
-                new system::RoutingTypes::MqttAddress(replyChannelId));
+                JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(replyChannelId));
         messageRouter.addNextHop(message.getHeaderFrom(), address);
     }
 

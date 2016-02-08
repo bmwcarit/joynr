@@ -25,12 +25,14 @@
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
+#include "joynr/JsonSerializer.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;
@@ -877,7 +879,7 @@ MATCHER_P2(pointerToAddressWithChannelId, addressType, channelId, "") {
         if (mqttAddress == nullptr) {
             return false;
         }
-        return mqttAddress->getChannelId() == channelId;
+        return JsonSerializer::serialize(*mqttAddress) == channelId;
     } else if (addressType == "http") {
         std::shared_ptr<system::RoutingTypes::ChannelAddress> httpAddress = std::dynamic_pointer_cast<system::RoutingTypes::ChannelAddress>(arg);
         if (httpAddress == nullptr) {
@@ -916,7 +918,9 @@ void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(const std::str
 
 TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerMqttAddress) {
     const std::string addressType = "mqtt";
-    const std::string channelId = "mqtt_TEST_channelId";
+    const std::string topic = "mqtt_TEST_channelId";
+    system::RoutingTypes::MqttAddress mqttAddress("brokerUri", topic);
+    const std::string channelId = JsonSerializer::serialize(mqttAddress);
     registerReceivedCapabilities(addressType, channelId);
 }
 

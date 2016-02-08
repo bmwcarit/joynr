@@ -43,6 +43,7 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
+#include "joynr/JsonSerializer.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
@@ -194,9 +195,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             messagingSettings->getChannelUrlDirectoryParticipantId();
 
     // provision global capabilities directory
-    if (capabilitiesDirectoryChannelId.substr(0, 5) == mqttSettings.mqttChannelIdPrefix) {
-        std::shared_ptr<joynr::system::RoutingTypes::Address> globalCapabilitiesDirectoryAddress(
-                new system::RoutingTypes::MqttAddress(capabilitiesDirectoryChannelId.substr(5)));
+    if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
+        std::shared_ptr<system::RoutingTypes::MqttAddress> globalCapabilitiesDirectoryAddress(
+                JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(
+                        capabilitiesDirectoryChannelId));
         messageRouter->addProvisionedNextHop(
                 capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
     } else {
@@ -207,9 +209,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     }
 
     // provision channel url directory
-    if (channelUrlDirectoryChannelId.substr(0, 5) == mqttSettings.mqttChannelIdPrefix) {
-        std::shared_ptr<joynr::system::RoutingTypes::Address> globalChannelUrlDirectoryAddress(
-                new system::RoutingTypes::MqttAddress(channelUrlDirectoryChannelId.substr(5)));
+    if (boost::starts_with(channelUrlDirectoryChannelId, "{")) {
+        std::shared_ptr<system::RoutingTypes::MqttAddress> globalChannelUrlDirectoryAddress(
+                JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(
+                        channelUrlDirectoryChannelId));
         messageRouter->addProvisionedNextHop(
                 channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);
     } else {

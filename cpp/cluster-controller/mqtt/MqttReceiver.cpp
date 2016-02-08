@@ -19,6 +19,8 @@
 #include "MqttReceiver.h"
 
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {
@@ -27,16 +29,24 @@ INIT_LOGGER(MqttReceiver);
 
 MqttReceiver::MqttReceiver(const MessagingSettings& settings)
         : channelCreatedSemaphore(new joynr::Semaphore(0)),
-          channelId(),
+          channelIdForMqttTopic(),
+          channelIdForCapabilitiesDirectory(),
           receiverId(),
           settings(settings),
           channelUrlDirectory(),
-          mosquittoSubscriber(settings.getBrokerUrl(), channelId, channelCreatedSemaphore),
+          mosquittoSubscriber(settings.getBrokerUrl(),
+                              channelIdForCapabilitiesDirectory,
+                              channelCreatedSemaphore),
           mqttSettings()
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
 
-    channelId = mqttSettings.mqttChannelIdPrefix + persist.getChannelId();
+    channelIdForMqttTopic = persist.getChannelId();
+    std::string brokerUri =
+            "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
+            std::to_string(settings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
+    system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, channelIdForMqttTopic);
+    channelIdForCapabilitiesDirectory = JsonSerializer::serialize(receiveMqttAddress);
     receiverId = persist.getReceiverId();
 
     init();
@@ -49,7 +59,7 @@ MqttReceiver::~MqttReceiver()
 
 void MqttReceiver::init()
 {
-    mosquittoSubscriber.registerChannelId(channelId);
+    mosquittoSubscriber.registerChannelId(channelIdForMqttTopic);
 }
 
 void MqttReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory)
@@ -83,7 +93,7 @@ void MqttReceiver::stopReceiveQueue()
 
 const std::string& MqttReceiver::getReceiveChannelId() const
 {
-    return channelId;
+    return channelIdForCapabilitiesDirectory;
 }
 
 bool MqttReceiver::tryToDeleteChannel()

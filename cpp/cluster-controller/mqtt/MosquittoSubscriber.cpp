@@ -103,14 +103,13 @@ void MosquittoSubscriber::on_connect(int rc)
 
         std::string topic = channelId + "/" + getMqttPrio() + "/" + "#";
 
-        JOYNR_LOG_DEBUG(logger, "Subscribed to {}", topic);
-
         while (!isChannelAvailable) {
             std::this_thread::sleep_for(std::chrono::milliseconds(25));
         }
 
         // TODO: Check mid in callback on_subscribe instead of generated mid (NULL)
         subscribe(nullptr, topic.c_str(), getMqttQos());
+        JOYNR_LOG_DEBUG(logger, "Subscribed to {}", topic);
     }
 }
 

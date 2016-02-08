@@ -106,6 +106,7 @@ TEST_F(MessageRouterTest, addMessageToQueue){
 TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     const std::string testHttp = "TEST_HTTP";
     const std::string testMqtt = "TEST_MQTT";
+    const std::string brokerUri = "brokerUri";
     // this message should be added because no destination header set
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
@@ -119,7 +120,7 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // add destination address -> message should be routed
-    auto mqttAddress = std::make_shared<system::RoutingTypes::MqttAddress>(testMqtt);
+    auto mqttAddress = std::make_shared<system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
     messageRouter->addNextHop(testMqtt, mqttAddress);
     // the message now has a known destination and should be directly routed
     joynrMessage.setHeaderTo(testMqtt);
@@ -130,6 +131,7 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
 TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     const std::string testHttp = "TEST_HTTP";
     const std::string testMqtt = "TEST_MQTT";
+    const std::string brokerUri = "brokerUri";
     // this message should be added because destination is unknown
     joynrMessage.setHeaderTo(testHttp);
     messageRouter->route(joynrMessage);
@@ -144,7 +146,7 @@ TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
-    auto mqttAddress = std::make_shared<system::RoutingTypes::MqttAddress>(testMqtt);
+    auto mqttAddress = std::make_shared<system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
     messageRouter->addNextHop(testMqtt, mqttAddress);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }
@@ -185,12 +187,13 @@ TEST_F(MessageRouterTest, routeMessageToHttpAddress) {
 TEST_F(MessageRouterTest, routeMessageToMqttAddress) {
     const std::string destinationParticipantId = "TEST_routeMessageToMqttAddress";
     const std::string destinationChannelId = "TEST_routeMessageToMqttAddress_channelId";
-    auto address = std::make_shared<system::RoutingTypes::MqttAddress>(destinationChannelId);
+    const std::string brokerUri = "brokerUri";
+    auto address = std::make_shared<system::RoutingTypes::MqttAddress>(brokerUri, destinationChannelId);
     EXPECT_CALL(*messagingStubFactory,
             create(AllOf(
                     A<const joynr::system::RoutingTypes::Address&>(),
                     WhenDynamicCastTo<const system::RoutingTypes::MqttAddress&>(
-                            Property(&system::RoutingTypes::MqttAddress::getChannelId, Eq(destinationChannelId))
+                            Property(&system::RoutingTypes::MqttAddress::getTopic, Eq(destinationChannelId))
                             )
                     ))
             ).Times(1);

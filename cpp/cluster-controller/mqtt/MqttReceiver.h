@@ -87,7 +87,8 @@ private:
        of
        createChannel and waitForReceiveQueueStarted works as well. */
     Semaphore* channelCreatedSemaphore;
-    std::string channelId; // currently channelId is used to subscribe
+    std::string channelIdForMqttTopic; // currently channelId is used to subscribe
+    std::string channelIdForCapabilitiesDirectory;
 
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
     // Allows for registering multiple receivers for a single channel.

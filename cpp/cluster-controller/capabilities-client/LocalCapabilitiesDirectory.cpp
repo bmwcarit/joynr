@@ -25,6 +25,7 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/CapabilityEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/MessageRouter.h"
 #include "common/InterfaceAddress.h"
@@ -382,10 +383,19 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         CapabilityEntry currentEntry = entryIterator.value();
 
         std::string participantId = currentEntry.getParticipantId();
+        std::string channelId = entryIterator.key();
 
-        if (boost::starts_with(entryIterator.key(), mqttSettings.mqttChannelIdPrefix)) {
-            auto joynrAddress =
-                    std::make_shared<system::RoutingTypes::MqttAddress>(entryIterator.key());
+        std::size_t foundTypeNameKey = channelId.find("\"_typeName\"");
+        std::size_t foundTypeNameValue =
+                channelId.find("\"joynr.system.RoutingTypes.MqttAddress\"");
+        if (boost::starts_with(channelId, "{") && foundTypeNameKey != std::string::npos &&
+            foundTypeNameValue != std::string::npos && foundTypeNameKey < foundTypeNameValue) {
+            std::shared_ptr<system::RoutingTypes::MqttAddress> joynrAddress(
+                    JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(channelId));
+            // if (joynrAddress) {
+            // TODO: check joynrAddress for nullptr instead of string.find after the deserialization
+            // works as expected.
+            // Currently, JsonDeserializer.deserialize<T> always returns an instance of T
             messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
         } else {
             auto joynrAddress =

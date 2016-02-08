@@ -28,6 +28,14 @@ typeCollection RoutingTypes {
 		String channelId
 	}
 
+	<** @description: Mqtt Address **>
+	struct MqttAddress extends Address {
+		<** @description: Mqtt broker uri **>
+		String brokerUri
+		<** @description: MQTT topic identification **>
+		String topic
+	}
+
 	<** @description: CommonApiDbus address **>
 	struct CommonApiDbusAddress extends Address {
 		<** @description: Domain name **>
@@ -77,12 +85,6 @@ typeCollection RoutingTypes {
 
 		<** @description: MQTT (secure) **>
 		MQTTS
-	}
-
-	<** @description: MQTT address **>
-	struct MqttAddress extends Address {
-		<** @description: Channel identification **>
-		String channelId
 	}
 
 	<** @description: Websocket client address **>

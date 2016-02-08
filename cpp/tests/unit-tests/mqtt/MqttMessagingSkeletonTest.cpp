@@ -82,7 +82,7 @@ MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "") {
     if (mqttAddress == nullptr) {
         return false;
     }
-    return mqttAddress->getChannelId() == channelId;
+    return mqttAddress->getTopic() == channelId;
 }
 
 TEST_F(MqttMessagingSkeletonTest, transmitTest) {
