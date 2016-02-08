@@ -214,9 +214,13 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                 if (error instanceof JoynrShutdownException) {
                     logger.warn("{}", error.getMessage());
                     return;
+                } else if (error instanceof JoynrMessageNotSentException) {
+                    logger.error(" ERROR SENDING:  aborting send of messageId: {} to Address: {}. Error: {}",
+                                 new Object[]{ messageId, getAddress(message.getTo()), error.getMessage() });
+                    return;
                 }
-                logger.error("!!!! ERROR SENDING: messageId: {} to Address: {}. Error: {}", new String[]{ messageId,
-                        error.getMessage() });
+                logger.error("ERROR SENDING: messageId: {} to Address: {}. Error: {}", new Object[]{ messageId,
+                        getAddress(message.getTo()), error.getMessage() });
 
                 long delayMs;
                 if (error instanceof JoynrDelayMessageException) {
