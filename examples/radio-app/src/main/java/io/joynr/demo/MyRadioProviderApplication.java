@@ -206,7 +206,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     }
 
     private static void configureMqtt(Properties joynrConfig) {
-        joynrConfig.put("joynr.messaging.mqtt.broker_uri", "tcp://localhost:1883");
+        joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
     }
 
     @Override

@@ -185,7 +185,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             }
 
             if (transport.contains("mqtt")) {
-                joynrConfig.put("joynr.messaging.mqtt.broker_uri", "tcp://localhost:1883");
+                joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
                 backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
             }
 

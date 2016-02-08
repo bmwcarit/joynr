@@ -42,8 +42,8 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class MqttModule extends AbstractModule {
 
     // property key
-    public static final String PROPERTY_KEY_MQTT_BROKER_URI = "joynr.messaging.mqtt.broker_uri";
     public static final String PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS = "joynr.messaging.mqtt.reconnect.sleepms";
+    public static final String PROPERTY_KEY_MQTT_BROKER_URI = "joynr.messaging.mqtt.brokeruri";
     public static final String PROPERTY_MQTT_ADDRESS = "property_mqtt_address";
 
     @Provides
