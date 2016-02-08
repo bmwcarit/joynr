@@ -178,6 +178,8 @@ void HttpSender::SendMessageRunnable::run()
         delay = messageSender->messageSendRetryInterval - timeDiff;
     }
 
+    JOYNR_LOG_TRACE(
+            logger, "sendMessageResult.getStatusCode() = {}", sendMessageResult.getStatusCode());
     if (sendMessageResult.getStatusCode() != 201) {
         messageSender->channelUrlCache->feedback(false, channelId, url);
         delayedScheduler.schedule(new SendMessageRunnable(messageSender,
@@ -235,9 +237,11 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(
         const std::string& url,
         std::chrono::milliseconds curlTimeout)
 {
+    JOYNR_LOG_TRACE(logger, "buildRequestAndSend.createHttpPostBuilder...");
     std::shared_ptr<IHttpPostBuilder> sendMessageRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(url));
 
+    JOYNR_LOG_TRACE(logger, "buildRequestAndSend.sendMessageRequestBuilder...");
     std::shared_ptr<HttpRequest> sendMessageRequest(
             sendMessageRequestBuilder->withContentType("application/json")
                     ->withTimeout(std::min(maxAttemptTtl, curlTimeout))
