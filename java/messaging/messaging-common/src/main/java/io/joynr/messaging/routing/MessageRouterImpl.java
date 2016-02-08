@@ -184,7 +184,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                     }
                 }
             },
-                               0,
+                               delayMs,
                                TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException e) {
             logger.error("Execution rejected while scheduling SendSerializedMessageRequest ", e);
