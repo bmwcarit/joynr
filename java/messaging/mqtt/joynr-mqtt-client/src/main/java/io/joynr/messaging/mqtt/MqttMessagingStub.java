@@ -28,6 +28,7 @@ import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JoynrMessageSerializer;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 /**
  * Messaging stub used to send messages to a MQTT Broker
@@ -71,7 +72,7 @@ public class MqttMessagingStub implements IMessaging {
         if (type != null
                 && message.getReplyTo() == null
                 && (type.equals(MESSAGE_TYPE_REQUEST) || type.equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST) || type.equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST))) {
-            message.setReplyTo(replyToMqttAddress.getBrokerUri() + "/" + replyToMqttAddress.getTopic());
+            message.setReplyTo(RoutingTypesUtil.toAddressString(replyToMqttAddress));
         }
     }
 }

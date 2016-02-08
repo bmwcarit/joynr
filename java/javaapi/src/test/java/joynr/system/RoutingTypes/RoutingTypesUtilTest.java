@@ -27,6 +27,8 @@ import java.util.UUID;
 import org.junit.Test;
 
 public class RoutingTypesUtilTest {
+    String mqttAddressString = "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://host:1234\",\"topic\":\"topic\"}";
+
     static final String BROKERURI = "tcp://host:1234";
     static final String TOPIC = "topic";
     static final String CHANNELID = UUID.randomUUID().toString();
@@ -35,12 +37,11 @@ public class RoutingTypesUtilTest {
     public void toMqttAddressStringTest() {
         MqttAddress mqttAddress = new MqttAddress(BROKERURI, TOPIC);
         String addressString = RoutingTypesUtil.toAddressString(mqttAddress);
-        assertEquals(BROKERURI + "/" + TOPIC, addressString);
+        assertEquals(mqttAddressString, addressString);
     }
 
     @Test
     public void fromMqttAddressString() {
-        String mqttAddressString = BROKERURI + "/" + TOPIC;
         Address address = RoutingTypesUtil.fromAddressString(mqttAddressString);
         assertTrue(address instanceof MqttAddress);
         MqttAddress mqttAddress = (MqttAddress) address;

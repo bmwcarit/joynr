@@ -1,5 +1,7 @@
 package joynr.system.RoutingTypes;
 
+import java.io.IOException;
+
 /*
  * #%L
  * %%
@@ -19,31 +21,37 @@ package joynr.system.RoutingTypes;
  * #L%
  */
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.joynr.exceptions.JoynrIllegalStateException;
 
 public class RoutingTypesUtil {
+
+    static ObjectMapper objectMapper = new ObjectMapper();
 
     public static String toAddressString(Address address) {
         if (address instanceof ChannelAddress) {
             return ((ChannelAddress) address).getChannelId();
         } else if (address instanceof MqttAddress) {
             MqttAddress mqttAddress = (MqttAddress) address;
-            return mqttAddress.getBrokerUri() + "/" + mqttAddress.getTopic();
+            try {
+                return objectMapper.writeValueAsString(mqttAddress);
+            } catch (JsonProcessingException e) {
+                throw new JoynrIllegalStateException("MQTT address could not be serilaized: " + e.getMessage());
+            }
         }
-        throw new IllegalStateException("unable to convert address to string: unknown address type: " + address);
+        throw new JoynrIllegalStateException("unable to convert address to string: unknown address type: " + address);
     }
 
     public static Address fromAddressString(String addressString) {
-        if (addressString.startsWith("tcp")) {
-            URI uri;
+        //TODO channelId for ChannelAddress not yet serialized as object. Later this If will not be necessary
+        if (addressString.startsWith("{")) {
             try {
-                uri = new URI(addressString);
-                String brokerUri = uri.getScheme() + "://" + uri.getAuthority();
-                String topic = uri.getPath().replaceFirst("^/+", "");
-                return new MqttAddress(brokerUri, topic);
-            } catch (URISyntaxException e) {
-                throw new IllegalArgumentException("MQTT address was not a valid URL: " + e.getMessage());
+                return objectMapper.readValue(addressString, MqttAddress.class);
+            } catch (IOException e) {
+                throw new JoynrIllegalStateException("unable to deserialize address: " + addressString + " reason:"
+                        + e.getMessage());
             }
         } else {
             return new ChannelAddress(addressString);
