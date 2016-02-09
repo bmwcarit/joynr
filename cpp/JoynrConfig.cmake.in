@@ -50,6 +50,10 @@ set(
     @USE_PLATFORM_JSMN@
 )
 
+# CURL
+find_package(CURL REQUIRED)
+include(${JOYNR_CMAKE_DIR}/CheckCurlImportTargets.cmake)
+
 # QT5
 find_package(Qt5Core REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")

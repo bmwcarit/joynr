@@ -383,11 +383,7 @@ if(${WIN32})
 else(${WIN32})
     find_package(CURL REQUIRED)
 endif(${WIN32})
-
-message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
-message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
-message(STATUS "variable CURL_INCLUDE_DIRS=" ${CURL_INCLUDE_DIRS})
-message(STATUS "variable CURL_LIBRARIES=" ${CURL_LIBRARIES})
+include(CheckCurlImportTargets)
 
 if(NOT CURL_FOUND)
     message(FATAL_ERROR "Could not find library: curl.")
@@ -766,7 +762,9 @@ configure_file(
     "JoynrConfig.cmake" @ONLY
 )
 file(
-    COPY "CMake/CheckBoostImportTargets.cmake"
+    COPY
+        "CMake/CheckBoostImportTargets.cmake"
+        "CMake/CheckCurlImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 # ... for the install tree
@@ -808,6 +806,7 @@ install(
     FILES
         "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfigVersion.cmake"
         "CMake/CheckBoostImportTargets.cmake"
+        "CMake/CheckCurlImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
 )
 
