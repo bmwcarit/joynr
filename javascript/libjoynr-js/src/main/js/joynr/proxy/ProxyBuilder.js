@@ -168,27 +168,39 @@ define("joynr/proxy/ProxyBuilder", [
                                 + uuid();
                     proxy.messagingQos = settings.messagingQos;
 
-                    return arbitrator.startArbitration({
-                        domain : proxy.domain,
-                        interfaceName : proxy.interfaceName,
-                        discoveryQos : settings.discoveryQos,
-                        staticArbitration : settings.staticArbitration
-                    }).then(
-                            function(arbitratedCaps) {
-                                if (settings.loggingContext !== undefined) {
-                                    dependencies.loggingManager.setLoggingContext(
-                                            proxy.proxyParticipantId,
-                                            settings.loggingContext);
-                                }
-                                if (arbitratedCaps && arbitratedCaps.length > 0) {
-                                    proxy.providerParticipantId = arbitratedCaps[0].participantId;
-                                }
-                                dependencies.messageRouter.addNextHop(
-                                        proxy.proxyParticipantId,
-                                        dependencies.libjoynrMessagingAddress);
+                    var datatypePromises =
+                            ProxyConstructor.getUsedDatatypes().map(
+                                    function(datatype) {
+                                        return typeRegistry.getTypeRegisteredPromise(
+                                                datatype,
+                                                typeRegisteredTimeout_ms);
+                                    });
 
-                                // make proxy object immutable and return asynchronously
-                                return Object.freeze(proxy);
+                    return Promise.all(datatypePromises).then(
+                            function() {
+                                return arbitrator.startArbitration({
+                                    domain : proxy.domain,
+                                    interfaceName : proxy.interfaceName,
+                                    discoveryQos : settings.discoveryQos,
+                                    staticArbitration : settings.staticArbitration
+                                }).then(
+                                        function(arbitratedCaps) {
+                                            if (settings.loggingContext !== undefined) {
+                                                dependencies.loggingManager.setLoggingContext(
+                                                        proxy.proxyParticipantId,
+                                                        settings.loggingContext);
+                                            }
+                                            if (arbitratedCaps && arbitratedCaps.length > 0) {
+                                                proxy.providerParticipantId =
+                                                        arbitratedCaps[0].participantId;
+                                            }
+                                            dependencies.messageRouter.addNextHop(
+                                                    proxy.proxyParticipantId,
+                                                    dependencies.libjoynrMessagingAddress);
+
+                                            // make proxy object immutable and return asynchronously
+                                            return Object.freeze(proxy);
+                                        });
                             });
                 };
     }
