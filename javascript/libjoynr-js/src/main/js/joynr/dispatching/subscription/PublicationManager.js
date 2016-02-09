@@ -296,8 +296,10 @@ define(
                                         subscriptionInfo,
                                         value,
                                         triggerPublicationTimer);
+                                    return value;
                             }).catch(function(exception) {
                                 sendPublication(subscriptionInfo, undefined, exception);
+                                return exception;
                             });
                         }, delay);
                     }
@@ -929,8 +931,10 @@ define(
                                         subscriptionInfo,
                                             value,
                                             triggerPublicationTimer);
+                                    return value;
                                 }).catch(function(exception) {
                                     sendPublication(subscriptionInfo, undefined, exception);
+                                    return exception;
                                 });
                         };
 

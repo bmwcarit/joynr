@@ -1,3 +1,4 @@
+/*jslint es5: true */
 /*
  * #%L
  * %%
@@ -72,9 +73,11 @@ define(
                                 })
                             }).then(function(newLoggingProxy) {
                                 newAppender.setProxy(newLoggingProxy);
-                            }, function(error) {
+                                return newLoggingProxy;
+                            }).catch(function(error) {
                                 errorString = "Failed to create proxy for logging: " + error;
                                 log.debug(errorString);
+                                return error;
                             });
 
                             return newAppender;

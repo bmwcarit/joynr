@@ -136,11 +136,12 @@ function initializeTest(provisioningSuffix) {
                     function() {
                         // signal test driver that we are ready
                         resolve(joynr);
+                        return;
                     }).catch(function(error) {
                         reject(error);
                         throw new Error("error registering provider: " + error);
                     });
-            
+            return joynr;
         }).catch(function(error){
             throw error;
         });

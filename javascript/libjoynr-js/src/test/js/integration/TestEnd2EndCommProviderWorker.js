@@ -390,10 +390,12 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     providerQos).then(function() {
                 // signal test driver that we are ready
                 resolve(libjoynrAsync);
+                return;
             }).catch(function(error) {
                 reject(error);
                 throw new Error("error registering provider: " + error);
             });
+            return libjoynrAsync;
         }).catch(function(error){
             throw error;
         });

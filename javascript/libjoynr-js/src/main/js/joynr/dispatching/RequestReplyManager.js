@@ -279,11 +279,13 @@ define(
                                         response : response,
                                         requestReplyId : request.requestReplyId
                                     }));
+                                    return response;
                                 }).catch(function(internalException) {
                                     callbackDispatcher(new Reply({
                                         error : internalException,
                                         requestReplyId : request.requestReplyId
                                     }));
+                                    return internalException;
                                 });
                             } else {
                                 if (exception) {
