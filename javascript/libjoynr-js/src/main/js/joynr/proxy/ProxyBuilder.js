@@ -121,6 +121,8 @@ define("joynr/proxy/ProxyBuilder", [
          *            parameters
          * @param {MessagingQos}
          *            settings.messagingQos - the settings object determining arbitration parameters
+         * @param {Boolean}
+         *            settings.freeze - define if the returned proxy object should be frozen
          * @param {Object}
          *            settings.loggingContext - optional logging context will be appended to logging
          *            messages created in the name of
@@ -198,8 +200,15 @@ define("joynr/proxy/ProxyBuilder", [
                                                     proxy.proxyParticipantId,
                                                     dependencies.libjoynrMessagingAddress);
 
-                                            // make proxy object immutable and return asynchronously
-                                            return Object.freeze(proxy);
+                                            var freeze =
+                                                    settings.freeze === undefined
+                                                        || settings.freeze;
+                                            if (freeze) {
+                                                // make proxy object immutable and return asynchronously
+                                                proxy = Object.freeze(proxy);
+                                            }
+
+                                            return proxy;
                                         });
                             });
                 };

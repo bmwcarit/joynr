@@ -244,7 +244,7 @@ joynrTestRequire(
                             });
                         });
 
-                        it("returned promise is resolved with a proxy object", function() {
+                        it("returned promise is resolved with a frozen proxy object by default", function() {
                             var spy = jasmine.createSpyObj("spy", [
                                 "onFulfilled",
                                 "onRejected"
@@ -270,6 +270,40 @@ joynrTestRequire(
                                 expect(spy.onFulfilled).toHaveBeenCalledWith(
                                         jasmine.any(RadioProxy));
                                 expect(spy.onRejected).not.toHaveBeenCalled();
+                                var proxy = spy.onFulfilled.mostRecentCall.args[0];
+                                proxy.adaptfrozenObjectShouldNotWork = "adaptfrozenObjectShouldNotWork";
+                                expect(proxy.adaptfrozenObjectShouldNotWork).not.toBeDefined();
+                            });
+                        });
+
+                        it("returned promise is resolved with an unfrozen proxy object if set accordingly", function() {
+                            var spy = jasmine.createSpyObj("spy", [
+                                "onFulfilled",
+                                "onRejected"
+                            ]);
+
+                            runs(function() {
+                                settings.freeze = false;
+                                proxyBuilder.build(RadioProxy, settings).then(function(argument) {
+                                    spy.onFulfilled(argument);
+                                }).catch(spy.onRejected);
+                            });
+
+                            waitsFor(
+                                    function() {
+                                        return spy.onFulfilled.callCount > 0;
+                                    },
+                                    "until the ProxyBuilder promise is not pending any more",
+                                    safetyTimeoutDelta);
+
+                            runs(function() {
+                                expect(spy.onFulfilled).toHaveBeenCalled();
+                                expect(spy.onFulfilled).toHaveBeenCalledWith(
+                                        jasmine.any(RadioProxy));
+                                expect(spy.onRejected).not.toHaveBeenCalled();
+                                var proxy = spy.onFulfilled.mostRecentCall.args[0];
+                                proxy.adaptUnfrozenObjectShouldWork = "adaptUnfrozenObjectShouldWork";
+                                expect(proxy.adaptUnfrozenObjectShouldWork).toEqual("adaptUnfrozenObjectShouldWork");
                             });
                         });
 
