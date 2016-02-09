@@ -249,18 +249,16 @@ joynrTestRequire(
                                 "onFulfilled",
                                 "onRejected"
                             ]);
-                            var onFulfilledCalled = false;
 
                             runs(function() {
                                 proxyBuilder.build(RadioProxy, settings).then(function(argument) {
-                                    onFulfilledCalled = true;
                                     spy.onFulfilled(argument);
                                 }).catch(spy.onRejected);
                             });
 
                             waitsFor(
                                     function() {
-                                        return onFulfilledCalled;
+                                        return spy.onFulfilled.callCount > 0;
                                     },
                                     "until the ProxyBuilder promise is not pending any more",
                                     safetyTimeoutDelta);
