@@ -139,6 +139,7 @@ std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
                 idleHandleMap.remove(threadId, pooledHandle);
                 return pooledHandle;
             }
+            ++i;
         }
         return idleHandleMap.take(threadId);
     } else {
