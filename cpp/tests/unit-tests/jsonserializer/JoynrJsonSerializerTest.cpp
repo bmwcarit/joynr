@@ -335,9 +335,8 @@ TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
         JoynrMessage message;
         ClassDeserializer<JoynrMessage>::deserialize(message, tokenizer.nextObject());
         JOYNR_LOG_TRACE(logger, "JoynrMessage payload JSON: {}",message.getPayload());
-        Request* request = JsonSerializer::deserialize<Request>(message.getPayload());
-        compareRequestWithPrimitiveValues(expectedRequest, *request);
-        delete request;
+        Request request = JsonSerializer::deserialize<Request>(message.getPayload());
+        compareRequestWithPrimitiveValues(expectedRequest, request);
     }
 }
 
@@ -965,11 +964,10 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
     JOYNR_LOG_TRACE(logger, "TEverythingStruct JSON: {}",json);
 
     // Deserialize
-    TEverythingStruct* everythingStruct = JsonSerializer::deserialize<TEverythingStruct>(json);
+    TEverythingStruct everythingStruct = JsonSerializer::deserialize<TEverythingStruct>(json);
 
     // Check that the object serialized/deserialized correctly
-    EXPECT_EQ(expectedEverythingStruct, *everythingStruct);
-    delete everythingStruct;
+    EXPECT_EQ(expectedEverythingStruct, everythingStruct);
 }
 
 void JoynrJsonSerializerTest::testSerializationOfTStruct(joynr::types::TestTypes::TStruct expectedStruct) {
@@ -984,12 +982,10 @@ void JoynrJsonSerializerTest::testSerializationOfTStruct(joynr::types::TestTypes
     JOYNR_LOG_TRACE(logger, "TStruct JSON: {}",json);
 
     // Deserialize
-    TStruct* actualStruct = JsonSerializer::deserialize<TStruct>(json);
+    TStruct actualStruct = JsonSerializer::deserialize<TStruct>(json);
 
     // Check that the object serialized/deserialized correctly
-    EXPECT_EQ(expectedStruct, *actualStruct);
-    delete actualStruct;
-
+    EXPECT_EQ(expectedStruct, actualStruct);
 }
 
 // test with TEverythingStruct

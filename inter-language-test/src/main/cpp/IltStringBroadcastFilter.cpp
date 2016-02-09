@@ -100,28 +100,38 @@ bool IltStringBroadcastFilter::filter(
                             ExtendedTypeCollectionEnumerationInTypeCollection::getEnum(
                                     enumerationOfInterestLiteral);
 
-    joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray*
-            structWithStringArrayOfInterest = JsonSerializer::deserialize<
-                    joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>(
-                    filterParameters.getStructWithStringArrayOfInterest());
+    try {
+        using joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray;
 
-    std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray*>
-            structWithStringArrayArrayOfInterest = JsonSerializer::deserializeVector<
-                    joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>(
-                    filterParameters.getStructWithStringArrayArrayOfInterest());
+        StructWithStringArray structWithStringArrayOfInterest =
+                JsonSerializer::deserialize<StructWithStringArray>(
+                        filterParameters.getStructWithStringArrayOfInterest());
 
-    if (!IltUtil::checkStringArray(stringArrayOfInterest)) {
-        return false;
-    }
-    if (enumerationOfInterest != joynr::interlanguagetest::namedTypeCollection2::
-                                         ExtendedTypeCollectionEnumerationInTypeCollection::
-                                                 ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
-        return false;
-    }
-    if (!IltUtil::checkStructWithStringArray(*structWithStringArrayOfInterest)) {
-        return false;
-    }
-    if (!IltUtil::checkStructWithStringArrayArray(structWithStringArrayArrayOfInterest)) {
+        std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray*>
+                structWithStringArrayArrayOfInterest = JsonSerializer::deserializeVector<
+                        joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>(
+                        filterParameters.getStructWithStringArrayArrayOfInterest());
+
+        if (!IltUtil::checkStringArray(stringArrayOfInterest)) {
+            return false;
+        }
+        if (enumerationOfInterest != joynr::interlanguagetest::namedTypeCollection2::
+                                             ExtendedTypeCollectionEnumerationInTypeCollection::
+                                                     ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
+            return false;
+        }
+        if (!IltUtil::checkStructWithStringArray(structWithStringArrayOfInterest)) {
+            return false;
+        }
+        if (!IltUtil::checkStructWithStringArrayArray(structWithStringArrayArrayOfInterest)) {
+            return false;
+        }
+
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "could not deserialize StructWithStringArray from {} - error: {}",
+                        filterParameters.getStructWithStringArrayOfInterest(),
+                        e.what());
         return false;
     }
 

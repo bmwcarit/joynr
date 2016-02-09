@@ -180,36 +180,40 @@ void LongPollingMessageReceiver::processReceivedInput(const QByteArray& received
 
 void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& jsonObject)
 {
-    JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
-    if (msg == nullptr) {
-        JOYNR_LOG_ERROR(logger, "Unable to deserialize message. Raw message: {}", jsonObject);
-        return;
-    }
-    if (msg->getType().empty()) {
-        JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
-        return;
-    }
-    if (!msg->containsHeaderExpiryDate()) {
+    try {
+        JoynrMessage msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
+
+        if (msg.getType().empty()) {
+            JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
+            return;
+        }
+        if (!msg.containsHeaderExpiryDate()) {
+            JOYNR_LOG_ERROR(logger,
+                            "received message [msgId=[{}] without decay time - dropping message",
+                            msg.getHeaderMessageId());
+        }
+        if (msg.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
+            msg.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+            msg.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
+            // TODO ca: check if replyTo header info is available?
+            std::string replyChannelId = msg.getHeaderReplyChannelId();
+            std::shared_ptr<system::RoutingTypes::ChannelAddress> address(
+                    new system::RoutingTypes::ChannelAddress(replyChannelId));
+            messageRouter->addNextHop(msg.getHeaderFrom(), address);
+        }
+
+        // messageRouter.route passes the message reference to the MessageRunnable, which copies it.
+        // TODO would be nicer if the pointer would be passed to messageRouter, on to
+        // MessageRunnable,
+        // and runnable should delete it.
+        messageRouter->route(msg);
+    } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
-                        "received message [msgId=[{}] without decay time - dropping message",
-                        msg->getHeaderMessageId());
+                        "Unable to deserialize message. Raw message: {} - error:",
+                        jsonObject,
+                        e.what());
+        return;
     }
-
-    if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-        msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        // TODO ca: check if replyTo header info is available?
-        std::string replyChannelId = msg->getHeaderReplyChannelId();
-        std::shared_ptr<system::RoutingTypes::ChannelAddress> address(
-                new system::RoutingTypes::ChannelAddress(replyChannelId));
-        messageRouter->addNextHop(msg->getHeaderFrom(), address);
-    }
-
-    // messageRouter.route passes the message reference to the MessageRunnable, which copies it.
-    // TODO would be nicer if the pointer would be passed to messageRouter, on to MessageRunnable,
-    // and runnable should delete it.
-    messageRouter->route(*msg);
-    delete msg;
 }
 
 void LongPollingMessageReceiver::checkServerTime()

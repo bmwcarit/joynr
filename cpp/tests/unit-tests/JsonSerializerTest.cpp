@@ -77,8 +77,8 @@ protected:
 
         EXPECT_EQ(expectedReplyString, jsonReply);
 
-        Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
-        Variant responseVariant = receivedReply->getResponse().at(0);
+        Reply receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
+        Variant responseVariant = receivedReply.getResponse().at(0);
 
         T responseValue;
         if (responseVariant.is<std::int64_t>()) {
@@ -89,9 +89,6 @@ protected:
             responseValue = responseVariant.get<T>();
         }
         EXPECT_EQ(value, responseValue);
-
-        // clean up
-        delete receivedReply;
     }
 
     ADD_LOGGER(JsonSerializerTest);
@@ -105,11 +102,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     request.setQos(subscriptionQos);
     std::string result = JsonSerializer::serialize<SubscriptionRequest>(request);
     JOYNR_LOG_DEBUG(logger, "result: {}", result);
-    SubscriptionRequest* desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
-    EXPECT_TRUE(request == *desRequest);
-
-    // Clean up
-    delete desRequest;
+    SubscriptionRequest desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
+    EXPECT_TRUE(request == desRequest);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
@@ -122,8 +116,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     request.setSubscribeToName("myAttribute");
     std::string requestJson = JsonSerializer::serialize<BroadcastSubscriptionRequest>(request);
     JOYNR_LOG_DEBUG(logger, requestJson);
-    BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(requestJson);
-    EXPECT_TRUE(request == *desRequest);
+    BroadcastSubscriptionRequest desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(requestJson);
+    EXPECT_TRUE(request == desRequest);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
@@ -151,16 +145,13 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
     JOYNR_LOG_DEBUG(logger, "serialize_JoynrMessage: expected: {}", expectedString);
     EXPECT_EQ(expectedString, serializedContent);
 
-    JoynrMessage* joynrMessage = JsonSerializer::deserialize<JoynrMessage>(serializedContent);
-    JOYNR_LOG_DEBUG(logger, "joynrMessage->getPayload(): {}", joynrMessage->getPayload());
-    Request* request = JsonSerializer::deserialize<Request>(joynrMessage->getPayload());
-    JOYNR_LOG_DEBUG(logger, "joynrMessage->getType(): {}", joynrMessage->getType());
-    EXPECT_EQ(joynrMessage->getType(), expectedJoynrMessage.getType());
-    JOYNR_LOG_DEBUG(logger, "request->getMethodName(): {}", request->getMethodName());
-    EXPECT_EQ(request->getMethodName(), expectedRequest.getMethodName());
-    // Clean up
-    delete request;
-    delete joynrMessage;
+    JoynrMessage joynrMessage = JsonSerializer::deserialize<JoynrMessage>(serializedContent);
+    JOYNR_LOG_DEBUG(logger, "joynrMessage->getPayload(): {}", joynrMessage.getPayload());
+    Request request = JsonSerializer::deserialize<Request>(joynrMessage.getPayload());
+    JOYNR_LOG_DEBUG(logger, "joynrMessage->getType(): {}", joynrMessage.getType());
+    EXPECT_EQ(joynrMessage.getType(), expectedJoynrMessage.getType());
+    JOYNR_LOG_DEBUG(logger, "request->getMethodName(): {}", request.getMethodName());
+    EXPECT_EQ(request.getMethodName(), expectedRequest.getMethodName());
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
@@ -198,8 +189,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     EXPECT_EQ(expectedRequestJson, serializedRequestJson);
 
     // Deserialize the request
-    Request* deserializedRequest = JsonSerializer::deserialize<Request>(serializedRequestJson);
-    std::vector<Variant> deserializedParams = deserializedRequest->getParams();
+    Request deserializedRequest = JsonSerializer::deserialize<Request>(serializedRequestJson);
+    std::vector<Variant> deserializedParams = deserializedRequest.getParams();
     std::vector<Variant> deserializedVariantVectorParam = deserializedParams.at(0).get<std::vector<Variant>>();
 
     EXPECT_EQ(expectedVariantVectorParam, deserializedVariantVectorParam);
@@ -215,8 +206,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     EXPECT_EQ(expectedVariantVectorParam.end(), expectedIt);
     EXPECT_EQ(deserializedVariantVectorParam.end(), deserializedIt);
-
-    delete deserializedRequest;
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt8) {
@@ -324,8 +313,8 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
                                   R"("paramDatatypes": ["joynr.tests.testTypes.TestEnum.Enum","Double"],)"
                                   R"("params": ["ONE",2.2]})");
 
-    Request *request = JsonSerializer::deserialize<Request>(serializedContent);
-    std::vector<Variant> params = request->getParams();
+    Request request = JsonSerializer::deserialize<Request>(serializedContent);
+    std::vector<Variant> params = request.getParams();
 
     // Check the deserialized values
     Variant enumParam = params.at(0);
@@ -338,7 +327,6 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
     // Extract the parameters in the same way as a RequestInterpreter
     tests::testTypes::TestEnum::Enum value = Util::convertVariantToEnum<tests::testTypes::TestEnum>(enumParam);
     EXPECT_EQ(1, value);
-    delete(request);
 }
 
 TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
@@ -359,25 +347,23 @@ TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
                 R"("possibleRequiredTrustLevels": ["HIGH","MID","LOW"],)"
                 R"("uid": "*"})");
 
-    infrastructure::DacTypes::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
+    infrastructure::DacTypes::MasterAccessControlEntry mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
 
     // Check scalar enums
-    EXPECT_EQ(Permission::NO, mac->getDefaultConsumerPermission());
-    EXPECT_EQ(TrustLevel::LOW, mac->getDefaultRequiredTrustLevel());
+    EXPECT_EQ(Permission::NO, mac.getDefaultConsumerPermission());
+    EXPECT_EQ(TrustLevel::LOW, mac.getDefaultRequiredTrustLevel());
 
     // Check enum lists
     std::vector<Permission::Enum> possibleRequiredPermissions;
     possibleRequiredPermissions.push_back(Permission::YES);
     possibleRequiredPermissions.push_back(Permission::NO);
-    EXPECT_EQ(possibleRequiredPermissions, mac->getPossibleConsumerPermissions());
+    EXPECT_EQ(possibleRequiredPermissions, mac.getPossibleConsumerPermissions());
 
     std::vector<TrustLevel::Enum> possibleRequiredTrustLevels;
     possibleRequiredTrustLevels.push_back(TrustLevel::HIGH);
     possibleRequiredTrustLevels.push_back(TrustLevel::MID);
     possibleRequiredTrustLevels.push_back(TrustLevel::LOW);
-    EXPECT_EQ(possibleRequiredTrustLevels, mac->getPossibleRequiredTrustLevels());
-
-    delete(mac);
+    EXPECT_EQ(possibleRequiredTrustLevels, mac.getPossibleRequiredTrustLevels());
 }
 
 TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
@@ -409,12 +395,10 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
     JOYNR_LOG_DEBUG(logger, "Serialized expectedMac: {}", serializedContent);
 
     // Deserialize the result
-    infrastructure::DacTypes::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
+    infrastructure::DacTypes::MasterAccessControlEntry mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
 
     // Check that the object serialized/deserialized correctly
-    EXPECT_EQ(expectedMac, *mac);
-
-    delete(mac);
+    EXPECT_EQ(expectedMac, mac);
 }
 
 using namespace infrastructure::DacTypes;
@@ -509,11 +493,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
     JOYNR_LOG_DEBUG(logger, serializedContent);
     EXPECT_EQ(expectedTStruct, serializedContent);
 
-    types::TestTypes::TStruct* tStructDeserialized = JsonSerializer::deserialize<types::TestTypes::TStruct>(serializedContent);
+    types::TestTypes::TStruct tStructDeserialized = JsonSerializer::deserialize<types::TestTypes::TStruct>(serializedContent);
 
-    EXPECT_EQ(tStruct, *tStructDeserialized);
-
-    delete tStructDeserialized;
+    EXPECT_EQ(tStruct, tStructDeserialized);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
@@ -540,11 +522,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
     JOYNR_LOG_DEBUG(logger, serializedTStructExt);
 
     EXPECT_EQ(expectedTStructExt, serializedTStructExt);
-    types::TestTypes::TStructExtended* deserializedTStructExt = JsonSerializer::deserialize<types::TestTypes::TStructExtended>(serializedTStructExt);
+    types::TestTypes::TStructExtended deserializedTStructExt = JsonSerializer::deserialize<types::TestTypes::TStructExtended>(serializedTStructExt);
 
-    EXPECT_EQ(tStructExt, *deserializedTStructExt);
-
-    delete deserializedTStructExt;
+    EXPECT_EQ(tStructExt, deserializedTStructExt);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
@@ -583,19 +563,16 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
 
     EXPECT_EQ(expectedReply, jsonReply);
 
-    Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
+    Reply receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
-    EXPECT_TRUE(receivedReply->getResponse().size() == 1);
-    EXPECT_TRUE(receivedReply->getResponse().at(0).is<types::Localisation::GpsLocation>());
+    EXPECT_TRUE(receivedReply.getResponse().size() == 1);
+    EXPECT_TRUE(receivedReply.getResponse().at(0).is<types::Localisation::GpsLocation>());
 
-    types::Localisation::GpsLocation gps2 = receivedReply->getResponse().at(0).get<types::Localisation::GpsLocation>();
+    types::Localisation::GpsLocation gps2 = receivedReply.getResponse().at(0).get<types::Localisation::GpsLocation>();
 
     EXPECT_EQ(gps1, gps2)
             << "Gps locations gps1 " << gps1.toString()
             << " and gps2 " << gps2.toString() << " are not the same";
-
-    // Clean up
-    delete receivedReply;
 }
 
 TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
@@ -618,10 +595,8 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
 
     JOYNR_LOG_DEBUG(logger, "Serialized Reply: {}", jsonReply);
 
-    Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
-
-    // Clean up
-    delete receivedReply;
+    Reply receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
+    EXPECT_EQ(reply, receivedReply);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
@@ -680,10 +655,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     JOYNR_LOG_DEBUG(logger, jsonReply);
     //EXPECT_EQ(expectedReply, jsonReply);
 
-    Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
+    Reply receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
-    EXPECT_TRUE(receivedReply->getResponse().at(0).is<std::vector<Variant>>());
-    std::vector<Variant> receivedReplyResponse = receivedReply->getResponse().at(0).get<std::vector<Variant>>();
+    EXPECT_TRUE(receivedReply.getResponse().at(0).is<std::vector<Variant>>());
+    std::vector<Variant> receivedReplyResponse = receivedReply.getResponse().at(0).get<std::vector<Variant>>();
     EXPECT_EQ(receivedReplyResponse.size(), 2);
     std::vector<Variant>::const_iterator i_received = receivedReplyResponse.begin();
     std::vector<Variant> originalResponse = reply.getResponse();
@@ -701,8 +676,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
         i_received++;
         i_origin++;
     }
-
-    delete receivedReply;
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
@@ -758,12 +731,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
     std::string serializedContent = JsonSerializer::serialize(Variant::make<types::Localisation::Trip>(trip1));
     EXPECT_EQ(expected, serializedContent);
 
-    types::Localisation::Trip* trip2 = JsonSerializer::deserialize<types::Localisation::Trip>(serializedContent);
-    EXPECT_EQ(trip1, *trip2) << "trips \n trip1: " << trip1.toString().c_str()
-                             << " and \n trip2: " << trip2->toString().c_str()
-                             << "\n are not the same";
-
-    delete trip2;
+    types::Localisation::Trip trip2 = JsonSerializer::deserialize<types::Localisation::Trip>(serializedContent);
+    EXPECT_EQ(trip1, trip2) << "trips \n trip1: " << trip1.toString().c_str()
+                            << " and \n trip2: " << trip2.toString().c_str()
+                            << "\n are not the same";
 }
 
 
@@ -793,16 +764,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     std::string serializedContent = JsonSerializer::serialize(request1);
     JOYNR_LOG_DEBUG(logger, serializedContent);
 
-    Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
+    Request request2 = JsonSerializer::deserialize<Request>(serializedContent);
 
-    std::vector<Variant> paramsReceived = request2->getParams();
+    std::vector<Variant> paramsReceived = request2.getParams();
 
     EXPECT_EQ(paramsReceived.at(0).get<std::string>(), contentParam1);
     EXPECT_EQ(paramsReceived.at(1).get<types::Localisation::Trip>(), trip1);
 
-    EXPECT_EQ(request1, *request2);
-
-    delete request2;
+    EXPECT_EQ(request1, request2);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
@@ -820,16 +789,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     std::string serializedContent = JsonSerializer::serialize<Reply>(reply);
     JOYNR_LOG_DEBUG(logger, serializedContent);
 
-    Reply* deserializedReply = JsonSerializer::deserialize<Reply>(serializedContent);
+    Reply deserializedReply = JsonSerializer::deserialize<Reply>(serializedContent);
 
-    response = deserializedReply->getResponse();
+    response = deserializedReply.getResponse();
 
     std::vector<Variant> receivedCaps = response.at(0).get<std::vector<Variant>>();
     types::CapabilityInformation receivedCap1 = receivedCaps.at(0).get<types::CapabilityInformation>();
     EXPECT_EQ(receivedCap1, cap1);
-    EXPECT_EQ(deserializedReply->getRequestReplyId(), "serialize_deserialize_Reply_with_Array_as_Response");
-
-    delete deserializedReply;
+    EXPECT_EQ(deserializedReply.getRequestReplyId(), "serialize_deserialize_Reply_with_Array_as_Response");
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
@@ -894,8 +861,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     EXPECT_EQ(expected, serializedContent);
 
     //deserializing Request
-    Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
-    std::vector<Variant> paramsReceived = request2->getParams();
+    Request request2 = JsonSerializer::deserialize<Request>(serializedContent);
+    std::vector<Variant> paramsReceived = request2.getParams();
 
     JOYNR_LOG_DEBUG(logger, "x1 {}", paramsReceived.at(0).getTypeName());
     ASSERT_TRUE(paramsReceived.at(0).is<std::vector<Variant>>()) << "Cannot convert the field of the Param Map to a std::vector<Variant>";
@@ -907,8 +874,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 
     std::vector<types::Localisation::GpsLocation> resultLocationList = Util::convertVariantVectorToVector<types::Localisation::GpsLocation>(returnvl);
     EXPECT_EQ(resultLocationList.at(1), types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 317));
-
-    delete request2;
 }
 
 //// Test to investigate whether long lists cause a problem with during deserialization
@@ -939,7 +904,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 
     // Time request deserialization
     start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-    Request* deserialized1 = JsonSerializer::deserialize<Request>(newSerializedContent);
+    Request deserialized1 = JsonSerializer::deserialize<Request>(newSerializedContent);
+    std::ignore = deserialized1;
     end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int deserializationElapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
@@ -970,7 +936,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 
     // Time request deserialization with new serializer
     start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-    Request* deserialized2 = JsonSerializer::deserialize<Request>(newSerializedContent);
+    Request deserialized2 = JsonSerializer::deserialize<Request>(newSerializedContent);
+    std::ignore = deserialized2;
     end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int deserializationElapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
@@ -982,9 +949,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     // Assert O(N) complexity
     ASSERT_TRUE(serializationElapsed2 < (serializationElapsed1 * serializationElapsed1));
     ASSERT_TRUE(deserializationElapsed2 < (deserializationElapsed1 * deserializationElapsed1));
-
-    delete deserialized1;
-    delete deserialized2;
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
@@ -1010,20 +974,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     JOYNR_LOG_DEBUG(logger, "serialized WS client address: {}", wsClientSerialized);
 
     // deserialize
-    joynr::system::RoutingTypes::ChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::ChannelAddress>(joynrSerialized);
-    joynr::system::RoutingTypes::CommonApiDbusAddress* dbusDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::CommonApiDbusAddress>(dbusSerialized);
-    joynr::system::RoutingTypes::WebSocketAddress* wsServerDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketAddress>(wsServerSerialized);
-    joynr::system::RoutingTypes::WebSocketClientAddress* wsClientDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketClientAddress>(wsClientSerialized);
+    joynr::system::RoutingTypes::ChannelAddress joynrDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::ChannelAddress>(joynrSerialized);
+    joynr::system::RoutingTypes::CommonApiDbusAddress dbusDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::CommonApiDbusAddress>(dbusSerialized);
+    joynr::system::RoutingTypes::WebSocketAddress wsServerDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketAddress>(wsServerSerialized);
+    joynr::system::RoutingTypes::WebSocketClientAddress wsClientDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketClientAddress>(wsClientSerialized);
 
-    EXPECT_EQ(joynr, *joynrDeserialized);
-    EXPECT_EQ(dbus, *dbusDeserialized);
-    EXPECT_EQ(wsServer, *wsServerDeserialized);
-    EXPECT_EQ(wsClient, *wsClientDeserialized);
-
-    delete joynrDeserialized;
-    delete dbusDeserialized;
-    delete wsServerDeserialized;
-    delete wsClientDeserialized;
+    EXPECT_EQ(joynr, joynrDeserialized);
+    EXPECT_EQ(dbus, dbusDeserialized);
+    EXPECT_EQ(wsServer, wsServerDeserialized);
+    EXPECT_EQ(wsClient, wsClientDeserialized);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
@@ -1060,10 +1019,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
     // deserialize
     JOYNR_LOG_DEBUG(logger, "serialized capabilityInformation {}",serialized);
 
-    types::CapabilityInformation* deserializedCI = JsonSerializer::deserialize<types::CapabilityInformation>(serialized);
+    types::CapabilityInformation deserializedCI = JsonSerializer::deserialize<types::CapabilityInformation>(serialized);
 
-    EXPECT_EQ(capabilityInformation, *deserializedCI);
-    JOYNR_LOG_DEBUG(logger, "deserialized capabilityInformation {}", deserializedCI->toString());
+    EXPECT_EQ(capabilityInformation, deserializedCI);
+    JOYNR_LOG_DEBUG(logger, "deserialized capabilityInformation {}", deserializedCI.toString());
 }
 
 //// Test of ChannelURLInformation which is of type std::Vector<std::string>.
@@ -1083,10 +1042,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
     EXPECT_EQ(expected, serialized);
 
     // Deserialize
-    types::ChannelUrlInformation* deserializedInfo = JsonSerializer::deserialize<types::ChannelUrlInformation>(serialized);
+    types::ChannelUrlInformation deserializedInfo = JsonSerializer::deserialize<types::ChannelUrlInformation>(serialized);
 
     // Check the structure
-    std::vector<std::string> deserializedUrls = deserializedInfo->getUrls();
+    std::vector<std::string> deserializedUrls = deserializedInfo.getUrls();
     EXPECT_EQ(urls, deserializedUrls);
 }
 
@@ -1095,13 +1054,11 @@ TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
 
     std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"providerVersion\":3,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
 
-    joynr::types::ProviderQos* providerQos = JsonSerializer::deserialize<joynr::types::ProviderQos>(jsonProviderQos);
+    joynr::types::ProviderQos providerQos = JsonSerializer::deserialize<joynr::types::ProviderQos>(jsonProviderQos);
 
-    EXPECT_EQ(providerQos->getScope(), joynr::types::ProviderScope::LOCAL);
-    EXPECT_EQ(providerQos->getProviderVersion(), 3);
-    EXPECT_EQ(providerQos->getPriority(), 5);
-
-    delete providerQos;
+    EXPECT_EQ(providerQos.getScope(), joynr::types::ProviderScope::LOCAL);
+    EXPECT_EQ(providerQos.getProviderVersion(), 3);
+    EXPECT_EQ(providerQos.getPriority(), 5);
 }
 
 TEST_F(JsonSerializerTest, serialize_ProviderQos) {
@@ -1135,10 +1092,8 @@ TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
                 R"("time": 17})"
                 );
 
-    joynr::types::Localisation::GpsLocation* receivedGps = JsonSerializer::deserialize<joynr::types::Localisation::GpsLocation>(jsonGPS);
-    EXPECT_EQ(3.3, receivedGps->getAltitude());
-    // Clean up
-    delete receivedGps;
+    joynr::types::Localisation::GpsLocation receivedGps = JsonSerializer::deserialize<joynr::types::Localisation::GpsLocation>(jsonGPS);
+    EXPECT_EQ(3.3, receivedGps.getAltitude());
 }
 
 TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
@@ -1148,14 +1103,10 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     std::string jsonQos = JsonSerializer::serialize<OnChangeWithKeepAliveSubscriptionQos>(qos);
     JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
-    OnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
+    OnChangeWithKeepAliveSubscriptionQos desQos = JsonSerializer::deserialize<OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
 
-    jsonQos = JsonSerializer::serialize<OnChangeWithKeepAliveSubscriptionQos>(*desQos);
+    jsonQos = JsonSerializer::serialize<OnChangeWithKeepAliveSubscriptionQos>(desQos);
     JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
-
-    EXPECT_EQ(qos, *desQos);
-
-    // Clean up
-    delete desQos;
+    EXPECT_EQ(qos, desQos);
 }

@@ -112,24 +112,34 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
 
-        std::unique_ptr<Request> request(
-                JsonSerializer::deserialize<Request>(message.getPayload()));
-        if (request) {
-            operation = request->getMethodName();
+        try {
+            Request request = JsonSerializer::deserialize<Request>(message.getPayload());
+            operation = request.getMethodName();
+
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger, "could not deserialize Request from {} - error {}", e.what());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
+        try {
+            SubscriptionRequest request =
+                    JsonSerializer::deserialize<SubscriptionRequest>(message.getPayload());
+            operation = request.getSubscribeToName();
 
-        std::unique_ptr<SubscriptionRequest> request(
-                JsonSerializer::deserialize<SubscriptionRequest>(message.getPayload()));
-        if (request) {
-            operation = request->getSubscribeToName();
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "could not deserialize SubscriptionRequest from {} - error {}",
+                            e.what());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
+        try {
+            BroadcastSubscriptionRequest request =
+                    JsonSerializer::deserialize<BroadcastSubscriptionRequest>(message.getPayload());
+            operation = request.getSubscribeToName();
 
-        std::unique_ptr<BroadcastSubscriptionRequest> request(
-                JsonSerializer::deserialize<BroadcastSubscriptionRequest>(message.getPayload()));
-        if (request) {
-            operation = request->getSubscribeToName();
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "could not deserialize BroadcastSubscriptionRequest from {} - error {}",
+                            e.what());
         }
     }
 
