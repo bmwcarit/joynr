@@ -24,14 +24,16 @@ define(
             "joynr/system/LoggingProxy",
             "joynr/proxy/DiscoveryQos",
             "joynr/types/DiscoveryScope",
-            "joynr/system/LoggerFactory"
+            "joynr/system/LoggerFactory",
+            "joynr/util/UtilInternal"
         ],
         function(
                 DistributedLoggingAppender,
                 LoggingProxy,
                 DiscoveryQos,
                 DiscoveryScope,
-                LoggerFactory) {
+                LoggerFactory,
+                Util) {
 
             /**
              * A Factory to create a DistributedLoggingAppender constructor that contains a closure
@@ -66,8 +68,7 @@ define(
                                 messagingQos : messagingQos,
                                 discoveryQos : new DiscoveryQos({
                                     discoveryScope : DiscoveryScope.GLOBAL_ONLY,
-                                    cacheMaxAge : -1
-                                //invalidate
+                                    cacheMaxAge : Util.getMaxLongValue()
                                 })
                             }).then(function(newLoggingProxy) {
                                 newAppender.setProxy(newLoggingProxy);

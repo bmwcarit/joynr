@@ -552,7 +552,7 @@ define(
                                 discoveryQos : new DiscoveryQos(
                                         {
                                             discoveryScope : DiscoveryScope.GLOBAL_ONLY,
-                                            cacheMaxAge : -1 //invalidate
+                                            cacheMaxAge : Util.getMaxLongValue()
                                         })
                             };
 

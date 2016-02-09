@@ -35,7 +35,8 @@ define(
             "joynr/types/ProviderScope",
             "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy",
             "joynr/system/LoggerFactory",
-            "joynr/util/CapabilitiesUtil"
+            "joynr/util/CapabilitiesUtil",
+            "joynr/util/UtilInternal"
         ],
         function(
                 Promise,
@@ -47,7 +48,8 @@ define(
                 ProviderScope,
                 GlobalCapabilitiesDirectoryProxy,
                 LoggerFactory,
-                CapabilitiesUtil) {
+                CapabilitiesUtil,
+                Util) {
 
             /**
              * The CapabilitiesDiscovery looks up the local and global capabilities directory
@@ -158,7 +160,7 @@ define(
                         },
                         discoveryQos : new DiscoveryQos({
                             discoveryScope : DiscoveryScope.GLOBAL_ONLY,
-                            cacheMaxAge : -1 //invalidate
+                            cacheMaxAge : Util.getMaxLongValue()
                         })
                     }).catch(function(error) {
                         throw new Error("Failed to create global capabilities directory proxy: " + error);
