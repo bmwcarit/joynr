@@ -34,4 +34,107 @@
           <artifactId>slf4j-log4j12</artifactId>
         </dependency>
     </dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<configuration>
+					<excludeArtifactIds></excludeArtifactIds>
+				</configuration>
+				<executions>
+					<!-- unpack all non-runnable files into WEB-INF/lib -->
+					<execution>
+						<id>unpack-dependency-info</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<excludes>**/*.class,**/*.xtend,**/MANIFEST.MF,**/*.xmi,**/*.properties,
+							**/maven/,**/*.gif,**/*.jar,**/*.xtext,**/*.mwe2,**/*.tokens,**/*.so,
+							**/*.Extensions,**/*.jnilib,**/*.dll,**/*.dtd</excludes>
+							<useSubDirectoryPerArtifact>true</useSubDirectoryPerArtifact>
+							<includeScope>compile</includeScope>
+							<outputDirectory>${project.build.directory}/WEB-INF/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<!-- unpack runnable files into classes -->
+					<execution>
+						<id>unpack-dependency-classes</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeScope>compile</includeScope>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- use ant to copy the info directory without copying over empty directories -->
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>prepare-package</phase>
+						<configuration>
+							<tasks>
+								<copy todir="${project.build.directory}/classes/WEB-INF/lib/"
+									includeEmptyDirs="false">
+									<fileset dir="${project.build.directory}/WEB-INF/lib/" includes="**/*" />
+								</copy>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- zip it all together, removing some further directories that the excludes
+				from the other plugins didnt seem to be able to remove -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<skipIfEmpty>true</skipIfEmpty>
+					<excludes>
+						<exclude>target/**/*</exclude>
+						<exclude>target</exclude>
+					</excludes>
+					<archive>
+						<manifest>
+							<mainClass>io.joynr.runtime.ClusterController</mainClass>
+						</manifest>
+						<manifestEntries>
+							<mode>development</mode>
+							<url>${project.url}</url>
+							<key>value</key>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
