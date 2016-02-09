@@ -1,3 +1,16 @@
+#joynr 0.14.3
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Removed absolute paths from export targets for the install tree.
+* **[C++]** Fix segmentation fault in cluster-controller checkServerTime function.
+* **[C++]** Added /etc/joynr to settings search path. This is a workaround for builds with
+  incorrect CMAKE_INSTALL_PREFIX.
+
 #joynr 0.14.2
 
 This is a minor bug fix release.
