@@ -24,7 +24,6 @@
 #include <functional>
 
 #include <QCoreApplication>
-#include <QThread>
 
 #include "joynr/Dispatcher.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
