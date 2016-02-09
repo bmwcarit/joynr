@@ -479,8 +479,11 @@ void MessageRouter::resolveNextHop(
         std::function<void(const bool& resolved)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> /*onError*/)
 {
-    ReadLocker lock(routingTableLock);
-    bool resolved = routingTable.contains(participantId);
+    bool resolved;
+    {
+        ReadLocker lock(routingTableLock);
+        resolved = routingTable.contains(participantId);
+    }
     onSuccess(resolved);
 }
 
