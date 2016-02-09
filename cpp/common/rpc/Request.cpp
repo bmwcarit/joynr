@@ -29,23 +29,6 @@ Request::Request() : requestReplyId(), methodName(), params(), paramDatatypes()
     this->requestReplyId = Util::createUuid();
 }
 
-Request::Request(const Request& other)
-        : requestReplyId(other.getRequestReplyId()),
-          methodName(other.getMethodName()),
-          params(other.getParams()),
-          paramDatatypes(other.paramDatatypes)
-{
-}
-
-Request& Request::operator=(const Request& other)
-{
-    requestReplyId = other.getRequestReplyId();
-    methodName = other.getMethodName();
-    params = other.getParams();
-    paramDatatypes = other.paramDatatypes;
-    return *this;
-}
-
 bool Request::operator==(const Request& other) const
 {
     return requestReplyId == other.getRequestReplyId() && methodName == other.getMethodName() &&

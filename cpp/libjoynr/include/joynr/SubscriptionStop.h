@@ -19,10 +19,9 @@
 #ifndef SUBSCRIPTIONSTOP_H
 #define SUBSCRIPTIONSTOP_H
 
-#include "joynr/JoynrExport.h"
-
-#include <memory>
 #include <string>
+
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {
@@ -30,14 +29,18 @@ namespace joynr
 class JOYNR_EXPORT SubscriptionStop
 {
 public:
-    SubscriptionStop& operator=(const SubscriptionStop& other);
+    SubscriptionStop();
+
+    SubscriptionStop(const SubscriptionStop&) = default;
+    SubscriptionStop& operator=(const SubscriptionStop&) = default;
+
+    SubscriptionStop(SubscriptionStop&&) = default;
+    SubscriptionStop& operator=(SubscriptionStop&& other) = default;
+
     bool operator==(const SubscriptionStop& other) const;
     bool operator!=(const SubscriptionStop& other) const;
 
     const static SubscriptionStop NULL_RESPONSE;
-
-    SubscriptionStop(const SubscriptionStop& other);
-    SubscriptionStop();
 
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);

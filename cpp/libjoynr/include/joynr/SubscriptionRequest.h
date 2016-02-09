@@ -42,8 +42,12 @@ class JOYNR_EXPORT SubscriptionRequest
 {
 public:
     SubscriptionRequest();
-    SubscriptionRequest(const SubscriptionRequest& subscriptionRequest);
-    SubscriptionRequest& operator=(const SubscriptionRequest& subscriptionRequest);
+    SubscriptionRequest(const SubscriptionRequest&) = default;
+    SubscriptionRequest& operator=(const SubscriptionRequest&) = default;
+
+    SubscriptionRequest(SubscriptionRequest&&) = default;
+    SubscriptionRequest& operator=(SubscriptionRequest&&) = default;
+
     virtual ~SubscriptionRequest() = default;
     bool operator==(const SubscriptionRequest& subscriptionRequest) const;
 

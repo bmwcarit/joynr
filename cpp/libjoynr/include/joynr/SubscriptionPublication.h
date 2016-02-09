@@ -19,13 +19,10 @@
 #ifndef SUBSCRIPTIONPUBLICATION_H
 #define SUBSCRIPTIONPUBLICATION_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/exceptions/JoynrException.h"
-
 #include <vector>
 
-#include <memory>
-
+#include "joynr/JoynrExport.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
 
 namespace joynr
@@ -34,14 +31,18 @@ namespace joynr
 class JOYNR_EXPORT SubscriptionPublication
 {
 public:
-    SubscriptionPublication& operator=(const SubscriptionPublication& other);
+    SubscriptionPublication();
+
+    SubscriptionPublication(const SubscriptionPublication&) = default;
+    SubscriptionPublication& operator=(const SubscriptionPublication&) = default;
+
+    SubscriptionPublication(SubscriptionPublication&&) = default;
+    SubscriptionPublication& operator=(SubscriptionPublication&&) = default;
+
     bool operator==(const SubscriptionPublication& other) const;
     bool operator!=(const SubscriptionPublication& other) const;
 
     const static SubscriptionPublication NULL_RESPONSE;
-
-    SubscriptionPublication(const SubscriptionPublication& other);
-    SubscriptionPublication();
 
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);

@@ -41,13 +41,6 @@ SubscriptionRequest::SubscriptionRequest()
     subscriptionId = Util::createUuid();
 }
 
-SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscriptionRequest)
-        : subscriptionId(subscriptionRequest.getSubscriptionId()),
-          subscribedToName(subscriptionRequest.getSubscribeToName()),
-          qos(subscriptionRequest.getQos())
-{
-}
-
 std::string SubscriptionRequest::getSubscriptionId() const
 {
     return subscriptionId;
@@ -79,14 +72,6 @@ const SubscriptionQos* SubscriptionRequest::getSubscriptionQosPtr()
     }
 
     return nullptr;
-}
-
-SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& subscriptionRequest)
-{
-    subscriptionId = subscriptionRequest.getSubscriptionId();
-    subscribedToName = subscriptionRequest.getSubscribeToName();
-    qos = subscriptionRequest.getQos();
-    return *this;
 }
 
 bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const

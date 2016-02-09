@@ -33,8 +33,12 @@ class JOYNRCOMMON_EXPORT Request
 public:
     Request();
 
-    Request(const Request& other);
-    Request& operator=(const Request& other);
+    Request(const Request&) = default;
+    Request& operator=(const Request&) = default;
+
+    Request(Request&&) = default;
+    Request& operator=(Request&&) = default;
+
     bool operator==(const Request& other) const;
 
     const std::string& getRequestReplyId() const;

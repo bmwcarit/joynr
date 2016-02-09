@@ -32,15 +32,16 @@ class JOYNRCOMMON_EXPORT Reply
 {
 public:
     Reply();
-    Reply(const Reply& other) = default;
+    Reply(const Reply&) = default;
+    Reply(Reply&&) = default;
     ~Reply() = default;
 
     Reply& operator=(const Reply&) = default;
-    bool operator==(const Reply& other) const;
-    bool operator!=(const Reply& other) const;
+    Reply& operator=(Reply&&) = default;
+    bool operator==(const Reply&) const;
+    bool operator!=(const Reply&) const;
 
     const static Reply NULL_RESPONSE;
-
     const std::string& getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
 
