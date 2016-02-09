@@ -88,19 +88,7 @@ static const bool is«typeName»Registered = Variant::registerType<«type.typeNa
 }
 
 «ENDIF»
-«IF !getMembers(type).isEmpty»
-// Copy Constructor
-«typeName»::«typeName»(const «typeName»& other) :
-		«IF hasExtendsDeclaration(type)»
-			«getExtendedType(type).joynrName»(other),
-		«ENDIF»
-		«FOR member: getMembers(type) SEPARATOR ','»
-			«member.joynrName»(other.«member.joynrName»)
-		«ENDFOR»
-{
-}
 
-«ENDIF»
 bool «typeName»::operator!=(const «typeName»& other) const {
 	return !(*this==other);
 }

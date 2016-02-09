@@ -92,7 +92,10 @@ public:
 	«ENDIF»
 
 	/** @brief Copy constructor */
-	«typeName»(const «typeName»& «typeName.toFirstLower»Obj)«IF getMembers(type).size == 0» = default«ENDIF»;
+	«typeName»(const «typeName»&) = default;
+
+    /** @brief Move constructor */
+	«typeName»(«typeName»&&) = default;
 
 	/** @brief Destructor */
 	«IF !hasExtendsDeclaration(type)»
@@ -125,7 +128,13 @@ public:
 	 * @brief assigns an object
 	 * @return reference to the object assigned to
 	 */
-	«typeName»& operator=(const «typeName»& «typeName.toFirstLower»Obj) = default;
+	«typeName»& operator=(const «typeName»&) = default;
+
+	/**
+	 * @brief move assigns an object
+	 * @return reference to the object assigned to
+	 */
+	«typeName»& operator=(«typeName»&&) = default;
 
 	/**
 	 * @brief equality operator
