@@ -219,7 +219,7 @@ class ProxyGenerator {
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
 			define(«fInterface.defineName(fInterface.proxyName)»[
-				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypes) SEPARATOR ','»
+				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
 						"«datatype.getDependencyPath»"
 				«ENDFOR»
 				], function () {
@@ -227,7 +227,7 @@ class ProxyGenerator {
 				});
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {
-				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypes)»
+				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
 					require("«relativePathToBase() + datatype.getDependencyPath()»");
 				«ENDFOR»
 				exports = module.exports = «fInterface.proxyName»;
