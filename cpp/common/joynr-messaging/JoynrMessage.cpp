@@ -105,6 +105,23 @@ JoynrMessage& JoynrMessage::operator=(const JoynrMessage& message)
     return *this;
 }
 
+JoynrMessage::JoynrMessage(JoynrMessage&& message)
+        : type(std::move(message.type)),
+          header(std::move(message.header)),
+          payload(std::move(message.payload))
+{
+    generateAndSetMsgIdHeaderIfAbsent();
+}
+
+JoynrMessage& JoynrMessage::operator=(JoynrMessage&& message)
+{
+    type = std::move(message.type);
+    header = std::move(message.header);
+    payload = std::move(message.payload);
+    generateAndSetMsgIdHeaderIfAbsent();
+    return *this;
+}
+
 void JoynrMessage::generateAndSetMsgIdHeaderIfAbsent()
 {
     if (!containsHeader(HEADER_MESSAGE_ID())) {
