@@ -310,6 +310,7 @@ find_package(Boost 1.56.0 REQUIRED
     system
     thread
 )
+include(CheckBoostImportTargets)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -764,6 +765,10 @@ configure_file(
     JoynrConfig.cmake.in
     "JoynrConfig.cmake" @ONLY
 )
+file(
+    COPY "CMake/CheckBoostImportTargets.cmake"
+    DESTINATION "${CMAKE_BINARY_DIR}"
+)
 # ... for the install tree
 file(
     RELATIVE_PATH RELATIVE_INSTALL_INCLUDE_DIR
@@ -800,10 +805,11 @@ install(
     RENAME "JoynrConfig.cmake"
 )
 install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfigVersion.cmake"
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfigVersion.cmake"
+        "CMake/CheckBoostImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
 )
-
 
 ######### Documentation settings ########
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)

@@ -156,7 +156,7 @@ generate_export_header(
 
 target_link_libraries(Joynr
     ${JoynrLib_TARGET_LIBRARIES}
-    ${Boost_LIBRARIES}
+    Boost::thread
 )
 
 install(
