@@ -94,7 +94,6 @@ void ThreadPool::threadLifecycle()
     JOYNR_LOG_TRACE(logger, "Thread enters lifecycle");
 
     while (keepRunning) {
-        reportThreadPoolStats();
 
         JOYNR_LOG_TRACE(logger, "Thread is waiting");
         // Take a runnable
@@ -128,15 +127,6 @@ void ThreadPool::threadLifecycle()
     }
 
     JOYNR_LOG_TRACE(logger, "Thread leaves lifecycle");
-}
-
-void ThreadPool::reportThreadPoolStats()
-{
-    JOYNR_LOG_TRACE(logger,
-                    "Thread statistics (active / waiting / available threads): {}/ {}  / {}",
-                    currentlyRunning.size(),
-                    scheduler.getQueueLength(),
-                    threads.size());
 }
 
 } // namespace joynr
