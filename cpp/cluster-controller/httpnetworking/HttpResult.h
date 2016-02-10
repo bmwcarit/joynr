@@ -38,21 +38,21 @@ class JOYNRCLUSTERCONTROLLER_EXPORT HttpResult
 {
 public:
     HttpResult(std::int32_t curlError,
-               std::int32_t statusCode,
+               std::int64_t statusCode,
                QByteArray* body,
                QMultiMap<std::string, std::string>* headers);
     ~HttpResult() = default;
 
     bool isCurlError() const;
     std::int32_t getCurlError() const;
-    std::int32_t getStatusCode() const;
+    std::int64_t getStatusCode() const;
     std::string getErrorMessage() const;
     const QByteArray& getBody() const;
     const QMultiMap<std::string, std::string>& getHeaders() const;
 
 private:
     std::int32_t curlError;
-    std::int32_t statusCode;
+    std::int64_t statusCode;
     std::shared_ptr<QByteArray> body;
     std::shared_ptr<QMultiMap<std::string, std::string>> headers;
 };
