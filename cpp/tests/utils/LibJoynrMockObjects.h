@@ -268,7 +268,8 @@ public:
                     const joynr::ByteBuffer& result
             )> onSuccess,
             std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
-    ) {
+    ) override
+    {
         std::ignore = onError;
         onSuccess(
                 input
