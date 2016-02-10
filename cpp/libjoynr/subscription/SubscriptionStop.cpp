@@ -27,16 +27,6 @@ const SubscriptionStop SubscriptionStop::NULL_RESPONSE = SubscriptionStop();
 SubscriptionStop::SubscriptionStop() : subscriptionId()
 {
 }
-SubscriptionStop::SubscriptionStop(const SubscriptionStop& other)
-        : subscriptionId(other.getSubscriptionId())
-{
-}
-
-SubscriptionStop& SubscriptionStop::operator=(const SubscriptionStop& other)
-{
-    this->subscriptionId = other.getSubscriptionId();
-    return *this;
-}
 
 std::string SubscriptionStop::getSubscriptionId() const
 {

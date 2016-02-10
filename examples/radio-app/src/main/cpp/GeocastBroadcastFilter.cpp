@@ -39,13 +39,15 @@ bool GeocastBroadcastFilter::filter(
         return true;
     }
 
-    joynr::vehicle::GeoPosition* positionOfInterest =
-            JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
-                    filterParameters.getPositionOfInterest());
-    if (positionOfInterest == nullptr) {
+    joynr::vehicle::GeoPosition positionOfInterest;
+    try {
+        positionOfInterest = JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
+                filterParameters.getPositionOfInterest());
+    } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
-                        "Unable to deserialize geo position object from: {}",
-                        filterParameters.getPositionOfInterest());
+                        "Unable to deserialize geo position object from: {} - error: {}",
+                        filterParameters.getPositionOfInterest(),
+                        e.what());
         return true;
     }
     int radiusOfInterestArea = std::stoi(filterParameters.getRadiusOfInterestArea());
@@ -61,13 +63,12 @@ bool GeocastBroadcastFilter::filter(
 
     BoostGeoPosition boostGeoPosition(geoPosition.getLatitude(), geoPosition.getLongitude());
     BoostGeoPosition boostPositionOfInterest(
-            positionOfInterest->getLatitude(), positionOfInterest->getLongitude());
+            positionOfInterest.getLatitude(), positionOfInterest.getLongitude());
 
     double distance = boost::geometry::distance(
             boostGeoPosition,
             boostPositionOfInterest,
             boost::geometry::strategy::distance::haversine<double>(earthRadius));
 
-    delete positionOfInterest;
     return distance < radiusOfInterestArea;
 }

@@ -59,17 +59,19 @@ public:
             callback->onError(error);
             return;
         }
-
-        std::shared_ptr<SubscriptionCallback<Ts...>> typedCallbackQsp =
+        std::shared_ptr<SubscriptionCallback<Ts...>> typedCallback =
                 std::dynamic_pointer_cast<SubscriptionCallback<Ts...>>(callback);
-
-        std::tuple<Ts...> values = Util::toValueTuple<Ts...>(response);
-        auto func = std::mem_fn(&SubscriptionCallback<Ts...>::onSuccess);
-
-        Util::expandTupleIntoFunctionArguments(func, typedCallbackQsp, values);
+        callOnSucces(response, typedCallback, std::index_sequence_for<Ts...>{});
     }
 
 private:
+    template <std::size_t... Indices>
+    void callOnSucces(const std::vector<Variant>& response,
+                      const std::shared_ptr<SubscriptionCallback<Ts...>>& typedCallback,
+                      std::index_sequence<Indices...>)
+    {
+        typedCallback->onSuccess(util::valueOf<Ts>(response[Indices])...);
+    }
     ADD_LOGGER(PublicationInterpreter);
 };
 
@@ -107,7 +109,7 @@ public:
         }
 
         typename T::Enum value =
-                Util::convertVariantToEnum<T>(subscriptionPublication.getResponse().front());
+                util::convertVariantToEnum<T>(subscriptionPublication.getResponse().front());
 
         std::shared_ptr<SubscriptionCallback<typename T::Enum>> typedCallbackQsp =
                 std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
@@ -154,7 +156,7 @@ public:
         std::shared_ptr<SubscriptionCallback<std::vector<typename T::Enum>>> typedCallbackQsp =
                 std::dynamic_pointer_cast<SubscriptionCallback<std::vector<typename T::Enum>>>(
                         callback);
-        std::vector<typename T::Enum> valueList = Util::convertVariantVectorToEnumVector<T>(qvList);
+        std::vector<typename T::Enum> valueList = util::convertVariantVectorToEnumVector<T>(qvList);
 
         // value is copied in onSuccess
         typedCallbackQsp->onSuccess(valueList);

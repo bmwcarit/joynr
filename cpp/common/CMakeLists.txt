@@ -24,7 +24,7 @@ set(
     JoynrCommon_INCLUDE_DIRECTORIES
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
@@ -43,10 +43,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
-include_directories(
-    ${JoynrCommon_INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/../libjoynr/include
-)
 
 set(
     JoynrCommon_EXPORT_HEADER
@@ -130,10 +126,17 @@ set_target_properties(
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}"
+    COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}/${INSTALL_RES_DIR}"
 )
 
 # make spdlog system directory to avoid compiler warnings
-target_include_directories(JoynrCommon SYSTEM PUBLIC $<BUILD_INTERFACE:${spdlog_SOURCE_DIR}/include>)
+target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>")
+
+target_include_directories(
+    JoynrCommon
+    PRIVATE ${JoynrCommon_INCLUDE_DIRECTORIES}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../libjoynr/include
+)
 
 generate_export_header(
     JoynrCommon
@@ -142,7 +145,9 @@ generate_export_header(
 
 target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
 
-add_dependencies(JoynrCommon spdlog)
+if(NOT USE_PLATFORM_SPDLOG)
+    add_dependencies(JoynrCommon spdlog)
+endif(NOT USE_PLATFORM_SPDLOG)
 
 AddClangFormat(JoynrCommon)
 
@@ -153,15 +158,15 @@ AddClangTidy(JoynrCommon)
 install(
     TARGETS JoynrCommon
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of headder files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
 )
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )
 
@@ -188,6 +193,6 @@ else()
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
-        DESTINATION ${INSTALL_BIN_DIR}/resources/
+        DESTINATION ${INSTALL_RES_DIR}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")

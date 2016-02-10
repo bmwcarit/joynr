@@ -22,7 +22,9 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
 
@@ -30,7 +32,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.arbitration.ArbitratorFactory;
@@ -48,14 +53,27 @@ import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
+import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.logging.JoynrAppenderManagerFactory;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
+import io.joynr.messaging.inprocess.InProcessMessageSerializerFactory;
+import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
+import io.joynr.messaging.routing.GlobalAddressFactory;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
+import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
+import io.joynr.messaging.serialize.MessageSerializerFactory;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
@@ -66,12 +84,41 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
+    MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
+    MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
+    MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+    Multibinder<GlobalAddressFactory> globalAddresses;
 
     @Override
     protected void configure() {
         install(new JsonMessageSerializerModule());
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
                                           .build(ProxyInvocationHandlerFactory.class));
+
+        messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
+        }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
+        }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
+        messagingStubFactory.addBinding(InProcessAddress.class).to(InProcessMessagingStubFactory.class);
+
+        messageSerializerFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
+        }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
+        }, Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
+        messageSerializerFactory.addBinding(InProcessAddress.class).to(InProcessMessageSerializerFactory.class);
+
+        messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
+        }, new TypeLiteral<IMessagingSkeleton>() {
+        }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
+        messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessLibjoynrMessagingSkeleton.class);
+
+        // default implementation with a dummy address holder: no global communication. other address types must be
+        // added to the multibinder to support global addressing
+        globalAddresses = Multibinder.newSetBinder(binder(), GlobalAddressFactory.class);
+        globalAddresses.addBinding().toInstance(new GlobalAddressFactory() {
+            @Override
+            public Address create() {
+                return new Address();
+            }
+        });
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
         bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
@@ -91,7 +138,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
-        requestStaticInjection(ArbitratorFactory.class);
+        requestStaticInjection(ArbitratorFactory.class, JoynrDelayMessageException.class);
     }
 
     @Provides
@@ -123,6 +170,18 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                              @com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
         return getAddress(channelId, domainAccessControllerChannelId);
+    }
+
+    @Provides
+    @Named(MessageRouter.SCHEDULEDTHREADPOOL)
+    ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
+        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
+                                                                              .build();
+        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
+                                                                                schedulerNamedThreadFactory);
+        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
+        scheduler.allowCoreThreadTimeOut(true);
+        return scheduler;
     }
 
     private Address getAddress(String localChannelId, String targetChannelId) {

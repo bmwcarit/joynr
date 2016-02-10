@@ -19,13 +19,11 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
-#include "joynr/JoynrCommonExport.h"
-
-#include "joynr/Variant.h"
-
-#include <memory>
 #include <string>
 #include <vector>
+
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -35,8 +33,12 @@ class JOYNRCOMMON_EXPORT Request
 public:
     Request();
 
-    Request(const Request& other);
-    Request& operator=(const Request& other);
+    Request(const Request&) = default;
+    Request& operator=(const Request&) = default;
+
+    Request(Request&&) = default;
+    Request& operator=(Request&&) = default;
+
     bool operator==(const Request& other) const;
 
     const std::string& getRequestReplyId() const;

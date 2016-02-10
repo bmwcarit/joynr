@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CONTENTWITHTTL_H
-#define CONTENTWITHTTL_H
+#ifndef CONTENTWITHDECAYTIME_H
+#define CONTENTWITHDECAYTIME_H
 
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/DispatcherUtils.h"
@@ -48,4 +48,4 @@ class SendMsgRequest;
 typedef ContentWithDecayTime<SendMsgRequest> SendMsgRequestWithDecayTime;
 
 } // namespace joynr
-#endif // CONTENTWITHTTL_H
+#endif // CONTENTWITHDECAYTIME_H

@@ -40,19 +40,21 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.ChannelUrlDirectory;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.CapabilityInformation;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
@@ -64,13 +66,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
-    private String localChannelId;
     private CapabilitiesStore localCapabilitiesStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
     private CapabilitiesStore globalCapabilitiesCache;
     private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
     private MessageRouter messageRouter;
+
+    private Address globalAddress;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -81,13 +84,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId,
-                                          @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
+                                          @Named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS) Address globalAddress,
                                           CapabilitiesStore localCapabilitiesStore,
                                           CapabilitiesCache globalCapabilitiesCache,
                                           MessageRouter messageRouter,
                                           ProxyBuilderFactory proxyBuilderFactory) {
+        this.globalAddress = globalAddress;
         // CHECKSTYLE:ON
-        this.localChannelId = localChannelId;
         this.messageRouter = messageRouter;
         this.localCapabilitiesStore = localCapabilitiesStore;
         this.globalCapabilitiesCache = globalCapabilitiesCache;
@@ -96,19 +99,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                                     capabilitiesDirectoryParticipantId,
                                                                                                     new ProviderQos(),
                                                                                                     new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
-                                                                                 capabiltitiesDirectoryChannelId));
+                                                                                 new ChannelAddress(capabiltitiesDirectoryChannelId)));
         this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(discoveryDirectoriesDomain,
                                                                                                     ChannelUrlDirectory.INTERFACE_NAME,
                                                                                                     channelUrlDirectoryParticipantId,
                                                                                                     new ProviderQos(),
                                                                                                     new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
-                                                                                 channelUrlDirectoryChannelId));
+                                                                                 new ChannelAddress(channelUrlDirectoryChannelId)));
         this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(discoveryDirectoriesDomain,
                                                                                                     GlobalDomainAccessController.INTERFACE_NAME,
                                                                                                     domainAccessControllerParticipantId,
                                                                                                     new ProviderQos(),
                                                                                                     new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
-                                                                                 domainAccessControllerChannelId));
+                                                                                 new ChannelAddress(domainAccessControllerChannelId)));
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(proxyBuilderFactory,
                                                                          discoveryDirectoriesDomain);
@@ -122,9 +125,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     @Override
     public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry) {
         final DeferredVoid deferred = new DeferredVoid();
-        ChannelAddress joynrMessagingEndpointAddress = new ChannelAddress(localChannelId);
 
-        if (localCapabilitiesStore.hasCapability(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry, localChannelId))) {
+        if (localCapabilitiesStore.hasCapability(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry, globalAddress))) {
             DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.LOCAL_AND_GLOBAL, DiscoveryQos.NO_MAX_AGE);
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
                     || globalCapabilitiesCache.lookup(discoveryEntry.getParticipantId(), discoveryQos.getCacheMaxAge()) != null) {
@@ -134,7 +136,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
             // in the other case, the global registration needs to be done
         } else {
-            localCapabilitiesStore.add(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry, localChannelId));
+            localCapabilitiesStore.add(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry, globalAddress));
             notifyCapabilityAdded(discoveryEntry);
         }
 
@@ -142,7 +144,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
 
             final CapabilityInformation capabilityInformation = CapabilityUtils.discoveryEntry2Information(discoveryEntry,
-                                                                                                           joynrMessagingEndpointAddress.getChannelId());
+                                                                                                           globalAddress);
             if (capabilityInformation != null) {
 
                 logger.info("starting global registration for " + capabilityInformation.getDomain() + " : "
@@ -156,7 +158,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                 + capabilityInformation.getInterfaceName() + " completed");
                         deferred.resolve();
                         globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry,
-                                                                                            localChannelId));
+                                                                                            globalAddress));
                     }
 
                     @Override
@@ -336,7 +338,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             // EndpointAddress?
             // TODO when are entries purged from the messagingEndpointDirectory?
             if (ce.getParticipantId() != null && ce.getChannelId() != null) {
-                messageRouter.addNextHop(ce.getParticipantId(), new ChannelAddress(ce.getChannelId()));
+                messageRouter.addNextHop(ce.getParticipantId(), RoutingTypesUtil.fromAddressString(ce.getChannelId()));
             }
         }
     }

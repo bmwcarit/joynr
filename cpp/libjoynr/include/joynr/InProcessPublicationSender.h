@@ -18,17 +18,20 @@
  */
 #ifndef INPROCESSPUBLICATIONSENDER_H
 #define INPROCESSPUBLICATIONSENDER_H
-#include "joynr/PrivateCopyAssign.h"
 
+#include <string>
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/IPublicationSender.h"
-#include "joynr/ISubscriptionManager.h"
-#include <string>
 
 namespace joynr
 {
 
 class SubscriptionPublication;
+class ISubscriptionManager;
+class MessagingQos;
 
 /**
  * @brief

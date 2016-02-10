@@ -17,14 +17,13 @@
  * #L%
  */
 #include "JoynrMessageSerializer.h"
+
+#include <string>
+
 #include "joynr/Util.h"
 #include "joynr/MapSerializer.h"
 #include "joynr/SerializerRegistry.h"
-#include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
-
-#include <string>
-#include <regex>
 
 namespace joynr
 {
@@ -44,7 +43,7 @@ void ClassDeserializerImpl<JoynrMessage>::deserialize(JoynrMessage& t, IObject& 
             auto&& converted = convertMap<std::string>(field.value(), convertString);
             t.setHeader(converted);
         } else if (field.name() == "payload") {
-            t.setPayload(removeEscapeFromSpecialChars(field.value()));
+            t.setPayload(util::removeEscapeFromSpecialChars(field.value()));
         }
     }
 }

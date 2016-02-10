@@ -40,9 +40,20 @@ void MqttMessagingSkeleton::transmit(JoynrMessage& message)
         // TODO ca: check if replyTo header info is available?
         std::string replyChannelId = message.getHeaderReplyChannelId();
 
-        std::shared_ptr<system::RoutingTypes::MqttAddress> address(
-                JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(replyChannelId));
-        messageRouter.addNextHop(message.getHeaderFrom(), address);
+        try {
+            using system::RoutingTypes::MqttAddress;
+            MqttAddress address =
+                    JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(replyChannelId);
+            auto addressPtr = std::make_shared<MqttAddress>(address);
+            messageRouter.addNextHop(message.getHeaderFrom(), addressPtr);
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_FATAL(logger,
+                            "could not deserialize MqqtAddress from {} - error: {}",
+                            replyChannelId,
+                            e.what());
+            // do not try to route the message if address is not valid
+            return;
+        }
     }
 
     messageRouter.route(message);
@@ -50,24 +61,27 @@ void MqttMessagingSkeleton::transmit(JoynrMessage& message)
 
 void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
 {
-    // deserialize message and transmit
-    JoynrMessage* joynrMsg = JsonSerializer::deserialize<JoynrMessage>(message);
-    if (joynrMsg == nullptr || joynrMsg->getType().empty()) {
-        JOYNR_LOG_ERROR(logger, "Unable to deserialize joynr message object from: {}", message);
-        return;
-    }
+    try {
+        JoynrMessage msg = JsonSerializer::deserialize<JoynrMessage>(message);
 
-    if (!joynrMsg->containsHeaderExpiryDate()) {
+        if (msg.getType().empty()) {
+            JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
+            return;
+        }
+        if (!msg.containsHeaderExpiryDate()) {
+            JOYNR_LOG_ERROR(logger,
+                            "received message [msgId=[{}] without decay time - dropping message",
+                            msg.getHeaderMessageId());
+            return;
+        }
+        JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
+        transmit(msg);
+    } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
-                        "Received message [msgId = {}] without decay time - dropping message",
-                        joynrMsg->getHeaderMessageId());
+                        "Unable to deserialize message. Raw message: {} - error:",
+                        message,
+                        e.what());
     }
-
-    JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
-    // message router copies joynr message when scheduling thread that handles
-    // message delivery
-    transmit(*joynrMsg);
-    delete joynrMsg;
 }
 
 } // namespace joynr

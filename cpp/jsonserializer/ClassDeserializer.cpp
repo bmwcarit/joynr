@@ -17,9 +17,14 @@
  * #L%
  */
 #include "joynr/ClassDeserializer.h"
+
+#include <memory>
+#include <stdexcept>
+
 #include "joynr/SerializerRegistry.h"
 #include "joynr/IDeserializer.h"
 #include "joynr/Util.h"
+
 namespace joynr
 {
 
@@ -66,7 +71,7 @@ Variant convertVariant(IValue &value)
 
 std::string convertString(IValue &value)
 {
-    return removeEscapeFromSpecialChars(static_cast<std::string>(value));
+    return util::removeEscapeFromSpecialChars(static_cast<std::string>(value));
 }
 
 bool convertBool(IValue &value)

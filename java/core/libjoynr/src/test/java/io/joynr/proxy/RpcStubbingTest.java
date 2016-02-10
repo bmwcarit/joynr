@@ -44,18 +44,22 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.MapBinder;
+import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.dispatching.DispatcherTestModule;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RequestInterpreter;
+import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrCommunicationException;
@@ -63,8 +67,13 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
+import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
+import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
@@ -75,6 +84,7 @@ import io.joynr.runtime.PropertyLoader;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
+import joynr.system.RoutingTypes.Address;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 
@@ -129,7 +139,6 @@ public class RpcStubbingTest {
     private SubscriptionManager subscriptionManager;
     @Mock
     private RequestReplyManager requestReplyManager;
-
     @Mock
     private TestProvider testMock;
 
@@ -165,7 +174,22 @@ public class RpcStubbingTest {
         // required to inject static members of JoynMessagingConnectorFactory
         injector = Guice.createInjector(new JoynrPropertiesModule(PropertyLoader.loadProperties("defaultMessaging.properties")),
                                         new JsonMessageSerializerModule(),
-                                        new DispatcherTestModule());
+                                        new AbstractModule() {
+
+                                            @Override
+                                            protected void configure() {
+                                                requestStaticInjection(RpcUtils.class);
+                                                MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
+                                                messagingStubFactory = MapBinder.newMapBinder(binder(),
+                                                                                              new TypeLiteral<Class<? extends Address>>() {
+                                                                                              },
+                                                                                              new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
+                                                                                              },
+                                                                                              Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
+                                                messagingStubFactory.addBinding(InProcessAddress.class)
+                                                                    .to(InProcessMessagingStubFactory.class);
+                                            }
+                                        });
 
         final RequestInterpreter requestInterpreter = injector.getInstance(RequestInterpreter.class);
         final RequestCallerFactory requestCallerFactory = injector.getInstance(RequestCallerFactory.class);

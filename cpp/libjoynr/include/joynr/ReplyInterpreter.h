@@ -19,12 +19,15 @@
 #ifndef REPLYINTERPRETER_H
 #define REPLYINTERPRETER_H
 
+#include <memory>
+#include <utility>
+#include <tuple>
+
 #include "joynr/IReplyInterpreter.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/Reply.h"
 #include "joynr/Logger.h"
 #include "joynr/Util.h"
-#include <memory>
 
 namespace joynr
 {
@@ -39,7 +42,7 @@ public:
     {
         assert(caller);
 
-        std::shared_ptr<ReplyCaller<Ts...>> typedCallerQsp =
+        std::shared_ptr<ReplyCaller<Ts...>> typedCaller =
                 std::dynamic_pointer_cast<ReplyCaller<Ts...>>(caller);
 
         const Variant& error = reply.getError();
@@ -48,19 +51,25 @@ public:
             return;
         }
 
-        if ((reply.getResponse()).empty()) {
+        const std::vector<Variant>& response = reply.getResponse();
+        if (response.empty()) {
             JOYNR_LOG_ERROR(logger, "Unexpected empty reply object. Calling error callback");
             caller->returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
             return;
         }
 
-        std::tuple<Ts...> values = Util::toValueTuple<Ts...>(reply.getResponse());
-        auto func = std::mem_fn(&ReplyCaller<Ts...>::returnValue);
-
-        Util::expandTupleIntoFunctionArguments(func, typedCallerQsp, values);
+        callReturnValue(response, typedCaller, std::index_sequence_for<Ts...>{});
     }
 
 private:
+    template <std::size_t... Indices>
+    void callReturnValue(const std::vector<Variant>& response,
+                         const std::shared_ptr<ReplyCaller<Ts...>>& typedCaller,
+                         std::index_sequence<Indices...>)
+    {
+        typedCaller->returnValue(util::valueOf<Ts>(response[Indices])...);
+    }
+
     ADD_LOGGER(ReplyInterpreter);
 };
 

@@ -42,7 +42,7 @@ public:
         std::string receiverID;
         std::string requestID;
 
-        postFix = "_" + Util::createUuid();
+        postFix = "_" + util::createUuid();
         senderID = "senderId" + postFix;
         receiverID = "receiverID" + postFix;
         requestID = "requestId" + postFix;

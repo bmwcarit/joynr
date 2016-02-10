@@ -87,7 +87,7 @@ public:
             const std::vector<joynr::tests::testTypes::TestEnum::Enum>& enumerationArrayOut,
             const joynr::types::TestTypes::TEverythingStruct& structWithStringArrayOut,
             const std::vector<joynr::types::TestTypes::TEverythingStruct> & structWithStringArrayArrayOut
-    ) {
+    ) override {
         tests::testAbstractProvider::fireBroadcastWithFiltering(stringOut,
                                                                 stringArrayOut,
                                                                 enumerationArrayOut,
@@ -126,7 +126,7 @@ public:
         settings2(new Settings(std::get<1>(GetParam()))),
         messagingSettings1(*settings1),
         messagingSettings2(*settings2),
-        baseUuid(Util::createUuid()),
+        baseUuid(util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
         semaphore(0),

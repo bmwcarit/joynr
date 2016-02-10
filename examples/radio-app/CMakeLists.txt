@@ -5,7 +5,7 @@ project(radio-app-0.15.0-SNAPSHOT)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
-add_definitions("-std=gnu++0x")
+add_definitions("-std=c++14")
 
 set(
     JOYNR_SERVER
@@ -43,6 +43,7 @@ message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMO
 
 find_package(Boost 1.56.0 REQUIRED
     COMPONENTS
+    system
     filesystem
 )
 message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")

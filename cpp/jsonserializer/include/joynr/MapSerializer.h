@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef MAPSERIALIZER
-#define MAPSERIALIZER
+#ifndef MAPSERIALIZER_H
+#define MAPSERIALIZER_H
 
 #include <ostream>
 #include <string>
@@ -85,5 +85,5 @@ void MapSerializer::serialize(const std::map<T, S>& map,
 }
 
 } // namespace joynr
-#endif // MAPSERIALIZER
+#endif // MAPSERIALIZER_H
 

@@ -47,6 +47,7 @@ class EnumSerializerCppTemplate implements EnumTemplate{
 #include <string>
 #include <utility>
 #include <algorithm>
+#include <ostream>
 
 namespace joynr
 {

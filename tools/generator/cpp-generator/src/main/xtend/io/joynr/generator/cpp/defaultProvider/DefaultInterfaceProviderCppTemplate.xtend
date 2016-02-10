@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.defaultProvider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ class DefaultInterfaceProviderCppTemplate implements InterfaceTemplate{
 #include <cstdint>
 #include <tuple>
 
-#include "joynr/RequestStatus.h"
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -90,7 +89,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 				)> onSuccess,
 				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 		) {
-			(void) onError;
+			std::ignore = onError;
 			onSuccess(«attributeName»);
 		}
 
@@ -101,7 +100,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 				std::function<void()> onSuccess,
 				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 		) {
-			(void) onError;
+			std::ignore = onError;
 			this->«attributeName» = «attributeName»;
 			«IF attribute.notifiable»
 				«attributeName»Changed(«attributeName»);
@@ -142,7 +141,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 			std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			«ENDIF»
 	) {
-		(void) onError;
+		std::ignore = onError;
 		«FOR inputParameter: getInputParameters(method)»
 			std::ignore = «inputParameter.joynrName»;
 		«ENDFOR»

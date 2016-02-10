@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,9 +182,9 @@ public:
     void testAsync_getAttributeNotCached() {
         asyncTestFixture = createFixture(false);
 
-        MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>();
+        MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
 
-        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation");
+        setExpectationsForSendRequestCall(util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation");
         asyncTestFixture->getLocationAsync(
                 [callback] (const joynr::types::Localisation::GpsLocation& location) {
                     callback->onSuccess(location);
@@ -206,7 +206,7 @@ public:
                         ), // request object to send
                         Property(
                             &std::shared_ptr<IReplyCaller>::get,
-                            AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(Util::getTypeId<void>())))
+                            AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(util::getTypeId<void>())))
                         ) // reply caller to notify when reply is received
                     )
         ).WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackVoidResult));
@@ -218,7 +218,7 @@ public:
 
     void testSync_getAttributeNotCached() {
         tests::Itest* testFixture = createFixture(false);
-        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation")
+        setExpectationsForSendRequestCall(util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
         types::Localisation::GpsLocation gpsLocation;
@@ -234,9 +234,9 @@ public:
     void testAsync_getAttributeCached() {
         asyncTestFixture = createFixture(true);
 
-        MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>();
+        MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
 
-        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation").Times(0);
+        setExpectationsForSendRequestCall(util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation").Times(0);
 
         Variant variant = Variant::make<types::Localisation::GpsLocation>(expectedGpsLocation);
 
@@ -251,7 +251,7 @@ public:
     void testSync_getAttributeCached() {
         tests::Itest* testFixture = createFixture(true);
 
-        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation").Times(0);
+        setExpectationsForSendRequestCall(util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation").Times(0);
 
         Variant variant = Variant::make<types::Localisation::GpsLocation>(expectedGpsLocation);
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(variant));
@@ -701,9 +701,9 @@ public:
     void testAsync_OperationWithNoArguments() {
         asyncTestFixture = createFixture(false);
 
-        MockCallbackWithOnErrorHavingRequestStatus<int>* callback = new MockCallbackWithOnErrorHavingRequestStatus<int>();
+        MockCallbackWithJoynrException<int>* callback = new MockCallbackWithJoynrException<int>();
 
-        setExpectationsForSendRequestCall(Util::getTypeId<int>(), "methodWithNoInputParameters");
+        setExpectationsForSendRequestCall(util::getTypeId<int>(), "methodWithNoInputParameters");
 
         asyncTestFixture->methodWithNoInputParametersAsync(
                 [callback] (const int& value) {
@@ -713,7 +713,7 @@ public:
 
     void testSync_OperationWithNoArguments() {
         tests::Itest* testFixture = createFixture(false);
-        setExpectationsForSendRequestCall(Util::getTypeId<int>(), "methodWithNoInputParameters")
+        setExpectationsForSendRequestCall(util::getTypeId<int>(), "methodWithNoInputParameters")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 
         int result;

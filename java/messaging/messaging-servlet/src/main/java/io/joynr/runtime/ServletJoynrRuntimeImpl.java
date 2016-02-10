@@ -27,9 +27,9 @@ import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilderFactory;
 
@@ -48,15 +48,15 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
                                    ProxyBuilderFactory builderFactory,
                                    RequestCallerDirectory requestCallerDirectory,
                                    ReplyCallerDirectory replyCallerDirectory,
-                                   MessageReceiver messageReceiver,
                                    Dispatcher dispatcher,
+                                   MessagingStubFactory messagingStubFactory,
+                                   MessagingSkeletonFactory messagingSkeletonFactory,
                                    LocalDiscoveryAggregator localDiscoveryAggregator,
                                    LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                    @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessagingSkeleton clusterControllerMessagingSkeleton,
                                    @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                    CapabilitiesRegistrar capabilitiesRegistrar,
                                    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
@@ -67,6 +67,8 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
               requestCallerDirectory,
               replyCallerDirectory,
               dispatcher,
+              messagingStubFactory,
+              messagingSkeletonFactory,
               localDiscoveryAggregator,
               systemServicesDomain,
               dispatcherAddress,
@@ -74,10 +76,8 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
               channelUrlDirectoryAddress,
               domainAccessControllerAddress,
               discoveryProviderAddress,
-              clusterControllerMessagingSkeleton,
               capabilitiesRegistrar,
               localCapabilitiesDirectory,
-              messageReceiver,
               messageRouter);
         // CHECKSTYLE:ON
     }
@@ -86,7 +86,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
     /**
      * Unregistering currently is not receiving any answers, cauing timrout exceptions
      * The reason is that the unregister happens in the ServletContextListener at contextDestroyed
-     * which happens after the servlet has already been destroyed. Since the response to unregister 
+     * which happens after the servlet has already been destroyed. Since the response to unregister
      * would have to arrive via the messaging receiver servlet, this is obviously too late to unregister,
      * but there is no obvious fix (other than create a long polling message receiver for the unregister)
      * since the servelet lifecycle does not consist of any further usful events.

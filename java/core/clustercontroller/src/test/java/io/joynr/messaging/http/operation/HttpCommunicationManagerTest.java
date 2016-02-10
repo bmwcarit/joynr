@@ -31,10 +31,10 @@ import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.AtmosphereMessagingModule;
-import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.messaging.routing.MessageRouter;
 
 import java.util.Properties;
 import java.util.UUID;
@@ -70,7 +70,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 public class HttpCommunicationManagerTest {
 
     LongPollingMessageReceiver longpollingMessageReceiver;
-    MessageSender messageSender;
     private String testChannelId = "HttpCommunicationManagerTest-" + UUID.randomUUID().toString();
 
     private static Server server;
@@ -103,6 +102,8 @@ public class HttpCommunicationManagerTest {
 
     @Mock
     private Dispatcher dispatcher;
+    @Mock
+    private MessageRouter mockMessageRouter;
     private String bounceProxyUrlString;
 
     @Before
@@ -128,11 +129,11 @@ public class HttpCommunicationManagerTest {
                                                          bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
                                                                                   .in(Singleton.class);
                                                          bind(LocalChannelUrlDirectoryClient.class).to(DummyLocalChannelUrlDirectoryClient.class);
+                                                         bind(MessageRouter.class).toInstance(mockMessageRouter);
                                                      }
                                                  });
 
         longpollingMessageReceiver = injector.getInstance(LongPollingMessageReceiver.class);
-        messageSender = injector.getInstance(MessageSender.class);
     }
 
     @After

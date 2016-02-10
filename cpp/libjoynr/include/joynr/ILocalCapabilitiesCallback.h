@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ILOCALCAPABILITIESDIRECTORYCALLBACK_H
-#define ILOCALCAPABILITIESDIRECTORYCALLBACK_H
+#ifndef ILOCALCAPABILITIESCALLBACK_H
+#define ILOCALCAPABILITIESCALLBACK_H
 
 #include "joynr/JoynrExport.h"
 #include "joynr/CapabilityEntry.h"
@@ -35,4 +35,4 @@ public:
 };
 
 } // namespace joynr
-#endif // ILOCALCAPABILITIESDIRECTORYCALLBACK_H
+#endif // ILOCALCAPABILITIESCALLBACK_H

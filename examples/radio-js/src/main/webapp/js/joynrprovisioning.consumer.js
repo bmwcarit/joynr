@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,4 @@
  * #L%
  */
 
-provisioning.channelId = "javascripttestchannel";
-var queryChannelId = window.location.href.match(/channelId=([a-zA-Z0-9\-]+)/);
-if(queryChannelId !== null) {
-    provisioning.channelId = queryChannelId[1];
-}
+provisioning.channelId = provisioning.channelId || "javascripttestchannel";

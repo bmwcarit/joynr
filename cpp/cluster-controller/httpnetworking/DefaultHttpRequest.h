@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef DEFAULTHTTPREQUEST_H_
-#define DEFAULTHTTPREQUEST_H_
+#ifndef DEFAULTHTTPREQUEST_H
+#define DEFAULTHTTPREQUEST_H
 #include "joynr/PrivateCopyAssign.h"
 
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
@@ -52,4 +52,4 @@ private:
 };
 
 } // namespace joynr
-#endif // DEFAULTHTTPREQUEST_H_
+#endif // DEFAULTHTTPREQUEST_H

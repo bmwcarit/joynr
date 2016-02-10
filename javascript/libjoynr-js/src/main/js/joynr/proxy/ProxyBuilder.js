@@ -121,6 +121,8 @@ define("joynr/proxy/ProxyBuilder", [
          *            parameters
          * @param {MessagingQos}
          *            settings.messagingQos - the settings object determining arbitration parameters
+         * @param {Boolean}
+         *            settings.freeze - define if the returned proxy object should be frozen
          * @param {Object}
          *            settings.loggingContext - optional logging context will be appended to logging
          *            messages created in the name of
@@ -168,27 +170,46 @@ define("joynr/proxy/ProxyBuilder", [
                                 + uuid();
                     proxy.messagingQos = settings.messagingQos;
 
-                    return arbitrator.startArbitration({
-                        domain : proxy.domain,
-                        interfaceName : proxy.interfaceName,
-                        discoveryQos : settings.discoveryQos,
-                        staticArbitration : settings.staticArbitration
-                    }).then(
-                            function(arbitratedCaps) {
-                                if (settings.loggingContext !== undefined) {
-                                    dependencies.loggingManager.setLoggingContext(
-                                            proxy.proxyParticipantId,
-                                            settings.loggingContext);
-                                }
-                                if (arbitratedCaps && arbitratedCaps.length > 0) {
-                                    proxy.providerParticipantId = arbitratedCaps[0].participantId;
-                                }
-                                dependencies.messageRouter.addNextHop(
-                                        proxy.proxyParticipantId,
-                                        dependencies.libjoynrMessagingAddress);
+                    var datatypePromises =
+                            ProxyConstructor.getUsedDatatypes().map(
+                                    function(datatype) {
+                                        return typeRegistry.getTypeRegisteredPromise(
+                                                datatype,
+                                                typeRegisteredTimeout_ms);
+                                    });
 
-                                // make proxy object immutable and return asynchronously
-                                return Object.freeze(proxy);
+                    return Promise.all(datatypePromises).then(
+                            function() {
+                                return arbitrator.startArbitration({
+                                    domain : proxy.domain,
+                                    interfaceName : proxy.interfaceName,
+                                    discoveryQos : settings.discoveryQos,
+                                    staticArbitration : settings.staticArbitration
+                                }).then(
+                                        function(arbitratedCaps) {
+                                            if (settings.loggingContext !== undefined) {
+                                                dependencies.loggingManager.setLoggingContext(
+                                                        proxy.proxyParticipantId,
+                                                        settings.loggingContext);
+                                            }
+                                            if (arbitratedCaps && arbitratedCaps.length > 0) {
+                                                proxy.providerParticipantId =
+                                                        arbitratedCaps[0].participantId;
+                                            }
+                                            dependencies.messageRouter.addNextHop(
+                                                    proxy.proxyParticipantId,
+                                                    dependencies.libjoynrMessagingAddress);
+
+                                            var freeze =
+                                                    settings.freeze === undefined
+                                                        || settings.freeze;
+                                            if (freeze) {
+                                                // make proxy object immutable and return asynchronously
+                                                proxy = Object.freeze(proxy);
+                                            }
+
+                                            return proxy;
+                                        });
                             });
                 };
     }

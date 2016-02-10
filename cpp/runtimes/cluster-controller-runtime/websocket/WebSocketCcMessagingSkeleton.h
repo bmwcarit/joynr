@@ -19,8 +19,9 @@
 #ifndef WEBSOCKETCCMESSAGINGSKELETON_H
 #define WEBSOCKETCCMESSAGINGSKELETON_H
 
-#include <QtCore/QObject>
 #include <vector>
+
+#include <QtCore/QObject>
 #include <QtNetwork/QAbstractSocket>
 #include <QtWebSockets/qwebsocketprotocol.h>
 
@@ -28,16 +29,25 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 
-#include "joynr/MessageRouter.h"
 #include "joynr/IMessaging.h"
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 class QWebSocketServer;
 class QWebSocket;
 
 namespace joynr
 {
+
+class JoynrMessage;
+class MessageRouter;
+class WebSocketMessagingStubFactory;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class WebSocketAddress;
+} // namespace RoutingTypes
+} // namespace system
 
 /**
  * @class WebSocketCcMessagingSkeleton

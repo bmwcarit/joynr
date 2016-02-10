@@ -20,13 +20,14 @@
 #define SYSTEMSERVICESSETTINGS_H
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/Settings.h"
 #include "joynr/Logger.h"
 
 #include <string>
 
 namespace joynr
 {
+
+class Settings;
 
 class JOYNRCOMMON_EXPORT SystemServicesSettings
 {

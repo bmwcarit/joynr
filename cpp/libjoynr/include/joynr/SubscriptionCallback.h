@@ -67,7 +67,7 @@ public:
 
     int getTypeId() const override
     {
-        return Util::getTypeId<T, Ts...>();
+        return util::getTypeId<T, Ts...>();
     }
 
 protected:

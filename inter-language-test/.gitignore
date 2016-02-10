@@ -16,3 +16,4 @@ localStorageStorage/
 node_modules/
 npm-debug.log
 reports
+ilt-results*

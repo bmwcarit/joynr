@@ -24,6 +24,14 @@
 #include "mosquittopp.h"
 
 #include "JoynrClusterControllerRuntime.h"
+
+#include <cassert>
+#include <cstdint>
+#include <chrono>
+#include <functional>
+
+#include <QCoreApplication>
+
 #include "joynr/Dispatcher.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
@@ -54,9 +62,26 @@
 #include "websocket/WebSocketCcMessagingSkeleton.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
+#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "joynr/BrokerUrl.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/IDispatcher.h"
+#include "joynr/IMessageReceiver.h"
+#include "joynr/IMessageSender.h"
+#include "joynr/IRequestCallerDirectory.h"
+#include "joynr/InProcessAddress.h"
+#include "joynr/MessageRouter.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/ParticipantIdStorage.h"
+#include "joynr/ProxyBuilder.h"
+#include "joynr/ProxyFactory.h"
+#include "joynr/SystemServicesSettings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
+#include "joynr/system/DiscoveryProvider.h"
+#include "joynr/system/RoutingProvider.h"
 
 #include "joynr/system/RoutingTypes/MqttProtocol.h"
 #include "cluster-controller/mqtt/MqttReceiver.h"
@@ -196,11 +221,19 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     // provision global capabilities directory
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
-        std::shared_ptr<system::RoutingTypes::MqttAddress> globalCapabilitiesDirectoryAddress(
-                JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(
-                        capabilitiesDirectoryChannelId));
-        messageRouter->addProvisionedNextHop(
-                capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
+        try {
+            using system::RoutingTypes::MqttAddress;
+            auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>(
+                    JsonSerializer::deserialize<MqttAddress>(capabilitiesDirectoryChannelId));
+            messageRouter->addProvisionedNextHop(
+                    capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_FATAL(logger,
+                            "could not deserialize MqttAddress from {} - error: {}",
+                            capabilitiesDirectoryChannelId,
+                            e.what());
+        }
+
     } else {
         std::shared_ptr<joynr::system::RoutingTypes::Address> globalCapabilitiesDirectoryAddress(
                 new system::RoutingTypes::ChannelAddress(capabilitiesDirectoryChannelId));
@@ -210,11 +243,19 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     // provision channel url directory
     if (boost::starts_with(channelUrlDirectoryChannelId, "{")) {
-        std::shared_ptr<system::RoutingTypes::MqttAddress> globalChannelUrlDirectoryAddress(
-                JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(
-                        channelUrlDirectoryChannelId));
-        messageRouter->addProvisionedNextHop(
-                channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);
+
+        try {
+            using system::RoutingTypes::MqttAddress;
+            auto globalChannelUrlDirectoryAddress = std::make_shared<MqttAddress>(
+                    JsonSerializer::deserialize<MqttAddress>(channelUrlDirectoryChannelId));
+            messageRouter->addProvisionedNextHop(
+                    channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_FATAL(logger,
+                            "could not deserialize MqttAddress from {} - error: {}",
+                            capabilitiesDirectoryChannelId,
+                            e.what());
+        }
     } else {
         std::shared_ptr<joynr::system::RoutingTypes::Address> globalChannelUrlDirectoryAddress(
                 new system::RoutingTypes::ChannelAddress(channelUrlDirectoryChannelId));

@@ -19,14 +19,15 @@
 #ifndef JSONSERIALIZER_H
 #define JSONSERIALIZER_H
 
-#include "joynr/Logger.h"
 #include <vector>
 #include <sstream>
+#include <iomanip>
+
+#include "joynr/Logger.h"
 #include "joynr/Variant.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/JsonTokenizer.h"
 #include "joynr/ArraySerializer.h"
-#include <iomanip>
 
 namespace joynr
 {
@@ -83,15 +84,16 @@ public:
      * valid JSON representation of the template type T.
      *
      * @param json The JSON representation of template type T.
-     * @return The deserialized object, or NULL in case of deserialization error
+     * @return The deserialized object
+     * @throws std::invalid_argument in case of a deserialization error
      */
-    static T* deserialize(const std::string& json)
+    static T deserialize(const std::string& json)
     {
         JsonTokenizer tokenizer(json);
 
-        T* object = new T();
+        T object;
         if (tokenizer.hasNextObject()) {
-            ClassDeserializer<T>::deserialize(*object, tokenizer.nextObject());
+            ClassDeserializer<T>::deserialize(object, tokenizer.nextObject());
         }
 
         return object;

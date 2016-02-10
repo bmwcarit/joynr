@@ -55,7 +55,7 @@ void MqttSender::sendMessage(const std::string& channelId, const JoynrMessage& m
     const int payloadLength = serializedMessage.length();
     const void* payload = serializedMessage.c_str();
 
-    Util::logSerializedMessage(logger, "Sending Message: ", serializedMessage);
+    util::logSerializedMessage(logger, "Sending Message: ", serializedMessage);
 
     mosquittoPublisher.publishMessage(channelId, message.getHeaderTo(), payloadLength, payload);
 }

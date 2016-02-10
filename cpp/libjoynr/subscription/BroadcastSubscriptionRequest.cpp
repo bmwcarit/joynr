@@ -34,21 +34,6 @@ BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters(
 {
 }
 
-BroadcastSubscriptionRequest::BroadcastSubscriptionRequest(
-        const BroadcastSubscriptionRequest& subscriptionRequest)
-        : SubscriptionRequest(subscriptionRequest),
-          filterParameters(subscriptionRequest.getFilterParameters())
-{
-}
-
-BroadcastSubscriptionRequest& BroadcastSubscriptionRequest::operator=(
-        const BroadcastSubscriptionRequest& subscriptionRequest)
-{
-    SubscriptionRequest::operator=(subscriptionRequest);
-    filterParameters = subscriptionRequest.getFilterParameters();
-    return *this;
-}
-
 bool BroadcastSubscriptionRequest::operator==(
         const BroadcastSubscriptionRequest& subscriptionRequest) const
 {

@@ -31,6 +31,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
+#include "joynr/Settings.h"
 
  /*
   * This test creates two Runtimes and will test communication

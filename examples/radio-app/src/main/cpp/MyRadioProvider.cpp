@@ -22,7 +22,6 @@
 #include <chrono>
 
 #include "MyRadioHelper.h"
-#include "joynr/RequestStatus.h"
 
 using namespace joynr;
 

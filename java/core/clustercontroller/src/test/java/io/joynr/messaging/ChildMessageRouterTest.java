@@ -1,5 +1,7 @@
 package io.joynr.messaging;
 
+import io.joynr.common.ExpiryDate;
+
 /*
  * #%L
  * %%
@@ -25,7 +27,6 @@ import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.Callback;
 import joynr.JoynrMessage;
 import joynr.system.RoutingProxy;
-import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import org.junit.Before;
@@ -35,14 +36,16 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.IOException;
-import java.util.UUID;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChildMessageRouterTest {
 
-    @Mock
-    private MessagingStubFactory messagingStubFactory;
     @Mock
     IMessaging messagingStub;
     @Mock
@@ -50,26 +53,31 @@ public class ChildMessageRouterTest {
     @Mock
     private RoutingProxy messageRouterParent;
     @Mock
-    private JoynrMessage message;
-    @Mock
     private ChannelAddress parentAddress;
     @Mock
     private ChannelAddress nextHopAddress;
     @Mock
     private WebSocketAddress incommingAddress;
+    @Mock
+    private MessagingStubFactory messagingStubFactory;
 
+    private JoynrMessage message;
     private ChildMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
+    private Long sendMsgRetryIntervalMs = 10L;
 
     @Before
     public void setUp() {
-        Mockito.when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
-        messageRouter = new ChildMessageRouter(routingTable, messagingStubFactory);
+        message = new JoynrMessage();
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(10000));
+        message.setTo(unknownParticipantId);
+
+        messageRouter = new ChildMessageRouter(routingTable,
+                                               provideMessageSchedulerThreadPoolExecutor(),
+                                               sendMsgRetryIntervalMs,
+                                               messagingStubFactory);
         messageRouter.setIncomingAddress(incommingAddress);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
-
-        Mockito.when(message.getTo()).thenReturn(unknownParticipantId);
-        Mockito.when(message.getId()).thenReturn("messageId" + UUID.randomUUID());
 
         Mockito.when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
         Mockito.when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
@@ -78,14 +86,16 @@ public class ChildMessageRouterTest {
     }
 
     @Test
-    public void itQueriesParentForNextHop() throws IOException {
+    public void itQueriesParentForNextHop() throws Exception {
         messageRouter.route(message);
+        Thread.sleep(100);
         Mockito.verify(messageRouterParent).resolveNextHop(Mockito.eq(unknownParticipantId));
     }
 
     @Test
-    public void addsNextHopAfterQueryingParent() throws IOException {
+    public void addsNextHopAfterQueryingParent() throws Exception {
         messageRouter.route(message);
+        Thread.sleep(100);
         Mockito.verify(routingTable).put(Mockito.eq(unknownParticipantId), Mockito.eq(parentAddress));
     }
 
@@ -96,5 +106,14 @@ public class ChildMessageRouterTest {
         Mockito.verify(messageRouterParent).addNextHop(Mockito.any(Callback.class),
                                                        Mockito.eq(unknownParticipantId),
                                                        Mockito.eq(incommingAddress));
+    }
+
+    ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
+        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
+                                                                              .build();
+        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(2, schedulerNamedThreadFactory);
+        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
+        scheduler.allowCoreThreadTimeOut(true);
+        return scheduler;
     }
 }

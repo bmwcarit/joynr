@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,46 +19,12 @@
 
 (function() {
     var setupProvisionedData = function(provisioning) {
-        var discoveryChannel = "discoverydirectory_channelid";
         provisioning.bounceProxyBaseUrl = "${joynr.provisioning.bounceProxyBaseUrl}";
         provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
 
         provisioning.internalMessagingQos = {
             ttl : provisioning.ttl
         };
-
-        provisioning.channelUrls = {};
-        provisioning.channelUrls[discoveryChannel] = [ provisioning.bounceProxyBaseUrl + "/discovery/channels/" + discoveryChannel + "/" ];
-        // joynr.provisioning.messaging.maxQueueSizeInKBytes = 10000;
-        var globalCapDirCapability = {
-            domain : "io.joynr",
-            interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
-            providerQos : {
-                qos : [],
-                version : 0,
-                priority : 1,
-                scope : "GLOBAL",
-                onChangeSubscriptions : true
-            },
-            channelId : discoveryChannel,
-            participantId : "capabilitiesdirectory_participantid"
-        };
-
-        var channelUrlDirCapability = {
-            domain : "io.joynr",
-            interfaceName : "infrastructure/ChannelUrlDirectory",
-            providerQos : {
-                qos : [],
-                version : 0,
-                priority : 1,
-                scope : "GLOBAL",
-                onChangeSubscriptions : true
-            },
-            channelId : discoveryChannel,
-            participantId : "channelurldirectory_participantid"
-        };
-
-        provisioning.capabilities = [ globalCapDirCapability, channelUrlDirCapability ];
 
         provisioning.logging = {
             configuration : {
@@ -89,11 +55,13 @@
     // AMD support
     if (typeof define === 'function' && define.amd) {
         define("joynr/provisioning/provisioning_cc",
-            ["joynr/provisioning/provisioning_common"], function(provisioning) {
+            ["joynr/provisioning/provisioning_root"], function(provisioning) {
             return setupProvisionedData(provisioning);
         });
     } else {
         // expect that joynrprovisioning.common has been loaded before
+        window.joynr = window.joynr || {};
+        window.joynr.provisioning = window.joynr.provisioning || {};
         setupProvisionedData(window.joynr.provisioning);
     }
 }());

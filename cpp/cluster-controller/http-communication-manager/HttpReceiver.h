@@ -16,13 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#ifndef HTTPRECEIVER_H_
-#define HTTPRECEIVER_H_
+#ifndef HTTPRECEIVER_H
+#define HTTPRECEIVER_H
+
 #include <memory>
 #include <string>
 
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/IMessageReceiver.h"
 #include "joynr/JoynrClusterControllerExport.h"
@@ -121,4 +121,4 @@ private:
 };
 
 } // namespace joynr
-#endif // HTTPRECEIVER_H_
+#endif // HTTPRECEIVER_H

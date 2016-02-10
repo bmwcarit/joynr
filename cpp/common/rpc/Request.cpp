@@ -26,24 +26,7 @@ bool isRequestTypeRegistered = Variant::registerType<Request>("joynr.Request");
 
 Request::Request() : requestReplyId(), methodName(), params(), paramDatatypes()
 {
-    this->requestReplyId = Util::createUuid();
-}
-
-Request::Request(const Request& other)
-        : requestReplyId(other.getRequestReplyId()),
-          methodName(other.getMethodName()),
-          params(other.getParams()),
-          paramDatatypes(other.paramDatatypes)
-{
-}
-
-Request& Request::operator=(const Request& other)
-{
-    requestReplyId = other.getRequestReplyId();
-    methodName = other.getMethodName();
-    params = other.getParams();
-    paramDatatypes = other.paramDatatypes;
-    return *this;
+    this->requestReplyId = util::createUuid();
 }
 
 bool Request::operator==(const Request& other) const

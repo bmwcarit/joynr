@@ -4,7 +4,7 @@ message(STATUS "#############################################\n")
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrLib_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 
 ### Add mosquitto mqtt ###########################################################
 if(USE_PLATFORM_MOSQUITTO)
@@ -54,14 +54,15 @@ set(
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${MOSQUITTO_INCLUDE_DIRS}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
     JoynrClusterController_SYS_INCLUDE_DIRECTORIES
     ${jsmn_INCLUDE_DIR}
-    ${Qt5Core_INCLUDE_DIRECTORY}
+    ${Qt5Core_INCLUDE_DIRS}
+    ${CURL_INCLUDE_DIRS}
+    ${MOSQUITTO_INCLUDE_DIRS}
 )
 
 set(
@@ -159,14 +160,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-include_directories(
-        ${JoynrClusterController_INCLUDE_DIRECTORIES}
-)
-
-include_directories(
-    SYSTEM
-    ${JoynrClusterController_SYS_INCLUDE_DIRECTORIES}
-)
 
 add_library(
     JoynrClusterController
@@ -175,8 +168,16 @@ add_library(
     ${JoynrClusterController_SOURCES}
 )
 
-target_include_directories(JoynrClusterController SYSTEM PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
+target_include_directories(
+    JoynrClusterController
+    PRIVATE ${JoynrClusterController_INCLUDE_DIRECTORIES}
+)
 
+target_include_directories(
+    JoynrClusterController
+    SYSTEM
+    PRIVATE ${JoynrClusterController_SYS_INCLUDE_DIRECTORIES}
+)
 if(NOT USE_PLATFORM_MOSQUITTO)
     add_dependencies(JoynrClusterController mosquitto)
 endif(NOT USE_PLATFORM_MOSQUITTO)
@@ -206,15 +207,15 @@ target_link_libraries(JoynrClusterController ${JoynrClusterController_TARGET_LIB
 install(
     TARGETS JoynrClusterController
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of headder files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
 )
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )
 
@@ -273,6 +274,6 @@ else()
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
-        DESTINATION ${INSTALL_BIN_DIR}/resources/
+        DESTINATION ${INSTALL_RES_DIR}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")

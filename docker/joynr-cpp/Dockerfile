@@ -40,7 +40,7 @@ RUN cd /opt/qt5 \
 		-skip qtwinextras \
 		-skip qtx11extras \
 		-v \
-	&& make -j8 all \
+	&& make -j"$(nproc)" all \
 	&& make install \
 	&& rm -rf /opt/qt5
 
@@ -57,7 +57,7 @@ RUN curl -L  http://downloads.sourceforge.net/project/boost/boost/1.56.0/boost_1
 
 RUN cd /opt/boost \
 	&& ./bootstrap.sh --prefix=/usr/local \
-	&& ./b2 --without-wave --without-python --without-mpi --without-iostreams --without-graph_parallel -j4 install \
+	&& ./b2 --without-wave --without-python --without-mpi --without-iostreams --without-graph_parallel -j"$(nproc)" install \
 	&& rm -rf /opt/boost
 
 
@@ -78,7 +78,7 @@ RUN cd /opt \
 	&& git checkout -b v2.1.4 2.1.4 \
 	&& autoreconf -i \
 	&& ./configure \
-	&& make -j4 \
+	&& make -j"$(nproc)" \
 	&& make install \
 	&& cd /opt \
 	&& rm -rf /opt/common-api-runtime \
@@ -90,7 +90,7 @@ RUN cd /opt \
 	&& cd /opt/dbus-1.4.16 \
 	&& patch -p1 < ../common-api-dbus-runtime/dbus-DBusMessage-add-support-for-custom-marshaling.patch \
 	&& ./configure --prefix=/usr/local \
-	&& make -j4 -C dbus \
+	&& make -j"$(nproc)" -C dbus \
 	&& make -C dbus install \
 	&& make install-pkgconfigDATA \
 	&& cd /opt \
@@ -99,7 +99,7 @@ RUN cd /opt \
 	&& cd /opt/common-api-dbus-runtime \
 	&& autoreconf -i \
 	&& export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH" && ./configure \
-	&& make -j4 \
+	&& make -j"$(nproc)" \
 	&& make install \
 	&& cd /opt \
 	&& rm -rf /opt/common-api-dbus-runtime
@@ -131,6 +131,66 @@ RUN yum update -y \
 	&& yum clean all
 
 RUN pip install gcovr
+
+###################################################
+# install libwebsockets
+###################################################
+
+RUN cd /opt \
+    && git clone git://git.libwebsockets.org/libwebsockets \
+    && cd libwebsockets \
+    && git checkout v1.5-chrome47-firefox41 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make install -j"$(nproc)" \
+    && cd /opt/ \
+    && rm -rf libwebsockets
+
+###################################################
+# install jsmn
+###################################################
+
+RUN cd /opt \
+    && git clone https://github.com/zserge/jsmn.git \
+    && cd jsmn \
+    && git checkout 572ace5 \
+    && CFLAGS=-fPIC make \
+    && cp libjsmn.a /usr/local/lib \
+    && cp jsmn.h /usr/local/include \
+    && cd /opt/ \
+    && rm -rf jsmn
+
+###################################################
+# install spdlog
+###################################################
+
+RUN cd /opt \
+    && git clone https://github.com/gabime/spdlog.git \
+    && cd spdlog \
+    && git checkout e91e1b8 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make install -j"$(nproc)" \
+    && cd /opt/ \
+    && rm -rf spdlog
+
+###################################################
+# install googletest & googlemock
+###################################################
+
+RUN cd /opt \
+    && git clone https://github.com/google/googletest.git \
+    && cd googletest \
+    && git checkout ddb8012e \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make install -j"$(nproc)" \
+    && cd /opt/ \
+    && rm -rf googletest
+
 ###################################################
 # Copy build scripts
 ###################################################

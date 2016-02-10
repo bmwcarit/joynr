@@ -60,7 +60,7 @@ public:
         runtime2(nullptr),
         settings1(new Settings(std::get<0>(GetParam()))),
         settings2(new Settings(std::get<1>(GetParam()))),
-        baseUuid(Util::createUuid()),
+        baseUuid(util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppEnd2EndSubscriptionTest_Domain" + uuid),
         semaphore(0),

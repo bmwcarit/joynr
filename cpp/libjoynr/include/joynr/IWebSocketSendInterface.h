@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef IWEBSOCKETSENDINTERFACE_H_
-#define IWEBSOCKETSENDINTERFACE_H_
+#ifndef IWEBSOCKETSENDINTERFACE_H
+#define IWEBSOCKETSENDINTERFACE_H
 
 #include "joynr/JoynrExport.h"
 
@@ -79,4 +79,4 @@ public:
 
 } // namespace joynr
 
-#endif // IWEBSOCKETSENDINTERFACE_H_
+#endif // IWEBSOCKETSENDINTERFACE_H

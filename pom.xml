@@ -479,6 +479,11 @@
 				<version>${jetty.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.eclipse.paho</groupId>
+				<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+				<version>1.0.2</version>
+			</dependency>
+			<dependency>
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
 				<version>${guice.version}</version>

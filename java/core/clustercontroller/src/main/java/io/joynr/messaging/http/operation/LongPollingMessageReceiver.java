@@ -31,7 +31,6 @@ import java.util.concurrent.ThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ObjectArrays;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
@@ -61,9 +60,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     private Object shutdownSynchronizer = new Object();
 
     @Inject
-    public LongPollingMessageReceiver(LongPollingChannelLifecycle channelMonitor,
-                                      MessagingSettings settings,
-                                      ObjectMapper objectMapper) {
+    public LongPollingMessageReceiver(LongPollingChannelLifecycle channelMonitor, MessagingSettings settings) {
         this.channelMonitor = channelMonitor;
         this.settings = settings;
         this.channelId = channelMonitor.getChannelId();
@@ -143,7 +140,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public boolean isChannelCreated() {
+    public boolean isReady() {
         return channelMonitor.isChannelCreated();
     }
 

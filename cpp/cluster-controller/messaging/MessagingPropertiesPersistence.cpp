@@ -41,7 +41,7 @@ std::string MessagingPropertiesPersistence::getChannelId()
         channelId = settings.get<std::string>(CHANNEL_ID_KEY());
     } else {
         // Create and persist a channelId
-        channelId = Util::createUuid();
+        channelId = util::createUuid();
         settings.set(CHANNEL_ID_KEY(), channelId);
         settings.sync();
     }
@@ -61,7 +61,7 @@ std::string MessagingPropertiesPersistence::getReceiverId()
         receiverId = settings.get<std::string>(RECEIVER_ID_KEY());
     } else {
         // Create and persist a receiverId
-        receiverId = Util::createUuid();
+        receiverId = util::createUuid();
         settings.set(RECEIVER_ID_KEY(), receiverId);
         settings.sync();
     }

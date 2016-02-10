@@ -20,8 +20,6 @@
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 
-#include <QtConcurrent/QtConcurrent>
-
 using namespace joynr;
 
 TEST_P(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {

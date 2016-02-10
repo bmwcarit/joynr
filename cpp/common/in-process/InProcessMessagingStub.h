@@ -28,9 +28,7 @@
 namespace joynr
 {
 
-class MessagingQos;
-class IDispatcher;
-
+class JoynrMessage;
 class InProcessMessagingSkeleton;
 
 class JOYNRCOMMON_EXPORT InProcessMessagingStub : public IMessaging

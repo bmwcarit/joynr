@@ -22,6 +22,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "cluster-controller/mqtt/MqttSettings.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -43,14 +44,12 @@ class JoynrClusterControllerRuntimeTest;
 namespace joynr
 {
 
-class InProcessClusterControllerMessagingSkeleton;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class IMessageReceiver;
 class IMessageSender;
 class ICapabilitiesClient;
 class SubscriptionManager;
-class InProcessDispatcher;
 class ConnectorFactory;
 class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
@@ -64,6 +63,8 @@ class MqttMessagingSkeleton;
 class IPlatformSecurityManager;
 class Settings;
 class LibjoynrSettings;
+class JoynrMessageSender;
+class IMessaging;
 
 namespace infrastructure
 {

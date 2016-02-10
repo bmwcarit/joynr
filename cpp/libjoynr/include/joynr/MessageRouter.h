@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingAbstractProvider.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/Directory.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/ThreadPool.h"

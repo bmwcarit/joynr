@@ -1,9 +1,11 @@
 package io.joynr.runtime;
 
+import java.util.Set;
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,28 +21,21 @@ package io.joynr.runtime;
  * #L%
  */
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-
 import javax.inject.Named;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Provides;
-import com.google.inject.Singleton;
 
 import io.joynr.discovery.DiscoveryClientModule;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.MessageScheduler;
 import io.joynr.messaging.NoBackendMessagingModule;
-import io.joynr.messaging.channel.ChannelMessagingSkeleton;
-import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.security.DummyPlatformSecurityManager;
 import io.joynr.security.PlatformSecurityManager;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 
-abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModule {
+public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModule {
+    public static final String GLOBAL_ADDRESS = "clustercontroller_global_address";
 
     @Override
     protected void configure() {
@@ -52,21 +47,28 @@ abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModule {
     }
 
     @Provides
-    @Named(MessageScheduler.SCHEDULEDTHREADPOOL)
-    ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
-        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                              .build();
-        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
-                                                                                schedulerNamedThreadFactory);
-        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
-        scheduler.allowCoreThreadTimeOut(true);
-        return scheduler;
-    }
+    @Named(GLOBAL_ADDRESS)
+    public Address provideGlobalAddress(Set<GlobalAddressFactory> addressFactories) {
+        Address mqttAddress = null;
+        Address channelAddress = null;
+        Address otherAddress = null;
+        for (GlobalAddressFactory addressFactory : addressFactories) {
+            Address address = addressFactory.create();
+            if (address instanceof MqttAddress) {
+                mqttAddress = address;
+            } else if (address instanceof ChannelAddress) {
+                channelAddress = address;
+            } else {
+                otherAddress = address;
+            }
+        }
 
-    @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON)
-    IMessaging getClusterControllerMessagingSkeleton(MessageRouter messageRouter) {
-        return new ChannelMessagingSkeleton(messageRouter);
+        if (mqttAddress != null) {
+            return mqttAddress;
+        }
+        if (channelAddress != null) {
+            return channelAddress;
+        }
+        return otherAddress;
     }
 }

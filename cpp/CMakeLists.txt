@@ -2,7 +2,7 @@
 # that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/).
 # There are no attributions specified by the author.
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 ######## Project settings ########
 project(joynr-0.15.0-SNAPSHOT)
@@ -42,35 +42,67 @@ message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
 message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
 message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(INSTALL_LIB_DIR lib CACHE PATH "Installation sub directory for libraries")
-set(INSTALL_BIN_DIR bin CACHE PATH "Installation sub directory for executables")
-set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation sub directory for header files")
-set(INSTALL_CMAKE_DIR lib/cmake/Joynr CACHE PATH "Installation sub directory for CMake files")
+# defines GNU standard installation directories
+include(GNUInstallDirs)
+set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/joynr CACHE PATH "Installation sub directory for CMake files")
+set(INSTALL_RES_DIR ${CMAKE_INSTALL_SYSCONFDIR}/joynr CACHE PATH "Installation sub directory for resource and setting files")
 
 if(NOT INSTALL_TEST_DIR)
-    set(INSTALL_TEST_DIR "${INSTALL_BIN_DIR}" CACHE PATH "Installation sub directory for tests")
+    set(INSTALL_TEST_DIR "${CMAKE_INSTALL_BINDIR}" CACHE PATH "Installation sub directory for tests")
 endif(NOT INSTALL_TEST_DIR)
 
-# Make absolute paths relative (otherwise the export files break for cross-compiling)
-foreach(p LIB BIN INCLUDE CMAKE)
-    set(var INSTALL_${p}_DIR)
-    if(IS_ABSOLUTE "${${var}}")
-        file(
-            RELATIVE_PATH ${var}
-            "${CMAKE_INSTALL_PREFIX}"
-            "${${var}}"
-        )
-    endif()
-endforeach()
-
 message(STATUS "----------------- INSTALL LOCATIONS -----------------")
-message(STATUS "CMAKE_INSTALL_PREFIX = ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "INSTALL_LIB_DIR      = ${INSTALL_LIB_DIR}")
-message(STATUS "INSTALL_BIN_DIR      = ${INSTALL_BIN_DIR}")
-message(STATUS "INSTALL_TEST_DIR     = ${INSTALL_TEST_DIR}")
-message(STATUS "INSTALL_INCLUDE_DIR  = ${INSTALL_INCLUDE_DIR}")
-message(STATUS "INSTALL_CMAKE_DIR    = ${INSTALL_CMAKE_DIR}")
+message(STATUS "CMAKE_INSTALL_PREFIX     = ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "CMAKE_INSTALL_BINDIR     = ${CMAKE_INSTALL_BINDIR}")
+message(STATUS "INSTALL_TEST_DIR         = ${INSTALL_TEST_DIR}")
+message(STATUS "CMAKE_INSTALL_LIBDIR     = ${CMAKE_INSTALL_LIBDIR}")
+message(STATUS "INSTALL_CMAKE_DIR        = ${INSTALL_CMAKE_DIR}")
+message(STATUS "CMAKE_INSTALL_INCLUDEDIR = ${CMAKE_INSTALL_INCLUDEDIR}")
+message(STATUS "CMAKE_INSTALL_SYSCONFDIR = ${CMAKE_INSTALL_SYSCONFDIR}")
+message(STATUS "INSTALL_RES_DIR          = ${INSTALL_RES_DIR}")
 message(STATUS "-----------------------------------------------------")
+
+option(
+    USE_PLATFORM_DEPENDENCIES
+    "Resolve all dependencies (link libraries) from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_DEPENDENCIES=" ${USE_PLATFORM_DEPENDENCIES})
+
+if(USE_PLATFORM_DEPENDENCIES)
+    set(USE_PLATFORM_LIBWEBSOCKETS ON)
+    set(USE_PLATFORM_SPDLOG ON)
+    set(USE_PLATFORM_JSMN ON)
+    set(USE_PLATFORM_GTEST_GMOCK ON)
+endif(USE_PLATFORM_DEPENDENCIES)
+
+option(
+    USE_PLATFORM_LIBWEBSOCKETS
+    "Resolve dependency to libwebsocket from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_LIBWEBSOCKETS=" ${USE_PLATFORM_LIBWEBSOCKETS})
+
+option(
+    USE_PLATFORM_SPDLOG
+    "Resolve dependency to spdlog from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_SPDLOG=" ${USE_PLATFORM_SPDLOG})
+
+option(
+    USE_PLATFORM_JSMN
+    "Resolve dependency to jsmn from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_JSMN=" ${USE_PLATFORM_JSMN})
+
+option(
+    USE_PLATFORM_GTEST_GMOCK
+    "Resolve dependency to gtest and gmock from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
 
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(
@@ -227,7 +259,7 @@ endif(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
 message(STATUS "variable JOYNR_SERVER_MQTT_PORT=" ${JOYNR_SERVER_MQTT_PORT})
 
 # Set the binary directory
-set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
+set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 message(STATUS "variable JOYNR_BINARY_DIR=" ${JOYNR_BINARY_DIR})
 
 if(${ENABLE_GCOV})
@@ -401,9 +433,6 @@ if(NOT CURL_FOUND)
     message(FATAL_ERROR "Could not find library: curl.")
 endif()
 
-include_directories(
-   SYSTEM ${CURL_INCLUDE_DIRS}
-)
 
 include(AddExternalProject)
 
@@ -411,6 +440,7 @@ include(AddExternalProject)
 if (USE_PLATFORM_LIBWEBSOCKETS)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(libwebsockets REQUIRED libwebsockets)
+    message(STATUS "linking against ${libwebsockets_LIBRARIES}")
 else(USE_PLATFORM_LIBWEBSOCKETS)
     AddExternalProject(
         libwebsockets
@@ -419,28 +449,27 @@ else(USE_PLATFORM_LIBWEBSOCKETS)
         TIMEOUT 10
         # Disable svn update
         UPDATE_COMMAND ""
-        PATCH_COMMAND patch -f -d ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets -p1 < ${CMAKE_SOURCE_DIR}/CMake/libwebsockets-FixEmptyExtensions.patch
         # Configure libwebsockets library features
         CMAKE_ARGS  -DLWS_WITH_SSL=0
                     -DLWS_WITHOUT_CLIENT=0
                     -DLWS_WITHOUT_SERVER=0
-                    -DLWS_WITHOUT_EXTENSIONS=1
+                    -DLWS_WITHOUT_EXTENSIONS=0
+                    -DLWS_WITH_ZLIB=ON
                     -DLWS_WITHOUT_TESTAPPS=1
                     -DLWS_WITHOUT_TEST_SERVER=1
                     -DLWS_WITHOUT_TEST_SERVER_EXTPOLL=1
                     -DLWS_WITHOUT_TEST_PING=1
                     -DLWS_WITHOUT_TEST_CLIENT=1
-                    -DLWS_WITH_ZLIB=OFF
                     -DLWS_WITHOUT_TEST_FRAGGLE=1
                     -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}
                     -DCMAKE_POSITION_INDEPENDENT_CODE=1
-        BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets.a
+        BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets${CMAKE_SHARED_LIBRARY_SUFFIX}
     )
 
     ExternalProject_Get_Property(libwebsockets SOURCE_DIR)
     ExternalProject_Get_Property(libwebsockets BINARY_DIR)
 
-    set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets.a )
+    set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(libwebsockets_INCLUDE_DIRS
         ${SOURCE_DIR}/lib
         ${BINARY_DIR}
@@ -536,16 +565,16 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif(${WIN32})
     # check GNU CXX compiler version
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
-        message(STATUS "C++11 activated.")
+        message(STATUS "C++14 activated.")
         add_definitions(-D_GLIBCXX_USE_NANOSLEEP)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
     else()
-        message(FATAL_ERROR "C++11 and a gcc compiler with a version higher than 4.9 is needed.")
+        message(FATAL_ERROR "C++14 and a gcc compiler with a version higher than 4.9 is needed.")
     endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -Wno-unknown-pragmas")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++14 -Wno-unknown-pragmas")
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         option(
             USE_STDLIB_LIBCPP
@@ -559,7 +588,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        
+
     add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
@@ -596,20 +625,14 @@ find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
 
 if (USE_PLATFORM_SPDLOG)
     find_package(spdlog REQUIRED)
+    get_target_property(spdlog_INCLUDE_DIRS spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
 else(USE_PLATFORM_SPDLOG)
     message(STATUS "############ Download: spdlog ############")
-    set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
-    set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
-    if(SPDLOG_ROOT)
-        set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
-        set(SPDLOG_SOURCE_TYPE "URL")
-    endif(SPDLOG_ROOT)
-    message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
-
 
     AddExternalProject(
         spdlog
-        ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
+        GIT_REPOSITORY https://github.com/gabime/spdlog
+        GIT_TAG e91e1b8 # there are no version tags, hence a SHA is used
         TIMEOUT 10
         # Disable configure step
         CONFIGURE_COMMAND ""
@@ -617,9 +640,11 @@ else(USE_PLATFORM_SPDLOG)
         BUILD_COMMAND ""
     )
 
-    ExternalProject_Get_Property(spdlog SOURCE_DIR)
-    set(spdlog_SOURCE_DIR ${SOURCE_DIR})
+     ExternalProject_Get_Property(spdlog SOURCE_DIR)
+     set(spdlog_INCLUDE_DIRS "${SOURCE_DIR}/include")
 endif(USE_PLATFORM_SPDLOG)
+
+message(STATUS "variable spdlog_INCLUDE_DIRS=" ${spdlog_INCLUDE_DIRS})
 
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -632,11 +657,13 @@ if(${BUILD_CLUSTER_CONTROLLER})
     add_subdirectory(cluster-controller)
 else()
     # We still use the websocket default configuration file
+    # copy resources for build tree
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cluster-controller/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings @ONLY)
+    # ...and for install tree
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
-        DESTINATION ${INSTALL_BIN_DIR}/resources/
+        DESTINATION ${INSTALL_RES_DIR}
     )
 endif(${BUILD_CLUSTER_CONTROLLER})
 add_subdirectory(runtimes)
@@ -651,7 +678,7 @@ set(
     JoynrCommon
     Joynr
     JoynrWsRuntime
-    jsonserializer
+    JoynrJsonSerializer
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -694,7 +721,7 @@ set(
     JoynrConfig_LIB_COMMON_LIBRARIES
     JoynrCommon
     Joynr
-    jsonserializer
+    JoynrJsonSerializer
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -721,15 +748,15 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 # ... for the build tree
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
-message(STATUS "variable jsonserializer_PUBLIC_INCLUDE_DIRECTORY=" ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY})
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
+message(STATUS "variable JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY=" ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY})
 
 set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_SOURCE_DIR}/include
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${spdlog_INCLUDE_DIRS}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
@@ -746,8 +773,8 @@ set(
     JoynrConfig_LIB_WS_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_SOURCE_DIR}/include
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${spdlog_INCLUDE_DIRS}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
 )
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -755,13 +782,14 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JoynrConfig_LIB_DBUS_INCLUDE_DIRS
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-        ${spdlog_SOURCE_DIR}/include
-        ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+        ${spdlog_INCLUDE_DIRS}
+        ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
         ${jsmn_INCLUDE_DIR}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
 set(JoynrConfig_INSTALL_BIN_DIR "${JOYNR_BINARY_DIR}")
+set(JoynrConfig_RESOURCES_DIR "${JoynrConfig_INSTALL_BIN_DIR}/resources")
 
 configure_file(
     JoynrConfig.cmake.in
@@ -771,14 +799,19 @@ configure_file(
 file(
     RELATIVE_PATH RELATIVE_INSTALL_INCLUDE_DIR
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"
-    "${CMAKE_INSTALL_PREFIX}/${INSTALL_INCLUDE_DIR}"
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}"
 )
+set(JoynrConfig_LIB_COMMON_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
+set(JoynrConfig_LIB_WS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
+set(JoynrConfig_LIB_DBUS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_TARGETS_FILE "\${CMAKE_CURRENT_LIST_DIR}/JoynrTargets.cmake")
+set(JoynrConfig_RESOURCES_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_RES_DIR}")
+
 file(
     RELATIVE_PATH RELATIVE_INSTALL_BIN_DIR
     "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"
-    "${CMAKE_INSTALL_PREFIX}/${INSTALL_BIN_DIR}"
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
 )
 set(JoynrConfig_INSTALL_BIN_DIR "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_BIN_DIR}")
 configure_file(

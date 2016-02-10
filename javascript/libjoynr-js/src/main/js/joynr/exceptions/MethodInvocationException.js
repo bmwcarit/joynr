@@ -67,9 +67,15 @@ define("joynr/exceptions/MethodInvocationException", [
     }
 
     defaultSettings = {};
+
     TypeRegistrySingleton.getInstance().addType(
             "joynr.exceptions.MethodInvocationException",
             MethodInvocationException);
+
+    MethodInvocationException.prototype = new Error();
+    MethodInvocationException.prototype.constructor = MethodInvocationException;
+    MethodInvocationException.prototype.name = "MethodInvocationException";
+
     return MethodInvocationException;
 
 });

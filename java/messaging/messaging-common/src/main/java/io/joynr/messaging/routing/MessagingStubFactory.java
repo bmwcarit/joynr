@@ -19,47 +19,47 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
-import com.google.inject.Inject;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.messaging.AbstractMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessMessagingStub;
-import joynr.system.RoutingTypes.Address;
-
 import java.util.Map;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
+import io.joynr.messaging.IMessaging;
+import joynr.system.RoutingTypes.Address;
+
+@Singleton
 public class MessagingStubFactory {
 
-    private Map<Class<? extends Address>, AbstractMessagingStubFactory> messagingStubFactories;
+    public static final String MIDDLEWARE_MESSAGING_STUB_FACTORIES = "MIDDLEWARE_MESSAGING_STUB_FACTORIES";
+    private Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> middlewareMessagingStubFactories;
 
     @Inject
-    public MessagingStubFactory(Map<Class<? extends Address>, AbstractMessagingStubFactory> messagingStubFactories) {
-        this.messagingStubFactories = messagingStubFactories;
-        messagingStubFactories.put(InProcessAddress.class, new AbstractMessagingStubFactory<InProcessAddress>() {
-            @Override
-            protected IMessaging createInternal(InProcessAddress address) {
-                return new InProcessMessagingStub((address).getSkeleton());
-            }
-
-            @Override
-            public void shutdown() {
-                //nothing to do
-            }
-        });
+    public MessagingStubFactory(@Named(MIDDLEWARE_MESSAGING_STUB_FACTORIES) Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> middlewareMessagingStubFactories) {
+        this.middlewareMessagingStubFactories = middlewareMessagingStubFactories;
     }
 
     public IMessaging create(Address address) {
-        AbstractMessagingStubFactory messagingStubFactory = messagingStubFactories.get(address.getClass());
+        @SuppressWarnings("unchecked")
+        AbstractMiddlewareMessagingStubFactory<? extends IMessaging, Address> messagingStubFactory = (AbstractMiddlewareMessagingStubFactory<? extends IMessaging, Address>) middlewareMessagingStubFactories.get(address.getClass());
+
         if (messagingStubFactory == null) {
-            throw new JoynrMessageNotSentException("Failed to send Request: Address type not supported");
+            throw new JoynrMessageNotSentException("Failed to send Request: Address type not supported: "
+                    + address.getClass().getName());
         }
         return messagingStubFactory.create(address);
     }
 
     public void shutdown() {
-        for (AbstractMessagingStubFactory messagingStubFactory : messagingStubFactories.values()) {
+        for (AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address> messagingStubFactory : middlewareMessagingStubFactories.values()) {
             messagingStubFactory.shutdown();
         }
+    }
+
+    public void register(Class<? extends Address> address,
+                         AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address> middlewareMessagingStubFactory) {
+        middlewareMessagingStubFactories.put(address, middlewareMessagingStubFactory);
     }
 }

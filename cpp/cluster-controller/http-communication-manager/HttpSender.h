@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef HTTPSENDER_H_
-#define HTTPSENDER_H_
+#ifndef HTTPSENDER_H
+#define HTTPSENDER_H
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/IMessageSender.h"
@@ -133,4 +133,4 @@ private:
 };
 
 } // namespace joynr
-#endif // HTTPSENDER_H_
+#endif // HTTPSENDER_H

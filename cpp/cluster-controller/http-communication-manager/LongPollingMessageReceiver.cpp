@@ -145,7 +145,7 @@ void LongPollingMessageReceiver::run()
             // 200 does nott refect the state of the message body! It could be empty.
             if (longPollingResult.getStatusCode() == 200 ||
                 longPollingResult.getStatusCode() == 503) {
-                Util::logSerializedMessage(logger,
+                util::logSerializedMessage(logger,
                                            "long polling successful; contents: ",
                                            longPollingResult.getBody().data());
                 processReceivedInput(longPollingResult.getBody());
@@ -172,7 +172,7 @@ void LongPollingMessageReceiver::run()
 void LongPollingMessageReceiver::processReceivedInput(const QByteArray& receivedInput)
 {
     std::vector<std::string> jsonObjects =
-            Util::splitIntoJsonObjects(QString(receivedInput).toStdString());
+            util::splitIntoJsonObjects(QString(receivedInput).toStdString());
     for (std::size_t i = 0; i < jsonObjects.size(); i++) {
         processReceivedJsonObjects(jsonObjects.at(i));
     }

@@ -16,16 +16,15 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNRMESSAGE_H_
-#define JOYNRMESSAGE_H_
+#ifndef JOYNRMESSAGE_H
+#define JOYNRMESSAGE_H
+
+#include <map>
+#include <string>
 
 #include "joynr/JoynrCommonExport.h"
-
-#include "joynr/Logger.h"
 #include "joynr/DispatcherUtils.h"
-#include <cstdint>
-
-#include <string>
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -44,7 +43,6 @@ namespace joynr
   */
 class JOYNRCOMMON_EXPORT JoynrMessage
 {
-    using StringMap = std::map<std::string, std::string>;
 
 public:
     JoynrMessage();
@@ -109,6 +107,10 @@ public:
 
     JoynrMessage(const JoynrMessage& message);
     JoynrMessage& operator=(const JoynrMessage& message);
+
+    JoynrMessage(JoynrMessage&& message);
+    JoynrMessage& operator=(JoynrMessage&& message);
+
     // deactivated to fix linker warnings. Not needed anywhere at the moment.
     bool operator==(const JoynrMessage& message) const;
 
@@ -326,4 +328,4 @@ private:
 };
 
 } // namespace joynr
-#endif // JOYNRMESSAGE_H_
+#endif // JOYNRMESSAGE_H

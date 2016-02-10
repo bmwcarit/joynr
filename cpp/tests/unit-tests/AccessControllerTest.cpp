@@ -23,6 +23,7 @@
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include <tuple>
 #include <string>
 
 using namespace ::testing;
@@ -47,10 +48,10 @@ public:
             TrustLevel::Enum trustLevel,
             std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
     ) {
-        Q_UNUSED(userId)
-        Q_UNUSED(domain)
-        Q_UNUSED(interfaceName)
-        Q_UNUSED(trustLevel)
+        std::ignore = userId;
+        std::ignore = domain;
+        std::ignore = interfaceName;
+        std::ignore = trustLevel;
         callback->consumerPermission(permission);
     }
 
@@ -61,10 +62,10 @@ public:
             TrustLevel::Enum trustLevel,
             std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
     ) {
-        Q_UNUSED(userId)
-        Q_UNUSED(domain)
-        Q_UNUSED(interfaceName)
-        Q_UNUSED(trustLevel)
+        std::ignore = userId;
+        std::ignore = domain;
+        std::ignore = interfaceName;
+        std::ignore = trustLevel;
         callback->operationNeeded();
     }
 
@@ -96,7 +97,7 @@ public:
     void invokeOnSuccessCallbackFct (std::string participantId,
                             std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
-        Q_UNUSED(participantId);
+        std::ignore = participantId;
         onSuccess(discoveryEntry);
     }
 

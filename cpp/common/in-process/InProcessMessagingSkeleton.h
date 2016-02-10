@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef COMMON_INPROCESS_INPROCESSMESSAGINGSKELETON_H
-#define COMMON_INPROCESS_INPROCESSMESSAGINGSKELETON_H
+#ifndef INPROCESSMESSAGINGSKELETON_H
+#define INPROCESSMESSAGINGSKELETON_H
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/IMessaging.h"
 
@@ -41,4 +41,4 @@ private:
 };
 
 } // namespace joynr
-#endif // COMMON_INPROCESS_INPROCESSMESSAGINGSKELETON_H
+#endif // INPROCESSMESSAGINGSKELETON_H

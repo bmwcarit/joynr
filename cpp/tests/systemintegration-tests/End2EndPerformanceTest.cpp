@@ -55,7 +55,7 @@ public:
         runtime2(nullptr),
         settings1(new Settings(std::get<0>(GetParam()))),
         settings2(new Settings(std::get<1>(GetParam()))),
-        baseUuid(Util::createUuid()),
+        baseUuid(util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domain("cppEnd2EndPerformancesTestDomain" + uuid)
     {
@@ -134,7 +134,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     for (int i=0; i<numberOfRequests; i++){
         testFutureList.at(i)->wait();
         int expectedValue = 2+4+8+i;
-        if (testFutureList.at(i)->getStatus().successful()) {
+        if (testFutureList.at(i)->isOk()) {
             successfulRequests++;
             int actualValue;
             testFutureList.at(i)->get(actualValue);
@@ -146,8 +146,9 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     EXPECT_EQ(numberOfRequests, successfulRequests);
     JOYNR_LOG_INFO(logger, "Required Time for 1000 Requests: {}",(stopTime - startTime));
     // to silence unused-variable compiler warnings
-    (void)startTime;
-    (void)stopTime;
+    std::ignore = startTime;
+    std::ignore = stopTime;
+    std::ignore = logger;
 }
 INSTANTIATE_TEST_CASE_P(Http,
         End2EndPerformanceTest,

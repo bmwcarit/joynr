@@ -19,6 +19,8 @@
 
 #include "joynr/Reply.h"
 
+#include "joynr/exceptions/JoynrException.h"
+
 namespace joynr
 {
 
@@ -29,20 +31,8 @@ const Reply Reply::NULL_RESPONSE = Reply();
 Reply::Reply() : requestReplyId(), response(), error(Variant::NULL_VARIANT())
 {
 }
-Reply::Reply(const Reply& other)
-        : requestReplyId(other.getRequestReplyId()), response(other.response), error(other.error)
-{
-}
 
-Reply& Reply::operator=(const Reply& other)
-{
-    this->requestReplyId = other.getRequestReplyId();
-    this->response = other.response;
-    this->error = other.error;
-    return *this;
-}
-
-std::string Reply::getRequestReplyId() const
+const std::string& Reply::getRequestReplyId() const
 {
     return requestReplyId;
 }
@@ -52,7 +42,7 @@ void Reply::setRequestReplyId(const std::string& requestReplyId)
     this->requestReplyId = requestReplyId;
 }
 
-std::vector<Variant> Reply::getResponse() const
+const std::vector<Variant>& Reply::getResponse() const
 {
     return response;
 }

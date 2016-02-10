@@ -19,88 +19,132 @@
  * #L%
  */
 
-joynrTestRequire("joynr/proxy/TestProxy", [
-    "global/Promise",
-    "joynr/vehicle/RadioProxy",
-    "joynr/vehicle/radiotypes/RadioStation",
-    "joynr/proxy/ProxyAttributeNotifyReadWrite",
-    "joynr/proxy/ProxyAttributeNotifyRead",
-    "joynr/proxy/ProxyAttributeNotifyWrite",
-    "joynr/proxy/ProxyAttributeNotify",
-    "joynr/proxy/ProxyAttributeReadWrite",
-    "joynr/proxy/ProxyAttributeRead",
-    "joynr/proxy/ProxyAttributeWrite",
-    "joynr/proxy/ProxyOperation",
-    "joynr/proxy/ProxyEvent",
-    "joynr/types/TypeRegistrySingleton",
-    "joynr/proxy/DiscoveryQos",
-    "joynr/messaging/MessagingQos"
-], function(
-        Promise,
-        RadioProxy,
-        RadioStation,
-        ProxyAttributeNotifyReadWrite,
-        ProxyAttributeNotifyRead,
-        ProxyAttributeNotifyWrite,
-        ProxyAttributeNotify,
-        ProxyAttributeReadWrite,
-        ProxyAttributeRead,
-        ProxyAttributeWrite,
-        ProxyOperation,
-        ProxyEvent,
-        TypeRegistrySingleton,
-        DiscoveryQos,
-        MessagingQos) {
+joynrTestRequire(
+        "joynr/proxy/TestProxy",
+        [
+            "global/Promise",
+            "joynr/vehicle/RadioProxy",
+            "joynr/vehicle/radiotypes/RadioStation",
+            "joynr/proxy/ProxyAttributeNotifyReadWrite",
+            "joynr/proxy/ProxyAttributeNotifyRead",
+            "joynr/proxy/ProxyAttributeNotifyWrite",
+            "joynr/proxy/ProxyAttributeNotify",
+            "joynr/proxy/ProxyAttributeReadWrite",
+            "joynr/proxy/ProxyAttributeRead",
+            "joynr/proxy/ProxyAttributeWrite",
+            "joynr/proxy/ProxyOperation",
+            "joynr/proxy/ProxyEvent",
+            "joynr/types/TypeRegistrySingleton",
+            "joynr/proxy/DiscoveryQos",
+            "joynr/messaging/MessagingQos"
+        ],
+        function(
+                Promise,
+                RadioProxy,
+                RadioStation,
+                ProxyAttributeNotifyReadWrite,
+                ProxyAttributeNotifyRead,
+                ProxyAttributeNotifyWrite,
+                ProxyAttributeNotify,
+                ProxyAttributeReadWrite,
+                ProxyAttributeRead,
+                ProxyAttributeWrite,
+                ProxyOperation,
+                ProxyEvent,
+                TypeRegistrySingleton,
+                DiscoveryQos,
+                MessagingQos) {
 
-    describe("libjoynr-js.joynr.proxy.Proxy", function() {
+            describe(
+                    "libjoynr-js.joynr.proxy.Proxy",
+                    function() {
 
-        var settings, dependencies, radioProxy;
-        var typeRegistry = TypeRegistrySingleton.getInstance();
+                        var settings, dependencies, radioProxy;
+                        var typeRegistry = TypeRegistrySingleton.getInstance();
 
-        beforeEach(function() {
-            settings = {
-                domain : "",
-                interfaceName : "",
-                discoveryQos : new DiscoveryQos(),
-                messagingQos : new MessagingQos(),
-                proxyElementTypes : {
-                    ProxyAttributeNotifyReadWrite : ProxyAttributeNotifyReadWrite,
-                    ProxyAttributeNotifyRead : ProxyAttributeNotifyRead,
-                    ProxyAttributeNotifyWrite : ProxyAttributeNotifyWrite,
-                    ProxyAttributeNotify : ProxyAttributeNotify,
-                    ProxyAttributeReadWrite : ProxyAttributeReadWrite,
-                    ProxyAttributeRead : ProxyAttributeRead,
-                    ProxyAttributeWrite : ProxyAttributeWrite,
-                    ProxyOperation : ProxyOperation,
-                    ProxyEvent : ProxyEvent
-                },
-                dependencies : {
-                    subscriptionManager : {}
-                }
-            };
-            radioProxy = new RadioProxy(settings);
-        });
+                        beforeEach(function() {
+                            settings = {
+                                domain : "",
+                                interfaceName : "",
+                                discoveryQos : new DiscoveryQos(),
+                                messagingQos : new MessagingQos(),
+                                proxyElementTypes : {
+                                    ProxyAttributeNotifyReadWrite : ProxyAttributeNotifyReadWrite,
+                                    ProxyAttributeNotifyRead : ProxyAttributeNotifyRead,
+                                    ProxyAttributeNotifyWrite : ProxyAttributeNotifyWrite,
+                                    ProxyAttributeNotify : ProxyAttributeNotify,
+                                    ProxyAttributeReadWrite : ProxyAttributeReadWrite,
+                                    ProxyAttributeRead : ProxyAttributeRead,
+                                    ProxyAttributeWrite : ProxyAttributeWrite,
+                                    ProxyOperation : ProxyOperation,
+                                    ProxyEvent : ProxyEvent
+                                },
+                                dependencies : {
+                                    subscriptionManager : {}
+                                }
+                            };
+                            radioProxy = new RadioProxy(settings);
+                        });
 
-        it("RadioProxy is instantiable", function() {
-            expect(radioProxy).toBeDefined();
-            expect(radioProxy).not.toBeNull();
-            expect(typeof radioProxy === "object").toBeTruthy();
-            expect(radioProxy instanceof RadioProxy).toBeTruthy();
-        });
+                        it("RadioProxy is instantiable", function() {
+                            expect(radioProxy).toBeDefined();
+                            expect(radioProxy).not.toBeNull();
+                            expect(typeof radioProxy === "object").toBeTruthy();
+                            expect(radioProxy instanceof RadioProxy).toBeTruthy();
+                        });
 
-        it("RadioProxy saves settings object", function() {
-            expect(radioProxy.settings).toEqual(settings);
-        });
+                        it("RadioProxy provides API to access used datatypes", function() {
+                            expect(RadioProxy.getUsedDatatypes).toBeDefined();
+                        });
 
-        it("RadioProxy has all members", function() {
-            expect(radioProxy.isOn).toBeDefined();
-            expect(radioProxy.isOn instanceof ProxyAttributeNotifyReadWrite).toBeTruthy();
-            expect(radioProxy.addFavoriteStation).toBeDefined();
-            expect(typeof radioProxy.addFavoriteStation === "function").toBeTruthy();
-            expect(radioProxy.weakSignal).toBeDefined();
-            expect(radioProxy.weakSignal instanceof ProxyEvent).toBeTruthy();
-        });
+                        it(
+                                "RadioProxy.getUsedDatatype can be used to synchronize to the successful registration of all used datatypes",
+                                function() {
+                                    var datatypePromises;
+                                    var allDatatypesRegistered;
+                                    runs(function() {
+                                        allDatatypesRegistered = false;
+                                        expect(RadioProxy.getUsedDatatypes).toBeDefined();
+                                        datatypePromises =
+                                                RadioProxy.getUsedDatatypes().map(
+                                                        function(datatype) {
+                                                            return typeRegistry
+                                                                    .getTypeRegisteredPromise(
+                                                                            datatype,
+                                                                            1000);
+                                                        });
+                                        Promise.all(datatypePromises).then(function() {
+                                            allDatatypesRegistered = true;
+                                        });
+                                    });
 
-    });
+                                    waitsFor(
+                                            function() {
+                                                return allDatatypesRegistered;
+                                            },
+                                            "all datatypes used by RadioProxy are registered at the typeRegistry",
+                                            1000);
 
-}); // require
+                                    runs(function() {
+                                        expect(allDatatypesRegistered).toEqual(true);
+                                    });
+                                });
+
+                        it("RadioProxy saves settings object", function() {
+                            expect(radioProxy.settings).toEqual(settings);
+                        });
+
+                        it("RadioProxy has all members", function() {
+                            expect(radioProxy.isOn).toBeDefined();
+                            expect(radioProxy.isOn instanceof ProxyAttributeNotifyReadWrite)
+                                    .toBeTruthy();
+                            expect(radioProxy.addFavoriteStation).toBeDefined();
+                            expect(typeof radioProxy.addFavoriteStation === "function")
+                                    .toBeTruthy();
+                            expect(radioProxy.weakSignal).toBeDefined();
+                            expect(radioProxy.weakSignal instanceof ProxyEvent).toBeTruthy();
+                        });
+
+                    });
+
+        }); // require

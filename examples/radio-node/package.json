@@ -7,11 +7,15 @@
   "dependencies": {
   },
   "config": {
-    "domain": "nodeProvider"
+    "domain": "nodeProvider",
+    "cc": {
+      "host": "localhost",
+      "port": "4242"
+    }
   },
   "scripts": {
     "preinstall": "npm install ../../javascript/libjoynr-js/target/classes",
-    "startconsumer" : "node src/main/js/radioConsumer.js $npm_package_config_domain",
-    "startprovider" : "node src/main/js/radioProvider.js $npm_package_config_domain"
+    "startconsumer" : "node src/main/js/radioConsumer.js $npm_package_config_domain $npm_package_config_cc_host $npm_package_config_cc_port",
+    "startprovider" : "node src/main/js/radioProvider.js $npm_package_config_domain $npm_package_config_cc_host $npm_package_config_cc_port"
   }
 }

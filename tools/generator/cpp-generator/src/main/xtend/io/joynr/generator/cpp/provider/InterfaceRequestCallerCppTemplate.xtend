@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,6 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 «ENDFOR»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
 «IF !serviceInterface.methods.empty || !serviceInterface.attributes.empty»
-	#include "joynr/RequestStatus.h"
 	#include "joynr/TypeUtil.h"
 «ENDIF»
 

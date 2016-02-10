@@ -7,6 +7,7 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.websocket.LibWebSocketMessagingStub;
@@ -56,6 +57,8 @@ public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAdd
                                     RequestCallerDirectory requestCallerDirectory,
                                     ReplyCallerDirectory replyCallerDirectory,
                                     Dispatcher dispatcher,
+                                    MessagingStubFactory messagingStubFactory,
+                                    MessagingSkeletonFactory messagingSkeletonFactory,
                                     LocalDiscoveryAggregator localDiscoveryAggregator,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -65,7 +68,6 @@ public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAdd
                                     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
                                     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
                                     @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) WebSocketClientAddress libjoynrMessagingAddress,
-                                    MessagingStubFactory messagingStubFactory,
                                     ChildMessageRouter messageRouter,
                                     @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId,
                                     @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton) {
@@ -74,6 +76,8 @@ public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAdd
               requestCallerDirectory,
               replyCallerDirectory,
               dispatcher,
+              messagingStubFactory,
+              messagingSkeletonFactory,
               localDiscoveryAggregator,
               systemServicesDomain,
               dispatcherAddress,
@@ -84,9 +88,7 @@ public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAdd
               ccMessagingAddress,
               libjoynrMessagingAddress,
               messageRouter,
-              parentRoutingProviderParticipantId,
-              webSocketMessagingSkeleton,
-              messagingStubFactory);
+              parentRoutingProviderParticipantId);
         // CHECKSTYLE:ON
     }
 
@@ -111,10 +113,5 @@ public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAdd
         } catch (IOException e) {
             logger.error("Error while sending websocket init message: ", e);
         }
-    }
-
-    @Override
-    void startReceiver() {
-        logger.debug("LibJoynr has no receiver. Nothing to start.");
     }
 }

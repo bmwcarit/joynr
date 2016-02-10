@@ -20,7 +20,12 @@
 
 #include <iostream>
 #include <string>
+#include <utility>
+#include <memory>
+#include <chrono>
+
 #include "joynr/Util.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -100,10 +105,27 @@ JoynrMessage& JoynrMessage::operator=(const JoynrMessage& message)
     return *this;
 }
 
+JoynrMessage::JoynrMessage(JoynrMessage&& message)
+        : type(std::move(message.type)),
+          header(std::move(message.header)),
+          payload(std::move(message.payload))
+{
+    generateAndSetMsgIdHeaderIfAbsent();
+}
+
+JoynrMessage& JoynrMessage::operator=(JoynrMessage&& message)
+{
+    type = std::move(message.type);
+    header = std::move(message.header);
+    payload = std::move(message.payload);
+    generateAndSetMsgIdHeaderIfAbsent();
+    return *this;
+}
+
 void JoynrMessage::generateAndSetMsgIdHeaderIfAbsent()
 {
     if (!containsHeader(HEADER_MESSAGE_ID())) {
-        std::string msgId = Util::createUuid();
+        std::string msgId = util::createUuid();
         setHeaderForKey(HEADER_MESSAGE_ID(), msgId);
     }
 }

@@ -1,5 +1,7 @@
 package io.joynr.messaging.inprocess;
 
+import com.google.inject.Inject;
+
 /*
  * #%L
  * %%
@@ -20,19 +22,35 @@ package io.joynr.messaging.inprocess;
  */
 
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.messaging.FailureAction;
 import joynr.JoynrMessage;
 
 public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSkeleton {
 
     private final Dispatcher dispatcher;
 
+    @Inject
     public InProcessLibjoynrMessagingSkeleton(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 
     @Override
+    public void transmit(JoynrMessage message, FailureAction failureAction) {
+        try {
+            transmit(message);
+        } catch (Exception exception) {
+            failureAction.execute(exception);
+        }
+    }
+
+    @Override
     public void transmit(JoynrMessage message) {
         dispatcher.messageArrived(message);
+    }
+
+    @Override
+    public void transmit(String serializedMessage, FailureAction failureAction) {
+        throw new IllegalStateException("InProcessMessagingSkeleton does not handle serialized messages");
     }
 
     @Override

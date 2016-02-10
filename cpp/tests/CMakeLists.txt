@@ -84,9 +84,6 @@ else (USE_PLATFORM_GTEST_GMOCK)
 
 endif(USE_PLATFORM_GTEST_GMOCK)
 
-include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
-include_directories(SYSTEM ${GMOCK_INCLUDE_DIRS})
-
 ### copy test resources and settings ##########################################
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     configure_file(
@@ -309,7 +306,7 @@ include(AddTest.cmake)
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -337,8 +334,8 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_SOURCE_DIR}/include
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${spdlog_INCLUDE_DIRS}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_INCLUDE_DIR}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
@@ -347,7 +344,7 @@ set(
     test_TARGET_LIBRARIES
     JoynrCommon
     Joynr
-    jsonserializer
+    JoynrJsonSerializer
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -423,14 +420,14 @@ set(
 )
 
 file(
-    GLOB_RECURSE JsonSerailizerTest_GENSOURCES
+    GLOB_RECURSE JsonSerializerTest_GENSOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     #"gen/*.cpp" uncomment this when generate-test-sources prepared for jsonserializer
     "unit-tests/jsonserializer/generated/*.cpp" #remove this when generate-test-sources prepared for jsonserializer
 )
 
 file(
-    GLOB_RECURSE JsonSerailizerTest_GENHEADERS
+    GLOB_RECURSE JsonSerializerTest_GENHEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     #"gen/*.h" uncomment this when generate-test-sources prepared for jsonserializer
     "unit-tests/jsonserializer/generated/*.h" #remove this when generate-test-sources prepared for jsonserializer
@@ -439,13 +436,13 @@ file(
 set(
     libjsonserializer_test_HEADERS
     "unit-tests/jsonserializer/ExampleTypes.h"
-    ${JsonSerailizerTest_GENHEADERS}
+    ${JsonSerializerTest_GENHEADERS}
 )
 
 set(
     libjsonserializer_test_SOURCES
     "unit-tests/jsonserializer/ExampleTypes.cpp"
-    ${JsonSerailizerTest_GENSOURCES}
+    ${JsonSerializerTest_GENSOURCES}
 )
 
 set(
@@ -508,10 +505,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     target_include_directories(
         g_UnitTests
-        SYSTEM
-        PRIVATE ${MOSQUITTO_INCLUDE_DIRS}
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -543,10 +536,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     target_include_directories(
         g_IntegrationTests
-        SYSTEM
-        PRIVATE ${MOSQUITTO_INCLUDE_DIRS}
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -584,8 +573,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_include_directories(
         g_SystemIntegrationTests
         SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
+        PRIVATE ${CURL_INCLUDE_DIRS}
+    )
+
+    target_include_directories(
+        g_SystemIntegrationTests
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -620,9 +612,6 @@ else()
 
     target_include_directories(
         g_UnitTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
     )
 
@@ -649,9 +638,6 @@ else()
 
     target_include_directories(
         g_SystemIntegrationTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
     )
 

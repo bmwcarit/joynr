@@ -22,7 +22,11 @@ package io.joynr.messaging.channel;
 import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 
 import java.io.IOException;
@@ -40,20 +44,30 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
 
+    private MessageReceiver messageReceiver;
+
     @Inject
-    public ChannelMessagingSkeleton(MessageRouter messageRouter) {
+    public ChannelMessagingSkeleton(MessageRouter messageRouter, MessageReceiver messageReceiver) {
         this.messageRouter = messageRouter;
+        this.messageReceiver = messageReceiver;
     }
 
     @Override
-    public void transmit(JoynrMessage message) {
+    public void transmit(JoynrMessage message, FailureAction failureAction) {
         final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
         addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
         try {
             messageRouter.route(message);
-        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException e) {
+        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException exception) {
             logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader());
+            failureAction.execute(exception);
         }
+    }
+
+    @Override
+    public void transmit(String serializedMessage, FailureAction failureAction) {
+        // TODO Auto-generated method stub
+
     }
 
     private void addRequestorToMessageRouter(String requestorParticipantId, String replyToChannelId) {
@@ -70,11 +84,42 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
 
     @Override
     public void init() {
-        //do nothing
+        messageReceiver.start(new MessageArrivedListener() {
+
+            @Override
+            public void messageArrived(final JoynrMessage message) {
+                transmit(message, new FailureAction() {
+                    @Override
+                    public void execute(Throwable error) {
+                        logger.error("error processing incoming message: {} error: {}",
+                                     message.getId(),
+                                     error.getMessage());
+                    }
+                });
+            }
+
+            @Override
+            public void error(JoynrMessage message, Throwable error) {
+                logger.error("error receiving incoming message: {} error: {}", message.getId(), error.getMessage());
+            }
+        }, new ReceiverStatusListener() {
+
+            @Override
+            public void receiverStarted() {
+
+            }
+
+            @Override
+            public void receiverException(Throwable e) {
+                logger.error("error in long polling message receiver error: {}", e.getMessage());
+                shutdown();
+            }
+        });
     }
 
     @Override
     public void shutdown() {
-        //do nothing
+        messageReceiver.shutdown(false);
     }
+
 }

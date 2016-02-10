@@ -18,8 +18,8 @@
  */
 
 #include "joynr/Settings.h"
-
 #include <boost/property_tree/ini_parser.hpp>
+#include <utility>
 
 namespace ptree = boost::property_tree;
 
@@ -73,6 +73,16 @@ void Settings::merge(const Settings& from, Settings& to, bool overwrite)
     to.loaded = true;
 }
 
+void Settings::fillEmptySettingsWithDefaults(const std::string& defaultsFilename)
+{
+    const std::string cmakeSettingsPath = CMAKE_JOYNR_SETTINGS_INSTALL_DIR;
+    Settings cmakeDefaultSettings(cmakeSettingsPath + "/" + defaultsFilename);
+    Settings relativeDefaultSettings("resources/" + defaultsFilename);
+
+    Settings::merge(relativeDefaultSettings, *this, false);
+    Settings::merge(cmakeDefaultSettings, *this, false);
+}
+
 void Settings::merge(const boost::property_tree::ptree& from,
                      boost::property_tree::ptree& to,
                      bool overwrite)
@@ -105,6 +115,11 @@ void Settings::merge(const boost::property_tree::ptree& from,
             merge(fromEntry.second, toIt->second, overwrite);
         }
     }
+}
+
+boost::property_tree::path Settings::createPath(const std::string& path)
+{
+    return boost::property_tree::path(path, '/');
 }
 
 } // namespace joynr

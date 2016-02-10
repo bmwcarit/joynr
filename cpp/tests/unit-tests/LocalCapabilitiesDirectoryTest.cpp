@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
+#include <tuple>
 #include <cstdint>
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
@@ -65,9 +66,9 @@ public:
         registerCapabilitiesMetaTypes();
 
         //TODO the participantId should be provided by the provider
-        dummyParticipantId1 = Util::createUuid();
-        dummyParticipantId2 = Util::createUuid();
-        dummyParticipantId3 = Util::createUuid();
+        dummyParticipantId1 = util::createUuid();
+        dummyParticipantId2 = util::createUuid();
+        dummyParticipantId3 = util::createUuid();
         localJoynrMessagingAddress1 = std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress("LOCAL_CHANNEL_ID"));
         callback = std::shared_ptr<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
@@ -98,8 +99,8 @@ public:
             const std::string& interfaceName,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(domain);
-        Q_UNUSED(interfaceName);
+        std::ignore = domain;
+        std::ignore = interfaceName;
         std::vector<types::CapabilityInformation> result;
         onSuccess(result);
     }
@@ -108,7 +109,7 @@ public:
             const std::string& participantId,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(participantId);
+        std::ignore = participantId;
         std::vector<types::CapabilityInformation> result;
         onSuccess(result);
     }
@@ -118,8 +119,8 @@ public:
             const std::string& interfaceName,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(domain);
-        Q_UNUSED(interfaceName);
+        std::ignore = domain;
+        std::ignore = interfaceName;
         types::ProviderQos qos;
         std::vector<types::CapabilityInformation> capInfoList;
         capInfoList.push_back(types::CapabilityInformation(
@@ -162,7 +163,7 @@ public:
             const std::string& participantId,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(participantId);
+        std::ignore = participantId;
         types::ProviderQos qos;
         std::vector<types::CapabilityInformation> capInfoList;
         capInfoList.push_back(types::CapabilityInformation(

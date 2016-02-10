@@ -79,7 +79,7 @@ public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
     @Override
     @After
     public void tearDown() throws InterruptedException {
-
+        super.tearDown();
         for (DummyJoynrApplication application : dummyApplications) {
             application.shutdown();
         }

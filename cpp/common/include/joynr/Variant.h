@@ -24,9 +24,9 @@
 #include <memory>
 #include <cassert>
 #include <iostream>
-#include <tuple>
 #include <vector>
 #include <tuple>
+#include <string>
 
 #include "joynr/Logger.h"
 
@@ -326,16 +326,16 @@ Variant Variant::make(TArgs&&... args)
 
 // Copyable
 template <typename T>
-typename std::enable_if<std::is_copy_constructible<T>::value, VariantHolder<T>>::type*
-copyVariantHolder(const T& value)
+std::enable_if_t<std::is_copy_constructible<T>::value, VariantHolder<T>>* copyVariantHolder(
+        const T& value)
 {
     return new VariantHolder<T>(T(value));
 }
 
 // Not copyable
 template <typename T>
-typename std::enable_if<!std::is_copy_constructible<T>::value, VariantHolder<T>>::type*
-copyVariantHolder(const T& value)
+std::enable_if_t<!std::is_copy_constructible<T>::value, VariantHolder<T>>* copyVariantHolder(
+        const T& value)
 {
     assert(false);
     std::ignore = value;

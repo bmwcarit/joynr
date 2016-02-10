@@ -18,9 +18,7 @@
  */
 #include "joynr/MessagingStubFactory.h"
 
-#include "joynr/IMessaging.h"
-
-#include <cassert>
+#include "joynr/IMiddlewareMessagingStubFactory.h"
 
 namespace joynr
 {

@@ -56,7 +56,7 @@ public:
 
 
     void SetUp(){
-        postFix = "_" + Util::createUuid();
+        postFix = "_" + util::createUuid();
         senderID = "senderId" + postFix;
         receiverID = "receiverID" + postFix;
         requestID = "requestId" + postFix;
@@ -135,7 +135,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     Reply reply;
-    reply.setRequestReplyId(Util::createUuid());
+    reply.setRequestReplyId(util::createUuid());
     std::vector<Variant> response;
     response.push_back(Variant::make<std::string>("response"));
     reply.setResponse(std::move(response));
@@ -232,7 +232,7 @@ TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
 
-//    joynrMessageSender.sendSubscriptionReply(Util::createUuid(), payload, senderID, receiverID, qosSettings);
+//    joynrMessageSender.sendSubscriptionReply(util::createUuid(), payload, senderID, receiverID, qosSettings);
 }
 
 TEST_F(JoynrMessageSenderTest, sendPublication_normal){

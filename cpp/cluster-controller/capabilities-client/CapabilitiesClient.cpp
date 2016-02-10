@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,13 +59,12 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
         for (std::uint32_t i = 0; i < capabilitiesInformationList.size(); i++) {
             capabilitiesInformationList[i].setChannelId(localChannelId);
         }
-        RequestStatus rs;
         // TM switching from sync to async
-        // capabilitiesProxy->add(rs, capabilitiesInformationList);
+        // capabilitiesProxy->add(capabilitiesInformationList);
 
         std::function<void(const exceptions::JoynrException&)> onError =
                 [&](const exceptions::JoynrException& error) {
-            (void)error;
+            std::ignore = error;
             JOYNR_LOG_ERROR(logger, "Error occured during the execution of capabilitiesProxy->add");
         };
         capabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);

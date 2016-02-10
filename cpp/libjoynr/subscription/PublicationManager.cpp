@@ -745,7 +745,7 @@ void PublicationManager::removeOnChangePublication(
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     JOYNR_LOG_DEBUG(logger, "Removing onChange publication for id = {}", subscriptionId);
     // to silence unused-variable compiler warnings
-    (void)subscriptionId;
+    std::ignore = subscriptionId;
 
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         // Unregister and delete the attribute listener
@@ -843,7 +843,7 @@ void PublicationManager::sendSubscriptionPublication(
 
     {
         std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
-        removeAll(currentScheduledPublications, request->getSubscriptionId());
+        util::removeAll(currentScheduledPublications, request->getSubscriptionId());
     }
     JOYNR_LOG_TRACE(logger, "sent publication @ {}", now);
 }
@@ -906,7 +906,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
         // Get the value of the attribute
         std::string attributeGetter(
-                Util::attributeGetterFromName(subscriptionRequest->getSubscribeToName()));
+                util::attributeGetterFromName(subscriptionRequest->getSubscribeToName()));
         std::shared_ptr<RequestCaller> requestCaller(publication->requestCaller);
         std::shared_ptr<IRequestInterpreter> requestInterpreter(
                 InterfaceRegistrar::instance().getRequestInterpreter(
@@ -1066,7 +1066,7 @@ void PublicationManager::broadcastOccurred(
 bool PublicationManager::isPublicationAlreadyScheduled(const std::string& subscriptionId)
 {
     std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
-    return vectorContains(currentScheduledPublications, subscriptionId);
+    return util::vectorContains(currentScheduledPublications, subscriptionId);
 }
 
 std::int64_t PublicationManager::getTimeUntilNextPublication(
@@ -1095,7 +1095,7 @@ void PublicationManager::reschedulePublication(const std::string& subscriptionId
         std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
 
         // Schedule a publication so that the change is not forgotten
-        if (!vectorContains(currentScheduledPublications, subscriptionId)) {
+        if (!util::vectorContains(currentScheduledPublications, subscriptionId)) {
             JOYNR_LOG_DEBUG(logger, "rescheduling runnable with delay: {}", nextPublication);
             currentScheduledPublications.push_back(subscriptionId);
             delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),

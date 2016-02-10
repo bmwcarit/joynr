@@ -54,6 +54,7 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 «ENDFOR»
 
 #include <memory>
+#include <functional>
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
 #include "joynr/AbstractJoynrMessagingConnector.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
@@ -67,6 +68,7 @@ namespace joynr {
 	class IJoynrMessageSender;
 	class ISubscriptionManager;
 	template <class ... Ts> class Future;
+	template <typename... Ts> class ISubscriptionListener;
 
 namespace exceptions
 {

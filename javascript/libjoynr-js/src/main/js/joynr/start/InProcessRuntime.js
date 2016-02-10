@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,11 +59,15 @@ define(
             "joynr/types/ChannelUrlInformation",
             "joynr/types/TypeRegistrySingleton",
             "joynr/util/UtilInternal",
+            "joynr/util/CapabilitiesUtil",
             "joynr/system/DistributedLoggingAppenderConstructorFactory",
             "joynr/system/WebWorkerMessagingAppender",
             "joynr/system/LoggingManager",
             "uuid",
             "joynr/system/LoggerFactory",
+            "joynr/start/settings/defaultSettings",
+            "joynr/start/settings/defaultLibjoynrSettings",
+            "joynr/start/settings/defaultClusterControllerSettings",
             "global/LocalStorage"
         ],
         function(
@@ -104,11 +108,15 @@ define(
                 ChannelUrlInformation,
                 TypeRegistrySingleton,
                 Util,
+                CapabilitiesUtil,
                 DistributedLoggingAppenderConstructorFactory,
                 WebWorkerMessagingAppender,
                 LoggingManager,
                 uuid,
                 LoggerFactory,
+                defaultSettings,
+                defaultLibjoynrSettings,
+                defaultClusterControllerSettings,
                 LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
@@ -265,7 +273,7 @@ define(
                  */
                 this.start =
                         function start() {
-                            var i;
+                            var i,j;
 
                             if (joynrState !== JoynrStates.SHUTDOWN) {
                                 throw new Error("Cannot start libjoynr because it's currently \""
@@ -307,17 +315,21 @@ define(
                             persistency.setItem("joynr.channels.channelId.1", channelId);
 
                             untypedCapabilities = provisioning.capabilities || [];
+                            var defaultClusterControllerCapabilities = defaultClusterControllerSettings.capabilities || [];
+
+                            untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
+
                             typedCapabilities = [];
-                            if (untypedCapabilities) {
-                                for (i = 0; i < untypedCapabilities.length; i++) {
-                                    var capability =
-                                            new CapabilityInformation(untypedCapabilities[i]);
+                            for (i = 0; i < untypedCapabilities.length; i++) {
+                                var capability =
+                                        new CapabilityInformation(untypedCapabilities[i]);
+                                if (capability.channelId) {
                                     initialRoutingTable[capability.participantId] =
-                                            new ChannelAddress({
-                                                channelId : capability.channelId
-                                            });
-                                    typedCapabilities.push(capability);
+                                        new ChannelAddress({
+                                            channelId : capability.channelId
+                                        });
                                 }
+                                typedCapabilities.push(capability);
                             }
 
                             var channelUrlDirectoryStub = new InProcessStub();
@@ -347,9 +359,14 @@ define(
                                 return typedChannelUrls;
                             }
 
+                            var mergedChannelUrls = provisioning.channelUrls || {};
+                            mergedChannelUrls[defaultClusterControllerSettings.discoveryChannel] =
+                                mergedChannelUrls[defaultClusterControllerSettings.discoveryChannel] ||
+                                defaultClusterControllerSettings.getDefaultDiscoveryChannelUrls(
+                                        provisioning.bounceProxyBaseUrl);
                             localChannelUrlDirectory = new LocalChannelUrlDirectory({
                                 channelUrlDirectoryProxy : channelUrlDirectoryStub,
-                                provisionedChannelUrls : typeChannelUrls(provisioning.channelUrls)
+                                provisionedChannelUrls : typeChannelUrls(mergedChannelUrls)
                             });
 
                             communicationModule = new CommunicationModule();
@@ -432,8 +449,8 @@ define(
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
 
-                            localCapabilitiesStore = new CapabilitiesStore(typedCapabilities);
-                            globalCapabilitiesCache = new CapabilitiesStore();
+                            localCapabilitiesStore = new CapabilitiesStore(CapabilitiesUtil.toDiscoveryEntries(defaultLibjoynrSettings.capabilities || []));
+                            globalCapabilitiesCache = new CapabilitiesStore(typedCapabilities);
 
                             participantIdStorage = new ParticipantIdStorage(persistency, uuid);
 
@@ -474,7 +491,8 @@ define(
                                 messagingQos : internalMessagingQos,
                                 discoveryQos : new DiscoveryQos(
                                         {
-                                            discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                            discoveryScope : DiscoveryScope.GLOBAL_ONLY,
+                                            cacheMaxAge : Util.getMaxLongValue()
                                         })
                             };
 

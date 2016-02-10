@@ -47,12 +47,16 @@ class EnumSerializerHTemplate implements EnumTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
+#include <iosfwd> 
+
 #include "joynr/PrimitiveDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include «getIncludeOf(type)»
 
 namespace joynr
 {
+
+class IObject;
 
 using «joynrName» = «type.typeName»;
 

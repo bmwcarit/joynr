@@ -22,7 +22,7 @@
 
 #include <cstdint>
 #include <string>
-
+#include <iosfwd>
 #include "joynr/JoynrCommonExport.h"
 
 namespace joynr

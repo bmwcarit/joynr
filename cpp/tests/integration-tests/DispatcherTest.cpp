@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,13 +46,13 @@ class DispatcherTest : public ::testing::Test {
 public:
     DispatcherTest() :
         mockMessageRouter(new MockMessageRouter()),
-        mockCallback(new MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation>()),
+        mockCallback(new MockCallbackWithJoynrException<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
-                [this] (const RequestStatus& status, const joynr::types::Localisation::GpsLocation& location) {
+                [this] (const joynr::types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const RequestStatus& status, const exceptions::JoynrException& exception) {
+                [] (const exceptions::JoynrException&) {
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -77,14 +77,14 @@ public:
     void invokeOnSuccessWithGpsLocation(
             std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
-        (void) onError;
+        std::ignore = onError;
         onSuccess(gpsLocation1);
     }
 
 protected:
     ADD_LOGGER(DispatcherTest);
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation> > mockCallback;
+    std::shared_ptr<MockCallbackWithJoynrException<types::Localisation::GpsLocation> > mockCallback;
 
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
     std::shared_ptr<MockReplyCaller<types::Localisation::GpsLocation> > mockReplyCaller;

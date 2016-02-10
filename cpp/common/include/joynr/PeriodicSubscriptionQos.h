@@ -20,6 +20,7 @@
 #define PERIODICSUBSCRIPTIONQOS_H
 
 #include "joynr/SubscriptionQos.h"
+#include <cstdint>
 
 namespace joynr
 {

@@ -72,6 +72,10 @@ define("joynr/exceptions/IllegalAccessException", [
             "joynr.exceptions.IllegalAccessException",
             IllegalAccessException);
 
+    IllegalAccessException.prototype = new Error();
+    IllegalAccessException.prototype.constructor = IllegalAccessException;
+    IllegalAccessException.prototype.name = "IllegalAccessException";
+
     return IllegalAccessException;
 
 });

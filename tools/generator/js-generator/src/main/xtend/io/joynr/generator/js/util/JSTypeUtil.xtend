@@ -312,8 +312,9 @@ class JSTypeUtil extends AbstractTypeUtil {
 					+ datatype.joynrName
 	}
 
-	def getTypeSelectorIncludingErrorTypes() {
+	def getTypeSelectorIncludingErrorTypesAndTransitiveTypes() {
 		val selector = TypeSelector::defaultTypeSelector
+		selector.transitiveTypes(true)
 		selector.errorTypes(true)
 		return selector
 	}

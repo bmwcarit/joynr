@@ -29,8 +29,7 @@ INIT_LOGGER(DbusSettings);
 
 DbusSettings::DbusSettings(Settings& settings) : settings(settings)
 {
-    Settings defaultDbusSettings{DEFAULT_DBUS_SETTINGS_FILENAME()};
-    Settings::merge(defaultDbusSettings, this->settings, false);
+    settings.fillEmptySettingsWithDefaults(DEFAULT_DBUS_SETTINGS_FILENAME());
     checkSettings();
 }
 
@@ -69,7 +68,7 @@ const std::string& DbusSettings::SETTING_CC_MESSAGING_PARTICIPANTID()
 
 const std::string& DbusSettings::DEFAULT_DBUS_SETTINGS_FILENAME()
 {
-    static const std::string value("resources/default-dbus.settings");
+    static const std::string value("default-dbus.settings");
     return value;
 }
 

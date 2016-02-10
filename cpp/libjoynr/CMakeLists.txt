@@ -2,14 +2,13 @@ message(STATUS "#############################################")
 message(STATUS "Configuring JoynrLib...")
 message(STATUS "#############################################\n")
 
-get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrLib_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
-
 
 set(
     JoynrLib_INCLUDE_DIRECTORIES
@@ -21,7 +20,7 @@ set(
 set(
     JoynrLib_SYS_INCLUDE_DIRS
     ${jsmn_INCLUDE_DIR}
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${libwebsockets_INCLUDE_DIRS}
 )
 
@@ -29,7 +28,7 @@ set(
     JoynrLib_TARGET_LIBRARIES
     ${libwebsockets_LIBRARIES}
     JoynrCommon
-    jsonserializer
+    JoynrJsonSerializer
 )
 
 set(
@@ -117,15 +116,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-include_directories(
-    ${JoynrLib_INCLUDE_DIRECTORIES}
-)
-
-include_directories(
-    SYSTEM
-    ${JoynrLib_SYS_INCLUDE_DIRS}
-)
-
 add_library(
     Joynr
     SHARED
@@ -133,7 +123,21 @@ add_library(
     ${JoynrLib_SOURCES}
 )
 
-add_dependencies(Joynr libwebsockets)
+target_include_directories(
+    Joynr
+    PRIVATE ${JoynrLib_INCLUDE_DIRECTORIES}
+)
+
+target_include_directories(
+    Joynr
+    SYSTEM
+    PRIVATE ${JoynrLib_SYS_INCLUDE_DIRS}
+)
+
+
+if(NOT USE_PLATFORM_LIBWEBSOCKETS)
+    add_dependencies(Joynr libwebsockets)
+endif(NOT USE_PLATFORM_LIBWEBSOCKETS)
 
 AddClangFormat(Joynr)
 
@@ -147,6 +151,7 @@ set_target_properties(
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}"
+    COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}/${INSTALL_RES_DIR}"
 )
 
 generate_export_header(
@@ -162,15 +167,15 @@ target_link_libraries(Joynr
 install(
     TARGETS Joynr
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of headder files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
 )
 
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )

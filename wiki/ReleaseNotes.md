@@ -1,3 +1,23 @@
+#joynr 0.15.0
+
+##Notes
+* **[C++]** libjoynr uses libwebsockets of the libwebsockets project (http://libwebsockets.org)
+  to communicate with the cluster-controller. Due to an incompatibility with Mac OS X,
+  the C++-Websocket-Runtime currently does not work on Mac OS X.
+
+##API relevant changes
+* **[C++]** Removed the RequestStatus object returned by joynr::Future::getStatus().
+  Instead, an enum named "StatusCode::Enum" is returned.
+* **[C++]** joynr code now requires C++14
+
+##Other changes
+* **[JS]** Updated the versions of joynr dependencies log4js (0.6.29), requirejs (2.1.22),
+  bluebird (3.1.1) and promise (7.1.1). No API impact.
+* **[JS]** The several joynr runtimes (e.g. WebSocketLibjoynrRuntime or InProcessRuntime)
+  now bring their own default values for joynr internal settings. Thus, joynr
+  applications no longer need to provide this information via the provisioning
+  object when loading the library.
+
 #joynr 0.14.1
 
 This is a minor bug fix release.

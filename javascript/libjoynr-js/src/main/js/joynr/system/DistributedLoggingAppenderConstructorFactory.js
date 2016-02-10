@@ -1,3 +1,4 @@
+/*jslint es5: true */
 /*
  * #%L
  * %%
@@ -24,14 +25,16 @@ define(
             "joynr/system/LoggingProxy",
             "joynr/proxy/DiscoveryQos",
             "joynr/types/DiscoveryScope",
-            "joynr/system/LoggerFactory"
+            "joynr/system/LoggerFactory",
+            "joynr/util/UtilInternal"
         ],
         function(
                 DistributedLoggingAppender,
                 LoggingProxy,
                 DiscoveryQos,
                 DiscoveryScope,
-                LoggerFactory) {
+                LoggerFactory,
+                Util) {
 
             /**
              * A Factory to create a DistributedLoggingAppender constructor that contains a closure
@@ -65,13 +68,16 @@ define(
                                 domain : "io.joynr",
                                 messagingQos : messagingQos,
                                 discoveryQos : new DiscoveryQos({
-                                    discoveryScope : DiscoveryScope.GLOBAL_ONLY
+                                    discoveryScope : DiscoveryScope.GLOBAL_ONLY,
+                                    cacheMaxAge : Util.getMaxLongValue()
                                 })
                             }).then(function(newLoggingProxy) {
                                 newAppender.setProxy(newLoggingProxy);
-                            }, function(error) {
+                                return newLoggingProxy;
+                            }).catch(function(error) {
                                 errorString = "Failed to create proxy for logging: " + error;
                                 log.debug(errorString);
+                                return error;
                             });
 
                             return newAppender;

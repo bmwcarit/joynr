@@ -19,13 +19,10 @@
 #ifndef REPLY_H
 #define REPLY_H
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/exceptions/JoynrException.h"
-
 #include <string>
 #include <vector>
-#include <memory>
 
+#include "joynr/JoynrCommonExport.h"
 #include "joynr/Variant.h"
 
 namespace joynr
@@ -34,19 +31,21 @@ namespace joynr
 class JOYNRCOMMON_EXPORT Reply
 {
 public:
-    Reply& operator=(const Reply& other);
-    bool operator==(const Reply& other) const;
-    bool operator!=(const Reply& other) const;
+    Reply();
+    Reply(const Reply&) = default;
+    Reply(Reply&&) = default;
+    ~Reply() = default;
+
+    Reply& operator=(const Reply&) = default;
+    Reply& operator=(Reply&&) = default;
+    bool operator==(const Reply&) const;
+    bool operator!=(const Reply&) const;
 
     const static Reply NULL_RESPONSE;
-
-    Reply(const Reply& other);
-    Reply();
-
-    std::string getRequestReplyId() const;
+    const std::string& getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
 
-    std::vector<Variant> getResponse() const;
+    const std::vector<Variant>& getResponse() const;
     void setResponse(std::vector<Variant> response);
 
     const Variant& getError() const;

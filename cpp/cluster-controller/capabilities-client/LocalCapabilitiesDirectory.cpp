@@ -382,21 +382,27 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
 
-        std::string participantId = currentEntry.getParticipantId();
         std::string channelId = entryIterator.key();
 
+        // TODO: check joynrAddress for nullptr instead of string.find after the deserialization
+        // works as expected.
+        // Currently, JsonDeserializer.deserialize<T> always returns an instance of T
         std::size_t foundTypeNameKey = channelId.find("\"_typeName\"");
         std::size_t foundTypeNameValue =
                 channelId.find("\"joynr.system.RoutingTypes.MqttAddress\"");
         if (boost::starts_with(channelId, "{") && foundTypeNameKey != std::string::npos &&
             foundTypeNameValue != std::string::npos && foundTypeNameKey < foundTypeNameValue) {
-            std::shared_ptr<system::RoutingTypes::MqttAddress> joynrAddress(
-                    JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(channelId));
-            // if (joynrAddress) {
-            // TODO: check joynrAddress for nullptr instead of string.find after the deserialization
-            // works as expected.
-            // Currently, JsonDeserializer.deserialize<T> always returns an instance of T
-            messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
+            try {
+                using system::RoutingTypes::MqttAddress;
+                MqttAddress joynrAddress = JsonSerializer::deserialize<MqttAddress>(channelId);
+                auto addressPtr = std::make_shared<MqttAddress>(joynrAddress);
+                messageRouter.addNextHop(currentEntry.getParticipantId(), addressPtr);
+            } catch (const std::invalid_argument& e) {
+                JOYNR_LOG_FATAL(logger,
+                                "could not deserialize MqttAddress from {} - error: {}",
+                                channelId,
+                                e.what());
+            }
         } else {
             auto joynrAddress =
                     std::make_shared<system::RoutingTypes::ChannelAddress>(entryIterator.key());
@@ -412,7 +418,7 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     add(discoveryEntry);
     onSuccess();
 }
@@ -425,7 +431,7 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(domain, interfaceName, future, discoveryQos);
     std::vector<CapabilityEntry> capabilities = future->get();
@@ -440,7 +446,7 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(participantId, future);
     std::vector<CapabilityEntry> capabilities = future->get();
@@ -465,7 +471,7 @@ void LocalCapabilitiesDirectory::remove(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     remove(participantId);
     onSuccess();
 }
@@ -479,7 +485,7 @@ void LocalCapabilitiesDirectory::addProviderRegistrationObserver(
 void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
         std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
 {
-    removeAll(observers, observer);
+    util::removeAll(observers, observer);
 }
 
 /**

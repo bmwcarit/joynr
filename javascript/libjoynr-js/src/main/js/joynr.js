@@ -101,8 +101,10 @@ var joynr = {
                     populateJoynrApi(joynr, runtime);
                     freeze(joynr, capabilitiesWritable);
                     resolve(joynr);
+                    return;
                 }).catch(function(error) {
                     reject(error);
+                    return error;
                 });
             });
         });

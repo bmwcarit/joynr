@@ -63,8 +63,7 @@ void WebSocketClient::connect(const WebSocketAddress& address)
         JOYNR_LOG_DEBUG(logger, "Configured for use SSL");
     }
 
-    context = std::unique_ptr<WebSocketContext>(
-            new WebSocketContext(this, "", "", -1, sslCertPath, sslKeyPath));
+    context = std::make_unique<WebSocketContext>(this, "", "", -1, sslCertPath, sslKeyPath);
     state = WebSocketState_Initializing;
     context->start();
     state = WebSocketState_Initialized;

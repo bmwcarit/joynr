@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNRMESSAGEFACTORY_H_
-#define JOYNRMESSAGEFACTORY_H_
+#ifndef JOYNRMESSAGEFACTORY_H
+#define JOYNRMESSAGEFACTORY_H
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrExport.h"
@@ -113,4 +113,4 @@ private:
 };
 
 } // namespace joynr
-#endif // JOYNRMESSAGEFACTORY_H_
+#endif // JOYNRMESSAGEFACTORY_H

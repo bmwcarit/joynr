@@ -21,10 +21,11 @@
 
 #include <ostream>
 #include <vector>
-#include "joynr/Variant.h"
 
 namespace joynr
 {
+
+class Variant;
 
 /**
  * @brief Helper class that serializes arrays

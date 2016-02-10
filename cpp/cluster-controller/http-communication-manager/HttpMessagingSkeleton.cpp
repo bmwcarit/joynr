@@ -49,26 +49,27 @@ void HttpMessagingSkeleton::transmit(JoynrMessage& message)
 
 void HttpMessagingSkeleton::onTextMessageReceived(const std::string& message)
 {
-    JoynrMessage* joynrMsg = JsonSerializer::deserialize<JoynrMessage>(message);
-    if (joynrMsg == nullptr) {
-        JOYNR_LOG_ERROR(logger, "Unable to deserialize message. Raw message: {}", message);
-        return;
-    }
-    if (joynrMsg->getType().empty()) {
-        JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
-        return;
-    }
-    if (!joynrMsg->containsHeaderExpiryDate()) {
-        JOYNR_LOG_ERROR(logger,
-                        "received message [msgId=[{}] without decay time - dropping message",
-                        joynrMsg->getHeaderMessageId());
-    }
+    try {
+        JoynrMessage msg = JsonSerializer::deserialize<JoynrMessage>(message);
 
-    JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
-    // message router copies joynr message when scheduling thread that handles
-    // message delivery
-    transmit(*joynrMsg);
-    delete joynrMsg;
+        if (msg.getType().empty()) {
+            JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
+            return;
+        }
+        if (!msg.containsHeaderExpiryDate()) {
+            JOYNR_LOG_ERROR(logger,
+                            "received message [msgId=[{}] without decay time - dropping message",
+                            msg.getHeaderMessageId());
+            return;
+        }
+        JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
+        transmit(msg);
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize message. Raw message: {} - error:",
+                        message,
+                        e.what());
+    }
 }
 
 } // namespace joynr

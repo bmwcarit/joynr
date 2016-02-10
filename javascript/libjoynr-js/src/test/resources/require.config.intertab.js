@@ -27,6 +27,7 @@
             paths : {
                 "joynr" : "js/joynr.intertab",
                 "joynr/system": "./joynr/system",
+                "joynr/start/settings": "./joynr/start/settings",
                 "joynr/types": "./joynr/types",
                 "intertab_cc": "js/joynr.intertab.clustercontroller",
                 "integration": "../test-classes/integration",

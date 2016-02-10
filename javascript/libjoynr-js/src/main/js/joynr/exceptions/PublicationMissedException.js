@@ -76,8 +76,14 @@ define(
             }
 
             defaultSettings = {};
+
             TypeRegistrySingleton.getInstance().addType(
                     "joynr.exceptions.PublicationMissedException",
                     PublicationMissedException);
+
+            PublicationMissedException.prototype = new Error();
+            PublicationMissedException.prototype.constructor = PublicationMissedException;
+            PublicationMissedException.prototype.name = "PublicationMissedException";
+
             return PublicationMissedException;
         });

@@ -30,12 +30,11 @@ INIT_LOGGER(MessagingSettings);
 
 MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
 {
-    Settings defaultMessagingSettings{DEFAULT_MESSAGING_SETTINGS_FILENAME()};
     if (!settings.contains(SETTING_BOUNCE_PROXY_URL()) && settings.contains(SETTING_BROKER_URL())) {
         std::string brokerUrl = settings.get<std::string>(SETTING_BROKER_URL());
         settings.set(SETTING_BOUNCE_PROXY_URL(), brokerUrl);
     }
-    Settings::merge(defaultMessagingSettings, this->settings, false);
+    settings.fillEmptySettingsWithDefaults(DEFAULT_MESSAGING_SETTINGS_FILENAME());
     checkSettings();
 }
 
@@ -202,7 +201,7 @@ void MessagingSettings::setClientCertificatePassword(const std::string& clientCe
 
 const std::string& MessagingSettings::DEFAULT_MESSAGING_SETTINGS_FILENAME()
 {
-    static const std::string value("resources/default-messaging.settings");
+    static const std::string value("default-messaging.settings");
     return value;
 }
 

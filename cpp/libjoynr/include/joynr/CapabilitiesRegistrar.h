@@ -124,7 +124,7 @@ public:
         } catch (exceptions::JoynrException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Unable to remove provider (participant ID: {}, domain: {}, interface: "
-                            "{} to discovery. Status code: {}",
+                            "{} to discovery. Error: {}",
                             participantId,
                             domain,
                             interfaceName,
@@ -136,7 +136,7 @@ public:
         messageRouter->removeNextHop(participantId, callbackFct);
         future->wait();
 
-        if (!future->getStatus().successful()) {
+        if (!future->isOk()) {
             JOYNR_LOG_ERROR(logger,
                             "Unable to remove next hop (participant ID: {}) from message router.",
                             participantId);

@@ -28,7 +28,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
-import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.test.TestRuntime;
 import joynr.system.RoutingTypes.Address;
@@ -41,8 +41,8 @@ public class TestRuntimeModule extends AbstractModule {
 
     @Provides
     @Singleton
-    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories() {
-        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
+    Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> provideMessagingStubFactories() {
+        Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> factories = Maps.newHashMap();
         return factories;
     }
 

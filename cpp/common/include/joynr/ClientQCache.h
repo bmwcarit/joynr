@@ -16,22 +16,22 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ClientQCache_H
-#define ClientQCache_H
-
-#include "joynr/JoynrCommonExport.h"
-
-#include "joynr/IClientCache.h"
-#include "joynr/CachedValue.h"
-
-#include "joynr/Cache.h"
+#ifndef CLIENTQCACHE_H
+#define CLIENTQCACHE_H
 
 #include <string>
 #include <mutex>
+
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/IClientCache.h"
+#include "joynr/Cache.h"
 #include "joynr/Variant.h"
 
 namespace joynr
 {
+
+template <class T>
+class CachedValue;
 
 /**
  * Implements IClientCache. Stores objects with a key and a timestamp.
@@ -64,4 +64,4 @@ private:
 
 } // namespace joynr
 
-#endif // ClientQCache_H
+#endif // CLIENTQCACHE_H

@@ -18,15 +18,24 @@
  */
 #include "joynr/Util.h"
 
-#include <cstring>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <regex>
+#include <cctype>
+#include <iterator>
+
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+#include "joynr/Logger.h"
+#include "joynr/exceptions/JoynrException.h"
+
 namespace joynr
 {
 
-std::vector<std::string> Util::splitIntoJsonObjects(const std::string& jsonStream)
+namespace util
+{
+
+std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream)
 {
     // This code relies assumes jsonStream is a valid JSON string
     std::vector<std::string> jsonObjects;
@@ -61,7 +70,7 @@ std::vector<std::string> Util::splitIntoJsonObjects(const std::string& jsonStrea
     return jsonObjects;
 }
 
-std::string Util::attributeGetterFromName(const std::string& attributeName)
+std::string attributeGetterFromName(const std::string& attributeName)
 {
     std::string result = attributeName;
     result[0] = std::toupper(result[0]);
@@ -69,13 +78,13 @@ std::string Util::attributeGetterFromName(const std::string& attributeName)
     return result;
 }
 
-std::string Util::createUuid()
+std::string createUuid()
 {
     boost::uuids::uuid uuid = boost::uuids::random_generator()();
     return boost::uuids::to_string(uuid);
 }
 
-void Util::throwJoynrException(const exceptions::JoynrException& error)
+void throwJoynrException(const exceptions::JoynrException& error)
 {
     std::string typeName = error.getTypeName();
     if (typeName == exceptions::JoynrRuntimeException::TYPE_NAME) {
@@ -118,4 +127,22 @@ std::string removeEscapeFromSpecialChars(const std::string& inputStr)
 
     return unEscapedString;
 }
+
+void logSerializedMessage(Logger& logger,
+                          const std::string& explanation,
+                          const std::string& message)
+{
+    if (message.size() > 2048) {
+        JOYNR_LOG_DEBUG(logger,
+                        "{} {}<**truncated, length {}",
+                        explanation,
+                        message.substr(0, 2048),
+                        message.length());
+    } else {
+        JOYNR_LOG_DEBUG(logger, "{} {}, length {}", explanation, message, message.length());
+    }
+}
+
+} // namespace util
+
 } // namespace joynr

@@ -51,9 +51,11 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 
 #include <string>
 #include <vector>
+#include <cstddef>
 
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/Variant.h"
 
 // include complex Datatype headers.
 «FOR member: type.typeDependencies»
@@ -90,7 +92,10 @@ public:
 	«ENDIF»
 
 	/** @brief Copy constructor */
-	«typeName»(const «typeName»& «typeName.toFirstLower»Obj)«IF getMembers(type).size == 0» = default«ENDIF»;
+	«typeName»(const «typeName»&) = default;
+
+    /** @brief Move constructor */
+	«typeName»(«typeName»&&) = default;
 
 	/** @brief Destructor */
 	«IF !hasExtendsDeclaration(type)»
@@ -123,7 +128,13 @@ public:
 	 * @brief assigns an object
 	 * @return reference to the object assigned to
 	 */
-	«typeName»& operator=(const «typeName»& «typeName.toFirstLower»Obj) = default;
+	«typeName»& operator=(const «typeName»&) = default;
+
+	/**
+	 * @brief move assigns an object
+	 * @return reference to the object assigned to
+	 */
+	«typeName»& operator=(«typeName»&&) = default;
 
 	/**
 	 * @brief equality operator
@@ -184,13 +195,15 @@ std::size_t hash_value(«typeName» const& «typeName.toFirstLower»Value);
 
 namespace joynr
 {
+namespace util {
 template <>
-inline std::vector<«type.typeName»> Util::valueOf<
+inline std::vector<«type.typeName»> valueOf<
 		std::vector<«type.typeName»>>(const Variant& variant)
 {
-	return joynr::Util::convertVariantVectorToVector<«type.typeName»>(
+	return convertVariantVectorToVector<«type.typeName»>(
 			variant.get<std::vector<Variant>>());
 }
+} // namespace util
 } // namespace joynr
 
 namespace std {

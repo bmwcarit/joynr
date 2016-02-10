@@ -19,6 +19,8 @@
 #include "cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/Logger.h"
 #include "joynr/Util.h"
+#include "joynr/Settings.h"
+
 #include <string>
 
 using namespace joynr;

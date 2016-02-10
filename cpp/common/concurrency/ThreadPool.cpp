@@ -17,9 +17,11 @@
  * #L%
  */
 #include "joynr/ThreadPool.h"
-#include "joynr/Runnable.h"
 
 #include <cassert>
+#include <functional>
+
+#include "joynr/Runnable.h"
 
 namespace joynr
 {

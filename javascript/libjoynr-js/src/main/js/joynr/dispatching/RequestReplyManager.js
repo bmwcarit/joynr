@@ -32,7 +32,8 @@ define(
             "joynr/util/LongTimer",
             "joynr/exceptions/MethodInvocationException",
             "joynr/exceptions/ProviderRuntimeException",
-            "joynr/system/LoggerFactory"
+            "joynr/system/LoggerFactory",
+            "joynr/types/TypeRegistrySingleton"
         ],
         function(
                 Promise,
@@ -45,8 +46,9 @@ define(
                 LongTimer,
                 MethodInvocationException,
                 ProviderRuntimeException,
-                LoggerFactory) {
-
+                LoggerFactory,
+                TypeRegistrySingleton) {
+                var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
              * The RequestReplyManager is responsible maintaining a list of providers that wish to
              * receive incoming requests, and also a list of requestReplyIds which is used to match
@@ -277,11 +279,13 @@ define(
                                         response : response,
                                         requestReplyId : request.requestReplyId
                                     }));
+                                    return response;
                                 }).catch(function(internalException) {
                                     callbackDispatcher(new Reply({
                                         error : internalException,
                                         requestReplyId : request.requestReplyId
                                     }));
+                                    return internalException;
                                 });
                             } else {
                                 if (exception) {
@@ -324,7 +328,30 @@ define(
 
                             try {
                                 if (reply.error) {
-                                    replyCaller.reject(reply.error);
+                                    if (reply.error instanceof Error) {
+                                        replyCaller.reject(reply.error);
+                                    } else {
+                                        /*
+                                         * TODO this object sanitizer needs to be removed, by fixing the issue related with
+                                         * PhantomJs
+                                         */
+                                        var cleanObjectFromPhantomJsAddons = function(object) {
+                                            object.sourceId = undefined;
+                                            object.sourceURL= undefined;
+                                            object.stack = undefined;
+                                            object.stackArray = undefined;
+                                            object.line = undefined;
+                                            object.isOperational = undefined;
+                                        };
+                                        cleanObjectFromPhantomJsAddons(reply.error);
+                                        if (reply.error.error) {
+                                            cleanObjectFromPhantomJsAddons(reply.error.error);
+                                        }
+                                        replyCaller.reject(Typing.augmentTypes(
+                                                reply.error,
+                                                typeRegistry));
+                                    }
+
                                 } else {
                                     replyCaller.resolve(reply.response);
                                 }

@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,12 +57,16 @@ define(
             "joynr/types/DiscoveryScope",
             "joynr/types/DiscoveryEntry",
             "joynr/util/UtilInternal",
+            "joynr/util/CapabilitiesUtil",
             "joynr/system/DistributedLoggingAppenderConstructorFactory",
             "joynr/system/DistributedLoggingAppender",
             "joynr/system/WebWorkerMessagingAppender",
             "uuid",
             "joynr/system/LoggingManager",
             "joynr/system/LoggerFactory",
+            "joynr/start/settings/defaultSettings",
+            "joynr/start/settings/defaultInterTabSettings",
+            "joynr/start/settings/defaultLibjoynrSettings",
             "global/LocalStorage"
         ],
         function(
@@ -101,12 +105,16 @@ define(
                 DiscoveryScope,
                 DiscoveryEntry,
                 Util,
+                CapabilitiesUtil,
                 DistributedLoggingAppenderConstructorFactory,
                 DistributedLoggingAppender,
                 WebWorkerMessagingAppender,
                 uuid,
                 LoggingManager,
                 LoggerFactory,
+                defaultSettings,
+                defaultInterTabSettings,
+                defaultLibjoynrSettings,
                 LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
@@ -259,7 +267,7 @@ define(
                  */
                 this.start =
                         function start() {
-                            var i;
+                            var i,j;
                             ccAddress = new BrowserAddress({
                                 windowId : CC_WINDOWID
                             });
@@ -295,8 +303,8 @@ define(
                             persistency = new LocalStorage();
 
                             if (Util.checkNullUndefined(provisioning.parentWindow)) {
-                                throw new Error(
-                                        "parent window not set in provisioning.parentWindow, use \"window.opener || window.top\" for example");
+                                log.debug("provisioning.parentWindow not set. Use default setting \""
+                                          + defaultInterTabSettings.parentWindow + "\" instead");
                             }
 
                             if (Util.checkNullUndefined(provisioning.windowId)) {
@@ -308,14 +316,16 @@ define(
                             });
                             initialRoutingTable = {};
                             untypedCapabilities = provisioning.capabilities || [];
+                            var defaultCapabilities = defaultLibjoynrSettings.capabilities || [];
+
+                            untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
+
                             typedCapabilities = [];
-                            if (untypedCapabilities) {
-                                for (i = 0; i < untypedCapabilities.length; i++) {
-                                    var capability =
-                                            new CapabilityInformation(untypedCapabilities[i]);
-                                    initialRoutingTable[capability.participantId] = ccAddress;
-                                    typedCapabilities.push(capability);
-                                }
+                            for (i = 0; i < untypedCapabilities.length; i++) {
+                                var capability =
+                                        new CapabilityInformation(untypedCapabilities[i]);
+                                initialRoutingTable[capability.participantId] = ccAddress;
+                                typedCapabilities.push(capability);
                             }
 
                             messageQueueSettings = {};
@@ -326,17 +336,14 @@ define(
                             }
 
                             webMessagingStub = new WebMessagingStub({
-                                window : provisioning.parentWindow, // parent window variable for
-                                // communication, this should be
-                                // window.opener || window.top
-                                origin : provisioning.parentOrigin
-                            // target origin of the parent window, this will be location.origin in
-                            // most cases
+                                // parent window variable for communication
+                                window : provisioning.parentWindow || defaultInterTabSettings.parentWindow,
+                                // target origin of the parent window
+                                origin : provisioning.parentOrigin || defaultInterTabSettings.parentOrigin
                             });
 
                             webMessagingSkeleton = new WebMessagingSkeleton({
-                                window : provisioning.window
-                            // window variable for communication, this should be window
+                                window : provisioning.window || defaultInterTabSettings.window
                             });
 
                             browserMessagingSkeleton = new BrowserMessagingSkeleton({
@@ -403,7 +410,7 @@ define(
                                         loggingManager : loggingManager
                                     }));
 
-                            arbitrator = new Arbitrator(discovery, typedCapabilities);
+                            arbitrator = new Arbitrator(discovery, CapabilitiesUtil.toDiscoveryEntries(typedCapabilities));
 
                             providerBuilder = Object.freeze(new ProviderBuilder());
 

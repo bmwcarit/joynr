@@ -31,6 +31,7 @@ This project has dependencies to:
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
+  Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   io.joynr.examples:android-location-consumer under The Apache Software License, Version 2.0
@@ -50,6 +51,7 @@ This project has dependencies to:
   io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
@@ -79,6 +81,7 @@ This project has dependencies to:
   JUnit under Common Public License Version 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
+  org.eclipse.paho.client.mqttv3 under Eclipse Public License - Version 1.0
   Reflections under WTFPL
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
