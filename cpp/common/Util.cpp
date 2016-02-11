@@ -108,6 +108,12 @@ void throwJoynrException(const exceptions::JoynrException& error)
     } else if (typeName == exceptions::ApplicationException::TYPE_NAME) {
         throw dynamic_cast<exceptions::ApplicationException&>(
                 const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::JoynrMessageNotSentException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::JoynrMessageNotSentException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::JoynrDelayMessageException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::JoynrDelayMessageException&>(
+                const_cast<exceptions::JoynrException&>(error));
     } else {
         std::string message = error.getMessage();
         throw exceptions::JoynrRuntimeException("Unknown exception: " + error.getTypeName() + ": " +

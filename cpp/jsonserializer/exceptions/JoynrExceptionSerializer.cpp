@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#include <chrono>
+
 #include "exceptions/JoynrExceptionSerializer.h"
 
 #include <ostream>
@@ -49,6 +51,12 @@ static const bool isPublicationMissedExceptionRegistered =
 // Register the MethodInvocationException type id and serializer/deserializer
 static const bool isMethodInvocationExceptionRegistered =
         SerializerRegistry::registerType<exceptions::MethodInvocationException>(exceptions::MethodInvocationException::TYPE_NAME);
+static const bool isJoynrMessageNotSentExceptionRegistered =
+        SerializerRegistry::registerType<joynr::exceptions::JoynrMessageNotSentException>(
+                exceptions::JoynrMessageNotSentException::TYPE_NAME);
+static const bool isJoynrJoynrDelayMessageExceptionRegistered =
+        SerializerRegistry::registerType<joynr::exceptions::JoynrDelayMessageException>(
+                exceptions::JoynrDelayMessageException::TYPE_NAME);
 
 template <>
 void ClassDeserializerImpl<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o)
@@ -119,6 +127,23 @@ void ClassDeserializerImpl<exceptions::PublicationMissedException>::deserialize(
         }
     }
 }
+template <>
+void ClassDeserializerImpl<exceptions::JoynrMessageNotSentException>::deserialize(exceptions::JoynrMessageNotSentException& t, IObject& o)
+{
+    ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(t, o);
+}
+template <>
+void ClassDeserializerImpl<exceptions::JoynrDelayMessageException>::deserialize(exceptions::JoynrDelayMessageException& t, IObject& o)
+{
+    while (o.hasNextField()) {
+        IField& field = o.nextField();
+        if (field.name() == "detailMessage") {
+            t.setMessage(field.value());
+        } else if (field.name() == "delayMs") {
+            t.setDelayMs(std::chrono::milliseconds(field.value().getIntType<int64_t>()));
+        }
+    }
+}
 
 void initSerialization (const std::string& typeName, std::ostream& stream) {
     stream << R"({)";
@@ -175,6 +200,22 @@ void ClassSerializerImpl<exceptions::PublicationMissedException>::serialize(cons
 {
     initSerialization(JoynrTypeId<exceptions::PublicationMissedException>::getTypeName(), stream);
     stream << R"("subscriptionId": ")" << exception.getSubscriptionId() << R"(")";
+    stream << "}";
+}
+
+template <>
+void ClassSerializerImpl<exceptions::JoynrMessageNotSentException>::serialize(const exceptions::JoynrMessageNotSentException& exception, std::ostream& stream)
+{
+    serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::JoynrMessageNotSentException>::getTypeName(), exception, stream);
+}
+template <>
+void ClassSerializerImpl<exceptions::JoynrDelayMessageException>::serialize(const exceptions::JoynrDelayMessageException& exception, std::ostream& stream)
+{
+    initSerialization(JoynrTypeId<exceptions::JoynrDelayMessageException>::getTypeName(), stream);
+    if (!exception.getMessage().empty()) {
+        stream << R"("detailMessage": ")" << exception.getMessage() << R"(",)";
+    }
+    stream << R"("delayMs": ")" << exception.getDelayMs().count() << R"(")";
     stream << "}";
 }
 

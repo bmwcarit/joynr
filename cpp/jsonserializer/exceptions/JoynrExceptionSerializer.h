@@ -83,5 +83,19 @@ void ClassSerializerImpl<exceptions::MethodInvocationException>::serialize(const
 // Deserializes a MethodInvocationException
 template <>
 void ClassDeserializerImpl<exceptions::MethodInvocationException>::deserialize(exceptions::MethodInvocationException& t, IObject& o);
+
+// Serializes a JoynrMessageNotSentException
+template <>
+void ClassSerializerImpl<exceptions::JoynrMessageNotSentException>::serialize(const exceptions::JoynrMessageNotSentException& exception, std::ostream& o);
+// Deserializes a JoynrMessageNotSentException
+template <>
+void ClassDeserializerImpl<exceptions::JoynrMessageNotSentException>::deserialize(exceptions::JoynrMessageNotSentException& t, IObject& o);
+
+// Serializes a JoynrDelayMessageException
+template <>
+void ClassSerializerImpl<exceptions::JoynrDelayMessageException>::serialize(const exceptions::JoynrDelayMessageException& exception, std::ostream& o);
+// Deserializes a JoynrDelayMessageException
+template <>
+void ClassDeserializerImpl<exceptions::JoynrDelayMessageException>::deserialize(exceptions::JoynrDelayMessageException& t, IObject& o);
 } // namespace joynr
 #endif // JOYNREXCEPTIONSERIALIZER_H
