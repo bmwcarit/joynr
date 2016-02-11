@@ -130,6 +130,14 @@ RUN yum update -y \
 	lcov \
 	&& yum clean all
 
+###################################################
+# install rpm-build required by CMake / CPack
+###################################################
+RUN yum update -y \
+	&& yum install -y \
+	rpm-build \
+	&& yum clean all
+
 RUN pip install gcovr
 
 ###################################################
