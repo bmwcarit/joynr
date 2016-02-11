@@ -90,7 +90,7 @@ HttpResult DefaultHttpRequest::execute()
     CURLcode curlError;
     curlError = curl_easy_perform(handle);
 
-    std::int32_t statusCode;
+    std::int64_t statusCode;
     curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &statusCode);
 
     // Check for internal curl errors
