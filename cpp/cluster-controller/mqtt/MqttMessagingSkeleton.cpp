@@ -68,6 +68,10 @@ void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
             JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
             return;
         }
+        if (msg.getPayload().empty()) {
+            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
+            return;
+        }
         if (!msg.containsHeaderExpiryDate()) {
             JOYNR_LOG_ERROR(logger,
                             "received message [msgId=[{}] without decay time - dropping message",
@@ -78,7 +82,7 @@ void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
         transmit(msg);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
-                        "Unable to deserialize message. Raw message: {} - error:",
+                        "Unable to deserialize message. Raw message: {} - error: {}",
                         message,
                         e.what());
     }

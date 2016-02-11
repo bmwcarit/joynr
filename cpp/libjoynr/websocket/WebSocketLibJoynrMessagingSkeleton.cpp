@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,17 @@ void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const std::string
             JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message);
             return;
         }
+        if (joynrMsg.getPayload().empty()) {
+            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
+            return;
+        }
+        if (!joynrMsg.containsHeaderExpiryDate()) {
+            JOYNR_LOG_ERROR(logger,
+                            "received message [msgId=[{}] without decay time - dropping message",
+                            joynrMsg.getHeaderMessageId());
+            return;
+        }
         JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
-        // message router copies joynr message when scheduling thread that handles
-        // message delivery
         transmit(joynrMsg);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
