@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.14.2)
+project(joynr-0.14.3)
 set(JOYNR_MAJOR_VERSION 0)
 set(JOYNR_MINOR_VERSION 14)
-set(JOYNR_PATCH_VERSION 2)
+set(JOYNR_PATCH_VERSION 3)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -310,6 +310,7 @@ find_package(Boost 1.56.0 REQUIRED
     system
     thread
 )
+include(CheckBoostImportTargets)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -382,11 +383,7 @@ if(${WIN32})
 else(${WIN32})
     find_package(CURL REQUIRED)
 endif(${WIN32})
-
-message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
-message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
-message(STATUS "variable CURL_INCLUDE_DIRS=" ${CURL_INCLUDE_DIRS})
-message(STATUS "variable CURL_LIBRARIES=" ${CURL_LIBRARIES})
+include(CheckCurlImportTargets)
 
 if(NOT CURL_FOUND)
     message(FATAL_ERROR "Could not find library: curl.")
@@ -764,6 +761,12 @@ configure_file(
     JoynrConfig.cmake.in
     "JoynrConfig.cmake" @ONLY
 )
+file(
+    COPY
+        "CMake/CheckBoostImportTargets.cmake"
+        "CMake/CheckCurlImportTargets.cmake"
+    DESTINATION "${CMAKE_BINARY_DIR}"
+)
 # ... for the install tree
 file(
     RELATIVE_PATH RELATIVE_INSTALL_INCLUDE_DIR
@@ -800,10 +803,12 @@ install(
     RENAME "JoynrConfig.cmake"
 )
 install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfigVersion.cmake"
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfigVersion.cmake"
+        "CMake/CheckBoostImportTargets.cmake"
+        "CMake/CheckCurlImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
 )
-
 
 ######### Documentation settings ########
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)

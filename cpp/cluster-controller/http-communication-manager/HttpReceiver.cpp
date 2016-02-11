@@ -158,7 +158,7 @@ bool HttpReceiver::tryToDeleteChannel()
             deleteChannelRequestBuilder->withTimeout(std::chrono::seconds(20))->build());
     JOYNR_LOG_DEBUG(logger, "sending delete channel request to {}", deleteChannelUrl);
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
-    std::int32_t statusCode = deleteChannelResult.getStatusCode();
+    std::int64_t statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
         channelCreatedSemaphore->waitFor(
                 std::chrono::seconds(5)); // Reset the channel created Semaphore.

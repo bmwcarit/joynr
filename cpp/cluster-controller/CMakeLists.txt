@@ -30,7 +30,7 @@ set(
     JoynrClusterController_TARGET_LIBRARIES
     Joynr
     JoynrCommon
-    ${CURL_LIBRARIES}
+    cURL::curl
     ${Qt5Sql_LIBRARIES}
 )
 

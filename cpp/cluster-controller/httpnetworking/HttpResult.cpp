@@ -23,13 +23,10 @@ namespace joynr
 {
 
 HttpResult::HttpResult(std::int32_t curlError,
-                       std::int32_t statusCode,
+                       std::int64_t statusCode,
                        QByteArray* body,
                        QMultiMap<std::string, std::string>* headers)
-        : curlError(static_cast<int>(curlError)),
-          statusCode(statusCode),
-          body(body),
-          headers(headers)
+        : curlError(curlError), statusCode(statusCode), body(body), headers(headers)
 {
 }
 
@@ -43,7 +40,7 @@ std::int32_t HttpResult::getCurlError() const
     return curlError;
 }
 
-std::int32_t HttpResult::getStatusCode() const
+std::int64_t HttpResult::getStatusCode() const
 {
     return statusCode;
 }
