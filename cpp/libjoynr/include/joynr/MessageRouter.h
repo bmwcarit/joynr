@@ -18,6 +18,12 @@
  */
 #ifndef MESSAGEROUTER_H
 #define MESSAGEROUTER_H
+#include <chrono>
+#include <unordered_set>
+#include <mutex>
+#include <string>
+#include <memory>
+
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrExport.h"
@@ -29,16 +35,11 @@
 #include "joynr/system/RoutingAbstractProvider.h"
 #include "joynr/Directory.h"
 #include "joynr/MessageQueue.h"
-#include "joynr/ThreadPool.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Timer.h"
 #include "joynr/Runnable.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Logger.h"
-
-#include <unordered_set>
-#include <mutex>
-#include <string>
-#include <memory>
 
 namespace joynr
 {
@@ -152,7 +153,7 @@ private:
     IMessagingStubFactory* messagingStubFactory;
     Directory<std::string, joynr::system::RoutingTypes::Address> routingTable;
     ReadWriteLock routingTableLock;
-    ThreadPool threadPool;
+    ThreadPoolDelayedScheduler messageScheduler;
     joynr::system::RoutingProxy* parentRouter;
     std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress;
     std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress;
@@ -182,6 +183,10 @@ private:
                            std::shared_ptr<joynr::system::RoutingTypes::Address> address);
 
     void removeRunningParentResolvers(const std::string& destinationPartId);
+
+    void scheduleMessage(const JoynrMessage& message,
+                         std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+                         std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 };
 
 /**

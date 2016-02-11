@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#include <cassert>
+
 #include "joynr/MessageRouter.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/MessagingStubFactory.h"
@@ -31,10 +33,6 @@
 #include "joynr/JsonSerializer.h"
 #include "cluster-controller/access-control/IAccessController.h"
 #include "joynr/IPlatformSecurityManager.h"
-
-#include <chrono>
-
-#include <cassert>
 
 namespace joynr
 {
@@ -62,7 +60,7 @@ public:
 MessageRouter::~MessageRouter()
 {
     messageQueueCleanerTimer.shutdown();
-    threadPool.shutdown();
+    messageScheduler.shutdown();
     if (parentRouter != nullptr) {
         delete parentRouter;
     }
@@ -80,7 +78,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           messagingStubFactory(messagingStubFactory),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
-          threadPool("MessageRouter", maxThreads),
+          messageScheduler(maxThreads, "MessageRouter"),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(),
@@ -112,7 +110,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           messagingStubFactory(messagingStubFactory),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
-          threadPool("MessageRouter", maxThreads),
+          messageScheduler(maxThreads, "MessageRouter"),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(incomingAddress),
@@ -285,11 +283,19 @@ void MessageRouter::sendMessages(const std::string& destinationPartId,
 }
 
 void MessageRouter::sendMessage(const JoynrMessage& message,
-                                std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress)
+                                std::shared_ptr<system::RoutingTypes::Address> destAddress)
+{
+    scheduleMessage(message, destAddress);
+}
+
+void MessageRouter::scheduleMessage(
+        const JoynrMessage& message,
+        std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+        std::chrono::milliseconds delay)
 {
     auto stub = messagingStubFactory->create(*destAddress);
     if (stub) {
-        threadPool.execute(new MessageRunnable(message, stub, *this));
+        messageScheduler.schedule(new MessageRunnable(message, stub, *this), delay);
     } else {
         JOYNR_LOG_WARN(logger,
                        "Messag with payload {}  could not be send to {}. Stub creation failed",
