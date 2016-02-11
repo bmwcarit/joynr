@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,11 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest) {
         _)
     ).Times(1);
     EXPECT_CALL(mockMessageRouter, route(message)).Times(1);
-    mqttMessagingSkeleton.transmit(message);
+
+    auto onFailure = [](const exceptions::JoynrRuntimeException& e) {
+        FAIL() << "onFailure called";
+    };
+    mqttMessagingSkeleton.transmit(message,onFailure);
 }
 
 TEST_F(MqttMessagingSkeletonTest, onTextMessageReceivedTest) {

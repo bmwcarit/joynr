@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,11 @@ WebSocketMessagingStub::WebSocketMessagingStub(IWebSocketSendInterface* webSocke
     webSocket->registerDisconnectCallback(onStubClosed);
 }
 
-void WebSocketMessagingStub::transmit(JoynrMessage& message)
+void WebSocketMessagingStub::transmit(
+        JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
+    std::ignore = onFailure; // TODO handle errors in WebSocket.send
     if (!webSocket->isInitialized()) {
         JOYNR_LOG_ERROR(logger,
                         "WebSocket not ready. Unable to send message {}",

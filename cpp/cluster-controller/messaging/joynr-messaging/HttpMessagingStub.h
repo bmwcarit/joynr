@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@ public:
                                const std::string& destinationChannelId,
                                const std::string& receiveChannelId);
     ~HttpMessagingStub() override = default;
-    void transmit(JoynrMessage& message) override;
+    void transmit(JoynrMessage& message,
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+            override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingStub);

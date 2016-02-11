@@ -37,8 +37,9 @@ DbusMessagingStubAdapter::DbusMessagingStubAdapter(std::string serviceAddress)
     init();
 }
 
-void DbusMessagingStubAdapter::transmit(JoynrMessage& message)
+void DbusMessagingStubAdapter::transmit(JoynrMessage& message, const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
+    std::ignore = onFailure;
     logMethodCall(FormatString("transmit message with ID: %1 and payload: %2")
                           .arg(message.getHeaderMessageId())
                           .arg(message.getPayload())

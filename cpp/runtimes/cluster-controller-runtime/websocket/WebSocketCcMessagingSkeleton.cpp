@@ -74,9 +74,15 @@ WebSocketCcMessagingSkeleton::~WebSocketCcMessagingSkeleton()
     qDeleteAll(clients.begin(), clients.end());
 }
 
-void WebSocketCcMessagingSkeleton::transmit(JoynrMessage& message)
+void WebSocketCcMessagingSkeleton::transmit(
+        JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    messageRouter.route(message);
+    try {
+        messageRouter.route(message);
+    } catch (exceptions::JoynrRuntimeException& e) {
+        onFailure(e);
+    }
 }
 
 void WebSocketCcMessagingSkeleton::onNewConnection()
@@ -147,7 +153,14 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
         }
 
         JOYNR_LOG_TRACE(logger, "<<<< INCOMING <<<< {}", message.toStdString());
-        transmit(joynrMsg);
+
+        auto onFailure = [joynrMsg](const exceptions::JoynrRuntimeException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Incoming Message with ID {} could not be sent! reason: {}",
+                            joynrMsg.getHeaderMessageId(),
+                            e.getMessage());
+        };
+        transmit(joynrMsg, onFailure);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize joynr message object from: {} - error: {}",

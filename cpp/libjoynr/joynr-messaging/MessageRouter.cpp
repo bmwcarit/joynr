@@ -289,7 +289,7 @@ void MessageRouter::sendMessage(const JoynrMessage& message,
 {
     auto stub = messagingStubFactory->create(*destAddress);
     if (stub) {
-        threadPool.execute(new MessageRunnable(message, stub));
+        threadPool.execute(new MessageRunnable(message, stub, *this));
     } else {
         JOYNR_LOG_WARN(logger,
                        "Messag with payload {}  could not be send to {}. Stub creation failed",
@@ -514,11 +514,13 @@ void MessageRouter::resolveNextHop(
 INIT_LOGGER(MessageRunnable);
 
 MessageRunnable::MessageRunnable(const JoynrMessage& message,
-                                 std::shared_ptr<IMessaging> messagingStub)
+                                 std::shared_ptr<IMessaging> messagingStub,
+                                 MessageRouter& messageRouter)
         : Runnable(true),
           ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
-          messagingStub(messagingStub)
+          messagingStub(messagingStub),
+          messageRouter(messageRouter)
 {
 }
 
@@ -529,7 +531,14 @@ void MessageRunnable::shutdown()
 void MessageRunnable::run()
 {
     if (!isExpired()) {
-        messagingStub->transmit(message);
+        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
+            // TODO MessageRunnable will later handle the errors and reschedule
+            JOYNR_LOG_ERROR(logger,
+                            "Message with ID {} could not be sent! reason: {}",
+                            message.getHeaderMessageId(),
+                            e.getMessage());
+        };
+        messagingStub->transmit(message, onFailure);
     } else {
         JOYNR_LOG_ERROR(
                 logger, "Message with ID {}  expired: dropping!", message.getHeaderMessageId());

@@ -39,7 +39,9 @@ public:
                                const std::string& destinationChannelId,
                                const std::string& receiveChannelId);
     ~MqttMessagingStub() override = default;
-    void transmit(JoynrMessage& message) override;
+    void transmit(JoynrMessage& message,
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+            override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingStub);

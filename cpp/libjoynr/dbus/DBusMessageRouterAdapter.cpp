@@ -34,10 +34,14 @@ DBusMessageRouterAdapter::~DBusMessageRouterAdapter()
     delete dbusSkeletonWrapper;
 }
 
-void DBusMessageRouterAdapter::transmit(JoynrMessage& message)
+void DBusMessageRouterAdapter::transmit(JoynrMessage& message, const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     dbusSkeletonWrapper->logMethodCall("transmit", "DBusMessageRouterAdapter");
-    messageRouter.route(message);
+    try {
+        messageRouter.route(message);
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        onFailure(e);
+    }
 }
 
 } // namespace joynr

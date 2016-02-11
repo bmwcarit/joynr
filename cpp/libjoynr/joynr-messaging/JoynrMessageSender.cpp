@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
         messageRouter->route(message);
     } catch (std::invalid_argument exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
-    }
+    } // TODO: catch exception from messageRouter->route (JoynrMessageNotSentException...)
 }
 
 void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderParticipantId,
@@ -117,7 +117,7 @@ void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticip
         messageRouter->route(message);
     } catch (std::invalid_argument exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
-    }
+    } // TODO: catch exception from messageRouter->route (JoynrMessageNotSentException...)
 }
 
 void JoynrMessageSender::sendSubscriptionStop(const std::string& senderParticipantId,
@@ -148,7 +148,7 @@ void JoynrMessageSender::sendSubscriptionPublication(
         messageRouter->route(message);
     } catch (std::invalid_argument exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
-    }
+    } // TODO: catch exception from messageRouter->route (JoynrMessageNotSentException...)
 }
 
 } // namespace joynr

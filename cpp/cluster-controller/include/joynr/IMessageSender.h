@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,10 @@ public:
     /**
     * @brief Sends the message to the given channel.
     */
-    virtual void sendMessage(const std::string& channelId, const JoynrMessage& message) = 0;
+    virtual void sendMessage(
+            const std::string& channelId,
+            const JoynrMessage& message,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
     /**
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.

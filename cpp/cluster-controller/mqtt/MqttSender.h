@@ -45,7 +45,10 @@ public:
     /**
     * @brief Sends the message to the given channel.
     */
-    void sendMessage(const std::string& channelId, const JoynrMessage& message) override;
+    void sendMessage(const std::string& channelId,
+                     const JoynrMessage& message,
+                     const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+            override;
     /**
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.

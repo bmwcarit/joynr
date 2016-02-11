@@ -141,7 +141,7 @@ public:
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
-    MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
+    MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 
 class MockDelayedScheduler : public joynr::DelayedScheduler
@@ -267,7 +267,7 @@ public:
 
 class MockMessaging : public joynr::IMessaging {
 public:
-  MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
+  MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
   MOCK_METHOD2(test1, void(int a0, int a1));
 };
 
@@ -540,7 +540,7 @@ public:
 class MockMessageSender : public joynr::IMessageSender
 {
 public:
-    MOCK_METHOD2(sendMessage,void(const std::string&, const joynr::JoynrMessage&));
+    MOCK_METHOD3(sendMessage,void(const std::string&, const joynr::JoynrMessage&, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
     MOCK_METHOD2(init,void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
     MOCK_METHOD1(registerReceiveQueueStartedCallback, void(std::function<void(void)> waitForReceiveQueueStarted));
 };

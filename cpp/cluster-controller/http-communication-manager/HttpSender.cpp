@@ -74,9 +74,13 @@ HttpSender::~HttpSender()
     delete channelUrlCache;
 }
 
-void HttpSender::sendMessage(const std::string& channelId, const JoynrMessage& message)
+void HttpSender::sendMessage(
+        const std::string& channelId,
+        const JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-
+    // TODO pass back http errors to message router / calling MessageRunnable via onFailure
+    std::ignore = onFailure;
     JOYNR_LOG_TRACE(logger, "sendMessage: ...");
     std::string&& serializedMessage = JsonSerializer::serialize(message);
     /** Potential issue: needs second threadpool to call the ChannelUrlDir so a deadlock cannot

@@ -44,8 +44,14 @@ void MqttSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirec
     std::ignore = settings;
 }
 
-void MqttSender::sendMessage(const std::string& channelId, const JoynrMessage& message)
+void MqttSender::sendMessage(
+        const std::string& channelId,
+        const JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
+    // TODO handle and pass back mqtt errors to message router / calling MessageRunnable via
+    // onFailure
+    std::ignore = onFailure;
     JOYNR_LOG_DEBUG(logger, "sendMessage: ...");
 
     waitForReceiveQueueStarted();

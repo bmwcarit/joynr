@@ -32,7 +32,9 @@ HttpMessagingSkeleton::HttpMessagingSkeleton(MessageRouter& messageRouter)
 {
 }
 
-void HttpMessagingSkeleton::transmit(JoynrMessage& message)
+void HttpMessagingSkeleton::transmit(
+        JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
@@ -44,7 +46,11 @@ void HttpMessagingSkeleton::transmit(JoynrMessage& message)
         messageRouter.addNextHop(message.getHeaderFrom(), address);
     }
 
-    messageRouter.route(message);
+    try {
+        messageRouter.route(message);
+    } catch (exceptions::JoynrRuntimeException& e) {
+        onFailure(e);
+    }
 }
 
 void HttpMessagingSkeleton::onTextMessageReceived(const std::string& message)
@@ -66,7 +72,14 @@ void HttpMessagingSkeleton::onTextMessageReceived(const std::string& message)
             return;
         }
         JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
-        transmit(msg);
+
+        auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Incoming Message with ID {} could not be sent! reason: {}",
+                            msg.getHeaderMessageId(),
+                            e.getMessage());
+        };
+        transmit(msg, onFailure);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize message. Raw message: {} - error: {}",

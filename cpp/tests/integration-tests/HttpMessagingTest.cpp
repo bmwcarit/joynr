@@ -98,11 +98,11 @@ TEST_F(HttpMessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 //            .Times(1);
 
     // InProcessMessagingSkeleton should not receive the message
-    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
+    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),_))
             .Times(0);
 
     // MessageSender should not receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(_,_))
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
             .Times(0);
 
 // NOTE: LipciMessaging doesn't exists (2012-05-08)

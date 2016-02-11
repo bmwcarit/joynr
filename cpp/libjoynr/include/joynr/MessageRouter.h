@@ -190,13 +190,16 @@ private:
 class MessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
-    MessageRunnable(const JoynrMessage& message, std::shared_ptr<IMessaging> messagingStub);
+    MessageRunnable(const JoynrMessage& message,
+                    std::shared_ptr<IMessaging> messagingStub,
+                    MessageRouter& messageRouter);
     void shutdown() override;
     void run() override;
 
 private:
     JoynrMessage message;
     std::shared_ptr<IMessaging> messagingStub;
+    MessageRouter& messageRouter;
     ADD_LOGGER(MessageRunnable);
 };
 

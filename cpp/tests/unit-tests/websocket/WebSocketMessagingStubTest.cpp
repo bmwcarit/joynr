@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,7 +171,11 @@ TEST_F(WebSocketMessagingStubTest, transmitMessage) {
         [](){});
     joynr::JoynrMessage joynrMsg;
     std::string expectedMessage = joynr::JsonSerializer::serialize(joynrMsg);
-    messagingStub.transmit(joynrMsg);
+
+    auto onFailure = [joynrMsg](const joynr::exceptions::JoynrRuntimeException& e) {
+            FAIL() << "Unexpected call of onFailure function, exception: " + e.getMessage();
+        };
+    messagingStub.transmit(joynrMsg,onFailure);
 
     // wait until message is received
     EXPECT_TRUE(textMessageReceivedSignalSpy.wait());
