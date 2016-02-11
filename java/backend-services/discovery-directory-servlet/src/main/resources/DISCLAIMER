@@ -19,6 +19,9 @@ The software listed below included in some products is licensed under the "Apach
 - com.google.inject.extensions:guice-assistedinject:3.0
   Notice file: WEB-INF/lib/guice-assistedinject-3.0.jar:META-INF/NOTICE
   License file: WEB-INF/lib/guice-assistedinject-3.0.jar:META-INF/LICENSE
+- com.google.inject.extensions:guice-multibindings:3.0
+  Notice file: WEB-INF/lib/guice-multibindings-3.0.jar:META-INF/NOTICE
+  License file: WEB-INF/lib/guice-multibindings-3.0.jar:META-INF/LICENSE
 - com.google.inject.extensions:guice-persist:3.0
   Notice file: WEB-INF/lib/guice-persist-3.0.jar:META-INF/NOTICE
   License file: WEB-INF/lib/guice-persist-3.0.jar:META-INF/LICENSE

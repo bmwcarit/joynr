@@ -15,6 +15,9 @@ The software listed below included in some products is licensed under the "Apach
   Notice file: WEB-INF/lib/jackson-module-jaxb-annotations-2.6.2.jar:META-INF/NOTICE
   License file: WEB-INF/lib/jackson-module-jaxb-annotations-2.6.2.jar:META-INF/LICENSE
 - com.google.guava:guava:11.0.2
+- com.google.inject.extensions:guice-multibindings:3.0
+  Notice file: WEB-INF/lib/guice-multibindings-3.0.jar:META-INF/NOTICE
+  License file: WEB-INF/lib/guice-multibindings-3.0.jar:META-INF/LICENSE
 - com.google.inject.extensions:guice-servlet:3.0
   Notice file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/NOTICE
   License file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/LICENSE
