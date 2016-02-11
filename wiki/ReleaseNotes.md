@@ -1,3 +1,13 @@
+#joynr 0.14.2
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fix dependency resolution in the CMake package config file for joynr.
+
 #joynr 0.14.1
 
 This is a minor bug fix release.
