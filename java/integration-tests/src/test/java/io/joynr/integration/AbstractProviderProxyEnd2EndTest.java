@@ -36,6 +36,7 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
@@ -56,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
@@ -97,6 +99,8 @@ import com.google.inject.Module;
 import joynr.types.TestTypes.TStringKeyMap;
 
 public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
+    private static final String MAX_MESSAGE_SIZE = "4000000";
+
     private static final Logger logger = LoggerFactory.getLogger(AbstractProviderProxyEnd2EndTest.class);
 
     // This timeout must be shared by all integration test environments and
@@ -185,6 +189,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                 + UUID.randomUUID().toString());
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigProvider.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
         providerRuntime = getRuntime(joynrConfigProvider, new StaticDomainAccessControlProvisioningModule());
 
@@ -193,6 +198,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                 + UUID.randomUUID().toString());
         joynrConfigConsumer.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
         joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigConsumer.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
         consumerRuntime = getRuntime(joynrConfigConsumer);
 
@@ -712,6 +718,23 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         Byte[] byteArray = { 1, 2, 3 };
+        proxy.setByteBufferAttribute(byteArray);
+        Byte[] result = proxy.getByteBufferAttribute();
+        assertArrayEquals(byteArray, result);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testLargeByteBufferAttribute() throws DiscoveryException, JoynrIllegalStateException,
+                                              InterruptedException {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        byte[] bytes = new byte[1000000];
+        new Random().nextBytes(bytes);
+        Byte[] byteArray = new Byte[bytes.length];
+        int i = 0;
+        for (byte nextbyte : bytes) {
+            byteArray[i++] = nextbyte;
+        }
         proxy.setByteBufferAttribute(byteArray);
         Byte[] result = proxy.getByteBufferAttribute();
         assertArrayEquals(byteArray, result);

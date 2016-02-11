@@ -26,20 +26,28 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
 public class WebSocketMessagingStubFactory extends
         AbstractMiddlewareMessagingStubFactory<LibWebSocketMessagingStub, WebSocketAddress> {
 
-    @Inject
     ObjectMapper objectMapper;
-    @Inject
-    @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON)
     WebSocketMessagingSkeleton webSocketMessagingSkeleton;
+    int maxMessageSize;
+
+    @Inject
+    public WebSocketMessagingStubFactory(ObjectMapper objectMapper,
+                                         @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton,
+                                         @Named(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE) int maxMessageSize) {
+        this.objectMapper = objectMapper;
+        this.webSocketMessagingSkeleton = webSocketMessagingSkeleton;
+        this.maxMessageSize = maxMessageSize;
+    }
 
     @Override
     protected LibWebSocketMessagingStub createInternal(WebSocketAddress address) {
-        return new LibWebSocketMessagingStub(address, objectMapper, webSocketMessagingSkeleton);
+        return new LibWebSocketMessagingStub(address, objectMapper, webSocketMessagingSkeleton, maxMessageSize);
     }
 
     @Override

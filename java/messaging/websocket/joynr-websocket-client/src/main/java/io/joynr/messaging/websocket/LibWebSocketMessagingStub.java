@@ -40,13 +40,16 @@ public class LibWebSocketMessagingStub extends WebSocketMessagingStub {
     private WebSocketAddress address;
     private WebSocketMessagingSkeleton libWebSocketMessagingSkeleton;
     private WebSocketClient client;
+    private int maxMessageSize;
 
     public LibWebSocketMessagingStub(WebSocketAddress address,
                                      ObjectMapper objectMapper,
-                                     WebSocketMessagingSkeleton libWebSocketMessagingSkeleton) {
+                                     WebSocketMessagingSkeleton libWebSocketMessagingSkeleton,
+                                     int maxMessageSize) {
         super(objectMapper);
         this.address = address;
         this.libWebSocketMessagingSkeleton = libWebSocketMessagingSkeleton;
+        this.maxMessageSize = maxMessageSize;
     }
 
     @Override
@@ -60,6 +63,7 @@ public class LibWebSocketMessagingStub extends WebSocketMessagingStub {
             shutdownWebSocketClient();
         }
         client = new WebSocketClient();
+        client.getPolicy().setMaxTextMessageSize(maxMessageSize);
         try {
             client.start();
             // Attempt Connect

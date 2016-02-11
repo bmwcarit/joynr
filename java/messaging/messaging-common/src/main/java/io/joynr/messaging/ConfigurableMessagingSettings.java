@@ -65,6 +65,8 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS = "joynr.messaging.maximumparallelsends";
     public static final String PROPERTY_HOSTS_FILENAME = "joynr.messaging.hostsfilename";
 
+    public static final String PROPERTY_MAX_MESSAGE_SIZE = "joynr.messaging.maxmessagesize";
+
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
     private final long deleteChannelRetryIntervalMs;

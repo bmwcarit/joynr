@@ -39,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
@@ -54,15 +56,18 @@ public class CCWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
     private WebSocketAddress address;
     private WebSocketClientMessagingStubFactory webSocketMessagingStubFactory;
     private Server server;
+    private int maxMessageSize;
 
     @Inject
     public CCWebSocketMessagingSkeleton(@Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_URL_ADDRESS) WebSocketAddress address,
                                         ObjectMapper objectMapper,
                                         MessageRouter messageRouter,
-                                        WebSocketClientMessagingStubFactory webSocketMessagingStubFactory) {
+                                        WebSocketClientMessagingStubFactory webSocketMessagingStubFactory,
+                                        @Named(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE) int maxMessageSize) {
         super(objectMapper, messageRouter);
         this.address = address;
         this.webSocketMessagingStubFactory = webSocketMessagingStubFactory;
+        this.maxMessageSize = maxMessageSize;
     }
 
     @Override
@@ -114,6 +119,8 @@ public class CCWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
         ServletHolder holderEvents = new ServletHolder("ws-events", new WebSocketServlet() {
             @Override
             public void configure(WebSocketServletFactory webSocketServletFactory) {
+                webSocketServletFactory.getPolicy().setMaxBinaryMessageSize(maxMessageSize);
+                webSocketServletFactory.getPolicy().setMaxTextMessageSize(maxMessageSize);
                 webSocketServletFactory.setCreator(new WebSocketCreator() {
                     @Override
                     public Object createWebSocket(ServletUpgradeRequest servletUpgradeRequest,
@@ -133,6 +140,7 @@ public class CCWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
         }
     }
 
+    @Override
     public void shutdown() {
         try {
             if (server != null) {

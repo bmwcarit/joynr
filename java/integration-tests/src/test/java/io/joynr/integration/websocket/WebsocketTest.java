@@ -56,6 +56,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WebsocketTest {
+    private static final int MAX_MESSAGE_SIZE = 100000;
     private static Logger logger = LoggerFactory.getLogger(WebsocketTest.class);
     private LibWebSocketMessagingStub webSocketMessagingStub;
     private CCWebSocketMessagingSkeleton ccWebSocketMessagingSkeleton;
@@ -88,7 +89,8 @@ public class WebsocketTest {
         ccWebSocketMessagingSkeleton = new CCWebSocketMessagingSkeleton(serverAddress,
                                                                         new ObjectMapper(),
                                                                         messageRouterMock,
-                                                                        webSocketMessagingStubFactory);
+                                                                        webSocketMessagingStubFactory,
+                                                                        MAX_MESSAGE_SIZE);
         joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper());
         ccWebSocketMessagingSkeleton.init();
     }
@@ -110,7 +112,8 @@ public class WebsocketTest {
         try {
             webSocketMessagingStub = new LibWebSocketMessagingStub(serverAddress,
                     new ObjectMapper(),
-                    libWebSocketMessagingSkeleton);
+                    libWebSocketMessagingSkeleton,
+                    MAX_MESSAGE_SIZE);
             webSocketMessagingStub.transmit(msg, new FailureAction() {
 
                 @Override
@@ -136,7 +139,8 @@ public class WebsocketTest {
         try {
             webSocketMessagingStub = new LibWebSocketMessagingStub(serverAddress,
                     new ObjectMapper(),
-                    libWebSocketMessagingSkeleton);
+                    libWebSocketMessagingSkeleton,
+                    MAX_MESSAGE_SIZE);
 
             ObjectMapper objectMapper = new ObjectMapper();
             String serializedAddress = objectMapper.writeValueAsString(clientAddress);
