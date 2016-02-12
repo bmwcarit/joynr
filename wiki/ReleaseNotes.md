@@ -1,6 +1,14 @@
 #joynr 0.15.0
 
 ##Notes
+* **[Java,C++]** Java and C++ cluster controllers are now able to communciate to an MQTT broker as
+  a replacement, or in addition to, the original bounceproxy. Java uses the Eclipse Paho client,
+  while C++ uses mosquitto as an MQTT client.
+* **[C++]** There is a new build and runtime dependency for the clustercontroller to mosquitto 1.4.7
+* **[Java]** Handling of different transport middlewares has been refactored to be much more
+  extensible. Using Guice Multibinders, it is now possible for external projects to add transport
+  middleware implementations and inject these into the runtime. See the ```
+joynr-mqtt-client``` project for an example of how this can be done.
 * **[C++]** libjoynr uses libwebsockets of the libwebsockets project (http://libwebsockets.org)
   to communicate with the cluster-controller. Due to an incompatibility with Mac OS X,
   the C++-Websocket-Runtime currently does not work on Mac OS X.
