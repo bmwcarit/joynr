@@ -89,7 +89,7 @@ public:
      * @param message the message to route.
      * @param qos the QoS used to route the message.
      */
-    virtual void route(const JoynrMessage& message);
+    virtual void route(const JoynrMessage& message, std::uint32_t tryCount = 0);
 
     void addNextHop(const std::string& participantId,
                     const joynr::system::RoutingTypes::ChannelAddress& channelAddress,
@@ -172,7 +172,8 @@ private:
                                     onError = nullptr);
 
     void sendMessage(const JoynrMessage& message,
-                     std::shared_ptr<system::RoutingTypes::Address> destAddress);
+                     std::shared_ptr<system::RoutingTypes::Address> destAddress,
+                     std::uint32_t tryCount = 0);
 
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<system::RoutingTypes::Address> address);
@@ -186,6 +187,7 @@ private:
 
     void scheduleMessage(const JoynrMessage& message,
                          std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+                         std::uint32_t tryCount,
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 };
 
@@ -197,14 +199,18 @@ class MessageRunnable : public Runnable, public ObjectWithDecayTime
 public:
     MessageRunnable(const JoynrMessage& message,
                     std::shared_ptr<IMessaging> messagingStub,
-                    MessageRouter& messageRouter);
+                    std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+                    MessageRouter& messageRouter,
+                    std::uint32_t tryCount);
     void shutdown() override;
     void run() override;
 
 private:
     JoynrMessage message;
     std::shared_ptr<IMessaging> messagingStub;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress;
     MessageRouter& messageRouter;
+    std::uint32_t tryCount;
     ADD_LOGGER(MessageRunnable);
 };
 

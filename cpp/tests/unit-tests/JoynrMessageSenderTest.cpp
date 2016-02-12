@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
     );
 
     EXPECT_CALL( *(messagingStubQsp.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST)),
-                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload())))));
+                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
@@ -117,7 +117,7 @@ TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death)
 
     MockDispatcher mockDispatcher;
     std::shared_ptr<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
-    EXPECT_CALL(*(messagingStubQsp.get()), route(_)).Times(0);
+    EXPECT_CALL(*(messagingStubQsp.get()), route(_,_)).Times(0);
 
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
@@ -148,7 +148,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
 
 
     EXPECT_CALL(*(messagingStubQsp.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
-                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload())))));
+                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
     joynrMessageSender.sendReply(senderID, receiverID, qosSettings, reply);
 }
@@ -176,7 +176,7 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
 
 
     EXPECT_CALL(*messagingStubQsp, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)),
-                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload())))));
+                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
@@ -209,7 +209,7 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 
 
     EXPECT_CALL(*messagingStubQsp, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)),
-                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload())))));
+                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
@@ -225,7 +225,7 @@ TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
     std::shared_ptr<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
     std::string payload("subscriptionReply");
     EXPECT_CALL(*(messagingStubQsp.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
-                                                  Property(&JoynrMessage::getPayload, Eq(payload)))));
+                                                  Property(&JoynrMessage::getPayload, Eq(payload))),_));
 
 
 
@@ -254,7 +254,7 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
                 publication);
 
     EXPECT_CALL(*(messagingStubQsp.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION)),
-                                                      Property(&JoynrMessage::getPayload, Eq(message.getPayload())))));
+                                                      Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
 
     joynrMessageSender.sendSubscriptionPublication(senderID, receiverID, qosSettings, publication);
 }

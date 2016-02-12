@@ -174,7 +174,7 @@ bool MessageRouter::isChildMessageRouter()
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void MessageRouter::route(const JoynrMessage& message)
+void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
@@ -258,7 +258,7 @@ void MessageRouter::route(const JoynrMessage& message)
     }
 
     // If this point is reached, the message can be sent without delay
-    sendMessage(message, destAddress);
+    sendMessage(message, destAddress, tryCount);
 }
 
 void MessageRouter::removeRunningParentResolvers(const std::string& destinationPartId)
@@ -283,22 +283,25 @@ void MessageRouter::sendMessages(const std::string& destinationPartId,
 }
 
 void MessageRouter::sendMessage(const JoynrMessage& message,
-                                std::shared_ptr<system::RoutingTypes::Address> destAddress)
+                                std::shared_ptr<system::RoutingTypes::Address> destAddress,
+                                std::uint32_t tryCount)
 {
-    scheduleMessage(message, destAddress);
+    scheduleMessage(message, destAddress, tryCount);
 }
 
 void MessageRouter::scheduleMessage(
         const JoynrMessage& message,
         std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+        std::uint32_t tryCount,
         std::chrono::milliseconds delay)
 {
     auto stub = messagingStubFactory->create(*destAddress);
     if (stub) {
-        messageScheduler.schedule(new MessageRunnable(message, stub, *this), delay);
+        messageScheduler.schedule(
+                new MessageRunnable(message, stub, destAddress, *this, tryCount), delay);
     } else {
         JOYNR_LOG_WARN(logger,
-                       "Messag with payload {}  could not be send to {}. Stub creation failed",
+                       "Message with payload {}  could not be send to {}. Stub creation failed",
                        message.getPayload(),
                        (*destAddress).toString());
     }
@@ -521,12 +524,16 @@ INIT_LOGGER(MessageRunnable);
 
 MessageRunnable::MessageRunnable(const JoynrMessage& message,
                                  std::shared_ptr<IMessaging> messagingStub,
-                                 MessageRouter& messageRouter)
+                                 std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+                                 MessageRouter& messageRouter,
+                                 std::uint32_t tryCount)
         : Runnable(true),
           ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
           messagingStub(messagingStub),
-          messageRouter(messageRouter)
+          destAddress(destAddress),
+          messageRouter(messageRouter),
+          tryCount(tryCount)
 {
 }
 
@@ -538,11 +545,25 @@ void MessageRunnable::run()
 {
     if (!isExpired()) {
         auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
-            // TODO MessageRunnable will later handle the errors and reschedule
-            JOYNR_LOG_ERROR(logger,
-                            "Message with ID {} could not be sent! reason: {}",
-                            message.getHeaderMessageId(),
-                            e.getMessage());
+            try {
+                exceptions::JoynrDelayMessageException& delayException =
+                        dynamic_cast<exceptions::JoynrDelayMessageException&>(
+                                const_cast<exceptions::JoynrRuntimeException&>(e));
+                std::chrono::milliseconds delay = delayException.getDelayMs();
+
+                JOYNR_LOG_ERROR(logger,
+                                "Rescheduling message after error: messageId: {}, new delay {}ms, "
+                                "error: {}",
+                                message.getHeaderMessageId(),
+                                delay.count(),
+                                e.getMessage());
+                messageRouter.scheduleMessage(message, destAddress, tryCount + 1, delay);
+            } catch (std::bad_cast& castError) {
+                JOYNR_LOG_ERROR(logger,
+                                "Message with ID {} could not be sent! reason: {}",
+                                message.getHeaderMessageId(),
+                                e.getMessage());
+            }
         };
         messagingStub->transmit(message, onFailure);
     } else {

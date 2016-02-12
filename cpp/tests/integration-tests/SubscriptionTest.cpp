@@ -360,7 +360,8 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                      AllOf(
                          A<JoynrMessage>(),
                          Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
-                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId)))
+                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId))),
+                     _
                      ));
 
     publicationManager->add(
@@ -382,7 +383,8 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                      AllOf(
                          A<JoynrMessage>(),
                          Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
-                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId)))
+                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId))),
+                     _
                      ));
 
 

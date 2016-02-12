@@ -300,7 +300,7 @@ public:
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
     }
-    MOCK_METHOD1(route, void(const joynr::JoynrMessage& message));
+    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, std::uint32_t tryCount));
     MOCK_METHOD3(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,

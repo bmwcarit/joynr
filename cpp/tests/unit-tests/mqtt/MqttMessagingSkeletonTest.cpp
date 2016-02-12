@@ -96,7 +96,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest) {
         ),
         _)
     ).Times(1);
-    EXPECT_CALL(mockMessageRouter, route(message)).Times(1);
+    EXPECT_CALL(mockMessageRouter, route(message,_)).Times(1);
 
     auto onFailure = [](const exceptions::JoynrRuntimeException& e) {
         FAIL() << "onFailure called";
@@ -107,6 +107,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest) {
 TEST_F(MqttMessagingSkeletonTest, onTextMessageReceivedTest) {
     MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter);
     std::string serializedMessage = JsonSerializer::serialize<JoynrMessage>(message);
-    EXPECT_CALL(mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(message.getType())), Property(&JoynrMessage::getPayload, Eq(message.getPayload()))))).Times(1);
+    EXPECT_CALL(mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(message.getType())),
+                                            Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_)).Times(1);
     mqttMessagingSkeleton.onTextMessageReceived(serializedMessage);
 }
