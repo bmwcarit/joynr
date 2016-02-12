@@ -35,6 +35,8 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
  */
 public class MqttMessagingStub implements IMessaging {
 
+    private static final String PRIORITY_LOW = "/low/";
+    private static final String RAW = PRIORITY_LOW + "raw";
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
     private JoynrMessageSerializer messageSerializer;
@@ -53,13 +55,19 @@ public class MqttMessagingStub implements IMessaging {
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         setReplyTo(message);
-        String serializeMessage = messageSerializer.serialize(message);
-        transmit(serializeMessage, failureAction);
+        String topic = address.getTopic() + PRIORITY_LOW + message.getTo();
+        String serializedMessage = messageSerializer.serialize(message);
+        try {
+            mqttClient.publishMessage(topic, serializedMessage);
+        } catch (Throwable error) {
+            failureAction.execute(error);
+        }
     }
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
-        String topic = address.getTopic();
+        // Unable to access participantId, so publishing to RAW topic
+        String topic = address.getTopic() + RAW;
         try {
             mqttClient.publishMessage(topic, serializedMessage);
         } catch (Throwable error) {
