@@ -61,7 +61,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             try {
                 mqttClient.connect();
                 mqttClient.setCallback(this);
-                mqttClient.subscribe(ownTopic.getTopic());
+                mqttClient.subscribe(ownTopic.getTopic() + "/#");
                 logger.debug("MQTT Connected client");
             } catch (MqttException mqttError) {
                 logger.error("MQTT Connect failed: {}", mqttError.getMessage());
