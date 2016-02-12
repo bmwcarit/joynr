@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,25 +30,25 @@ namespace joynr
 
 // Register the JoynrRuntimeException type id and serializer/deserializer
 static const bool isJoynrRuntimeExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::JoynrRuntimeException>("joynr.exceptions.JoynrRuntimeException");
+        SerializerRegistry::registerType<exceptions::JoynrRuntimeException>(exceptions::JoynrRuntimeException::TYPE_NAME);
 // Register the ProviderRuntimeException type id and serializer/deserializer
 static const bool isProviderRuntimeExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::ProviderRuntimeException>("joynr.exceptions.ProviderRuntimeException");
+        SerializerRegistry::registerType<exceptions::ProviderRuntimeException>(exceptions::ProviderRuntimeException::TYPE_NAME);
 // Register the DiscoveryException type id and serializer/deserializer
 static const bool isDiscoveryExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::DiscoveryException>("joynr.exceptions.DiscoveryException");
+        SerializerRegistry::registerType<exceptions::DiscoveryException>(exceptions::DiscoveryException::TYPE_NAME);
 // Register the ApplicationException type id and serializer/deserializer
 static const bool isApplicationExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::ApplicationException>("joynr.exceptions.ApplicationException");
+        SerializerRegistry::registerType<exceptions::ApplicationException>(exceptions::ApplicationException::TYPE_NAME);
 // Register the JoynrTimeOutException type id and serializer/deserializer
 static const bool isJoynrTimeOutExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::JoynrTimeOutException>("joynr.exceptions.JoynrTimeOutException");
+        SerializerRegistry::registerType<exceptions::JoynrTimeOutException>(exceptions::JoynrTimeOutException::TYPE_NAME);
 // Register the PublicationMissedException type id and serializer/deserializer
 static const bool isPublicationMissedExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::PublicationMissedException>("joynr.exceptions.PublicationMissedException");
+        SerializerRegistry::registerType<exceptions::PublicationMissedException>(exceptions::PublicationMissedException::TYPE_NAME);
 // Register the MethodInvocationException type id and serializer/deserializer
 static const bool isMethodInvocationExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::MethodInvocationException>("joynr.exceptions.MethodInvocationException");
+        SerializerRegistry::registerType<exceptions::MethodInvocationException>(exceptions::MethodInvocationException::TYPE_NAME);
 
 template <>
 void ClassDeserializerImpl<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o)

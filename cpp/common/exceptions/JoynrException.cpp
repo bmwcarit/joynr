@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,28 +39,27 @@ const std::string PublicationMissedException::TYPE_NAME =
 const std::string ApplicationException::TYPE_NAME = "joynr.exceptions.ApplicationException";
 
 static const bool isJoynrExceptionRegistered =
-        Variant::registerType<joynr::exceptions::JoynrException>("joynr.exceptions.JoynrException");
+        Variant::registerType<joynr::exceptions::JoynrException>(JoynrException::TYPE_NAME);
 static const bool isJoynrRuntimeExceptionRegistered =
         Variant::registerType<joynr::exceptions::JoynrRuntimeException>(
-                "joynr.exceptions.JoynrRuntimeException");
+                JoynrRuntimeException::TYPE_NAME);
 static const bool isJoynrTimeOutExceptionRegistered =
         Variant::registerType<joynr::exceptions::JoynrTimeOutException>(
-                "joynr.exceptions.JoynrTimeOutException");
+                JoynrTimeOutException::TYPE_NAME);
 static const bool isDiscoveryExceptionRegistered =
-        Variant::registerType<joynr::exceptions::DiscoveryException>(
-                "joynr.exceptions.DiscoveryException");
+        Variant::registerType<joynr::exceptions::DiscoveryException>(DiscoveryException::TYPE_NAME);
 static const bool isMethodInvocationExceptionRegistered =
         Variant::registerType<joynr::exceptions::MethodInvocationException>(
-                "joynr.exceptions.MethodInvocationException");
+                MethodInvocationException::TYPE_NAME);
 static const bool isProviderRuntimeExceptionRegistered =
         Variant::registerType<joynr::exceptions::ProviderRuntimeException>(
-                "joynr.exceptions.ProviderRuntimeException");
+                ProviderRuntimeException::TYPE_NAME);
 static const bool isPublicationMissedExceptionRegistered =
         Variant::registerType<joynr::exceptions::PublicationMissedException>(
-                "joynr.exceptions.PublicationMissedException");
+                PublicationMissedException::TYPE_NAME);
 static const bool isApplicationExceptionRegistered =
         Variant::registerType<joynr::exceptions::ApplicationException>(
-                "joynr.exceptions.ApplicationException");
+                ApplicationException::TYPE_NAME);
 
 JoynrException::JoynrException() noexcept : message("")
 {
