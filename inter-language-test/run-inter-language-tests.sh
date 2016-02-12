@@ -203,7 +203,7 @@ function start_java_provider {
 	cd $JOYNR_SOURCE_DIR/inter-language-test
 	rm -f java-provider.persistence_file
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN" > $ILT_RESULTS_DIR/provider_java.log 2>&1 &
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ILT_RESULTS_DIR/provider_java.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider with PID $PROVIDER_PID"
 	# Allow some time for startup
@@ -258,7 +258,7 @@ function start_java_consumer {
 	echo '####################################################'
 	cd $JOYNR_SOURCE_DIR/inter-language-test
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltConsumerApplication" -Dexec.args="$DOMAIN" >> $ILT_RESULTS_DIR/consumer_java_$1.log 2>&1
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltConsumerApplication" -Dexec.args="$DOMAIN http:mqtt" >> $ILT_RESULTS_DIR/consumer_java_$1.log 2>&1
 	SUCCESS=$?
 	if [ "$SUCCESS" != 0 ]
 	then
