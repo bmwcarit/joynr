@@ -43,6 +43,11 @@
 			<artifactId>libjoynr-websocket-runtime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>joynr-mqtt-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- Logging used in the interlanguage app -->
 		<dependency>
