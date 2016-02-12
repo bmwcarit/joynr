@@ -55,7 +55,13 @@ cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
       -DENABLE_GCOV=$GCOV \
       -DPYTHON_EXECUTABLE=/usr/bin/python \
       -DJOYNR_SERVER=localhost:8080 \
-      -DCMAKE_BUILD_TYPE=Debug /data/src/cpp
+      -DCMAKE_BUILD_TYPE=Debug /data/src/cpp \
+      -DUSE_PLATFORM_LIBWEBSOCKETS=ON \
+      -DUSE_PLATFORM_SPDLOG=ON \
+      -DUSE_PLATFORM_JSMN=ON \
+      -DUSE_PLATFORM_GTEST_GMOCK=ON \
+      -DUSE_PLATFORM_MOSQUITTO=ON
+
 
 if [ "$GCOV" == "ON" ] ; then
     echo "run coverage build"

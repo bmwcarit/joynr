@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 
@@ -177,7 +176,7 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
     Optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
     if (dre) {
         std::vector<std::string> domains = dre.getValue().getDomains();
-        if (vectorContains(domains, domain)) {
+        if (util::vectorContains(domains, domain)) {
             hasRole = true;
         }
     }
@@ -344,7 +343,6 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const std::st
                                                                    const std::string& interfaceName,
                                                                    const std::string& operation)
 {
-    RequestStatus rs;
     bool success;
     globalDomainAccessControllerProxy->removeMediatorAccessControlEntry(
             success, uid, domain, interfaceName, operation);
@@ -878,7 +876,7 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
 void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
-    (void)error;
+    std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of DRE failed!");
 }
 
@@ -908,7 +906,7 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
 void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
-    (void)error;
+    std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of MasterAce failed!");
 }
 
@@ -937,7 +935,7 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
 void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
-    (void)error;
+    std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of MediatorAce failed!");
 }
 
@@ -966,7 +964,7 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
 void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
-    (void)error;
+    std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of OwnerAce failed!");
 }
 

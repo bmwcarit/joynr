@@ -16,18 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNR_SCHEDULER_H
-#define JOYNR_SCHEDULER_H
-
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/Logger.h"
+#ifndef BLOCKINGQUEUE_H
+#define BLOCKINGQUEUE_H
 
 #include <deque>
 #include <mutex>
 #include <condition_variable>
-#include <utility>
 #include <atomic>
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -105,4 +104,4 @@ private:
     mutable std::mutex conditionMutex;
 };
 } // namespace joynr
-#endif // JOYNR_SCHEDULER_H
+#endif // BLOCKINGQUEUE_H

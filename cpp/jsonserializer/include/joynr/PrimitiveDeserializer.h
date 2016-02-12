@@ -19,11 +19,9 @@
 #ifndef PRIMITIVEDESERIALIZER_H
 #define PRIMITIVEDESERIALIZER_H
 
-#include "joynr/Variant.h"
+#include <string>
 
-#include <functional>
-#include <vector>
-#include <utility>
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -42,7 +40,7 @@ public:
      */
     virtual ~IPrimitiveDeserializer() = default;
     /**
-     * @brief deserializeVariant Every deserializer has be able to deserailize to Variant
+     * @brief deserializeVariant Every deserializer has be able to deserialize to Variant
      * @param value
      * @return Deserialized object enclosed in Variant.
      * If given object is not a Variant, returns empty Variant

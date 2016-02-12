@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>0.14.3</version>
+		<version>0.15.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -92,37 +92,15 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.3</version>
 				<configuration>
-					<verbose>true</verbose>
+					<verbose>false</verbose>
 					<failOnError>true</failOnError>
 					<sourcepath>${basedir}</sourcepath>
 					<sourceFileExcludes>
+						<exclude>**/target/**/*.java</exclude>
 						<exclude>**/src/test/**/*.java</exclude>
 						<exclude>integration-tests/src/main/**/*.java</exclude>
 						<!-- following files will be quelled, since the package-info is duplicated -->
-						<exclude>backend-services/capabilities-directory/src/main/java/io/joynr/endpoints/package-info.java</exclude>
-						<exclude>backend-services/discovery-directory-servlet/src/main/java/io/joynr/servlet/package-info.java</exclude>
-						<exclude>common/infrastructure-common/src/main/java/io/joynr/arbitration/package-info.java</exclude>
-						<exclude>common/infrastructure-common/src/main/java/io/joynr/capabilities/package-info.java</exclude>
-						<exclude>common/infrastructure-common/src/main/java/io/joynr/common/package-info.java</exclude>
-						<exclude>common/infrastructure-common/src/main/java/io/joynr/messaging/package-info.java</exclude>
-						<exclude>core/joynr-types/src/main/java/io/joynr/dispatcher/rpc/package-info.java</exclude>
-						<exclude>javaapi/src/main/java/io/joynr/provider/package-info.java</exclude>
-						<exclude>javaapi/src/main/java/io/joynr/proxy/package-info.java</exclude>
-						<exclude>javaapi/src/main/java/io/joynr/pubsub/package-info.java</exclude>
-						<exclude>javaapi/src/main/java/io/joynr/pubsub/publication/package-info.java</exclude>
-						<exclude>javaapi/src/main/java/io/joynr/pubsub/subscription/package-info.java</exclude>
-						<exclude>messaging/bounceproxy-controller-service/src/main/java/io/joynr/messaging/info/package-info.java</exclude>
-						<exclude>messaging/bounceproxy-controller-service/src/main/java/io/joynr/messaging/service/package-info.java</exclude>
-						<exclude>messaging/bounceproxy/bounceproxy-controller-clustered/src/main/java/io/joynr/messaging/bounceproxy/controller/runtime/package-info.java</exclude>
-						<exclude>messaging/bounceproxy/bounceproxy-controller/src/main/java/io/joynr/messaging/bounceproxy/controller/runtime/package-info.java</exclude>
-						<exclude>messaging/messaging-common/src/main/java/io/joynr/messaging/package-info.java</exclude>
-						<exclude>messaging/messaging-common/src/main/java/io/joynr/runtime/package-info.java</exclude>
-						<exclude>messaging/messaging-service/src/main/java/io/joynr/messaging/service/package-info.java</exclude>
-						<exclude>messaging/messaging-servlet/src/main/java/io/joynr/dispatcher/package-info.java</exclude>
-						<exclude>messaging/messaging-servlet/src/main/java/io/joynr/messaging/package-info.java</exclude>
-						<exclude>messaging/messaging-servlet/src/main/java/io/joynr/runtime/package-info.java</exclude>
-						<exclude>messaging/service-common/src/main/java/io/joynr/messaging/datatypes/package-info.java</exclude>
-						<exclude>messaging/service-common/src/main/java/io/joynr/messaging/info/package-info.java</exclude>
+						<exclude>**/package-info.java</exclude>
 					</sourceFileExcludes>
 					<detectJavaApiLink>true</detectJavaApiLink>
 					<detectLinks>true</detectLinks>

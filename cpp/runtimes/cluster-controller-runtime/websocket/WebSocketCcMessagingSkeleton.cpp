@@ -18,12 +18,19 @@
  */
 #include "WebSocketCcMessagingSkeleton.h"
 
-#include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "QWebSocketSendWrapper.h"
-
 #include <QtWebSockets/QWebSocketServer>
 #include <QtWebSockets/QWebSocket>
+
+#include "joynr/JoynrMessage.h"
+#include "joynr/Util.h"
+#include "joynr/MessageRouter.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/IWebSocketSendInterface.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "joynr/system/RoutingTypes/WebSocketProtocol.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "QWebSocketSendWrapper.h"
 
 namespace joynr
 {
@@ -93,48 +100,60 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
     QWebSocket* client = qobject_cast<QWebSocket*>(sender());
 
     if (isInitializationMessage(message)) {
+        using joynr::system::RoutingTypes::WebSocketClientAddress;
         JOYNR_LOG_DEBUG(logger,
                         "received initialization message from websocket client: {}",
                         message.toStdString());
         // register client with messaging stub factory
-        joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress =
-                JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketClientAddress>(
-                        message.toStdString());
-        // client address must be valid, or libjoynr and CC are deployed in different versions
-        assert(clientAddress);
+        try {
+            WebSocketClientAddress clientAddress =
+                    JsonSerializer::deserialize<WebSocketClientAddress>(message.toStdString());
+            IWebSocketSendInterface* clientWrapper = new QWebSocketSendWrapper(client);
+            messagingStubFactory.addClient(&clientAddress, clientWrapper);
 
-        IWebSocketSendInterface* clientWrapper = new QWebSocketSendWrapper(client);
-        messagingStubFactory.addClient(clientAddress, clientWrapper);
+            // cleanup
+            disconnect(client,
+                       &QWebSocket::disconnected,
+                       this,
+                       &WebSocketCcMessagingSkeleton::onSocketDisconnected);
+            util::removeAll(clients, client);
 
-        // cleanup
-        disconnect(client,
-                   &QWebSocket::disconnected,
-                   this,
-                   &WebSocketCcMessagingSkeleton::onSocketDisconnected);
-        removeAll(clients, client);
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_FATAL(logger,
+                            "client address must be valid, otherwise libjoynr and CC are deployed "
+                            "in different versions - raw: {} - error: {}",
+                            message.toStdString(),
+                            e.what());
+        }
         return;
     }
 
     // deserialize message and transmit
-    JoynrMessage* joynrMsg = JsonSerializer::deserialize<JoynrMessage>(message.toStdString());
-    if (joynrMsg == nullptr || joynrMsg->getPayload().empty()) {
+    try {
+        JoynrMessage joynrMsg = JsonSerializer::deserialize<JoynrMessage>(message.toStdString());
+        if (joynrMsg.getPayload().empty()) {
+            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message.toStdString());
+            return;
+        }
+
+        JOYNR_LOG_TRACE(logger, "<<<< INCOMING <<<< {}", message.toStdString());
+        // message router copies joynr message when scheduling thread that handles
+        // message delivery
+        transmit(joynrMsg);
+    } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
-                        "Unable to deserialize joynr message object from: {}",
-                        message.toStdString());
+                        "Unable to deserialize joynr message object from: {} - error: {}",
+                        message.toStdString(),
+                        e.what());
         return;
     }
-    JOYNR_LOG_TRACE(logger, "<<<< INCOMING <<<< {}", message.toStdString());
-    // message router copies joynr message when scheduling thread that handles
-    // message delivery
-    transmit(*joynrMsg);
-    delete joynrMsg;
 }
 
 void WebSocketCcMessagingSkeleton::onSocketDisconnected()
 {
     QWebSocket* client = qobject_cast<QWebSocket*>(sender());
-    if (vectorContains(clients, client)) {
-        removeAll(clients, client);
+    if (util::vectorContains(clients, client)) {
+        util::removeAll(clients, client);
         client->deleteLater();
     }
 }

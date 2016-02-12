@@ -43,6 +43,9 @@ public:
     */
     virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                       const MessagingSettings& settings) = 0;
+
+    virtual void registerReceiveQueueStartedCallback(
+            std::function<void(void)> waitForReceiveQueueStarted) = 0;
 };
 } // namespace joynr
 

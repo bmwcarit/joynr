@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #include <memory>
 #include <chrono>
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 
@@ -50,29 +50,28 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrl
 
 
 // No longer desired behavior!
-TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannelUrlDir) {
-    const std::string bounceProxyBaseUrl = "http://www.urltest.org/pseudoBp";
-    BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
+TEST(ChannelUrlSelectorTest, DISABLED_usesBrokerUrlIfNotProvidedWithChannelUrlDir) {
+    const std::string brokerBaseUrl = "http://www.urltest.org/pseudoBp";
+    BrokerUrl brokerUrl(brokerBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
-                bounceProxyUrl,
+                brokerUrl,
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
-    RequestStatus* status = new RequestStatus();
+    StatusCodeEnum status (StatusCodeEnum::IN_PROGRESS);
     std::string channelId = "testChannelId";
-    std::string url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
+    std::string url = urlCache->obtainUrl(channelId,status, std::chrono::seconds(20));
     EXPECT_EQ("http://www.urltest.org/pseudoBp/testChannelId/message/", url);
     delete urlCache;
-    delete status;
 }
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
-    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string brokerBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
 
-    BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
+    BrokerUrl brokerUrl(brokerBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
-                bounceProxyUrl,
+                brokerUrl,
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
 
@@ -91,13 +90,12 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
                     A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
-    RequestStatus* status = new RequestStatus();
+    StatusCodeEnum status(StatusCodeEnum::IN_PROGRESS);
     std::string channelId = "testChannelId";
 
-    std::string url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
+    std::string url = urlCache->obtainUrl(channelId,status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
-    delete status;
     delete urlCache;
     delete settings;
     delete baseSettings;
@@ -105,12 +103,12 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
-    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string brokerBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
 
-    BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
+    BrokerUrl brokerUrl(brokerBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
-                bounceProxyUrl,
+                brokerUrl,
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
 
@@ -129,25 +127,24 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
                     A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
-    RequestStatus* status = new RequestStatus();
+    StatusCodeEnum status (StatusCodeEnum::IN_PROGRESS);
     std::string channelId = "testChannelId";
 
-    std::string url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
+    std::string url = urlCache->obtainUrl(channelId, status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
     urlCache->feedback(false,channelId,url);
-    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
+    url = urlCache->obtainUrl(channelId, status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
     urlCache->feedback(false,channelId,url);
-    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
+    url = urlCache->obtainUrl(channelId, status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
     urlCache->feedback(false,channelId,url);
-    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
+    url = urlCache->obtainUrl(channelId, status, std::chrono::seconds(20));
     EXPECT_EQ("secondUrl/message/", url);
 
-    delete status;
     delete urlCache;
     delete settings;
     delete baseSettings;
@@ -155,14 +152,14 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
-    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string brokerBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
     std::chrono::milliseconds timeForOneRecouperation(1000);
     double punishmentFactor = 0.4;//three punishments will lead to a try of the second Url
-    BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
+    BrokerUrl brokerUrl(brokerBaseUrl);
 
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
-                bounceProxyUrl,
+                brokerUrl,
                 timeForOneRecouperation,
                 punishmentFactor);
 
@@ -181,21 +178,20 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
                     A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
-    RequestStatus* status = new RequestStatus();
+    StatusCodeEnum status (StatusCodeEnum::IN_PROGRESS);
     std::string channelId = "testChannelId";
-    std::string url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
+    std::string url = urlCache->obtainUrl(channelId, status, std::chrono::seconds(20));
 
     urlCache->feedback(false,channelId,url);
     urlCache->feedback(false,channelId,url);
     urlCache->feedback(false,channelId,url);
-    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
+    url = urlCache->obtainUrl(channelId, status, std::chrono::seconds(20));
     EXPECT_EQ("secondUrl/message/", url);
 
     std::this_thread::sleep_for(timeForOneRecouperation + std::chrono::milliseconds(100));
-    url = urlCache->obtainUrl(channelId,*status, std::chrono::seconds(20));
+    url = urlCache->obtainUrl(channelId, status, std::chrono::seconds(20));
     EXPECT_EQ("firstUrl/message/", url);
 
-    delete status;
     delete urlCache;
     delete settings;
     delete baseSettings;

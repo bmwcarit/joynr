@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,23 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
+#include <tuple>
 #include <cstdint>
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
+#include "joynr/JsonSerializer.h"
+
+using ::testing::Property;
+using ::testing::WhenDynamicCastTo;
 using namespace ::testing;
 using namespace joynr;
 
@@ -60,9 +66,9 @@ public:
         registerCapabilitiesMetaTypes();
 
         //TODO the participantId should be provided by the provider
-        dummyParticipantId1 = Util::createUuid();
-        dummyParticipantId2 = Util::createUuid();
-        dummyParticipantId3 = Util::createUuid();
+        dummyParticipantId1 = util::createUuid();
+        dummyParticipantId2 = util::createUuid();
+        dummyParticipantId3 = util::createUuid();
         localJoynrMessagingAddress1 = std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress("LOCAL_CHANNEL_ID"));
         callback = std::shared_ptr<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
@@ -93,8 +99,8 @@ public:
             const std::string& interfaceName,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(domain);
-        Q_UNUSED(interfaceName);
+        std::ignore = domain;
+        std::ignore = interfaceName;
         std::vector<types::CapabilityInformation> result;
         onSuccess(result);
     }
@@ -103,7 +109,7 @@ public:
             const std::string& participantId,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(participantId);
+        std::ignore = participantId;
         std::vector<types::CapabilityInformation> result;
         onSuccess(result);
     }
@@ -113,8 +119,8 @@ public:
             const std::string& interfaceName,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(domain);
-        Q_UNUSED(interfaceName);
+        std::ignore = domain;
+        std::ignore = interfaceName;
         types::ProviderQos qos;
         std::vector<types::CapabilityInformation> capInfoList;
         capInfoList.push_back(types::CapabilityInformation(
@@ -157,7 +163,7 @@ public:
             const std::string& participantId,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
-        Q_UNUSED(participantId);
+        std::ignore = participantId;
         types::ProviderQos qos;
         std::vector<types::CapabilityInformation> capInfoList;
         capInfoList.push_back(types::CapabilityInformation(
@@ -210,6 +216,7 @@ protected:
     static const int TIMEOUT;
     std::shared_ptr<MockLocalCapabilitiesDirectoryCallback> callback;
     std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
+    void registerReceivedCapabilities(const std::string& addressType, const std::string& channelId);
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectoryTest);
 };
@@ -863,3 +870,63 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupGlobalOnly
 }
 
 //TODO test remove global capability
+
+MATCHER_P2(pointerToAddressWithChannelId, addressType, channelId, "") {
+    if (arg == nullptr) {
+        return false;
+    }
+    if (addressType == "mqtt") {
+        std::shared_ptr<system::RoutingTypes::MqttAddress> mqttAddress = std::dynamic_pointer_cast<system::RoutingTypes::MqttAddress>(arg);
+        if (mqttAddress == nullptr) {
+            return false;
+        }
+        return JsonSerializer::serialize(*mqttAddress) == channelId;
+    } else if (addressType == "http") {
+        std::shared_ptr<system::RoutingTypes::ChannelAddress> httpAddress = std::dynamic_pointer_cast<system::RoutingTypes::ChannelAddress>(arg);
+        if (httpAddress == nullptr) {
+            return false;
+        }
+        return httpAddress->getChannelId() == channelId;
+    } else {
+        return false;
+    }
+}
+
+void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(const std::string& addressType, const std::string& channelId) {
+    const std::string participantId = "TEST_participantId";
+        EXPECT_CALL(mockMessageRouter, addNextHop(
+                participantId,
+                AllOf(
+                        Pointee(A<const joynr::system::RoutingTypes::Address>()),
+                        pointerToAddressWithChannelId(addressType, channelId)),
+                _)
+            ).Times(1);
+        EXPECT_CALL(mockMessageRouter, addNextHop(
+                participantId,
+                AnyOf(
+                        Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
+                        Not(pointerToAddressWithChannelId(addressType, channelId))
+                        ),
+                _)
+            ).Times(0);
+
+        QMap<std::string, CapabilityEntry> capabilitiesMap;
+        CapabilityEntry capEntry;
+        capEntry.setParticipantId(participantId);
+        capabilitiesMap.insertMulti(channelId, capEntry);
+        localCapabilitiesDirectory->registerReceivedCapabilities(capabilitiesMap);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerMqttAddress) {
+    const std::string addressType = "mqtt";
+    const std::string topic = "mqtt_TEST_channelId";
+    system::RoutingTypes::MqttAddress mqttAddress("brokerUri", topic);
+    const std::string channelId = JsonSerializer::serialize(mqttAddress);
+    registerReceivedCapabilities(addressType, channelId);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerHttpAddress) {
+    const std::string addressType = "http";
+    const std::string channelId = "http_TEST_channelId";
+    registerReceivedCapabilities(addressType, channelId);
+}

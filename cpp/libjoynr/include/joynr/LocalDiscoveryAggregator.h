@@ -19,26 +19,24 @@
 #ifndef LOCALDISCOVERYAGGREGATOR_H
 #define LOCALDISCOVERYAGGREGATOR_H
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
-#include "joynr/ProxyBuilder.h"
-
-#include "joynr/system/IDiscovery.h"
 #include <string>
 #include <vector>
 #include <map>
 
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
+#include "joynr/system/IDiscovery.h"
+#include "joynr/types/DiscoveryEntry.h"
+
 namespace joynr
 {
-class JoynrRuntime;
 class IRequestCallerDirectory;
 class SystemServicesSettings;
 
-namespace system
+namespace types
 {
 class DiscoveryQos;
-class DiscoveryProxy;
-} // namespace system
+} // namespace types
 
 /**
  * @brief The LocalDiscoveryAggregator class is a wrapper for discovery proxies. On

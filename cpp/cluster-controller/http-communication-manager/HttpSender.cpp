@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/QtTypeUtil.h"
 
 #include <algorithm>
@@ -47,11 +46,11 @@ const std::int64_t& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIA
 
 INIT_LOGGER(HttpSender);
 
-HttpSender::HttpSender(const BounceProxyUrl& bounceProxyUrl,
+HttpSender::HttpSender(const BrokerUrl& brokerUrl,
                        std::chrono::milliseconds maxAttemptTtl,
                        std::chrono::milliseconds messageSendRetryInterval)
-        : bounceProxyUrl(bounceProxyUrl),
-          channelUrlCache(new ChannelUrlSelector(this->bounceProxyUrl,
+        : brokerUrl(brokerUrl),
+          channelUrlCache(new ChannelUrlSelector(this->brokerUrl,
                                                  ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                                                  ChannelUrlSelector::PUNISHMENT_FACTOR())),
           maxAttemptTtl(maxAttemptTtl),
@@ -92,12 +91,6 @@ void HttpSender::sendMessage(const std::string& channelId, const JoynrMessage& m
         scheduler = &delayedScheduler;
     }
 
-    /**
-     * NOTE: passing std::string by value into the runnable and thereby relying on the fact that the
-     * std::string internally
-     * uses QSharedDataPointer to manage the string's data, which when copied by value only copies
-     * the pointer (but safely)
-     */
     scheduler->schedule(new SendMessageRunnable(this,
                                                 channelId,
                                                 message.getHeaderExpiryDate(),
@@ -155,8 +148,10 @@ void HttpSender::SendMessageRunnable::run()
                     SendMessageRunnable::messageRunnableCounter);
 
     assert(messageSender->channelUrlCache != nullptr);
-    // A channelId can have several Url's. Hence, we cannot use up all the time we have for testing
-    // just one (in case it is not available). So we use just a fraction, yet at least MIN... and
+    // A channelId can have several Url's. Hence, we cannot use up all the time we have for
+    // testing
+    // just one (in case it is not available). So we use just a fraction, yet at least MIN...
+    // and
     // at most MAX... seconds.
     std::int64_t curlTimeout = std::max(
             getRemainingTtl_ms() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
@@ -175,6 +170,8 @@ void HttpSender::SendMessageRunnable::run()
         delay = messageSender->messageSendRetryInterval - timeDiff;
     }
 
+    JOYNR_LOG_TRACE(
+            logger, "sendMessageResult.getStatusCode() = {}", sendMessageResult.getStatusCode());
     if (sendMessageResult.getStatusCode() != 201) {
         messageSender->channelUrlCache->feedback(false, channelId, url);
         delayedScheduler.schedule(new SendMessageRunnable(messageSender,
@@ -188,11 +185,11 @@ void HttpSender::SendMessageRunnable::run()
         if (!sendMessageResult.getBody().isNull()) {
             body = std::string(sendMessageResult.getBody().data());
         }
-        JOYNR_LOG_ERROR(
-                logger,
-                "sending message - fail; error message {}; contents {}; rescheduling for retry...",
-                sendMessageResult.getErrorMessage(),
-                body);
+        JOYNR_LOG_ERROR(logger,
+                        "sending message - fail; error message {}; contents {}; rescheduling "
+                        "for retry...",
+                        sendMessageResult.getErrorMessage(),
+                        body);
     } else {
         JOYNR_LOG_DEBUG(logger,
                         "sending message - success; url: {} status code: {} at ",
@@ -205,19 +202,20 @@ std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(
         std::chrono::milliseconds curlTimeout)
 {
     JOYNR_LOG_TRACE(logger, "obtaining Url with a curlTimeout of : {}", curlTimeout.count());
-    RequestStatus status;
+    StatusCodeEnum status(StatusCodeEnum::IN_PROGRESS);
     // we also use the curl timeout here, to prevent long blocking during shutdown.
     std::string url = messageSender->channelUrlCache->obtainUrl(channelId, status, curlTimeout);
-    if (!status.successful()) {
+    if (!(status == StatusCodeEnum::SUCCESS)) {
         JOYNR_LOG_ERROR(logger,
                         "Issue while trying to obtained URl from the ChannelUrlDirectory: {}",
-                        status.toString());
+                        StatusCode::toString(status));
     }
     if (url.empty()) {
         JOYNR_LOG_DEBUG(logger,
                         "Url for channelId could not be obtained from the "
                         "ChannelUrlDirectory ... EXITING ...");
-        assert(false); // OR: url = messageSender->bounceProxyUrl.getSendUrl(channelId).toString();
+        assert(false); // OR: url =
+                       // messageSender->brokerUrl.getSendUrl(channelId).toString();
     }
 
     JOYNR_LOG_TRACE(logger,
@@ -231,9 +229,11 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(
         const std::string& url,
         std::chrono::milliseconds curlTimeout)
 {
+    JOYNR_LOG_TRACE(logger, "buildRequestAndSend.createHttpPostBuilder...");
     std::shared_ptr<IHttpPostBuilder> sendMessageRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(url));
 
+    JOYNR_LOG_TRACE(logger, "buildRequestAndSend.sendMessageRequestBuilder...");
     std::shared_ptr<HttpRequest> sendMessageRequest(
             sendMessageRequestBuilder->withContentType("application/json")
                     ->withTimeout(std::min(maxAttemptTtl, curlTimeout))
@@ -241,9 +241,15 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(
                     ->build());
     JOYNR_LOG_TRACE(logger, "builtRequest");
 
-    Util::logSerializedMessage(logger, "Sending Message: ", data);
+    util::logSerializedMessage(logger, "Sending Message: ", data);
 
     return sendMessageRequest->execute();
+}
+
+void HttpSender::registerReceiveQueueStartedCallback(
+        std::function<void(void)> waitForReceiveQueueStarted)
+{
+    std::ignore = waitForReceiveQueueStarted;
 }
 
 } // namespace joynr

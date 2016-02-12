@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(radio-app-0.14.3)
+project(radio-app-0.15.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
-add_definitions("-std=gnu++0x")
+add_definitions("-std=c++14")
 
 set(
     JOYNR_SERVER
@@ -26,7 +26,7 @@ message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.14.3 REQUIRED)
+find_package(Joynr 0.15.0 REQUIRED)
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_DBUS_INCLUDE_DIRS=${Joynr_LIB_DBUS_INCLUDE_DIRS}")
@@ -43,6 +43,7 @@ message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMO
 
 find_package(Boost 1.56.0 REQUIRED
     COMPONENTS
+    system
     filesystem
 )
 message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")

@@ -6,6 +6,43 @@ get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCL
 get_target_property(JoynrLib_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 
+### Add mosquitto mqtt ###########################################################
+if(USE_PLATFORM_MOSQUITTO)
+    find_package(mosquitto REQUIRED)
+
+    message(STATUS "variable MOSQUITTO_INCLUDE_DIRS=${MOSQUITTO_INCLUDE_DIRS}")
+    set(MOSQUITTO_INCLUDE_DIRS ${MOSQUITTO_INCLUDE_DIRS} PARENT_SCOPE)
+    get_filename_component(MOSQUITTO_BINARY_DIR ${MOSQUITTO_LIBRARY} DIRECTORY)
+    message(STATUS "variable MOSQUITTO_BINARY_DIR=${MOSQUITTO_BINARY_DIR}")
+    message(STATUS "variable MOSQUITTO_LIBRARY=${MOSQUITTO_LIBRARY}")
+else(USE_PLATFORM_MOSQUITTO)
+    message(STATUS "############ Download: mosquitto ############")
+    set(MOSQUITTO_SOURCE_URL "https://git.eclipse.org/r/mosquitto/org.eclipse.mosquitto.git")
+    set(MOSQUITTO_SOURCE_TYPE "GIT_REPOSITORY")
+    set(MOSQUITTO_VERSION 1.4.7)
+
+    AddExternalProject(
+        mosquitto
+        ${MOSQUITTO_SOURCE_TYPE} "${MOSQUITTO_SOURCE_URL}"
+        GIT_TAG v${MOSQUITTO_VERSION}
+        TIMEOUT 10
+        BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/mosquitto-build/lib/cpp/libmosquittopp.so")
+    )
+
+    ExternalProject_Get_Property(mosquitto SOURCE_DIR)
+    set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib/cpp ${SOURCE_DIR}/lib)
+    set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib/cpp ${SOURCE_DIR}/lib PARENT_SCOPE)
+    message(STATUS "variable MOSQUITTO_INCLUDE_DIRS=${MOSQUITTO_INCLUDE_DIRS}")
+
+    ExternalProject_Get_Property(mosquitto BINARY_DIR)
+    set(MOSQUITTO_BINARY_DIR ${BINARY_DIR}/lib/cpp)
+    message(STATUS "variable MOSQUITTO_BINARY_DIR=${MOSQUITTO_BINARY_DIR}")
+    set(MOSQUITTO_LIBRARY ${MOSQUITTO_BINARY_DIR}/libmosquittopp.so)
+    message(STATUS "variable MOSQUITTO_LIBRARY=${MOSQUITTO_LIBRARY}")
+
+endif(USE_PLATFORM_MOSQUITTO)
+
+
 set(
     JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -23,7 +60,9 @@ set(
 set(
     JoynrClusterController_SYS_INCLUDE_DIRECTORIES
     ${jsmn_INCLUDE_DIR}
-    ${Qt5Core_INCLUDE_DIRECTORY}
+    ${Qt5Core_INCLUDE_DIRS}
+    ${CURL_INCLUDE_DIRS}
+    ${MOSQUITTO_INCLUDE_DIRS}
 )
 
 set(
@@ -32,6 +71,7 @@ set(
     JoynrCommon
     cURL::curl
     ${Qt5Sql_LIBRARIES}
+    ${MOSQUITTO_LIBRARY}
 )
 
 set(
@@ -58,6 +98,7 @@ file(
     "messaging/*.h"
     "messaging/in-process/*.h"
     "messaging/joynr-messaging/*.h"
+    "mqtt/*.h"
 )
 
 set(
@@ -77,6 +118,7 @@ file(
     "messaging/*.cpp"
     "messaging/in-process/*.cpp"
     "messaging/joynr-messaging/*.cpp"
+    "mqtt/*.cpp"
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -118,14 +160,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-include_directories(
-        ${JoynrClusterController_INCLUDE_DIRECTORIES}
-)
-
-include_directories(
-    SYSTEM
-    ${JoynrClusterController_SYS_INCLUDE_DIRECTORIES}
-)
 
 add_library(
     JoynrClusterController
@@ -133,6 +167,20 @@ add_library(
     ${JoynrClusterController_HEADERS}
     ${JoynrClusterController_SOURCES}
 )
+
+target_include_directories(
+    JoynrClusterController
+    PRIVATE ${JoynrClusterController_INCLUDE_DIRECTORIES}
+)
+
+target_include_directories(
+    JoynrClusterController
+    SYSTEM
+    PRIVATE ${JoynrClusterController_SYS_INCLUDE_DIRECTORIES}
+)
+if(NOT USE_PLATFORM_MOSQUITTO)
+    add_dependencies(JoynrClusterController mosquitto)
+endif(NOT USE_PLATFORM_MOSQUITTO)
 
 AddClangFormat(JoynrClusterController)
 
@@ -159,31 +207,67 @@ target_link_libraries(JoynrClusterController ${JoynrClusterController_TARGET_LIB
 install(
     TARGETS JoynrClusterController
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of headder files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
 )
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )
 
 # Visual Studio compiles to Debug and Release directories
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-messaging.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-messaging.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-dbus.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-dbus.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-websocket.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-websocket.settings)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-messaging.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-messaging.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-dbus.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-dbus.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-websocket.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-websocket.settings
+        @ONLY
+    )
 else()
     # copy resources for build tree
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-messaging.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
+        @ONLY
+    )
     # ...and for install tree
     install(
         FILES

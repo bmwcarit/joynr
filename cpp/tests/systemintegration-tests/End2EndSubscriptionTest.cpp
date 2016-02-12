@@ -39,21 +39,14 @@ ACTION_P(ReleaseSemaphore,semaphore)
     semaphore->notify();
 }
 
-static const std::string messagingPropertiesPersistenceFileName1(
-        "End2EndSubscriptionTest-runtime1-joynr.settings");
-static const std::string messagingPropertiesPersistenceFileName2(
-        "End2EndSubscriptionTest-runtime2-joynr.settings");
-
 namespace joynr {
 
-class End2EndSubscriptionTest : public Test {
+class End2EndSubscriptionTest : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
-    Settings settings1;
-    Settings settings2;
-    MessagingSettings messagingSettings1;
-    MessagingSettings messagingSettings2;
+    Settings *settings1;
+    Settings *settings2;
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
@@ -65,11 +58,9 @@ public:
     End2EndSubscriptionTest() :
         runtime1(nullptr),
         runtime2(nullptr),
-        settings1("test-resources/SystemIntegrationTest1.settings"),
-        settings2("test-resources/SystemIntegrationTest2.settings"),
-        messagingSettings1(settings1),
-        messagingSettings2(settings2),
-        baseUuid(Util::createUuid()),
+        settings1(new Settings(std::get<0>(GetParam()))),
+        settings2(new Settings(std::get<1>(GetParam()))),
+        baseUuid(util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppEnd2EndSubscriptionTest_Domain" + uuid),
         semaphore(0),
@@ -77,22 +68,15 @@ public:
         subscribeToAttributeWait(2000)
 
     {
-        messagingSettings1.setMessagingPropertiesPersistenceFilename(
-                    messagingPropertiesPersistenceFileName1);
-        messagingSettings2.setMessagingPropertiesPersistenceFilename(
-                    messagingPropertiesPersistenceFileName2);
-
-        Settings* settings_1 = new Settings("test-resources/SystemIntegrationTest1.settings");
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
-        Settings::merge(integration1Settings, *settings_1, false);
+        Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings_1);
+        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings1);
 
-        Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
-        Settings::merge(integration2Settings, *settings_2, false);
+        Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings_2);
+        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings2);
     }
 
     void SetUp() {
@@ -197,7 +181,7 @@ protected:
 } // namespace joynr
 
 
-TEST_F(End2EndSubscriptionTest, subscribeToEnumAttribute) {
+TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute) {
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
 
     testOneShotAttributeSubscription(expectedTestEnum,
@@ -210,7 +194,7 @@ TEST_F(End2EndSubscriptionTest, subscribeToEnumAttribute) {
                                  "enumAttribute");
 }
 
-TEST_F(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
+TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
     joynr::ByteBuffer expectedByteBuffer {0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0};
 
     testOneShotAttributeSubscription(expectedByteBuffer,
@@ -223,3 +207,17 @@ TEST_F(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
                                  "byteBufferAttribute");
 
 }
+
+INSTANTIATE_TEST_CASE_P(Http,
+        End2EndSubscriptionTest,
+        testing::Values(
+            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings","test-resources/HttpSystemIntegrationTest2.settings")
+        )
+);
+
+INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+        End2EndSubscriptionTest,
+        testing::Values(
+            std::make_tuple("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings","test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings")
+        )
+);

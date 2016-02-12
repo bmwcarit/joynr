@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CAPABILITIESMETATYPES
-#define CAPABILITIESMETATYPES
+#ifndef CAPABILITIESMETATYPES_H
+#define CAPABILITIESMETATYPES_H
 
 #include "joynr/JoynrCommonExport.h"
 
@@ -28,4 +28,4 @@ void JOYNRCOMMON_EXPORT registerCapabilitiesMetaTypes();
 
 } // namespace joynr
 
-#endif // CAPABILITIESMETATYPES
+#endif // CAPABILITIESMETATYPES_H

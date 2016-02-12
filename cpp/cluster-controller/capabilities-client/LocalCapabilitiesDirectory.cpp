@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#include <boost/algorithm/string/predicate.hpp>
+
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IChannelUrlDirectory.h"
@@ -23,6 +25,7 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/CapabilityEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/MessageRouter.h"
 #include "common/InterfaceAddress.h"
@@ -45,7 +48,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
           participantId2LocalCapability(),
           registeredGlobalCapabilities(),
           messageRouter(messageRouter),
-          observers()
+          observers(),
+          mqttSettings()
 {
     providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
     providerQos.setProviderVersion(1);
@@ -195,7 +199,7 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
     std::vector<CapabilityEntry> globalCapabilities = searchCache(
             interfaceAddress, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()), false);
 
-    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
+    return callReceiverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
 
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
@@ -210,10 +214,10 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
     std::vector<CapabilityEntry> globalCapabilities = searchCache(
             participantId, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()), false);
 
-    return callRecieverIfPossible(scope, localCapabilities, globalCapabilities, callback);
+    return callReceiverIfPossible(scope, localCapabilities, globalCapabilities, callback);
 }
 
-bool LocalCapabilitiesDirectory::callRecieverIfPossible(
+bool LocalCapabilitiesDirectory::callReceiverIfPossible(
         joynr::types::DiscoveryScope::Enum& scope,
         std::vector<CapabilityEntry>& localCapabilities,
         std::vector<CapabilityEntry>& globalCapabilities,
@@ -311,7 +315,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     // get the local and cached entries
     bool receiverCalled = getLocalAndCachedCapabilities(participantId, discoveryQos, callback);
 
-    // if no reciever is called, use the global capabilities directory
+    // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
         auto onSuccess = [this, participantId, callback](
@@ -335,7 +339,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& domain,
     // get the local and cached entries
     bool receiverCalled = getLocalAndCachedCapabilities(interfaceAddress, discoveryQos, callback);
 
-    // if no reciever is called, use the global capabilities directory
+    // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
         auto onSuccess = [this, interfaceAddress, callback, discoveryQos](
@@ -377,9 +381,33 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
     while (entryIterator.hasNext()) {
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
-        std::shared_ptr<joynr::system::RoutingTypes::Address> joynrAddress(
-                new system::RoutingTypes::ChannelAddress(entryIterator.key()));
-        messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
+
+        std::string channelId = entryIterator.key();
+
+        // TODO: check joynrAddress for nullptr instead of string.find after the deserialization
+        // works as expected.
+        // Currently, JsonDeserializer.deserialize<T> always returns an instance of T
+        std::size_t foundTypeNameKey = channelId.find("\"_typeName\"");
+        std::size_t foundTypeNameValue =
+                channelId.find("\"joynr.system.RoutingTypes.MqttAddress\"");
+        if (boost::starts_with(channelId, "{") && foundTypeNameKey != std::string::npos &&
+            foundTypeNameValue != std::string::npos && foundTypeNameKey < foundTypeNameValue) {
+            try {
+                using system::RoutingTypes::MqttAddress;
+                MqttAddress joynrAddress = JsonSerializer::deserialize<MqttAddress>(channelId);
+                auto addressPtr = std::make_shared<MqttAddress>(joynrAddress);
+                messageRouter.addNextHop(currentEntry.getParticipantId(), addressPtr);
+            } catch (const std::invalid_argument& e) {
+                JOYNR_LOG_FATAL(logger,
+                                "could not deserialize MqttAddress from {} - error: {}",
+                                channelId,
+                                e.what());
+            }
+        } else {
+            auto joynrAddress =
+                    std::make_shared<system::RoutingTypes::ChannelAddress>(entryIterator.key());
+            messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
+        }
         this->insertInCache(currentEntry, false, true);
     }
 }
@@ -390,7 +418,7 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     add(discoveryEntry);
     onSuccess();
 }
@@ -403,7 +431,7 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(domain, interfaceName, future, discoveryQos);
     std::vector<CapabilityEntry> capabilities = future->get();
@@ -418,7 +446,7 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(participantId, future);
     std::vector<CapabilityEntry> capabilities = future->get();
@@ -443,7 +471,7 @@ void LocalCapabilitiesDirectory::remove(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    (void)onError;
+    std::ignore = onError;
     remove(participantId);
     onSuccess();
 }
@@ -457,7 +485,7 @@ void LocalCapabilitiesDirectory::addProviderRegistrationObserver(
 void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
         std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
 {
-    removeAll(observers, observer);
+    util::removeAll(observers, observer);
 }
 
 /**

@@ -17,10 +17,8 @@
  * #L%
  */
 #include "joynr/SubscriptionQos.h"
-#include "joynr/DispatcherUtils.h"
 #include <limits>
 #include <chrono>
-#include <stdexcept>
 #include "joynr/Variant.h"
 
 namespace joynr

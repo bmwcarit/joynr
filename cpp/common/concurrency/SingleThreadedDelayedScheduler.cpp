@@ -18,9 +18,9 @@
  */
 #include "joynr/SingleThreadedDelayedScheduler.h"
 
-#include "joynr/Runnable.h"
-
 #include <cassert>
+
+#include "joynr/Runnable.h"
 
 namespace joynr
 {

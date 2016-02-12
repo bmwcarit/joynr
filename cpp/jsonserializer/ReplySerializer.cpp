@@ -22,7 +22,8 @@
 #include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
 #include "joynr/ArraySerializer.h"
-#include "exceptions/JoynrExceptionSerializer.h"
+#include "joynr/IDeserializer.h"
+
 
 namespace joynr
 {

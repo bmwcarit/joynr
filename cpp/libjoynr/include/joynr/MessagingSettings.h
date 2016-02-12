@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 namespace joynr
 {
 
-class BounceProxyUrl;
+class BrokerUrl;
 class Settings;
 
 class JOYNR_EXPORT MessagingSettings
@@ -38,6 +38,7 @@ public:
 
     ~MessagingSettings() = default;
 
+    static const std::string& SETTING_BROKER_URL();
     static const std::string& SETTING_BOUNCE_PROXY_URL();
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
     static const std::string& SETTING_CHANNEL_URL_DIRECTORY_URL();
@@ -63,7 +64,7 @@ public:
     static const std::string& SETTING_PERSISTENCE_FILENAME();
     static const std::string& SETTING_LONGPOLL_TIMEOUT_MS();
     static const std::string& SETTING_HTTP_CONNECT_TIMEOUT_MS();
-    static const std::string& SETTING_BOUNCEPROXY_TIMEOUT_MS();
+    static const std::string& SETTING_BROKER_TIMEOUT_MS();
     /**
      * @brief SETTING_DISCOVERY_MESSAGES_TTL_MS Time-to-live of messages used
      * in communication between the local discovery service and the discovery
@@ -79,13 +80,17 @@ public:
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
     static std::int64_t DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
-    static std::int64_t DEFAULT_BOUNCEPROXY_TIMEOUT_MS();
+    static std::int64_t DEFAULT_BROKER_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
     static std::int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
 
-    BounceProxyUrl getBounceProxyUrl() const;
+    BrokerUrl getBrokerUrl() const;
+    std::string getBrokerUrlString() const;
+    void setBrokerUrl(const BrokerUrl& brokerUrl);
+
+    BrokerUrl getBounceProxyUrl() const;
     std::string getBounceProxyUrlString() const;
-    void setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl);
+    void setBounceProxyUrl(const BrokerUrl& brokerUrl);
 
     std::string getDiscoveryDirectoriesDomain() const;
 
@@ -125,8 +130,8 @@ public:
     void setLongPollTimeout(std::int64_t timeout_ms);
     std::int64_t getHttpConnectTimeout() const;
     void setHttpConnectTimeout(std::int64_t timeout_ms);
-    std::int64_t getBounceProxyTimeout() const;
-    void setBounceProxyTimeout(std::int64_t timeout_ms);
+    std::int64_t getBrokerTimeout() const;
+    void setBrokerTimeout(std::int64_t timeout_ms);
     std::int64_t getDiscoveryMessagesTtl() const;
     void setDiscoveryMessagesTtl(std::int64_t ttl_ms);
     std::int64_t getSendMsgMaxTtl() const;

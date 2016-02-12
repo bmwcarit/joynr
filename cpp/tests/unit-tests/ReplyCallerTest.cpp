@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,92 +46,88 @@ using namespace joynr;
 class ReplyCallerTest : public ::testing::Test {
 public:
     ReplyCallerTest()
-        : intCallback(new MockCallbackWithOnErrorHavingRequestStatus<int>()),
-          intFixture(std::bind(&MockCallbackWithOnErrorHavingRequestStatus<int>::onSuccess, intCallback, std::placeholders::_2),
-                     std::bind(&MockCallbackWithOnErrorHavingRequestStatus<int>::onError, intCallback, std::placeholders::_1, std::placeholders::_2)),
-          voidCallback(new MockCallbackWithOnErrorHavingRequestStatus<void>()),
-          voidFixture(std::bind(&MockCallbackWithOnErrorHavingRequestStatus<void>::onSuccess, voidCallback),
-                      std::bind(&MockCallbackWithOnErrorHavingRequestStatus<void>::onError, voidCallback, std::placeholders::_1, std::placeholders::_2)) {}
+        : intCallback(new MockCallbackWithJoynrException<int>()),
+          intFixture(std::bind(&MockCallbackWithJoynrException<int>::onSuccess, intCallback, std::placeholders::_1),
+                     std::bind(&MockCallbackWithJoynrException<int>::onError, intCallback, std::placeholders::_1)),
+          voidCallback(new MockCallbackWithJoynrException<void>()),
+          voidFixture(std::bind(&MockCallbackWithJoynrException<void>::onSuccess, voidCallback),
+                      std::bind(&MockCallbackWithJoynrException<void>::onError, voidCallback, std::placeholders::_1)) {}
 
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<int>> intCallback;
+    std::shared_ptr<MockCallbackWithJoynrException<int>> intCallback;
     ReplyCaller<int> intFixture;
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<void>> voidCallback;
+    std::shared_ptr<MockCallbackWithJoynrException<void>> voidCallback;
     ReplyCaller<void> voidFixture;
 };
 
 typedef ReplyCallerTest ReplyCallerDeathTest;
 
 TEST_F(ReplyCallerTest, getType) {
-    ASSERT_EQ(Util::getTypeId<int>(), intFixture.getTypeId());
+    ASSERT_EQ(util::getTypeId<int>(), intFixture.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeInt64_t) {
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<std::int64_t>> callback(new MockCallbackWithOnErrorHavingRequestStatus<std::int64_t>());
+    std::shared_ptr<MockCallbackWithJoynrException<std::int64_t>> callback(new MockCallbackWithJoynrException<std::int64_t>());
     ReplyCaller<std::int64_t> int64_tReplyCaller(
-                [callback](const RequestStatus& status, const std::int64_t& value) {
+                [callback](const std::int64_t& value) {
                     callback->onSuccess(value);
                 },
-                [](const RequestStatus& status, const exceptions::JoynrException& error){
+                [](const exceptions::JoynrException& error){
                 });
-    ASSERT_EQ(Util::getTypeId<std::int64_t>(), int64_tReplyCaller.getTypeId());
+    ASSERT_EQ(util::getTypeId<std::int64_t>(), int64_tReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeInt8_t) {
-    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<std::int8_t>> callback(new MockCallbackWithOnErrorHavingRequestStatus<std::int8_t>());
+    std::shared_ptr<MockCallbackWithJoynrException<std::int8_t>> callback(new MockCallbackWithJoynrException<std::int8_t>());
     ReplyCaller<std::int8_t> int8_tReplyCaller(
-                [callback](const RequestStatus& status, const std::int8_t& value) {
+                [callback](const std::int8_t& value) {
                     callback->onSuccess(value);
                 },
-                [](const RequestStatus& status, const exceptions::JoynrException& error){
+                [](const exceptions::JoynrException& error){
                 });
-    ASSERT_EQ(Util::getTypeId<std::int8_t>(), int8_tReplyCaller.getTypeId());
+    ASSERT_EQ(util::getTypeId<std::int8_t>(), int8_tReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeForVoid) {
     int typeId = voidFixture.getTypeId();
-    ASSERT_EQ(Util::getTypeId<void>(), typeId);
+    ASSERT_EQ(util::getTypeId<void>(), typeId);
 }
 
 
 TEST_F(ReplyCallerTest, timeOut) {
     EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
-    EXPECT_CALL(*intCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException())).Times(1);
+    EXPECT_CALL(*intCallback, onError(timeoutException())).Times(1);
     intFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, timeOutForVoid) {
-    EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
-    EXPECT_CALL(*voidCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException())).Times(1);
+    EXPECT_CALL(*voidCallback, onSuccess()).Times(0);
+    EXPECT_CALL(*voidCallback, onError(timeoutException())).Times(1);
     voidFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, errorReceived) {
     std::string errorMsg = "errorMsgFromProvider";
-    EXPECT_CALL(*intCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR),providerRuntimeException(errorMsg))).Times(1);
+    EXPECT_CALL(*intCallback, onError(providerRuntimeException(errorMsg))).Times(1);
     EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
     intFixture.returnError(exceptions::ProviderRuntimeException(errorMsg));
 }
 
 TEST_F(ReplyCallerTest, errorReceivedForVoid) {
     std::string errorMsg = "errorMsgFromProvider";
-    EXPECT_CALL(*voidCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR),providerRuntimeException(errorMsg))).Times(1);
+    EXPECT_CALL(*voidCallback, onError(providerRuntimeException(errorMsg))).Times(1);
     EXPECT_CALL(*voidCallback, onSuccess()).Times(0);
     voidFixture.returnError(exceptions::ProviderRuntimeException(errorMsg));
 }
 
 TEST_F(ReplyCallerTest, resultReceived) {
     EXPECT_CALL(*intCallback, onSuccess(7));
-    EXPECT_CALL(*intCallback, onError(_,_)).Times(0);
+    EXPECT_CALL(*intCallback, onError(_)).Times(0);
     intFixture.returnValue(7);
 }
 
 TEST_F(ReplyCallerTest, resultReceivedForVoid) {
     EXPECT_CALL(*voidCallback, onSuccess());
-    EXPECT_CALL(*voidCallback, onError(_,_)).Times(0);
+    EXPECT_CALL(*voidCallback, onError(_)).Times(0);
     voidFixture.returnValue();
 }
 

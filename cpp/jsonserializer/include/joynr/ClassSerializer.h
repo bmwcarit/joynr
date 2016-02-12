@@ -16,12 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CLASSSERIALIZER
-#define CLASSSERIALIZER
+#ifndef CLASSSERIALIZER_H
+#define CLASSSERIALIZER_H
+
+#include <vector>
+#include <iosfwd>
 
 #include "joynr/Variant.h"
-#include <vector>
-#include <ostream>
 
 namespace joynr
 {
@@ -100,5 +101,5 @@ void ClassSerializerImpl<Variant>::serialize(const Variant &variant, std::ostrea
 std::string addEscapeForSpecialCharacters(const std::string& str);
 
 } // namespace joynr
-#endif // CLASSSERIALIZER
+#endif // CLASSSERIALIZER_H
 

@@ -19,15 +19,16 @@
 #ifndef REPLYSERIALIZER_H
 #define REPLYSERIALIZER_H
 
+#include <iosfwd>
+
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "joynr/Reply.h"
-#include "joynr/IDeserializer.h"
-
-#include <ostream>
 
 namespace joynr
 {
+
+class IObject;
 
 // Serializes a Reply
 template <>

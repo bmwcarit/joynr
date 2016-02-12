@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef PRIVATE_COPY_ASSIGN_H
-#define PRIVATE_COPY_ASSIGN_H
+#ifndef PRIVATECOPYASSIGN_H
+#define PRIVATECOPYASSIGN_H
 
 //------------------------------------------------------------------------------
 // This header file should be included manually in every Joynr source file that
@@ -30,4 +30,4 @@
     TypeName(const TypeName&) = delete;                                                            \
     TypeName& operator=(const TypeName&) = delete
 
-#endif // PRIVATE_COPY_ASSIGN_H
+#endif // PRIVATECOPYASSIGN_H

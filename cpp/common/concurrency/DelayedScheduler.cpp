@@ -17,10 +17,11 @@
  * #L%
  */
 #include "joynr/DelayedScheduler.h"
-#include "joynr/Runnable.h"
 
+#include <utility>
 #include <cassert>
-#include <functional>
+
+#include "joynr/Runnable.h"
 
 namespace joynr
 {

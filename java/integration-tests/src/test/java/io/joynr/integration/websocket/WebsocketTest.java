@@ -21,11 +21,13 @@ package io.joynr.integration.websocket;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.LibWebSocketMessagingStub;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
+import io.joynr.servlet.ServletUtil;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -54,10 +56,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WebsocketTest {
+    private static final int MAX_MESSAGE_SIZE = 100000;
     private static Logger logger = LoggerFactory.getLogger(WebsocketTest.class);
     private LibWebSocketMessagingStub webSocketMessagingStub;
     private CCWebSocketMessagingSkeleton ccWebSocketMessagingSkeleton;
-    private WebSocketAddress serverAddress = new WebSocketAddress(WebSocketProtocol.WS, "localhost", 8080, "/test");
+    private WebSocketAddress serverAddress;
     private WebSocketClientAddress clientAddress = new WebSocketClientAddress(UUID.randomUUID().toString().replace("-",
                                                                                                                    ""));
 
@@ -69,10 +72,13 @@ public class WebsocketTest {
 
     @Mock
     MessageRouter messageRouterMock;
+    private int port;
 
     @Before
     public void init() throws IOException {
         logger.debug("INIT WebsocketTest");
+        port = ServletUtil.findFreePort();
+        serverAddress = new WebSocketAddress(WebSocketProtocol.WS, "localhost", port, "/test");
         Mockito.doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -83,7 +89,8 @@ public class WebsocketTest {
         ccWebSocketMessagingSkeleton = new CCWebSocketMessagingSkeleton(serverAddress,
                                                                         new ObjectMapper(),
                                                                         messageRouterMock,
-                                                                        webSocketMessagingStubFactory);
+                                                                        webSocketMessagingStubFactory,
+                                                                        MAX_MESSAGE_SIZE);
         joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper());
         ccWebSocketMessagingSkeleton.init();
     }
@@ -105,8 +112,15 @@ public class WebsocketTest {
         try {
             webSocketMessagingStub = new LibWebSocketMessagingStub(serverAddress,
                     new ObjectMapper(),
-                    libWebSocketMessagingSkeleton);
-            webSocketMessagingStub.transmit(msg);
+                    libWebSocketMessagingSkeleton,
+                    MAX_MESSAGE_SIZE);
+            webSocketMessagingStub.transmit(msg, new FailureAction() {
+
+                @Override
+                public void execute(Throwable error) {
+                    Assert.fail(error.getMessage());
+                }
+            });
             Mockito.verify(messageRouterMock, Mockito.timeout(1000)).route(msg);
         } catch (IOException e) {
             logger.error("Error: ", e);
@@ -125,7 +139,8 @@ public class WebsocketTest {
         try {
             webSocketMessagingStub = new LibWebSocketMessagingStub(serverAddress,
                     new ObjectMapper(),
-                    libWebSocketMessagingSkeleton);
+                    libWebSocketMessagingSkeleton,
+                    MAX_MESSAGE_SIZE);
 
             ObjectMapper objectMapper = new ObjectMapper();
             String serializedAddress = objectMapper.writeValueAsString(clientAddress);

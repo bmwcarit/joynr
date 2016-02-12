@@ -18,24 +18,23 @@
  */
 #ifndef MESSAGINGSTUBFACTORY_H
 #define MESSAGINGSTUBFACTORY_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/RuntimeConfig.h"
-#include "joynr/Directory.h"
-#include "joynr/IMessagingStubFactory.h"
-#include "joynr/IMiddlewareMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include <string>
 #include <memory>
 #include <mutex>
 #include <vector>
 
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/RuntimeConfig.h"
+#include "joynr/Directory.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/IMessagingStubFactory.h"
+#include "joynr/IMessaging.h"
+
 namespace joynr
 {
 
-class IMessaging;
-
-class InProcessMessagingSkeleton;
+class IMiddlewareMessagingStubFactory;
 
 /**
   * Creates/Stores <Middleware>MessagingStubs. MessagingStubs are used to contact remote

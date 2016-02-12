@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
  */
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Logger.h"
@@ -42,7 +42,7 @@ public:
     MessagingSettings* messagingSettings;
 
     ClockSkewTest() :
-        settings("test-resources/SystemIntegrationTest1.settings"),
+        settings("test-resources/HttpSystemIntegrationTest1.settings"),
         messagingSettings(new MessagingSettings(settings))
     {
     }

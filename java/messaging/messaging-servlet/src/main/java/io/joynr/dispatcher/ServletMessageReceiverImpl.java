@@ -190,7 +190,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     }
 
     @Override
-    public boolean isChannelCreated() {
+    public boolean isReady() {
         // TODO find a better way to check if the servlet is ready to receive messages
         return messageListener != null;
     }

@@ -19,8 +19,9 @@
 #ifndef ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
 #define ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOS_H
 
-#include "joynr/OnChangeSubscriptionQos.h"
 #include <cstdint>
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 
 namespace joynr
 {

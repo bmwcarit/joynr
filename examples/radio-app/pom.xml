@@ -35,7 +35,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>0.14.3</version>
+		<version>0.15.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -67,7 +67,11 @@
 			<artifactId>libjoynr-websocket-runtime</artifactId>
 			<version>${joynr.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>joynr-mqtt-client</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
 		<!-- Logging used in the demo app -->
 		<dependency>
 			<groupId>org.slf4j</groupId>

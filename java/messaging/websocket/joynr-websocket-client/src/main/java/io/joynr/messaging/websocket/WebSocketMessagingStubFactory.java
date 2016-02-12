@@ -1,5 +1,7 @@
 package io.joynr.messaging.websocket;
 
+import java.util.concurrent.ExecutionException;
+
 /*
  * #%L
  * %%
@@ -23,26 +25,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.messaging.AbstractMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
-public class WebSocketMessagingStubFactory extends AbstractMessagingStubFactory<WebSocketAddress> {
+public class WebSocketMessagingStubFactory extends
+        AbstractMiddlewareMessagingStubFactory<LibWebSocketMessagingStub, WebSocketAddress> {
+
+    ObjectMapper objectMapper;
+    WebSocketMessagingSkeleton webSocketMessagingSkeleton;
+    int maxMessageSize;
 
     @Inject
-    ObjectMapper objectMapper;
-    @Inject
-    @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON)
-    WebSocketMessagingSkeleton webSocketMessagingSkeleton;
+    public WebSocketMessagingStubFactory(ObjectMapper objectMapper,
+                                         @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton,
+                                         @Named(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE) int maxMessageSize) {
+        this.objectMapper = objectMapper;
+        this.webSocketMessagingSkeleton = webSocketMessagingSkeleton;
+        this.maxMessageSize = maxMessageSize;
+    }
 
     @Override
-    protected IMessaging createInternal(WebSocketAddress address) {
-        return new LibWebSocketMessagingStub(address, objectMapper, webSocketMessagingSkeleton);
+    protected LibWebSocketMessagingStub createInternal(WebSocketAddress address) {
+        return new LibWebSocketMessagingStub(address, objectMapper, webSocketMessagingSkeleton, maxMessageSize);
     }
 
     @Override
     public void shutdown() {
-        //do nothing
+        for (LibWebSocketMessagingStub stub : getAllMessagingStubs()) {
+            try {
+                stub.shutdown();
+            } catch (ExecutionException | InterruptedException e) {
+            }
+        }
     }
-
 }

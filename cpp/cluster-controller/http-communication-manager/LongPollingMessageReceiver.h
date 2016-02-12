@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,21 @@
  */
 #ifndef LONGPOLLINGMESSAGERECEIVER_H_
 #define LONGPOLLINGMESSAGERECEIVER_H_
+#include <condition_variable>
+#include <chrono>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <QByteArray>
+
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/ContentWithDecayTime.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/Directory.h"
-#include "joynr/Thread.h"
-
-#include <mutex>
-#include <condition_variable>
-
 #include "joynr/Semaphore.h"
-#include <memory>
-#include <string>
-#include <chrono>
-
-#include <QByteArray>
+#include "joynr/Thread.h"
 
 namespace joynr
 {
@@ -47,7 +45,7 @@ class MessageRouter;
  */
 struct LongPollingMessageReceiverSettings
 {
-    std::chrono::milliseconds bounceProxyTimeout;
+    std::chrono::milliseconds brokerTimeout;
     std::chrono::milliseconds longPollTimeout;
     std::chrono::milliseconds longPollRetryInterval;
     std::chrono::milliseconds createChannelRetryInterval;
@@ -59,13 +57,13 @@ struct LongPollingMessageReceiverSettings
 class LongPollingMessageReceiver : public Thread
 {
 public:
-    LongPollingMessageReceiver(const BounceProxyUrl& bounceProxyUrl,
+    LongPollingMessageReceiver(const BrokerUrl& brokerUrl,
                                const std::string& channelId,
                                const std::string& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
                                Semaphore* channelCreatedSemaphore,
                                std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                               std::shared_ptr<MessageRouter> messageRouter);
+                               std::function<void(const std::string&)> onTextMessageReceived);
     void stop() override;
     void run() override;
     void interrupt();
@@ -77,7 +75,7 @@ public:
 private:
     void checkServerTime();
     DISALLOW_COPY_AND_ASSIGN(LongPollingMessageReceiver);
-    const BounceProxyUrl bounceProxyUrl;
+    const BrokerUrl brokerUrl;
     const std::string channelId;
     const std::string receiverId;
     const LongPollingMessageReceiverSettings settings;
@@ -90,7 +88,9 @@ private:
 
     ADD_LOGGER(LongPollingMessageReceiver);
     Semaphore* channelCreatedSemaphore;
-    std::shared_ptr<MessageRouter> messageRouter;
+
+    /*! On text message received callback */
+    std::function<void(const std::string&)> onTextMessageReceived;
 };
 
 } // namespace joynr

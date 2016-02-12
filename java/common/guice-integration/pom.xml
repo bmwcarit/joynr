@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>common</artifactId>
-		<version>0.14.3</version>
+		<version>0.15.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -37,7 +37,11 @@
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-multibindings</artifactId>
+			<version>${guice.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>

@@ -16,11 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include <concurrency/TimerData.h>
 #include "joynr/Timer.h"
-#include <tuple>
+
 #include <chrono>
 #include <cassert>
+#include <utility>
+
+#include "concurrency/TimerData.h"
 
 namespace joynr
 {

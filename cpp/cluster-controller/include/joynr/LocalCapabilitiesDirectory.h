@@ -44,6 +44,7 @@
 #include "joynr/Semaphore.h"
 #include "common/InterfaceAddress.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "cluster-controller/mqtt/MqttSettings.h"
 #include <vector>
 
 #include <memory>
@@ -176,7 +177,7 @@ private:
     bool getLocalAndCachedCapabilities(const std::string& participantId,
                                        const joynr::types::DiscoveryQos& discoveryQos,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
-    bool callRecieverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
+    bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
                                 std::vector<CapabilityEntry>& localCapabilities,
                                 std::vector<CapabilityEntry>& globalCapabilities,
                                 std::shared_ptr<ILocalCapabilitiesCallback> callback);
@@ -216,6 +217,8 @@ private:
     std::vector<types::CapabilityInformation> registeredGlobalCapabilities;
     MessageRouter& messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
+
+    MqttSettings mqttSettings;
 
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);

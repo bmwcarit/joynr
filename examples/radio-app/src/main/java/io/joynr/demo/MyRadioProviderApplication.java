@@ -24,6 +24,7 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -170,16 +171,30 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     }
 
     private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
+        Module runtimeModule;
         if (args.length > 1) {
-            if (args[1].equalsIgnoreCase("websocket")) {
+            String transport = args[1].toLowerCase();
+            if (transport.contains("websocketcc")) {
                 configureWebSocket(joynrConfig);
-                return new LibjoynrWebSocketRuntimeModule();
-            } else if (args[1].equalsIgnoreCase("websocketcc")) {
+                runtimeModule = new CCWebSocketRuntimeModule();
+            } else if (transport.contains("websocket")) {
                 configureWebSocket(joynrConfig);
-                return new CCWebSocketRuntimeModule();
+                runtimeModule = new LibjoynrWebSocketRuntimeModule();
+            } else {
+                runtimeModule = new CCInProcessRuntimeModule();
             }
+
+            Module backendTransportModules = Modules.EMPTY_MODULE;
+            if (transport.contains("http")) {
+                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
+            }
+
+            if (transport.contains("mqtt")) {
+                configureMqtt(joynrConfig);
+                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+            }
+            return Modules.override(runtimeModule).with(backendTransportModules);
         }
-        //by default:
         return Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
     }
 
@@ -188,6 +203,10 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+    }
+
+    private static void configureMqtt(Properties joynrConfig) {
+        joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
     }
 
     @Override

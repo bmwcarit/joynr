@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@
 #include "joynr/Directory.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/RequestStatusCode.h"
 #include "joynr/JsonSerializer.h"
 #include "cluster-controller/access-control/IAccessController.h"
 #include "joynr/IPlatformSecurityManager.h"
@@ -328,6 +328,21 @@ void MessageRouter::addNextHop(
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
         const std::string& participantId,
+        const system::RoutingTypes::MqttAddress& mqttAddress,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    auto address = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
+    addToRoutingTable(participantId, address);
+
+    addNextHopToParent(participantId, onSuccess, onError);
+
+    sendMessages(participantId, address);
+}
+
+// inherited from joynr::system::RoutingProvider
+void MessageRouter::addNextHop(
+        const std::string& participantId,
         const system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
@@ -414,6 +429,10 @@ void MessageRouter::addNextHopToParent(
             parentRouter->addNextHopAsync(
                     participantId, *channelAddress, onSuccess, onErrorWrapper);
         }
+        if (auto mqttAddress = std::dynamic_pointer_cast<joynr::system::RoutingTypes::MqttAddress>(
+                    incomingAddress)) {
+            parentRouter->addNextHopAsync(participantId, *mqttAddress, onSuccess, onErrorWrapper);
+        }
         if (auto commonApiDbusAddress =
                     std::dynamic_pointer_cast<joynr::system::RoutingTypes::CommonApiDbusAddress>(
                             incomingAddress)) {
@@ -480,8 +499,11 @@ void MessageRouter::resolveNextHop(
         std::function<void(const bool& resolved)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> /*onError*/)
 {
-    ReadLocker lock(routingTableLock);
-    bool resolved = routingTable.contains(participantId);
+    bool resolved;
+    {
+        ReadLocker lock(routingTableLock);
+        resolved = routingTable.contains(participantId);
+    }
     onSuccess(resolved);
 }
 

@@ -66,9 +66,15 @@ define("joynr/exceptions/JoynrRuntimeException", [
     }
 
     defaultSettings = {};
+
     TypeRegistrySingleton.getInstance().addType(
             "joynr.exceptions.JoynrRuntimeException",
             JoynrRuntimeException);
+
+    JoynrRuntimeException.prototype = new Error();
+    JoynrRuntimeException.prototype.constructor = JoynrRuntimeException;
+    JoynrRuntimeException.prototype.name = "JoynrRuntimeException";
+
     return JoynrRuntimeException;
 
 });

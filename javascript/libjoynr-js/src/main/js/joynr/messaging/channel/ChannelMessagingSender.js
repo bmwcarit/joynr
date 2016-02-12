@@ -123,6 +123,7 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
                         }
                         messageProcessors++;
                         notify();
+                        return xhr;
                     }).catch(function(xhr, errorType) {
                         try {
                             log.debug("sending msgId: " + queuedMessage.message.msgId + " failed");
@@ -134,6 +135,7 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
                         }
                         messageProcessors++;
                         notify();
+                        return xhr;
                     });
         }
 

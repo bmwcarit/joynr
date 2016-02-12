@@ -19,15 +19,16 @@
 #ifndef PERIODICSUBSCRIPTIONQOSSERIALIZER_H
 #define PERIODICSUBSCRIPTIONQOSSERIALIZER_H
 
+#include <iosfwd>
+
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "joynr/PeriodicSubscriptionQos.h"
-#include "joynr/IDeserializer.h"
-
-#include <ostream>
 
 namespace joynr
 {
+
+class IObject;
 
 // Serializes a PeriodicSubscriptionQos
 template <>

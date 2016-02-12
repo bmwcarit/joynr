@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef HTTPNETWORKING_H_
-#define HTTPNETWORKING_H_
+#ifndef HTTPNETWORKING_H
+#define HTTPNETWORKING_H
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrClusterControllerExport.h"
@@ -240,4 +240,4 @@ private:
 };
 
 } // namespace joynr
-#endif // HTTPNETWORKING_H_
+#endif // HTTPNETWORKING_H

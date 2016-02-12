@@ -146,8 +146,8 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces) {
     std::vector<MasterAccessControlEntry> masterAces = localDomainAccessStore->getMasterAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);
     int expectedNumberOfMasterAces = 2;
     EXPECT_EQ(expectedNumberOfMasterAces, masterAces.size());
-    EXPECT_TRUE(vectorContains(masterAces, expectedMasterAccessControlEntry));
-    EXPECT_TRUE(vectorContains(masterAces, masterAceWildcardUser));
+    EXPECT_TRUE(util::vectorContains(masterAces, expectedMasterAccessControlEntry));
+    EXPECT_TRUE(util::vectorContains(masterAces, masterAceWildcardUser));
     EXPECT_EQ(masterAceWildcardUser, localDomainAccessStore->getMasterAccessControlEntry(TEST_USER2,
                                                                                          masterAceWildcardUser.getDomain(),
                                                                                          masterAceWildcardUser.getInterfaceName(),
@@ -235,8 +235,8 @@ TEST_F(LocalDomainAccessStoreTest, getOwnerAccessControlEntry) {
     std::vector<OwnerAccessControlEntry> ownerAces = localDomainAccessStore->getOwnerAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);
     int expectedNumberOfOwnerAces = 2;
     EXPECT_EQ(expectedNumberOfOwnerAces, ownerAces.size());
-    EXPECT_TRUE(vectorContains(ownerAces, expectedOwnerAccessControlEntry));
-    EXPECT_TRUE(vectorContains(ownerAces, ownerAceWildcardUser));
+    EXPECT_TRUE(util::vectorContains(ownerAces, expectedOwnerAccessControlEntry));
+    EXPECT_TRUE(util::vectorContains(ownerAces, ownerAceWildcardUser));
     EXPECT_EQ(ownerAceWildcardUser, localDomainAccessStore->getOwnerAccessControlEntry(TEST_USER2,
                                                                                          ownerAceWildcardUser.getDomain(),
                                                                                          ownerAceWildcardUser.getInterfaceName(),

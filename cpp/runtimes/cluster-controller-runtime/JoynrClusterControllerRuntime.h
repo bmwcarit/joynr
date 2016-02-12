@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
+#include "cluster-controller/mqtt/MqttSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/ClientQCache.h"
@@ -35,7 +37,6 @@
 #include "joynr/DBusMessageRouterAdapter.h"
 #include "common/dbus/DbusSettings.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-#include <string>
 
 class QCoreApplication;
 class JoynrClusterControllerRuntimeTest;
@@ -43,14 +44,12 @@ class JoynrClusterControllerRuntimeTest;
 namespace joynr
 {
 
-class InProcessClusterControllerMessagingSkeleton;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class IMessageReceiver;
 class IMessageSender;
 class ICapabilitiesClient;
 class SubscriptionManager;
-class InProcessDispatcher;
 class ConnectorFactory;
 class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
@@ -59,9 +58,13 @@ class IDispatcher;
 class InProcessPublicationSender;
 class WebSocketCcMessagingSkeleton;
 class InProcessMessagingSkeleton;
+class HttpMessagingSkeleton;
+class MqttMessagingSkeleton;
 class IPlatformSecurityManager;
 class Settings;
 class LibjoynrSettings;
+class JoynrMessageSender;
+class IMessaging;
 
 namespace infrastructure
 {
@@ -73,7 +76,9 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : publi
 public:
     JoynrClusterControllerRuntime(QCoreApplication* app,
                                   Settings* settings,
-                                  IMessageReceiver* messageReceiver = nullptr,
+                                  IMessageReceiver* httpMessageReceiver = nullptr,
+                                  IMessageSender* = nullptr,
+                                  IMessageReceiver* mqttMessageReceiver = nullptr,
                                   IMessageSender* = nullptr);
 
     static JoynrClusterControllerRuntime* create(Settings* settings);
@@ -123,8 +128,14 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    std::shared_ptr<IMessageReceiver> messageReceiver;
-    std::shared_ptr<IMessageSender> messageSender;
+    std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
+    std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
+
+    std::shared_ptr<IMessageReceiver> httpMessageReceiver;
+    std::shared_ptr<IMessageSender> httpMessageSender;
+
+    std::shared_ptr<IMessageReceiver> mqttMessageReceiver;
+    std::shared_ptr<IMessageSender> mqttMessageSender;
 
     std::vector<IDispatcher*> dispatcherList;
     InProcessConnectorFactory* inProcessConnectorFactory;
@@ -144,12 +155,16 @@ protected:
     WebSocketSettings wsSettings;
     WebSocketCcMessagingSkeleton* wsCcMessagingSkeleton;
     IPlatformSecurityManager* securityManager;
-    bool messagingIsRunning;
+    bool httpMessagingIsRunning;
+    bool mqttMessagingIsRunning;
+    bool doMqttMessaging;
+    bool doHttpMessaging;
 
     ADD_LOGGER(JoynrClusterControllerRuntime);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
+    MqttSettings mqttSettings;
 
     friend class ::JoynrClusterControllerRuntimeTest;
 };

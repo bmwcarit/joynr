@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef IWEBSOCKETCONTEXTCALLBACK_H_
-#define IWEBSOCKETCONTEXTCALLBACK_H_
+#ifndef IWEBSOCKETCONTEXTCALLBACK_H
+#define IWEBSOCKETCONTEXTCALLBACK_H
 
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "WebSocketContext.h"
@@ -93,4 +93,4 @@ public:
 
 } // namespace joynr
 
-#endif // IWEBSOCKETCONTEXTCALLBACK_H_
+#endif // IWEBSOCKETCONTEXTCALLBACK_H

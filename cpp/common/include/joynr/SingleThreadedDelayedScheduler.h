@@ -16,21 +16,23 @@
  * limitations under the License.
  * #L%
  */
-#ifndef SINGLETHREADEDDELAYEDSCHEDULER_H_
-#define SINGLETHREADEDDELAYEDSCHEDULER_H_
-
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrCommonExport.h"
-
-#include "joynr/DelayedScheduler.h"
-#include "joynr/Thread.h"
-#include "joynr/BlockingQueue.h"
+#ifndef SINGLETHREADEDDELAYEDSCHEDULER_H
+#define SINGLETHREADEDDELAYEDSCHEDULER_H
 
 #include <chrono>
 #include <atomic>
 
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/Logger.h"
+#include "joynr/DelayedScheduler.h"
+#include "joynr/Thread.h"
+#include "joynr/BlockingQueue.h"
+
 namespace joynr
 {
+
+class Runnable;
 
 /**
  * @brief A single threaded implementation of the @ref DelayedScheduler
@@ -85,4 +87,4 @@ private:
 };
 } // namespace joynr
 
-#endif // SINGLETHREADEDDELAYEDSCHEDULER_H_
+#endif // SINGLETHREADEDDELAYEDSCHEDULER_H

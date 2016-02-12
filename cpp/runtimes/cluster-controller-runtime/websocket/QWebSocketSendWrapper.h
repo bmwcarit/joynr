@@ -19,13 +19,14 @@
 #ifndef QWEBSOCKETSENDWRAPPER_H_
 #define QWEBSOCKETSENDWRAPPER_H_
 
+#include <functional>
+#include <string>
+
 #include <QtCore/QObject>
 #include <QString>
 
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/IWebSocketSendInterface.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 class QWebSocket;
 

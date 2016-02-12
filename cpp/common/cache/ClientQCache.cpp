@@ -19,7 +19,8 @@
 #include "joynr/ClientQCache.h"
 
 #include <chrono>
-#include <cstdint>
+
+#include "joynr/CachedValue.h"
 
 namespace joynr
 {

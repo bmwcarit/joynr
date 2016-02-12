@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,9 @@
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 
-#include <QtConcurrent/QtConcurrent>
-
 using namespace joynr;
 
-TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
+TEST_P(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
                 messagingSettings1.getDiscoveryDirectoriesDomain()
@@ -44,7 +42,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     EXPECT_THROW(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId), exceptions::JoynrTimeOutException);
 }
 
-TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
+TEST_P(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
                 messagingSettings1.getDiscoveryDirectoriesDomain()
@@ -89,7 +87,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
 
 
 // This test is disabled, because the feature is not yet implemented on the server.
-TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
+TEST_P(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
                 messagingSettings1.getDiscoveryDirectoriesDomain()

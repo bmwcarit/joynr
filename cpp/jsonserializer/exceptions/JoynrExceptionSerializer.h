@@ -19,15 +19,17 @@
 #ifndef JOYNREXCEPTIONSERIALIZER_H
 #define JOYNREXCEPTIONSERIALIZER_H
 
+#include <iosfwd>
+
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/IDeserializer.h"
-
-#include <sstream>
 
 namespace joynr
 {
+
+class IObject;
+
 // Serializes a JoynrRuntimeException
 template <>
 void ClassSerializerImpl<exceptions::JoynrRuntimeException>::serialize(const exceptions::JoynrRuntimeException& exception, std::ostream& o);

@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,15 @@ define(
             "global/Promise",
             "joynr/provisioning/provisioning_root",
             "integration/provisioning_end2end_common",
+            "joynr/start/settings/defaultInterTabSettings",
             "JstdConsoleAppender"
         ],
-        function(Promise, provisioning_root, provisioning_end2end, JstdConsoleAppender) {
+        function(
+            Promise,
+            provisioning_root,
+            provisioning_end2end,
+            defaultInterTabSettings,
+            JstdConsoleAppender) {
             var IntegrationUtils = {};
             var currentlyRunningWebWorkerCC;
             var workerReady = {}, workerStarted = {}, workerFinished = {}, worker = {}, workerId =
@@ -169,7 +175,7 @@ define(
                                         window
                                                 .postMessage(
                                                         msg.data,
-                                                        provisioning_root.parentOrigin);
+                                                        defaultInterTabSettings.parentOrigin);
                                     }
                                 });
                         worker[newWorkerId].postMessage({

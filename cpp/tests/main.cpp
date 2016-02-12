@@ -19,7 +19,8 @@
 #include <QtTest/QTest>
 #include <QtCore>
 // Unittests
-#include "MessagingTest.h"
+#include "HttpMessagingTest.h"
+#include "MqttMessagingTest.h"
 #include "DispatcherTest.h"
 #include "ClientCacheTest.h"
 #include "CurlHandlePoolTest.h"
@@ -71,7 +72,8 @@ int main(int argc, char *argv[])
     qRegisterMetaType <MessageWithDecayTime> ("MessageWithDecayTime");
     bool runDirectoryTest = false;
     bool runDispatcherTest = false;
-    bool runMessagingTest = false;
+    bool runHttpMessagingTest = false;
+    bool runMqttMessagingTest = false;
     bool runClientCacheTest = false;
     bool runCurlHandlePoolTest = false;
     bool runLocalCapabilitiesDirectoryTest = false;
@@ -86,7 +88,8 @@ int main(int argc, char *argv[])
 
     DirectoryTest directoryTest;
     DispatcherTest dispatcherTest;
-    MessagingTest messagingTest;
+    HttpMessagingTest httpMessagingTest;
+    MqttMessagingTest mqttMessagingTest;
     ClientCacheTest clientCacheTest;
     CurlHandlePoolTest curlHandlePoolTest;
     LocalCapabilitiesDirectoryTest localCapabilitiesDirectoryTest;
@@ -130,9 +133,14 @@ int main(int argc, char *argv[])
         runDispatcherTest = true;
     }
 
-    if(args.contains("-MessagingTest")){
-        args.removeAll("-MessagingTest");
-        runMessagingTest = true;
+    if(args.contains("-HttpMessagingTest")){
+        args.removeAll("-HttpMessagingTest");
+        runHttpMessagingTest = true;
+    }
+
+    if(args.contains("-MqttMessagingTest")){
+        args.removeAll("-MqttMessagingTest");
+        runMqttMessagingTest = true;
     }
 
     if(args.contains("-ClientCacheTest")){
@@ -214,16 +222,29 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(runAllTests || runMessagingTest){
-        QStringList messagingTestArgs(args);
+    if(runAllTests || runHttpMessagingTest){
+        QStringList httpMessagingTestArgs(args);
         if (xmlFileOutput) {
-            messagingTestArgs.append("-o");
-            messagingTestArgs.append("MessagingTest-results.xml");
+        	httpMessagingTestArgs.append("-o");
+        	httpMessagingTestArgs.append("MessagingTest-results.xml");
         }
-        code = QTest::qExec((QObject*)&messagingTest, messagingTestArgs);
+        code = QTest::qExec((QObject*)&httpMessagingTest, httpMessagingTestArgs);
         if (code != 0) {
             testFailed = true;
-            errorMessage += " Failed at: messagingTest \n";
+            errorMessage += " Failed at: httpMessagingTest \n";
+        }
+    }
+
+    if(runAllTests || runMqttMessagingTest){
+        QStringList mqttMessagingTestArgs(args);
+        if (xmlFileOutput) {
+        	mqttMessagingTestArgs.append("-o");
+        	mqttMessagingTestArgs.append("MqttMessagingTest-results.xml");
+        }
+        code = QTest::qExec((QObject*)&mqttMessagingTest, mqttMessagingTestArgs);
+        if (code != 0) {
+            testFailed = true;
+            errorMessage += " Failed at: mqttMessagingTest \n";
         }
     }
 

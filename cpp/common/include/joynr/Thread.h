@@ -16,19 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#ifndef THREAD_H_
-#define THREAD_H_
-
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrCommonExport.h"
+#ifndef THREAD_H
+#define THREAD_H
 
 #include <string>
 #include <thread>
 
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrCommonExport.h"
+
 namespace joynr
 {
-
-class Runnable;
 
 /**
  * @class Thread
@@ -89,4 +87,4 @@ private:
 };
 } // namespace joynr
 
-#endif // THREAD_H_
+#endif // THREAD_H

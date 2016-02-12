@@ -82,9 +82,15 @@ define(
             }
 
             defaultSettings = {};
+
             TypeRegistrySingleton.getInstance().addType(
                     "joynr.exceptions.JoynrException",
                     JoynrException);
+
+            JoynrException.prototype = new Error();
+            JoynrException.prototype.constructor = JoynrException;
+            JoynrException.prototype.name = "JoynrException";
+
             return JoynrException;
 
         });

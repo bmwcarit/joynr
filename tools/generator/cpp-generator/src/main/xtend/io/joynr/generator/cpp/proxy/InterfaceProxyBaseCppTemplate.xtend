@@ -58,7 +58,7 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 		const joynr::MessagingQos &qosSettings,
 		bool cached
 ) :
-		joynr::ProxyBase(connectorFactory, cache, domain, interfaceName, qosSettings, cached),
+		joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
 		messagingAddress(messagingAddress),
 		connector(nullptr)
 {

@@ -40,8 +40,8 @@ examples/android-location-provider/AndroidManifest.xml \
 examples/android-location-consumer/AndroidManifest.xml \
 java/backend-services/discovery-directory-servlet/pom.xml \
 java/backend-services/domain-access-controller-servlet/pom.xml \
-javascript/apps/radio-node/pom.xml \
-javascript/apps/radio-node/package.json \
+examples/radio-node/pom.xml \
+examples/radio-node/package.json \
 javascript/libjoynr-js/src/main/resources/package.json
 
 echo "prepare git patch"

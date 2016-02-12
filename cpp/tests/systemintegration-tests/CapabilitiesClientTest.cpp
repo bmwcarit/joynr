@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,26 +37,24 @@ ACTION_P(ReleaseSemaphore,semaphore)
 }
 
 static const std::string messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
-static const std::string settingsFilename("test-resources/SystemIntegrationTest1.settings");
 static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");
 
-class CapabilitiesClientTest : public Test {
+class CapabilitiesClientTest : public TestWithParam< std::string > {
 public:
     ADD_LOGGER(CapabilitiesClientTest);
     JoynrClusterControllerRuntime* runtime;
-    Settings settings;
+    Settings *settings;
     MessagingSettings messagingSettings;
     std::string channelId;
 
     CapabilitiesClientTest() :
         runtime(nullptr),
-        settings(settingsFilename),
-        messagingSettings(settings)
+        settings(new Settings(GetParam())),
+        messagingSettings(*settings)
     {
         messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
         MessagingPropertiesPersistence storage(messagingSettings.getMessagingPropertiesPersistenceFilename());
         channelId = storage.getChannelId();
-        Settings* settings = new Settings(settingsFilename);
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
@@ -83,7 +81,7 @@ private:
 
 INIT_LOGGER(CapabilitiesClientTest);
 
-TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
+TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
@@ -136,3 +134,16 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     delete capabilitiesProxyBuilder;
 }
 
+INSTANTIATE_TEST_CASE_P(Http,
+        CapabilitiesClientTest,
+        testing::Values(
+            "test-resources/HttpSystemIntegrationTest1.settings"
+        )
+);
+
+INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+        CapabilitiesClientTest,
+        testing::Values(
+            "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        )
+);

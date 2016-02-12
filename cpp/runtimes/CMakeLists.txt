@@ -27,7 +27,7 @@ set(
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_INCLUDE_DIR}
+    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -35,11 +35,9 @@ if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
     set(
         JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES
-        ${runtime_PUBLIC_INCLUDE_DIRECTORY}
-        "../"
-        ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
-        ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
+        ${JoynrRuntime_INCLUDE_DIRECTORIES}
         ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
+        ${MOSQUITTO_INCLUDE_DIRS}
     )
 
     set(
@@ -76,21 +74,24 @@ if(${BUILD_CLUSTER_CONTROLLER})
         "cluster-controller-runtime/websocket/*.cpp"
     )
 
-    include_directories(
-        ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
-    )
-
-    include_directories(
-        SYSTEM
-        ${Qt5WebSockets_INCLUDE_DIRS}
-        ${Qt5Core_INCLUDE_DIRS}
-    )
-
     add_library(
         JoynrClusterControllerRuntime
         SHARED
         ${JoynrClusterControllerRuntime_HEADERS}
         ${JoynrClusterControllerRuntime_SOURCES}
+    )
+    target_include_directories(JoynrClusterControllerRuntime SYSTEM PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
+
+    target_include_directories(
+        JoynrClusterControllerRuntime
+        PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
+    )
+
+    target_include_directories(
+        JoynrClusterControllerRuntime
+        SYSTEM
+        PRIVATE ${Qt5WebSockets_INCLUDE_DIRS}
+        PRIVATE ${Qt5Core_INCLUDE_DIRS}
     )
 
     AddClangFormat(JoynrClusterControllerRuntime)
@@ -123,11 +124,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
     install(
         TARGETS JoynrClusterControllerRuntime
         EXPORT JoynrTargets
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT library
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT library
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
         # this will flatten directory hierarchy of header files
-        # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+        # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
     )
 endif(${BUILD_CLUSTER_CONTROLLER})
 
@@ -135,7 +136,7 @@ endif(${BUILD_CLUSTER_CONTROLLER})
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )
 
@@ -174,12 +175,6 @@ set(
     "libjoynr-runtime/websocket/JoynrWebSocketRuntimeExecutor.cpp"
 )
 
-include_directories(
-    ${JoynrRuntime_INCLUDE_DIRECTORIES}
-    ${libwebsockets_INCLUDE_DIRS}
-    ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
-)
-
 add_library(
     JoynrWsRuntime
     SHARED
@@ -187,6 +182,13 @@ add_library(
     ${JoynrRuntime_SOURCES}
     ${JoynrWsRuntime_PRIVATE_HEADERS}
     ${JoynrWsRuntime_SOURCES}
+)
+
+target_include_directories(
+    JoynrWsRuntime
+    PRIVATE
+    ${JoynrRuntime_INCLUDE_DIRECTORIES}
+    ${libwebsockets_INCLUDE_DIRS}
 )
 
 AddClangFormat(JoynrWsRuntime)
@@ -218,16 +220,16 @@ set_target_properties(
 install(
     TARGETS JoynrWsRuntime
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT library
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT library
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of header files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
 )
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )
 
@@ -255,10 +257,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${common_api_PUBLIC_INCLUDE_DIRECTORY}
     )
 
-    include_directories(
-        ${JoynrRuntime_INCLUDE_DIRECTORIES}
-    )
-
     add_library(
         JoynrDbusRuntime
         SHARED
@@ -266,6 +264,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrRuntime_SOURCES}
         ${JoynrDbusRuntime_PRIVATE_HEADERS}
         ${JoynrDbusRuntime_SOURCES}
+    )
+
+    target_include_directories(
+        JoynrDbusRuntime
+        PRIVATE ${JoynrRuntime_INCLUDE_DIRECTORIES}
     )
 
     AddClangFormat(JoynrDbusRuntime)
@@ -296,15 +299,15 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     install(
         TARGETS JoynrDbusRuntime
         EXPORT JoynrTargets
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
         # this will flatten directory hierarchy of header files
-        # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+        # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
     )
     # so we install header files manually to preserve directory hierarchy
     install(
         DIRECTORY include/
-        DESTINATION "${INSTALL_INCLUDE_DIR}"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
         FILES_MATCHING PATTERN "*.h"
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -343,9 +346,14 @@ if(${BUILD_CLUSTER_CONTROLLER})
         JoynrClusterControllerRuntime
     )
 
+    target_include_directories(
+        cluster-controller
+        PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
+    )
+
     install(
         TARGETS cluster-controller
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     )
 endif(${BUILD_CLUSTER_CONTROLLER})

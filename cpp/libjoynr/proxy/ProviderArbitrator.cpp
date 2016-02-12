@@ -58,10 +58,9 @@ void ProviderArbitrator::startArbitration()
     Semaphore semaphore;
 
     // Arbitrate until successful or timed out
+    auto start = std::chrono::system_clock::now();
+
     while (true) {
-
-        auto start = std::chrono::system_clock::now();
-
         // Attempt arbitration (overloaded in subclasses)
         attemptArbitration();
 
@@ -69,22 +68,27 @@ void ProviderArbitrator::startArbitration()
         if (arbitrationStatus != ArbitrationStatus::ArbitrationRunning)
             return;
 
-        // Reduce the timeout by the elapsed time
+        // If there are no suitable providers
+
         auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
-        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - duration.count());
-        if (discoveryQos.getDiscoveryTimeout() <= 0)
-            break;
 
-        // If there are no suitable providers, wait for a second before trying again
-        semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryInterval()));
-
-        // Reduce the timeout again
-        now = std::chrono::system_clock::now();
-        duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
-        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - duration.count());
-        if (discoveryQos.getDiscoveryTimeout() <= 0)
+        if (discoveryQos.getDiscoveryTimeout() <= duration.count()) {
+            // discovery timeout reached
             break;
+        } else if (discoveryQos.getDiscoveryTimeout() - duration.count() <=
+                   discoveryQos.getRetryInterval()) {
+            /*
+             * no retry possible -> wait until discoveryTimeout is reached and inform caller about
+             * cancelled arbitration
+             */
+            semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeout() -
+                                                        duration.count()));
+            break;
+        } else {
+            // wait for retry interval and attempt a new arbitration
+            semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryInterval()));
+        }
     }
 
     // If this point is reached the arbitration timed out

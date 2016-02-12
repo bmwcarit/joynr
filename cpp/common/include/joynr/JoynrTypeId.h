@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TYPEID_H
-#define TYPEID_H
+#ifndef JOYNRTYPEID_H
+#define JOYNRTYPEID_H
 
 #include <string>
 #include <cassert>
@@ -155,4 +155,4 @@ TypeId getTemplateTypeId()
 #endif
 
 } // namespace joynr
-#endif // TYPEID_H
+#endif // JOYNRTYPEID_H

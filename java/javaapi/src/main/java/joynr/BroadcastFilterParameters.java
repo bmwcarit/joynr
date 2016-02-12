@@ -26,7 +26,7 @@ import javax.annotation.Nonnull;
  * #L%
  */
 public class BroadcastFilterParameters implements JoynrType {
-
+    private static final long serialVersionUID = 1L;
     Map<String, String> filterParameters = new HashMap<String, String>();
 
     public Map<String, String> getFilterParameters() {
@@ -55,18 +55,23 @@ public class BroadcastFilterParameters implements JoynrType {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         BroadcastFilterParameters other = (BroadcastFilterParameters) obj;
         if (filterParameters == null) {
-            if (other.filterParameters != null)
+            if (other.filterParameters != null) {
                 return false;
-        } else if (!filterParameters.equals(other.filterParameters))
+            }
+        } else if (!filterParameters.equals(other.filterParameters)) {
             return false;
+        }
         return true;
     }
 

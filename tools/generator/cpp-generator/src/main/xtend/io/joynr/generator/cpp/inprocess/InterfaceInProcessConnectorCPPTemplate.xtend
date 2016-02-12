@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.inprocess
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,8 +63,6 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/Util.h"
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
-#include "joynr/RequestStatus.h"
-#include "joynr/RequestStatusCode.h"
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
 
@@ -117,7 +115,7 @@ bool «className»::usesClusterController() const{
 
 			std::function<void(const exceptions::ProviderRuntimeException&)> onError =
 					[future] (const exceptions::ProviderRuntimeException& error) {
-						future->onError(RequestStatusCode::ERROR, error);
+						future->onError(error);
 					};
 
 			//see header for more information
@@ -145,7 +143,7 @@ bool «className»::usesClusterController() const{
 
 			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
 					[future, onError] (const exceptions::ProviderRuntimeException& error) {
-						future->onError(RequestStatusCode::ERROR, error);
+						future->onError(error);
 						if (onError) {
 							onError(error);
 						}
@@ -177,7 +175,7 @@ bool «className»::usesClusterController() const{
 
 			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
 					[future, onError] (const exceptions::ProviderRuntimeException& error) {
-						future->onError(RequestStatusCode::ERROR, error);
+						future->onError(error);
 						if (onError) {
 							onError(error);
 						}
@@ -205,7 +203,7 @@ bool «className»::usesClusterController() const{
 
 			std::function<void(const exceptions::ProviderRuntimeException&)> onError =
 					[future] (const exceptions::ProviderRuntimeException& error) {
-						future->onError(RequestStatusCode::ERROR, error);
+						future->onError(error);
 					};
 
 			//see header for more information
@@ -241,6 +239,7 @@ bool «className»::usesClusterController() const{
 			«IF isEnum(attribute.type)»
 				std::ignore = subscriptionListener;
 				std::ignore = subscriptionQos;
+				std::ignore = subscriptionRequest;
 				// TODO support enum return values in C++ client
 				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
@@ -328,7 +327,7 @@ bool «className»::usesClusterController() const{
 
 	std::function<void(const exceptions::JoynrException&)> onError =
 			[future] (const exceptions::JoynrException& error) {
-				future->onError(RequestStatusCode::ERROR, error);
+				future->onError(error);
 			};
 
 	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
@@ -356,7 +355,7 @@ bool «className»::usesClusterController() const{
 
 	std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
 			[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
-				future->onError(RequestStatusCode::ERROR, error);
+				future->onError(error);
 				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(serviceInterface, method)»
 			};
 

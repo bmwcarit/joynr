@@ -36,8 +36,6 @@ namespace joynr
 typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds>
         JoynrTimePoint;
 
-class JoynrMessage;
-
 /**
  * @brief The DispatcherUtils class implements untility functions for ttl manipulation
  */

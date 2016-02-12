@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef HTTPREQUESTBUILDER_H_
-#define HTTPREQUESTBUILDER_H_
+#ifndef HTTPREQUESTBUILDER_H
+#define HTTPREQUESTBUILDER_H
 #include "joynr/PrivateCopyAssign.h"
 
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
@@ -73,4 +73,4 @@ private:
 };
 
 } // namespace joynr
-#endif // HTTPREQUESTBUILDER_H_
+#endif // HTTPREQUESTBUILDER_H

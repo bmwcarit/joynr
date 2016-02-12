@@ -1,9 +1,5 @@
 package io.joynr.runtime;
 
-import java.util.Map;
-
-import javax.inject.Named;
-
 /*
  * #%L
  * %%
@@ -22,22 +18,15 @@ import javax.inject.Named;
  * limitations under the License.
  * #L%
  */
-
-import com.google.common.collect.Maps;
+import javax.inject.Named;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Names;
 
-import io.joynr.messaging.AbstractMessagingStubFactory;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.channel.ChannelMessagingSkeleton;
-import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.http.HttpGlobalAddressFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 
 /**
  *  Use this module if you want to run libjoynr and cluster controller in one process
@@ -49,17 +38,7 @@ public class CCInProcessRuntimeModule extends ClusterControllerRuntimeModule {
         super.configure();
         bind(JoynrRuntime.class).to(ClusterControllerRuntime.class).in(Singleton.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
-        bind(IMessagingSkeleton.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON))
-                                      .to(ChannelMessagingSkeleton.class)
-                                      .in(Singleton.class);
-    }
-
-    @Provides
-    @Singleton
-    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(ChannelMessagingStubFactory channelMessagingStubFactory) {
-        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
-        factories.put(ChannelAddress.class, channelMessagingStubFactory);
-        return factories;
+        globalAddresses.addBinding().to(HttpGlobalAddressFactory.class);
     }
 
     @Provides
@@ -68,5 +47,4 @@ public class CCInProcessRuntimeModule extends ClusterControllerRuntimeModule {
     public Address provideCCMessagingAddress() {
         return new InProcessAddress();
     }
-
 }

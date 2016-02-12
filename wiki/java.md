@@ -52,10 +52,35 @@ public interface joynr.<Package>.<Interface>Proxy
 public interface joynr.<Package>.<Interface>SubscriptionInterface
 public interface joynr.<Package>.<Interface>Sync
 ```
+# Setting up a joynr deployment
+Choose how you want your application to connect to the joynr network by initializing the
+JoynrRuntime with the appropriate joynr RuntimeModule, which uses guice to inject the desired
+functionality.
+
+If you have multiple nodes running locally, they can share a cluster controller, which handles
+access control, local discovery and message routing for the local cluster. joynr currently supports
+connecting Java nodes to a cluster controller via WebSockets. The individual applications are
+configured using a ```LibjoynrWebSocketRuntimeModule```.
+
+For a single node deployment, it may however be simpler to combine the cluster controller logic and
+the application in a single Java process. Use a ```CCInProcessRuntimeModule``` in this case.
+
+See the Radio example, in particular ```MyRadioConsumerApplication```, for a detailed example of how
+this is done.
+
+## The external transport middlewares
+joynr is able to communicate to other clusters via HTTP using Atmosphere, or MQTT using Eclipe Paho,
+both of which can be in operation at the same time. Guice is also used to inject the required
+functionality.
+
+After choosing which RuntimeModule you are using, override it with the
+```AtmosphereMessagingModule``` and the ```MqttPahoModule```. See the Radio example, in particular
+```MyRadioConsumerApplication``` for a detailed example of how this is done.
 
 # Building a Java consumer application
 
-A java joynr application inherits from ```AbstractJoynrApplication``` class and contains at least a ```main()```, ```run()``` and ```shutdown()``` method.
+A java joynr application inherits from ```AbstractJoynrApplication``` class and contains at least a
+```main()```, ```run()``` and ```shutdown()``` method.
 
 ## Required imports
 
@@ -114,9 +139,12 @@ public class MyConsumerApplication extends AbstractJoynrApplication {
 
 ## The main method
 
-The ```main()``` method must setup the configuration (provider domain etc.) and create the ```JoynrApplication``` instance by instantiating a new ```JoynrApplicationModule```. Then the ```run()``` method of the consumer application can be called to do the work.
+The ```main()``` method must setup the configuration (provider domain etc.) and create the
+```JoynrApplication``` instance by instantiating a new ```JoynrApplicationModule```. Then the
+```run()``` method of the consumer application can be called to do the work.
 
-As a prerequisite, the **provider** and **consumer domain** need to be defined using ```Properties``` as shown below.
+As a prerequisite, the **provider** and **consumer domain** need to be defined using ```Properties```
+as shown below.
 
 ```java
 public static void main(String[] args) throws IOException {
@@ -129,7 +157,11 @@ public static void main(String[] args) throws IOException {
     Properties appConfig = new Properties();
     appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
-    JoynrApplication myConsumerApp = new JoynrInjectorFactory(joynrConfig).createApplication(
+     Module runtimeModule = Modules.override(
+       new LibjoynrWebSocketRuntimeModule()).with(new MqttPahoModule())
+
+    JoynrApplication myConsumerApp =
+      new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(
         new JoynrApplicationModule(MyApplication.class, appConfig));
 
     myConsumerApp.run();

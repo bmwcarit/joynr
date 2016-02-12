@@ -108,7 +108,7 @@ TEST_F(VariantTest, checkCollectionOfVariants) {
             for (auto& i : vec) {
                 JOYNR_LOG_DEBUG(logger, "expectedInt: {}",i.get<ExampleCustomType>().expectedInt);
                 // to silence unused-variable compiler warnings
-                (void)i;
+                std::ignore = i;
             }
         }
     }

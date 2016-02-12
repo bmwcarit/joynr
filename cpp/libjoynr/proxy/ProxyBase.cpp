@@ -26,20 +26,18 @@ INIT_LOGGER(ProxyBase);
 ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
                      IClientCache* cache,
                      const std::string& domain,
-                     const std::string& interfaceName,
                      const MessagingQos& qosSettings,
                      bool cached)
         : connectorFactory(connectorFactory),
           cache(cache),
           domain(domain),
-          interfaceName(interfaceName),
           qosSettings(qosSettings),
           cached(cached),
           providerParticipantId(""),
           proxyParticipantId(""),
           connection(nullptr)
 {
-    proxyParticipantId = Util::createUuid();
+    proxyParticipantId = util::createUuid();
 }
 
 ProxyBase::~ProxyBase()

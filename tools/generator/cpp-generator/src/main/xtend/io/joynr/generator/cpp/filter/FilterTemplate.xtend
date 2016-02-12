@@ -38,9 +38,9 @@ class FilterTemplate implements BroadcastTemplate {
 	def getCommaSeperatedEventArgumentListFromVariantList(Iterable<FArgument> arguments)'''
 		«var i = 0»
 		«FOR FArgument argument : arguments SEPARATOR ","»
-			Util::valueOf<«argument.typeName»>(eventValues[«i++»])
+			util::valueOf<«argument.typeName»>(eventValues[«i++»])
 		«ENDFOR»
-''' 
+'''
 
 	override generate(FInterface serviceInterface, FBroadcast broadcast)
 '''

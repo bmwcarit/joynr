@@ -17,12 +17,12 @@
  * #L%
  */
 #include "joynr/ParticipantIdStorage.h"
-#include "joynr/Util.h"
-
-#include "joynr/Settings.h"
-#include "joynr/FormatString.h"
 
 #include <algorithm>
+
+#include "joynr/Util.h"
+#include "joynr/Settings.h"
+#include "joynr/FormatString.h"
 
 namespace joynr
 {
@@ -74,7 +74,7 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
     // Lookup the participant id
     if (!settings.contains(providerKey)) {
         // Persist a new participant Id, using the defaultValue if possible
-        participantId = (!defaultValue.empty()) ? defaultValue : Util::createUuid();
+        participantId = (!defaultValue.empty()) ? defaultValue : util::createUuid();
         settings.set(providerKey, participantId);
         settings.sync();
     } else {

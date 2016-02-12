@@ -71,7 +71,6 @@ import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
@@ -103,8 +102,6 @@ public class ProxyTest {
     private RequestReplyManager requestReplyManager;
     @Mock
     SubscriptionManager subscriptionManager;
-    @Mock
-    MessageSender messageSender;
     @Mock
     MessageRouter messageRouter;
     @Mock
@@ -159,7 +156,6 @@ public class ProxyTest {
                 bind(ReplyCallerDirectory.class).toInstance(replyCallerDirectory);
                 bind(RequestReplyManager.class).toInstance(requestReplyManager);
                 bind(SubscriptionManager.class).toInstance(subscriptionManager);
-                bind(MessageSender.class).toInstance(messageSender);
                 bind(MessageRouter.class).toInstance(messageRouter);
                 bind(RoutingTable.class).toInstance(routingTable);
                 install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class,

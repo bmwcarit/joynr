@@ -18,6 +18,7 @@
  */
 #ifndef OBJECTWITHDECAYTIME_H
 #define OBJECTWITHDECAYTIME_H
+
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/DispatcherUtils.h"
 #include <cstdint>
@@ -29,9 +30,8 @@ class JOYNRCOMMON_EXPORT ObjectWithDecayTime
 {
 
 public:
-    virtual ~ObjectWithDecayTime() = default;
-    //    ObjectWithDecayTime();
     explicit ObjectWithDecayTime(const JoynrTimePoint& decayTime);
+    virtual ~ObjectWithDecayTime() = default;
     std::int64_t getRemainingTtl_ms() const;
     JoynrTimePoint getDecayTime() const;
     bool isExpired() const;

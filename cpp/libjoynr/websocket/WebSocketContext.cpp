@@ -431,11 +431,7 @@ bool WebSocketContext::initContext(struct libwebsocket_protocols* protocols,
     info.ssl_cert_filepath = certPath.c_str();
     info.ssl_private_key_filepath = keyPath.c_str();
 #endif
-    //#ifdef LWS_WITHOUT_EXTENSIONS
-    //    info.extensions = libwebsocket_get_internal_extensions();
-    //#else
-    //#endif
-    info.extensions = nullptr;
+    info.extensions = libwebsocket_get_internal_extensions();
     info.gid = -1;
     info.uid = -1;
     info.options = 0;

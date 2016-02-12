@@ -1,3 +1,31 @@
+#joynr 0.15.0
+
+##Notes
+* **[Java,C++]** Java and C++ cluster controllers are now able to communciate to an MQTT broker as
+  a replacement, or in addition to, the original bounceproxy. Java uses the Eclipse Paho client,
+  while C++ uses mosquitto as an MQTT client.
+* **[C++]** There is a new build and runtime dependency for the clustercontroller to mosquitto 1.4.7
+* **[Java]** Handling of different transport middlewares has been refactored to be much more
+  extensible. Using Guice Multibinders, it is now possible for external projects to add transport
+  middleware implementations and inject these into the runtime. See the ```
+joynr-mqtt-client``` project for an example of how this can be done.
+* **[C++]** libjoynr uses libwebsockets of the libwebsockets project (http://libwebsockets.org)
+  to communicate with the cluster-controller. Due to an incompatibility with Mac OS X,
+  the C++-Websocket-Runtime currently does not work on Mac OS X.
+
+##API relevant changes
+* **[C++]** Removed the RequestStatus object returned by joynr::Future::getStatus().
+  Instead, an enum named "StatusCode::Enum" is returned.
+* **[C++]** joynr code now requires C++14
+
+##Other changes
+* **[JS]** Updated the versions of joynr dependencies log4js (0.6.29), requirejs (2.1.22),
+  bluebird (3.1.1) and promise (7.1.1). No API impact.
+* **[JS]** The several joynr runtimes (e.g. WebSocketLibjoynrRuntime or InProcessRuntime)
+  now bring their own default values for joynr internal settings. Thus, joynr
+  applications no longer need to provide this information via the provisioning
+  object when loading the library.
+
 #joynr 0.14.3
 
 This is a minor bug fix release.

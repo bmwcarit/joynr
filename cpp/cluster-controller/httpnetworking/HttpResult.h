@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef HTTPRESULT_H_
-#define HTTPRESULT_H_
+#ifndef HTTPRESULT_H
+#define HTTPRESULT_H
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include <QMultiMap>
@@ -58,4 +58,4 @@ private:
 };
 
 } // namespace joynr
-#endif // HTTPRESULT_H_
+#endif // HTTPRESULT_H

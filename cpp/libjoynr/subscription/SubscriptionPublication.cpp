@@ -31,18 +31,6 @@ SubscriptionPublication::SubscriptionPublication()
         : subscriptionId(), response(), error(Variant::NULL_VARIANT())
 {
 }
-SubscriptionPublication::SubscriptionPublication(const SubscriptionPublication& other)
-        : subscriptionId(other.getSubscriptionId()), response(other.response), error(other.error)
-{
-}
-
-SubscriptionPublication& SubscriptionPublication::operator=(const SubscriptionPublication& other)
-{
-    this->subscriptionId = other.getSubscriptionId();
-    this->response = other.response;
-    this->error = other.error;
-    return *this;
-}
 
 std::string SubscriptionPublication::getSubscriptionId() const
 {

@@ -40,6 +40,7 @@ import io.joynr.channel.ChannelUrlDirectoyImpl;
 import io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted;
 import io.joynr.servlet.JoynrWebServlet;
 import joynr.types.CapabilityInformation;
+import joynr.types.ChannelUrlInformation;
 import joynr.types.ProviderScope;
 
 @Singleton
@@ -69,8 +70,13 @@ public class DiscoveryInformationServlet extends HttpServlet {
                 try {
                     JoynrMessagingEndpointAddressPersisted address = (JoynrMessagingEndpointAddressPersisted) capabilityEntry.getAddresses()
                                                                                                                              .get(0);
+
                     channelId = address.getChannelId();
-                    channelUrl = channelUrlDirectory.getRegisteredChannels().get(channelId).getUrls()[0];
+                    ChannelUrlInformation channelUrlInformation = channelUrlDirectory.getRegisteredChannels()
+                                                                                     .get(channelId);
+                    if (channelUrlInformation != null) {
+                        channelUrl = channelUrlInformation.getUrls()[0];
+                    }
                     CapabilityInformation capabilityInformation = capabilityEntry.toCapabilityInformation();
                     capabilityInformation.setChannelId(channelId + ":" + channelUrl);
                     globalCapabilities.add(capabilityInformation);

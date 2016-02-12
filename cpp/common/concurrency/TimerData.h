@@ -16,11 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TIMERDATA_H_
-#define TIMERDATA_H_
+#ifndef TIMERDATA_H
+#define TIMERDATA_H
 
 #include <chrono>
-#include <joynr/Timer.h>
+#include <functional>
+
+#include "joynr/Timer.h"
 
 namespace joynr
 {
@@ -155,4 +157,4 @@ private:
 
 } // namespace joynr
 
-#endif // TIMERDATA_H_
+#endif // TIMERDATA_H

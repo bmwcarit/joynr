@@ -138,9 +138,9 @@ void MetaTypeRegistrar::registerEnumMetaType()
 {
     {
         std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
-        addEnumPublicationInterpreter<T>(Util::getTypeId<typename T::Enum>());
+        addEnumPublicationInterpreter<T>(util::getTypeId<typename T::Enum>());
         addEnumPublicationInterpreter<std::vector<T>>(
-                Util::getTypeId<std::vector<typename T::Enum>>());
+                util::getTypeId<std::vector<typename T::Enum>>());
     }
 }
 
@@ -166,7 +166,7 @@ void MetaTypeRegistrar::registerMetaType()
 template <class... Ts>
 void MetaTypeRegistrar::addPublicationInterpreter()
 {
-    int typeId = Util::getTypeId<Ts...>();
+    int typeId = util::getTypeId<Ts...>();
 
     if (publicationInterpreters.find(typeId) == publicationInterpreters.end()) {
         publicationInterpreters.insert({typeId, new PublicationInterpreter<Ts...>()});
@@ -178,7 +178,7 @@ void MetaTypeRegistrar::registerReplyMetaType()
 {
     {
         std::lock_guard<std::mutex> lock(replyInterpretersMutex);
-        int typeId = Util::getTypeId<Ts...>();
+        int typeId = util::getTypeId<Ts...>();
 
         if (replyInterpreters.find(typeId) == replyInterpreters.end()) {
             replyInterpreters.insert({typeId, new ReplyInterpreter<Ts...>()});

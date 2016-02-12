@@ -1,6 +1,6 @@
 {
   "name": "joynr",
-  "version": "0.14.3",
+  "version": "0.15.0",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "main": "joynr.js",
   "private": true,
@@ -8,16 +8,16 @@
     "jasmine-node": ">=1.14.5"
   },
   "dependencies": {
-    "log4js": "0.6.21",
-    "node-localstorage": "0.3.4",
+    "log4js": "0.6.29",
+    "node-localstorage": "1.1.2",
     "//": {
         "these dependencies are commented out, but left in the package.json file for an eventual future usage" : "true",
         "atmosphere-client": "2.2.0",
         "xmlhttprequest" : "1.6.0"
     },
-    "requirejs" : "2.1.14",
+    "requirejs" : "2.1.22",
     "ws" : "1.0.1",
-    "bluebird" : "2.9.9",
-    "promise": ">=6.0.1"
+    "bluebird" : "3.1.1",
+    "promise": ">=7.1.1"
   }
 }

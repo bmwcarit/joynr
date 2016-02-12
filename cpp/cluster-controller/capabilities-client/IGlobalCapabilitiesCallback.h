@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CAPABILITIESRESULTCALLBACK_H
-#define CAPABILITIESRESULTCALLBACK_H
+#ifndef IGLOBALCAPABILITIESCALLBACK_H
+#define IGLOBALCAPABILITIESCALLBACK_H
 
 #include "joynr/types/CapabilityInformation.h"
 #include <vector>
@@ -46,4 +46,4 @@ public:
 
 } // namespace joynr
 
-#endif // CAPABILITIESRESULTCALLBACK_H
+#endif // IGLOBALCAPABILITIESCALLBACK_H

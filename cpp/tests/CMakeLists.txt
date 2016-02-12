@@ -84,36 +84,219 @@ else (USE_PLATFORM_GTEST_GMOCK)
 
 endif(USE_PLATFORM_GTEST_GMOCK)
 
-include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
-include_directories(SYSTEM ${GMOCK_INCLUDE_DIRS})
-
 ### copy test resources and settings ##########################################
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/integrationtest.settings")
-    configure_file("resources/sslintegrationtest.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/sslintegrationtest.settings")
-    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest1.settings")
-    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/SystemIntegrationTest2.settings")
-    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration1.settings")
-    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration2.settings")
-    configure_file("resources/ca.crt" "${JOYNR_BINARY_DIR}/Debug/test-resources/ca.crt")
-    configure_file("resources/testclient.pem" "${JOYNR_BINARY_DIR}/Debug/test-resources/testclient.pem")
-    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/integrationtest.settings")
-    configure_file("resources/sslintegrationtest.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/sslintegrationtest.settings")
-    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest1.settings")
-    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/SystemIntegrationTest2.settings")
-    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration1.settings")
-    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration2.settings")
-    configure_file("resources/ca.crt" "${JOYNR_BINARY_DIR}/Release/test-resources/ca.crt")
-    configure_file("resources/testclient.pem" "${JOYNR_BINARY_DIR}/Release/test-resources/testclient.pem")
+    configure_file(
+        "resources/integrationtest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/integrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/sslintegrationtest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/sslintegrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpSystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration1.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration2.settings"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/ca.crt"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/ca.crt"
+        @ONLY
+    )
+    configure_file(
+        "resources/testclient.pem"
+        "${JOYNR_BINARY_DIR}/Debug/test-resources/testclient.pem"
+        @ONLY
+    )
+    configure_file(
+        "resources/integrationtest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/integrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/sslintegrationtest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/sslintegrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/HttpSystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/HttpSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/HttpMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration1.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration2.settings"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/ca.crt"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/ca.crt"
+        @ONLY
+    )
+    configure_file(
+        "resources/testclient.pem"
+        "${JOYNR_BINARY_DIR}/Release/test-resources/testclient.pem"
+        @ONLY
+    )
 else()
-    configure_file("resources/integrationtest.settings" "${JOYNR_BINARY_DIR}/test-resources/integrationtest.settings")
-    configure_file("resources/sslintegrationtest.settings" "${JOYNR_BINARY_DIR}/test-resources/sslintegrationtest.settings")
-    configure_file("resources/SystemIntegrationTest1.settings" "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest1.settings")
-    configure_file("resources/SystemIntegrationTest2.settings" "${JOYNR_BINARY_DIR}/test-resources/SystemIntegrationTest2.settings")
-    configure_file("resources/libjoynrSystemIntegration1.settings" "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration1.settings")
-    configure_file("resources/libjoynrSystemIntegration2.settings" "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration2.settings")
-    configure_file("resources/ca.crt" "${JOYNR_BINARY_DIR}/test-resources/ca.crt")
-    configure_file("resources/testclient.pem" "${JOYNR_BINARY_DIR}/test-resources/testclient.pem")
+    configure_file(
+        "resources/integrationtest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/integrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/sslintegrationtest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/sslintegrationtest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/HttpSystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/HttpSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/HttpMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/HttpMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration1.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration1.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/libjoynrSystemIntegration2.settings"
+        "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration2.settings"
+        @ONLY
+    )
+    configure_file(
+        "resources/ca.crt"
+        "${JOYNR_BINARY_DIR}/test-resources/ca.crt"
+        @ONLY
+    )
+    configure_file(
+        "resources/testclient.pem"
+        "${JOYNR_BINARY_DIR}/test-resources/testclient.pem"
+        @ONLY
+    )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 
@@ -237,14 +420,14 @@ set(
 )
 
 file(
-    GLOB_RECURSE JsonSerailizerTest_GENSOURCES
+    GLOB_RECURSE JsonSerializerTest_GENSOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     #"gen/*.cpp" uncomment this when generate-test-sources prepared for jsonserializer
     "unit-tests/jsonserializer/generated/*.cpp" #remove this when generate-test-sources prepared for jsonserializer
 )
 
 file(
-    GLOB_RECURSE JsonSerailizerTest_GENHEADERS
+    GLOB_RECURSE JsonSerializerTest_GENHEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     #"gen/*.h" uncomment this when generate-test-sources prepared for jsonserializer
     "unit-tests/jsonserializer/generated/*.h" #remove this when generate-test-sources prepared for jsonserializer
@@ -253,13 +436,13 @@ file(
 set(
     libjsonserializer_test_HEADERS
     "unit-tests/jsonserializer/ExampleTypes.h"
-    ${JsonSerailizerTest_GENHEADERS}
+    ${JsonSerializerTest_GENHEADERS}
 )
 
 set(
     libjsonserializer_test_SOURCES
     "unit-tests/jsonserializer/ExampleTypes.cpp"
-    ${JsonSerailizerTest_GENSOURCES}
+    ${JsonSerializerTest_GENSOURCES}
 )
 
 set(
@@ -293,6 +476,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     file(
         GLOB g_UnitTests_SOURCES
         "unit-tests/*.cpp"
+        "unit-tests/mqtt/*.cpp"
         "unit-tests/websocket/*.cpp"
         "unit-tests/jsonserializer/*.cpp"
     )
@@ -321,9 +505,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     target_include_directories(
         g_UnitTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -355,9 +536,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     target_include_directories(
         g_IntegrationTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -395,8 +573,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_include_directories(
         g_SystemIntegrationTests
         SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
+        PRIVATE ${CURL_INCLUDE_DIRS}
+    )
+
+    target_include_directories(
+        g_SystemIntegrationTests
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
@@ -431,9 +612,6 @@ else()
 
     target_include_directories(
         g_UnitTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
     )
 
@@ -460,9 +638,6 @@ else()
 
     target_include_directories(
         g_SystemIntegrationTests
-        SYSTEM
-        PRIVATE ${GTEST_INCLUDE_DIRS}
-        PRIVATE ${GMOCK_INCLUDE_DIRS}
         PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
     )
 

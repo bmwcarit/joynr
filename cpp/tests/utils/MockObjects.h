@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/IMessageSender.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/Directory.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
@@ -273,13 +273,43 @@ public:
 
 class MockMessageRouter : public joynr::MessageRouter {
 public:
+    void invokeAddNextHopOnSuccessFct(const std::string& participantId,
+            const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
+            std::function<void()> onSuccess) {
+        if (onSuccess) {
+            onSuccess();
+        }
+    }
+    void invokeRemoveNextHopOnSuccessFct(const std::string& participantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+        if (onSuccess) {
+            onSuccess();
+        }
+    }
+
     MockMessageRouter():
         MessageRouter(nullptr, nullptr, 0) {
-
+        EXPECT_CALL(
+                *this,
+                addNextHop(_,_,_)
+        )
+                .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
+        EXPECT_CALL(
+                *this,
+                removeNextHop(_,_,_)
+        )
+                .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
     }
     MOCK_METHOD1(route, void(const joynr::JoynrMessage& message));
-    MOCK_METHOD2(addNextHop, void(std::string participantId, std::shared_ptr<joynr::system::RoutingTypes::Address> inprocessAddress));
-    MOCK_METHOD1(removeNextHop, void(std::string participantId));
+    MOCK_METHOD3(addNextHop, void(
+            const std::string& participantId,
+            const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
+            std::function<void()> onSuccess));
+    MOCK_METHOD3(removeNextHop, void(
+            const std::string& participantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
@@ -365,8 +395,8 @@ public:
 template <typename T>
 class MockReplyCaller : public joynr::ReplyCaller<T> {
 public:
-    MockReplyCaller(std::function<void(const joynr::RequestStatus& status, const T& returnValue)> callbackFct,
-                    std::function<void(const joynr::RequestStatus& status, const joynr::exceptions::JoynrException& error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
+    MockReplyCaller(std::function<void(const T& returnValue)> callbackFct,
+                    std::function<void(const joynr::exceptions::JoynrException& error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
     MOCK_METHOD1_T(returnValue, void(const T& payload));
     MOCK_METHOD0_T(timeOut, void());
     MOCK_CONST_METHOD0_T(getType, std::string());
@@ -504,6 +534,7 @@ public:
     MOCK_METHOD0(waitForReceiveQueueStarted, void());
     MOCK_METHOD0(updateSettings, void());
     MOCK_METHOD0(tryToDeleteChannel, bool());
+    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(const std::string&)> onTextMessageReceived));
 };
 
 class MockMessageSender : public joynr::IMessageSender
@@ -511,6 +542,7 @@ class MockMessageSender : public joynr::IMessageSender
 public:
     MOCK_METHOD2(sendMessage,void(const std::string&, const joynr::JoynrMessage&));
     MOCK_METHOD2(init,void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
+    MOCK_METHOD1(registerReceiveQueueStartedCallback, void(std::function<void(void)> waitForReceiveQueueStarted));
 };
 
 /*
@@ -547,20 +579,18 @@ public:
 };
 
 template <typename ... Ts>
-class MockCallbackWithOnErrorHavingRequestStatus{
+class MockCallbackWithJoynrException{
 public:
     MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
-    MOCK_METHOD2_T(onError, void(const joynr::RequestStatus& status,
-                const joynr::exceptions::JoynrException& error));
+    MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
 };
 
 template<>
-class MockCallbackWithOnErrorHavingRequestStatus<void> {
+class MockCallbackWithJoynrException<void> {
 
 public:
     MOCK_METHOD0(onSuccess, void(void));
-    MOCK_METHOD2(onError, void(const joynr::RequestStatus& status,
-            const joynr::exceptions::JoynrException& error));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrException& error));
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
@@ -756,7 +786,7 @@ class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::Chann
 public:
     MockChannelUrlDirectoryProxy() :
         ChannelUrlDirectoryProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        ProxyBase(nullptr, nullptr, "domain", "INTERFACE_NAME", joynr::MessagingQos(), false),
+        ProxyBase(nullptr, nullptr, "domain", joynr::MessagingQos(), false),
         ChannelUrlDirectoryProxyBase(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
         ChannelUrlDirectorySyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
         ChannelUrlDirectoryAsyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false){}
@@ -847,7 +877,6 @@ public:
                 nullptr,
                 nullptr,
                 "domain",
-                "INTERFACE_NAME",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerProxyBase(

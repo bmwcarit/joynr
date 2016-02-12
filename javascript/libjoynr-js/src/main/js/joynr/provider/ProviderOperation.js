@@ -237,7 +237,7 @@ define(
                                                     });
                                                 } else {
                                                     exception = new ProviderRuntimeException({
-                                                        detailMessage: "Implementation causes unkown error"
+                                                        detailMessage: "Implementation causes unknown error"
                                                     });
                                                 }
                                             }

@@ -16,12 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#ifndef READWRITELOCK_H_
-#define READWRITELOCK_H_
+#ifndef READWRITELOCK_H
+#define READWRITELOCK_H
 
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
-
 namespace joynr
 {
 
@@ -31,4 +30,4 @@ using WriteLocker = boost::unique_lock<ReadWriteLock>;
 
 } // namespace joynr
 
-#endif // READWRITELOCK_H_
+#endif // READWRITELOCK_H

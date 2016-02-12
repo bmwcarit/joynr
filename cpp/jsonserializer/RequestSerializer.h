@@ -19,13 +19,16 @@
 #ifndef REQUESTSERIALIZER_H
 #define REQUESTSERIALIZER_H
 
+#include <iosfwd>
+
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "joynr/Request.h"
-#include <ostream>
 
 namespace joynr
 {
+
+class IObject;
 
 // Serializes a request
 template <>

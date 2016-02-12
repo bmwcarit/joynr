@@ -20,7 +20,10 @@ package io.joynr.messaging.routing;
  */
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
@@ -36,8 +39,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.CheckForNull;
+
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * MessageRouter implementation which adds hops to its parent and tries to resolve unknown addresses at its parent
@@ -52,8 +57,11 @@ public class ChildMessageRouter extends MessageRouterImpl {
     private List<Runnable> deferredParentHops = new LinkedList<>();
 
     @Inject
-    public ChildMessageRouter(RoutingTable routingTable, MessagingStubFactory messagingStubFactory) {
-        super(routingTable, messagingStubFactory);
+    public ChildMessageRouter(RoutingTable routingTable,
+                              @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                              @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                              MessagingStubFactory messagingStubFactory) {
+        super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory);
     }
 
     @Override

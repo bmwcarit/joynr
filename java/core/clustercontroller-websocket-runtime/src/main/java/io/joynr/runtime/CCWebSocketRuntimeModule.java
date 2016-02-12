@@ -19,26 +19,20 @@ package io.joynr.runtime;
  * #L%
  */
 
-import com.google.common.collect.Maps;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Names;
-import io.joynr.messaging.AbstractMessagingStubFactory;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.http.HttpGlobalAddressFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.WebSocketClientMessageSerializerFactory;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebsocketModule;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 import javax.inject.Named;
-import java.util.Map;
 
 /**
  *
@@ -50,21 +44,15 @@ public class CCWebSocketRuntimeModule extends ClusterControllerRuntimeModule {
         install(new WebsocketModule());
         bind(ClusterControllerRuntime.class).in(Singleton.class);
         bind(JoynrRuntime.class).to(ClusterControllerRuntime.class);
-        bind(IMessagingSkeleton.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON))
-                                      .to(CCWebSocketMessagingSkeleton.class)
-                                      .in(Singleton.class);
         bind(WebSocketClientMessagingStubFactory.class).in(Singleton.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
-    }
 
-    @Provides
-    @Singleton
-    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(WebSocketClientMessagingStubFactory webSocketClientMessagingStubFactory,
-                                                                                              ChannelMessagingStubFactory channelMessagingStubFactory) {
-        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
-        factories.put(WebSocketClientAddress.class, webSocketClientMessagingStubFactory);
-        factories.put(ChannelAddress.class, channelMessagingStubFactory);
-        return factories;
+        messagingSkeletonFactory.addBinding(WebSocketClientAddress.class).to(CCWebSocketMessagingSkeleton.class);
+        messagingStubFactory.addBinding(WebSocketClientAddress.class).to(WebSocketClientMessagingStubFactory.class);
+        messageSerializerFactory.addBinding(WebSocketClientAddress.class)
+                                .to(WebSocketClientMessageSerializerFactory.class);
+        globalAddresses.addBinding().to(HttpGlobalAddressFactory.class);
+
     }
 
     @Provides

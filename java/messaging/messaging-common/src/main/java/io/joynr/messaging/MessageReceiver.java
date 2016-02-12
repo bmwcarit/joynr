@@ -35,7 +35,7 @@ public interface MessageReceiver {
      */
     void shutdown(boolean clear);
 
-    boolean isChannelCreated();
+    boolean isReady();
 
     boolean deleteChannel();
 

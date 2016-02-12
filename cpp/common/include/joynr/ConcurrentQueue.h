@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CONCURENTQUEUE_H
-#define CONCURENTQUEUE_H
+#ifndef CONCURRENTQUEUE_H
+#define CONCURRENTQUEUE_H
 
 #include <queue>
 #include <mutex>
@@ -102,4 +102,4 @@ private:
 };
 
 } // namespace joynr
-#endif // CONCURENTQUEUE_H
+#endif // CONCURRENTQUEUE_H

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef KEYWORDARBITRATOR
-#define KEYWORDARBITRATOR
+#ifndef KEYWORDARBITRATOR_H
+#define KEYWORDARBITRATOR_H
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
@@ -78,4 +78,4 @@ private:
 };
 
 } // namespace joynr
-#endif // KEYWORDARBITRATOR
+#endif // KEYWORDARBITRATOR_H

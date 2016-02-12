@@ -77,6 +77,7 @@ public class SubscriptionEnd2EndTest extends AbstractSubscriptionEnd2EndTest {
     @Override
     @After
     public void tearDown() throws InterruptedException {
+        super.tearDown();
         ccJoynrRuntime.shutdown(false);
     }
 

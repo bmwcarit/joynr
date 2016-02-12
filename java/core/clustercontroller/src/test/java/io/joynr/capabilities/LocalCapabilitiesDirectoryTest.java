@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.CustomParameter;
@@ -122,7 +123,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         capabiltitiesDirectoryChannelId,
                                                                         domainAccessControllerParticipantId,
                                                                         domainAccessControllerChannelId,
-                                                                        channelId,
+                                                                        new ChannelAddress(channelId),
                                                                         localCapabilitiesStoreMock,
                                                                         globalCapabilitiesCacheMock,
                                                                         messageRouter,

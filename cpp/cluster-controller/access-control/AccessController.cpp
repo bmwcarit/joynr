@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/types/DiscoveryEntry.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
@@ -113,24 +112,34 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
 
-        std::unique_ptr<Request> request(
-                JsonSerializer::deserialize<Request>(message.getPayload()));
-        if (request) {
-            operation = request->getMethodName();
+        try {
+            Request request = JsonSerializer::deserialize<Request>(message.getPayload());
+            operation = request.getMethodName();
+
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger, "could not deserialize Request from {} - error {}", e.what());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
+        try {
+            SubscriptionRequest request =
+                    JsonSerializer::deserialize<SubscriptionRequest>(message.getPayload());
+            operation = request.getSubscribeToName();
 
-        std::unique_ptr<SubscriptionRequest> request(
-                JsonSerializer::deserialize<SubscriptionRequest>(message.getPayload()));
-        if (request) {
-            operation = request->getSubscribeToName();
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "could not deserialize SubscriptionRequest from {} - error {}",
+                            e.what());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
+        try {
+            BroadcastSubscriptionRequest request =
+                    JsonSerializer::deserialize<BroadcastSubscriptionRequest>(message.getPayload());
+            operation = request.getSubscribeToName();
 
-        std::unique_ptr<BroadcastSubscriptionRequest> request(
-                JsonSerializer::deserialize<BroadcastSubscriptionRequest>(message.getPayload()));
-        if (request) {
-            operation = request->getSubscribeToName();
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "could not deserialize BroadcastSubscriptionRequest from {} - error {}",
+                            e.what());
         }
     }
 
@@ -223,7 +232,7 @@ void AccessController::addParticipantToWhitelist(const std::string& participantI
 
 bool AccessController::needsPermissionCheck(const JoynrMessage& message)
 {
-    if (vectorContains(whitelistParticipantIds, message.getHeaderTo())) {
+    if (util::vectorContains(whitelistParticipantIds, message.getHeaderTo())) {
         return false;
     }
 
@@ -282,7 +291,7 @@ void AccessController::hasConsumerPermission(
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> lookupErrorCallback =
             [callback](const joynr::exceptions::ProviderRuntimeException& exception) {
-        (void)exception;
+        std::ignore = exception;
         callback->hasConsumerPermission(false);
     };
     localCapabilitiesDirectory.lookup(participantId, lookupSuccessCallback, lookupErrorCallback);

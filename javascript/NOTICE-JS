@@ -44,8 +44,8 @@ This project has dependencies to:
   License: MIT License (https://github.com/jrburke/requirejs/blob/master/LICENSE)
   Webjar: <groupId>org.webjars</groupId>
           <artifactId>requirejs</artifactId>
-          <version>2.1.14</version>
-  npm package: version 2.1.14 (https://www.npmjs.com/package/requirejs)
+          <version>2.1.22</version>
+  npm package: version 2.1.22 (https://www.npmjs.com/package/requirejs)
 
 * UUID (https://gist.github.com/jed/982883)
   License: WTF Public License (https://gist.github.com/jed/982883#file-license-txt)
@@ -67,8 +67,8 @@ This project has dependencies to:
   License: MIT License (https://github.com/petkaantonov/bluebird/blob/master/LICENSE)
   Webjar: <groupId>org.webjars</groupId>
           <artifactId>bluebird</artifactId>
-          <version>2.9.9</version>
-  npm package: version 2.9.9 (https://www.npmjs.com/package/bluebird)
+          <version>3.1.1</version>
+  npm package: version 3.1.1 (https://www.npmjs.com/package/bluebird)
 
 * jasmine-jstd-adapter (https://github.com/ibolmo/jasmine-jstd-adapter)
   License: MIT License (https://github.com/ibolmo/jasmine-jstd-adapter/blob/master/MIT.LICENSE)
@@ -80,12 +80,12 @@ This project has dependencies to:
 
 * log4js (https://github.com/nomiddlename/log4js-node)
   License: Apache License, Version 2.0 (https://github.com/nomiddlename/log4js-node/blob/master/LICENSE)
-  npm package: version 0.6.21 (https://www.npmjs.com/package/log4js)
+  npm package: version 0.6.29 (https://www.npmjs.com/package/log4js)
 
 * node-localstorage (https://github.com/lmaccherone/node-localstorage)
   License: MIT License (https://github.com/lmaccherone/node-localstorage#mit-license)
-  npm package: version 0.3.4 (https://www.npmjs.com/package/node-localstorage)
+  npm package: version 1.1.2 (https://www.npmjs.com/package/node-localstorage)
 
 * promise (https://github.com/then/promise)
   License: MIT License (https://github.com/then/promise#license)
-  npm package: version 6.0.1 (https://www.npmjs.com/package/promise)
+  npm package: version 7.1.1 (https://www.npmjs.com/package/promise)

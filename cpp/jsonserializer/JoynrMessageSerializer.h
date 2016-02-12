@@ -19,15 +19,17 @@
 #ifndef JOYNRMESSAGESERIALIZER_H
 #define JOYNRMESSAGESERIALIZER_H
 
+#include <iosfwd>
+
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/IDeserializer.h"
-
-#include <sstream>
 
 namespace joynr
 {
+
+class IObject;
+
 // Serializes a request
 template <>
 void ClassSerializerImpl<JoynrMessage>::serialize(const JoynrMessage& request, std::ostream& o);

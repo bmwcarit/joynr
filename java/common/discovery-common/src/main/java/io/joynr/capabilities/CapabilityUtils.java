@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ package io.joynr.capabilities;
  * limitations under the License.
  * #L%
  */
-
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import com.google.common.collect.Lists;
-import joynr.system.RoutingTypes.ChannelAddress;
+
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.CapabilityInformation;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
@@ -60,7 +61,7 @@ public class CapabilityUtils {
                                        capabilityInformation.getProviderQos(),
                                        capabilityInformation.getParticipantId(),
                                        System.currentTimeMillis(),
-                                       new ChannelAddress(capabilityInformation.getChannelId()));
+                                       RoutingTypesUtil.fromAddressString(capabilityInformation.getChannelId()));
     }
 
     public static Collection<CapabilityEntry> capabilityInformationList2Entries(List<CapabilityInformation> capInfoList) {
@@ -71,21 +72,25 @@ public class CapabilityUtils {
         return capEntryCollection;
     }
 
-    public static CapabilityInformation discoveryEntry2Information(DiscoveryEntry discoveryEntry, String channelId) {
+    public static CapabilityInformation discoveryEntry2Information(DiscoveryEntry discoveryEntry, Address globalAddress) {
         return new CapabilityInformation(discoveryEntry.getDomain(),
                                          discoveryEntry.getInterfaceName(),
                                          discoveryEntry.getQos(),
-                                         channelId,
+                                         RoutingTypesUtil.toAddressString(globalAddress),
                                          discoveryEntry.getParticipantId());
     }
 
-    public static CapabilityEntry discoveryEntry2CapEntry(DiscoveryEntry discoveryEntry, String channelId) {
+    public static CapabilityEntry discoveryEntry2CapEntry(DiscoveryEntry discoveryEntry, String globalAddressString) {
+        return discoveryEntry2CapEntry(discoveryEntry, RoutingTypesUtil.fromAddressString(globalAddressString));
+    }
+
+    public static CapabilityEntry discoveryEntry2CapEntry(DiscoveryEntry discoveryEntry, Address globalAddress) {
         return new CapabilityEntryImpl(discoveryEntry.getDomain(),
                                        discoveryEntry.getInterfaceName(),
                                        discoveryEntry.getQos(),
                                        discoveryEntry.getParticipantId(),
                                        System.currentTimeMillis(),
-                                       new ChannelAddress(channelId));
+                                       globalAddress);
     }
 
     public static Collection<DiscoveryEntry> capabilityEntries2DiscoveryEntries(Collection<CapabilityEntry> capEntryList) {

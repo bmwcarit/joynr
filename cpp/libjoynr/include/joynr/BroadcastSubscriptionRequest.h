@@ -41,9 +41,13 @@ class JOYNR_EXPORT BroadcastSubscriptionRequest : public SubscriptionRequest
 {
 public:
     BroadcastSubscriptionRequest();
-    BroadcastSubscriptionRequest(const BroadcastSubscriptionRequest& subscriptionRequest);
-    BroadcastSubscriptionRequest& operator=(
-            const BroadcastSubscriptionRequest& subscriptionRequest);
+
+    BroadcastSubscriptionRequest(const BroadcastSubscriptionRequest&) = default;
+    BroadcastSubscriptionRequest& operator=(const BroadcastSubscriptionRequest&) = default;
+
+    BroadcastSubscriptionRequest(BroadcastSubscriptionRequest&&) = default;
+    BroadcastSubscriptionRequest& operator=(BroadcastSubscriptionRequest&&) = default;
+
     bool operator==(const BroadcastSubscriptionRequest& subscriptionRequest) const;
 
     std::string toString() const;

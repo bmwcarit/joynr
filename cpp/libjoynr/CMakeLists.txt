@@ -116,15 +116,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-include_directories(
-    ${JoynrLib_INCLUDE_DIRECTORIES}
-)
-
-include_directories(
-    SYSTEM
-    ${JoynrLib_SYS_INCLUDE_DIRS}
-)
-
 add_library(
     Joynr
     SHARED
@@ -132,7 +123,21 @@ add_library(
     ${JoynrLib_SOURCES}
 )
 
-add_dependencies(Joynr libwebsockets)
+target_include_directories(
+    Joynr
+    PRIVATE ${JoynrLib_INCLUDE_DIRECTORIES}
+)
+
+target_include_directories(
+    Joynr
+    SYSTEM
+    PRIVATE ${JoynrLib_SYS_INCLUDE_DIRS}
+)
+
+
+if(NOT USE_PLATFORM_LIBWEBSOCKETS)
+    add_dependencies(Joynr libwebsockets)
+endif(NOT USE_PLATFORM_LIBWEBSOCKETS)
 
 AddClangFormat(Joynr)
 
@@ -162,15 +167,15 @@ target_link_libraries(Joynr
 install(
     TARGETS Joynr
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of headder files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
 )
 
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )

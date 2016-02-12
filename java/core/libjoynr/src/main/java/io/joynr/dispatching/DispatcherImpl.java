@@ -145,7 +145,7 @@ public class DispatcherImpl implements Dispatcher {
     @Override
     public void messageArrived(final JoynrMessage message) {
         if (message == null) {
-            logger.error("received messaage was null");
+            logger.error("received message was null");
             return;
         }
         final long expiryDate = message.getExpiryDate();

@@ -84,7 +84,7 @@ function update() {
         
         for (var i=0; i<data.length; i++ ) {
             var entry = data[i];
-            var channel = entry.endpointAddresses[0].channelId;
+            var channel = entry.channelId;
             var participant = entry.participantId;
             var domain = entry.domain;
             var interfaceName = entry.interfaceName;

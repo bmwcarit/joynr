@@ -17,6 +17,7 @@
  * #L%
  */
 #include "joynr/exceptions/JoynrException.h"
+
 #include "joynr/Variant.h"
 
 namespace joynr

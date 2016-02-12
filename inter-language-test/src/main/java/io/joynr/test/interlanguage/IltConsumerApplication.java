@@ -30,6 +30,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
@@ -126,16 +127,7 @@ public class IltConsumerApplication extends AbstractJoynrApplication {
         String providerDomain = args[0];
         LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
         Properties joynrConfig = new Properties();
-        Module runtimeModule = null;
-        if (args.length == 2 && args[1].equalsIgnoreCase("websocket")) {
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
-            runtimeModule = new LibjoynrWebSocketRuntimeModule();
-        } else {
-            runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
-        }
+        Module runtimeModule = getRuntimeModule(args, joynrConfig);
         LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
         LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
 
@@ -149,6 +141,35 @@ public class IltConsumerApplication extends AbstractJoynrApplication {
         myConsumerApp.run();
 
         myConsumerApp.shutdown();
+    }
+
+    private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
+        Module runtimeModule;
+        if (args.length >= 2) {
+            String transport = args[1].toLowerCase();
+            if (transport.contains("websocket")) {
+                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+                runtimeModule = new LibjoynrWebSocketRuntimeModule();
+            } else {
+                runtimeModule = new CCInProcessRuntimeModule();
+            }
+
+            Module backendTransportModules = Modules.EMPTY_MODULE;
+            if (transport.contains("http")) {
+                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
+            }
+
+            if (transport.contains("mqtt")) {
+                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+            }
+
+            return Modules.override(runtimeModule).with(backendTransportModules);
+        }
+
+        return Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
     }
 
     @Override

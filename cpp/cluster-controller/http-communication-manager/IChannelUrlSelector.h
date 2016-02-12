@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ICHANNELDIRECTORYURLCACHE_H_
-#define ICHANNELDIRECTORYURLCACHE_H_
+#ifndef ICHANNELURLSELECTOR_H
+#define ICHANNELURLSELECTOR_H
 
 #include "joynr/ILocalChannelUrlDirectory.h"
-#include "joynr/RequestStatus.h"
+#include "joynr/StatusCode.h"
 #include <memory>
 #include <string>
 #include <chrono>
@@ -51,7 +51,7 @@ public:
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
     * URL is currently best depending on recent availability and initial ordering (eg direct before
-    * bounceproxy URL.
+    * broker URL.
     *
     * @param channelId
     * @param status
@@ -59,7 +59,7 @@ public:
     * @return std::string
     */
     virtual std::string obtainUrl(const std::string& channelId,
-                                  RequestStatus& status,
+                                  StatusCodeEnum& status,
                                   std::chrono::milliseconds timeout) = 0;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
@@ -72,4 +72,4 @@ public:
 };
 
 } // namespace joynr
-#endif // ICHANNELDIRECTORYURLCACHE_H_
+#endif // ICHANNELURLSELECTOR_H

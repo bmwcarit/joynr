@@ -31,8 +31,8 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.integration.util.TestMessageListener;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -68,9 +68,6 @@ public abstract class AbstractMessagingIntegrationTest {
     // The timeout should be achievable in all test environments
     private static final int DEFAULT_TIMEOUT = 8000;
 
-    private MessageSender joynrMessageSender1;
-    private MessageSender joynrMessageSender2;
-
     private String payload1;
     private String payload2;
     private String payload3;
@@ -97,6 +94,12 @@ public abstract class AbstractMessagingIntegrationTest {
 
     private long relativeTtl_ms = 10000L;
 
+    private ChannelAddress address2;
+    private ChannelAddress address1;
+
+    private MessageRouter joynrMessageSender1;
+    private MessageRouter joynrMessageSender2;
+
     // To be provided by subclasses
     public abstract Injector createInjector(Properties joynrConfig, Module... modules);
 
@@ -110,15 +113,26 @@ public abstract class AbstractMessagingIntegrationTest {
         localChannelUrlDirectoryClient = new DummyLocalChannelUrlDirectoryClient();
 
         String channelId1 = "1_" + UUID.randomUUID().toString().substring(0, 2);
+        address1 = new ChannelAddress(channelId1);
         Injector injector1 = setupMessageEndpoint(channelId1, localChannelUrlDirectoryClient, localCapDir);
-        joynrMessageSender1 = injector1.getInstance(MessageSender.class);
+        joynrMessageSender1 = injector1.getInstance(MessageRouter.class);
         messageReceiver1 = injector1.getInstance(MessageReceiver.class);
         //   IMessageReceivers messageReceivers = injector1.getInstance(IMessageReceivers.class);
         // messageReceivers.registerMessageReceiver(messageReceiver1, channelId1);
 
         String channelId2 = "2_" + UUID.randomUUID().toString();
+        address2 = new ChannelAddress(channelId2);
         Injector injector2 = setupMessageEndpoint(channelId2, localChannelUrlDirectoryClient, localCapDir);
-        joynrMessageSender2 = injector2.getInstance(MessageSender.class);
+
+        RoutingTable routingTable1 = injector1.getInstance(RoutingTable.class);
+        routingTable1.put(fromParticipantId, address1);
+        routingTable1.put(toParticipantId, address2);
+
+        RoutingTable routingTable2 = injector2.getInstance(RoutingTable.class);
+        routingTable2.put(fromParticipantId, address1);
+        routingTable2.put(toParticipantId, address2);
+
+        joynrMessageSender2 = injector2.getInstance(MessageRouter.class);
         messageReceiver2 = injector2.getInstance(MessageReceiver.class);
         //   IMessageReceivers messageReceivers2 = injector2.getInstance(IMessageReceivers.class);
         //  messageReceivers2.registerMessageReceiver(messageReceiver2, channelId2);
@@ -173,7 +187,6 @@ public abstract class AbstractMessagingIntegrationTest {
     @Test
     public void receiveOneWayMessagesBothDirections() throws Exception {
         ExpiryDate expiryDate;
-        String channelId2 = messageReceiver2.getChannelId();
 
         TestMessageListener listener2 = new TestMessageListener(2);
         messageReceiver2.start(listener2);
@@ -192,14 +205,11 @@ public abstract class AbstractMessagingIntegrationTest {
                                                                    toParticipantId,
                                                                    payload2,
                                                                    expiryDate);
-        joynrMessageSender1.sendMessage(channelId2, messageA);
-        joynrMessageSender1.sendMessage(channelId2, messageB);
+        joynrMessageSender1.route(messageA);
+        joynrMessageSender1.route(messageB);
 
         listener2.assertAllPayloadsReceived(DEFAULT_TIMEOUT);
         listener2.assertReceivedPayloadsContains(messageA, messageB);
-
-        // test the other direction
-        String channelId1 = messageReceiver1.getChannelId();
 
         Thread.sleep(50);
 
@@ -208,7 +218,7 @@ public abstract class AbstractMessagingIntegrationTest {
                                                                    fromParticipantId,
                                                                    payload2,
                                                                    expiryDate);
-        joynrMessageSender2.sendMessage(channelId1, messageC);
+        joynrMessageSender2.route(messageC);
 
         listener1.assertAllPayloadsReceived(DEFAULT_TIMEOUT);
         listener1.assertReceivedPayloadsContains(messageC);
@@ -217,7 +227,6 @@ public abstract class AbstractMessagingIntegrationTest {
     @Test
     public void testUmlautInMessagesPayload() throws Exception {
         ExpiryDate ttl_absolute_ms;
-        String channelId2 = messageReceiver2.getChannelId();
         // send message one way
         TestMessageListener listener2 = new TestMessageListener(1);
         messageReceiver2.start(listener2);
@@ -231,7 +240,7 @@ public abstract class AbstractMessagingIntegrationTest {
                                                                    toParticipantId,
                                                                    "Test äöü",
                                                                    ttl_absolute_ms);
-        joynrMessageSender1.sendMessage(channelId2, messageA);
+        joynrMessageSender1.route(messageA);
 
         listener2.assertAllPayloadsReceived(DEFAULT_TIMEOUT);
         listener2.assertReceivedPayloadsContains(messageA);
@@ -240,8 +249,6 @@ public abstract class AbstractMessagingIntegrationTest {
 
     @Test
     public void ttlCausesMessageToBeDropped() throws Exception {
-        String channelId2 = messageReceiver2.getChannelId();
-
         // send 2 messages one way, one should be dropped
         TestMessageListener listener1 = new TestMessageListener(0, 1);
         messageReceiver1.start(listener1);
@@ -260,8 +267,8 @@ public abstract class AbstractMessagingIntegrationTest {
                                                                    toParticipantId,
                                                                    payload4,
                                                                    ExpiryDate.fromRelativeTtl(200));
-        joynrMessageSender1.sendMessage(channelId2, message1);
-        joynrMessageSender1.sendMessage(channelId2, message2);
+        joynrMessageSender1.route(message1);
+        joynrMessageSender1.route(message2);
 
         // wait ttl to cause a message to be discarded
         Thread.sleep(500);
@@ -293,10 +300,8 @@ public abstract class AbstractMessagingIntegrationTest {
                                                                    payload2,
                                                                    expiryDate);
 
-        String channelId2 = messageReceiver2.getChannelId();
-
-        joynrMessageSender1.sendMessage(channelId2, message1);
-        joynrMessageSender1.sendMessage(channelId2, message2);
+        joynrMessageSender1.route(message1);
+        joynrMessageSender1.route(message2);
 
         Thread.sleep(500);
         messageReceiver2.resume();
@@ -308,7 +313,6 @@ public abstract class AbstractMessagingIntegrationTest {
     @Test
     public void receiveOneWayMessagesBothDirections2() throws Exception {
         ExpiryDate ttl_absolute_ms;
-        String channelId2 = messageReceiver2.getChannelId();
 
         TestMessageListener listener2 = new TestMessageListener(2);
         messageReceiver2.start(listener2);
@@ -327,23 +331,21 @@ public abstract class AbstractMessagingIntegrationTest {
                                                                    toParticipantId,
                                                                    payload2,
                                                                    ttl_absolute_ms);
-        joynrMessageSender1.sendMessage(channelId2, messageA);
-        joynrMessageSender1.sendMessage(channelId2, messageB);
+        joynrMessageSender1.route(messageA);
+        joynrMessageSender1.route(messageB);
 
         listener2.assertAllPayloadsReceived(DEFAULT_TIMEOUT);
         listener2.assertReceivedPayloadsContains(messageA, messageB);
 
-        // test the other direction
-        String channelId1 = messageReceiver1.getChannelId();
-
         Thread.sleep(50);
 
+        // test the other direction
         ttl_absolute_ms = ExpiryDate.fromRelativeTtl(relativeTtl_ms);
         JoynrMessage messageC = joynrMessagingFactory.createOneWay(toParticipantId,
                                                                    fromParticipantId,
                                                                    payload2,
                                                                    ttl_absolute_ms);
-        joynrMessageSender2.sendMessage(channelId1, messageC);
+        joynrMessageSender2.route(messageC);
 
         listener1.assertAllPayloadsReceived(DEFAULT_TIMEOUT);
         listener1.assertReceivedPayloadsContains(messageC);
@@ -358,8 +360,6 @@ public abstract class AbstractMessagingIntegrationTest {
                                               JoynrSendBufferFullException, JoynrMessageNotSentException, IOException {
         ExpiryDate ttl_absolute_ms;
         int nMessages = 500; // TestMessageListener listener1 = new TestMessageListener(nMessages);
-
-        String channelId2 = messageReceiver2.getChannelId();
 
         TestMessageListener listener2 = new TestMessageListener(nMessages);
         messageReceiver2.start(listener2);
@@ -378,7 +378,7 @@ public abstract class AbstractMessagingIntegrationTest {
             JoynrMessage message = joynrMessagingFactory.createOneWay(fromParticipantId, toParticipantId, payload1
                     + "message:" + i, ttl_absolute_ms);
             messages.add(message);
-            joynrMessageSender1.sendMessage(channelId2, message);
+            joynrMessageSender1.route(message);
         }
 
         listener2.assertAllPayloadsReceived(ttlForManyMessages);

@@ -17,6 +17,9 @@
  * #L%
  */
 #include "joynr/PrimitiveDeserializer.h"
+
+#include <memory>
+
 #include "joynr/Util.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/IDeserializer.h"
@@ -35,7 +38,7 @@ Variant deserialize(IValue& o, std::string typeName)
 
 template <>
 void PrimitiveDeserializer<std::string>::deserialize(std::string& string,const IValue& value) {
-    string = removeEscapeFromSpecialChars(value);
+    string = util::removeEscapeFromSpecialChars(value);
 }
 
 } // namespace joynr

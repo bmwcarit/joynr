@@ -4,6 +4,7 @@ import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 
 import java.io.IOException; /*
@@ -24,6 +25,8 @@ import java.io.IOException; /*
  * limitations under the License.
  * #L%
  */
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.Set;
 
@@ -51,17 +54,33 @@ public class ClusterController {
         Properties ccConfig = new Properties();
         ccConfig.putAll(webSocketConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
-        Module runtimeModule = null;
+        Module runtimeModule = new CCWebSocketRuntimeModule();
 
-        if (args.length == 1) {
-            if (args[0].equalsIgnoreCase("atmosphere")) {
-                runtimeModule = Modules.override(new CCWebSocketRuntimeModule()).with(new AtmosphereMessagingModule());
-            } else {
-                LOG.error("\n\nUSAGE: java {} [atmosphere]\n\n", ClusterController.class.getName());
-                return;
+        if (args.length > 0) {
+            String transport = args[0].toLowerCase();
+            Module backendTransportModules = Modules.EMPTY_MODULE;
+            if (transport.contains("atmosphere") || transport.contains("http")) {
+                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
             }
-        } else {
-            runtimeModule = new CCWebSocketRuntimeModule();
+            if (transport.contains("mqtt")) {
+                if (args.length > 1) {
+                    String brokerUri = args[1];
+                    try {
+                        URI uri = new URI(brokerUri);
+                        if (uri.getAuthority() == null || uri.getHost() == null || uri.getPort() < 0) {
+                            throw new URISyntaxException(brokerUri, "host, authority or port was not set");
+                        }
+                    } catch (URISyntaxException e) {
+                        System.err.println(brokerUri
+                                + " is not a valid URI for the MQTT broker. Expecting for example: tcp://localhost:1883 Error: "
+                                + e.getMessage());
+                        System.exit(1);
+                    }
+                    ccConfig.put("joynr.messaging.mqtt.brokerUri", brokerUri);
+                }
+                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+            }
+            runtimeModule = Modules.override(runtimeModule).with(backendTransportModules);
         }
 
         Injector injectorCC = new JoynrInjectorFactory(ccConfig, runtimeModule).getInjector();

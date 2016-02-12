@@ -1,5 +1,6 @@
 [messaging]
-bounce-proxy-url=http://${JOYNR_SERVER}/bounceproxy/
+broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
+bounceproxy-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/bounceproxy/
 
 discovery-directories-domain=io.joynr
 # TTL in msecs of messages used in communication between local discovery service and backend
@@ -10,11 +11,11 @@ discovery-directories-domain=io.joynr
 # 1814400 = 21 days
 discovery-messages-ttl=1814400
 
-channel-url-directory-url=http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/
+channel-url-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/discovery/channels/discoverydirectory_channelid/
 channel-url-directory-channelid=discoverydirectory_channelid
 channel-url-directory-participantid=channelurldirectory_participantid
 
-capabilities-directory-url=http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/
+capabilities-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/discovery/channels/discoverydirectory_channelid/
 capabilities-directory-channelid=discoverydirectory_channelid
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
@@ -28,5 +29,5 @@ http-debug=
 local-proxy-port=
 persistence-file=joynr.settings
 long-poll-timeout=
-bounce-proxy-timeout=
+broker-timeout=
 max-send-ttl=

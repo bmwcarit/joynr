@@ -33,6 +33,7 @@
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
+#include "joynr/Settings.h"
 #include <vector>
 
 namespace joynr

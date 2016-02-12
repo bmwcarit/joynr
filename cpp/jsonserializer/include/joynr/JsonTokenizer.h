@@ -19,16 +19,19 @@
 #ifndef JSONTOKENIZER_H
 #define JSONTOKENIZER_H
 
-#include "jsmn.h"
-#include "joynr/IDeserializer.h"
-#include "joynr/Variant.h"
-
 #include <string>
 #include <memory>
 #include <vector>
 #include <atomic>
 #include <sstream>
 #include <cstddef>
+#include <cstdint>
+
+#include "jsmn.h"
+
+#include "joynr/IDeserializer.h"
+#include "joynr/Variant.h"
+
 
 namespace joynr
 {

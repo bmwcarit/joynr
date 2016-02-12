@@ -39,7 +39,6 @@ public:
     ProxyBase(ConnectorFactory* connectorFactory,
               IClientCache* cache,
               const std::string& domain,
-              const std::string& interfaceName,
               const MessagingQos& qosSettings,
               bool cached);
     virtual ~ProxyBase();
@@ -65,7 +64,6 @@ protected:
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
     std::string domain;
-    std::string interfaceName;
     MessagingQos qosSettings;
     bool cached;
     std::string providerParticipantId;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,20 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CHANNELDIRECTORYURLCACHE_H_
-#define CHANNELDIRECTORYURLCACHE_H_
-#include "joynr/PrivateCopyAssign.h"
+#ifndef CHANNELURLSELECTOR_H
+#define CHANNELURLSELECTOR_H
 
+#include <cstdint>
+#include <memory>
+#include <chrono>
+#include <map>
+
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/types/ChannelUrlInformation.h"
-#include "joynr/BounceProxyUrl.h"
-#include <cstdint>
-#include <memory>
-#include <chrono>
-
-#include <QMap>
+#include "joynr/BrokerUrl.h"
 
 // Forward declare test classes
 class ChannelUrlSelectorTest_punishTest_Test;
@@ -64,11 +64,11 @@ public:
     /**
      * @brief Initialize
      *
-     * @param bounceProxyUrl
+     * @param brokerUrl
      * @param timeForOneRecouperation
      * @param punishmentFactor
      */
-    explicit ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
+    explicit ChannelUrlSelector(const BrokerUrl& brokerUrl,
                                 std::chrono::milliseconds timeForOneRecouperation,
                                 double punishmentFactor);
 
@@ -85,7 +85,7 @@ public:
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
     * URL is currently best depending on recent availability and initial ordering (eg direct before
-    * bounceproxy URL.
+    * broker URL.
     *
     * @param channelId
     * @param status
@@ -93,7 +93,7 @@ public:
     * @return std::string
     */
     std::string obtainUrl(const std::string& channelId,
-                          RequestStatus& status,
+                          StatusCodeEnum& status,
                           std::chrono::milliseconds timeout) override;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
@@ -109,8 +109,8 @@ private:
     std::string constructDefaultUrl(const std::string& channelId);
     std::string constructUrl(const std::string& baseUrl);
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
-    const BounceProxyUrl& bounceProxyUrl;
-    QMap<std::string, ChannelUrlSelectorEntry*> entries;
+    const BrokerUrl& brokerUrl;
+    std::map<std::string, ChannelUrlSelectorEntry*> entries;
     std::chrono::milliseconds timeForOneRecouperation;
     double punishmentFactor;
     std::string channelUrlDirectoryUrl;
@@ -179,4 +179,4 @@ private:
 };
 
 } // namespace joynr
-#endif // CHANNELDIRECTORYURLCACHE_H_
+#endif // CHANNELURLSELECTOR_H

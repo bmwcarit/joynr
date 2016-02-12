@@ -18,9 +18,12 @@
  */
 #include "exceptions/JoynrExceptionSerializer.h"
 
+#include <ostream>
+
 #include "joynr/SerializerRegistry.h"
-#include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
+#include "joynr/IDeserializer.h"
+#include "joynr/PrimitiveDeserializer.h"
 
 namespace joynr
 {

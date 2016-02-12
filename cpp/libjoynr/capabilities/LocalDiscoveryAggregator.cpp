@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,17 @@
  */
 #include "joynr/LocalDiscoveryAggregator.h"
 
+#include <utility>
+
+#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/SystemServicesSettings.h"
-#include "joynr/RequestStatus.h"
-#include "joynr/RequestStatusCode.h"
 
+#include "joynr/types/ProviderQos.h"
 #include "joynr/types/DiscoveryEntry.h"
-#include "joynr/types/DiscoveryQos.h"
 #include "joynr/system/IRouting.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/system/DiscoveryProxy.h"
-#include "joynr/TypeUtil.h"
 
 namespace joynr
 {

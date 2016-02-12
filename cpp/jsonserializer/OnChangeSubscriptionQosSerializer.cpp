@@ -17,7 +17,13 @@
  * #L%
  */
 #include "OnChangeSubscriptionQosSerializer.h"
+
+#include <cstdint>
+#include <ostream>
+
 #include "joynr/SerializerRegistry.h"
+#include "joynr/JoynrTypeId.h"
+#include "joynr/IDeserializer.h"
 
 namespace joynr
 {

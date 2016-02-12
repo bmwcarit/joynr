@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,17 @@
  * #L%
  */
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/Future.h"
-#include "joynr/DispatcherUtils.h"
-#include "joynr/QtTypeUtil.h"
-#include <boost/algorithm/string/predicate.hpp>
-#include <QUrl>
+
 #include <cmath>
 #include <memory>
 #include <chrono>
+
+#include <QUrl>
+#include <boost/algorithm/string/predicate.hpp>
+
+#include "joynr/MessagingSettings.h"
+#include "joynr/Future.h"
+#include "joynr/DispatcherUtils.h"
 
 namespace joynr
 {
@@ -43,11 +45,11 @@ std::chrono::milliseconds ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
     return std::chrono::minutes(3);
 }
 
-ChannelUrlSelector::ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
+ChannelUrlSelector::ChannelUrlSelector(const BrokerUrl& brokerUrl,
                                        std::chrono::milliseconds timeForOneRecouperation,
                                        double punishmentFactor)
         : channelUrlDirectory(),
-          bounceProxyUrl(bounceProxyUrl),
+          brokerUrl(brokerUrl),
           entries(),
           timeForOneRecouperation(timeForOneRecouperation),
           punishmentFactor(punishmentFactor),
@@ -63,7 +65,7 @@ ChannelUrlSelector::~ChannelUrlSelector()
     auto it = entries.begin();
     ChannelUrlSelectorEntry* v;
     while (it != entries.end()) {
-        v = *it;
+        v = it->second;
         if (v) {
             delete v;
         }
@@ -81,29 +83,29 @@ void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channel
 }
 
 std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
-                                          RequestStatus& status,
+                                          StatusCodeEnum& status,
                                           std::chrono::milliseconds timeout)
 {
 
     JOYNR_LOG_TRACE(logger, "entering obtainUrl ...");
-    status.setCode(RequestStatusCode::IN_PROGRESS);
+    status = StatusCodeEnum::SUCCESS;
 
     std::string url("");
 
     if (!channelUrlDirectory) {
         JOYNR_LOG_DEBUG(logger, "obtainUrl: channelUrlDirectoryProxy not available ...");
         JOYNR_LOG_DEBUG(
-                logger,
-                "using default url constructed from channelId and BounceproxyUrl instead...");
-        status.setCode(RequestStatusCode::ERROR);
+                logger, "using default url constructed from channelId and BrokerUrl instead...");
+        status = StatusCodeEnum::ERROR;
         url = constructDefaultUrl(channelId);
         return constructUrl(url);
     }
 
-    if (entries.contains(channelId)) {
+    auto entryIt = entries.find(channelId);
+    if (entryIt != entries.cend()) {
         JOYNR_LOG_DEBUG(logger, "obtainUrl: using cached Urls for id = {}", channelId);
-        ChannelUrlSelectorEntry* entry = entries.value(channelId);
-        status.setCode(RequestStatusCode::OK);
+        ChannelUrlSelectorEntry* entry = entryIt->second;
+        status = StatusCodeEnum::SUCCESS;
         return constructUrl(entry->best());
     }
     JOYNR_LOG_DEBUG(logger,
@@ -113,7 +115,7 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
             channelUrlDirectory->getUrlsForChannelAsync(channelId, timeout));
     status = proxyFuture->getStatus();
 
-    if (status.successful()) {
+    if (status == StatusCodeEnum::SUCCESS) {
         JOYNR_LOG_DEBUG(logger,
                         "obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = {}",
                         channelId);
@@ -123,23 +125,23 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
             JOYNR_LOG_DEBUG(
                     logger, "obtainUrl: empty list of urls obtained from id = {}", channelId);
             JOYNR_LOG_DEBUG(logger, "obtainUrl: constructing default url for id = {}", channelId);
-            status.setCode(RequestStatusCode::ERROR);
+            status = StatusCodeEnum::ERROR;
             url = constructDefaultUrl(channelId);
             return constructUrl(url);
         }
         url = urlInformation.getUrls().at(0); // return the first, store all
-        entries.insert(channelId,
-                       new ChannelUrlSelectorEntry(urlInformation,
-                                                   punishmentFactor,
-                                                   timeForOneRecouperation)); // deleted where?
-        status.setCode(RequestStatusCode::OK);
+        entries.insert(
+                std::make_pair(channelId,
+                               new ChannelUrlSelectorEntry(
+                                       urlInformation, punishmentFactor, timeForOneRecouperation)));
+        status = StatusCodeEnum::SUCCESS;
         return constructUrl(url);
     } else {
         JOYNR_LOG_DEBUG(logger,
                         "obtainUrl: FAILED to obtain Urls from remote ChannelUrlDirectory "
                         "for id = {}",
                         channelId);
-        status.setCode(RequestStatusCode::ERROR);
+        status = StatusCodeEnum::ERROR;
         url = constructDefaultUrl(channelId);
         return constructUrl(url);
     }
@@ -153,14 +155,16 @@ void ChannelUrlSelector::feedback(bool success, const std::string& channelId, st
         JOYNR_LOG_TRACE(logger, "feedback was positive");
         return;
     }
-    if (!entries.contains(channelId)) {
+
+    auto entryIt = entries.find(channelId);
+    if (entryIt == entries.cend()) {
         JOYNR_LOG_DEBUG(logger, "feedback for an unknown channelId");
         return;
     }
     JOYNR_LOG_TRACE(logger, "feedback: punishing Url = {}", url);
     JOYNR_LOG_TRACE(logger, " for channelId= {}", channelId);
-    ChannelUrlSelectorEntry* entry = entries.value(channelId);
-    std::string::size_type cutoff = url.find("/" + BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX(), 0);
+    ChannelUrlSelectorEntry* entry = entryIt->second;
+    std::string::size_type cutoff = url.find("/" + BrokerUrl::SEND_MESSAGE_PATH_APPENDIX(), 0);
     url.resize(cutoff);
     entry->punish(url);
     url.append("/"); // necessary because an Url can be provided without the ending /
@@ -175,7 +179,7 @@ std::string ChannelUrlSelector::constructUrl(const std::string& baseUrl)
     if (!path.empty() && !ends_with(path, "/")) {
         path.append("/");
     }
-    path.append(BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX());
+    path.append(BrokerUrl::SEND_MESSAGE_PATH_APPENDIX());
     path.append("/");
     sendUrl.setPath(QString::fromStdString(path));
     return sendUrl.toString().toStdString();
@@ -186,16 +190,17 @@ std::string ChannelUrlSelector::constructDefaultUrl(const std::string& channelId
 {
     JOYNR_LOG_DEBUG(logger,
                     "constructDefaultUrl ... using default Url inferred from channelId and "
-                    "BounceProxyUrl");
+                    "BrokerUrl");
     assert(useDefaultUrl);
-    std::string url = bounceProxyUrl.getBounceProxyChannelsBaseUrl().toString() + channelId;
+    std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString() + channelId;
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls;
     urls.push_back(url);
     urlInformation.setUrls(urls);
     entries.insert(
-            channelId,
-            new ChannelUrlSelectorEntry(urlInformation, punishmentFactor, timeForOneRecouperation));
+            std::make_pair(channelId,
+                           new ChannelUrlSelectorEntry(
+                                   urlInformation, punishmentFactor, timeForOneRecouperation)));
     return url;
 }
 
@@ -250,7 +255,7 @@ void ChannelUrlSelectorEntry::punish(const std::string& url)
     JOYNR_LOG_TRACE(logger, "punish ...");
     const std::string stdUrl = url;
     const std::vector<std::string>& urls = urlInformation.getUrls();
-    if (!vectorContains(urls, stdUrl)) {
+    if (!util::vectorContains(urls, stdUrl)) {
         JOYNR_LOG_DEBUG(logger, "Url not contained in cache entry ...");
         return;
     }

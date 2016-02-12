@@ -1,7 +1,7 @@
 FROM fedora:21
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2015-09-12
+ENV REFRESHED_AT 2016-02-16
 
 ###################################################
 # set timezone
@@ -46,6 +46,7 @@ RUN yum update -y \
 	xcb-util-devel \
 	xcb-util-*-devel \
 	zlib.i686 \
+	hostname.x86_64 \
 	&& yum groupinstall -y 'Development Tools' \
 	&& yum clean all
 
@@ -77,6 +78,24 @@ RUN wget http://mirror.serversupportforum.de/apache/maven/maven-3/${MAVEN_VERSIO
 ENV PATH $PATH:/opt/apache-maven-${MAVEN_VERSION}/bin
 ENV MAVEN_OPTS -Xmx2048M -XX:+CMSClassUnloadingEnabled
 VOLUME /home/joynr/.m2
+
+###################################################
+# build and install mosquitto 1.4.7 mqtt broker
+# do not build documentation
+# use default settings
+# run mosquitto as user "joynr"
+###################################################
+RUN yum update -y \
+    && yum install -y c-ares-devel libuuid-devel\
+    && cd /opt \
+    && git clone https://git.eclipse.org/r/mosquitto/org.eclipse.mosquitto.git \
+    && cd org.eclipse.mosquitto \
+    && git checkout v1.4.7 \
+    && make DOCDIRS= install -j"$(nproc)" \
+    && mv /etc/mosquitto/mosquitto.conf.example /etc/mosquitto/mosquitto.conf \
+    && echo "user joynr" >> /etc/mosquitto/mosquitto.conf \
+    && yum clean all
+
 
 ###################################################
 # create data directories and volumes

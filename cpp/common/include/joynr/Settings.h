@@ -23,6 +23,7 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include <boost/property_tree/ptree.hpp>
+#include <string>
 
 namespace joynr
 {
@@ -109,10 +110,7 @@ private:
                       boost::property_tree::ptree& to,
                       bool overwrite);
 
-    static boost::property_tree::path createPath(const std::string& path)
-    {
-        return boost::property_tree::path{path, '/'};
-    }
+    static boost::property_tree::path createPath(const std::string& path);
 };
 
 //---- Implementation ----------------------------------------------------------

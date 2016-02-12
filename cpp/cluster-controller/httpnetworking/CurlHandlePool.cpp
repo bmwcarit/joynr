@@ -82,7 +82,7 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
     pooledHandle->clearHandle();
     idleHandleMap.insert(QThread::currentThreadId(), pooledHandle);
     // handles most recently used are prepended
-    removeAll(handleOrderList, pooledHandle);
+    util::removeAll(handleOrderList, pooledHandle);
     handleOrderList.insert(handleOrderList.begin(), pooledHandle);
 
     if (!handleOrderList.empty() && handleOrderList.size() + outHandleMap.size() > POOL_SIZE) {
@@ -103,7 +103,7 @@ void PerThreadCurlHandlePool::deleteHandle(void* handle)
     std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     if (pooledHandle) {
-        removeAll(handleOrderList, pooledHandle);
+        util::removeAll(handleOrderList, pooledHandle);
         idleHandleMap.remove(QThread::currentThreadId(), pooledHandle);
     }
 }
@@ -139,6 +139,7 @@ std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
                 idleHandleMap.remove(threadId, pooledHandle);
                 return pooledHandle;
             }
+            ++i;
         }
         return idleHandleMap.take(threadId);
     } else {
@@ -148,7 +149,7 @@ std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
 
 const std::int32_t PooledCurlHandle::CONNECTIONS_PER_HANDLE = 3;
 
-PooledCurlHandle::PooledCurlHandle() : hosts(), handle(nullptr)
+PooledCurlHandle::PooledCurlHandle() : hosts(), handle(nullptr), hostsMutex()
 {
     handle = curl_easy_init();
     curl_easy_setopt(handle, CURLOPT_MAXCONNECTS, CONNECTIONS_PER_HANDLE);
@@ -161,6 +162,7 @@ PooledCurlHandle::~PooledCurlHandle()
 
 bool PooledCurlHandle::hasHost(const std::string& host) const
 {
+    std::lock_guard<std::mutex> hostsLocker(hostsMutex);
     return hosts.contains(host);
 }
 
@@ -171,6 +173,8 @@ void* PooledCurlHandle::getHandle()
 
 void PooledCurlHandle::setActiveHost(const std::string& host)
 {
+    std::lock_guard<std::mutex> hostsLocker(hostsMutex);
+
     QMutableLinkedListIterator<std::string> i(hosts);
     while (i.hasNext()) {
         const std::string& itHost = i.next();

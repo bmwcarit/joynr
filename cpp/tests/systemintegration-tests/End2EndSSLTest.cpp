@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
@@ -51,7 +50,7 @@ public:
         Settings::merge(sslSettings, *settings, false);
         Settings::merge(integrationTestSettings, *settings, false);
         runtime = new JoynrClusterControllerRuntime(nullptr, settings);
-        std::string uuid = Util::createUuid();
+        std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
     }
 

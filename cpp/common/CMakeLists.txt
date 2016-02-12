@@ -11,6 +11,7 @@ configure_file(
 configure_file(
     "RuntimeConfig.h.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/RuntimeConfig.h"
+    @ONLY
 )
 
 
@@ -42,10 +43,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
-include_directories(
-    ${JoynrCommon_INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/../libjoynr/include
-)
 
 set(
     JoynrCommon_EXPORT_HEADER
@@ -135,6 +132,12 @@ set_target_properties(
 # make spdlog system directory to avoid compiler warnings
 target_include_directories(JoynrCommon SYSTEM PUBLIC "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>")
 
+target_include_directories(
+    JoynrCommon
+    PRIVATE ${JoynrCommon_INCLUDE_DIRECTORIES}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../libjoynr/include
+)
+
 generate_export_header(
     JoynrCommon
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrCommon_EXPORT_HEADER}"
@@ -142,7 +145,9 @@ generate_export_header(
 
 target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
 
-add_dependencies(JoynrCommon spdlog)
+if(NOT USE_PLATFORM_SPDLOG)
+    add_dependencies(JoynrCommon spdlog)
+endif(NOT USE_PLATFORM_SPDLOG)
 
 AddClangFormat(JoynrCommon)
 
@@ -153,25 +158,37 @@ AddClangTidy(JoynrCommon)
 install(
     TARGETS JoynrCommon
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of headder files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
 )
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )
 
 # Visual Studio compiles to Debug and Release directories
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-system-services.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-system-services.settings)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-system-services.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-system-services.settings
+        @ONLY
+    )
 else()
     # copy resources for build tree
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
+        @ONLY
+    )
     # ...and for install tree
     install(
         FILES

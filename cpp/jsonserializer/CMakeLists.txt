@@ -10,6 +10,7 @@ else(USE_PLATFORM_JSMN)
     AddExternalProject(
         jsmn
         GIT_REPOSITORY https://github.com/zserge/jsmn
+        GIT_TAG 572ace5 # there are no version tags, hence a SHA is used
         TIMEOUT 10
         PATCH_COMMAND rm -f config.mk COMMAND git apply ${CMAKE_SOURCE_DIR}/CMake/jsmn-fpic.patch
         # Disable configure step
@@ -83,8 +84,9 @@ add_library(
     ${JoynrJsonSerializer_SOURCES}
 )
 
-include_directories(
-    ${JoynrJsonSerializer_INCLUDE_DIRECTORIES}
+target_include_directories(
+    JoynrJsonSerializer
+    PRIVATE ${JoynrJsonSerializer_INCLUDE_DIRECTORIES}
 )
 
 AddIncludeWhatYouUse(JoynrJsonSerializer)
@@ -103,19 +105,21 @@ set_target_properties(
     PUBLIC_INCLUDE_DIRECTORY "${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}"
 )
 
-add_dependencies(JoynrJsonSerializer jsmn)
+if(NOT USE_PLATFORM_JSMN)
+    add_dependencies(JoynrJsonSerializer jsmn)
+endif(NOT USE_PLATFORM_JSMN)
 
 install(
     TARGETS JoynrJsonSerializer EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT library
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT library
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of headder files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT development
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT development
 )
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )

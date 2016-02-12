@@ -68,7 +68,7 @@ public class DispatcherImplTest {
     @Mock
     private MessageRouter messageRouterMock;
     @Spy
-    private MessageSenderReceiverMock messageReceiverMock = new MessageSenderReceiverMock();
+    private MessageReceiverMock messageReceiverMock = new MessageReceiverMock();
 
     private Dispatcher fixture;
     private RequestCallerDirectory requestCallerDirectory;

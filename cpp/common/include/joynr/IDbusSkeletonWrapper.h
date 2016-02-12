@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef DBUSSKELETONWRAPPER_H
-#define DBUSSKELETONWRAPPER_H
+#ifndef IDBUSSKELETONWRAPPER_H
+#define IDBUSSKELETONWRAPPER_H
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
@@ -91,4 +91,4 @@ template <class _SkeletonClass, class _CallBackClass>
 INIT_LOGGER(SINGLE_MACRO_ARG(IDbusSkeletonWrapper<_SkeletonClass, _CallBackClass>));
 
 } // namespace joynr
-#endif // DBUSSKELETONWRAPPER_H
+#endif // IDBUSSKELETONWRAPPER_H

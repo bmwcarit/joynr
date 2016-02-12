@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef WEBSOCKETEVENTHANDLER_H
-#define WEBSOCKETEVENTHANDLER_H
+#ifndef IWEBSOCKETEVENTHANDLER_H
+#define IWEBSOCKETEVENTHANDLER_H
 
 #include <string>
 
@@ -61,4 +61,4 @@ public:
 };
 
 } // namespace joynr
-#endif // WEBSOCKETEVENTHANDLER_H
+#endif // IWEBSOCKETEVENTHANDLER_H

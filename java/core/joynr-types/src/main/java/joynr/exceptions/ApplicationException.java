@@ -140,6 +140,7 @@ public class ApplicationException extends Exception implements JoynrException {
 
     @SuppressWarnings("rawtypes")
     public static class JoynrErrorEnumSerializer extends StdSerializer<Enum> {
+        private static final long serialVersionUID = 1L;
 
         public JoynrErrorEnumSerializer() {
             super(Enum.class);

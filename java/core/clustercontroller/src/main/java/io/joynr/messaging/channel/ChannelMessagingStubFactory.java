@@ -20,38 +20,43 @@ package io.joynr.messaging.channel;
  */
 
 import com.google.inject.Inject;
-import io.joynr.messaging.AbstractMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.MessageSender;
-import joynr.JoynrMessage;
-import joynr.system.RoutingTypes.ChannelAddress;
 
-import java.io.IOException;
+import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
+import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.http.HttpGlobalAddressFactory;
+import io.joynr.messaging.http.HttpMessageSender;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 /**
  *  Message stub factory for joynr channel addresses
  */
-public class ChannelMessagingStubFactory extends AbstractMessagingStubFactory<ChannelAddress> {
-    private MessageSender messageSender;
+public class ChannelMessagingStubFactory extends
+        AbstractMiddlewareMessagingStubFactory<ChannelMessagingStub, ChannelAddress> {
+    private HttpMessageSender httpMessageSender;
+    private ChannelMessageSerializerFactory channelMessageSerializerFactory;
+    private ChannelAddress replyToAddress;
 
     @Inject
-    public ChannelMessagingStubFactory(MessageSender messageSender) {
-        this.messageSender = messageSender;
+    public ChannelMessagingStubFactory(ChannelMessageSerializerFactory channelMessageSerializerFactory,
+                                       HttpMessageSender messageSender,
+                                       HttpGlobalAddressFactory replyToAddressFactory) {
+        this.channelMessageSerializerFactory = channelMessageSerializerFactory;
+        this.httpMessageSender = messageSender;
+        this.replyToAddress = (ChannelAddress) replyToAddressFactory.create();
     }
 
     @Override
-    protected IMessaging createInternal(final ChannelAddress address) {
-        IMessaging messagingStub = new IMessaging() {
-            @Override
-            public void transmit(JoynrMessage message) throws IOException {
-                messageSender.sendMessage(address.getChannelId(), message);
-            }
-        };
+    protected ChannelMessagingStub createInternal(final ChannelAddress address) {
+        final JoynrMessageSerializer messageSerializer = channelMessageSerializerFactory.create(address);
+        ChannelMessagingStub messagingStub = new ChannelMessagingStub(address,
+                                                                      replyToAddress,
+                                                                      messageSerializer,
+                                                                      httpMessageSender);
         return messagingStub;
     }
 
     @Override
     public void shutdown() {
-        messageSender.shutdown();
+        httpMessageSender.shutdown();
     }
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  * #L%
  */
 #include "joynr/MessagingSettings.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 
@@ -30,6 +30,10 @@ INIT_LOGGER(MessagingSettings);
 
 MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
 {
+    if (!settings.contains(SETTING_BOUNCE_PROXY_URL()) && settings.contains(SETTING_BROKER_URL())) {
+        std::string brokerUrl = settings.get<std::string>(SETTING_BROKER_URL());
+        settings.set(SETTING_BOUNCE_PROXY_URL(), brokerUrl);
+    }
     settings.fillEmptySettingsWithDefaults(DEFAULT_MESSAGING_SETTINGS_FILENAME());
     checkSettings();
 }
@@ -39,9 +43,15 @@ MessagingSettings::MessagingSettings(const MessagingSettings& other) : settings(
     checkSettings();
 }
 
+const std::string& MessagingSettings::SETTING_BROKER_URL()
+{
+    static const std::string value("messaging/broker-url");
+    return value;
+}
+
 const std::string& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
 {
-    static const std::string value("messaging/bounce-proxy-url");
+    static const std::string value("messaging/bounceproxy-url");
     return value;
 }
 
@@ -225,13 +235,13 @@ std::int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_BOUNCEPROXY_TIMEOUT_MS()
+const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
 {
-    static const std::string value("messaging/bounce-proxy-timeout");
+    static const std::string value("messaging/broker-timeout");
     return value;
 }
 
-std::int64_t MessagingSettings::DEFAULT_BOUNCEPROXY_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
 {
     static const std::int64_t value(20 * 1000); // 20 seconds
     return value;
@@ -261,9 +271,25 @@ std::int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
     return value;
 }
 
-BounceProxyUrl MessagingSettings::getBounceProxyUrl() const
+BrokerUrl MessagingSettings::getBrokerUrl() const
 {
-    return BounceProxyUrl(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
+    return BrokerUrl(settings.get<std::string>(SETTING_BROKER_URL()));
+}
+
+std::string MessagingSettings::getBrokerUrlString() const
+{
+    return settings.get<std::string>(SETTING_BROKER_URL());
+}
+
+void MessagingSettings::setBrokerUrl(const BrokerUrl& brokerUrl)
+{
+    std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString();
+    settings.set(SETTING_BROKER_URL(), url);
+}
+
+BrokerUrl MessagingSettings::getBounceProxyUrl() const
+{
+    return BrokerUrl(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
 }
 
 std::string MessagingSettings::getBounceProxyUrlString() const
@@ -271,9 +297,9 @@ std::string MessagingSettings::getBounceProxyUrlString() const
     return settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
 }
 
-void MessagingSettings::setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl)
+void MessagingSettings::setBounceProxyUrl(const BrokerUrl& bounceProxyUrl)
 {
-    std::string url = bounceProxyUrl.getBounceProxyChannelsBaseUrl().toString();
+    std::string url = bounceProxyUrl.getBrokerChannelsBaseUrl().toString();
     settings.set(SETTING_BOUNCE_PROXY_URL(), url);
 }
 
@@ -422,14 +448,14 @@ void MessagingSettings::setHttpConnectTimeout(std::int64_t timeout_ms)
     settings.set(SETTING_HTTP_CONNECT_TIMEOUT_MS(), timeout_ms);
 }
 
-std::int64_t MessagingSettings::getBounceProxyTimeout() const
+std::int64_t MessagingSettings::getBrokerTimeout() const
 {
-    return settings.get<std::int64_t>(SETTING_BOUNCEPROXY_TIMEOUT_MS());
+    return settings.get<std::int64_t>(SETTING_BROKER_TIMEOUT_MS());
 }
 
-void MessagingSettings::setBounceProxyTimeout(std::int64_t timeout_ms)
+void MessagingSettings::setBrokerTimeout(std::int64_t timeout_ms)
 {
-    settings.set(SETTING_BOUNCEPROXY_TIMEOUT_MS(), timeout_ms);
+    settings.set(SETTING_BROKER_TIMEOUT_MS(), timeout_ms);
 }
 
 std::int64_t MessagingSettings::getDiscoveryMessagesTtl() const
@@ -460,11 +486,21 @@ bool MessagingSettings::contains(const std::string& key) const
 // Checks messaging settings and sets defaults
 void MessagingSettings::checkSettings() const
 {
-    assert(settings.contains(SETTING_BOUNCE_PROXY_URL()));
-    std::string bounceProxyUrl = settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
-    if (bounceProxyUrl.back() != '/') {
-        bounceProxyUrl.append("/");
-        settings.set(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
+    assert(settings.contains(SETTING_BROKER_URL()));
+    std::string brokerUrl = settings.get<std::string>(SETTING_BROKER_URL());
+    if (brokerUrl.back() != '/') {
+        brokerUrl.append("/");
+        settings.set(SETTING_BROKER_URL(), brokerUrl);
+    }
+
+    if (!settings.contains(SETTING_BOUNCE_PROXY_URL())) {
+        settings.set(SETTING_BOUNCE_PROXY_URL(), brokerUrl);
+    } else {
+        std::string bounceProxyUrl = settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
+        if (bounceProxyUrl.back() != '/') {
+            bounceProxyUrl.append("/");
+            settings.set(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
+        }
     }
 
     assert(settings.contains(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
@@ -514,6 +550,10 @@ void MessagingSettings::checkSettings() const
 
 void MessagingSettings::printSettings() const
 {
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_BROKER_URL(),
+                    settings.get<std::string>(SETTING_BROKER_URL()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {} = {})",
                     SETTING_BOUNCE_PROXY_URL(),

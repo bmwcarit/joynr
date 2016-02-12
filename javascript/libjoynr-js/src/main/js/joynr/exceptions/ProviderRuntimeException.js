@@ -66,8 +66,14 @@ define("joynr/exceptions/ProviderRuntimeException", [
     }
 
     defaultSettings = {};
+
     TypeRegistrySingleton.getInstance().addType(
             "joynr.exceptions.ProviderRuntimeException",
             ProviderRuntimeException);
+
+    ProviderRuntimeException.prototype = new Error();
+    ProviderRuntimeException.prototype.constructor = ProviderRuntimeException;
+    ProviderRuntimeException.prototype.name = "ProviderRuntimeException";
+
     return ProviderRuntimeException;
 });

@@ -59,7 +59,7 @@ public:
     joynr::Semaphore semaphore;
 
     End2EndDbusTest() :
-        messageSettingsFilename("test-resources/SystemIntegrationTest1.settings"),
+        messageSettingsFilename("test-resources/HttpSystemIntegrationTest1.settings"),
         clusterControllerRuntime(NULL),
         runtime1(NULL),
         runtime2(NULL),

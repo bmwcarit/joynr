@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,11 +61,13 @@ INIT_LOGGER(CombinedEnd2EndTest);
 CombinedEnd2EndTest::CombinedEnd2EndTest() :
         runtime1(nullptr),
         runtime2(nullptr),
-        settings1("test-resources/SystemIntegrationTest1.settings"),
-        settings2("test-resources/SystemIntegrationTest2.settings"),
+        messagingSettingsFile1(std::get<0>(GetParam())),
+        messagingSettingsFile2(std::get<1>(GetParam())),
+        settings1(messagingSettingsFile1),
+        settings2(messagingSettingsFile2),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
-        baseUuid(Util::createUuid()),
+        baseUuid(util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppCombinedEnd2EndTest_Domain" + uuid),
         semaphore(0)
@@ -76,7 +78,7 @@ CombinedEnd2EndTest::CombinedEnd2EndTest() :
 
 void CombinedEnd2EndTest::SetUp()
 {
-    JOYNR_LOG_DEBUG(logger, "SetUp() CombinedEnd2End");
+    JOYNR_LOG_DEBUG(logger, std::string("SetUp() CombinedEnd2End"));
 
     // See if the test environment has overridden the configuration files
     tests::Configuration& configuration = tests::Configuration::getInstance();
@@ -88,9 +90,9 @@ void CombinedEnd2EndTest::SetUp()
 
     if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
         runtime1 = JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration1.settings",
-                                               "test-resources/SystemIntegrationTest1.settings");
+                                               messagingSettingsFile1);
         runtime2= JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration2.settings",
-                                              "test-resources/SystemIntegrationTest2.settings");
+                                              messagingSettingsFile2);
     } else {
         runtime1 = JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile);
         runtime2 = JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile);
@@ -111,7 +113,7 @@ CombinedEnd2EndTest::~CombinedEnd2EndTest()
 {
 }
 
-TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
+TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
     // Provider: (runtime1)
     types::ProviderQos providerQos;
@@ -148,7 +150,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         std::shared_ptr<Future<int> >gpsFuture (testProxy->sumIntsAsync(list));
         gpsFuture->wait();
         int expectedValue = 2+4+8;
-        ASSERT_TRUE(gpsFuture->getStatus().successful());
+        ASSERT_EQ(StatusCodeEnum::SUCCESS, gpsFuture->getStatus());
         int actualValue;
         gpsFuture->get(actualValue);
         EXPECT_EQ(expectedValue, actualValue);
@@ -167,7 +169,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputTrip.setLocations(inputLocationList);
         std::shared_ptr<Future<types::Localisation::Trip> > tripFuture (testProxy->optimizeTripAsync(inputTrip));
         tripFuture->wait();
-        ASSERT_EQ(RequestStatusCode::OK, tripFuture->getStatus().getCode());
+        ASSERT_EQ(StatusCodeEnum::SUCCESS, tripFuture->getStatus());
         types::Localisation::Trip actualTrip;
         tripFuture->get(actualTrip);
         EXPECT_EQ(inputTrip, actualTrip);
@@ -205,7 +207,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 //       std::shared_ptr<Future<std::vector<Vowel> > > wordFuture (new std::shared_ptr<Future<std::vector<Vowel> > >());
 //       testProxy->optimizeWord(wordFuture, inputTrip);
 //       wordFuture->wait();
-//       ASSERT_EQ(RequestStatusCode::OK, wordFuture->getStatus().getCode());
+//        ASSERT_EQ(StatusCodeEnum::SUCCESS, wordFuture->getStatus());
 //       inputTrip.push_back("a"); //thats what optimize word does.. appending an a.
 //       EXPECT_EQ(inputTrip, tripFuture->getValue());
 
@@ -220,7 +222,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputGpsLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
         std::shared_ptr<Future<std::vector<types::Localisation::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationListAsync(inputGpsLocationList));
         listLocationFuture->wait();
-        ASSERT_EQ(RequestStatusCode::OK, listLocationFuture->getStatus().getCode());
+        ASSERT_EQ(StatusCodeEnum::SUCCESS, tripFuture->getStatus());
         std::vector<joynr::types::Localisation::GpsLocation> actualLocation;
         listLocationFuture->get(actualLocation);
         EXPECT_EQ(inputGpsLocationList, actualLocation);
@@ -327,9 +329,9 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         try {
             testProxy->setEnumAttribute(static_cast<tests::testTypes::TestEnum::Enum>(999));
             ASSERT_FALSE(true) << "This line of code should never be reached";
-        } catch (joynr::exceptions::MethodInvocationException e) {
+        } catch (joynr::exceptions::MethodInvocationException& e) {
             JOYNR_LOG_DEBUG(logger, "Expected joynr::exceptions::MethodInvocationException has been thrown. Message: {}",e.getMessage());
-        } catch (std::exception e) {
+        } catch (std::exception& e) {
             ASSERT_FALSE(true) << "joynr::exceptions::MethodInvocationException is expected, however exception with message " << e.what() << "is thrown";
         }
 
@@ -361,7 +363,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->build());
         std::shared_ptr<Future<int> > testFuture(testProxy->addNumbersAsync(1, 2, 3));
         testFuture->wait();
-        ASSERT_EQ(testFuture->getStatus().getCode(), RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE);
+        ASSERT_EQ(StatusCodeEnum::ERROR, testFuture->getStatus());
         //TODO CA: shared pointer for proxy builder?
         delete testProxyBuilder;
     }
@@ -523,7 +525,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 }
 
 
-TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
+TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -577,7 +579,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     delete testProxyBuilder;
 }
 
-TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
+TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
@@ -645,7 +647,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     delete testProxyBuilder;
 }
 
-TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
+TEST_P(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     MockSubscriptionListenerOneType<std::vector<int>> *mockListener = new MockSubscriptionListenerOneType<std::vector<int>>();
 
@@ -701,7 +703,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     delete proxyBuilder;
 }
 
-TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
+TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
 	// Setup a mock listener - this will never be called
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
@@ -714,7 +716,6 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
             = runtime2->createProxyBuilder<tests::testProxy>(nonexistentDomain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
 
     const int arbitrationTimeout = 5000;
 
@@ -747,6 +748,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
         auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
         elapsed = duration.count();
+        if (elapsed < arbitrationTimeout) {
+            JOYNR_LOG_DEBUG(logger, "Expected joynr::exceptions::DiscoveryException has been thrown too early. Message: {}",e.getMessage());
+        }
 	}
 
 	ASSERT_TRUE(haveDiscoveryException);
@@ -755,7 +759,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 }
 
 
-TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
+TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -811,7 +815,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     delete testProxyBuilder;
 }
 
-TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
+TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 
     // Provider: (runtime1)
 
@@ -888,7 +892,7 @@ static void unsubscribeFromLocation(tests::testProxy* testProxy,
 
 // This test was written to model a bug report where a subscription started in a background thread
 // causes a runtime error to be reported by Qt
-TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
+TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
@@ -922,7 +926,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     runtime1->unregisterProvider(providerParticipantId);
 }
 
-TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
+TEST_P(CombinedEnd2EndTest, call_async_void_operation) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
@@ -961,12 +965,12 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
 
     // Wait for the operation to finish and check for a successful callback
     future->wait();
-    ASSERT_TRUE(future->getStatus().successful());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, future->getStatus());
 
     delete testProxyBuilder;
 }
 
-TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
+TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
@@ -1010,7 +1014,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
 
     // Wait for the operation to finish and check for a failure callback
     future->wait();
-    ASSERT_FALSE(future->getStatus().successful());
+    ASSERT_EQ(StatusCodeEnum::ERROR, future->getStatus());
     try {
         future->get();
         ADD_FAILURE();
@@ -1021,3 +1025,18 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
 
     delete testProxyBuilder;
 }
+
+INSTANTIATE_TEST_CASE_P(Http,
+        CombinedEnd2EndTest,
+        testing::Values(
+            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings","test-resources/HttpSystemIntegrationTest2.settings")
+        )
+);
+
+INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+        CombinedEnd2EndTest,
+        testing::Values(
+            std::make_tuple("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings","test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings")
+        )
+);
+

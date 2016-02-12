@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,12 +55,8 @@ namespace system {
 }
 }
 
- void PrintTo(const RequestStatusCode& value, ::std::ostream* os) {
-     *os << value.toString() << std::endl;
- }
-
- void PrintTo(const RequestStatus& value, ::std::ostream* os) {
-     *os << value.toString() << std::endl;
+ void PrintTo(const StatusCodeEnum& value, ::std::ostream* os) {
+     *os << StatusCode::toString(value) << std::endl;
  }
 
  void PrintTo(const JoynrMessage& value, ::std::ostream* os)

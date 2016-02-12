@@ -16,18 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#ifndef SerializerRegistry_H
-#define SerializerRegistry_H
+#ifndef SERIALIZERREGISTRY_H
+#define SERIALIZERREGISTRY_H
 
 #include <memory>
 #include <unordered_map>
 #include <mutex>
 #include <string>
 
-#include "joynr/JoynrTypeId.h"
-#include "ClassDeserializer.h"
-#include "PrimitiveDeserializer.h"
-#include "ClassSerializer.h"
+#include "joynr/ClassDeserializer.h"
+#include "joynr/ClassSerializer.h"
+#include "joynr/PrimitiveDeserializer.h"
 
 namespace joynr
 {
@@ -213,4 +212,4 @@ bool SerializerRegistry::registerEnum(const std::string& typeName)
 }
 
 } // namespace joynr
-#endif // SerializerRegistry_H
+#endif // SERIALIZERREGISTRY_H

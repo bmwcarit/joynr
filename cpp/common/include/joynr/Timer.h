@@ -16,12 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TIMER_H_
-#define TIMER_H_
-
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Logger.h"
+#ifndef TIMER_H
+#define TIMER_H
 
 #include <cstdint>
 #include <map>
@@ -30,6 +26,10 @@
 #include <condition_variable>
 #include <functional>
 #include <chrono>
+
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -118,4 +118,4 @@ private:
 
 } // namespace joynr
 
-#endif // TIMER_H_
+#endif // TIMER_H

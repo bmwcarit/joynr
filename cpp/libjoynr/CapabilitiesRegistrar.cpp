@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
  */
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/ParticipantIdStorage.h"
-#include "joynr/RequestStatus.h"
 
 namespace joynr
 {
@@ -60,7 +59,7 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     messageRouter->removeNextHop(participantId, onSuccess);
     future->wait();
 
-    if (!future->getStatus().successful()) {
+    if (!future->isOk()) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to remove next hop (participant ID: {}) from message router.",
                         participantId);
@@ -74,7 +73,7 @@ void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher)
 
 void CapabilitiesRegistrar::removeDispatcher(IDispatcher* dispatcher)
 {
-    removeAll(dispatcherList, dispatcher);
+    util::removeAll(dispatcherList, dispatcher);
 }
 
 } // namespace joynr

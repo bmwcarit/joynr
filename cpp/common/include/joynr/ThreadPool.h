@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef THREADPOOL_H_
-#define THREADPOOL_H_
+#ifndef THREADPOOL_H
+#define THREADPOOL_H
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -35,7 +35,6 @@
 namespace joynr
 {
 
-class RunnableProvider;
 class Runnable;
 
 /**
@@ -107,4 +106,4 @@ private:
 
 } // namespace joynr
 
-#endif // THREADPOOL_H_
+#endif // THREADPOOL_H
