@@ -599,6 +599,11 @@ public:
     MOCK_METHOD1(contains, bool(const joynr::system::RoutingTypes::Address& destEndpointAddress));
 };
 
+class MockMessagingStub : public joynr::IMessaging {
+public:
+    MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+};
+
 class GlobalCapabilitiesMock {
 public:
     MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::CapabilityInformation>& results));

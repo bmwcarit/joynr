@@ -21,6 +21,9 @@
 #include "joynr/IMessaging.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/Request.h"
+#include "joynr/Reply.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
 #include "joynr/MessageRouter.h"
 
 #include <cassert>
@@ -71,7 +74,13 @@ void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
         messageRouter->route(message);
     } catch (std::invalid_argument exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
-    } // TODO: catch exception from messageRouter->route (JoynrMessageNotSentException...)
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "Reply with RequestReplyId {} could not be sent to {}. Error: {}",
+                        reply.getRequestReplyId(),
+                        receiverParticipantId,
+                        e.getMessage());
+    }
 }
 
 void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderParticipantId,
@@ -117,7 +126,14 @@ void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticip
         messageRouter->route(message);
     } catch (std::invalid_argument exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
-    } // TODO: catch exception from messageRouter->route (JoynrMessageNotSentException...)
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(
+                logger,
+                "SubscriptionReply with SubscriptionId {} could not be sent to {}. Error: {}",
+                subscriptionReply.getSubscriptionId(),
+                receiverParticipantId,
+                e.getMessage());
+    }
 }
 
 void JoynrMessageSender::sendSubscriptionStop(const std::string& senderParticipantId,
@@ -148,7 +164,14 @@ void JoynrMessageSender::sendSubscriptionPublication(
         messageRouter->route(message);
     } catch (std::invalid_argument exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
-    } // TODO: catch exception from messageRouter->route (JoynrMessageNotSentException...)
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(
+                logger,
+                "SubscriptionPublication with SubscriptionId {} could not be sent to {}. Error: {}",
+                subscriptionPublication.getSubscriptionId(),
+                receiverParticipantId,
+                e.getMessage());
+    }
 }
 
 } // namespace joynr

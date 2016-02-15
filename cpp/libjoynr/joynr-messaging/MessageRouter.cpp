@@ -53,6 +53,9 @@ public:
     MessageRouter& owningMessageRouter;
     JoynrMessage message;
     std::shared_ptr<system::RoutingTypes::Address> destination;
+
+private:
+    ADD_LOGGER(ConsumerPermissionCallback);
 };
 
 //------ MessageRouter ---------------------------------------------------------
@@ -180,16 +183,18 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
     if (now > message.getHeaderExpiryDate()) {
-        JOYNR_LOG_WARN(logger,
-                       "Received expired message. Dropping the message (ID: {}).",
-                       message.getHeaderMessageId());
-        return;
+        std::string errorMessage("Received expired message. Dropping the message (ID: " +
+                                 message.getHeaderMessageId() + ").");
+        JOYNR_LOG_WARN(logger, errorMessage);
+        throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
     // Validate the message if possible
     if (securityManager != nullptr && !securityManager->validate(message)) {
-        JOYNR_LOG_ERROR(logger, "messageId {} failed validation", message.getHeaderMessageId());
-        return;
+        std::string errorMessage("messageId " + message.getHeaderMessageId() +
+                                 " failed validation");
+        JOYNR_LOG_ERROR(logger, errorMessage);
+        throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
     JOYNR_LOG_DEBUG(logger,
@@ -277,7 +282,14 @@ void MessageRouter::sendMessages(const std::string& destinationPartId,
         if (!item) {
             break;
         }
-        sendMessage(item->getContent(), address);
+        try {
+            sendMessage(item->getContent(), address);
+        } catch (const exceptions::JoynrMessageNotSentException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Message with Id {} could not be sent. Error: {}",
+                            item->getContent().getHeaderMessageId(),
+                            e.getMessage());
+        }
         delete item;
     }
 }
@@ -300,10 +312,11 @@ void MessageRouter::scheduleMessage(
         messageScheduler.schedule(
                 new MessageRunnable(message, stub, destAddress, *this, tryCount), delay);
     } else {
-        JOYNR_LOG_WARN(logger,
-                       "Message with payload {}  could not be send to {}. Stub creation failed",
-                       message.getPayload(),
-                       (*destAddress).toString());
+        std::string errorMessage("Message with payload " + message.getPayload() +
+                                 "  could not be send to " + (*destAddress).toString() +
+                                 ". Stub creation failed");
+        JOYNR_LOG_WARN(logger, errorMessage);
+        throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 }
 
@@ -575,6 +588,7 @@ void MessageRunnable::run()
 /**
  * IMPLEMENTATION of ConsumerPermissionCallback class
  */
+INIT_LOGGER(ConsumerPermissionCallback);
 
 ConsumerPermissionCallback::ConsumerPermissionCallback(
         MessageRouter& owningMessageRouter,
@@ -587,7 +601,14 @@ ConsumerPermissionCallback::ConsumerPermissionCallback(
 void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
 {
     if (hasPermission) {
-        owningMessageRouter.sendMessage(message, destination);
+        try {
+            owningMessageRouter.sendMessage(message, destination);
+        } catch (const exceptions::JoynrMessageNotSentException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Message with Id {} could not be sent. Error: {}",
+                            message.getHeaderMessageId(),
+                            e.getMessage());
+        }
     }
 }
 
