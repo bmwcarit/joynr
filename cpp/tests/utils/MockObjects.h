@@ -46,7 +46,6 @@
 #include "joynr/IClientCache.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/ISubscriptionListener.h"
-#include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MessageRouter.h"

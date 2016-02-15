@@ -825,9 +825,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          cluster-controller/capabilities-client/FakeCapabilitiesClient.cpp \
                          cluster-controller/capabilities-client/FakeCapabilitiesClient.h \
                          cluster-controller/capabilities-client/ICapabilitiesClient.h \
-                         cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h \
-                         cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.cpp \
-                         cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.h \
                          cluster-controller/capabilities-client/LocalCapabilitiesDirectory.cpp \
                          cluster-controller/http-communication-manager/ChannelUrlSelector.cpp \
                          cluster-controller/http-communication-manager/ChannelUrlSelector.h \

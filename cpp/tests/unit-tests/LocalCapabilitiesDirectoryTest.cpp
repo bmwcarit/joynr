@@ -29,7 +29,6 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
-#include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
