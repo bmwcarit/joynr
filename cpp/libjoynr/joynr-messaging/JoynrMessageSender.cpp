@@ -57,7 +57,7 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
                 senderParticipantId, receiverParticipantId, qos, request);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
 }
@@ -72,7 +72,7 @@ void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
                 messageFactory.createReply(senderParticipantId, receiverParticipantId, qos, reply);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
         JOYNR_LOG_ERROR(logger,
@@ -93,7 +93,7 @@ void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderPartic
                 senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
 }
@@ -109,7 +109,7 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
                 senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
 }
@@ -124,7 +124,7 @@ void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticip
                 senderParticipantId, receiverParticipantId, qos, subscriptionReply);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
         JOYNR_LOG_ERROR(
@@ -146,7 +146,7 @@ void JoynrMessageSender::sendSubscriptionStop(const std::string& senderParticipa
                 senderParticipantId, receiverParticipantId, qos, subscriptionStop);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
 }
@@ -162,7 +162,7 @@ void JoynrMessageSender::sendSubscriptionPublication(
                 senderParticipantId, receiverParticipantId, qos, subscriptionPublication);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
         JOYNR_LOG_ERROR(

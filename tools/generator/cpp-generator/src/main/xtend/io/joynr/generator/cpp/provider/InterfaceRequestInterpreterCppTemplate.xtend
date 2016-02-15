@@ -173,7 +173,7 @@ void «interfaceName»RequestInterpreter::execute(
 								onSuccess(std::move(outParams));
 							};
 					«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerOnSuccess, onError);
-			    } catch (std::invalid_argument exception) {
+			    } catch (const std::invalid_argument& exception) {
 					onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
 			    }
 				return;
@@ -274,7 +274,7 @@ void «interfaceName»RequestInterpreter::execute(
 							«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
 							requestCallerOnSuccess,
 							onError);
-				} catch (std::invalid_argument exception) {
+				} catch (const std::invalid_argument& exception) {
 					onError(exceptions::MethodInvocationException(exception.what()));
 				}
 

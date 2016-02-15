@@ -540,7 +540,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
                 connections
             );
             localCapabilitiesDirectory->add(entry);
-        } catch (exceptions::JoynrException& e){
+        } catch (const exceptions::JoynrException& e){
             exceptionCounter++;
         }
     }

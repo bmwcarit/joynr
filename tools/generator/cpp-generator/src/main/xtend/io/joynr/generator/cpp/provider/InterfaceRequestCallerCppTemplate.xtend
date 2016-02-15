@@ -79,11 +79,11 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 		) {
 			try {
 				provider->get«attributeName.toFirstUpper»(onSuccess, onError);
-			} catch (exceptions::ProviderRuntimeException& e) {
+			} catch (const exceptions::ProviderRuntimeException& e) {
 				std::string message = "Could not perform «interfaceName»RequestCaller::get«attributeName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
 				onError(e);
-			} catch (exceptions::JoynrException& e) {
+			} catch (const exceptions::JoynrException& e) {
 				std::string message = "Could not perform «interfaceName»RequestCaller::get«attributeName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
 				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
@@ -101,11 +101,11 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 		) {
 			try {
 				provider->set«attributeName.toFirstUpper»(«attributeName», onSuccess, onError);
-			} catch (exceptions::ProviderRuntimeException& e) {
+			} catch (const exceptions::ProviderRuntimeException& e) {
 				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
 				onError(e);
-			} catch (exceptions::JoynrException& e) {
+			} catch (const exceptions::JoynrException& e) {
 				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
 				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
@@ -161,11 +161,11 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 		// serializability. They are treated as JoynrExceptions. They can only be handled correctly
 		// if the constructor is used properly (with the appropriate literal of the reported error
 		// enumeration).
-		} catch (exceptions::ProviderRuntimeException& e) {
+		} catch (const exceptions::ProviderRuntimeException& e) {
 			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
 								e.getTypeName() + ":" + e.getMessage();
 			onError(e);
-		} catch (exceptions::JoynrException& e) {
+		} catch (const exceptions::JoynrException& e) {
 			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
 								e.getTypeName() + ":" + e.getMessage();
 			onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +

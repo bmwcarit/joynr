@@ -79,7 +79,7 @@ public:
                 domain, interfaceName, participantId, provider->getProviderQos(), connections);
         try {
             discoveryProxy.add(entry);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Unable to add provider (participant ID: {}, domain: {}, interface: "
                             "{}) to discovery. Error: {}",
@@ -121,7 +121,7 @@ public:
 
         try {
             discoveryProxy.remove(participantId);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Unable to remove provider (participant ID: {}, domain: {}, interface: "
                             "{} to discovery. Error: {}",

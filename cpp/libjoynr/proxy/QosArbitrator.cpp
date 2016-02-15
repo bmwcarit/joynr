@@ -46,7 +46,7 @@ void QosArbitrator::attemptArbitration()
     try {
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
         receiveCapabilitiesLookupResults(result);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "
                         "from discovery. Error: {}",

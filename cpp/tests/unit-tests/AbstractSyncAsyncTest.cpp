@@ -224,7 +224,7 @@ public:
         types::Localisation::GpsLocation gpsLocation;
         try {
             testFixture->getLocation(gpsLocation);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "getLocation was not successful";
         }
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
@@ -259,7 +259,7 @@ public:
         types::Localisation::GpsLocation gpsLocation;
         try {
             testFixture->getLocation(gpsLocation);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "getLocation was not successful";
         }
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
@@ -299,10 +299,10 @@ public:
         try {
             testFixture->getAttributeWithProviderRuntimeException(result);
             ADD_FAILURE()<< "getterCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
-        } catch (exceptions::ProviderRuntimeException& e) {
+        } catch (const exceptions::ProviderRuntimeException& e) {
             EXPECT_EQ(expected.getTypeName(), e.getTypeName());
             EXPECT_EQ(expected.getMessage(), e.getMessage());
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "getterCallReturnsProviderRuntimeException was not successful (unexpected exception)";
         }
 
@@ -342,10 +342,10 @@ public:
         try {
             testFixture->getAttributeWithProviderRuntimeException(result);
             ADD_FAILURE()<< "getterCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";
-        } catch (exceptions::MethodInvocationException& e) {
+        } catch (const exceptions::MethodInvocationException& e) {
             EXPECT_EQ(expected.getTypeName(), e.getTypeName());
             EXPECT_EQ(expected.getMessage(), e.getMessage());
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "getterCallReturnsMethodInvocationException was not successful (unexpected exception)";
         }
 
@@ -387,10 +387,10 @@ public:
         try {
             testFixture->setAttributeWithProviderRuntimeException(value);
             ADD_FAILURE()<< "setterCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
-        } catch (exceptions::ProviderRuntimeException& e) {
+        } catch (const exceptions::ProviderRuntimeException& e) {
             EXPECT_EQ(expected.getTypeName(), e.getTypeName());
             EXPECT_EQ(expected.getMessage(), e.getMessage());
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "setterCallReturnsProviderRuntimeException was not successful (unexpected exception)";
         }
 
@@ -431,10 +431,10 @@ public:
         try {
             testFixture->setAttributeWithProviderRuntimeException(value);
             ADD_FAILURE()<< "setterCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";
-        } catch (exceptions::MethodInvocationException& e) {
+        } catch (const exceptions::MethodInvocationException& e) {
             EXPECT_EQ(expected.getTypeName(), e.getTypeName());
             EXPECT_EQ(expected.getMessage(), e.getMessage());
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "setterCallReturnsMethodInvocationException was not successful (unexpected exception)";
         }
 
@@ -473,10 +473,10 @@ public:
         try {
             testFixture->methodWithProviderRuntimeException();
             ADD_FAILURE()<< "testSync_methodCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
-        } catch (exceptions::ProviderRuntimeException& e) {
+        } catch (const exceptions::ProviderRuntimeException& e) {
             EXPECT_EQ(expected.getTypeName(), e.getTypeName());
             EXPECT_EQ(expected.getMessage(), e.getMessage());
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsProviderRuntimeException was not successful (unexpected exception)";
         }
         delete testFixture;
@@ -514,10 +514,10 @@ public:
         try {
             testFixture->methodWithProviderRuntimeException();
             ADD_FAILURE()<< "testSync_methodCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";
-        } catch (exceptions::MethodInvocationException& e) {
+        } catch (const exceptions::MethodInvocationException& e) {
             EXPECT_EQ(expected.getTypeName(), e.getTypeName());
             EXPECT_EQ(expected.getMessage(), e.getMessage());
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsMethodInvocationException was not successful (unexpected exception)";
         }
 
@@ -573,9 +573,9 @@ public:
         try {
             testFixture->methodWithErrorEnum();
             ADD_FAILURE()<< "testSync_methodCallReturnsErrorEnum was not successful (expected MethodInvocationException)";
-        } catch (exceptions::ApplicationException& e) {
+        } catch (const exceptions::ApplicationException& e) {
             checkApplicationException(expected, e, expectedErrorEnum);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsErrorEnum was not successful (unexpected exception)";
         }
 
@@ -630,9 +630,9 @@ public:
         try {
             testFixture->methodWithErrorEnumExtended();
             ADD_FAILURE()<< "testSync_methodCallReturnsExtendedErrorEnum was not successful (expected MethodInvocationException)";
-        } catch (exceptions::ApplicationException& e) {
+        } catch (const exceptions::ApplicationException& e) {
             checkApplicationException(expected, e, error);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsExtendedErrorEnum was not successful (unexpected exception)";
         }
 
@@ -689,9 +689,9 @@ public:
         try {
             testFixture->methodWithImplicitErrorEnum();
             ADD_FAILURE()<< "testSync_methodCallReturnsInlineErrorEnum was not successful (expected MethodInvocationException)";
-        } catch (exceptions::ApplicationException& e) {
+        } catch (const exceptions::ApplicationException& e) {
             checkApplicationException(expected, e, error);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsInlineErrorEnum was not successful (unexpected exception)";
         }
 
@@ -719,7 +719,7 @@ public:
         int result;
         try {
             testFixture->methodWithNoInputParameters(result);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "methodWithNoInputParameters was not successful";
         }
         EXPECT_EQ(expectedInt, result);

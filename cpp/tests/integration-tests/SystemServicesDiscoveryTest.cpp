@@ -139,7 +139,7 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 
     try {
         discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
     EXPECT_TRUE(result.empty());
@@ -186,20 +186,20 @@ TEST_F(SystemServicesDiscoveryTest, add)
 
     try {
         discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
     EXPECT_TRUE(result.empty());
 
     try {
         discoveryProxy->add(discoveryEntry);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "add was not successful";
     }
 
     try {
         discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
     EXPECT_EQ(expectedResult, result);
@@ -243,28 +243,28 @@ TEST_F(SystemServicesDiscoveryTest, remove)
 
     try {
         discoveryProxy->add(discoveryEntry);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "add was not successful";
     }
 
     std::vector<joynr::types::DiscoveryEntry> result;
     try {
         discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
     EXPECT_EQ(expectedResult, result);
 
     try {
         discoveryProxy->remove(participantId);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "remove was not successful";
     }
 
     result.clear();
     try {
         discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
     EXPECT_TRUE(result.empty());

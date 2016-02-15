@@ -950,13 +950,13 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                                         onSuccess,
                                         onError);
             // ApplicationException is not possible for attributes in Franca
-        } catch (exceptions::ProviderRuntimeException& e) {
+        } catch (const exceptions::ProviderRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Could not perform pollSubscription, caught exception: {} : {}",
                             e.getTypeName(),
                             e.getMessage());
             onError(e);
-        } catch (exceptions::JoynrRuntimeException& e) {
+        } catch (const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Could not perform an pollSubscription, caught exception: {} : {}",
                             e.getTypeName(),

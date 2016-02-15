@@ -187,7 +187,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         try {
             testProxy->returnPrimeNumbers(result, 6);
             EXPECT_EQ(primesBelow6, result);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "returnPrimeNumbers was not successful";
         }
 
@@ -247,7 +247,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         int primeResult(0);
         try {
             testProxy->getFirstPrime(primeResult);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getFirstPrime was not successful";
         }
         EXPECT_EQ(primeResult, 15);
@@ -263,7 +263,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
         try {
             testProxy->getListOfStrings(remoteStrList);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getListOfStrings was not successful";
         }
         EXPECT_EQ(localStrList, remoteStrList);
@@ -275,12 +275,12 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
         try {
             testProxy->setFirstPrime(19);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "setFirstPrime was not successful";
         }
         try {
             testProxy->getFirstPrime(primeResult);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getFirstPrime was not successful";
         }
         EXPECT_EQ(primeResult, 19);
@@ -298,7 +298,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         std::vector<int> outputIntLIst;
         try {
             testProxy->getListOfInts(outputIntLIst);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getListOfInts was not successful";
         }
         EXPECT_EQ(outputIntLIst, inputIntList);
@@ -310,12 +310,12 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputIntList.push_back(13);
         try {
             testProxy->setListOfInts(inputIntList);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "setListOfInts was not successful";
         }
         try {
             testProxy->getListOfInts(outputIntLIst);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getListOfInts was not successful";
         }
         EXPECT_EQ(outputIntLIst, inputIntList);
@@ -743,7 +743,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
         std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
-	} catch (exceptions::DiscoveryException& e) {
+	} catch (const exceptions::DiscoveryException& e) {
         haveDiscoveryException = true;
         auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
@@ -1018,7 +1018,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure) {
     try {
         future->get();
         ADD_FAILURE();
-    } catch (exceptions::JoynrTimeOutException& e) {
+    } catch (const exceptions::JoynrTimeOutException& e) {
     }
 
     runtime1->unregisterProvider(testProviderParticipantId);

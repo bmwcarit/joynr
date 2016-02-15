@@ -255,7 +255,7 @@ T* ProxyBuilder<T>::build()
     do {
         try {
             future->wait(100);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException&) {
         }
     } while (future->getStatus() == StatusCodeEnum::IN_PROGRESS);
 

@@ -47,7 +47,7 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     }
     try {
         discoveryProxy.remove(participantId);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to remove provider (participant ID: {}) to discovery. Error: {}",
                         participantId,
