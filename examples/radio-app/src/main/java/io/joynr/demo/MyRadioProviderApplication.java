@@ -71,7 +71,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
         if (args.length < 1 || args.length > 3) {
-            LOG.error("\n\nUSAGE: java {} <local-domain> [(websocket | websocketCC) [local]]\n\n NOTE: Providers are registered on the local domain.",
+            LOG.error("\n\nUSAGE: java {} <local-domain> [(websocket | websocketCC):[http]:[mqtt] [local]]\n\n NOTE: Providers are registered on the local domain.",
                       MyRadioProviderApplication.class.getName());
             return;
         }
