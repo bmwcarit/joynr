@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ namespace exceptions
 {
 
 /**
- * @brief Util class to transfroms between Variant and joynr exceptions.
+ * @brief Util class to transforms between Variant and joynr exceptions.
  */
 class JOYNRCOMMON_EXPORT JoynrExceptionUtil
 {
@@ -62,6 +62,14 @@ public:
         } else if (dynamic_cast<const exceptions::JoynrRuntimeException*>(&exception) != nullptr) {
             return Variant::make<exceptions::JoynrRuntimeException>(
                     static_cast<const exceptions::JoynrRuntimeException&>(exception));
+        } else if (dynamic_cast<const exceptions::JoynrMessageNotSentException*>(&exception) !=
+                   nullptr) {
+            return Variant::make<exceptions::JoynrMessageNotSentException>(
+                    static_cast<const exceptions::JoynrMessageNotSentException&>(exception));
+        } else if (dynamic_cast<const exceptions::JoynrDelayMessageException*>(&exception) !=
+                   nullptr) {
+            return Variant::make<exceptions::JoynrDelayMessageException>(
+                    static_cast<const exceptions::JoynrDelayMessageException&>(exception));
         }
         return Variant::make<exceptions::JoynrException>(exception);
     }
@@ -83,6 +91,10 @@ public:
             return variant.get<exceptions::DiscoveryException>();
         } else if (variant.is<exceptions::JoynrRuntimeException>()) {
             return variant.get<exceptions::JoynrRuntimeException>();
+        } else if (variant.is<exceptions::JoynrMessageNotSentException>()) {
+            return variant.get<exceptions::JoynrMessageNotSentException>();
+        } else if (variant.is<exceptions::JoynrDelayMessageException>()) {
+            return variant.get<exceptions::JoynrDelayMessageException>();
         } else
             throw exceptions::JoynrRuntimeException(
                     "Exception type contained in Variant with typeName " + variant.getTypeName());
