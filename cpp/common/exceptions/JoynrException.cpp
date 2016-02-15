@@ -71,15 +71,11 @@ static const bool isApplicationExceptionRegistered =
         Variant::registerType<joynr::exceptions::ApplicationException>(
                 ApplicationException::TYPE_NAME);
 
-JoynrException::JoynrException() noexcept : message("")
+JoynrException::JoynrException() noexcept : message()
 {
 }
 
 JoynrException::JoynrException(const std::string& message) noexcept : message(message)
-{
-}
-
-JoynrException::JoynrException(const JoynrException& other) noexcept : message(other.message)
 {
 }
 
@@ -253,22 +249,14 @@ ProviderRuntimeException* ProviderRuntimeException::clone() const
     return new ProviderRuntimeException(static_cast<ProviderRuntimeException>(*this));
 }
 
-PublicationMissedException::PublicationMissedException() noexcept
-        : JoynrRuntimeException(std::string()),
-          subscriptionId()
+PublicationMissedException::PublicationMissedException() noexcept : JoynrRuntimeException(),
+                                                                    subscriptionId()
 {
 }
 
 PublicationMissedException::PublicationMissedException(const std::string& subscriptionId) noexcept
         : JoynrRuntimeException(subscriptionId),
           subscriptionId(subscriptionId)
-{
-}
-
-PublicationMissedException::PublicationMissedException(
-        const PublicationMissedException& other) noexcept
-        : JoynrRuntimeException(other.subscriptionId),
-          subscriptionId(other.subscriptionId)
 {
 }
 
@@ -296,14 +284,6 @@ PublicationMissedException* PublicationMissedException::clone() const
 bool PublicationMissedException::operator==(const PublicationMissedException& other) const
 {
     return message == other.getMessage() && subscriptionId == other.getSubscriptionId();
-}
-
-ApplicationException::ApplicationException(const ApplicationException& other) noexcept
-        : JoynrException(other.message),
-          value(other.value),
-          name(other.name),
-          typeName(other.typeName)
-{
 }
 
 ApplicationException::ApplicationException() noexcept : JoynrException(),

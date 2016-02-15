@@ -43,7 +43,7 @@ public:
      *
      * @param other The JoynrException to be copied from.
      */
-    JoynrException(const JoynrException& other) noexcept;
+    JoynrException(const JoynrException& other) = default;
     ~JoynrException() noexcept override = default;
     /**
      * @return The detail message string of the exception.
@@ -181,7 +181,7 @@ public:
      *
      * @param other The JoynrDelayMessageException to copy from.
      */
-    JoynrDelayMessageException(const JoynrDelayMessageException& other) noexcept = default;
+    JoynrDelayMessageException(const JoynrDelayMessageException& other) = default;
     /**
      * @brief Constructor for a JoynrDelayMessageException with detail message and default delay.
      *
@@ -326,7 +326,7 @@ public:
      *
      * @param other The PublicationMissedException to copy from.
      */
-    PublicationMissedException(const PublicationMissedException& other) noexcept;
+    PublicationMissedException(const PublicationMissedException& other) = default;
     /**
      * @brief Constructor for a PublicationMissedException with subscription ID.
      *
@@ -378,7 +378,7 @@ public:
      *
      * @param other The ApplicationException to copy from.
      */
-    ApplicationException(const ApplicationException& other) noexcept;
+    ApplicationException(const ApplicationException& other) = default;
 
     /**
      * @brief Constructor for an ApplicationException with detail message.
