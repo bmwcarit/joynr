@@ -931,7 +931,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          common/logging/joynrlogging_dlt.cpp \
                          common/logging/SpdlogLogging.cpp \
                          common/ObjectWithDecayTime.cpp \
-                         common/rpc/JsonCallback.h \
                          common/rpc/Reply.cpp \
                          common/rpc/Request.cpp \
                          common/rpc/RpcMetaTypes.cpp \
