@@ -90,7 +90,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
     QWebSocket* serverWebsocket = new QWebSocket();
     MockQWebSocketSendWrapper* wrapper = new MockQWebSocketSendWrapper(serverWebsocket);
 
-    factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), clientWebsocket);
+    factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), clientWebsocket);
     factory.addServer(webSocketServerAddress, wrapper);
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
     EXPECT_TRUE(factory.create(webSocketServerAddress).get() != nullptr);
@@ -103,7 +103,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
     WebSocketMessagingStubFactory factory;
     MockWebSocketClient* websocket = new MockWebSocketClient();
 
-    factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
+    factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
     EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
     std::shared_ptr<IMessaging> messagingStub(factory.create(webSocketClientAddress));
     std::shared_ptr<WebSocketMessagingStub> wsMessagingStub(std::dynamic_pointer_cast<WebSocketMessagingStub>(messagingStub));
@@ -121,7 +121,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     WebSocketMessagingStubFactory factory;
     WebSocketClient* websocket = new MockWebSocketClient();
 
-    factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
+    factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
     EXPECT_CALL(*static_cast<MockWebSocketClient*>(websocket), dtorCalled());
     factory.removeClient(webSocketClientAddress);
