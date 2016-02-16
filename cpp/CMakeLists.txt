@@ -804,6 +804,7 @@ file(
     COPY
         "CMake/CheckBoostImportTargets.cmake"
         "CMake/CheckCurlImportTargets.cmake"
+        "CMake/CheckMosquittoImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 # ... for the install tree
@@ -846,6 +847,7 @@ install(
         "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfigVersion.cmake"
         "CMake/CheckBoostImportTargets.cmake"
         "CMake/CheckCurlImportTargets.cmake"
+        "CMake/CheckMosquittoImportTargets.cmake"
     DESTINATION "${JOYNR_INSTALL_FULL_CMAKEDIR}" COMPONENT dev
 )
 

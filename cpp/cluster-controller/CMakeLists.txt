@@ -12,21 +12,22 @@ if(USE_PLATFORM_MOSQUITTO)
 
     message(STATUS "variable MOSQUITTO_INCLUDE_DIRS=${MOSQUITTO_INCLUDE_DIRS}")
     set(MOSQUITTO_INCLUDE_DIRS ${MOSQUITTO_INCLUDE_DIRS} PARENT_SCOPE)
-    get_filename_component(MOSQUITTO_BINARY_DIR ${MOSQUITTO_LIBRARY} DIRECTORY)
+    get_filename_component(MOSQUITTO_BINARY_DIR ${MOSQUITTO_LIBRARIES} DIRECTORY)
     message(STATUS "variable MOSQUITTO_BINARY_DIR=${MOSQUITTO_BINARY_DIR}")
-    message(STATUS "variable MOSQUITTO_LIBRARY=${MOSQUITTO_LIBRARY}")
+    message(STATUS "variable MOSQUITTO_LIBRARIES=${MOSQUITTO_LIBRARIES}")
 else(USE_PLATFORM_MOSQUITTO)
     message(STATUS "############ Download: mosquitto ############")
     set(MOSQUITTO_SOURCE_URL "https://git.eclipse.org/r/mosquitto/org.eclipse.mosquitto.git")
     set(MOSQUITTO_SOURCE_TYPE "GIT_REPOSITORY")
     set(MOSQUITTO_VERSION 1.4.7)
+    set(MOSQUITTO_LIBRARY_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}mosquittopp${CMAKE_SHARED_LIBRARY_SUFFIX})
 
     AddExternalProject(
         mosquitto
         ${MOSQUITTO_SOURCE_TYPE} "${MOSQUITTO_SOURCE_URL}"
         GIT_TAG v${MOSQUITTO_VERSION}
         TIMEOUT 10
-        BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/mosquitto-build/lib/cpp/libmosquittopp.so")
+        BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/mosquitto-build/lib/cpp/${MOSQUITTO_LIBRARY_NAME}")
     )
 
     ExternalProject_Get_Property(mosquitto SOURCE_DIR)
@@ -37,11 +38,10 @@ else(USE_PLATFORM_MOSQUITTO)
     ExternalProject_Get_Property(mosquitto BINARY_DIR)
     set(MOSQUITTO_BINARY_DIR ${BINARY_DIR}/lib/cpp)
     message(STATUS "variable MOSQUITTO_BINARY_DIR=${MOSQUITTO_BINARY_DIR}")
-    set(MOSQUITTO_LIBRARY ${MOSQUITTO_BINARY_DIR}/libmosquittopp.so)
-    message(STATUS "variable MOSQUITTO_LIBRARY=${MOSQUITTO_LIBRARY}")
-
+    set(MOSQUITTO_LIBRARIES ${MOSQUITTO_BINARY_DIR}/${MOSQUITTO_LIBRARY_NAME})
+    message(STATUS "variable MOSQUITTO_LIBRARIES=${MOSQUITTO_LIBRARIES}")
 endif(USE_PLATFORM_MOSQUITTO)
-
+include(CheckMosquittoImportTargets)
 
 set(
     JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY
@@ -71,7 +71,6 @@ set(
     JoynrCommon
     cURL::curl
     ${Qt5Sql_LIBRARIES}
-    ${MOSQUITTO_LIBRARY}
 )
 
 set(
@@ -178,9 +177,18 @@ target_include_directories(
     SYSTEM
     PRIVATE ${JoynrClusterController_SYS_INCLUDE_DIRECTORIES}
 )
+
 if(NOT USE_PLATFORM_MOSQUITTO)
-    add_dependencies(JoynrClusterController mosquitto)
+    # make sure the external project mosquitto is built before this
+    add_dependencies(JoynrClusterController mosquitto::mosquitto)
 endif(NOT USE_PLATFORM_MOSQUITTO)
+
+# manually add dependency to target
+list(
+    APPEND JoynrClusterController_TARGET_LIBRARIES
+    ${MOSQUITTO_LIBRARIES}
+)
+
 
 AddClangFormat(JoynrClusterController)
 
