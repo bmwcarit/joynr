@@ -86,7 +86,6 @@ define("joynr/proxy/PeriodicSubscriptionQos", [
          * Used for serialization.
          * @name PeriodicSubscriptionQos#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
         Util.checkPropertyIfDefined(settings, "Object", "settings");
@@ -102,25 +101,21 @@ define("joynr/proxy/PeriodicSubscriptionQos", [
          * See [constructor description]{@link PeriodicSubscriptionQos}.
          * @name PeriodicSubscriptionQos#period
          * @type Number
-         * @field
          */
         /**
          * See [constructor description]{@link PeriodicSubscriptionQos}.
          * @name PeriodicSubscriptionQos#expiryDate
          * @type Number
-         * @field
          */
         /**
          * See [constructor description]{@link PeriodicSubscriptionQos}.
          * @name PeriodicSubscriptionQos#alertAfterInterval
          * @type Number
-         * @field
          */
         /**
          * See [constructor description]{@link PeriodicSubscriptionQos}.
          * @name PeriodicSubscriptionQos#publicationTtl
          * @type Number
-         * @field
          */
         Util.extend(this, defaultSettings, settings, subscriptionQos);
 

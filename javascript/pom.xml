@@ -99,7 +99,7 @@
 									<pluginExecutionFilter>
 										<groupId>com.phasebash.jsdoc</groupId>
 										<artifactId>jsdoc3-maven-plugin</artifactId>
-										<versionRange>[1.1.0,)</versionRange>
+										<versionRange>[1.2.0,)</versionRange>
 										<goals>
 											<goal>jsdoc3</goal>
 										</goals>

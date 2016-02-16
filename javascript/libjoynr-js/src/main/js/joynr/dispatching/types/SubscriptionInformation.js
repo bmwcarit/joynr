@@ -52,7 +52,6 @@ define("joynr/dispatching/types/SubscriptionInformation", [
          *
          * @name SubscriptionInformation#_typeName
          * @type String
-         * @field
          */
         Typing.augmentTypeName(this, "joynr");
     }

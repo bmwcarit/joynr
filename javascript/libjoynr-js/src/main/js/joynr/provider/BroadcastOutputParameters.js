@@ -47,7 +47,6 @@ define("joynr/provider/BroadcastOutputParameters", [
         /**
          * @name BroadcastOutputParameters#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastOutputParameters");
         Util.checkPropertyIfDefined(outputParameterProperties, "Array", "outputParameters");
@@ -96,7 +95,6 @@ define("joynr/provider/BroadcastOutputParameters", [
         /**
          * @name BroadcastOutputParameters#outputParameters
          * @type Array
-         * @field
          */
         this.outputParameters = [];
     }

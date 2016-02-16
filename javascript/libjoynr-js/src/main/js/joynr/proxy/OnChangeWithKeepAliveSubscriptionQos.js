@@ -106,7 +106,6 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
          * Used for serialization.
          * @name OnChangeWithKeepAliveSubscriptionQos#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.OnChangeWithKeepAliveSubscriptionQos");
         Util.checkPropertyIfDefined(settings, "Object", "settings");
@@ -122,31 +121,26 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
          * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
          * @name OnChangeWithKeepAliveSubscriptionQos#minInterval
          * @type Number
-         * @field
          */
         /**
          * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
          * @name OnChangeWithKeepAliveSubscriptionQos#maxInterval
          * @type Number
-         * @field
          */
         /**
          * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
          * @name OnChangeWithKeepAliveSubscriptionQos#expiryDate
          * @type Number
-         * @field
          */
         /**
          * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
          * @name OnChangeWithKeepAliveSubscriptionQos#alertAfterInterval
          * @type Number
-         * @field
          */
         /**
          * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
          * @name OnChangeWithKeepAliveSubscriptionQos#publicationTtl
          * @type Number
-         * @field
          */
         Util.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
 

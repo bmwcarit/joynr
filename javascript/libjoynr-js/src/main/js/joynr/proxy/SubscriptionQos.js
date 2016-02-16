@@ -85,7 +85,6 @@ define("joynr/proxy/SubscriptionQos", [
          * Used for serialization.
          * @name SubscriptionQos#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.SubscriptionQos");
         Util.checkPropertyIfDefined(settings, "Object", "settings");
@@ -101,13 +100,11 @@ define("joynr/proxy/SubscriptionQos", [
          * See [constructor description]{@link SubscriptionQos}.
          * @name SubscriptionQos#expiryDate
          * @type Number
-         * @field
          */
         /**
          * See [constructor description]{@link SubscriptionQos}.
          * @name SubscriptionQos#publicationTtl
          * @type Number
-         * @field
          */
         Util.extend(this, defaultSettings, settings);
         if (this.publicationTtl < SubscriptionQos.MIN_PUBLICATION_TTL) {

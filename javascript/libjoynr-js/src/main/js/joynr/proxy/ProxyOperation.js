@@ -330,21 +330,18 @@ define(
                  *
                  * @name ProxyOperation#parent
                  * @type Proxy
-                 * @field
                  */
                 this.parent = parent;
 
                 /**
                  * @name ProxyOperation#operationName
                  * @type String
-                 * @field
                  */
                 this.operationName = operationName;
 
                 /**
                  * @name ProxyOperation#operationSignatures
                  * @type Array
-                 * @field
                  */
                 this.operationSignatures = operationSignatures;
 

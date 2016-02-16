@@ -59,7 +59,6 @@ define(
                  * Used for serialization.
                  * @name JoynrException#_typeName
                  * @type String
-                 * @field
                  */
                 Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrException");
                 Util.checkPropertyIfDefined(settings, "Object", "settings");
@@ -74,7 +73,6 @@ define(
                      * See [constructor description]{@link JoynrException}.
                      * @name JoynrException#detailMessage
                      * @type String
-                     * @field
                      */
                     this.detailMessage = undefined;
                 }

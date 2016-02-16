@@ -59,7 +59,6 @@ define("joynr/exceptions/MethodInvocationException", [
          * Used for serialization.
          * @name MethodInvocationException#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
 

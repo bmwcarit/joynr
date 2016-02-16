@@ -42,7 +42,6 @@ define("joynr/messaging/CommunicationModule", [
          *
          * @name CommunicationModule#atmosphere
          * @type Object
-         * @field
          */
         this.atmosphere = atmosphereDependency;
 

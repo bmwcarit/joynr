@@ -47,7 +47,6 @@ define("joynr/messaging/MessagingQos", [ "joynr/util/UtilInternal"
          *
          * @name MessagingQos#ttl
          * @type Number
-         * @field
          */
         this.ttl = settings.ttl;
     }

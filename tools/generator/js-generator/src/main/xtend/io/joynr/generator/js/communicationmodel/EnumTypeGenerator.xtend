@@ -60,7 +60,6 @@ class EnumTypeGenerator {
 			 * Used for serialization.
 			 * @name «type.joynrName»#_typeName
 			 * @type String
-			 * @field
 			 * @readonly
 			 */
 			Object.defineProperty(this, "_typeName", {

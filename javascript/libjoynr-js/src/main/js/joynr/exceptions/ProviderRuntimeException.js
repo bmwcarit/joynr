@@ -58,7 +58,6 @@ define("joynr/exceptions/ProviderRuntimeException", [
          * Used for serialization.
          * @name ProviderRuntimeException#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.ProviderRuntimeException");
 

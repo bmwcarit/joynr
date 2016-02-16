@@ -69,22 +69,18 @@ define("joynr/dispatching/types/Request", [
         /**
          * @name Request#requestReplyId
          * @type String
-         * @field
          */
         /**
          * @name Request#methodName
          * @type String
-         * @field
          */
         /**
          * @name Request#paramDatatypes
          * @type Array
-         * @field
          */
         /**
          * @name Request#params
          * @type Array
-         * @field
          */
         Util.extend(this, defaultSettings, settings);
 
@@ -93,7 +89,6 @@ define("joynr/dispatching/types/Request", [
          *
          * @name Request#_typeName
          * @type String
-         * @field
          */
         Typing.augmentTypeName(this, "joynr");
 

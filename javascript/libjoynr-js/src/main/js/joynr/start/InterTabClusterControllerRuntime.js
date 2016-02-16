@@ -201,7 +201,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#typeRegistry
                  * @type TypeRegistry
-                 * @field
                  */
                 Object.defineProperty(this, "typeRegistry", {
                     get : function() {
@@ -213,7 +212,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#capabilities
                  * @type CapabilitiesRegistrar
-                 * @field
                  */
                 Object.defineProperty(this, "capabilities", {
                     get : function() {
@@ -225,7 +223,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#participantIdStorage
                  * @type ParticipantIdStorage
-                 * @field
                  */
                 Object.defineProperty(this, "participantIdStorage", {
                     get : function() {
@@ -237,7 +234,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#providerBuilder
                  * @type ProviderBuilder
-                 * @field
                  */
                 Object.defineProperty(this, "providerBuilder", {
                     get : function() {
@@ -249,7 +245,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#proxyBuilder
                  * @type ProxyBuilder
-                 * @field
                  */
                 Object.defineProperty(this, "proxyBuilder", {
                     get : function() {
@@ -261,7 +256,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#logging
                  * @type LoggingManager
-                 * @field
                  */
                 Object.defineProperty(this, "logging", {
                     get : function() {

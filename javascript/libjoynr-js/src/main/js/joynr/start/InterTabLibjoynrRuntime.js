@@ -170,7 +170,6 @@ define(
                 /**
                  * @name InterTabLibjoynrRuntime#typeRegistry
                  * @type TypeRegistry
-                 * @field
                  */
                 Object.defineProperty(this, "typeRegistry", {
                     get : function() {
@@ -182,7 +181,6 @@ define(
                 /**
                  * @name InterTabLibjoynrRuntime#capabilities
                  * @type CapabilitiesRegistrar
-                 * @field
                  */
                 Object.defineProperty(this, "capabilities", {
                     get : function() {
@@ -194,7 +192,6 @@ define(
                 /**
                  * @name InterTabLibjoynrRuntime#providerBuilder
                  * @type ProviderBuilder
-                 * @field
                  */
                 Object.defineProperty(this, "providerBuilder", {
                     get : function() {
@@ -206,7 +203,6 @@ define(
                 /**
                  * @name InterTabLibjoynrRuntime#proxyBuilder
                  * @type ProxyBuilder
-                 * @field
                  */
                 Object.defineProperty(this, "proxyBuilder", {
                     get : function() {
@@ -218,7 +214,6 @@ define(
                 /**
                  * @name InterTabLibjoynrRuntime#participantIdStorage
                  * @type ParticipantIdStorage
-                 * @field
                  */
                 Object.defineProperty(this, "participantIdStorage", {
                     get : function() {
@@ -230,7 +225,6 @@ define(
                 /**
                  * @name InterTabLibjoynrRuntime#logging
                  * @type LoggingManager
-                 * @field
                  */
                 Object.defineProperty(this, "logging", {
                     get : function() {

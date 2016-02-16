@@ -46,7 +46,6 @@ define("joynr/proxy/BroadcastFilterParameters", [
         /**
          * @name BroadcastFilterParameters#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
         Util.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
@@ -78,7 +77,6 @@ define("joynr/proxy/BroadcastFilterParameters", [
         /**
          * @name BroadcastFilterParameters#filterParameters
          * @type Object
-         * @field
          */
         this.filterParameters = {};
     }

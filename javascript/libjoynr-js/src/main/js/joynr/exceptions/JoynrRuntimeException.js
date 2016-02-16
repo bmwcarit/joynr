@@ -58,7 +58,6 @@ define("joynr/exceptions/JoynrRuntimeException", [
          * Used for serialization.
          * @name JoynrRuntimeException#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrRuntimeException");
         Util.checkPropertyIfDefined(settings, "Object", "settings");

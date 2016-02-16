@@ -54,7 +54,6 @@ define("joynr/exceptions/DiscoveryException", [
          * Used for serialization.
          * @name DiscoveryException#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
 
@@ -62,7 +61,6 @@ define("joynr/exceptions/DiscoveryException", [
          * See [constructor description]{@link DiscoveryException}.
          * @name DiscoveryException#detailMessage
          * @type String
-         * @field
          */
         this.detailMessage = undefined;
     }

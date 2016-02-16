@@ -59,17 +59,14 @@ define("joynr/dispatching/types/SubscriptionRequest", [
         /**
          * @name SubscriptionRequest#subscriptionId
          * @type String
-         * @field
          */
         /**
          * @name SubscriptionRequest#qosName
          * @type OnChangeSubscriptionQos|PeriodicSubscriptionQos|OnChangeWithKeepAliveSubscriptionQos
-         * @field
          */
         /**
          * @name SubscriptionRequest#attributeName
          * @type String
-         * @field
          */
         Util.extend(this, defaultSettings, settings);
 
@@ -78,7 +75,6 @@ define("joynr/dispatching/types/SubscriptionRequest", [
          *
          * @name SubscriptionRequest#_typeName
          * @type String
-         * @field
          */
         Typing.augmentTypeName(this, "joynr");
 

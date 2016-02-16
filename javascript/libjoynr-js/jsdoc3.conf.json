@@ -1,6 +1,6 @@
   {
     "tags": {
-        "allowUnknownTags": true
+        "allowUnknownTags": false
     },
     "source": {
         "includePattern": ".+\\.js(doc)?$",
@@ -10,9 +10,6 @@
     "opts": {
         "recurse": true
     },
-    "plugins": [
-        "plugins/verboseOutput"
-    ],
     "templates": {
         "cleverLinks": false,
         "monospaceLinks": false,
