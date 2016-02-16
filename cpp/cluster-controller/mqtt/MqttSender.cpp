@@ -49,9 +49,6 @@ void MqttSender::sendMessage(
         const JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    // TODO handle and pass back mqtt errors to message router / calling MessageRunnable via
-    // onFailure
-    std::ignore = onFailure;
     JOYNR_LOG_DEBUG(logger, "sendMessage: ...");
 
     waitForReceiveQueueStarted();
@@ -63,7 +60,8 @@ void MqttSender::sendMessage(
 
     util::logSerializedMessage(logger, "Sending Message: ", serializedMessage);
 
-    mosquittoPublisher.publishMessage(channelId, message.getHeaderTo(), payloadLength, payload);
+    mosquittoPublisher.publishMessage(
+            channelId, message.getHeaderTo(), onFailure, payloadLength, payload);
 }
 
 void MqttSender::registerReceiveQueueStartedCallback(

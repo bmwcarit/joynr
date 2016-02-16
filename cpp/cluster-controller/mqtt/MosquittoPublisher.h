@@ -26,6 +26,7 @@
 #include "MosquittoConnection.h"
 #include "MqttSettings.h"
 
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Thread.h"
@@ -45,10 +46,12 @@ public:
     void interrupt();
     bool isInterrupted();
 
-    int publishMessage(const std::string& channelId,
-                       const std::string& participantId,
-                       uint32_t payloadlen,
-                       const void* payload);
+    void publishMessage(
+            const std::string& channelId,
+            const std::string& participantId,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
+            uint32_t payloadlen,
+            const void* payload);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoPublisher);
