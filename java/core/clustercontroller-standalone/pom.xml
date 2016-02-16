@@ -83,6 +83,7 @@
 							<goal>unpack-dependencies</goal>
 						</goals>
 						<configuration>
+							<excludes>log4j.properties</excludes>
 							<includeScope>compile</includeScope>
 							<outputDirectory>${project.build.directory}/classes</outputDirectory>
 							<overWriteReleases>true</overWriteReleases>
