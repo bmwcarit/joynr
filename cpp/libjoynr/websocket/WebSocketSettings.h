@@ -19,15 +19,22 @@
 #ifndef WEBSOCKETSETTINGS_H
 #define WEBSOCKETSETTINGS_H
 
-#include "joynr/Logger.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-
 #include <string>
+
+#include "joynr/Logger.h"
 
 namespace joynr
 {
 
 class Settings;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class WebSocketAddress;
+} // namespace RoutingTypes
+} // namespace system
 
 class WebSocketSettings
 {

@@ -19,7 +19,7 @@
 #include "WebSocketLibJoynrMessagingSkeleton.h"
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/MessageRouter.h"
 
 namespace joynr
 {

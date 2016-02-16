@@ -17,11 +17,12 @@
  * #L%
  */
 #include "WebSocketSettings.h"
-#include "joynr/Settings.h"
-#include "joynr/Url.h"
-#include "joynr/TypeUtil.h"
 
 #include <cassert>
+
+#include "joynr/Settings.h"
+#include "joynr/Url.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 namespace joynr
 {

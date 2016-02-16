@@ -24,26 +24,21 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-
 #include "joynr/IMessaging.h"
-#include "joynr/IWebSocketSendInterface.h"
 
 namespace joynr
 {
 
-namespace system
-{
+class IWebSocketSendInterface;
 
-namespace RoutingTypes
+namespace exceptions
 {
-class Address;
-} // namespace RoutingTypes
-} // namespace system
-
-/**
- * @class WebSocketMessagingStub
- * @brief Represents an outgoing WebSocket connection
- */
+class JoynrRuntimeException;
+} // namespace exceptions
+  /**
+   * @class WebSocketMessagingStub
+   * @brief Represents an outgoing WebSocket connection
+   */
 class WebSocketMessagingStub : public IMessaging
 {
 public:

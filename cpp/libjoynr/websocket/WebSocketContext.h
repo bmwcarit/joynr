@@ -19,16 +19,16 @@
 #ifndef WEBSOCKETCONTEXT_H
 #define WEBSOCKETCONTEXT_H
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Logger.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-
-#include <libwebsockets.h>
 #include <string>
 #include <atomic>
 #include <thread>
 #include <unordered_map>
 #include <condition_variable>
+
+#include <libwebsockets.h>
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
 struct libwebsocket;
 struct libwebsocket_context;
@@ -37,6 +37,14 @@ namespace joynr
 {
 
 class IWebSocketContextCallback;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class WebSocketAddress;
+} // namespace RoutingTypes
+} // namespace system
 
 /**
  * @brief The WebSocketContext class encapsulates boilerplate code needed for libwebsockets

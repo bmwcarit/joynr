@@ -16,12 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#include "IWebSocketContextCallback.h"
+
 #include "WebSocketContext.h"
-#include "joynr/exceptions/JoynrException.h"
 
 #include <sstream>
 #include <vector>
+
+#include "IWebSocketContextCallback.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 namespace joynr
 {

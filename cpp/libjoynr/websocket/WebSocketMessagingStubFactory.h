@@ -26,13 +26,20 @@
 #include "joynr/Url.h"
 #include "joynr/Logger.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 namespace joynr
 {
 class IWebSocketSendInterface;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+} // namespace RoutingTypes
+} // namespace system
 
 class WebSocketMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {

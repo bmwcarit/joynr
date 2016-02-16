@@ -18,18 +18,12 @@
  */
 #include "WebSocketMessagingStubFactory.h"
 
-#include <cassert>
-#include <typeinfo>
-#include <functional>
 #include <cctype>
 #include <algorithm>
 #include <string>
 
 #include "websocket/WebSocketMessagingStub.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/FormatString.h"
 
 namespace joynr

@@ -20,14 +20,16 @@
 #define WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 
 #include <string>
+#include <functional>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 #include "joynr/IMessaging.h"
-#include "joynr/MessageRouter.h"
 
 namespace joynr
 {
+
+class MessageRouter;
 
 class WebSocketLibJoynrMessagingSkeleton : public IMessaging
 {
