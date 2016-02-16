@@ -207,8 +207,8 @@ target_link_libraries(JoynrClusterController ${JoynrClusterController_TARGET_LIB
 install(
     TARGETS JoynrClusterController
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
+    RUNTIME DESTINATION "${CMAKE_INSTALL_FULL_BINDIR}" COMPONENT bin
+    LIBRARY DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}" COMPONENT shlib
     # this will flatten directory hierarchy of headder files
     # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev
 )
@@ -274,6 +274,6 @@ else()
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
-        DESTINATION ${INSTALL_RES_DIR}
+        DESTINATION ${JOYNR_INSTALL_FULL_SYSCONFDIR}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
