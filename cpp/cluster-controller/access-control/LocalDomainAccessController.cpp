@@ -173,9 +173,9 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
 
     // See if the user has the given role
     bool hasRole = false;
-    Optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
+    boost::optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
     if (dre) {
-        std::vector<std::string> domains = dre.getValue().getDomains();
+        std::vector<std::string> domains = dre->getDomains();
         if (util::vectorContains(domains, domain)) {
             hasRole = true;
         }
@@ -256,13 +256,13 @@ Permission::Enum LocalDomainAccessController::getConsumerPermission(
 {
     JOYNR_LOG_DEBUG(logger, "Entering getConsumerPermission with known operation");
 
-    Optional<MasterAccessControlEntry> masterAceOptional =
+    boost::optional<MasterAccessControlEntry> masterAceOptional =
             localDomainAccessStore->getMasterAccessControlEntry(
                     userId, domain, interfaceName, operation);
-    Optional<MasterAccessControlEntry> mediatorAceOptional =
+    boost::optional<MasterAccessControlEntry> mediatorAceOptional =
             localDomainAccessStore->getMediatorAccessControlEntry(
                     userId, domain, interfaceName, operation);
-    Optional<OwnerAccessControlEntry> ownerAceOptional =
+    boost::optional<OwnerAccessControlEntry> ownerAceOptional =
             localDomainAccessStore->getOwnerAccessControlEntry(
                     userId, domain, interfaceName, operation);
 
@@ -400,11 +400,10 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
     std::ignore = domain;
     std::ignore = interfaceName;
 
-    return accessControlAlgorithm.getProviderPermission(
-            Optional<MasterAccessControlEntry>::createNull(),
-            Optional<MasterAccessControlEntry>::createNull(),
-            Optional<OwnerAccessControlEntry>::createNull(),
-            trustLevel);
+    return accessControlAlgorithm.getProviderPermission(boost::optional<MasterAccessControlEntry>(),
+                                                        boost::optional<MasterAccessControlEntry>(),
+                                                        boost::optional<OwnerAccessControlEntry>(),
+                                                        trustLevel);
 }
 
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::

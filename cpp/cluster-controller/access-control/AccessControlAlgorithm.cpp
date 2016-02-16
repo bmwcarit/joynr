@@ -30,9 +30,9 @@ namespace joynr
 using namespace infrastructure::DacTypes;
 
 Permission::Enum AccessControlAlgorithm::getConsumerPermission(
-        const Optional<MasterAccessControlEntry>& masterOptional,
-        const Optional<MasterAccessControlEntry>& mediatorOptional,
-        const Optional<OwnerAccessControlEntry>& ownerOptional,
+        const boost::optional<MasterAccessControlEntry>& masterOptional,
+        const boost::optional<MasterAccessControlEntry>& mediatorOptional,
+        const boost::optional<OwnerAccessControlEntry>& ownerOptional,
         TrustLevel::Enum trustLevel)
 {
     return getPermission(
@@ -40,9 +40,9 @@ Permission::Enum AccessControlAlgorithm::getConsumerPermission(
 }
 
 Permission::Enum AccessControlAlgorithm::getProviderPermission(
-        const Optional<MasterAccessControlEntry>& masterOptional,
-        const Optional<MasterAccessControlEntry>& mediatorOptional,
-        const Optional<OwnerAccessControlEntry>& ownerOptional,
+        const boost::optional<MasterAccessControlEntry>& masterOptional,
+        const boost::optional<MasterAccessControlEntry>& mediatorOptional,
+        const boost::optional<OwnerAccessControlEntry>& ownerOptional,
         TrustLevel::Enum trustLevel)
 {
     return getPermission(
@@ -51,9 +51,9 @@ Permission::Enum AccessControlAlgorithm::getProviderPermission(
 
 Permission::Enum AccessControlAlgorithm::getPermission(
         AccessControlAlgorithm::PermissionType permissionType,
-        const Optional<MasterAccessControlEntry>& masterOptional,
-        const Optional<MasterAccessControlEntry>& mediatorOptional,
-        const Optional<OwnerAccessControlEntry>& ownerOptional,
+        const boost::optional<MasterAccessControlEntry>& masterOptional,
+        const boost::optional<MasterAccessControlEntry>& mediatorOptional,
+        const boost::optional<OwnerAccessControlEntry>& ownerOptional,
         TrustLevel::Enum trustLevel)
 {
     AceValidator validator(masterOptional, mediatorOptional, ownerOptional);
@@ -64,26 +64,24 @@ Permission::Enum AccessControlAlgorithm::getPermission(
     Permission::Enum permission = Permission::Enum::NO;
 
     if (ownerOptional) {
-        OwnerAccessControlEntry ownerAce = ownerOptional.getValue();
-        if (TrustLevelComparator::compare(trustLevel, ownerAce.getRequiredTrustLevel()) >= 0) {
+        if (TrustLevelComparator::compare(trustLevel, ownerOptional->getRequiredTrustLevel()) >=
+            0) {
             if (permissionType == PERMISSION_FOR_CONSUMER) {
-                permission = ownerAce.getConsumerPermission();
+                permission = ownerOptional->getConsumerPermission();
             }
         }
     } else if (mediatorOptional) {
-        MasterAccessControlEntry mediatorAce = mediatorOptional.getValue();
-        if (TrustLevelComparator::compare(trustLevel, mediatorAce.getDefaultRequiredTrustLevel()) >=
-            0) {
+        if (TrustLevelComparator::compare(
+                    trustLevel, mediatorOptional->getDefaultRequiredTrustLevel()) >= 0) {
             if (permissionType == PERMISSION_FOR_CONSUMER) {
-                permission = mediatorAce.getDefaultConsumerPermission();
+                permission = mediatorOptional->getDefaultConsumerPermission();
             }
         }
     } else if (masterOptional) {
-        MasterAccessControlEntry masterAce = masterOptional.getValue();
-        if (TrustLevelComparator::compare(trustLevel, masterAce.getDefaultRequiredTrustLevel()) >=
-            0) {
+        if (TrustLevelComparator::compare(
+                    trustLevel, masterOptional->getDefaultRequiredTrustLevel()) >= 0) {
             if (permissionType == PERMISSION_FOR_CONSUMER) {
-                permission = masterAce.getDefaultConsumerPermission();
+                permission = masterOptional->getDefaultConsumerPermission();
             }
         }
     }

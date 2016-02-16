@@ -20,15 +20,17 @@
 #ifndef LOCALDOMAINACCESSSTORE_H
 #define LOCALDOMAINACCESSSTORE_H
 
+#include <vector>
+#include <string>
+
+#include <boost/optional.hpp>
+#include <QtSql/QSqlDatabase>
+
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
-#include "joynr/Optional.h"
 #include "joynr/Logger.h"
-#include <vector>
-#include <string>
-#include <QtSql/QSqlDatabase>
 
 namespace joynr
 {
@@ -58,7 +60,7 @@ public:
      * Returned domain role entry domains value is empty list, if no domain role entry for uid
      *found.
      */
-    Optional<infrastructure::DacTypes::DomainRoleEntry> getDomainRole(
+    boost::optional<infrastructure::DacTypes::DomainRoleEntry> getDomainRole(
             const std::string& uid,
             infrastructure::DacTypes::Role::Enum role);
 
@@ -139,10 +141,10 @@ public:
      * @param domain The domain being called
      * @param interfaceName The interface being called.
      * @param operation The operation being called
-     * @return Master ACE Optional associated to given uid, domain, interface and operation.
-     * If no master ACE found for given parameters, returned Optional is null.
+     * @return Master ACE associated to given uid, domain, interface and operation.
+     * If no master ACE found for given parameters, returned boost::optional is not initialized.
      */
-    Optional<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntry(
+    boost::optional<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntry(
             const std::string& uid,
             const std::string& domain,
             const std::string& interfaceName,
@@ -234,14 +236,15 @@ public:
      * @param domain The domain being called
      * @param interfaceName The interface being called.
      * @param operation The operation being called
-     * @return Mediator ACE Optional associated to given uid, domain, interface and operation.
-     * If no mediator ACE found for given parameters, returned Optional is null.
+     * @return Mediator ACE  associated to given uid, domain, interface and
+     *operation.
+     * If no mediator ACE found for given parameters, returned boost::optional is not initialized.
      */
-    Optional<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntry(
-            const std::string& uid,
-            const std::string& domain,
-            const std::string& interfaceName,
-            const std::string& operation);
+    boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>
+    getMediatorAccessControlEntry(const std::string& uid,
+                                  const std::string& domain,
+                                  const std::string& interfaceName,
+                                  const std::string& operation);
     /**
      * Update given master ACE in MediatorACL.
      * If such doesn't already exist in the store, it will be added to the store.
@@ -326,10 +329,10 @@ public:
      * @param domain The domain being accessed
      * @param interfaceName The interface being accessed
      * @param operation The operation being called
-     * @return Owner ACE Optional associated to given uid, domain, interface and operation.
-     * If no owner ACE found for given parameters, returned Optional is null.
+     * @return Owner ACE associated to given uid, domain, interface and operation.
+     * If no owner ACE found for given parameters, returned boost::optional is not initialized.
      */
-    Optional<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntry(
+    boost::optional<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntry(
             const std::string& userId,
             const std::string& domain,
             const std::string& interfaceName,
@@ -443,7 +446,7 @@ private:
     QByteArray serializeEnumList(const std::vector<T>& value);
 
     template <typename T>
-    Optional<T> firstEntry(const std::vector<T>& list);
+    boost::optional<T> firstEntry(const std::vector<T>& list);
 
     QSqlQuery createGetAceQuery(const std::string& sqlQuery,
                                 const std::string& uid,
