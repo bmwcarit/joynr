@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include "IWebSocketEventHandler.h"
 #include "WebSocket.h"
 #include "WebSocketContext.h"
 

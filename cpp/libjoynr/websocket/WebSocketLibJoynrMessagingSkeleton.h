@@ -19,15 +19,12 @@
 #ifndef WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 #define WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 
+#include <string>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-
 #include "joynr/IMessaging.h"
 #include "joynr/MessageRouter.h"
-
-#include "IWebSocketEventHandler.h"
-
-#include <string>
 
 namespace joynr
 {

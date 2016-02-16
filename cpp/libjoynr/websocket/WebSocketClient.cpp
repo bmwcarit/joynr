@@ -16,14 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#include "IWebSocketEventHandler.h"
 #include "websocket/WebSocketClient.h"
-#include "joynr/exceptions/JoynrException.h"
 
 #include <thread>
 #include <iostream>
 #include <cassert>
 #include <sstream>
+
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
