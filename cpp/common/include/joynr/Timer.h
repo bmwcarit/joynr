@@ -26,6 +26,7 @@
 #include <condition_variable>
 #include <functional>
 #include <chrono>
+#include <atomic>
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -110,7 +111,7 @@ private:
     std::mutex mutex;
 
     /*! Flag indicating @ref workerThread to stay in the loop */
-    bool keepRunning;
+    std::atomic<bool> keepRunning;
 
     /*! Thread processing timers and will notify @ref TimerCallback */
     std::thread workerThread;

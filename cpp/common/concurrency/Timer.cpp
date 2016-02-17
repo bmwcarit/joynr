@@ -53,6 +53,7 @@ Timer::TimerId Timer::addTimer(std::function<void(Timer::TimerId)> onTimerExpire
 {
     const std::chrono::milliseconds interval(msToBeExpired);
     TimerData* newTimer = nullptr;
+    bool newTimerIsNextTimer = false;
 
     {
         std::unique_lock<std::mutex> lock(mutex);
@@ -64,10 +65,12 @@ Timer::TimerId Timer::addTimer(std::function<void(Timer::TimerId)> onTimerExpire
                     ++currentId, onTimerExpired, onActiveTimerRemoved, interval);
         }
         timers.emplace(newTimer->getNextExpiry(), newTimer);
+
+        newTimerIsNextTimer = timers.begin()->second == newTimer;
     }
 
     // If the new timer the next timer in the list we need to reorganize
-    if (timers.begin()->second == newTimer) {
+    if (newTimerIsNextTimer) {
         JOYNR_LOG_TRACE(logger, "New timer {} has the earliest deadline", currentId);
         waitCondition.notify_one();
     }
