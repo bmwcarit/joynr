@@ -68,8 +68,8 @@ have to be provided in the Maven configuration:
 The **&lt;GENERATION_LANGUAGE&gt;** can be either ```java```, ```cpp```, or ```javascript```.
 In each case, the corresponding dependency has to be added to the plugin's dependencies
 section (see above):
-* for ```java```: the artifact **io.joynr.tools.generator: cpp-generator**
-* for ```cpp```: the artifact **io.joynr.tools.generator: java-generator**
+* for ```java```: the artifact **io.joynr.tools.generator: java-generator**
+* for ```cpp```: the artifact **io.joynr.tools.generator: cpp-generator**
 * for ```javascript```: the artifact **io.joynr.tools.generator: js-generator**
 
 
