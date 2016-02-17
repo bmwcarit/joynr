@@ -23,7 +23,7 @@
 namespace joynr
 {
 
-joynr::WebSocket::WebSocket()
+WebSocket::WebSocket()
         : IWebSocketSendInterface(),
           state(WebSocketState_Closed),
           sslCertPath(),

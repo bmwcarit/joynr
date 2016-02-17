@@ -90,8 +90,7 @@ void SubscriptionManager::registerSubscription(
                                std::chrono::system_clock::now().time_since_epoch()).count();
     subscriptionRequest.setQos(qosVariant);
     const SubscriptionQos* qos = subscriptionRequest.getSubscriptionQosPtr();
-    if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
-        qos->getExpiryDate() < now) {
+    if (qos->getExpiryDate() != SubscriptionQos::NO_EXPIRY_DATE() && qos->getExpiryDate() < now) {
         throw std::invalid_argument("Subscription ExpiryDate " +
                                     std::to_string(qos->getExpiryDate()) + " in the past. Now: " +
                                     std::to_string(now));
@@ -111,9 +110,9 @@ void SubscriptionManager::registerSubscription(
             std::int64_t periodicPublicationInterval =
                     SubscriptionUtil::getPeriodicPublicationInterval(qosVariant);
 
-            if (expiryDate.time_since_epoch().count() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (expiryDate.time_since_epoch().count() == SubscriptionQos::NO_EXPIRY_DATE()) {
                 expiryDate = JoynrTimePoint(
-                        std::chrono::milliseconds(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL()));
+                        std::chrono::milliseconds(SubscriptionQos::NO_EXPIRY_DATE_TTL()));
             }
 
             subscription->missedPublicationRunnableHandle = missedPublicationScheduler->schedule(
@@ -124,7 +123,7 @@ void SubscriptionManager::registerSubscription(
                                                   *this,
                                                   alertAfterInterval),
                     std::chrono::milliseconds(alertAfterInterval));
-        } else if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+        } else if (qos->getExpiryDate() != SubscriptionQos::NO_EXPIRY_DATE()) {
             std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                        std::chrono::system_clock::now().time_since_epoch()).count();
             subscription->subscriptionEndRunnableHandle = missedPublicationScheduler->schedule(

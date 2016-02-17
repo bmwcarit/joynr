@@ -198,7 +198,7 @@ bool isSubscriptionExpired(const SubscriptionQos* qos, int offset = 0)
 {
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::system_clock::now().time_since_epoch()).count();
-    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
+    return qos->getExpiryDate() != SubscriptionQos::NO_EXPIRY_DATE() &&
            qos->getExpiryDate() < (now + offset);
 }
 
@@ -251,7 +251,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDate() != SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId),
                         std::chrono::milliseconds(publicationEndDelay));
@@ -389,7 +389,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDate() != SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId),
                         std::chrono::milliseconds(publicationEndDelay));
