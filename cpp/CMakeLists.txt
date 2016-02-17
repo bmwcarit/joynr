@@ -466,7 +466,6 @@ else(USE_PLATFORM_LIBWEBSOCKETS)
                     -DLWS_WITHOUT_TEST_PING=1
                     -DLWS_WITHOUT_TEST_CLIENT=1
                     -DLWS_WITHOUT_TEST_FRAGGLE=1
-                    -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}
                     -DCMAKE_POSITION_INDEPENDENT_CODE=1
         BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets${CMAKE_SHARED_LIBRARY_SUFFIX}
     )
