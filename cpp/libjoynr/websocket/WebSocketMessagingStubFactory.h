@@ -55,9 +55,10 @@ public:
 private:
     std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress, std::shared_ptr<IMessaging>>
             serverStubMap;
+    std::mutex serverStubMapMutex;
     std::unordered_map<joynr::system::RoutingTypes::WebSocketClientAddress,
                        std::shared_ptr<IMessaging>> clientStubMap;
-    std::mutex mutex;
+    std::mutex clientStubMapMutex;
 
     ADD_LOGGER(WebSocketMessagingStubFactory);
 };
