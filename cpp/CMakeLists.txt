@@ -812,6 +812,7 @@ file(
     COPY
         "CMake/CheckBoostImportTargets.cmake"
         "CMake/CheckCurlImportTargets.cmake"
+        "CMake/CheckOpenSSLImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 # ... for the install tree
@@ -854,6 +855,7 @@ install(
         "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfigVersion.cmake"
         "CMake/CheckBoostImportTargets.cmake"
         "CMake/CheckCurlImportTargets.cmake"
+        "CMake/CheckOpenSSLImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
 )
 

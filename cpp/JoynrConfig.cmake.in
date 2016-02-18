@@ -45,6 +45,7 @@ set(
     USE_PLATFORM_SPDLOG
     @USE_PLATFORM_SPDLOG@
 )
+
 set(
     USE_PLATFORM_JSMN
     @USE_PLATFORM_JSMN@
@@ -53,6 +54,10 @@ set(
 # CURL
 find_package(CURL REQUIRED)
 include(${JOYNR_CMAKE_DIR}/CheckCurlImportTargets.cmake)
+
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+include(${JOYNR_CMAKE_DIR}/CheckOpenSSLImportTargets.cmake)
 
 # QT5
 find_package(Qt5Core REQUIRED)

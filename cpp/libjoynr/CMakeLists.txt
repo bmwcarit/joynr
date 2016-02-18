@@ -5,6 +5,7 @@ message(STATUS "#############################################\n")
 ### Add websocketpp ###########################################################
 
 find_package(OpenSSL REQUIRED)
+include(CheckOpenSSLImportTargets)
 
 if(USE_PLATFORM_WEBSOCKETPP)
     find_package(websocketpp)
@@ -188,7 +189,7 @@ generate_export_header(
 target_link_libraries(Joynr
     ${JoynrLib_TARGET_LIBRARIES}
     Boost::thread
-    ${OPENSSL_LIBRARIES}
+    OpenSSL::SSL
 )
 
 install(
