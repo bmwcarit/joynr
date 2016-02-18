@@ -22,6 +22,8 @@ package io.joynr.messaging.http;
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
@@ -155,6 +157,8 @@ public class HttpMessageSender implements IMessageSender {
                         + statusText + " statusCode: " + statusCode));
                 break;
             }
+        } catch (JoynrShutdownException e) {
+            failureAction.execute(new JoynrMessageNotSentException("Message not sent to: " + address, e));
         } catch (Exception e) {
             // An exception occured - this could still be a communication error (e.g Connection refused)
             failureAction.execute(new JoynrCommunicationException(e.getClass().getName()
