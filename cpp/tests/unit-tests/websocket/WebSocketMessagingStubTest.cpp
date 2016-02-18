@@ -106,7 +106,7 @@ private:
 
 INIT_LOGGER(WebSocketServer);
 
-class WebSocketMessagingStubTest : public testing::Test
+class WebSocketMessagingStubTest : public testing::TestWithParam<std::size_t>
 {
 
 public:
@@ -170,7 +170,7 @@ TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
     sem.wait();
 }
 
-TEST_F(WebSocketMessagingStubTest, transmitMessage) {
+TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
     JOYNR_LOG_TRACE(logger, "transmit message");
 
     joynr::Semaphore sem(0);
@@ -187,6 +187,10 @@ TEST_F(WebSocketMessagingStubTest, transmitMessage) {
         webSocket,
         [](){});
     joynr::JoynrMessage joynrMsg;
+
+    const std::size_t payloadSize = GetParam();
+    std::string payload(payloadSize, 'x');
+    joynrMsg.setPayload(payload);
     std::string expectedMessage = joynr::JsonSerializer::serialize(joynrMsg);
 
     auto onFailure = [](const joynr::exceptions::JoynrRuntimeException& e) {
@@ -202,3 +206,8 @@ TEST_F(WebSocketMessagingStubTest, transmitMessage) {
     ASSERT_EQ(expectedMessage.size(), receivedMessage.size());
     EXPECT_EQ(expectedMessage, receivedMessage);
 }
+
+INSTANTIATE_TEST_CASE_P(WebsocketTransmitMessagesWithIncreasingSize,
+                        WebSocketMessagingStubTest,
+                        ::testing::Values<std::size_t>(256*1024, 512*1024, 1024*1024)
+);
