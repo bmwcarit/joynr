@@ -75,6 +75,7 @@ if(USE_PLATFORM_DEPENDENCIES)
     set(USE_PLATFORM_JSMN ON)
     set(USE_PLATFORM_MOSQUITTO ON)
     set(USE_PLATFORM_GTEST_GMOCK ON)
+    set(USE_PLATFORM_WEBSOCKETPP ON)
 endif(USE_PLATFORM_DEPENDENCIES)
 
 option(
@@ -111,6 +112,13 @@ option(
     OFF
 )
 message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
+
+option(
+    USE_PLATFORM_WEBSOCKETPP
+    "Resolve dependency to WebSocket++ from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_WEBSOCKETPP=" ${USE_PLATFORM_WEBSOCKETPP})
 
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(

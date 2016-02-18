@@ -2,6 +2,25 @@ message(STATUS "#############################################")
 message(STATUS "Configuring JoynrLib...")
 message(STATUS "#############################################\n")
 
+### Add websocketpp ###########################################################
+
+if(USE_PLATFORM_WEBSOCKETPP)
+    find_package(websocketpp)
+else(USE_PLATFORM_WEBSOCKETPP)
+    AddExternalProject(
+        websocketpp
+        GIT_REPOSITORY https://github.com/zaphoyd/websocketpp.git
+        GIT_TAG 17a2647454390d332581c0e8cc880414d21d248b
+        TIMEOUT 10
+        # Disable configure step
+        CONFIGURE_COMMAND ""
+        # Disable build step
+        BUILD_COMMAND ""
+    )
+    ExternalProject_Get_Property(websocketpp SOURCE_DIR)
+    set(WEBSOCKETPP_INCLUDE_DIR "${SOURCE_DIR}")
+endif(USE_PLATFORM_WEBSOCKETPP)
+
 get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
