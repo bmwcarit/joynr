@@ -58,7 +58,9 @@ WebSocketPpClient::~WebSocketPpClient()
     if (state == State::Connected) {
         close();
     }
-    thread.join();
+    if (thread.joinable()) {
+        thread.join();
+    }
 }
 
 void WebSocketPpClient::registerReceiveCallback(std::function<void(const std::string&)> callback)

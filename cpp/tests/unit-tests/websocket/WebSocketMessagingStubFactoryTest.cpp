@@ -94,9 +94,6 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
     factory.addServer(webSocketServerAddress, wrapper);
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
     EXPECT_TRUE(factory.create(webSocketServerAddress).get() != nullptr);
-
-    // Terminate call is needed if context was created. This is normally done within the runtime
-    clientWebsocket->terminate();
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
@@ -119,7 +116,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
 
 TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     WebSocketMessagingStubFactory factory;
-    WebSocketClient* websocket = new MockWebSocketClient();
+    WebSocketPpClient* websocket = new MockWebSocketClient();
 
     factory.addClient(new joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
