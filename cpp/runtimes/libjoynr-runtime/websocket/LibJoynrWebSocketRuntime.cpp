@@ -21,10 +21,9 @@
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
-#include "libjoynr/websocket/WebSocketClient.h"
 #include "joynr/Util.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/JsonSerializer.h"
+#include "libjoynr/websocket/WebSocketPpClient.h"
 
 namespace joynr
 {
@@ -35,9 +34,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
           wsSettings(*settings),
           wsLibJoynrMessagingSkeleton(nullptr),
-          websocket(new WebSocketClient(
-                  [this](const std::string& err) { this->onWebSocketError(err); },
-                  [](WebSocket*) {}))
+          websocket(new WebSocketPpClient())
 {
     std::string uuid = util::createUuid();
     // remove dashes
@@ -46,6 +43,16 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     std::shared_ptr<joynr::system::RoutingTypes::WebSocketClientAddress> libjoynrMessagingAddress(
             new system::RoutingTypes::WebSocketClientAddress(libjoynrMessagingId));
 
+    // send intialization message containing libjoynr messaging address
+    std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
+    JOYNR_LOG_TRACE(logger,
+                    "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
+                    initializationMsg,
+                    libjoynrMessagingAddress->toString());
+    auto connectCallback =
+            [this, initializationMsg]() { websocket->sendTextMessage(initializationMsg); };
+    websocket->registerConnectCallback(connectCallback);
+
     // create connection to parent routing service
     std::shared_ptr<joynr::system::RoutingTypes::WebSocketAddress> ccMessagingAddress(
             new joynr::system::RoutingTypes::WebSocketAddress(
@@ -53,16 +60,8 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
 
     websocket->connect(*ccMessagingAddress);
 
-    // send intialization message containing libjoynr messaging address
-    std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
-    JOYNR_LOG_TRACE(logger,
-                    "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
-                    initializationMsg,
-                    libjoynrMessagingAddress->toString());
-    websocket->send(initializationMsg);
-
     WebSocketMessagingStubFactory* factory = new WebSocketMessagingStubFactory();
-    factory->addServer(*ccMessagingAddress, websocket.get());
+    factory->addServer(*ccMessagingAddress, websocket);
 
     LibJoynrRuntime::init(factory, libjoynrMessagingAddress, ccMessagingAddress);
 }
@@ -75,7 +74,6 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(MessageRouter& messageRouter)
 {
-    // create messaging skeleton using uuid
     wsLibJoynrMessagingSkeleton = new WebSocketLibJoynrMessagingSkeleton(messageRouter);
     websocket->registerReceiveCallback([&](const std::string& msg) {
         wsLibJoynrMessagingSkeleton->onTextMessageReceived(msg);
