@@ -4,6 +4,8 @@ message(STATUS "#############################################\n")
 
 ### Add websocketpp ###########################################################
 
+find_package(OpenSSL REQUIRED)
+
 if(USE_PLATFORM_WEBSOCKETPP)
     find_package(websocketpp)
 else(USE_PLATFORM_WEBSOCKETPP)
@@ -151,12 +153,17 @@ target_include_directories(
     Joynr
     SYSTEM
     PRIVATE ${JoynrLib_SYS_INCLUDE_DIRS}
+    PUBLIC "$<BUILD_INTERFACE:${WEBSOCKETPP_INCLUDE_DIR}>"
 )
 
 
 if(NOT USE_PLATFORM_LIBWEBSOCKETS)
     add_dependencies(Joynr libwebsockets)
 endif(NOT USE_PLATFORM_LIBWEBSOCKETS)
+
+if(NOT USE_PLATFORM_WEBSOCKETPP)
+    add_dependencies(Joynr websocketpp)
+endif(NOT USE_PLATFORM_WEBSOCKETPP)
 
 AddClangFormat(Joynr)
 
@@ -181,6 +188,7 @@ generate_export_header(
 target_link_libraries(Joynr
     ${JoynrLib_TARGET_LIBRARIES}
     Boost::thread
+    ${OPENSSL_LIBRARIES}
 )
 
 install(
