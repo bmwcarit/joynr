@@ -108,6 +108,7 @@ This project has dependencies to:
   io.joynr.cpp:tests under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-consumer under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
+  io.joynr.examples:joynr-system-integration-test under The Apache Software License, Version 2.0
   io.joynr.examples:location-tester under The Apache Software License, Version 2.0
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.examples:radio-js under The Apache Software License, Version 2.0

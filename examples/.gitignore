@@ -4,4 +4,5 @@
 /.settings
 /gen
 radio-app-build
+joynr-system-integration-test-build
 /src/main/generated*
