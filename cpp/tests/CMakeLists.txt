@@ -328,7 +328,6 @@ file(
 
 set(
     JoynrTest_INCLUDE_DIRECTORIES
-    ${libwebsockets_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"

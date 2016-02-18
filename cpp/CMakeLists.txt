@@ -70,20 +70,12 @@ option(
 message(STATUS "option USE_PLATFORM_DEPENDENCIES=" ${USE_PLATFORM_DEPENDENCIES})
 
 if(USE_PLATFORM_DEPENDENCIES)
-    set(USE_PLATFORM_LIBWEBSOCKETS ON)
     set(USE_PLATFORM_SPDLOG ON)
     set(USE_PLATFORM_JSMN ON)
     set(USE_PLATFORM_MOSQUITTO ON)
     set(USE_PLATFORM_GTEST_GMOCK ON)
     set(USE_PLATFORM_WEBSOCKETPP ON)
 endif(USE_PLATFORM_DEPENDENCIES)
-
-option(
-    USE_PLATFORM_LIBWEBSOCKETS
-    "Resolve dependency to libwebsocket from the system?"
-    OFF
-)
-message(STATUS "option USE_PLATFORM_LIBWEBSOCKETS=" ${USE_PLATFORM_LIBWEBSOCKETS})
 
 option(
     USE_PLATFORM_SPDLOG
@@ -448,50 +440,6 @@ endif()
 
 
 include(AddExternalProject)
-
-### Add libwebsockets ###########################################################
-if (USE_PLATFORM_LIBWEBSOCKETS)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(libwebsockets REQUIRED libwebsockets)
-    message(STATUS "linking against ${libwebsockets_LIBRARIES}")
-else(USE_PLATFORM_LIBWEBSOCKETS)
-    AddExternalProject(
-        libwebsockets
-        GIT_REPOSITORY https://github.com/warmcat/libwebsockets
-        GIT_TAG v1.5-chrome47-firefox41
-        TIMEOUT 10
-        # Disable svn update
-        UPDATE_COMMAND ""
-        # Configure libwebsockets library features
-        CMAKE_ARGS  -DLWS_WITH_SSL=0
-                    -DLWS_WITHOUT_CLIENT=0
-                    -DLWS_WITHOUT_SERVER=0
-                    -DLWS_WITHOUT_EXTENSIONS=0
-                    -DLWS_WITH_ZLIB=ON
-                    -DLWS_WITHOUT_TESTAPPS=1
-                    -DLWS_WITHOUT_TEST_SERVER=1
-                    -DLWS_WITHOUT_TEST_SERVER_EXTPOLL=1
-                    -DLWS_WITHOUT_TEST_PING=1
-                    -DLWS_WITHOUT_TEST_CLIENT=1
-                    -DLWS_WITHOUT_TEST_FRAGGLE=1
-                    -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}
-                    -DCMAKE_POSITION_INDEPENDENT_CODE=1
-        BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets${CMAKE_SHARED_LIBRARY_SUFFIX}
-    )
-
-    ExternalProject_Get_Property(libwebsockets SOURCE_DIR)
-    ExternalProject_Get_Property(libwebsockets BINARY_DIR)
-
-    set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(libwebsockets_INCLUDE_DIRS
-        ${SOURCE_DIR}/lib
-        ${BINARY_DIR}
-    )
-endif(USE_PLATFORM_LIBWEBSOCKETS)
-
-
-message(STATUS "variable libwebsockets_LIBRARIES=${libwebsockets_LIBRARIES}")
-message(STATUS "variable libwebsockets_INCLUDE_DIRS=${libwebsockets_INCLUDE_DIRS}")
 
 # ---------------------------------------------- Build library --------------------------------------------------
 

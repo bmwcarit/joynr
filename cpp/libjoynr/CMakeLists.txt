@@ -43,12 +43,10 @@ set(
     JoynrLib_SYS_INCLUDE_DIRS
     ${jsmn_INCLUDE_DIR}
     ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${libwebsockets_INCLUDE_DIRS}
 )
 
 set(
     JoynrLib_TARGET_LIBRARIES
-    ${libwebsockets_LIBRARIES}
     JoynrCommon
     JoynrJsonSerializer
 )
@@ -156,11 +154,6 @@ target_include_directories(
     PRIVATE ${JoynrLib_SYS_INCLUDE_DIRS}
     PUBLIC "$<BUILD_INTERFACE:${WEBSOCKETPP_INCLUDE_DIR}>"
 )
-
-
-if(NOT USE_PLATFORM_LIBWEBSOCKETS)
-    add_dependencies(Joynr libwebsockets)
-endif(NOT USE_PLATFORM_LIBWEBSOCKETS)
 
 if(NOT USE_PLATFORM_WEBSOCKETPP)
     add_dependencies(Joynr websocketpp)

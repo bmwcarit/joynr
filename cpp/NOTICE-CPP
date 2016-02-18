@@ -31,7 +31,6 @@ OpenSSL under OpenSSL License
 
 --- Statically linked libraries by joynr binaries ------------------------------
 jsmn under MIT Licence
-libwebsockets under GNU Lesser General Public License v2.1 (LGPL-2.1) with static linking exception
 
 --- Header only libraries used by joynr binaries -------------------------------
 spdlog under MIT License
