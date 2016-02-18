@@ -38,6 +38,7 @@ message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}"
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
+message(STATUS "variable CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
 
 ######## Add Boost ########
 
@@ -163,19 +164,29 @@ target_link_libraries(radio-app-consumer-cc
     ${Joynr_LIB_INPROCESS_LIBRARIES}
 )
 
-# copy joynr resources and settings
-file(
-    COPY ${Joynr_RESOURCES_DIR}
-    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-)
-
-
+if(EXISTS ${Joynr_RESOURCES_DIR})
+    # copy joynr resources and settings
+    file(
+        COPY ${Joynr_RESOURCES_DIR}
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    )
+else()
+    message(WARNING ${Joynr_RESOURCES_DIR} " is not a valid directory")
+endif(EXISTS ${Joynr_RESOURCES_DIR})
 
 # copy joynr executables
-file(
-    COPY ${Joynr_EXECUTABLES}
-    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-)
+foreach(joynr_exectable ${Joynr_EXECUTABLES})
+if(EXISTS ${joynr_exectable})
+    # copy joynr executable
+    file(
+        COPY ${joynr_exectable}
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    )
+else()
+    message(WARNING ${joynr_exectable} " cannot be found. It will not be copied to " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+endif(EXISTS ${joynr_exectable})
+
+endforeach(joynr_exectable)
 
 # Compile the provider application (requires: running cluster controller)
 # Communicates via WebSockets with cluster controller
