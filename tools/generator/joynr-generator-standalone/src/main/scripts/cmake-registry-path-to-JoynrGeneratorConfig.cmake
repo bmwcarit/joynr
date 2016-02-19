@@ -1,0 +1,1 @@
+${joynr.generator.config.cmake.path}

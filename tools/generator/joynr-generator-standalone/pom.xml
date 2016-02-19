@@ -42,6 +42,7 @@
 
 	<properties>
 		<joynr.generator.standalone.jar>${project.build.directory}/joynr-generator-standalone-${project.version}.jar</joynr.generator.standalone.jar>
+		<joynr.generator.config.cmake.path>${project.build.directory}/scripts</joynr.generator.config.cmake.path>
 	</properties>
 	<build>
 		<resources>
@@ -207,7 +208,31 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>install-cmake-user-package-registry</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${user.home}/.cmake/packages/JoynrGenerator</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/scripts</directory>
+									<includes>
+										<include>cmake-registry-path-to-JoynrGeneratorConfig.cmake</include>
+									</includes>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+							<overwrite>true</overwrite>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
