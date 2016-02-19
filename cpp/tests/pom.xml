@@ -83,16 +83,6 @@
 							<model>${basedir}/../../basemodel/src/test/franca</model>
 						</configuration>
 					</execution>
-					<execution>
-						<id>generate-cpp-test-classes</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>${basedir}/model</model>
-						</configuration>
-					</execution>
 				</executions>
 				<dependencies>
 					<dependency>
