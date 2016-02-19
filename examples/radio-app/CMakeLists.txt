@@ -22,11 +22,18 @@ option(
 )
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
+option(
+    GENERATE_SOURCES
+    "Generate source files from Franca model?"
+    OFF
+)
+message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
 find_package(Joynr 0.16.0 REQUIRED)
+message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_DBUS_INCLUDE_DIRS=${Joynr_LIB_DBUS_INCLUDE_DIRS}")
@@ -38,6 +45,17 @@ message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}"
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
+
+if(${GENERATE_SOURCES})
+    find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
+    message(STATUS "variable JoynrGenerator_FOUND=${JoynrGenerator_FOUND}")
+    message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
+    JoynrGenerator(
+        OUTPUTPATH ${CMAKE_SOURCE_DIR}/src/main/generated-cpp
+        MODELPATH ${CMAKE_SOURCE_DIR}/src/main/model/radio.fidl
+        GENERATION_LANGUAGE "cpp"
+    )
+endif(${GENERATE_SOURCES})
 
 ######## Add Boost ########
 
