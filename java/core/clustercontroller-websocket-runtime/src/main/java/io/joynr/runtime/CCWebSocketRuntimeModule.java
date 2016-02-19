@@ -21,7 +21,6 @@ package io.joynr.runtime;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import io.joynr.messaging.http.HttpGlobalAddressFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
@@ -50,7 +49,6 @@ public class CCWebSocketRuntimeModule extends ClusterControllerRuntimeModule {
         messagingStubFactory.addBinding(WebSocketClientAddress.class).to(WebSocketClientMessagingStubFactory.class);
         messageSerializerFactory.addBinding(WebSocketClientAddress.class)
                                 .to(WebSocketClientMessageSerializerFactory.class);
-        globalAddresses.addBinding().to(HttpGlobalAddressFactory.class);
 
     }
 
