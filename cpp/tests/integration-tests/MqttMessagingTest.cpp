@@ -43,7 +43,7 @@ public:
                         messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
-        messagingStubFactory->registerStubFactory(new MqttMessagingStubFactory(mockMessageSender, senderChannelId));
+        messagingStubFactory->registerStubFactory(std::make_unique<MqttMessagingStubFactory>(mockMessageSender, senderChannelId));
     }
 
     void WaitXTimes(std::uint64_t x)

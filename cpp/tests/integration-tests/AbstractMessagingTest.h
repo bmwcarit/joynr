@@ -78,7 +78,7 @@ public:
         messagingStubFactory(new MessagingStubFactory()),
         messageRouter(new MessageRouter(messagingStubFactory, nullptr))
     {
-        messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
+        messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 
         qos.setTtl(10000);
     }

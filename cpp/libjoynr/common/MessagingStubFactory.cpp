@@ -23,15 +23,6 @@
 namespace joynr
 {
 
-MessagingStubFactory::~MessagingStubFactory()
-{
-    while (!factoryList.empty()) {
-        auto it = factoryList.begin();
-        delete *it;
-        factoryList.erase(it);
-    }
-}
-
 MessagingStubFactory::MessagingStubFactory()
         : address2MessagingStubDirectory("MessagingStubFactory-MessagingStubDirectory"),
           factoryList(),
@@ -47,7 +38,7 @@ std::shared_ptr<IMessaging> MessagingStubFactory::create(
 
         if (!address2MessagingStubDirectory.contains(destinationAddress)) {
             // search for the corresponding factory
-            for (std::vector<IMiddlewareMessagingStubFactory*>::iterator it =
+            for (std::vector<std::unique_ptr<IMiddlewareMessagingStubFactory>>::iterator it =
                          this->factoryList.begin();
                  it != factoryList.end();
                  ++it) {
@@ -74,9 +65,10 @@ bool MessagingStubFactory::contains(const joynr::system::RoutingTypes::Address& 
     return address2MessagingStubDirectory.contains(destinationAddress);
 }
 
-void MessagingStubFactory::registerStubFactory(IMiddlewareMessagingStubFactory* factory)
+void MessagingStubFactory::registerStubFactory(
+        std::unique_ptr<IMiddlewareMessagingStubFactory> factory)
 {
-    this->factoryList.push_back(factory);
+    this->factoryList.push_back(std::move(factory));
 }
 
 } // namespace joynr

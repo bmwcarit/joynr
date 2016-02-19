@@ -174,9 +174,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // create the messaging stub factory
     MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-    messagingStubFactory->registerStubFactory(new DbusMessagingStubFactory());
+    messagingStubFactory->registerStubFactory(std::make_unique<DbusMessagingStubFactory>());
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-    messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
+    messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
     // init message router
     messageRouter = std::shared_ptr<MessageRouter>(
             new MessageRouter(messagingStubFactory, securityManager));
@@ -264,13 +264,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     }
 
     // setup CC WebSocket interface
-    WebSocketMessagingStubFactory* wsMessagingStubFactory = new WebSocketMessagingStubFactory();
-    messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
+    auto wsMessagingStubFactory = std::make_unique<WebSocketMessagingStubFactory>();
     system::RoutingTypes::WebSocketAddress wsAddress =
             wsSettings.createClusterControllerMessagingAddress();
-
     wsCcMessagingSkeleton =
             new WebSocketCcMessagingSkeleton(*messageRouter, *wsMessagingStubFactory, wsAddress);
+    messagingStubFactory->registerStubFactory(std::move(wsMessagingStubFactory));
+
     /* LibJoynr */
     assert(messageRouter);
     joynrMessageSender = new JoynrMessageSender(messageRouter);
@@ -325,7 +325,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         }
 
         messagingStubFactory->registerStubFactory(
-                new HttpMessagingStubFactory(httpMessageSender, httpChannelId));
+                std::make_unique<HttpMessagingStubFactory>(httpMessageSender, httpChannelId));
     }
 
     /**
@@ -371,7 +371,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         }
 
         messagingStubFactory->registerStubFactory(
-                new MqttMessagingStubFactory(mqttMessageSender, mqttChannelId));
+                std::make_unique<MqttMessagingStubFactory>(mqttMessageSender, mqttChannelId));
     }
 
     // joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);

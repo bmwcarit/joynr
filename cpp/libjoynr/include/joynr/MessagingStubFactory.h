@@ -50,7 +50,6 @@ class MessagingStubFactory : public IMessagingStubFactory
 {
 
 public:
-    ~MessagingStubFactory() override;
     // MessagingStubFactory is created without the necessary skeletons.
     // Those Skeletons must be registered before the MessagingStubFactory is used.
     MessagingStubFactory();
@@ -60,13 +59,13 @@ public:
     void remove(const joynr::system::RoutingTypes::Address& destinationAddress) override;
     bool contains(const joynr::system::RoutingTypes::Address& destinationAddress) override;
 
-    void registerStubFactory(IMiddlewareMessagingStubFactory* factory);
+    void registerStubFactory(std::unique_ptr<IMiddlewareMessagingStubFactory> factory);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
 
     Directory<joynr::system::RoutingTypes::Address, IMessaging> address2MessagingStubDirectory;
-    std::vector<IMiddlewareMessagingStubFactory*> factoryList;
+    std::vector<std::unique_ptr<IMiddlewareMessagingStubFactory>> factoryList;
     std::mutex mutex;
 };
 

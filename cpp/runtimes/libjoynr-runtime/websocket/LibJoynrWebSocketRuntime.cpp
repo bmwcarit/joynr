@@ -60,10 +60,10 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
 
     websocket->connect(*ccMessagingAddress);
 
-    WebSocketMessagingStubFactory* factory = new WebSocketMessagingStubFactory();
+    auto factory = std::make_unique<WebSocketMessagingStubFactory>();
     factory->addServer(*ccMessagingAddress, websocket);
 
-    LibJoynrRuntime::init(factory, libjoynrMessagingAddress, ccMessagingAddress);
+    LibJoynrRuntime::init(std::move(factory), libjoynrMessagingAddress, ccMessagingAddress);
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
