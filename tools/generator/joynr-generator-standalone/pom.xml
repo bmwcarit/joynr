@@ -49,6 +49,7 @@
 			<resource>
 				<directory>src/main/scripts</directory>
 				<includes>
+					<include>joynr-generator</include>
 					<include>JoynrGeneratorConfig.cmake</include>
 					<include>JoynrGeneratorConfigVersion.cmake</include>
 				</includes>
