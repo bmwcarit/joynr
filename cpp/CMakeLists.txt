@@ -64,6 +64,18 @@ message(STATUS "JOYNR_INSTALL_FULL_SYSCONFDIR = ${JOYNR_INSTALL_FULL_SYSCONFDIR}
 message(STATUS "-----------------------------------------------------")
 
 option(
+    GENERATE_SOURCES
+    "Generate source files from Franca model?"
+    OFF
+)
+message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
+if(${GENERATE_SOURCES})
+    find_package(JoynrGenerator ${JOYNR_VERSION} EXACT REQUIRED)
+    message(STATUS "variable JoynrGenerator_FOUND=${JoynrGenerator_FOUND}")
+    message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
+endif(${GENERATE_SOURCES})
+
+option(
     USE_PLATFORM_DEPENDENCIES
     "Resolve all dependencies (link libraries) from the system?"
     OFF

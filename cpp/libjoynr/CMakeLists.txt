@@ -27,6 +27,14 @@ endif(USE_PLATFORM_WEBSOCKETPP)
 get_target_property(JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY JoynrJsonSerializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
+if(${GENERATE_SOURCES})
+    JoynrGenerator(
+        OUTPUTPATH "${CMAKE_CURRENT_SOURCE_DIR}"
+        MODELPATH "${CMAKE_CURRENT_SOURCE_DIR}/../../basemodel/src/main/franca"
+        GENERATION_LANGUAGE "cpp"
+    )
+endif(${GENERATE_SOURCES})
+
 set(
     JoynrLib_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"

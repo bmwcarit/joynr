@@ -320,6 +320,14 @@ endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 ### set up stuff common for all test targets ##################################
 
+if(${GENERATE_SOURCES})
+    JoynrGenerator(
+        OUTPUTPATH "${CMAKE_CURRENT_SOURCE_DIR}/gen"
+        MODELPATH "${CMAKE_CURRENT_SOURCE_DIR}/../../basemodel/src/test/franca"
+        GENERATION_LANGUAGE "cpp"
+    )
+endif(${GENERATE_SOURCES})
+
 include(AddTest.cmake)
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
