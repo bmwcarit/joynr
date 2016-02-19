@@ -66,7 +66,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
             MqttClient mqttClient = new MqttClient(ownAddress.getBrokerUri(),
                                                    ownAddress.getTopic(),
                                                    new MemoryPersistence());
-            pahoClient = new MqttPahoClient(mqttClient, new MqttAddress(ownAddress), reconnectSleepMs);
+            pahoClient = new MqttPahoClient(mqttClient, reconnectSleepMs);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
         }

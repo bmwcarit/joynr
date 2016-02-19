@@ -95,6 +95,7 @@ public class MqttPahoClientTest {
 
         client = mqttClientFactory.create();
         client.start();
+        client.subscribe(ownTopic.getTopic());
     }
 
     @After
