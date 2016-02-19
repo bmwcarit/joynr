@@ -40,7 +40,21 @@
 		</profile>
 	</profiles>
 
+	<properties>
+		<joynr.generator.standalone.jar>${project.build.directory}/joynr-generator-standalone-${project.version}.jar</joynr.generator.standalone.jar>
+	</properties>
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/scripts</directory>
+				<includes>
+					<include>JoynrGeneratorConfig.cmake</include>
+					<include>JoynrGeneratorConfigVersion.cmake</include>
+				</includes>
+				<filtering>true</filtering>
+				<targetPath>${project.build.directory}/scripts</targetPath>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
