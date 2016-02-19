@@ -28,6 +28,10 @@ public class ExecutorCL {
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException,
                                           IllegalAccessException {
 
+        if (args.length == 1 && (args[0].equals("-help") || args[0].equals("-?"))) {
+            System.out.println(InvocationArguments.usageString());
+            System.exit(0);
+        }
         // Parse the command line arguments
         InvocationArguments invocationArguments = new InvocationArguments(args);
         Executor executor = new Executor(invocationArguments);

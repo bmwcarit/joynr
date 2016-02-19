@@ -75,7 +75,7 @@ public class InvocationArguments {
         checkArguments(true);
     }
 
-    private String getLanguages(String seperator) {
+    private static String getLanguages(String seperator) {
         assert (seperator != null);
         StringBuffer appender = new StringBuffer();
         for (String language : languages.keySet()) {
@@ -94,36 +94,42 @@ public class InvocationArguments {
         result += ("------------------------------------------------------------------------\n");
         result += ("Generator could not be started due to wrong parameter settings!\n");
         result += ("------------------------------------------------------------------------\n");
-        result += ("Start the application with the following parameters: \n");
-        result += ("      Required: \n");
-        result += ("       " + dumpModelPathDefinition() + "\n");
-        result += ("       " + dumpOutputPathDefinition() + "\n");
-        result += ("      One of:\n");
-        result += ("       " + dumpRootGeneratorDefinition() + " OR\n");
-        result += ("       " + dumpGenerationLanguageDefinition() + "\n");
-        result += ("      Optional: \n");
-        result += ("       -templatesDir <folder name of templates directory>\n");
-        result += ("       -templatesEncoding <encoding of templates>\n");
-        result += ("       -generationId <name of what is being generated>\n");
-        result += ("      Optional, C++ only: \n");
-        result += ("       -outputHeaderPath <path to directory containing header files>\n");
-        result += ("       -includePrefix <prefix to use in include statements>\n");
+        result += usageString();
         return result;
     }
 
-    private String dumpOutputPathDefinition() {
+    public static String usageString() {
+        StringBuilder usageString = new StringBuilder();
+        usageString.append("Start the application with the following parameters: \n");
+        usageString.append("      Required: \n");
+        usageString.append("       " + dumpModelPathDefinition() + "\n");
+        usageString.append("       " + dumpOutputPathDefinition() + "\n");
+        usageString.append("      One of:\n");
+        usageString.append("       " + dumpRootGeneratorDefinition() + " OR\n");
+        usageString.append("       " + dumpGenerationLanguageDefinition() + "\n");
+        usageString.append("      Optional: \n");
+        usageString.append("       -templatesDir <folder name of templates directory>\n");
+        usageString.append("       -templatesEncoding <encoding of templates>\n");
+        usageString.append("       -generationId <name of what is being generated>\n");
+        usageString.append("      Optional, C++ only: \n");
+        usageString.append("       -outputHeaderPath <path to directory containing header files>\n");
+        usageString.append("       -includePrefix <prefix to use in include statements>\n");
+        return usageString.toString();
+    }
+
+    private static String dumpOutputPathDefinition() {
         return "-outputPath <path to output directory>";
     }
 
-    private String dumpModelPathDefinition() {
+    private static String dumpModelPathDefinition() {
         return "-modelPath <path to model>";
     }
 
-    private String dumpRootGeneratorDefinition() {
+    private static String dumpRootGeneratorDefinition() {
         return "-rootGenerator <full name of template root>";
     }
 
-    private String dumpGenerationLanguageDefinition() {
+    private static String dumpGenerationLanguageDefinition() {
         return "-generationLanguage <" + getLanguages("|") + ">";
     }
 
