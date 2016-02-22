@@ -1,3 +1,16 @@
+#joynr 0.15.1
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fix segmentation fault in cluster-controller when a libjoynr disconnects.
+* **[C++]** Define proper import targets for Mosquitto in the joynr package configuration.
+* **[Java]** Use correct MQTT topics to fix incompatibilities with joynr C++.
+* **[Java]** Improved stability in websocket implementation.
+
 #joynr 0.15.0
 
 ##Notes

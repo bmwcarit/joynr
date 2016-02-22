@@ -19,54 +19,40 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import io.joynr.exceptions.JoynrIllegalStateException;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
+import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
-import org.eclipse.jetty.websocket.api.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+@Singleton
+public class WebSocketClientMessagingStubFactory extends
+        AbstractMiddlewareMessagingStubFactory<WebSocketMessagingStub, WebSocketClientAddress> {
 
-/**
- * Factory for messaging stubs used on cluster controller side to create a connection to registered clients
- */
-public class WebSocketClientMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<CCWebSocketMessagingStub, WebSocketClientAddress> {
-
-    private Logger logger = LoggerFactory.getLogger(WebSocketClientMessagingStubFactory.class);
-    private Map<String, Session> sessionMap = new HashMap<>();
+    private ObjectMapper objectMapper;
+    private WebSocketEndpointFactory webSocketEndpointFactory;
+    private WebSocketAddress serverAddress;
 
     @Inject
-    ObjectMapper objectMapper;
+    public WebSocketClientMessagingStubFactory(@Named(WebsocketModule.WEBSOCKET_SERVER_ADDRESS) WebSocketAddress serverAddress,
+                                               WebSocketEndpointFactory webSocketEndpointFactory,
+                                               ObjectMapper objectMapper) {
+        this.serverAddress = serverAddress;
+        this.webSocketEndpointFactory = webSocketEndpointFactory;
+        this.objectMapper = objectMapper;
+    }
 
     @Override
-    protected CCWebSocketMessagingStub createInternal(WebSocketClientAddress address) {
-        if (sessionMap.containsKey(address.getId())) {
-            return new CCWebSocketMessagingStub(sessionMap.get(address.getId()), objectMapper);
-        } else {
-            throw new JoynrIllegalStateException("No session available for WebSocketClientAddress: " + address);
-        }
+    protected WebSocketMessagingStub createInternal(WebSocketClientAddress address) {
+        JoynrWebSocketEndpoint webSocketServer = webSocketEndpointFactory.create(serverAddress);
+        return new WebSocketMessagingStub(address, webSocketServer, objectMapper);
     }
 
     @Override
     public void shutdown() {
-        for (Session session : sessionMap.values()) {
-            try {
-                session.disconnect();
-            } catch (IOException e) {
-                logger.error("Error: ", e);
-            }
-        }
-
-    }
-
-
-    public void addSession(WebSocketClientAddress webSocketClientAddress, Session session) {
-        sessionMap.put(webSocketClientAddress.getId(), session);
+        // Nothing to do. Skeleton shuts down the client
     }
 }

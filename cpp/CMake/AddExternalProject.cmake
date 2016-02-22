@@ -41,5 +41,3 @@ function(AddExternalProject NAME)
     ExternalProject_Add(${NAME} "${ALL_ARGS}")
 
 endfunction(AddExternalProject)
-
-

@@ -36,14 +36,18 @@ public class WebsocketModule extends AbstractModule {
     public static final String PROPERTY_WEBSOCKET_MESSAGING_PORT = "joynr.messaging.cc.port";
     public static final String PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL = "joynr.messaging.cc.protocol";
     public static final String PROPERTY_WEBSOCKET_MESSAGING_PATH = "joynr.messaging.cc.path";
+    public static final String PROPERTY_WEBSOCKET_MESSAGING_RECONNECT_DELAY = "joynr.messaging.cc.reconnectdelay";
+    public static final String PROPERTY_WEBSOCKET_MESSAGING_IDLE_TIMEOUT = "joynr.messaging.cc.idletimeout";
+
+    public static final String WEBSOCKET_CLIENT_ADDRESS = "websocket_client_address";
+    public static final String WEBSOCKET_SERVER_ADDRESS = "websocket_server_address";
 
     @Override
     protected void configure() {
-
     }
 
     @Provides
-    @Named(PROPERTY_WEBSOCKET_MESSAGING_URL_ADDRESS)
+    @Named(WEBSOCKET_SERVER_ADDRESS)
     public WebSocketAddress provideWebsocketUrlWebSocketAddress(@Named(PROPERTY_WEBSOCKET_MESSAGING_HOST) String host,
                                                                 @Named(PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL) String protocol,
                                                                 @Named(PROPERTY_WEBSOCKET_MESSAGING_PORT) int port,

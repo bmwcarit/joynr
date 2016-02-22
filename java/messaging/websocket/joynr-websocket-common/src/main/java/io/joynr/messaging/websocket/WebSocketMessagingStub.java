@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,72 +19,48 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.joynr.exceptions.JoynrMessageNotSentException;
+
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import joynr.JoynrMessage;
-import org.eclipse.jetty.websocket.api.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import joynr.system.RoutingTypes.Address;
 
-public abstract class WebSocketMessagingStub implements IMessaging {
+public class WebSocketMessagingStub implements IMessaging {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingStub.class);
 
-    private ObjectMapper objectMapper;
+    protected ObjectMapper objectMapper;
+    private JoynrWebSocketEndpoint webSocketEndpoint;
 
-    protected Future<Session> sessionFuture = null;
+    private Address toAddress;
 
-    public WebSocketMessagingStub(ObjectMapper objectMapper) {
+    public WebSocketMessagingStub(Address toAddress, JoynrWebSocketEndpoint webSocketEndpoint, ObjectMapper objectMapper) {
+        this.toAddress = toAddress;
+        this.webSocketEndpoint = webSocketEndpoint;
         this.objectMapper = objectMapper;
     }
-
-    protected abstract void initConnection();
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         logger.debug("WebSocketMessagingStub.transmit with message " + message);
         long timeout = message.getExpiryDate() - System.currentTimeMillis();
+        String serializedMessage;
         try {
-            sendString(objectMapper.writeValueAsString(message), timeout);
-        } catch (IOException error) {
+            serializedMessage = objectMapper.writeValueAsString(message);
+            webSocketEndpoint.writeText(toAddress, serializedMessage, timeout, TimeUnit.MILLISECONDS, failureAction);
+        } catch (JsonProcessingException error) {
             failureAction.execute(error);
         }
     }
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
-        try {
-            sendString(serializedMessage, 120000);
-        } catch (IOException error) {
-            failureAction.execute(error);
-        }
+        webSocketEndpoint.writeText(toAddress, serializedMessage, 30, TimeUnit.SECONDS, failureAction);
     }
-
-    protected synchronized void sendString(String string, long timeout) throws IOException {
-        Session session = null;
-        if (sessionFuture == null) {
-            initConnection();
-        }
-
-        if (sessionFuture != null) {
-            try {
-                session = sessionFuture.get(timeout, TimeUnit.MILLISECONDS);
-                session.getRemote().sendString(string);
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                throw new JoynrMessageNotSentException("Websocket transmit error: " + e);
-            }
-        }
-    }
-
-    public void shutdown() throws ExecutionException, InterruptedException {
-        Session session = sessionFuture.get();
-        session.close();
-    }
-
 }
