@@ -297,8 +297,8 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     }
 
     @Override
-    public OnChangeWithKeepAliveSubscriptionQos setExpiryDate(long expiryDateMs) {
-        return (OnChangeWithKeepAliveSubscriptionQos) super.setExpiryDate(expiryDateMs);
+    public OnChangeWithKeepAliveSubscriptionQos setExpiryDateMs(long expiryDateMs) {
+        return (OnChangeWithKeepAliveSubscriptionQos) super.setExpiryDateMs(expiryDateMs);
     }
 
     @Override

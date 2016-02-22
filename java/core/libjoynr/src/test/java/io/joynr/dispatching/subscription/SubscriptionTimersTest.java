@@ -139,7 +139,7 @@ public class SubscriptionTimersTest {
 
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
         qos.setPublicationTtl(period);
-        qos.setExpiryDate(expiryDate);
+        qos.setExpiryDateMs(expiryDate);
         // alert 10 ms after a publication should have been received
         qos.setAlertAfterInterval(alertAfterInterval);
         qos.setPublicationTtl(1000);

@@ -36,7 +36,7 @@ public class SubscriptionQosTest {
         long expiryDateMs = System.currentTimeMillis() + 100000;
         long publicationTtlMs = 2000;
         long minIntervalMs = 100;
-        OnChangeSubscriptionQos onChangeSubscriptionQos = new OnChangeSubscriptionQos().setExpiryDate(expiryDateMs)
+        OnChangeSubscriptionQos onChangeSubscriptionQos = new OnChangeSubscriptionQos().setExpiryDateMs(expiryDateMs)
                                                                                        .setPublicationTtl(publicationTtlMs)
                                                                                        .setMinInterval(minIntervalMs);
         assertEquals(expiryDateMs, onChangeSubscriptionQos.getExpiryDate());
@@ -62,7 +62,7 @@ public class SubscriptionQosTest {
         long publicationTtlMs = 2000;
         long periodMs = 800;
         long alertAfterIntervalMs = 3000;
-        PeriodicSubscriptionQos periodicSubscriptionQos = new PeriodicSubscriptionQos().setExpiryDate(expiryDateMs)
+        PeriodicSubscriptionQos periodicSubscriptionQos = new PeriodicSubscriptionQos().setExpiryDateMs(expiryDateMs)
                                                                                        .setPublicationTtl(publicationTtlMs)
                                                                                        .setPeriod(periodMs)
                                                                                        .setAlertAfterInterval(alertAfterIntervalMs);
@@ -91,7 +91,7 @@ public class SubscriptionQosTest {
         long alertAfterIntervalMs = 4000;
         long maxIntervalMs = 3000;
         long minIntervalMs = 100;
-        OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setExpiryDate(expiryDateMs)
+        OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setExpiryDateMs(expiryDateMs)
                                                                                                                               .setPublicationTtl(publicationTtlMs)
                                                                                                                               .setMaxInterval(maxIntervalMs)
                                                                                                                               .setMinInterval(minIntervalMs)

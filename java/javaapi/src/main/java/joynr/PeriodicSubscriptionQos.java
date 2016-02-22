@@ -253,8 +253,8 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     }
 
     @Override
-    public PeriodicSubscriptionQos setExpiryDate(long expiryDateMs) {
-        return (PeriodicSubscriptionQos) super.setExpiryDate(expiryDateMs);
+    public PeriodicSubscriptionQos setExpiryDateMs(long expiryDateMs) {
+        return (PeriodicSubscriptionQos) super.setExpiryDateMs(expiryDateMs);
     }
 
     @Override

@@ -104,12 +104,12 @@ public abstract class SubscriptionQos implements JoynrType {
      *            to live, it will be deleted from the system. This value is
      *            provided in milliseconds.
      *
-     * @see #setExpiryDate(long)
+     * @see #setExpiryDateMs(long)
      * @see #setPublicationTtl(long)
      */
     @Deprecated
     public SubscriptionQos(long expiryDateMs, long publicationTtlMs) {
-        setExpiryDate(expiryDateMs);
+        setExpiryDateMs(expiryDateMs);
         setPublicationTtl(publicationTtlMs);
     }
 
@@ -128,6 +128,26 @@ public abstract class SubscriptionQos implements JoynrType {
     }
 
     /**
+     * @deprecated Use setExpiryDateMs instead
+     *
+     * Set the end date of the subscription, in milliseconds (since 1970-01-01T00:00:00.000 ).
+     * The publications will automatically expire at that date.
+     * <br>
+     * The provider will send notifications until the expiry date is reached.
+     * You will not receive any notifications (neither value notifications
+     * nor missed publication notifications) after this date.
+     * @param expiryDateMs
+     *            is the end date of the subscription. <br>
+     *            This value is provided in milliseconds (since 1970-01-01T00:00:00.000).
+     *            {@value #NO_EXPIRY_DATE} means NO_EXPIRY_DATE.
+     * @return the subscriptionQos (fluent interface)
+     */
+    @Deprecated
+    public SubscriptionQos setExpiryDate(final long expiryDateMs) {
+        return setExpiryDateMs(expiryDateMs);
+    }
+
+    /**
      * Set the end date of the subscription, in milliseconds (since 1970-01-01T00:00:00.000 ).
      * The publications will automatically expire at that date.
      * <br>
@@ -141,7 +161,7 @@ public abstract class SubscriptionQos implements JoynrType {
      *            {@value #NO_EXPIRY_DATE} means NO_EXPIRY_DATE.
      * @return the subscriptionQos (fluent interface)
      */
-    public SubscriptionQos setExpiryDate(final long expiryDateMs) {
+    public SubscriptionQos setExpiryDateMs(final long expiryDateMs) {
         long now = System.currentTimeMillis();
         if (expiryDateMs <= now && expiryDateMs != NO_EXPIRY_DATE) {
             throw new IllegalArgumentException("Subscription ExpiryDate " + expiryDateMs + " in the past. Now: " + now);
@@ -162,7 +182,7 @@ public abstract class SubscriptionQos implements JoynrType {
      */
     public SubscriptionQos setValidityMs(final long validityMs) {
         if (validityMs == -1) {
-            setExpiryDate(NO_EXPIRY_DATE);
+            setExpiryDateMs(NO_EXPIRY_DATE);
         } else {
             long now = System.currentTimeMillis();
             this.expiryDateMs = now + validityMs;
