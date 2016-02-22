@@ -10,10 +10,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(
+    GENERATE_SOURCES
+    "Generate source files from Franca model?"
+    OFF
+)
+message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
+
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
 find_package(Joynr 0.16.0 REQUIRED)
+message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_LIBRARIES=${Joynr_LIB_COMMON_LIBRARIES}")
@@ -21,6 +29,16 @@ message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}"
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 
+if(${GENERATE_SOURCES})
+    find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
+    message(STATUS "variable JoynrGenerator_FOUND=${JoynrGenerator_FOUND}")
+    message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
+    JoynrGenerator(
+        OUTPUTPATH ${CMAKE_SOURCE_DIR}/src/main/generated-cpp
+        MODELPATH ${CMAKE_SOURCE_DIR}/src/main/model/SystemIntegrationTest.fidl
+        GENERATION_LANGUAGE "cpp"
+    )
+endif(${GENERATE_SOURCES})
 option(
     ENABLE_CLANG_FORMATTER
     "Use clang-formatter to format source code?"
