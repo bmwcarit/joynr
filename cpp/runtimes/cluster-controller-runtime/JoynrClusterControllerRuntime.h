@@ -31,6 +31,8 @@
 #include "joynr/Logger.h"
 #include "joynr/JoynrRuntime.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/MessagingSettings.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "joynr/RuntimeConfig.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -53,7 +55,6 @@ class SubscriptionManager;
 class ConnectorFactory;
 class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
-class MessagingSettings;
 class IDispatcher;
 class InProcessPublicationSender;
 class WebSocketCcMessagingSkeleton;
@@ -62,7 +63,6 @@ class HttpMessagingSkeleton;
 class MqttMessagingSkeleton;
 class IPlatformSecurityManager;
 class Settings;
-class LibjoynrSettings;
 class JoynrMessageSender;
 class IMessaging;
 
@@ -141,9 +141,8 @@ protected:
     ConnectorFactory* connectorFactory;
     // take ownership, so a pointer is used
     Settings* settings;
-    // use pointer for settings object to check the configuration before initialization
-    MessagingSettings* messagingSettings;
-    LibjoynrSettings* libjoynrSettings;
+    MessagingSettings messagingSettings;
+    LibjoynrSettings libjoynrSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     DbusSettings* dbusSettings;
