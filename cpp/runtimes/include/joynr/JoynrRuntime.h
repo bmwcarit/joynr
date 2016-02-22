@@ -52,10 +52,7 @@ public:
     /**
      * @brief Destroys a JoynrRuntime instance
      */
-    virtual ~JoynrRuntime()
-    {
-        delete discoveryProxy;
-    }
+    virtual ~JoynrRuntime() = default;
 
     /**
      * @brief Registers a provider with the joynr communication framework.
@@ -175,7 +172,7 @@ protected:
     /** @brief MessageRouter instance */
     std::shared_ptr<MessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */
-    LocalDiscoveryAggregator* discoveryProxy;
+    std::unique_ptr<LocalDiscoveryAggregator> discoveryProxy;
     /**
      * @brief Publication manager receives subscription requests and prepares publications
      * which are send back to the subscription manager.

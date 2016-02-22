@@ -433,7 +433,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             std::shared_ptr<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     dispatcherAddress = libjoynrMessagingAddress;
-    discoveryProxy = new LocalDiscoveryAggregator(
+    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
             *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
 
     std::string discoveryProviderParticipantId(
