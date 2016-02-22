@@ -41,7 +41,6 @@ namespace joynr
 
 LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
         : JoynrRuntime(*settings),
-          connectorFactory(nullptr),
           subscriptionManager(nullptr),
           inProcessPublicationSender(nullptr),
           inProcessConnectorFactory(nullptr),
@@ -109,10 +108,9 @@ void LibJoynrRuntime::init(
     joynrMessagingConnectorFactory =
             new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
 
-    connectorFactory =
-            new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
-
-    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, nullptr);
+    auto connectorFactory = std::make_unique<ConnectorFactory>(
+            inProcessConnectorFactory, joynrMessagingConnectorFactory);
+    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, std::move(connectorFactory), nullptr);
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();

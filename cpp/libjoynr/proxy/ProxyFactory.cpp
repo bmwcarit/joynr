@@ -24,17 +24,12 @@ namespace joynr
 
 ProxyFactory::ProxyFactory(
         std::shared_ptr<joynr::system::RoutingTypes::Address> messagingEndpointAddress,
-        ConnectorFactory* connectorFactory,
+        std::unique_ptr<ConnectorFactory> connectorFactory,
         IClientCache* cache)
         : messagingEndpointAddress(messagingEndpointAddress),
-          connectorFactory(connectorFactory),
+          connectorFactory(std::move(connectorFactory)),
           cache(cache)
 {
-}
-
-ProxyFactory::~ProxyFactory()
-{
-    delete connectorFactory;
 }
 
 } // namespace joynr

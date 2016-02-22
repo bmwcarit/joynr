@@ -420,10 +420,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     joynrMessagingConnectorFactory =
             new JoynrMessagingConnectorFactory(joynrMessageSender, subscriptionManager);
 
-    connectorFactory =
-            createConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
-
-    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, &cache);
+    auto connectorFactory = std::make_unique<ConnectorFactory>(
+            inProcessConnectorFactory, joynrMessagingConnectorFactory);
+    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, std::move(connectorFactory), &cache);
 
     dispatcherList.push_back(joynrDispatcher);
     dispatcherList.push_back(inProcessDispatcher);
@@ -511,13 +510,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         mqttMessageReceiver->init(channelUrlDirectory);
         mqttMessageSender->init(channelUrlDirectory, *messagingSettings);
     }
-}
-
-ConnectorFactory* JoynrClusterControllerRuntime::createConnectorFactory(
-        InProcessConnectorFactory* inProcessConnectorFactory,
-        JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory)
-{
-    return new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
 }
 
 void JoynrClusterControllerRuntime::registerRoutingProvider()

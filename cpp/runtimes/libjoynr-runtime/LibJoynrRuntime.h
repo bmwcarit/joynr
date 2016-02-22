@@ -58,7 +58,6 @@ public:
     void unregisterProvider(const std::string& participantId) override;
 
 protected:
-    ConnectorFactory* connectorFactory;
     SubscriptionManager* subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     InProcessConnectorFactory* inProcessConnectorFactory;

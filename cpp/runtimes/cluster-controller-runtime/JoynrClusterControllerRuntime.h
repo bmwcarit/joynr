@@ -101,9 +101,6 @@ public:
 
 protected:
     void initializeAllDependencies();
-    virtual ConnectorFactory* createConnectorFactory(
-            InProcessConnectorFactory* inProcessConnectorFactory,
-            JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory);
 
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;

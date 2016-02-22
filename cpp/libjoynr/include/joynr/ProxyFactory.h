@@ -39,23 +39,25 @@ class JOYNR_EXPORT ProxyFactory
 {
 public:
     ProxyFactory(std::shared_ptr<joynr::system::RoutingTypes::Address> messagingEndpointAddress,
-                 ConnectorFactory* connectorFactory,
+                 std::unique_ptr<ConnectorFactory> connectorFactory,
                  IClientCache* cache);
-
-    ~ProxyFactory();
 
     // Create a proxy of type T
     template <class T>
     T* createProxy(const std::string& domain, const MessagingQos& qosSettings, bool cached)
     {
-        return new T(
-                messagingEndpointAddress, connectorFactory, cache, domain, qosSettings, cached);
+        return new T(messagingEndpointAddress,
+                     connectorFactory.get(),
+                     cache,
+                     domain,
+                     qosSettings,
+                     cached);
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyFactory);
     std::shared_ptr<joynr::system::RoutingTypes::Address> messagingEndpointAddress;
-    ConnectorFactory* connectorFactory;
+    std::unique_ptr<ConnectorFactory> connectorFactory;
     IClientCache* cache;
 };
 
