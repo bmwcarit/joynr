@@ -33,9 +33,11 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Settings.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
+#include "libjoynr/websocket/WebSocketSettings.h"
 
 using namespace ::testing;
 
@@ -111,6 +113,8 @@ class WebSocketMessagingStubTest : public testing::TestWithParam<std::size_t>
 
 public:
     WebSocketMessagingStubTest() :
+        settings(),
+        wsSettings(settings),
         server(),
         serverAddress(),
         webSocket(nullptr)
@@ -130,7 +134,7 @@ public:
         );
         JOYNR_LOG_DEBUG(logger, "server URL: {}",serverAddress.toString());
         joynr::Semaphore connected(0);
-        webSocket = new joynr::WebSocketPpClient();
+        webSocket = new joynr::WebSocketPpClient(wsSettings);
         webSocket->registerConnectCallback([&connected](){connected.notify();});
         webSocket->connect(serverAddress);
 
@@ -141,6 +145,8 @@ public:
 
 protected:
     ADD_LOGGER(WebSocketMessagingStubTest);
+    joynr::Settings settings;
+    joynr::WebSocketSettings wsSettings;
     WebSocketServer server;
     joynr::system::RoutingTypes::WebSocketAddress serverAddress;
     joynr::WebSocketPpClient* webSocket;

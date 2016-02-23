@@ -21,23 +21,18 @@
 
 #include <thread>
 #include <atomic>
+#include <chrono>
 
 #include <websocketpp/config/asio_client.hpp>
 #include <websocketpp/client.hpp>
 
 #include "joynr/Logger.h"
 #include "joynr/IWebSocketSendInterface.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "libjoynr/websocket/WebSocketSettings.h"
 
 namespace joynr
 {
-
-namespace system
-{
-namespace RoutingTypes
-{
-class WebSocketAddress;
-} // namespace RoutingTypes
-} // namespace systeme
 
 class WebSocketPpClient : public IWebSocketSendInterface
 {
@@ -49,11 +44,10 @@ class WebSocketPpClient : public IWebSocketSendInterface
     enum class State { Disconnected, Disconnecting, Connecting, Connected };
 
 public:
-public:
-    WebSocketPpClient();
+    WebSocketPpClient(const WebSocketSettings& wsSettings);
     ~WebSocketPpClient();
 
-    void connect(const system::RoutingTypes::WebSocketAddress& address);
+    void connect(system::RoutingTypes::WebSocketAddress address);
     void close();
 
     void registerConnectCallback(std::function<void()> callback);
@@ -68,6 +62,8 @@ public:
     void sendBinaryMessage(const std::string& msg);
 
 private:
+    void reconnect();
+    void disconnect();
     void onConnectionOpened(ConnectionHandle hdl);
     void onConnectionClosed(ConnectionHandle hdl);
     void onMessageReceived(ConnectionHandle hdl, MessagePtr message);
@@ -76,12 +72,17 @@ private:
     Client endpoint;
     std::thread thread;
     ConnectionHandle connection;
+    std::atomic<bool> isRunning;
 
     std::atomic<State> state;
     std::function<void(const std::string&)> onTextMessageReceivedCallback;
     std::function<void(const std::string&)> onBinaryMessageReceived;
     std::function<void()> onConnectionOpenedCallback;
     std::function<void()> onConnectionClosedCallback;
+
+    // store address for reconnect
+    system::RoutingTypes::WebSocketAddress address;
+    std::chrono::milliseconds reconnectSleepTimeMs;
 
     ADD_LOGGER(WebSocketPpClient);
 };

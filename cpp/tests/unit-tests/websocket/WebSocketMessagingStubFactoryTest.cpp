@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,9 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsNullForUnknownClient) {
 
 TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
     WebSocketMessagingStubFactory factory;
-    MockWebSocketClient* clientWebsocket = new MockWebSocketClient();
+    Settings settings;
+    WebSocketSettings wsSettings(settings);
+    MockWebSocketClient* clientWebsocket = new MockWebSocketClient(wsSettings);
     QWebSocket* serverWebsocket = new QWebSocket();
     MockQWebSocketSendWrapper* wrapper = new MockQWebSocketSendWrapper(serverWebsocket);
 
@@ -98,7 +100,9 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
 
 TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
     WebSocketMessagingStubFactory factory;
-    MockWebSocketClient* websocket = new MockWebSocketClient();
+    Settings settings;
+    WebSocketSettings wsSettings(settings);
+    MockWebSocketClient* websocket = new MockWebSocketClient(wsSettings);
 
     factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
     EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
@@ -116,7 +120,9 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
 
 TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     WebSocketMessagingStubFactory factory;
-    WebSocketPpClient* websocket = new MockWebSocketClient();
+    Settings settings;
+    WebSocketSettings wsSettings(settings);
+    WebSocketPpClient* websocket = new MockWebSocketClient(wsSettings);
 
     factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);

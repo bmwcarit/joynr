@@ -22,8 +22,8 @@
 #include <functional>
 
 #include <websocketpp/uri.hpp>
+#include <websocketpp/error.hpp>
 
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketProtocol.h"
 
 namespace joynr
@@ -31,15 +31,18 @@ namespace joynr
 
 INIT_LOGGER(WebSocketPpClient);
 
-WebSocketPpClient::WebSocketPpClient()
+WebSocketPpClient::WebSocketPpClient(const WebSocketSettings& wsSettings)
         : endpoint(),
           thread(),
           connection(),
+          isRunning(true),
           state(State::Disconnected),
           onTextMessageReceivedCallback(),
           onBinaryMessageReceived(),
           onConnectionOpenedCallback(),
-          onConnectionClosedCallback()
+          onConnectionClosedCallback(),
+          address(),
+          reconnectSleepTimeMs(wsSettings.getReconnectSleepTimeMs())
 {
     endpoint.init_asio();
     endpoint.clear_access_channels(websocketpp::log::alevel::all);
@@ -55,9 +58,7 @@ WebSocketPpClient::WebSocketPpClient()
 
 WebSocketPpClient::~WebSocketPpClient()
 {
-    if (state == State::Connected) {
-        close();
-    }
+    close();
     if (thread.joinable()) {
         thread.join();
     }
@@ -78,7 +79,18 @@ bool WebSocketPpClient::isConnected() const
     return state == State::Connected;
 }
 
-void WebSocketPpClient::connect(const system::RoutingTypes::WebSocketAddress& address)
+void WebSocketPpClient::connect(system::RoutingTypes::WebSocketAddress address)
+{
+    this->address = std::move(address);
+
+    reconnect();
+
+    // start the worker thread
+    // this thread will finish when the connection is closed
+    thread = std::thread(&Client::run, &endpoint);
+}
+
+void WebSocketPpClient::reconnect()
 {
     bool secure = address.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS;
     assert(!secure && "SSL is not yet supported");
@@ -98,10 +110,6 @@ void WebSocketPpClient::connect(const system::RoutingTypes::WebSocketAddress& ad
 
     state = State::Connecting;
     endpoint.connect(connectionPtr);
-
-    // start the worker thread
-    // this thread will finish when the connection is closed
-    thread = std::thread(&Client::run, &endpoint);
 }
 
 void WebSocketPpClient::sendTextMessage(const std::string& msg)
@@ -118,8 +126,23 @@ void WebSocketPpClient::sendBinaryMessage(const std::string& msg)
 
 void WebSocketPpClient::close()
 {
-    state = State::Disconnecting;
-    endpoint.close(connection, websocketpp::close::status::normal, "");
+    isRunning = false;
+    if (state == State::Connected) {
+        disconnect();
+    }
+}
+
+void WebSocketPpClient::disconnect()
+{
+    websocketpp::lib::error_code websocketError;
+    endpoint.close(connection, websocketpp::close::status::normal, "", websocketError);
+    if (websocketError) {
+        if (websocketError != websocketpp::error::bad_connection) {
+            JOYNR_LOG_ERROR(logger,
+                            "Unable to close websocket connection. Error: {}",
+                            websocketError.message());
+        }
+    }
 }
 
 void WebSocketPpClient::send(const std::string& msg)
@@ -145,23 +168,40 @@ void WebSocketPpClient::onConnectionOpened(ConnectionHandle hdl)
     if (onConnectionOpenedCallback) {
         onConnectionOpenedCallback();
     }
+    if (!isRunning) {
+        disconnect();
+    }
 }
 
 void WebSocketPpClient::onConnectionClosed(ConnectionHandle hdl)
 {
     std::ignore = hdl;
     state = State::Disconnected;
-    if (onConnectionClosedCallback) {
-        onConnectionClosedCallback();
+    if (!isRunning) {
+        JOYNR_LOG_DEBUG(logger, "connection closed");
+        if (onConnectionClosedCallback) {
+            onConnectionClosedCallback();
+        }
+    } else {
+        std::this_thread::sleep_for(reconnectSleepTimeMs);
+        JOYNR_LOG_DEBUG(logger, "connection closed unexpectedly. Trying to reconnect...");
+        reconnect();
     }
-    JOYNR_LOG_DEBUG(logger, "connection closed");
 }
 
 void WebSocketPpClient::onConnectionFailed(ConnectionHandle hdl)
 {
     state = State::Disconnected;
-    Client::connection_ptr con = endpoint.get_con_from_hdl(hdl);
-    JOYNR_LOG_ERROR(logger, "websocket connection failed - error: {}", con->get_ec().message());
+    if (!isRunning) {
+        JOYNR_LOG_DEBUG(logger, "connection closed");
+    } else {
+        Client::connection_ptr con = endpoint.get_con_from_hdl(hdl);
+        std::this_thread::sleep_for(reconnectSleepTimeMs);
+        JOYNR_LOG_ERROR(logger,
+                        "websocket connection failed - error: {}. Trying to reconnect...",
+                        con->get_ec().message());
+        reconnect();
+    }
 }
 
 void WebSocketPpClient::onMessageReceived(ConnectionHandle hdl, MessagePtr message)
@@ -175,7 +215,8 @@ void WebSocketPpClient::onMessageReceived(ConnectionHandle hdl, MessagePtr messa
             onTextMessageReceivedCallback(message->get_payload());
         }
     } else if (mode == value::binary) {
-        JOYNR_LOG_TRACE(logger, "incoming binary messag of size {}", message->get_payload().size());
+        JOYNR_LOG_TRACE(
+                logger, "incoming binary message of size {}", message->get_payload().size());
         if (onBinaryMessageReceived) {
             onBinaryMessageReceived(message->get_payload());
         }

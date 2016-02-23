@@ -1043,6 +1043,8 @@ class MockWebSocketClient : public joynr::WebSocketPpClient
 {
 public:
 
+    MockWebSocketClient(joynr::WebSocketSettings wsSettings)
+        : WebSocketPpClient(wsSettings) {}
     MOCK_METHOD0(dtorCalled, void());
     ~MockWebSocketClient() override
     {

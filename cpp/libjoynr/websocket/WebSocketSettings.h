@@ -19,6 +19,7 @@
 #ifndef WEBSOCKETSETTINGS_H
 #define WEBSOCKETSETTINGS_H
 
+#include <chrono>
 #include <string>
 
 #include "joynr/Logger.h"
@@ -40,6 +41,7 @@ class WebSocketSettings
 {
 public:
     static const std::string& SETTING_CC_MESSAGING_URL();
+    static const std::string& SETTING_RECONNECT_SLEEP_TIME_MS();
 
     static const std::string& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
 
@@ -52,6 +54,9 @@ public:
     std::string getClusterControllerMessagingUrl() const;
     void setClusterControllerMessagingUrl(const std::string& url);
     system::RoutingTypes::WebSocketAddress createClusterControllerMessagingAddress() const;
+
+    std::chrono::milliseconds getReconnectSleepTimeMs() const;
+    void setReconnectSleepTimeMs(const std::chrono::milliseconds reconnectSleepTimeMs);
 
     void printSettings() const;
 
