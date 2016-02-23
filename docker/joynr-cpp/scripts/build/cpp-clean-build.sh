@@ -4,7 +4,7 @@ source /data/src/docker/joynr-base/scripts/global.sh
 
 DBUS='OFF'
 GCOV='OFF'
-JOBS=8
+JOBS=$(nproc)
 
 function usage
 {
