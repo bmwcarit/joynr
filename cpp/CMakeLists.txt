@@ -44,7 +44,7 @@ message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
 
 # defines GNU standard installation directories
 include(GNUInstallDirs)
-set(JOYNR_INSTALL_FULL_CMAKEDIR ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/joynr CACHE PATH "Installation directory (absolute path) for CMake files")
+set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/joynr CACHE PATH "Installation sub directory for CMake files")
 set(JOYNR_INSTALL_FULL_SYSCONFDIR ${CMAKE_INSTALL_FULL_SYSCONFDIR}/joynr CACHE PATH "Installation directory (absolute path) for resources and settings files")
 
 if(NOT INSTALL_TEST_DIR)
@@ -55,9 +55,9 @@ message(STATUS "----------------- INSTALL LOCATIONS -----------------")
 message(STATUS "CMAKE_INSTALL_PREFIX          = ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "CMAKE_INSTALL_BINDIR          = ${CMAKE_INSTALL_BINDIR}")
 message(STATUS "INSTALL_TEST_DIR              = ${INSTALL_TEST_DIR}")
-message(STATUS "CMAKE_INSTALL_FULL_LIBDIR     = ${CMAKE_INSTALL_FULL_LIBDIR}")
-message(STATUS "JOYNR_INSTALL_FULL_CMAKEDIR   = ${JOYNR_INSTALL_FULL_CMAKEDIR}")
-message(STATUS "CMAKE_INSTALL_FULL_INCLUDEDIR = ${CMAKE_INSTALL_FULL_INCLUDEDIR}")
+message(STATUS "CMAKE_INSTALL_LIBDIR     = ${CMAKE_INSTALL_LIBDIR}")
+message(STATUS "INSTALL_CMAKE_DIR        = ${INSTALL_CMAKE_DIR}")
+message(STATUS "CMAKE_INSTALL_INCLUDEDIR = ${CMAKE_INSTALL_INCLUDEDIR}")
 message(STATUS "CMAKE_INSTALL_FULL_SYSCONFDIR = ${CMAKE_INSTALL_FULL_SYSCONFDIR}")
 message(STATUS "JOYNR_INSTALL_FULL_SYSCONFDIR = ${JOYNR_INSTALL_FULL_SYSCONFDIR}")
 message(STATUS "-----------------------------------------------------")
@@ -716,7 +716,7 @@ export(PACKAGE Joynr)
 # install the export targets for use with the install-tree
 install(
     EXPORT JoynrTargets
-    DESTINATION "${JOYNR_INSTALL_FULL_CMAKEDIR}" COMPONENT dev
+    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
     FILE "JoynrTargets.cmake"
 )
 
@@ -809,8 +809,8 @@ file(
 # ... for the install tree
 file(
     RELATIVE_PATH RELATIVE_INSTALL_INCLUDE_DIR
-    "${JOYNR_INSTALL_FULL_CMAKEDIR}"
-    "${CMAKE_INSTALL_FULL_INCLUDEDIR}"
+    "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}"
 )
 set(JoynrConfig_LIB_COMMON_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
@@ -821,8 +821,8 @@ set(JoynrConfig_RESOURCES_DIR "${JOYNR_INSTALL_FULL_SYSCONFDIR}")
 
 file(
     RELATIVE_PATH RELATIVE_INSTALL_BIN_DIR
-    "${JOYNR_INSTALL_FULL_CMAKEDIR}"
-    "${CMAKE_INSTALL_FULL_BINDIR}"
+    "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}"
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
 )
 set(JoynrConfig_INSTALL_BIN_DIR "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_BIN_DIR}")
 configure_file(
@@ -838,7 +838,7 @@ configure_file(
 # install the JoynrConfig.cmake and JoynrConfigVersion.cmake
 install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfig.cmake.install-tree"
-    DESTINATION "${JOYNR_INSTALL_FULL_CMAKEDIR}" COMPONENT dev
+    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
     RENAME "JoynrConfig.cmake"
 )
 install(
@@ -847,7 +847,7 @@ install(
         "CMake/CheckBoostImportTargets.cmake"
         "CMake/CheckCurlImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
-    DESTINATION "${JOYNR_INSTALL_FULL_CMAKEDIR}" COMPONENT dev
+    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
 )
 
 ######### Documentation settings ########
