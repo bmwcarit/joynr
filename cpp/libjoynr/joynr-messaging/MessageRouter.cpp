@@ -496,7 +496,15 @@ void MessageRouter::removeNextHop(
 
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
             [onError](const exceptions::JoynrException& error) {
-        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        } else {
+            JOYNR_LOG_ERROR(logger,
+                            "Unable to report error (received by calling "
+                            "parentRouter->removeNextHopAsync), since onError function is "
+                            "empty. Error message: {}",
+                            error.getMessage());
+        }
     };
 
     // remove from parent router
