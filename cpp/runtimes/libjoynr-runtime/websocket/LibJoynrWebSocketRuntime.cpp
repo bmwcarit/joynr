@@ -23,6 +23,7 @@
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
+#include "joynr/Semaphore.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
 
 namespace joynr
@@ -43,14 +44,21 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     std::shared_ptr<joynr::system::RoutingTypes::WebSocketClientAddress> libjoynrMessagingAddress(
             new system::RoutingTypes::WebSocketClientAddress(libjoynrMessagingId));
 
-    // send intialization message containing libjoynr messaging address
+    // send initialization message containing libjoynr messaging address
     std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
     JOYNR_LOG_TRACE(logger,
                     "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
                     initializationMsg,
                     libjoynrMessagingAddress->toString());
-    auto connectCallback =
-            [this, initializationMsg]() { websocket->sendTextMessage(initializationMsg); };
+    auto connectionEstablishedSemaphore = std::make_shared<Semaphore>(0);
+    auto connectCallback = [this, initializationMsg, connectionEstablishedSemaphore]() mutable {
+        websocket->sendTextMessage(initializationMsg);
+        if (connectionEstablishedSemaphore) {
+            connectionEstablishedSemaphore->notify();
+            connectionEstablishedSemaphore = nullptr;
+        }
+
+    };
     websocket->registerConnectCallback(connectCallback);
 
     // create connection to parent routing service
@@ -63,6 +71,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     auto factory = std::make_unique<WebSocketMessagingStubFactory>();
     factory->addServer(*ccMessagingAddress, websocket);
 
+    connectionEstablishedSemaphore->wait();
     LibJoynrRuntime::init(std::move(factory), libjoynrMessagingAddress, ccMessagingAddress);
 }
 
