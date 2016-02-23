@@ -56,10 +56,13 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
 
     auto future = std::make_shared<Future<void>>();
     auto onSuccess = [future]() { future->onSuccess(); };
-    messageRouter->removeNextHop(participantId, onSuccess);
-    future->wait();
-
-    if (!future->isOk()) {
+    auto onError = [future](const joynr::exceptions::ProviderRuntimeException& error) {
+        future->onError(error);
+    };
+    messageRouter->removeNextHop(participantId, onSuccess, onError);
+    try {
+        future->get();
+    } catch (const exceptions::JoynrRuntimeException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to remove next hop (participant ID: {}) from message router.",
                         participantId);
