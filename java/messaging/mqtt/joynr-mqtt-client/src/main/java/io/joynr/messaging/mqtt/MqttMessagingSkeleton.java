@@ -43,12 +43,14 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
     private JoynrMqttClient mqttClient;
     private JoynrMessageSerializer messageSerializer;
     private MqttClientFactory mqttClientFactory;
+    private MqttAddress ownAddress;
 
     @Inject
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttMessageSerializerFactory messageSerializerFactory) {
+        this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         messageSerializer = messageSerializerFactory.create(ownAddress);
@@ -59,6 +61,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
         mqttClient = mqttClientFactory.create();
         mqttClient.setMessageListener(this);
         mqttClient.start();
+        mqttClient.subscribe(ownAddress.getTopic() + "/#");
     }
 
     @Override

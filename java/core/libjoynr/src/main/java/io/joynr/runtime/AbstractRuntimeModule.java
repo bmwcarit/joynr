@@ -87,7 +87,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
-    Multibinder<GlobalAddressFactory> globalAddresses;
 
     @Override
     protected void configure() {
@@ -112,6 +111,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
         // default implementation with a dummy address holder: no global communication. other address types must be
         // added to the multibinder to support global addressing
+        Multibinder<GlobalAddressFactory> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(), GlobalAddressFactory.class);
         globalAddresses.addBinding().toInstance(new GlobalAddressFactory() {
             @Override

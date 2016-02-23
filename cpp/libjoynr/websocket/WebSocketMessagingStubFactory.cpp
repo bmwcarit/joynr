@@ -87,20 +87,19 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
 }
 
 void WebSocketMessagingStubFactory::addClient(
-        const joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress,
+        const system::RoutingTypes::WebSocketClientAddress& clientAddress,
         IWebSocketSendInterface* webSocket)
 {
 
-    if (clientStubMap.count(*clientAddress) == 0) {
+    if (clientStubMap.count(clientAddress) == 0) {
         WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(
-                webSocket,
-                [this, clientAddress]() { this->onMessagingStubClosed(*clientAddress); });
+                webSocket, [this, clientAddress]() { this->onMessagingStubClosed(clientAddress); });
         std::shared_ptr<IMessaging> clientStub(wsClientStub);
-        clientStubMap[*clientAddress] = clientStub;
+        clientStubMap[clientAddress] = clientStub;
     } else {
         JOYNR_LOG_ERROR(logger,
                         "Client with address {} already exists in the clientStubMap",
-                        clientAddress->toString());
+                        clientAddress.toString());
     }
 }
 

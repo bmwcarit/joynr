@@ -4,7 +4,7 @@ import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 /*
  * #%L
@@ -38,7 +39,7 @@ import com.google.inject.Inject;
  * #L%
  */
 
-public abstract class LibjoynrRuntime<T extends Address> extends JoynrRuntimeImpl {
+public class LibjoynrRuntime extends JoynrRuntimeImpl {
 
     public static final Logger logger = LoggerFactory.getLogger(LibjoynrRuntime.class);
 
@@ -52,16 +53,15 @@ public abstract class LibjoynrRuntime<T extends Address> extends JoynrRuntimeImp
                            MessagingStubFactory messagingStubFactory,
                            MessagingSkeletonFactory messagingSkeletonFactory,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
-                           String systemServicesDomain,
-                           Address dispatcherAddress,
-                           Address capabilitiesDirectoryAddress,
-                           Address channelUrlDirectoryAddress,
-                           Address domainAccessControllerAddress,
-                           Address discoveryProviderAddress,
-                           Address ccMessagingAddress,
-                           T libjoynrMessagingAddress,
+                           @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
+                           @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
+                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
+                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
+                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
+                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
+                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
                            ChildMessageRouter messageRouter,
-                           String parentRoutingProviderParticipantId) {
+                           @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId) {
         super(objectMapper,
               proxyBuilderFactory,
               requestCallerDirectory,
@@ -77,16 +77,12 @@ public abstract class LibjoynrRuntime<T extends Address> extends JoynrRuntimeImp
               domainAccessControllerAddress,
               discoveryProviderAddress);
         // CHECKSTYLE:ON
-        initMessagingStub(libjoynrMessagingAddress, messagingStubFactory.create(ccMessagingAddress));
         ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);
         RoutingProxy routingProxy = proxyBuilder.build();
-        messageRouter.setIncomingAddress(libjoynrMessagingAddress);
         messageRouter.setParentRouter(routingProxy,
                                       ccMessagingAddress,
                                       parentRoutingProviderParticipantId,
                                       proxyBuilder.getParticipantId());
         messageRouter.addNextHop(discoveryProxyParticipantId, dispatcherAddress);
     }
-
-    protected abstract void initMessagingStub(T libjoynrMessagingAddress, IMessaging messagingStub);
 }

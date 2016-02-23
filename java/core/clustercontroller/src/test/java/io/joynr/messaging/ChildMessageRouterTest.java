@@ -57,7 +57,7 @@ public class ChildMessageRouterTest {
     @Mock
     private ChannelAddress nextHopAddress;
     @Mock
-    private WebSocketAddress incommingAddress;
+    private WebSocketAddress incomingAddress;
     @Mock
     private MessagingStubFactory messagingStubFactory;
 
@@ -73,10 +73,10 @@ public class ChildMessageRouterTest {
         message.setTo(unknownParticipantId);
 
         messageRouter = new ChildMessageRouter(routingTable,
+                                               incomingAddress,
                                                provideMessageSchedulerThreadPoolExecutor(),
                                                sendMsgRetryIntervalMs,
                                                messagingStubFactory);
-        messageRouter.setIncomingAddress(incommingAddress);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
 
         Mockito.when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
@@ -105,7 +105,7 @@ public class ChildMessageRouterTest {
         messageRouter.addNextHop(unknownParticipantId, nextHopAddress);
         Mockito.verify(messageRouterParent).addNextHop(Mockito.any(Callback.class),
                                                        Mockito.eq(unknownParticipantId),
-                                                       Mockito.eq(incommingAddress));
+                                                       Mockito.eq(incomingAddress));
     }
 
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {

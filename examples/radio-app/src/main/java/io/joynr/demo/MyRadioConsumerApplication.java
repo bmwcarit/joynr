@@ -97,7 +97,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<provider-domain>"
         if (args.length < 1 || args.length > 3) {
-            LOG.error("USAGE: java {} <provider-domain> [websocket [local]]",
+            LOG.error("USAGE: java {} <provider-domain> [[websocket]:[http]:[mqtt] [local]]",
                       MyRadioConsumerApplication.class.getName());
             return;
         }
