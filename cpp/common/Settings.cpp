@@ -76,13 +76,11 @@ void Settings::merge(const Settings& from, Settings& to, bool overwrite)
 void Settings::fillEmptySettingsWithDefaults(const std::string& defaultsFilename)
 {
     const std::string cmakeSettingsPath = CMAKE_JOYNR_SETTINGS_INSTALL_DIR;
-    Settings systemSettings("/etc/joynr/" + defaultsFilename);
     Settings cmakeDefaultSettings(cmakeSettingsPath + "/" + defaultsFilename);
     Settings relativeDefaultSettings("resources/" + defaultsFilename);
 
     Settings::merge(relativeDefaultSettings, *this, false);
     Settings::merge(cmakeDefaultSettings, *this, false);
-    Settings::merge(systemSettings, *this, false);
 }
 
 void Settings::merge(const boost::property_tree::ptree& from,

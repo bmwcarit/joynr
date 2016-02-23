@@ -1,6 +1,4 @@
-package io.joynr.messaging.mqtt;
-
-import io.joynr.messaging.IMessaging;
+package io.joynr.messaging.websocket.server;
 
 /*
  * #%L
@@ -21,16 +19,8 @@ import io.joynr.messaging.IMessaging;
  * #L%
  */
 
-public interface JoynrMqttClient {
+public interface WebSocketMessageArrivedListener {
 
-    public void start();
-
-    public void setMessageListener(IMessaging messaging);
-
-    public void shutdown();
-
-    public void publishMessage(String topic, String serializedMessage);
-
-    public void subscribe(String topic);
+    void messageArrived(String message);
 
 }

@@ -1,7 +1,5 @@
 package io.joynr.messaging.websocket;
 
-import java.util.concurrent.ExecutionException;
-
 /*
  * #%L
  * %%
@@ -23,40 +21,32 @@ import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import com.google.inject.Singleton;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
+@Singleton
 public class WebSocketMessagingStubFactory extends
-        AbstractMiddlewareMessagingStubFactory<LibWebSocketMessagingStub, WebSocketAddress> {
+        AbstractMiddlewareMessagingStubFactory<WebSocketMessagingStub, WebSocketAddress> {
 
-    ObjectMapper objectMapper;
-    WebSocketMessagingSkeleton webSocketMessagingSkeleton;
-    int maxMessageSize;
+    private ObjectMapper objectMapper;
+    private WebSocketEndpointFactory webSocketEndpointFactory;
 
     @Inject
-    public WebSocketMessagingStubFactory(ObjectMapper objectMapper,
-                                         @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton,
-                                         @Named(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE) int maxMessageSize) {
+    public WebSocketMessagingStubFactory(WebSocketEndpointFactory webSocketClientFactory, ObjectMapper objectMapper) {
+        this.webSocketEndpointFactory = webSocketClientFactory;
         this.objectMapper = objectMapper;
-        this.webSocketMessagingSkeleton = webSocketMessagingSkeleton;
-        this.maxMessageSize = maxMessageSize;
     }
 
     @Override
-    protected LibWebSocketMessagingStub createInternal(WebSocketAddress address) {
-        return new LibWebSocketMessagingStub(address, objectMapper, webSocketMessagingSkeleton, maxMessageSize);
+    protected WebSocketMessagingStub createInternal(WebSocketAddress address) {
+        JoynrWebSocketEndpoint webSocketEndpoint = webSocketEndpointFactory.create(address);
+        return new WebSocketMessagingStub(address, webSocketEndpoint, objectMapper);
     }
 
     @Override
     public void shutdown() {
-        for (LibWebSocketMessagingStub stub : getAllMessagingStubs()) {
-            try {
-                stub.shutdown();
-            } catch (ExecutionException | InterruptedException e) {
-            }
-        }
+        // Nothing to do. Skeleton shuts down the client
     }
 }

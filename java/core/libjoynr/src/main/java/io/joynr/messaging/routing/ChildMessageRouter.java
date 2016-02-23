@@ -20,6 +20,7 @@ package io.joynr.messaging.routing;
  */
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -27,6 +28,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
@@ -47,6 +49,7 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * MessageRouter implementation which adds hops to its parent and tries to resolve unknown addresses at its parent
  */
+ @Singleton
 public class ChildMessageRouter extends MessageRouterImpl {
 
     private Logger logger = LoggerFactory.getLogger(ChildMessageRouter.class);
@@ -58,10 +61,12 @@ public class ChildMessageRouter extends MessageRouterImpl {
 
     @Inject
     public ChildMessageRouter(RoutingTable routingTable,
+                              @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                               @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                               @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                               MessagingStubFactory messagingStubFactory) {
         super(routingTable, scheduler, sendMsgRetryIntervalMs, messagingStubFactory);
+        this.incomingAddress = incomingAddress;
     }
 
     @Override

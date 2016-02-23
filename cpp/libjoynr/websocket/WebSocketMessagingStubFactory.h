@@ -49,7 +49,7 @@ public:
     std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
-    void addClient(const joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress,
+    void addClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress,
                    IWebSocketSendInterface* webSocket);
     void removeClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress);
     void addServer(const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,

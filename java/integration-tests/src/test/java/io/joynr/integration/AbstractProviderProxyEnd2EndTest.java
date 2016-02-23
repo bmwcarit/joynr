@@ -158,8 +158,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     private TestAsyncProviderImpl providerAsync;
 
-    private JoynrRuntime providerRuntime;
-    private JoynrRuntime consumerRuntime;
+    protected JoynrRuntime providerRuntime;
+    protected JoynrRuntime consumerRuntime;
 
     // Overridden by test environment implementations
     protected abstract JoynrRuntime getRuntime(Properties joynrConfig, Module... modules);

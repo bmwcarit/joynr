@@ -22,6 +22,7 @@ package io.joynr.examples.android_location_provider;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -46,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -127,8 +129,10 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         Properties appConfig = new Properties();
         appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
-        JoynrApplication gpsConsumerApp = new JoynrInjectorFactory(joynrConfig, new CCInProcessRuntimeModule()).createApplication(new JoynrApplicationModule(GpsConsumerApplication.class,
-                                                                                                                                                             appConfig));
+        JoynrApplication gpsConsumerApp = new JoynrInjectorFactory(joynrConfig,
+                                                                   Modules.override(new CCInProcessRuntimeModule())
+                                                                          .with(new AtmosphereMessagingModule())).createApplication(new JoynrApplicationModule(GpsConsumerApplication.class,
+                                                                                                                                                               appConfig));
         gpsConsumerApp.run();
 
         pressQEnterToContinue();

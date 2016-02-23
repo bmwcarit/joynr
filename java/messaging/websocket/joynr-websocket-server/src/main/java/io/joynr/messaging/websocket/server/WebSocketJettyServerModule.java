@@ -1,6 +1,4 @@
-package io.joynr.messaging.mqtt;
-
-import io.joynr.messaging.IMessaging;
+package io.joynr.messaging.websocket.server;
 
 /*
  * #%L
@@ -21,16 +19,16 @@ import io.joynr.messaging.IMessaging;
  * #L%
  */
 
-public interface JoynrMqttClient {
+import com.google.inject.AbstractModule;
 
-    public void start();
+import io.joynr.messaging.websocket.WebSocketEndpointFactory;
+import io.joynr.messaging.websocket.WebsocketModule;
 
-    public void setMessageListener(IMessaging messaging);
+public class WebSocketJettyServerModule extends AbstractModule {
 
-    public void shutdown();
-
-    public void publishMessage(String topic, String serializedMessage);
-
-    public void subscribe(String topic);
-
+    @Override
+    protected void configure() {
+        install(new WebsocketModule());
+        bind(WebSocketEndpointFactory.class).to(WebSocketJettyServerFactory.class);
+    }
 }

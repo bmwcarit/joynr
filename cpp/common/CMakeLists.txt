@@ -126,7 +126,7 @@ set_target_properties(
     SOVERSION "${JOYNR_VERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}"
-    COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}/${INSTALL_RES_DIR}"
+    COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${JOYNR_INSTALL_FULL_SYSCONFDIR}"
 )
 
 # make spdlog system directory to avoid compiler warnings
@@ -193,6 +193,6 @@ else()
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
-        DESTINATION ${INSTALL_RES_DIR}
+        DESTINATION ${JOYNR_INSTALL_FULL_SYSCONFDIR}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")

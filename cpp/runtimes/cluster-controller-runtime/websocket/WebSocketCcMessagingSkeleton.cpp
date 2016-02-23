@@ -115,7 +115,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
             WebSocketClientAddress clientAddress =
                     JsonSerializer::deserialize<WebSocketClientAddress>(message.toStdString());
             IWebSocketSendInterface* clientWrapper = new QWebSocketSendWrapper(client);
-            messagingStubFactory.addClient(&clientAddress, clientWrapper);
+            messagingStubFactory.addClient(clientAddress, clientWrapper);
 
             // cleanup
             disconnect(client,

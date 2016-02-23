@@ -1,6 +1,4 @@
-package io.joynr.messaging.mqtt;
-
-import io.joynr.messaging.IMessaging;
+package io.joynr.messaging.websocket;
 
 /*
  * #%L
@@ -21,16 +19,9 @@ import io.joynr.messaging.IMessaging;
  * #L%
  */
 
-public interface JoynrMqttClient {
+import joynr.system.RoutingTypes.WebSocketAddress;
 
-    public void start();
+public interface WebSocketEndpointFactory {
 
-    public void setMessageListener(IMessaging messaging);
-
-    public void shutdown();
-
-    public void publishMessage(String topic, String serializedMessage);
-
-    public void subscribe(String topic);
-
+    JoynrWebSocketEndpoint create(WebSocketAddress serverAddress);
 }

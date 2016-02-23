@@ -2,6 +2,24 @@ message(STATUS "#############################################")
 message(STATUS "Configuring tests...")
 message(STATUS "#############################################\n")
 
+option(
+    BUILD_UNIT_TESTS
+    "Build unit tests?"
+    ON
+)
+
+option(
+    BUILD_INTEGRATION_TESTS
+    "Build integration tests?"
+    ON
+)
+
+option(
+    BUILD_SYSTEM_INTEGRATION_TESTS
+    "Build system integration tests?"
+    ON
+)
+
 if(${WIN32})
     set(DISABLE_PTHREAD_CMAKE_ARG ON)
 else()
@@ -487,25 +505,31 @@ if(${BUILD_CLUSTER_CONTROLLER})
         )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    AddTest(
-        g_UnitTests
-        ${cluster_controller_test_HEADERS}
-        ${cluster_controller_test_SOURCES}
-        ${libjsonserializer_test_HEADERS}
-        ${libjsonserializer_test_SOURCES}
-        ${g_UnitTests_SOURCES}
-    )
+    if(${BUILD_UNIT_TESTS})
+        AddTest(
+            g_UnitTests
+            ${cluster_controller_test_HEADERS}
+            ${cluster_controller_test_SOURCES}
+            ${libjsonserializer_test_HEADERS}
+            ${libjsonserializer_test_SOURCES}
+            ${g_UnitTests_SOURCES}
+        )
 
-    target_link_libraries(
-        g_UnitTests
-        Qt5::Test
-        ${cluster_controller_test_TARGET_LIBRARIES}
-    )
+        target_link_libraries(
+            g_UnitTests
+            Qt5::Test
+            ${cluster_controller_test_TARGET_LIBRARIES}
+        )
 
-    target_include_directories(
-        g_UnitTests
-        PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
-    )
+        target_include_directories(
+            g_UnitTests
+            PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+        )
+
+        install(TARGETS g_UnitTests
+            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+        )
+    endif(${BUILD_UNIT_TESTS})
 
     ######################
     # g_IntegrationTests #
@@ -524,19 +548,25 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    AddTest(
-       g_IntegrationTests
-       ${cluster_controller_test_HEADERS}
-       ${cluster_controller_test_SOURCES}
-       ${g_IntegrationTests_SOURCES}
-    )
+    if(${BUILD_INTEGRATION_TESTS})
+        AddTest(
+           g_IntegrationTests
+           ${cluster_controller_test_HEADERS}
+           ${cluster_controller_test_SOURCES}
+           ${g_IntegrationTests_SOURCES}
+        )
 
-    target_link_libraries(g_IntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
+        target_link_libraries(g_IntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
 
-    target_include_directories(
-        g_IntegrationTests
-        PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
-    )
+        target_include_directories(
+            g_IntegrationTests
+            PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+        )
+
+        install(TARGETS g_IntegrationTests
+            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+        )
+    endif(${BUILD_INTEGRATION_TESTS})
 
     ############################
     # g_SystemIntegrationTests #
@@ -554,35 +584,37 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    AddTest(
-       g_SystemIntegrationTests
-       ${cluster_controller_test_HEADERS}
-       ${cluster_controller_test_SOURCES}
-       ${g_SystemIntegrationTests_SOURCES}
-    )
+    if(${BUILD_SYSTEM_INTEGRATION_TESTS})
+        AddTest(
+           g_SystemIntegrationTests
+           ${cluster_controller_test_HEADERS}
+           ${cluster_controller_test_SOURCES}
+           ${g_SystemIntegrationTests_SOURCES}
+        )
 
-    target_link_libraries(g_SystemIntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
+        target_link_libraries(g_SystemIntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
 
-    set_target_properties(
-       g_SystemIntegrationTests
-       PROPERTIES
-       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-    )
+        set_target_properties(
+           g_SystemIntegrationTests
+           PROPERTIES
+           COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+        )
 
-    target_include_directories(
-        g_SystemIntegrationTests
-        SYSTEM
-        PRIVATE ${CURL_INCLUDE_DIRS}
-    )
+        target_include_directories(
+            g_SystemIntegrationTests
+            SYSTEM
+            PRIVATE ${CURL_INCLUDE_DIRS}
+        )
 
-    target_include_directories(
-        g_SystemIntegrationTests
-        PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
-    )
+        target_include_directories(
+            g_SystemIntegrationTests
+            PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+        )
 
-    install(TARGETS g_UnitTests g_IntegrationTests g_SystemIntegrationTests
-        DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
-    )
+        install(TARGETS g_SystemIntegrationTests
+            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+        )
+    endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
 else()
     # Build tests that run on libjoynr
@@ -596,23 +628,29 @@ else()
         "unit-tests/JsonSerializerTest.cpp"
     )
 
-    AddTest(
-        g_UnitTests
-        ${libjoynr_test_HEADERS}
-        ${libjoynr_test_SOURCES}
-        ${g_UnitTests_SOURCES}
-    )
+    if(${BUILD_UNIT_TESTS})
+        AddTest(
+            g_UnitTests
+            ${libjoynr_test_HEADERS}
+            ${libjoynr_test_SOURCES}
+            ${g_UnitTests_SOURCES}
+        )
 
     target_link_libraries(
-        g_UnitTests
-        Qt5::Test
-        ${libjoynr_test_TARGET_LIBRARIES}
-    )
+            g_UnitTests
+            Qt5::Test
+            ${libjoynr_test_TARGET_LIBRARIES}
+        )
 
     target_include_directories(
-        g_UnitTests
-        PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
-    )
+            g_UnitTests
+            PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
+        )
+
+    install(TARGETS g_UnitTests
+            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+        )
+    endif(${BUILD_UNIT_TESTS})
 
     ############################
     # g_SystemIntegrationTests #
@@ -626,23 +664,25 @@ else()
        "systemintegration-tests/TestConfiguration.cpp"
     )
 
-    AddTest(
-       g_SystemIntegrationTests
-       ${libjoynr_test_HEADERS}
-       ${libjoynr_test_SOURCES}
-       ${g_SystemIntegrationTests_SOURCES}
-    )
+    if(${BUILD_SYSTEM_INTEGRATION_TESTS})
+        AddTest(
+           g_SystemIntegrationTests
+           ${libjoynr_test_HEADERS}
+           ${libjoynr_test_SOURCES}
+           ${g_SystemIntegrationTests_SOURCES}
+        )
 
-    target_link_libraries(g_SystemIntegrationTests ${libjoynr_test_TARGET_LIBRARIES})
+        target_link_libraries(g_SystemIntegrationTests ${libjoynr_test_TARGET_LIBRARIES})
 
-    target_include_directories(
-        g_SystemIntegrationTests
-        PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
-    )
+        target_include_directories(
+            g_SystemIntegrationTests
+            PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
+        )
 
-    install(TARGETS g_UnitTests g_SystemIntegrationTests
-        DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
-    )
+        install(TARGETS g_SystemIntegrationTests
+            DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+        )
+    endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
 endif(${BUILD_CLUSTER_CONTROLLER})
 

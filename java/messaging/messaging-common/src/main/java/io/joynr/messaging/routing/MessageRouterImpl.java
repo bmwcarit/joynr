@@ -185,7 +185,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                         FailureAction failureAction = createFailureAction(message, retriesCount);
                         messagingStub.transmit(message, failureAction);
                     } catch (Throwable error) {
-                        logger.error("error in scheduled message router thread: {}" + error.getMessage());
+                        logger.error("error in scheduled message router thread: {}", error.getMessage());
                         throw error;
                     }
                 }
@@ -225,8 +225,8 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                                  new Object[]{ messageId, getAddress(message.getTo()), error.getMessage() });
                     return;
                 }
-                logger.error("ERROR SENDING: messageId: {} to Address: {}. Error: {}", new Object[]{ messageId,
-                        getAddress(message.getTo()), error.getMessage() });
+                logger.error("ERROR SENDING: messageId: {} to Address: {}. Error: {} Message: {}", new Object[]{
+                        messageId, getAddress(message.getTo()), error.getClass().getName(), error.getMessage() });
 
                 long delayMs;
                 if (error instanceof JoynrDelayMessageException) {
