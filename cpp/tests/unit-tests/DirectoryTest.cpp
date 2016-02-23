@@ -100,7 +100,7 @@ TEST_F(DirectoryTest, scheduledRemove)
     ASSERT_FALSE(directory->contains(firstKey));
 }
 
-TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedByDirectoryAfterTtl)
+TEST(UnfixturedDirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 {
     Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
     {

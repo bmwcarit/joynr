@@ -92,9 +92,9 @@ public:
             return;
         }
 
-        std::shared_ptr<ReplyCaller<void>> typedCallerQsp =
+        std::shared_ptr<ReplyCaller<void>> typedCaller =
                 std::dynamic_pointer_cast<ReplyCaller<void>>(caller);
-        typedCallerQsp->returnValue();
+        typedCaller->returnValue();
     }
 };
 

@@ -112,15 +112,7 @@ protected:
     ICapabilitiesClient* capabilitiesClient;
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
-    // Reason why CapabilitiesAggregator (CA) has to be a QSP:
-    // CA has to be a member variable, because it is passed to ProxyBuilder in createProxyBuilder()
-    // CA has to be a pointer instead of a reference, because it has to be initialised to NULL
-    // (because other members are needed for its constructor)
-    // CA is passed into different other classes, so ownership cannot be transferred.
-    // => CA needs to be a QSP
     ClientQCache cache;
-    // messageRouter must be shared pointer since it is also registered as
-    // joynr::system::Routing provider and register capability expects shared pointer
     std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;

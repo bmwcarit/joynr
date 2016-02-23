@@ -51,7 +51,7 @@ class JOYNR_EXPORT Dispatcher : public IDispatcher
 public:
     // ownership of messageSender is not passed to dispatcher, so dispatcher is not responsible for
     // deleting it.
-    // Todo: should be changed to QSP or reference.
+    // Todo: should be changed to a std::shared_ptr or reference.
     explicit Dispatcher(JoynrMessageSender* messageSender, int maxThreads = 4);
 
     ~Dispatcher() override;
