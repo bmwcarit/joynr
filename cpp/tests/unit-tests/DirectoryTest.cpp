@@ -100,30 +100,6 @@ TEST_F(DirectoryTest, scheduledRemove)
     ASSERT_FALSE(directory->contains(firstKey));
 }
 
-
-TEST(UnfixturedDirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
-{
-    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
-    TrackableObject *t1 = new TrackableObject();
-    ASSERT_EQ(TrackableObject::getInstances(), 1);
-    directory->add("key", t1, 100);
-    ASSERT_EQ(TrackableObject::getInstances(), 1) << "Directory copied / deleted object";
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object";
-    delete directory;
-}
-
-TEST(UnfixturedDirectoryTest, ObjectsAreDeletedWhenDirectoryIsDeleted)
-{
-    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
-    TrackableObject *t1 = new TrackableObject();
-    ASSERT_EQ(TrackableObject::getInstances(), 1);
-    directory->add("key", t1, 100);
-    ASSERT_EQ(TrackableObject::getInstances(), 1) << "Directory copied / deleted object";
-    delete directory;
-    ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object when it was deleted";
-}
-
 TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedByDirectoryAfterTtl)
 {
     Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
@@ -138,7 +114,7 @@ TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedByDirectoryAfterTtl)
     delete directory;
 }
 
-TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedIfDirectoryIsDeleted)
+TEST(UnfixturedDirectoryTest, ObjectsAreDeletedIfDirectoryIsDeleted)
 {
     Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
     {
