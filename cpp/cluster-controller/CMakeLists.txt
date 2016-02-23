@@ -186,7 +186,7 @@ endif(NOT USE_PLATFORM_MOSQUITTO)
 # manually add dependency to target
 list(
     APPEND JoynrClusterController_TARGET_LIBRARIES
-    ${MOSQUITTO_LIBRARIES}
+    mosquitto::mosquitto
 )
 
 
