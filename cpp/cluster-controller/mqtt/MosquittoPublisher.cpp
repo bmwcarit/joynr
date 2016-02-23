@@ -104,7 +104,7 @@ void MosquittoPublisher::publishMessage(
 
     int mid;
     int rc = publish(&mid, topic.c_str(), payloadlen, payload, getMqttQos(), isMqttRetain());
-    if (!rc == MOSQ_ERR_SUCCESS) {
+    if (!(rc == MOSQ_ERR_SUCCESS)) {
         if (rc == MOSQ_ERR_INVAL || rc == MOSQ_ERR_PAYLOAD_SIZE) {
             onFailure(exceptions::JoynrMessageNotSentException(
                     "message could not be sent: mid (mqtt message id): " + std::to_string(mid) +
