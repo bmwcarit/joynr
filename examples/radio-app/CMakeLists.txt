@@ -5,7 +5,16 @@ project(radio-app-0.16.0-SNAPSHOT)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
-add_definitions("-std=c++14")
+
+# set required C++ standard
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if("${CMAKE_VERSION}" VERSION_LESS 3.1.0)
+    if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+endif("${CMAKE_VERSION}" VERSION_LESS 3.1.0)
 
 set(
     JOYNR_SERVER
