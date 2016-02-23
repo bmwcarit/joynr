@@ -185,17 +185,18 @@ private:
 };
 «getNamespaceEnder(serviceInterface)»
 
+«var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
+
 namespace joynr {
 
-// Helper class for use by the RequestCallerFactory.
-// This class creates instances of «interfaceName»RequestCaller
-template<>
-class RequestCallerFactoryHelper<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> {
-public:
-	std::shared_ptr<joynr::RequestCaller> create(std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider) {
-		return std::shared_ptr<joynr::RequestCaller>(new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»RequestCaller(provider));
-	}
+// specialization of traits class RequestCallerTraits
+// this links «interfaceName»Provider with «interfaceName»RequestCaller
+template <>
+struct RequestCallerTraits<«packagePrefix»::«interfaceName»Provider>
+{
+	using RequestCaller = «packagePrefix»::«interfaceName»RequestCaller;
 };
+
 } // namespace joynr
 
 #endif // «headerGuard»

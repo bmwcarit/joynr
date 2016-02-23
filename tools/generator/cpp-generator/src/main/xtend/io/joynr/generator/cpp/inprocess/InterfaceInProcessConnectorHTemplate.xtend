@@ -149,33 +149,18 @@ private:
 };
 «getNamespaceEnder(serviceInterface)»
 
-namespace joynr {
-
 «var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
 
-// Helper class for use by the InProcessConnectorFactory
-// This class creates instances of «interfaceName»InProcessConnector
+namespace joynr {
+
+// specialization of traits class InProcessTraits
+// this links I«interfaceName»Connector with «interfaceName»InProcessConnector
 template <>
-class InProcessConnectorFactoryHelper <«packagePrefix»::I«interfaceName»Connector> {
-public:
-	«packagePrefix»::«interfaceName»InProcessConnector* create(
-			ISubscriptionManager* subscriptionManager,
-			PublicationManager* publicationManager,
-			InProcessPublicationSender* inProcessPublicationSender,
-			const std::string& proxyParticipantId,
-			const std::string& providerParticipantId,
-			std::shared_ptr<InProcessAddress> address
-		) {
-		return new «packagePrefix»::«interfaceName»InProcessConnector(
-				subscriptionManager,
-				publicationManager,
-				inProcessPublicationSender,
-				proxyParticipantId,
-				providerParticipantId,
-				address
-		);
-	}
+struct InProcessTraits<«packagePrefix»::I«interfaceName»Connector>
+{
+	using Connector = «packagePrefix»::«interfaceName»InProcessConnector;
 };
+
 } // namespace joynr
 
 #endif // «headerGuard»

@@ -511,16 +511,15 @@ public:
     std::string getInterfaceName() const override;
 };
 
-namespace joynr {
-
-template<>
-class RequestCallerFactoryHelper<MockProvider> {
-public:
-    std::shared_ptr<RequestCaller> create(std::shared_ptr<MockProvider> provider) {
-        return std::shared_ptr<RequestCaller>(nullptr);
-    }
-};
-} // namespace joynr
+namespace joynr
+{
+template <>
+inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockProvider>(std::shared_ptr<MockProvider> provider)
+{
+    std::ignore = provider;
+    return std::shared_ptr<RequestCaller>(nullptr);
+}
+} // namespace joynr;
 
 class MockMessageReceiver : public joynr::IMessageReceiver
 {

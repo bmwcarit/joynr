@@ -438,17 +438,18 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             new joynr::system::DiscoveryRequestCaller(localCapabilitiesDirectory));
     std::shared_ptr<InProcessAddress> discoveryProviderAddress(
             new InProcessAddress(discoveryRequestCaller));
-    joynr::system::DiscoveryInProcessConnector* discoveryInProcessConnector =
-            InProcessConnectorFactoryHelper<joynr::system::IDiscoveryConnector>().create(
-                    subscriptionManager,
-                    publicationManager,
-                    inProcessPublicationSender,
-                    std::string(), // can be ignored
-                    discoveryProviderParticipantId,
-                    discoveryProviderAddress);
 
-    discoveryProxy->setDiscoveryProxy(discoveryInProcessConnector);
-
+    {
+        using joynr::system::DiscoveryInProcessConnector;
+        DiscoveryInProcessConnector* discoveryInProcessConnector =
+                new DiscoveryInProcessConnector(subscriptionManager,
+                                                publicationManager,
+                                                inProcessPublicationSender,
+                                                std::string(), // can be ignored
+                                                discoveryProviderParticipantId,
+                                                discoveryProviderAddress);
+        discoveryProxy->setDiscoveryProxy(discoveryInProcessConnector);
+    }
     capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
                                                       *discoveryProxy,
                                                       libjoynrMessagingAddress,

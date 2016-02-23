@@ -253,34 +253,16 @@ public:
 };
 «getNamespaceEnder(serviceInterface)»
 
+«var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
+
 namespace joynr {
 
-// Helper class for use by the JoynrMessagingConnectorFactory
-// This class creates instances of «interfaceName»JoynrMessagingConnector
+// specialization of traits class JoynrMessagingTraits
+// this links I«interfaceName»Connector with «interfaceName»JoynrMessagingConnector
 template <>
-class JoynrMessagingConnectorFactoryHelper <«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Connector> {
-public:
-	«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»JoynrMessagingConnector* create(
-			joynr::IJoynrMessageSender* messageSender,
-			joynr::ISubscriptionManager* subscriptionManager,
-			const std::string &domain,
-			const std::string proxyParticipantId,
-			const std::string& providerParticipantId,
-			const joynr::MessagingQos &qosSettings,
-			joynr::IClientCache *cache,
-			bool cached
-	) {
-		return new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»JoynrMessagingConnector(
-					messageSender,
-					subscriptionManager,
-					domain,
-					proxyParticipantId,
-					providerParticipantId,
-					qosSettings,
-					cache,
-					cached
-		);
-	}
+struct JoynrMessagingTraits<«packagePrefix»::I«interfaceName»Connector>
+{
+	using Connector = «packagePrefix»::«interfaceName»JoynrMessagingConnector;
 };
 
 } // namespace joynr
