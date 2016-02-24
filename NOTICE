@@ -179,6 +179,7 @@ This project has dependencies to:
   io.joynr:java under The Apache Software License, Version 2.0
   io.joynr:javascript under The Apache Software License, Version 2.0
   io.joynr:joynr under The Apache Software License, Version 2.0
+  io.joynr:performance under The Apache Software License, Version 2.0
   io.joynr:tests under The Apache Software License, Version 2.0
   io.joynr:tools under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
