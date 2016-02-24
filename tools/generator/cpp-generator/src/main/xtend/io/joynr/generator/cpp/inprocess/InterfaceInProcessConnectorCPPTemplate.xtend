@@ -106,7 +106,7 @@ bool «className»::usesClusterController() const{
 			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 			assert(«serviceInterface.interfaceCaller»);
 
-			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccess =
 					[future] (const «returnType»& «attributeName») {
@@ -131,7 +131,7 @@ bool «className»::usesClusterController() const{
 			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 			assert(«serviceInterface.interfaceCaller»);
 
-			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
 					[future, onSuccess] (const «returnType»& «attributeName») {
@@ -164,7 +164,7 @@ bool «className»::usesClusterController() const{
 			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 			assert(«serviceInterface.interfaceCaller»);
 
-			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
+			auto future = std::make_shared<joynr::Future<void>>();
 			std::function<void()> onSuccessWrapper =
 					[future, onSuccess] () {
 						future->onSuccess();
@@ -195,7 +195,7 @@ bool «className»::usesClusterController() const{
 			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 			assert(«serviceInterface.interfaceCaller»);
 
-			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
+			auto future = std::make_shared<joynr::Future<void>>();
 			std::function<void()> onSuccess =
 					[future] () {
 						future->onSuccess();
@@ -315,8 +315,7 @@ bool «className»::usesClusterController() const{
 	assert(caller);
 	std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 	assert(«serviceInterface.interfaceCaller»);
-	std::shared_ptr<joynr::Future<«outputParameters»> > future(
-			new joynr::Future<«outputParameters»>());
+	auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 	std::function<void(«outputTypedConstParamList»)> onSuccess =
 			[future] («outputTypedConstParamList») {
@@ -341,8 +340,7 @@ bool «className»::usesClusterController() const{
 	assert(caller);
 	std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 	assert(«serviceInterface.interfaceCaller»);
-	std::shared_ptr<joynr::Future<«outputParameters»> > future(
-			new joynr::Future<«outputParameters»>());
+	auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 	std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
 			[future, onSuccess] («outputTypedConstParamList») {

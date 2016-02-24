@@ -298,7 +298,7 @@ protected:
                                           const std::string& broadcastName,
                                           std::shared_ptr<IBroadcastFilter> filter,
                                           T... expectedValues) {
-        std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+        auto testProvider = std::make_shared<MyTestProvider>();
         runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
         if (filter) {
             testProvider->addBroadcastFilter(filter);
@@ -401,7 +401,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithFiltering) {
                     mockListener);
 
 
-    std::shared_ptr<MockTestBroadcastWithFilteringBroadcastFilter> filter(new MockTestBroadcastWithFilteringBroadcastFilter());
+    auto filter = std::make_shared<MockTestBroadcastWithFilteringBroadcastFilter>();
     ON_CALL(*filter, filter(Eq(stringOut),
                             Eq(stringArrayOut),
                             Eq(enumerationArrayOut),
@@ -453,7 +453,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener2(
                     mockListener2);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -540,7 +540,7 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -608,7 +608,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -681,7 +681,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation, float> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -758,7 +758,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     testProvider->addBroadcastFilter(filter);
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -835,7 +835,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(false));
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     testProvider->addBroadcastFilter(filter);
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -922,7 +922,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListenerBroadcast(
                     mockListenerBroadcast);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur

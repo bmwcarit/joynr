@@ -87,7 +87,7 @@ void InterfaceRegistrar::registerRequestInterpreter(const std::string& interface
 {
     std::lock_guard<std::mutex> lock(requestInterpretersMutex);
     if (requestInterpreters.find(interfaceName) == requestInterpreters.end()) {
-        requestInterpreters.insert({interfaceName, std::shared_ptr<IRequestInterpreter>(new T())});
+        requestInterpreters.insert({interfaceName, std::make_shared<T>()});
         requestInterpreterCounts.insert({interfaceName, 1});
     } else {
         ++requestInterpreterCounts[interfaceName];

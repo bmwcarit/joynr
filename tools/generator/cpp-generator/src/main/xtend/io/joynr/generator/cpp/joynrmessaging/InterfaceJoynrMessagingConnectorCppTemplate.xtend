@@ -128,7 +128,7 @@ bool «className»::usesClusterController() const{
 	«IF attribute.readable»
 		«produceSyncGetterSignature(attribute, className)»
 		{
-			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccess =
 					[future] (const «returnType»& «attributeName») {
@@ -140,16 +140,14 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(
-					onSuccess,
-					onError));
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(onSuccess, onError);
 			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 			future->get(«attributeName»);
 		}
 
 		«produceAsyncGetterSignature(attribute, className)»
 		{
-			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
 					[future, onSuccess] (const «returnType»& «attributeName») {
@@ -167,9 +165,7 @@ bool «className»::usesClusterController() const{
 						}
 					};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(
-					onSuccessWrapper,
-					onErrorWrapper));
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(onSuccessWrapper, onErrorWrapper);
 			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 
 			return future;
@@ -197,7 +193,7 @@ bool «className»::usesClusterController() const{
 				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»
 
-			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
+			auto future = std::make_shared<joynr::Future<void>>();
 
 			std::function<void()> onSuccessWrapper =
 					[future, onSuccess] () {
@@ -215,9 +211,7 @@ bool «className»::usesClusterController() const{
 					}
 				};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
-					onSuccessWrapper,
-					onErrorWrapper));
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(onSuccessWrapper, onErrorWrapper);
 			operationRequest(replyCaller, internalRequestObject);
 			return future;
 		}
@@ -242,7 +236,8 @@ bool «className»::usesClusterController() const{
 				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»
 
-			std::shared_ptr<joynr::Future<void> > future( new joynr::Future<void>());
+			auto future = std::make_shared<joynr::Future<void>>();
+
 
 			std::function<void()> onSuccess =
 					[future] () {
@@ -254,9 +249,7 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
-					onSuccess,
-					onError));
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(onSuccess, onError);
 			operationRequest(replyCaller, internalRequestObject);
 			future->get();
 		}
@@ -292,7 +285,7 @@ bool «className»::usesClusterController() const{
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(subscriptionQos));
 
-			std::shared_ptr<joynr::SubscriptionCallback<«returnType»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnType»>(subscriptionListener));
+			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>>(subscriptionListener);
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -334,8 +327,7 @@ bool «className»::usesClusterController() const{
 	«produceSyncMethodSignature(method, className)»
 	{
 		«produceParameterSetters(method)»
-		std::shared_ptr<joynr::Future<«outputParameters»> > future(
-				new joynr::Future<«outputParameters»>());
+		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 		std::function<void(«outputTypedConstParamList»)> onSuccess =
 				[future] («outputTypedConstParamList») {
@@ -347,9 +339,7 @@ bool «className»::usesClusterController() const{
 				future->onError(error);
 			};
 
-		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
-				onSuccess,
-				onError));
+		auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccess, onError);
 		operationRequest(replyCaller, internalRequestObject);
 		future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
 	}
@@ -358,8 +348,7 @@ bool «className»::usesClusterController() const{
 	{
 		«produceParameterSetters(method)»
 
-		std::shared_ptr<joynr::Future<«outputParameters»> > future(
-				new joynr::Future<«outputParameters»>());
+		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 		std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
 				[future, onSuccess] («outputTypedConstParamList») {
@@ -375,9 +364,7 @@ bool «className»::usesClusterController() const{
 				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(serviceInterface, method)»
 			};
 
-		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
-				onSuccessWrapper,
-				onErrorWrapper));
+		auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccessWrapper, onErrorWrapper);
 		operationRequest(replyCaller, internalRequestObject);
 		return future;
 	}

@@ -432,7 +432,7 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
+    auto future = std::make_shared<LocalCapabilitiesFuture>();
     lookup(domain, interfaceName, future, discoveryQos);
     std::vector<CapabilityEntry> capabilities = future->get();
     std::vector<types::DiscoveryEntry> result;
@@ -447,7 +447,7 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
+    auto future = std::make_shared<LocalCapabilitiesFuture>();
     lookup(participantId, future);
     std::vector<CapabilityEntry> capabilities = future->get();
     if (capabilities.size() > 1) {

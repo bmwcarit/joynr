@@ -209,8 +209,8 @@ void PublicationManager::add(const std::string& proxyParticipantId,
                              IPublicationSender* publicationSender)
 {
     assert(requestCaller);
-    std::shared_ptr<SubscriptionRequestInformation> requestInfo(new SubscriptionRequestInformation(
-            proxyParticipantId, providerParticipantId, subscriptionRequest));
+    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(
+            proxyParticipantId, providerParticipantId, subscriptionRequest);
     handleAttributeSubscriptionRequest(requestInfo, requestCaller, publicationSender);
 }
 
@@ -220,7 +220,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         IPublicationSender* publicationSender)
 {
     std::string subscriptionId = requestInfo->getSubscriptionId();
-    std::shared_ptr<Publication> publication(new Publication(publicationSender, requestCaller));
+    auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
 
     if (publicationExists(subscriptionId)) {
         JOYNR_LOG_DEBUG(logger,
@@ -321,8 +321,8 @@ void PublicationManager::add(const std::string& proxyParticipantId,
     JOYNR_LOG_DEBUG(logger,
                     "Added subscription for non existing provider (adding subscriptionRequest "
                     "to queue).");
-    std::shared_ptr<SubscriptionRequestInformation> requestInfo(new SubscriptionRequestInformation(
-            proxyParticipantId, providerParticipantId, subscriptionRequest));
+    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(
+            proxyParticipantId, providerParticipantId, subscriptionRequest);
     {
         std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
         queuedSubscriptionRequests.insert(
@@ -358,7 +358,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
     std::string subscriptionId = requestInfo->getSubscriptionId();
 
-    std::shared_ptr<Publication> publication(new Publication(publicationSender, requestCaller));
+    auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
 
     if (publicationExists(subscriptionId)) {
         JOYNR_LOG_DEBUG(logger,

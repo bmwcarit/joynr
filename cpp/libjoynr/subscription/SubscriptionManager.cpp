@@ -97,7 +97,7 @@ void SubscriptionManager::registerSubscription(
                                     std::to_string(now));
     }
 
-    std::shared_ptr<Subscription> subscription(new Subscription(subscriptionCaller));
+    auto subscription = std::make_shared<Subscription>(subscriptionCaller);
 
     subscriptions.insert(subscriptionId, subscription);
 

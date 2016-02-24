@@ -80,8 +80,7 @@ void LibJoynrRuntime::init(
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 
     // create message router
-    messageRouter = std::shared_ptr<MessageRouter>(
-            new MessageRouter(messagingStubFactory, libjoynrMessagingAddress));
+    messageRouter = std::make_shared<MessageRouter>(messagingStubFactory, libjoynrMessagingAddress);
 
     startLibJoynrMessagingSkeleton(*messageRouter);
 
@@ -90,10 +89,9 @@ void LibJoynrRuntime::init(
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
-    dispatcherMessagingSkeleton = std::shared_ptr<InProcessMessagingSkeleton>(
-            new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
-    dispatcherAddress = std::shared_ptr<joynr::system::RoutingTypes::Address>(
-            new InProcessMessagingAddress(dispatcherMessagingSkeleton));
+    dispatcherMessagingSkeleton =
+            std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
+    dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
@@ -114,8 +112,7 @@ void LibJoynrRuntime::init(
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage =
-            std::shared_ptr<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
+    participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
     // initialize the dispatchers
     std::vector<IDispatcher*> dispatcherList;

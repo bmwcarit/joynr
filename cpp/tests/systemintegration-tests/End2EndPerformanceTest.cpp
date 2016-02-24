@@ -98,7 +98,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    auto testProvider = std::make_shared<MockTestProvider>(providerQos);
 
     runtime1->registerProvider<tests::testProvider>(domain, testProvider);
 

@@ -870,7 +870,7 @@ class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructu
 public:
     MockGlobalDomainAccessControllerProxy() :
         GlobalDomainAccessControllerProxy(
-                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
+                std::make_shared<joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
@@ -883,21 +883,21 @@ public:
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerProxyBase(
-                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
+                std::make_shared<joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerSyncProxy(
-                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
+                std::make_shared<joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerAsyncProxy(
-                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
+                std::make_shared<joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",

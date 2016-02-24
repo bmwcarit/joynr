@@ -57,8 +57,7 @@ public:
     {
         std::shared_ptr<RequestCaller> requestCaller =
                 requestCallerDirectory->lookupRequestCaller(providerParticipantId);
-        std::shared_ptr<InProcessAddress> inProcessEndpointAddress(
-                new InProcessAddress(requestCaller));
+        auto inProcessEndpointAddress = std::make_shared<InProcessAddress>(requestCaller);
 
         using Connector = typename InProcessTraits<T>::Connector;
         return new Connector(subscriptionManager,

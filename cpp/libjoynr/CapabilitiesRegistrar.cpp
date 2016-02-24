@@ -54,7 +54,7 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
                         e.getMessage());
     }
 
-    std::shared_ptr<Future<void>> future(new Future<void>());
+    auto future = std::make_shared<Future<void>>();
     auto onSuccess = [future]() { future->onSuccess(); };
     messageRouter->removeNextHop(participantId, onSuccess);
     future->wait();

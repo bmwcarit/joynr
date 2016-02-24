@@ -76,8 +76,7 @@ TEST_F(MqttMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessag
     // - MessageRunnable.run
     // - MqttMessagingStub.transmit (IMessaging)
     // - MessageSender.send
-    std::shared_ptr<system::RoutingTypes::MqttAddress> joynrMessagingEndpointAddr =
-            std::shared_ptr<system::RoutingTypes::MqttAddress>(new system::RoutingTypes::MqttAddress());
+    auto joynrMessagingEndpointAddr = std::make_shared<system::RoutingTypes::MqttAddress>();
     joynrMessagingEndpointAddr->setTopic(receiverChannelId);
 
     sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager(joynrMessagingEndpointAddr);
@@ -95,11 +94,10 @@ TEST_F(MqttMessagingTest, routeMsgToInProcessMessagingSkeleton)
 }
 
 std::shared_ptr<system::RoutingTypes::MqttAddress> MqttMessagingTest::createJoynrMessagingEndpointAddress() {
-    std::shared_ptr<system::RoutingTypes::MqttAddress> joynrMessagingEndpointAddr =
-                std::shared_ptr<system::RoutingTypes::MqttAddress>(new system::RoutingTypes::MqttAddress());
-        joynrMessagingEndpointAddr->setTopic(receiverChannelId);
-        joynrMessagingEndpointAddr->setBrokerUri(brokerUri);
-        return joynrMessagingEndpointAddr;
+    auto joynrMessagingEndpointAddr = std::make_shared<system::RoutingTypes::MqttAddress>();
+    joynrMessagingEndpointAddr->setTopic(receiverChannelId);
+    joynrMessagingEndpointAddr->setBrokerUri(brokerUri);
+    return joynrMessagingEndpointAddr;
 }
 
 TEST_F(MqttMessagingTest, routeMsgToMqtt)

@@ -85,7 +85,7 @@ typedef JoynrMessageSenderTest JoynrMessageSenderDeathTest;
 TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 
     MockDispatcher mockDispatcher;
-    std::shared_ptr<MockMessageRouter> messagingStub(new MockMessageRouter());
+    auto messagingStub = std::make_shared<MockMessageRouter>();
 
     Request request;
     request.setMethodName("methodName");
@@ -116,7 +116,7 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death){
 
     MockDispatcher mockDispatcher;
-    std::shared_ptr<MockMessageRouter> messagingStub(new MockMessageRouter());
+    auto messagingStub = std::make_shared<MockMessageRouter>();
     EXPECT_CALL(*(messagingStub.get()), route(_,_)).Times(0);
 
     JoynrMessageSender joynrMessageSender(messagingStub);
@@ -130,7 +130,7 @@ TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death)
 TEST_F(JoynrMessageSenderTest, sendReply_normal){
 
     MockDispatcher mockDispatcher;
-    std::shared_ptr<MockMessageRouter> messagingStub(new MockMessageRouter());
+    auto messagingStub = std::make_shared<MockMessageRouter>();
 
     JoynrMessageSender joynrMessageSender(messagingStub);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
@@ -156,7 +156,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
 TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
 
     MockDispatcher mockDispatcher;
-    std::shared_ptr<MockMessageRouter> messagingStub(new MockMessageRouter());
+    auto messagingStub = std::make_shared<MockMessageRouter>();
 
     std::int64_t period = 2000;
     std::int64_t validity = 100000;
@@ -187,7 +187,7 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
 TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 
     MockDispatcher mockDispatcher;
-    std::shared_ptr<MockMessageRouter> messagingStub(new MockMessageRouter());
+    auto messagingStub = std::make_shared<MockMessageRouter>();
 
     std::int64_t minInterval = 2000;
     std::int64_t validity = 100000;
@@ -222,7 +222,7 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
 
     MockDispatcher mockDispatcher;
-    std::shared_ptr<MockMessageRouter> messagingStub(new MockMessageRouter());
+    auto messagingStub = std::make_shared<MockMessageRouter>();
     std::string payload("subscriptionReply");
     EXPECT_CALL(*(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
                                                   Property(&JoynrMessage::getPayload, Eq(payload))),_));
@@ -238,7 +238,7 @@ TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
 TEST_F(JoynrMessageSenderTest, sendPublication_normal){
 
     MockDispatcher mockDispatcher;
-    std::shared_ptr<MockMessageRouter> messagingStub(new MockMessageRouter());
+    auto messagingStub = std::make_shared<MockMessageRouter>();
 
     JoynrMessageSender joynrMessageSender(messagingStub);
     joynrMessageSender.registerDispatcher(&mockDispatcher);

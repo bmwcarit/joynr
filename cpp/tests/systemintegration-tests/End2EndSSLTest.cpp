@@ -81,7 +81,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
 {
 
     // Create a provider
-    std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
+    auto mockProvider = std::make_shared<MockGpsProvider>();
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 

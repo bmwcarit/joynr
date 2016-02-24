@@ -43,7 +43,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrl
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(new Future<types::ChannelUrlInformation>());
+    auto future = std::make_shared<Future<joynr::types::ChannelUrlInformation>>();
     future->onSuccess(urlInformation);
     return future;
 }

@@ -247,7 +247,7 @@ T* ProxyBuilder<T>::build()
      * synchronously wait until the proxy participantId is registered in the
      * routing table(s)
     */
-    std::shared_ptr<Future<void>> future(new Future<void>());
+    auto future = std::make_shared<Future<void>>();
     auto onSuccess = [future]() { future->onSuccess(); };
     messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress, onSuccess);
 

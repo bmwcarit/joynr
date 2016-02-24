@@ -199,7 +199,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
     MockPublicationSender mockPublicationSender;
 
     //the first publicationManager will get this requestCaller:
-    std::shared_ptr<MockTestRequestCaller> requestCaller(new MockTestRequestCaller(Between(1,3)));
+    auto requestCaller = std::make_shared<MockTestRequestCaller>(Between(1,3));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
@@ -207,7 +207,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
 
     //the second publicationManager will get this requestCaller
     //if restoring works, this caller will be called as well.
-    std::shared_ptr<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller(AtLeast(1)));
+    auto requestCaller2 = std::make_shared<MockTestRequestCaller>(AtLeast(1));
 
     PublicationManager* publicationManager = new PublicationManager() ;
 

@@ -114,7 +114,7 @@ public:
     virtual ~AbstractSyncAsyncTest() = default;
     void SetUp(){
         qosSettings = MessagingQos(456000);
-        endPointAddress = std::shared_ptr<system::RoutingTypes::Address>(new system::RoutingTypes::ChannelAddress("endPointAddress"));
+        endPointAddress = std::make_shared<system::RoutingTypes::ChannelAddress>("endPointAddress");
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
         mockJoynrMessageSender = new MockJoynrMessageSender();

@@ -171,7 +171,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
                 "broadcastWithSingleArrayParameter",
                 subscriptionBroadcastListener);
 
-    std::shared_ptr<MockMessageRouter> mockMessageRouter(std::shared_ptr<MockMessageRouter>(new MockMessageRouter()));
+    auto mockMessageRouter = std::make_shared<MockMessageRouter>();
     JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
     publicationManager->add(
                 proxyParticipantId,

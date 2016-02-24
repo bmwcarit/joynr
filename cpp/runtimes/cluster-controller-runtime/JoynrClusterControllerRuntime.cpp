@@ -174,8 +174,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
     // init message router
-    messageRouter = std::shared_ptr<MessageRouter>(
-            new MessageRouter(messagingStubFactory, securityManager));
+    messageRouter = std::make_shared<MessageRouter>(messagingStubFactory, securityManager);
 
     const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
     assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());
@@ -276,8 +275,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     /* CC */
     // TODO: libjoynrmessagingskeleton now uses the Dispatcher, should it use the
     // InprocessDispatcher?
-    libJoynrMessagingSkeleton = std::shared_ptr<InProcessMessagingSkeleton>(
-            new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
+    libJoynrMessagingSkeleton =
+            std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
     // EndpointAddress to messagingStub is transmitted when a provider is registered
     // messagingStubFactory->registerInProcessMessagingSkeleton(libJoynrMessagingSkeleton);
 
@@ -425,8 +424,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings.getParticipantIdsPersistenceFilename();
-    participantIdStorage =
-            std::shared_ptr<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
+    participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
     dispatcherAddress = libjoynrMessagingAddress;
     discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
@@ -495,8 +493,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
-    channelUrlDirectory = std::shared_ptr<ILocalChannelUrlDirectory>(
-            new LocalChannelUrlDirectory(messagingSettings, channelUrlDirectoryProxy));
+    channelUrlDirectory =
+            std::make_shared<LocalChannelUrlDirectory>(messagingSettings, channelUrlDirectoryProxy);
 
     if (doHttpMessaging) {
         httpMessageReceiver->init(channelUrlDirectory);

@@ -352,7 +352,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                     ReleaseSemaphore(&semaphore)
             ));
 
-    std::shared_ptr<MockMessageRouter> mockMessageRouter(std::shared_ptr<MockMessageRouter>(new MockMessageRouter()));
+    auto mockMessageRouter = std::make_shared<MockMessageRouter>();
     JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
 
     /* ensure the serialization succeeds and the first publication is send to the proxy */

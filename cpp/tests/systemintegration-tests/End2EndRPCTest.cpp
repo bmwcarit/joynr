@@ -81,7 +81,7 @@ private:
 TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 {
 
-    std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
+    auto mockProvider = std::make_shared<MockGpsProvider>();
 
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
@@ -111,14 +111,13 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 
 TEST_P(End2EndRPCTest, call_void_operation)
 {
-
-    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(
+    auto mockProvider = std::make_shared<MockTestProvider>(types::ProviderQos(
             std::vector<types::CustomParameter>(),
             1,
             1,
             types::ProviderScope::GLOBAL,
             false
-    )));
+    ));
 
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
@@ -146,7 +145,7 @@ TEST_P(End2EndRPCTest, call_void_operation)
 // tests in process subscription
 TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
-    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
+    auto mockProvider = std::make_shared<MockTestProvider>();
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(550));

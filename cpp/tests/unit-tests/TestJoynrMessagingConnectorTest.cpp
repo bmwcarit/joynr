@@ -244,7 +244,7 @@ TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute) {
 TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     tests::testJoynrMessagingConnector* connector = createConnector(false);
 
-    std::shared_ptr<MockGpsFloatSubscriptionListener> mockListener(new MockGpsFloatSubscriptionListener());
+    auto mockListener = std::make_shared<MockGpsFloatSubscriptionListener>();
 
     EXPECT_CALL(
                         *mockSubscriptionManager,

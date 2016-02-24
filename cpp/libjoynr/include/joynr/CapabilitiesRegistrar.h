@@ -90,7 +90,7 @@ public:
         }
 
         // add next hop to dispatcher
-        std::shared_ptr<Future<void>> future(new Future<void>());
+        auto future = std::make_shared<joynr::Future<void>>();
         auto onSuccess = [future]() { future->onSuccess(); };
         messageRouter->addNextHop(participantId, dispatcherAddress, onSuccess);
         future->wait();
@@ -131,7 +131,7 @@ public:
                             e.getMessage());
         }
 
-        std::shared_ptr<Future<void>> future(new Future<void>());
+        auto future = std::make_shared<joynr::Future<void>>();
         auto callbackFct = [future]() { future->onSuccess(); };
         messageRouter->removeNextHop(participantId, callbackFct);
         future->wait();

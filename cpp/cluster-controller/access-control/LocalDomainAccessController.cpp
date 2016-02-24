@@ -562,7 +562,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
                                                                    const std::string& interfaceName)
 {
     // Create an object to keep track of the initialisation
-    std::shared_ptr<Initialiser> initialiser(new Initialiser(*this, domain, interfaceName));
+    auto initialiser = std::make_shared<Initialiser>(*this, domain, interfaceName);
 
     // Initialise domain roles from global data
     // TODO: confirm that this is needed
