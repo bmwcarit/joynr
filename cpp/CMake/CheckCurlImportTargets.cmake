@@ -5,7 +5,7 @@ message(STATUS "variable CURL_LIBRARIES=${CURL_LIBRARIES}")
 
 if(NOT TARGET cURL::curl)
     message(STATUS "cURL::curl target not defined. Creating IMPORTED target.")
-    add_library(cURL::curl SHARED IMPORTED)
+    add_library(cURL::curl SHARED IMPORTED GLOBAL)
     set_target_properties(cURL::curl PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${CURL_INCLUDE_DIRS}"
         IMPORTED_LOCATION "${CURL_LIBRARIES}"
