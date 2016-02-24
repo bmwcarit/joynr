@@ -31,6 +31,13 @@ option(
 )
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
+if(ENABLE_CLANG_FORMATTER)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cpp/CMake")
+    include(LocateProgram)
+    LocateProgram(clang-format CLANG_FORMAT_PATH)
+    include(AddClangFormat)
+    add_custom_target(format)
+endif(ENABLE_CLANG_FORMATTER)
 
 ##### Start of build ####################
 
@@ -259,41 +266,19 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
             RUNTIME DESTINATION bin COMPONENT bin
     )
 
+    if(ENABLE_CLANG_FORMATTER)
+        AddClangFormat(ilt-provider-dbus)
+        AddClangFormat(ilt-consumer-dbus)
+    endif(ENABLE_CLANG_FORMATTER)
+
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${ilt-provider_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${ilt-provider_SOURCES}")
-
-    add_custom_command(
-        TARGET ilt-provider-cc
-        PRE_BUILD
-        COMMAND clang-format -i
-            ${ilt-provider_HEADERS}
-            ${ilt-provider_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${ilt-consumer_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${ilt-consumer_SOURCES}")
-
-    add_custom_command(
-        TARGET ilt-consumer-cc
-        PRE_BUILD
-        COMMAND clang-format -i
-            ${ilt-consumer_HEADERS}
-            ${ilt-consumer_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-endif(${ENABLE_CLANG_FORMATTER})
+if(ENABLE_CLANG_FORMATTER)
+    AddClangFormat(ilt-provider-cc)
+    AddClangFormat(ilt-consumer-cc)
+    AddClangFormat(ilt-provider-ws)
+    AddClangFormat(ilt-consumer-ws)
+endif(ENABLE_CLANG_FORMATTER)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.dbus.settings)

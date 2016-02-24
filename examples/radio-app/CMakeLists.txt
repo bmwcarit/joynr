@@ -66,6 +66,14 @@ if(${GENERATE_SOURCES})
     )
 endif(${GENERATE_SOURCES})
 
+if(ENABLE_CLANG_FORMATTER)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cpp/CMake")
+    include(LocateProgram)
+    LocateProgram(clang-format CLANG_FORMAT_PATH)
+    include(AddClangFormat)
+    add_custom_target(format)
+endif(ENABLE_CLANG_FORMATTER)
+
 ######## Add Boost ########
 
 find_package(Boost 1.56.0 REQUIRED
@@ -240,6 +248,13 @@ install(TARGETS
         RUNTIME DESTINATION bin COMPONENT bin
 )
 
+if(ENABLE_CLANG_FORMATTER)
+    AddClangFormat(radio-app-provider-ws)
+    AddClangFormat(radio-app-consumer-ws)
+    AddClangFormat(radio-app-provider-cc)
+    AddClangFormat(radio-app-consumer-cc)
+endif(ENABLE_CLANG_FORMATTER)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Compile the provider application (requires: Dbus and running cluster controller)
     # Communicates via Dbus with cluster controller
@@ -275,41 +290,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
             RUNTIME DESTINATION bin COMPONENT bin
     )
 
+    if(ENABLE_CLANG_FORMATTER)
+        AddClangFormat(radio-app-provider-dbus)
+        AddClangFormat(radio-app-provider-dbus)
+    endif(ENABLE_CLANG_FORMATTER)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-provider_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-provider_SOURCES}")
-
-    add_custom_command(
-        TARGET radio-app-provider-cc
-        PRE_BUILD
-        COMMAND clang-format -i
-            ${radio-app-provider_HEADERS}
-            ${radio-app-provider_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-consumer_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-consumer_SOURCES}")
-
-    add_custom_command(
-        TARGET radio-app-consumer-cc
-        PRE_BUILD
-        COMMAND clang-format -i
-            ${radio-app-consumer_HEADERS}
-            ${radio-app-consumer_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-endif(${ENABLE_CLANG_FORMATTER})
 
 # Set Visual Studio to do parallel builds
 IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
