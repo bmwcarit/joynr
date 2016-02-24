@@ -58,6 +58,7 @@
 		<module>cpp</module>
 		<module>examples</module>
 		<module>inter-language-test</module>
+		<module>tests</module>
 	</modules>
 
 	<profiles>
