@@ -16,11 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <cstdint>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
@@ -32,6 +33,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
 
 using namespace ::testing;
 
@@ -91,7 +93,7 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::int64_t qosRoundTripTTL = 40000;
     std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
@@ -127,7 +129,7 @@ TEST_P(End2EndRPCTest, call_void_operation)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::int64_t qosRoundTripTTL = 40000;
     tests::testProxy* testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
@@ -156,7 +158,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::int64_t qosRoundTripTTL = 40000;
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)

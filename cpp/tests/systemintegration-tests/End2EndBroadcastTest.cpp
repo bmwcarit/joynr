@@ -16,11 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <cstdint>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
@@ -32,6 +34,7 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -467,7 +470,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -554,7 +557,7 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -622,7 +625,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -695,7 +698,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -773,7 +776,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -850,7 +853,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -936,7 +939,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder

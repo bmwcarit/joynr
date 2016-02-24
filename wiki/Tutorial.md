@@ -247,8 +247,8 @@ int main(int argc, char* argv[])
             runtime->getProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
-    qlonglong qosMsgTtl = 30000;                // Time to live is 30 secs in one direction
-    qlonglong qosCacheDataFreshnessMs = 400000; // Only consider data cached for < 400 secs
+    std::int64_t qosMsgTtl = 30000;                // Time to live is 30 secs in one direction
+    std::int64_t qosCacheDataFreshnessMs = 400000; // Only consider data cached for < 400 secs
 
     // Find the provider with the highest priority set in ProviderQos
     DiscoveryQos discoveryQos;

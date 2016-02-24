@@ -16,13 +16,15 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+
 #include <memory>
 #include <string>
-#include "tests/utils/MockObjects.h"
+#include <cstdint>
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/vehicle/GpsProxy.h"
@@ -31,6 +33,7 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -91,7 +94,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::int64_t qosRoundTripTTL = 40000;
     std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)

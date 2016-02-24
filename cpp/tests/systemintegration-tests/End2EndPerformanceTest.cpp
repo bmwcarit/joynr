@@ -16,17 +16,20 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <cstdint>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
 
 using namespace ::testing;
 
@@ -110,7 +113,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 50000;
+    std::int64_t qosRoundTripTTL = 50000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
