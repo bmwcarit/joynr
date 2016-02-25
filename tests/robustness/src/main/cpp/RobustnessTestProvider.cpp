@@ -54,6 +54,35 @@ void RobustnessTestProvider::methodWithStringParameters(
     onSuccess(stringOut);
 }
 
+void RobustnessTestProvider::methodWithDelayedResponse(
+        const std::int32_t& delayArg,
+        std::function<void(const std::string& stringOut)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+{
+    JOYNR_LOG_WARN(logger, "methodWithDelayedResponse - START");
+
+    std::this_thread::sleep_for(std::chrono::seconds(delayArg));
+
+    JOYNR_LOG_WARN(logger, "methodWithDelayedResponse - OK");
+    onSuccess("done");
+}
+
+void RobustnessTestProvider::methodToFireBroadcastWithSingleStringParameter(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+{
+    std::ignore = onError;
+    JOYNR_LOG_WARN(
+            logger, "**********************************************************************");
+    JOYNR_LOG_WARN(
+            logger, "* RobustnessProvider::methodToFireBroadcastWithSingleStringParameter called");
+    JOYNR_LOG_WARN(
+            logger, "**********************************************************************");
+    std::string stringOut = "boom";
+    fireBroadcastWithSingleStringParameter(stringOut);
+    onSuccess();
+}
+
 void RobustnessTestProvider::startFireBroadcastWithSingleStringParameter(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)

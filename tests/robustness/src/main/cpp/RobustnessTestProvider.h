@@ -47,6 +47,17 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
 
+    void methodWithDelayedResponse(
+            const std::int32_t& delayArg,
+            std::function<void(const std::string& stringOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError) override;
+
+    void methodToFireBroadcastWithSingleStringParameter(
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError) override;
+
     void startFireBroadcastWithSingleStringParameter(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
@@ -62,9 +73,7 @@ public:
                                                         std::shared_ptr<std::string> stringOut);
 
 private:
-    // Disallow copy and assign
-    RobustnessTestProvider(const RobustnessTestProvider&);
-    void operator=(const RobustnessTestProvider&);
+    DISALLOW_COPY_AND_ASSIGN(RobustnessTestProvider);
 
     ADD_LOGGER(RobustnessTestProvider);
     std::atomic<bool> stopBroadcastWithSingleStringParameter;

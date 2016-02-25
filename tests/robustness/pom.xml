@@ -56,11 +56,28 @@
 							<outputPath>${basedir}/src/main/generated-cpp</outputPath>
 						</configuration>
 					</execution>
+					<execution>
+						<id>generate-javascript</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/src/main/model</model>
+							<generationLanguage>javascript</generationLanguage>
+							<outputPath>${basedir}/src/main/generated-javascript</outputPath>
+						</configuration>
+					</execution>
 				</executions>
 				<dependencies>
 					<dependency>
 						<groupId>io.joynr.tools.generator</groupId>
 						<artifactId>cpp-generator</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.joynr.tools.generator</groupId>
+						<artifactId>js-generator</artifactId>
 						<version>${project.version}</version>
 					</dependency>
 				</dependencies>
@@ -72,6 +89,12 @@
 					<filesets>
 						<fileset>
 							<directory>src/main/generated-cpp</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>src/main/generated-javascript</directory>
 							<includes>
 								<include>**</include>
 							</includes>
