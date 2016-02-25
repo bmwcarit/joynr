@@ -291,12 +291,12 @@ bool «className»::usesClusterController() const{
 			JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
 			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
-			if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+			if (subscriptionQos.getExpiryDateMs() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
 				clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
 			}
 			else{
 				std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-				clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
+				clonedMessagingQos.setTtl(subscriptionQos.getExpiryDateMs() - now);
 			}
 
 			std::shared_ptr<joynr::SubscriptionCallback<«returnType»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnType»>(subscriptionListener));
@@ -441,12 +441,12 @@ bool «className»::usesClusterController() const{
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
-		if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+		if (subscriptionQos.getExpiryDateMs() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
 			clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
 		}
 		else{
 			std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-			clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
+			clonedMessagingQos.setTtl(subscriptionQos.getExpiryDateMs() - now);
 		}
 
 		std::shared_ptr<joynr::SubscriptionCallback<«returnTypes»>> subscriptionCallback(

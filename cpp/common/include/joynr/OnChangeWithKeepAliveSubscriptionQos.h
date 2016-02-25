@@ -56,7 +56,7 @@ public:
     /**
      * @brief Constructor with full parameter set
      *
-     * @param validity Time span in milliseconds during which publications will be sent
+     * @param validityMs Time span in milliseconds during which publications will be sent
      * @param minInterval Minimum interval in milliseconds.
      * It is used to prevent flooding. Publications will be sent maintaining
      * this minimum interval provided, even if the value changes more often.
@@ -69,7 +69,7 @@ public:
      * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
      *
-     * @see SubscriptionQos#setValidity
+     * @see SubscriptionQos#setValidityMs
      * @see OnChangeSubscriptionQos#setMinInterval
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterInterval

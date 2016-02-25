@@ -198,8 +198,8 @@ bool isSubscriptionExpired(const SubscriptionQos* qos, int offset = 0)
 {
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::system_clock::now().time_since_epoch()).count();
-    return qos->getExpiryDate() != SubscriptionQos::NO_EXPIRY_DATE() &&
-           qos->getExpiryDate() < (now + offset);
+    return qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE() &&
+           qos->getExpiryDateMs() < (now + offset);
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,
@@ -247,11 +247,11 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationEndDelay = qos->getExpiryDate() - now;
+        std::int64_t publicationEndDelay = qos->getExpiryDateMs() - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId),
                         std::chrono::milliseconds(publicationEndDelay));
@@ -385,11 +385,11 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationEndDelay = qos->getExpiryDate() - now;
+        std::int64_t publicationEndDelay = qos->getExpiryDateMs() - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId),
                         std::chrono::milliseconds(publicationEndDelay));

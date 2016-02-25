@@ -58,10 +58,12 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos()
 {
 }
 
-PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t& validity,
+PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t& validityMs,
                                                  const std::int64_t& period,
                                                  const std::int64_t& alertAfterInterval)
-        : SubscriptionQos(validity), period(-1), alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
+        : SubscriptionQos(validityMs),
+          period(-1),
+          alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
 {
     setPeriod(period);
     setAlertAfterInterval(alertAfterInterval);
@@ -116,7 +118,7 @@ void PeriodicSubscriptionQos::clearAlertAfterInterval()
 
 PeriodicSubscriptionQos& PeriodicSubscriptionQos::operator=(const PeriodicSubscriptionQos& other)
 {
-    expiryDate = other.getExpiryDate();
+    expiryDateMs = other.getExpiryDateMs();
     publicationTtl = other.getPublicationTtl();
     period = other.getPeriod();
     alertAfterInterval = other.getAlertAfterInterval();
@@ -125,6 +127,6 @@ PeriodicSubscriptionQos& PeriodicSubscriptionQos::operator=(const PeriodicSubscr
 
 bool PeriodicSubscriptionQos::operator==(const PeriodicSubscriptionQos& other) const
 {
-    return expiryDate == other.getExpiryDate() && publicationTtl == other.getPublicationTtl() &&
+    return expiryDateMs == other.getExpiryDateMs() && publicationTtl == other.getPublicationTtl() &&
            period == other.getPeriod() && alertAfterInterval == other.getAlertAfterInterval();
 }

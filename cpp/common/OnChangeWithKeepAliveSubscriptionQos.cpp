@@ -56,11 +56,11 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos()
 }
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
-        const std::int64_t& validity,
+        const std::int64_t& validityMs,
         const std::int64_t& minInterval,
         const std::int64_t& maxInterval,
         const std::int64_t& alertAfterInterval)
-        : OnChangeSubscriptionQos(validity, minInterval),
+        : OnChangeSubscriptionQos(validityMs, minInterval),
           maxInterval(getMinInterval()),
           alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
 {
@@ -122,7 +122,7 @@ std::int64_t OnChangeWithKeepAliveSubscriptionQos::getAlertAfterInterval() const
 OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::operator=(
         const OnChangeWithKeepAliveSubscriptionQos& other)
 {
-    expiryDate = other.getExpiryDate();
+    expiryDateMs = other.getExpiryDateMs();
     publicationTtl = other.getPublicationTtl();
     minInterval = other.getMinInterval();
     maxInterval = other.getMaxInterval();
@@ -133,7 +133,7 @@ OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::oper
 bool OnChangeWithKeepAliveSubscriptionQos::operator==(
         const OnChangeWithKeepAliveSubscriptionQos& other) const
 {
-    return expiryDate == other.getExpiryDate() && publicationTtl == other.getPublicationTtl() &&
+    return expiryDateMs == other.getExpiryDateMs() && publicationTtl == other.getPublicationTtl() &&
            minInterval == other.getMinInterval() && maxInterval == other.getMaxInterval() &&
            alertAfterInterval == other.getAlertAfterInterval();
 }

@@ -61,7 +61,7 @@ TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect)
                 new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
     OnChangeSubscriptionQos qos{};
     std::int64_t now = TimeUtils::getCurrentMillisSinceEpoch();
-    qos.setExpiryDate(now + 10000);
+    qos.setExpiryDateMs(now + 10000);
     Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     SubscriptionRequest subscriptionRequest;
     subscriptionManager.registerSubscription(

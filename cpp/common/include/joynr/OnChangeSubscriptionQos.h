@@ -55,8 +55,8 @@ public:
     /**
      * @brief Constructor with full parameter set.
      *
-     * @param validity Time span in milliseconds during which publications will be sent
      * @param minInterval Minimum interval in milliseconds.
+     * @param validityMs Time span in milliseconds during which publications will be sent
      *
      * It is used to prevent flooding. Publications will be sent maintaining
      * this minimum interval provided, even if the value changes more often.
@@ -64,11 +64,11 @@ public:
      * The filtering happens on the provider's side, thus also preventing
      * excessive network traffic.
      *
-     * @see SubscriptionQos#setValidity
+     * @see SubscriptionQos#setValidityMs
      * @see OnChangeSubscriptionQos#setMinInterval
      * @see SubscriptionQos#setPublicationTtl
      */
-    OnChangeSubscriptionQos(const std::int64_t& validity, const std::int64_t& minInterval);
+    OnChangeSubscriptionQos(const std::int64_t& validityMs, const std::int64_t& minInterval);
 
     /**
      * @brief Gets the minimum interval in milliseconds

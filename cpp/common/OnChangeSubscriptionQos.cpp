@@ -48,9 +48,9 @@ OnChangeSubscriptionQos::OnChangeSubscriptionQos()
 {
 }
 
-OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t& validity,
+OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t& validityMs,
                                                  const std::int64_t& minInterval)
-        : SubscriptionQos(validity), minInterval(DEFAULT_MIN_INTERVAL())
+        : SubscriptionQos(validityMs), minInterval(DEFAULT_MIN_INTERVAL())
 {
     setMinInterval(minInterval);
 }
@@ -78,7 +78,7 @@ void OnChangeSubscriptionQos::setMinInterval(const std::int64_t& minInterval)
 
 OnChangeSubscriptionQos& OnChangeSubscriptionQos::operator=(const OnChangeSubscriptionQos& other)
 {
-    expiryDate = other.getExpiryDate();
+    expiryDateMs = other.getExpiryDateMs();
     publicationTtl = other.getPublicationTtl();
     minInterval = other.getMinInterval();
     return *this;
@@ -86,6 +86,6 @@ OnChangeSubscriptionQos& OnChangeSubscriptionQos::operator=(const OnChangeSubscr
 
 bool OnChangeSubscriptionQos::operator==(const OnChangeSubscriptionQos& other) const
 {
-    return expiryDate == other.getExpiryDate() && publicationTtl == other.getPublicationTtl() &&
+    return expiryDateMs == other.getExpiryDateMs() && publicationTtl == other.getPublicationTtl() &&
            minInterval == other.getMinInterval();
 }

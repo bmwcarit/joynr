@@ -35,8 +35,8 @@ void ClassDeserializerImpl<OnChangeSubscriptionQos>::deserialize(OnChangeSubscri
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
-        if (field.name() == "expiryDate") {
-            subscription.setExpiryDate(field.value().getIntType<std::int64_t>());
+        if (field.name() == "expiryDateMs") {
+            subscription.setExpiryDateMs(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "publicationTtl") {
             subscription.setPublicationTtl(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "minInterval") {
@@ -50,7 +50,7 @@ void ClassSerializerImpl<OnChangeSubscriptionQos>::serialize(const OnChangeSubsc
 {
     stream << R"({)";
     stream << R"("_typeName":")" << JoynrTypeId<OnChangeSubscriptionQos>::getTypeName() << R"(",)";
-    stream << R"("expiryDate": )" << subscription.getExpiryDate() << R"(,)";
+    stream << R"("expiryDateMs": )" << subscription.getExpiryDateMs() << R"(,)";
     stream << R"("publicationTtl": )" << subscription.getPublicationTtl()<< R"(,)";
     stream << R"("minInterval": )" << subscription.getMinInterval();
     stream << R"(})";

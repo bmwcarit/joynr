@@ -198,8 +198,8 @@ int main(int argc, char* argv[])
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
-    // setValidity_ms will set the end date to current time millis + validity_ms
-    subscriptionQos.setValidity(60 * 1000);
+    // setValidityMs will set the end date to current time millis + validity
+    subscriptionQos.setValidityMs(60 * 1000);
     // Notification messages will be sent with this time-to-live. If a notification message can not
     // be delivered within its TTL, it will be deleted from the system.
     // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
@@ -230,8 +230,8 @@ int main(int argc, char* argv[])
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
-    // setValidity_ms will set the end date to current time millis + validity_ms
-    weakSignalBroadcastSubscriptionQos.setValidity(60 * 1000);
+    // setValidityMs will set the end date to current time millis + validity
+    weakSignalBroadcastSubscriptionQos.setValidityMs(60 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
     std::string weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
@@ -241,7 +241,7 @@ int main(int argc, char* argv[])
 
     OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
     newStationDiscoveredBroadcastSubscriptionQos.setMinInterval(2 * 1000);
-    newStationDiscoveredBroadcastSubscriptionQos.setValidity(180 * 1000);
+    newStationDiscoveredBroadcastSubscriptionQos.setValidityMs(180 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>
             newStationDiscoveredBroadcastListener(new NewStationDiscoveredBroadcastListener());
     vehicle::RadioNewStationDiscoveredBroadcastFilterParameters

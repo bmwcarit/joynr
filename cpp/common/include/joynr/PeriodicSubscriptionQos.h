@@ -51,19 +51,19 @@ public:
     /**
      * @brief Constructor with full parameter set
      *
-     * @param validity Time span in milliseconds during which publications will be sent
+     * @param validityMs Time span in milliseconds during which publications will be sent
      * @param period interval in milliseconds.
      * The provider will send notifications every period in milliseconds
      * independently of value changes.
      * @param alertAfterInterval Time span in milliseconds after which publicationMissed
      * will be called if no publications were received.
      *
-     * @see SubscriptionQos#setValidity
+     * @see SubscriptionQos#setValidityMs
      * @see PeriodicSubscriptionQos#setPeriod
      * @see PeriodicSubscriptionQos#setAlertAfterInterval
      * @see SubscriptionQos#setPublicationTtl
      */
-    PeriodicSubscriptionQos(const std::int64_t& validity,
+    PeriodicSubscriptionQos(const std::int64_t& validityMs,
                             const std::int64_t& period,
                             const std::int64_t& alertAfterInterval);
 

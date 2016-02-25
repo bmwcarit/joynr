@@ -51,10 +51,10 @@ public:
      * @brief Constructor SubscriptionQos objects with specified validity
      * @param validity Time span in milliseconds during which publications will be sent
      *
-     * @see SubscriptionQos#setValidity
+     * @see SubscriptionQos#setValidityMs
      * @see SubscriptionQos#setPublicationTtl
      */
-    explicit SubscriptionQos(const std::int64_t& validity);
+    explicit SubscriptionQos(const std::int64_t& validityMs);
 
     /** Destructor */
     virtual ~SubscriptionQos() = default;
@@ -69,9 +69,17 @@ public:
      * @return The expiry date in milliseconds.
      * The publication will automatically expire at that EndDate.
      *
-     * @see SubscriptionQos#setValidity
+     * @see SubscriptionQos#setValidityMs
      */
-    std::int64_t getExpiryDate() const;
+    std::int64_t getExpiryDateMs() const;
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#getExpiryDateMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use getExpiryDateMs instead.")]] std::
+            int64_t
+            getExpiryDate() const;
 
     /**
      * @brief Clears the current expiry date and disables it, by setting
@@ -90,9 +98,17 @@ public:
      * @param expiryDate The expiry date in milliseconds
      * The publication will automatically expire at that date.
      *
-     * @see SubscriptionQos#setValidity
+     * @see SubscriptionQos#setValidityMs
      */
-    virtual void setExpiryDate(const std::int64_t& expiryDate);
+    virtual void setExpiryDateMs(const std::int64_t& expiryDateMs);
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#setExpiryDateMs
+     */
+    [[deprecated(
+            "Will be removed by end of the year 2016. Use setExpiryDateMs instead.")]] virtual void
+    setExpiryDate(const std::int64_t& expiryDateMs);
 
     /**
      * @brief Gets the time to live value for publication messages.
@@ -106,7 +122,7 @@ public:
      *
      * @return Returns the TTL of the publication Messages in milliseconds.
      *
-     * @see SubscriptionQos#setExpiryDate
+     * @see SubscriptionQos#setExpiryDateMs
      */
     virtual std::int64_t getPublicationTtl() const;
 
@@ -121,9 +137,17 @@ public:
      *
      * @param validity Time span in milliseconds during which publications will be sent
      *
-     * @see SubscriptionQos#setExpiryDate
+     * @see SubscriptionQos#setExpiryDateMs
      */
-    virtual void setValidity(const std::int64_t& validity);
+    virtual void setValidityMs(const std::int64_t& validityMs);
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#setValidityMs
+     */
+    [[deprecated(
+            "Will be removed by end of the year 2016. Use setValidityMs instead.")]] virtual void
+    setValidity(const std::int64_t& validityMs);
 
     /**
      * @brief Sets the time to live for publication messages in milliseconds
@@ -143,7 +167,7 @@ public:
      * <li>maximum publicationTtl_ms = 2 592 000 000 (30 days). Larger values will be rounded down.
      * </ul>
      *
-     * @see SubscriptionQos#setExpiryDate
+     * @see SubscriptionQos#setExpiryDateMs
      */
     virtual void setPublicationTtl(const std::int64_t& publicationTtl_ms);
 
@@ -182,7 +206,7 @@ public:
 
 protected:
     /** @brief The expiry date in milliseconds */
-    std::int64_t expiryDate;
+    std::int64_t expiryDateMs;
 
     /** @brief The publication time to live in milliseconds */
     std::int64_t publicationTtl;

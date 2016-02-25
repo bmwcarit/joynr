@@ -743,7 +743,7 @@ std::string LocalDomainAccessController::subscribeForDreChange(const std::string
 {
     OnChangeSubscriptionQos broadcastSubscriptionQos;
     broadcastSubscriptionQos.setMinInterval(broadcastMinInterval.count());
-    broadcastSubscriptionQos.setValidity(broadcastSubscriptionValidity.count());
+    broadcastSubscriptionQos.setValidityMs(broadcastSubscriptionValidity.count());
     broadcastSubscriptionQos.setPublicationTtl(broadcastPublicationTtl.count());
     GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters
             domainRoleFilterParameters;
@@ -767,7 +767,7 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
     OnChangeSubscriptionQos broadcastSubscriptionQos;
 
     broadcastSubscriptionQos.setMinInterval(broadcastMinInterval.count());
-    broadcastSubscriptionQos.setValidity(broadcastSubscriptionValidity.count());
+    broadcastSubscriptionQos.setValidityMs(broadcastSubscriptionValidity.count());
     broadcastSubscriptionQos.setPublicationTtl(broadcastPublicationTtl.count());
 
     AceSubscription subscriptionIds;
