@@ -48,7 +48,12 @@
 			<artifactId>joynr-mqtt-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
+			<version>${project.version}</version>
+			<classifier>tests</classifier>
+		</dependency>
 		<!-- Logging used in the performance Java code -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
