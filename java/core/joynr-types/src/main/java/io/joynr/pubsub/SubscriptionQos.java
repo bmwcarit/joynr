@@ -140,6 +140,22 @@ public abstract class SubscriptionQos implements JoynrType {
     }
 
     /**
+     * Set how long the subscription should run for, in milliseconds.
+     * This is a helper method that allows setting the expiryDate using
+     * a relative time.
+     *
+     *
+     * @param validityMs
+     *            is the number of milliseconds until the subscription will expire
+     * @return the subscriptionQos (fluent interface)
+     */
+    public SubscriptionQos setValidityMs(final long validityMs) {
+        long now = System.currentTimeMillis();
+        this.expiryDate = now + validityMs;
+        return this;
+    }
+
+    /**
      * Get the time-to-live for notification messages.
      * <br>
      * Notification messages will be sent with this time-to-live.<br>
