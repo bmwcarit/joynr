@@ -15,7 +15,11 @@
 
 include(CMakeParseArguments)
 
-set(JoynrGenerator_JAR "${joynr.generator.standalone.jar}")
+if(IS_ABSOLUTE ${joynr.generator.standalone.jar})
+    set(JoynrGenerator_JAR "${joynr.generator.standalone.jar}")
+else()
+    set(JoynrGenerator_JAR "${CMAKE_CURRENT_LIST_DIR}/${joynr.generator.standalone.jar}")
+endif(IS_ABSOLUTE ${joynr.generator.standalone.jar})
 
 if(EXISTS "${JoynrGenerator_JAR}")
     set(JoynrGenerator_FOUND TRUE)
