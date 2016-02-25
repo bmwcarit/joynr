@@ -13,7 +13,7 @@ else(USE_PLATFORM_WEBSOCKETPP)
     AddExternalProject(
         websocketpp
         GIT_REPOSITORY https://github.com/zaphoyd/websocketpp.git
-        GIT_TAG 17a2647454390d332581c0e8cc880414d21d248b
+        GIT_TAG 378437aecdcb1dfe62096ffd5d944bf1f640ccc3 # git tag 0.7.0
         TIMEOUT 10
         # Disable configure step
         CONFIGURE_COMMAND ""
