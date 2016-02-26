@@ -57,7 +57,7 @@ public:
      * @brief Constructor with full parameter set
      *
      * @param validityMs Time span in milliseconds during which publications will be sent
-     * @param minInterval Minimum interval in milliseconds.
+     * @param minIntervalMs Minimum interval in milliseconds.
      * It is used to prevent flooding. Publications will be sent maintaining
      * this minimum interval provided, even if the value changes more often.
      * This prevents the consumer from being flooded by updated values.
@@ -70,13 +70,13 @@ public:
      * will be called if no publications were received.
      *
      * @see SubscriptionQos#setValidityMs
-     * @see OnChangeSubscriptionQos#setMinInterval
+     * @see OnChangeSubscriptionQos#setMinIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterInterval
      * @see SubscriptionQos#setPublicationTtlMs
      */
-    OnChangeWithKeepAliveSubscriptionQos(const std::int64_t& validity,
-                                         const std::int64_t& minInterval,
+    OnChangeWithKeepAliveSubscriptionQos(const std::int64_t& validityMs,
+                                         const std::int64_t& minIntervalMs,
                                          const std::int64_t& maxInterval,
                                          const std::int64_t& alertAfterInterval);
 
@@ -88,10 +88,18 @@ public:
      *
      * @param minInterval Minimum interval in milliseconds
      *
-     * @see OnChangeSubscriptionQos#setMinInterval
+     * @see OnChangeSubscriptionQos#setMinIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
      */
-    void setMinInterval(const std::int64_t& minInterval) override;
+    void setMinIntervalMs(const std::int64_t& minIntervalMs) override;
+
+    /**
+     * @deprecated
+     * @see OnChangeWithKeepAliveSubscriptionQos#setMinIntervalMs
+     */
+    [[deprecated(
+            "Will be removed by end of the year 2016. Use setMinIntervalMs instead.")]] virtual void
+    setMinInterval(const std::int64_t& minIntervalMs) override;
 
     /**
      * @brief Gets the maximum interval in milliseconds

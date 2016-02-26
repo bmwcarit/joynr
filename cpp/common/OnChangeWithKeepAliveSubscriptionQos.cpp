@@ -50,18 +50,18 @@ const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVA
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos()
         : OnChangeSubscriptionQos(),
-          maxInterval(getMinInterval()),
+          maxInterval(getMinIntervalMs()),
           alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
 {
 }
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
         const std::int64_t& validityMs,
-        const std::int64_t& minInterval,
+        const std::int64_t& minIntervalMs,
         const std::int64_t& maxInterval,
         const std::int64_t& alertAfterInterval)
-        : OnChangeSubscriptionQos(validityMs, minInterval),
-          maxInterval(getMinInterval()),
+        : OnChangeSubscriptionQos(validityMs, minIntervalMs),
+          maxInterval(getMinIntervalMs()),
           alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
 {
     setMaxInterval(maxInterval);
@@ -79,8 +79,8 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
 void OnChangeWithKeepAliveSubscriptionQos::setMaxInterval(const std::int64_t& maxInterval)
 {
     this->maxInterval = maxInterval;
-    if (this->maxInterval < this->getMinInterval()) {
-        this->maxInterval = this->minInterval;
+    if (this->maxInterval < this->getMinIntervalMs()) {
+        this->maxInterval = this->minIntervalMs;
     }
     if (this->maxInterval > MAX_MAX_INTERVAL()) {
         this->maxInterval = MAX_MAX_INTERVAL();
@@ -95,11 +95,16 @@ std::int64_t OnChangeWithKeepAliveSubscriptionQos::getMaxInterval() const
     return this->maxInterval;
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMinInterval(const std::int64_t& minInterval)
+void OnChangeWithKeepAliveSubscriptionQos::setMinIntervalMs(const std::int64_t& minIntervalMs)
 {
-    OnChangeSubscriptionQos::setMinInterval(minInterval);
-    // corrects the maxinterval if minInterval changes
+    OnChangeSubscriptionQos::setMinIntervalMs(minIntervalMs);
+    // corrects the maxinterval if minIntervalMs changes
     setMaxInterval(this->maxInterval);
+}
+
+void OnChangeWithKeepAliveSubscriptionQos::setMinInterval(const std::int64_t& minIntervalMs)
+{
+    setMinIntervalMs(minIntervalMs);
 }
 
 void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterInterval(
@@ -124,7 +129,7 @@ OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::oper
 {
     expiryDateMs = other.getExpiryDateMs();
     publicationTtlMs = other.getPublicationTtlMs();
-    minInterval = other.getMinInterval();
+    minIntervalMs = other.getMinIntervalMs();
     maxInterval = other.getMaxInterval();
     alertAfterInterval = other.getAlertAfterInterval();
     return *this;
@@ -135,6 +140,6 @@ bool OnChangeWithKeepAliveSubscriptionQos::operator==(
 {
     return expiryDateMs == other.getExpiryDateMs() &&
            publicationTtlMs == other.getPublicationTtlMs() &&
-           minInterval == other.getMinInterval() && maxInterval == other.getMaxInterval() &&
+           minIntervalMs == other.getMinIntervalMs() && maxInterval == other.getMaxInterval() &&
            alertAfterInterval == other.getAlertAfterInterval();
 }

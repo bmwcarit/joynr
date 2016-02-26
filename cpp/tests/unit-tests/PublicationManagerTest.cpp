@@ -560,7 +560,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     //now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // will be deleted by the publication manager
 
-    qos.setMinInterval(minInterval_ms + 500);
+    qos.setMinIntervalMs(minInterval_ms + 500);
     qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setQos(qosVariant);
     JOYNR_LOG_DEBUG(logger, "update attribute subscription request");
@@ -874,7 +874,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     //now, let's update the subscription an check if the provided data is correctly processed by the PublicationManager
 
-    qos.setMinInterval(newMinInterval);
+    qos.setMinIntervalMs(newMinInterval);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);

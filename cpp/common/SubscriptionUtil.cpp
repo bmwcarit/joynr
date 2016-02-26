@@ -52,11 +52,11 @@ std::int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
         const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
                 &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-        return subscriptionQosPtr->getMinInterval();
+        return subscriptionQosPtr->getMinIntervalMs();
     }
     if (qos.is<OnChangeSubscriptionQos>()) {
         const OnChangeSubscriptionQos* subscriptionQosPtr = &qos.get<OnChangeSubscriptionQos>();
-        return subscriptionQosPtr->getMinInterval();
+        return subscriptionQosPtr->getMinIntervalMs();
     }
     return -1;
 }

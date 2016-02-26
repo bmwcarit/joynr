@@ -503,7 +503,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // update subscription, much longer minInterval_ms
-    subscriptionQos.setMinInterval(5000);
+    subscriptionQos.setMinIntervalMs(5000);
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));

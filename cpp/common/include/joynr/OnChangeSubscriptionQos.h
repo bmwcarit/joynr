@@ -55,8 +55,8 @@ public:
     /**
      * @brief Constructor with full parameter set.
      *
-     * @param minInterval Minimum interval in milliseconds.
      * @param validityMs Time span in milliseconds during which publications will be sent
+     * @param minIntervalMs Minimum interval in milliseconds.
      *
      * It is used to prevent flooding. Publications will be sent maintaining
      * this minimum interval provided, even if the value changes more often.
@@ -65,10 +65,10 @@ public:
      * excessive network traffic.
      *
      * @see SubscriptionQos#setValidityMs
-     * @see OnChangeSubscriptionQos#setMinInterval
+     * @see OnChangeSubscriptionQos#setMinIntervalMs
      * @see SubscriptionQos#setPublicationTtlMs
      */
-    OnChangeSubscriptionQos(const std::int64_t& validityMs, const std::int64_t& minInterval);
+    OnChangeSubscriptionQos(const std::int64_t& validityMs, const std::int64_t& minIntervalMs);
 
     /**
      * @brief Gets the minimum interval in milliseconds
@@ -81,7 +81,15 @@ public:
      *
      * @return Minimum interval in milliseconds
      */
-    virtual std::int64_t getMinInterval() const;
+    virtual std::int64_t getMinIntervalMs() const;
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#getMinIntervalMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use getMinIntervalMs "
+                 "instead.")]] virtual std::int64_t
+    getMinInterval() const;
 
     /**
      * @brief Sets minimum interval in milliseconds
@@ -94,14 +102,22 @@ public:
      * <br>
      * <b>Minimum and Maximum Values:</b>
      * <ul>
-     * <li><b>Minimum</b> minInterval: 50. Smaller values will be rounded up.
-     * <li><b>Maximum</b> minInterval: 2.592.000.000 (30 days). Larger values
+     * <li><b>Minimum</b> minIntervalMs: 50. Smaller values will be rounded up.
+     * <li><b>Maximum</b> minIntervalMs: 2.592.000.000 (30 days). Larger values
      * will be rounded down.
      * </ul>
      *
-     * @param minInterval Minimum interval in milliseconds
+     * @param minIntervalMs Minimum interval in milliseconds
      */
-    virtual void setMinInterval(const std::int64_t& minInterval);
+    virtual void setMinIntervalMs(const std::int64_t& minIntervalMs);
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#setMinIntervalMs
+     */
+    [[deprecated(
+            "Will be removed by end of the year 2016. Use setMinIntervalMs instead.")]] virtual void
+    setMinInterval(const std::int64_t& minIntervalMs);
 
     /** @brief Assignment operator */
     OnChangeSubscriptionQos& operator=(const OnChangeSubscriptionQos& other);
@@ -113,19 +129,43 @@ public:
      * @brief Returns the default value for the minimum interval setting in
      * milliseconds: 1000
      */
-    static const std::int64_t& DEFAULT_MIN_INTERVAL();
+    static const std::int64_t& DEFAULT_MIN_INTERVAL_MS();
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#DEFAULT_MIN_INTERVAL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_MIN_INTERVAL_MS "
+                 "instead.")]] static const std::int64_t&
+    DEFAULT_MIN_INTERVAL();
 
     /**
      * @brief Returns the minimum value for the minimum interval setting in
      * milliseconds: 50
      */
-    static const std::int64_t& MIN_MIN_INTERVAL();
+    static const std::int64_t& MIN_MIN_INTERVAL_MS();
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#MIN_MIN_INTERVAL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MIN_MIN_INTERVAL_MS "
+                 "instead.")]] static const std::int64_t&
+    MIN_MIN_INTERVAL();
 
     /**
      * @brief Returns the maximum value for the minimum interval setting in
      * milliseconds: 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_MIN_INTERVAL();
+    static const std::int64_t& MAX_MIN_INTERVAL_MS();
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#MAX_MIN_INTERVAL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MAX_MIN_INTERVAL_MS "
+                 "instead.")]] static const std::int64_t&
+    MAX_MIN_INTERVAL();
 
 protected:
     /**
@@ -137,7 +177,7 @@ protected:
      * The filtering happens on the provider's side, thus also preventing
      * excessive network traffic.
      */
-    std::int64_t minInterval;
+    std::int64_t minIntervalMs;
 };
 
 } // namespace joynr

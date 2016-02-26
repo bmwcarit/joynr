@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    subscriptionQos.setMinInterval(5 * 1000);
+    subscriptionQos.setMinIntervalMs(5 * 1000);
     // The provider will send notifications every maximum interval in milliseconds, even if the
     // value didn't change. It will send notifications more often if on-change notifications are
     // enabled, the value changes more often, and the minimum interval QoS does not prevent it. The
@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    weakSignalBroadcastSubscriptionQos.setMinInterval(1 * 1000);
+    weakSignalBroadcastSubscriptionQos.setMinIntervalMs(1 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
@@ -240,7 +240,7 @@ int main(int argc, char* argv[])
     // selective broadcast subscription
 
     OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
-    newStationDiscoveredBroadcastSubscriptionQos.setMinInterval(2 * 1000);
+    newStationDiscoveredBroadcastSubscriptionQos.setMinIntervalMs(2 * 1000);
     newStationDiscoveredBroadcastSubscriptionQos.setValidityMs(180 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>
             newStationDiscoveredBroadcastListener(new NewStationDiscoveredBroadcastListener());

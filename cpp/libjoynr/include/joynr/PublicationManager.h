@@ -198,7 +198,7 @@ private:
     // Logging
     ADD_LOGGER(PublicationManager);
 
-    // List of subscriptionId's of runnables scheduled with delay <= qos.getMinInterval_ms()
+    // List of subscriptionId's of runnables scheduled with delay <= qos.getMinIntervalMs_ms()
     std::vector<std::string> currentScheduledPublications;
     std::mutex currentScheduledPublicationsMutex;
 
