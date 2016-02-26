@@ -52,7 +52,7 @@ public:
      * @param validity Time span in milliseconds during which publications will be sent
      *
      * @see SubscriptionQos#setValidityMs
-     * @see SubscriptionQos#setPublicationTtl
+     * @see SubscriptionQos#setPublicationTtlMs
      */
     explicit SubscriptionQos(const std::int64_t& validityMs);
 
@@ -124,7 +124,15 @@ public:
      *
      * @see SubscriptionQos#setExpiryDateMs
      */
-    virtual std::int64_t getPublicationTtl() const;
+    virtual std::int64_t getPublicationTtlMs() const;
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#getPublicationTtlMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use getPublicationTtlMs "
+                 "instead.")]] virtual std::int64_t
+    getPublicationTtl() const;
 
     /**
      * @brief Sets the validity of the subscription in milliseconds.
@@ -169,7 +177,15 @@ public:
      *
      * @see SubscriptionQos#setExpiryDateMs
      */
-    virtual void setPublicationTtl(const std::int64_t& publicationTtl_ms);
+    virtual void setPublicationTtlMs(const std::int64_t& publicationTtlMs);
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#setPublicationTtlMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use setPublicationTtlMs "
+                 "instead.")]] virtual void
+    setPublicationTtl(const std::int64_t& publicationTtlMs);
 
     /** @brief Assignment operator */
     SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
@@ -181,19 +197,43 @@ public:
      * @brief Returns the default publication time to live value in milliseconds:
      * 10 000 (10 secs)
      */
-    static const std::int64_t& DEFAULT_PUBLICATION_TTL();
+    static const std::int64_t& DEFAULT_PUBLICATION_TTL_MS();
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#DEFAULT_PUBLICATION_TTL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_PUBLICATION_TTL_MS "
+                 "instead.")]] static const std::int64_t&
+    DEFAULT_PUBLICATION_TTL();
 
     /**
      * @brief Returns the minimum publication time to live value in milliseconds:
      * 100
      */
-    static const std::int64_t& MIN_PUBLICATION_TTL();
+    static const std::int64_t& MIN_PUBLICATION_TTL_MS();
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#MIN_PUBLICATION_TTL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MIN_PUBLICATION_TTL_MS "
+                 "instead.")]] static const std::int64_t&
+    MIN_PUBLICATION_TTL();
 
     /**
      * @brief Returns the maximum publication time to live value in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_PUBLICATION_TTL();
+    static const std::int64_t& MAX_PUBLICATION_TTL_MS();
+
+    /**
+     * @deprecated
+     * @see SubscriptionQos#MAX_PUBLICATION_TTL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MAX_PUBLICATION_TTL_MS "
+                 "instead.")]] static const std::int64_t&
+    MAX_PUBLICATION_TTL();
 
     /**
      * @brief Returns the value for no expiry date time to live in milliseconds:
@@ -209,7 +249,7 @@ protected:
     std::int64_t expiryDateMs;
 
     /** @brief The publication time to live in milliseconds */
-    std::int64_t publicationTtl;
+    std::int64_t publicationTtlMs;
 };
 
 } // namespace joynr

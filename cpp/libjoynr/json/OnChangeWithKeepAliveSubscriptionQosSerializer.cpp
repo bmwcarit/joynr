@@ -40,8 +40,8 @@ void ClassDeserializerImpl<OnChangeWithKeepAliveSubscriptionQos>::deserialize(
         IField& field = o.nextField();
         if (field.name() == "expiryDateMs") {
             qos.setExpiryDateMs(field.value().getIntType<std::int64_t>());
-        } else if (field.name() == "publicationTtl") {
-            qos.setPublicationTtl(field.value().getIntType<std::int64_t>());
+        } else if (field.name() == "publicationTtlMs") {
+            qos.setPublicationTtlMs(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "minInterval") {
             qos.setMinInterval(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "maxInterval") {
@@ -61,7 +61,7 @@ void ClassSerializerImpl<OnChangeWithKeepAliveSubscriptionQos>::serialize(
     stream << R"("_typeName":")" << JoynrTypeId<OnChangeWithKeepAliveSubscriptionQos>::getTypeName()
            << R"(",)";
     stream << R"("expiryDateMs": )" << qos.getExpiryDateMs() << R"(,)";
-    stream << R"("publicationTtl": )" << qos.getPublicationTtl() << R"(,)";
+    stream << R"("publicationTtlMs": )" << qos.getPublicationTtlMs() << R"(,)";
     stream << R"("minInterval": )" << qos.getMinInterval() << R"(,)";
     stream << R"("maxInterval": )" << qos.getMaxInterval() << R"(,)";
     stream << R"("alertAfterInterval": )" << qos.getAlertAfterInterval();

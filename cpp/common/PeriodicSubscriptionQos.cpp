@@ -119,7 +119,7 @@ void PeriodicSubscriptionQos::clearAlertAfterInterval()
 PeriodicSubscriptionQos& PeriodicSubscriptionQos::operator=(const PeriodicSubscriptionQos& other)
 {
     expiryDateMs = other.getExpiryDateMs();
-    publicationTtl = other.getPublicationTtl();
+    publicationTtlMs = other.getPublicationTtlMs();
     period = other.getPeriod();
     alertAfterInterval = other.getAlertAfterInterval();
     return *this;
@@ -127,6 +127,7 @@ PeriodicSubscriptionQos& PeriodicSubscriptionQos::operator=(const PeriodicSubscr
 
 bool PeriodicSubscriptionQos::operator==(const PeriodicSubscriptionQos& other) const
 {
-    return expiryDateMs == other.getExpiryDateMs() && publicationTtl == other.getPublicationTtl() &&
-           period == other.getPeriod() && alertAfterInterval == other.getAlertAfterInterval();
+    return expiryDateMs == other.getExpiryDateMs() &&
+           publicationTtlMs == other.getPublicationTtlMs() && period == other.getPeriod() &&
+           alertAfterInterval == other.getAlertAfterInterval();
 }

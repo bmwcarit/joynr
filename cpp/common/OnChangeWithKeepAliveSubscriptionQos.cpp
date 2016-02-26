@@ -123,7 +123,7 @@ OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::oper
         const OnChangeWithKeepAliveSubscriptionQos& other)
 {
     expiryDateMs = other.getExpiryDateMs();
-    publicationTtl = other.getPublicationTtl();
+    publicationTtlMs = other.getPublicationTtlMs();
     minInterval = other.getMinInterval();
     maxInterval = other.getMaxInterval();
     alertAfterInterval = other.getAlertAfterInterval();
@@ -133,7 +133,8 @@ OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::oper
 bool OnChangeWithKeepAliveSubscriptionQos::operator==(
         const OnChangeWithKeepAliveSubscriptionQos& other) const
 {
-    return expiryDateMs == other.getExpiryDateMs() && publicationTtl == other.getPublicationTtl() &&
+    return expiryDateMs == other.getExpiryDateMs() &&
+           publicationTtlMs == other.getPublicationTtlMs() &&
            minInterval == other.getMinInterval() && maxInterval == other.getMaxInterval() &&
            alertAfterInterval == other.getAlertAfterInterval();
 }

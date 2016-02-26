@@ -66,7 +66,7 @@ public:
      *
      * @see SubscriptionQos#setValidityMs
      * @see OnChangeSubscriptionQos#setMinInterval
-     * @see SubscriptionQos#setPublicationTtl
+     * @see SubscriptionQos#setPublicationTtlMs
      */
     OnChangeSubscriptionQos(const std::int64_t& validityMs, const std::int64_t& minInterval);
 

@@ -794,11 +794,11 @@ bool PublicationManager::isShuttingDown()
     return shuttingDown;
 }
 
-std::int64_t PublicationManager::getPublicationTtl(
+std::int64_t PublicationManager::getPublicationTtlMs(
         std::shared_ptr<SubscriptionRequest> subscriptionRequest) const
 {
     const SubscriptionQos* qosPtr = subscriptionRequest->getSubscriptionQosPtr();
-    return qosPtr->getPublicationTtl();
+    return qosPtr->getPublicationTtlMs();
 }
 
 void PublicationManager::sendPublicationError(
@@ -827,7 +827,7 @@ void PublicationManager::sendSubscriptionPublication(
 
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     // Set the TTL
-    mQos.setTtl(getPublicationTtl(request));
+    mQos.setTtl(getPublicationTtlMs(request));
 
     IPublicationSender* publicationSender = publication->sender;
 

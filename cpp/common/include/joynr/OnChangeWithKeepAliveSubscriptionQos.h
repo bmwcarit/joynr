@@ -73,7 +73,7 @@ public:
      * @see OnChangeSubscriptionQos#setMinInterval
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterInterval
-     * @see SubscriptionQos#setPublicationTtl
+     * @see SubscriptionQos#setPublicationTtlMs
      */
     OnChangeWithKeepAliveSubscriptionQos(const std::int64_t& validity,
                                          const std::int64_t& minInterval,

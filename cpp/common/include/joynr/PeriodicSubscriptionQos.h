@@ -61,7 +61,7 @@ public:
      * @see SubscriptionQos#setValidityMs
      * @see PeriodicSubscriptionQos#setPeriod
      * @see PeriodicSubscriptionQos#setAlertAfterInterval
-     * @see SubscriptionQos#setPublicationTtl
+     * @see SubscriptionQos#setPublicationTtlMs
      */
     PeriodicSubscriptionQos(const std::int64_t& validityMs,
                             const std::int64_t& period,

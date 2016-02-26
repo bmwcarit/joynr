@@ -36,8 +36,8 @@ void ClassDeserializerImpl<SubscriptionQos>::deserialize(SubscriptionQos& subscr
         IField& field = o.nextField();
         if (field.name() == "expiryDateMs") {
             subscription.setExpiryDateMs(field.value().getIntType<std::int64_t>());
-        } else if (field.name() == "publicationTtl") {
-            subscription.setPublicationTtl(field.value().getIntType<std::int64_t>());
+        } else if (field.name() == "publicationTtlMs") {
+            subscription.setPublicationTtlMs(field.value().getIntType<std::int64_t>());
         }
     }
 }
@@ -48,7 +48,7 @@ void ClassSerializerImpl<SubscriptionQos>::serialize(const SubscriptionQos& subs
     stream << R"({)";
     stream << R"("_typeName":")" << JoynrTypeId<SubscriptionQos>::getTypeName() << R"(",)";
     stream << R"("expiryDateMs": )" << subscription.getExpiryDateMs() << R"(,)";
-    stream << R"("publicationTtl": )" << subscription.getPublicationTtl();
+    stream << R"("publicationTtlMs": )" << subscription.getPublicationTtlMs();
     stream << R"(})";
 }
 }
