@@ -23,6 +23,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -40,16 +41,17 @@ void WebSocketMessagingStub::transmit(
         JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    std::ignore = onFailure; // TODO handle errors in WebSocket.send
     if (!webSocket->isInitialized()) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_TRACE(logger,
                         "WebSocket not ready. Unable to send message {}",
                         JsonSerializer::serialize(message));
-        return;
+        onFailure(exceptions::JoynrDelayMessageException(
+                "WebSocket not ready. Unable to send message"));
     }
 
     std::string serializedMessage = JsonSerializer::serialize(message);
     JOYNR_LOG_TRACE(logger, ">>>> OUTGOING >>>> {}", serializedMessage);
+    // TODO handle errors in webSocket->send
     webSocket->send(serializedMessage);
 }
 
