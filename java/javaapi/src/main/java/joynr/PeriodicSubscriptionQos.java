@@ -271,6 +271,11 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
 
     @Override
     @JsonIgnore
+    @Deprecated
+    /**
+     * @deprecated this method will be removed by 2017-01-01.
+     * Use getPeriod() instead.
+     */
     public long getHeartbeat() {
         return periodMs;
     }
