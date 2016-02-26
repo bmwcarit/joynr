@@ -42,7 +42,7 @@ std::int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
     }
     if (qos.is<PeriodicSubscriptionQos>()) {
         const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
-        return subscriptionQosPtr->getAlertAfterInterval();
+        return subscriptionQosPtr->getAlertAfterIntervalMs();
     }
     return -1;
 }

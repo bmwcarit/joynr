@@ -46,8 +46,8 @@ void ClassDeserializerImpl<PeriodicSubscriptionQos>::deserialize(
             qos.setPublicationTtlMs(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "periodMs") {
             qos.setPeriodMs(field.value().getIntType<std::int64_t>());
-        } else if (field.name() == "alertAfterInterval") {
-            qos.setAlertAfterInterval(field.value().getIntType<std::int64_t>());
+        } else if (field.name() == "alertAfterIntervalMs") {
+            qos.setAlertAfterIntervalMs(field.value().getIntType<std::int64_t>());
         }
     }
 }
@@ -62,7 +62,7 @@ void ClassSerializerImpl<PeriodicSubscriptionQos>::serialize(
     stream << R"("expiryDateMs": )" << qos.getExpiryDateMs() << R"(,)";
     stream << R"("publicationTtlMs": )" << qos.getPublicationTtlMs() << R"(,)";
     stream << R"("periodMs": )" << qos.getPeriodMs() << R"(,)";
-    stream << R"("alertAfterInterval": )" << qos.getAlertAfterInterval();
+    stream << R"("alertAfterIntervalMs": )" << qos.getAlertAfterIntervalMs();
     stream << R"(})";
 }
 } // namespace joynr

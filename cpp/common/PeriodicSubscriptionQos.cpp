@@ -54,15 +54,25 @@ const std::int64_t& PeriodicSubscriptionQos::DEFAULT_PERIOD_MS()
     return maxPeriod;
 }
 
-const std::int64_t& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
+const std::int64_t& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL_MS()
 {
     static std::int64_t maxAlertAfterInterval = 2592000000UL;
     return maxAlertAfterInterval;
 }
 
-const std::int64_t& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
+const std::int64_t& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
+{
+    return MAX_ALERT_AFTER_INTERVAL_MS();
+}
+
+const std::int64_t& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL_MS()
 {
     return NO_ALERT_AFTER_INTERVAL();
+}
+
+const std::int64_t& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
+{
+    return DEFAULT_ALERT_AFTER_INTERVAL_MS();
 }
 
 const std::int64_t& PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
@@ -74,7 +84,7 @@ const std::int64_t& PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 PeriodicSubscriptionQos::PeriodicSubscriptionQos()
         : SubscriptionQos(),
           periodMs(DEFAULT_PERIOD_MS()),
-          alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
+          alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {
 }
 
@@ -83,16 +93,16 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t& validityMs,
                                                  const std::int64_t& alertAfterInterval)
         : SubscriptionQos(validityMs),
           periodMs(DEFAULT_PERIOD_MS()),
-          alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
+          alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {
     setPeriodMs(periodMs);
-    setAlertAfterInterval(alertAfterInterval);
+    setAlertAfterIntervalMs(alertAfterInterval);
 }
 
 PeriodicSubscriptionQos::PeriodicSubscriptionQos(const PeriodicSubscriptionQos& other)
         : SubscriptionQos(other),
           periodMs(other.getPeriodMs()),
-          alertAfterInterval(other.getAlertAfterInterval())
+          alertAfterIntervalMs(other.getAlertAfterIntervalMs())
 {
 }
 
@@ -119,13 +129,13 @@ void PeriodicSubscriptionQos::setPeriodMs(const std::int64_t& periodMs)
         this->periodMs = periodMs;
     }
     // check dependendencies: allertAfterIntervalMs is not smaller than periodMs
-    if (alertAfterInterval != NO_ALERT_AFTER_INTERVAL() && alertAfterInterval < getPeriodMs()) {
+    if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() && alertAfterIntervalMs < getPeriodMs()) {
         JOYNR_LOG_WARN(logger,
-                       "alertAfterInterval ({} ms) is smaller than periodMs ({} ms). Setting "
-                       "alertAfterInterval to periodMs.",
-                       alertAfterInterval,
+                       "alertAfterIntervalMs ({} ms) is smaller than periodMs ({} ms). Setting "
+                       "alertAfterIntervalMs to periodMs.",
+                       alertAfterIntervalMs,
                        getPeriodMs());
-        alertAfterInterval = getPeriodMs();
+        alertAfterIntervalMs = getPeriodMs();
     }
 }
 
@@ -144,38 +154,48 @@ std::int64_t PeriodicSubscriptionQos::getPeriod() const
     return getPeriodMs();
 }
 
-void PeriodicSubscriptionQos::setAlertAfterInterval(const std::int64_t& alertAfterInterval)
+void PeriodicSubscriptionQos::setAlertAfterIntervalMs(const std::int64_t& alertAfterIntervalMs)
 {
-    if (alertAfterInterval > MAX_ALERT_AFTER_INTERVAL()) {
+    if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS()) {
         JOYNR_LOG_WARN(logger,
-                       "Trying to set invalid alertAfterInterval ({} ms), which is bigger than "
-                       "MAX_ALERT_AFTER_INTERVAL ({} ms). MAX_ALERT_AFTER_INTERVAL will be "
+                       "Trying to set invalid alertAfterIntervalMs ({} ms), which is bigger than "
+                       "MAX_ALERT_AFTER_INTERVAL_MS ({} ms). MAX_ALERT_AFTER_INTERVAL_MS will be "
                        "used instead.",
-                       alertAfterInterval,
-                       MAX_ALERT_AFTER_INTERVAL());
-        this->alertAfterInterval = MAX_ALERT_AFTER_INTERVAL();
+                       alertAfterIntervalMs,
+                       MAX_ALERT_AFTER_INTERVAL_MS());
+        this->alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL_MS();
         return;
     }
-    if (alertAfterInterval != NO_ALERT_AFTER_INTERVAL() && alertAfterInterval < getPeriodMs()) {
+    if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() && alertAfterIntervalMs < getPeriodMs()) {
         JOYNR_LOG_WARN(logger,
-                       "alertAfterInterval ({} ms) is smaller than periodMs ({} ms). Setting "
-                       "alertAfterInterval to periodMs.",
-                       alertAfterInterval,
+                       "alertAfterIntervalMs ({} ms) is smaller than periodMs ({} ms). Setting "
+                       "alertAfterIntervalMs to periodMs.",
+                       alertAfterIntervalMs,
                        getPeriodMs());
-        this->alertAfterInterval = periodMs;
+        this->alertAfterIntervalMs = periodMs;
         return;
     }
-    this->alertAfterInterval = alertAfterInterval;
+    this->alertAfterIntervalMs = alertAfterIntervalMs;
+}
+
+void PeriodicSubscriptionQos::setAlertAfterInterval(const std::int64_t& alertAfterIntervalMs)
+{
+    setAlertAfterIntervalMs(alertAfterIntervalMs);
+}
+
+std::int64_t PeriodicSubscriptionQos::getAlertAfterIntervalMs() const
+{
+    return alertAfterIntervalMs;
 }
 
 std::int64_t PeriodicSubscriptionQos::getAlertAfterInterval() const
 {
-    return alertAfterInterval;
+    return getAlertAfterIntervalMs();
 }
 
 void PeriodicSubscriptionQos::clearAlertAfterInterval()
 {
-    this->alertAfterInterval = NO_ALERT_AFTER_INTERVAL();
+    this->alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL();
 }
 
 PeriodicSubscriptionQos& PeriodicSubscriptionQos::operator=(const PeriodicSubscriptionQos& other)
@@ -183,7 +203,7 @@ PeriodicSubscriptionQos& PeriodicSubscriptionQos::operator=(const PeriodicSubscr
     expiryDateMs = other.getExpiryDateMs();
     publicationTtlMs = other.getPublicationTtlMs();
     periodMs = other.getPeriodMs();
-    alertAfterInterval = other.getAlertAfterInterval();
+    alertAfterIntervalMs = other.getAlertAfterIntervalMs();
     return *this;
 }
 
@@ -191,5 +211,5 @@ bool PeriodicSubscriptionQos::operator==(const PeriodicSubscriptionQos& other) c
 {
     return expiryDateMs == other.getExpiryDateMs() &&
            publicationTtlMs == other.getPublicationTtlMs() && periodMs == other.getPeriodMs() &&
-           alertAfterInterval == other.getAlertAfterInterval();
+           alertAfterIntervalMs == other.getAlertAfterIntervalMs();
 }
