@@ -49,13 +49,15 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
 
     private static final Logger logger = LoggerFactory.getLogger(OnChangeWithKeepAliveSubscriptionQos.class);
 
-    private static final long MIN_MAX_INTERVAL = 0L;
+    private static final long MIN_MAX_INTERVAL = 50L;
     private static final long MAX_MAX_INTERVAL = 2592000000L; // 30 days
+    private static final long DEFAULT_MAX_INTERVAL = 60000L; // 1 minute
 
     private static final long NO_ALERT_AFTER_INTERVAL = 0;
     private static final long DEFAULT_ALERT_AFTER_INTERVAL = NO_ALERT_AFTER_INTERVAL;
+    private static final long MAX_ALERT_AFTER_INTERVAL = 2592000000L; // 30 days
 
-    private long maxIntervalMs = MAX_MAX_INTERVAL;
+    private long maxIntervalMs = DEFAULT_MAX_INTERVAL;
     private long alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL;
 
     /**
@@ -218,17 +220,22 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      * @return the subscriptionQos (fluent interface)
      */
     public OnChangeWithKeepAliveSubscriptionQos setMaxInterval(long maxIntervalMs) {
-        if (maxIntervalMs < this.getMinInterval()) {
-            maxIntervalMs = this.getMinInterval();
-        } else if (maxIntervalMs < MIN_MAX_INTERVAL) {
+        if (this.maxIntervalMs < MIN_MAX_INTERVAL) {
             this.maxIntervalMs = MIN_MAX_INTERVAL;
-        } else if (maxIntervalMs > MAX_MAX_INTERVAL) {
+        } else if (this.maxIntervalMs > MAX_MAX_INTERVAL) {
             this.maxIntervalMs = MAX_MAX_INTERVAL;
-        } else if (alertAfterIntervalMs < maxIntervalMs) {
-            alertAfterIntervalMs = maxIntervalMs;
         } else {
             this.maxIntervalMs = maxIntervalMs;
         }
+
+        if (this.maxIntervalMs < getMinInterval()) {
+            this.maxIntervalMs = getMinInterval();
+        }
+
+        if (alertAfterIntervalMs != 0 && alertAfterIntervalMs < this.maxIntervalMs) {
+            alertAfterIntervalMs = this.maxIntervalMs;
+        }
+
         return this;
     }
 
@@ -270,11 +277,20 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            absolute maximum setting of 2.592.000.000 milliseconds.
      *            </ul>
      */
-    public void setAlertAfterInterval(final long alertAfterIntervalMs) {
-        if (alertAfterIntervalMs < maxIntervalMs) {
+    public OnChangeWithKeepAliveSubscriptionQos setAlertAfterInterval(final long alertAfterIntervalMs) {
+        if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL) {
+            this.alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL;
+            logger.warn("alertAfterIntervalMs > maxInterval. Using MAX_ALERT_AFTER_INTERVAL: {}",
+                        MAX_ALERT_AFTER_INTERVAL);
+        } else {
+            this.alertAfterIntervalMs = alertAfterIntervalMs;
+        }
+
+        if (this.alertAfterIntervalMs != 0 && this.alertAfterIntervalMs < maxIntervalMs) {
             this.alertAfterIntervalMs = maxIntervalMs;
             logger.warn("attempt to set alertAfterIntervalMs to a value smaller than maxInterval; setting to maxInterval instead");
         }
+        return this;
     }
 
     @Override
@@ -284,7 +300,9 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
 
     @Override
     public OnChangeWithKeepAliveSubscriptionQos setMinInterval(long minIntervalMs) {
-        return (OnChangeWithKeepAliveSubscriptionQos) super.setMinInterval(minIntervalMs);
+        super.setMinInterval(minIntervalMs);
+        // adjust maxInterval to match new minInterval
+        return setMaxInterval(maxIntervalMs);
     }
 
     @Override
@@ -295,6 +313,10 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     @Override
     public OnChangeWithKeepAliveSubscriptionQos setValidityMs(long validityMs) {
         return (OnChangeWithKeepAliveSubscriptionQos) super.setValidityMs(validityMs);
+    }
+
+    public void clearAlertAfterInterval() {
+        this.alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL;
     }
 
     @Override

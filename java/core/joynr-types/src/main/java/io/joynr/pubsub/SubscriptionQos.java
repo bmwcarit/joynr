@@ -161,8 +161,12 @@ public abstract class SubscriptionQos implements JoynrType {
      * @return the subscriptionQos (fluent interface)
      */
     public SubscriptionQos setValidityMs(final long validityMs) {
-        long now = System.currentTimeMillis();
-        this.expiryDateMs = now + validityMs;
+        if (validityMs == -1) {
+            setExpiryDate(NO_EXPIRY_DATE);
+        } else {
+            long now = System.currentTimeMillis();
+            this.expiryDateMs = now + validityMs;
+        }
         return this;
     }
 
@@ -209,6 +213,7 @@ public abstract class SubscriptionQos implements JoynrType {
         } else {
             this.publicationTtlMs = publicationTtlMs;
         }
+
         return this;
     }
 

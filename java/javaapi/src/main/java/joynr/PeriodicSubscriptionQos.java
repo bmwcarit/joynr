@@ -55,10 +55,6 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      */
     private static final long DEFAULT_PERIOD_MS = 60L * 1000L;
     /**
-     * Minimum value for alertAfterInterval in milliseconds: MIN_PERIOD: 50
-     */
-    private static final long MIN_ALERT_AFTER_INTERVAL = MIN_PERIOD;
-    /**
      * Maximum value for alertAfterInterval in milliseconds: 2.592.000.000 (30 days)
      */
     private static final long MAX_ALERT_AFTER_INTERVAL = 30L * 24L * 60L * 60L * 1000L; // 30 days
@@ -182,17 +178,20 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @see #clearAlertAfterInterval()
      */
     public PeriodicSubscriptionQos setAlertAfterInterval(final long alertAfterIntervalMs) {
-        if (alertAfterIntervalMs < periodMs && alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL) {
-            this.alertAfterIntervalMs = MIN_ALERT_AFTER_INTERVAL;
-            logger.warn("alertAfterInterval_ms < MIN_ALERT_AFTER_INTERVAL. Using MIN_ALERT_AFTER_INTERVAL: {}",
-                        MIN_ALERT_AFTER_INTERVAL);
-        } else if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL) {
+        if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL) {
             this.alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL;
             logger.warn("alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL. Using MAX_ALERT_AFTER_INTERVAL: {}",
                         MAX_ALERT_AFTER_INTERVAL);
         } else {
             this.alertAfterIntervalMs = alertAfterIntervalMs;
         }
+
+        if (this.alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL && this.alertAfterIntervalMs < periodMs) {
+            this.alertAfterIntervalMs = periodMs;
+            logger.warn("alertAfterInterval_ms < MIN_ALERT_AFTER_INTERVAL and will therefore be set to the period: {}",
+                        periodMs);
+        }
+
         return this;
     }
 
@@ -239,10 +238,10 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     public PeriodicSubscriptionQos setPeriod(long periodMs) {
         if (periodMs < MIN_PERIOD) {
             this.periodMs = MIN_PERIOD;
-            logger.warn("alertAfterInterval_ms < MIN_PERIOD. Using MIN_PERIOD: {}", MIN_PERIOD);
+            logger.warn("periodMs < MIN_PERIOD. Using MIN_PERIOD: {}", MIN_PERIOD);
         } else if (periodMs > MAX_PERIOD) {
             this.periodMs = MAX_PERIOD;
-            logger.warn("alertAfterInterval_ms > MAX_PERIOD. Using MAX_PERIOD: {}", MAX_PERIOD);
+            logger.warn("periodMs > MAX_PERIOD. Using MAX_PERIOD: {}", MAX_PERIOD);
         } else {
             this.periodMs = periodMs;
         }
