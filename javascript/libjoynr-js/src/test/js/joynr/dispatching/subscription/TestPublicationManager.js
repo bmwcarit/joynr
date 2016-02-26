@@ -70,7 +70,7 @@ joynrTestRequire(
                         var provider, asyncGetterCallDelay, fakeTime, intervalSubscriptionRequest;
                         var onChangeSubscriptionRequest, mixedSubscriptionRequest, onChangeBroadcastSubscriptionRequest;
                         var mixedSubscriptionRequestWithAsyncAttribute, testAttributeName;
-                        var asyncTestAttributeName, value, minInterval, maxInterval, maxNrOfTimes;
+                        var asyncTestAttributeName, value, minIntervalMs, maxInterval, maxNrOfTimes;
                         var subscriptionLength, asyncTestAttribute, testAttribute, providerSettings;
                         var testBroadcastName, testBroadcast;
 
@@ -80,7 +80,7 @@ joynrTestRequire(
                                 period,
                                 subscriptionLength,
                                 onChange,
-                                minInterval) {
+                                minIntervalMs) {
                             var qosSettings, expiryDateMs, request;
                             expiryDateMs =
                                     subscriptionLength === SubscriptionQos.NO_EXPIRY_DATE
@@ -89,7 +89,7 @@ joynrTestRequire(
                             if (onChange) {
                                 if (period !== undefined) {
                                     qosSettings = new OnChangeWithKeepAliveSubscriptionQos({
-                                        minInterval : minInterval || 50,
+                                        minIntervalMs : minIntervalMs || 50,
                                         maxInterval : period,
                                         expiryDateMs : expiryDateMs,
                                         alertAfterInterval : 0,
@@ -97,7 +97,7 @@ joynrTestRequire(
                                     });
                                 } else {
                                     qosSettings = new OnChangeSubscriptionQos({
-                                        minInterval : minInterval || 50,
+                                        minIntervalMs : minIntervalMs || 50,
                                         expiryDateMs : expiryDateMs,
                                         publicationTtlMs : 1000
                                     });
@@ -185,7 +185,7 @@ joynrTestRequire(
                             testBroadcastName = "testBroadcast";
                             asyncTestAttributeName = "asyncTestAttribute";
                             value = "the value";
-                            minInterval = 100;
+                            minIntervalMs = 100;
                             maxInterval = 1000;
                             maxNrOfTimes = 5;
                             asyncGetterCallDelay = 10;
@@ -280,7 +280,7 @@ joynrTestRequire(
                                             maxInterval,
                                             subscriptionLength,
                                             true,
-                                            minInterval);
+                                            minIntervalMs);
                             onChangeBroadcastSubscriptionRequest =
                                     createSubscriptionRequest(
                                             false,
@@ -295,7 +295,7 @@ joynrTestRequire(
                                             maxInterval,
                                             subscriptionLength,
                                             true,
-                                            minInterval);
+                                            minIntervalMs);
                         });
                         it("is instantiable", function() {
                             expect(publicationManager).toBeDefined();
@@ -900,7 +900,7 @@ joynrTestRequire(
                                 });
 
                         it(
-                                "creates a mixed subscription and does not send two publications within mininterval in case async getter calls and valueChanged occur at the same time",
+                                "creates a mixed subscription and does not send two publications within minIntervalMs in case async getter calls and valueChanged occur at the same time",
                                 function() {
                                     var times;
 
@@ -925,9 +925,9 @@ joynrTestRequire(
                                         asyncTestAttribute.get.reset();
                                         dispatcherSpy.sendPublication.reset();
 
-                                        // let the minInterval exceed, so that new value changes
+                                        // let the minIntervalMs exceed, so that new value changes
                                         // immediately lead to publications
-                                        increaseFakeTime(minInterval);
+                                        increaseFakeTime(minIntervalMs);
                                         expect(asyncTestAttribute.get).not.toHaveBeenCalled();
                                         expect(dispatcherSpy.sendPublication).not
                                                 .toHaveBeenCalled();
@@ -936,7 +936,7 @@ joynrTestRequire(
                                         increaseFakeTime(5);
 
                                         // this should cause an async timer, which sends a publication
-                                        // after mininterval-5
+                                        // after minIntervalMs-5
                                         asyncTestAttribute.valueChanged(value);
 
                                         // the getter has not been invoked so far
@@ -952,8 +952,8 @@ joynrTestRequire(
 
                                     runs(function() {
                                         expect(dispatcherSpy.sendPublication.callCount).toEqual(1);
-                                        // now, lets increas the time until mininterval
-                                        increaseFakeTime(minInterval - 5);
+                                        // now, lets increas the time until minIntervalMs
+                                        increaseFakeTime(minIntervalMs - 5);
 
                                         // now, the async timer has exceeded, and the PublicationManager
                                         // invokes the get
@@ -980,11 +980,11 @@ joynrTestRequire(
                                         asyncTestAttribute.valueChanged(value);
 
                                         // this shall not result in a new sendPublication, as
-                                        // asyncGetterCallDelay<minInterval and the time
-                                        // delay between two publications must be at least minInterval
+                                        // asyncGetterCallDelay<minIntervalMs and the time
+                                        // delay between two publications must be at least minIntervalMs
                                         expect(dispatcherSpy.sendPublication.callCount).toEqual(2);
 
-                                        increaseFakeTime(minInterval - asyncGetterCallDelay);
+                                        increaseFakeTime(minIntervalMs - asyncGetterCallDelay);
                                     });
 
                                     waitsFor(function() {
@@ -1095,7 +1095,7 @@ joynrTestRequire(
                                 });
 
                         it(
-                                "creates a mixed subscription that publishes valueChanges that occur each minInterval",
+                                "creates a mixed subscription that publishes valueChanges that occur each minIntervalMs",
                                 function() {
                                     runs(function() {
                                         publicationManager.addPublicationProvider(
@@ -1129,7 +1129,7 @@ joynrTestRequire(
                                     var internalCheck =
                                             function(times) {
                                                 runs(function() {
-                                                    increaseFakeTime(mixedSubscriptionRequest.qos.minInterval);
+                                                    increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
                                                     testAttribute.valueChanged(value + times);
                                                 });
 
@@ -1233,7 +1233,7 @@ joynrTestRequire(
                                     });
                                 });
                         it(
-                                "creates a mixed subscription that publishes many valueChanges within minInterval only once",
+                                "creates a mixed subscription that publishes many valueChanges within minIntervalMs only once",
                                 function() {
 
                                     runs(function() {
@@ -1266,7 +1266,7 @@ joynrTestRequire(
 
                                         var shortInterval =
                                                 Math
-                                                        .round((mixedSubscriptionRequest.qos.minInterval - 2)
+                                                        .round((mixedSubscriptionRequest.qos.minIntervalMs - 2)
                                                             / maxNrOfTimes);
                                         for (times = 0; times < maxNrOfTimes; times++) {
                                             expect(testAttribute.get).not.toHaveBeenCalled();
@@ -1276,8 +1276,8 @@ joynrTestRequire(
                                             testAttribute.valueChanged(value + times);
                                         }
 
-                                        // after minInterval the publication works again
-                                        increaseFakeTime(mixedSubscriptionRequest.qos.minInterval
+                                        // after minIntervalMs the publication works again
+                                        increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs
                                             - shortInterval
                                             * maxNrOfTimes);
                                         testAttribute.valueChanged(value);
@@ -1307,7 +1307,7 @@ joynrTestRequire(
                                                         period,
                                                         0,
                                                         false,
-                                                        minInterval);
+                                                        minIntervalMs);
                                         dispatcherSpy.sendPublication.reset();
                                         publicationManager.addPublicationProvider(
                                                 providerId,
@@ -1413,8 +1413,8 @@ joynrTestRequire(
                                         expect(dispatcherSpy.sendPublication).not
                                                 .toHaveBeenCalled();
 
-                                        // minInterval and a value change the value should be reported
-                                        increaseFakeTime(mixedSubscriptionRequest.qos.minInterval);
+                                        // minIntervalMs and a value change the value should be reported
+                                        increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
                                     });
 
                                     waitsFor(
@@ -1425,16 +1425,16 @@ joynrTestRequire(
                                             asyncGetterCallDelay);
 
                                     runs(function() {
-                                        // due to minInterval exceeded + valueChanged has been occured
-                                        // within the minInterval, the
+                                        // due to minIntervalMs exceeded + valueChanged has been occured
+                                        // within the minIntervalMs, the
                                         // PublicationManager
                                         // send the current attribute value to the subscriptions
                                         expect(testAttribute.get.callCount).toEqual(1);
                                         expect(dispatcherSpy.sendPublication.callCount).toEqual(1);
                                         testAttribute.get.reset();
                                         dispatcherSpy.sendPublication.reset();
-                                        // minInterval and no publication shall occur
-                                        increaseFakeTime(mixedSubscriptionRequest.qos.minInterval);
+                                        // minIntervalMs and no publication shall occur
+                                        increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
                                         expect(testAttribute.get).not.toHaveBeenCalled();
                                         expect(dispatcherSpy.sendPublication).not
                                                 .toHaveBeenCalled();
@@ -1455,11 +1455,11 @@ joynrTestRequire(
                                                     .toHaveBeenCalled();
                                         }
 
-                                        // at time mixedSubscriptionRequest.qos.minInterval the last
+                                        // at time mixedSubscriptionRequest.qos.minIntervalMs the last
                                         // value of the test attribute is sent
                                         // to the subscribers as the publication timeout occurs
                                         dispatcherSpy.sendPublication.reset();
-                                        increaseFakeTime(mixedSubscriptionRequest.qos.minInterval
+                                        increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs
                                             - maxNrOfTimes);
                                         expect(testAttribute.get.callCount).toEqual(1);
                                     });
@@ -1537,7 +1537,7 @@ joynrTestRequire(
                                                                 testAttributeName)).toBeFalsy();
                                         testAttribute.get.reset();
                                         dispatcherSpy.sendPublication.reset();
-                                        increaseFakeTime(mixedSubscriptionRequest.qos.minInterval);
+                                        increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
                                         testAttribute.valueChanged(value);
                                         expect(testAttribute.get).not.toHaveBeenCalled();
                                     });

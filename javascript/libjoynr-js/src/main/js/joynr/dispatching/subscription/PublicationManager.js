@@ -221,8 +221,8 @@ define(
                  */
                 function prepareAttributePublication(subscriptionInfo, value, timer) {
                     var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
-                    if (subscriptionInfo.qos.minInterval === undefined
-                        || timeSinceLastPublication >= subscriptionInfo.qos.minInterval) {
+                    if (subscriptionInfo.qos.minIntervalMs === undefined
+                        || timeSinceLastPublication >= subscriptionInfo.qos.minIntervalMs) {
                         sendPublication(subscriptionInfo, value);
                         // if registered interval exists => reschedule it
 
@@ -240,7 +240,7 @@ define(
                     } else {
                         if (subscriptionInfo.onChangeDebounce === undefined) {
                             subscriptionInfo.onChangeDebounce =
-                                    timer(subscriptionInfo, subscriptionInfo.qos.minInterval
+                                    timer(subscriptionInfo, subscriptionInfo.qos.minIntervalMs
                                         - timeSinceLastPublication, function() {
                                         delete subscriptionInfo.onChangeDebounce;
                                     });
@@ -254,13 +254,13 @@ define(
                  */
                 function prepareBroadcastPublication(subscriptionInfo, value) {
                     var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
-                    if (subscriptionInfo.qos.minInterval === undefined
-                        || timeSinceLastPublication >= subscriptionInfo.qos.minInterval) {
+                    if (subscriptionInfo.qos.minIntervalMs === undefined
+                        || timeSinceLastPublication >= subscriptionInfo.qos.minIntervalMs) {
                         sendPublication(subscriptionInfo, value);
                     } else {
                         log.info("Two subsequent broadcasts of event "
                                 + subscriptionInfo.subscribedToName
-                                + " occured within minInterval of subscription with id "
+                                + " occured within minIntervalMs of subscription with id "
                                 + subscriptionInfo.subscriptionId
                                 + ". Event will not be sent to the subscribing client.");
                     }
@@ -401,8 +401,8 @@ define(
                     for (subscriptionId in subscriptions) {
                         if (subscriptions.hasOwnProperty(subscriptionId)) {
                             var subscriptionInfo = subscriptions[subscriptionId];
-                            if (subscriptionInfo.qos.minInterval !== undefined
-                                && subscriptionInfo.qos.minInterval > 0) {
+                            if (subscriptionInfo.qos.minIntervalMs !== undefined
+                                && subscriptionInfo.qos.minIntervalMs > 0) {
                                 prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
                             }
                         }

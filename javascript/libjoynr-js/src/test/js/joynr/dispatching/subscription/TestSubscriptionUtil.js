@@ -58,7 +58,7 @@ joynrTestRequire(
                         var mixedSubscriptionRequest;
                         var testAttributeName;
                         var value;
-                        var minInterval;
+                        var minIntervalMs;
                         var maxInterval;
                         var maxNrOfTimes;
                         var subscriptionLength;
@@ -74,12 +74,12 @@ joynrTestRequire(
                                 period,
                                 subscriptionLength,
                                 onChange,
-                                minInterval) {
+                                minIntervalMs) {
                             var qosSettings;
                             if (onChange) {
                                 if (period !== undefined) {
                                     qosSettings = new OnChangeWithKeepAliveSubscriptionQos({
-                                        minInterval : minInterval || 0,
+                                        minIntervalMs : minIntervalMs || 0,
                                         maxInterval : period,
                                         expiryDateMs : Date.now() + subscriptionLength,
                                         alertAfterInterval : 0,
@@ -87,7 +87,7 @@ joynrTestRequire(
                                     });
                                 } else {
                                     qosSettings = new OnChangeSubscriptionQos({
-                                        minInterval : minInterval || 0,
+                                        minIntervalMs : minIntervalMs || 0,
                                         expiryDateMs : Date.now() + subscriptionLength,
                                         publicationTtlMs : 1000
                                     });
@@ -124,8 +124,8 @@ joynrTestRequire(
                                 + info.subscriptionId
                                 + "\",\"subscribedToName\":\""
                                 + info.subscribedToName
-                                + "\",\"qos\":{\"_typeName\":\"joynr.OnChangeWithKeepAliveSubscriptionQos\",\"alertAfterInterval\":0,\"minInterval\":"
-                                + info.qos.minInterval
+                                + "\",\"qos\":{\"_typeName\":\"joynr.OnChangeWithKeepAliveSubscriptionQos\",\"alertAfterInterval\":0,\"minIntervalMs\":"
+                                + info.qos.minIntervalMs
                                 + ",\"maxInterval\":"
                                 + info.qos.maxInterval
                                 + ",\"expiryDateMs\":"
@@ -230,8 +230,8 @@ joynrTestRequire(
                                     info.proxyParticipantId);
                             expect(subscriptions[info.subscriptionId].providerParticipantId).toBe(
                                     info.providerParticipantId);
-                            expect(subscriptions[info.subscriptionId].qos.minInterval).toBe(
-                                    info.qos.minInterval);
+                            expect(subscriptions[info.subscriptionId].qos.minIntervalMs).toBe(
+                                    info.qos.minIntervalMs);
                             expect(subscriptions[info.subscriptionId].qos.maxInterval).toBe(
                                     info.qos.maxInterval);
                         });
@@ -268,8 +268,8 @@ joynrTestRequire(
                                     info1.proxyParticipantId);
                             expect(subscriptions[info1.subscriptionId].providerParticipantId).toBe(
                                     info1.providerParticipantId);
-                            expect(subscriptions[info1.subscriptionId].qos.minInterval).toBe(
-                                    info1.qos.minInterval);
+                            expect(subscriptions[info1.subscriptionId].qos.minIntervalMs).toBe(
+                                    info1.qos.minIntervalMs);
                             expect(subscriptions[info1.subscriptionId].qos.maxInterval).toBe(
                                     info1.qos.maxInterval);
 
@@ -281,8 +281,8 @@ joynrTestRequire(
                                     info2.proxyParticipantId);
                             expect(subscriptions[info2.subscriptionId].providerParticipantId).toBe(
                                     info2.providerParticipantId);
-                            expect(subscriptions[info2.subscriptionId].qos.minInterval).toBe(
-                                    info2.qos.minInterval);
+                            expect(subscriptions[info2.subscriptionId].qos.minIntervalMs).toBe(
+                                    info2.qos.minIntervalMs);
                             expect(subscriptions[info2.subscriptionId].qos.maxInterval).toBe(
                                     info2.qos.maxInterval);
 
@@ -330,8 +330,9 @@ joynrTestRequire(
                                     expect(
                                             newSubscriptions[origin.subscriptionId].providerParticipantId)
                                             .toBe(origin.providerParticipantId);
-                                    expect(newSubscriptions[origin.subscriptionId].qos.minInterval)
-                                            .toBe(origin.qos.minInterval);
+                                    expect(
+                                            newSubscriptions[origin.subscriptionId].qos.minIntervalMs)
+                                            .toBe(origin.qos.minIntervalMs);
                                     expect(newSubscriptions[origin.subscriptionId].qos.maxInterval)
                                             .toBe(origin.qos.maxInterval);
 
@@ -379,8 +380,9 @@ joynrTestRequire(
                                     expect(
                                             newSubscriptions[origin1.subscriptionId].providerParticipantId)
                                             .toBe(origin1.providerParticipantId);
-                                    expect(newSubscriptions[origin1.subscriptionId].qos.minInterval)
-                                            .toBe(origin1.qos.minInterval);
+                                    expect(
+                                            newSubscriptions[origin1.subscriptionId].qos.minIntervalMs)
+                                            .toBe(origin1.qos.minIntervalMs);
                                     expect(newSubscriptions[origin1.subscriptionId].qos.maxInterval)
                                             .toBe(origin1.qos.maxInterval);
 
@@ -395,8 +397,9 @@ joynrTestRequire(
                                     expect(
                                             newSubscriptions[origin2.subscriptionId].providerParticipantId)
                                             .toBe(origin2.providerParticipantId);
-                                    expect(newSubscriptions[origin2.subscriptionId].qos.minInterval)
-                                            .toBe(origin2.qos.minInterval);
+                                    expect(
+                                            newSubscriptions[origin2.subscriptionId].qos.minIntervalMs)
+                                            .toBe(origin2.qos.minIntervalMs);
                                     expect(newSubscriptions[origin2.subscriptionId].qos.maxInterval)
                                             .toBe(origin2.qos.maxInterval);
 

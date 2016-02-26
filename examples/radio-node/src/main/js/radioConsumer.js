@@ -247,7 +247,7 @@ joynr.load(provisioning).then(function(loadedJoynr) {
     });
 
     subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-        minInterval : 50
+        minIntervalMs : 50
 	});
 
     joynr.proxyBuilder.build(RadioProxy, {

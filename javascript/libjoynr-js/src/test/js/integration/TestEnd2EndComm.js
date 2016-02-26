@@ -76,7 +76,7 @@ joynrTestRequire(
 
                                     subscriptionQosOnChange =
                                             new joynr.proxy.OnChangeSubscriptionQos({
-                                                minInterval : 50
+                                                minIntervalMs : 50
                                             });
 
                                     subscriptionQosInterval =
@@ -86,7 +86,7 @@ joynrTestRequire(
 
                                     subscriptionQosMixed =
                                             new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
-                                                minInterval : 100,
+                                                minIntervalMs : 100,
                                                 maxInterval : 1000
                                             });
 
@@ -608,7 +608,7 @@ joynrTestRequire(
                         });
 
                         it("subscribe to broadcastWithEnum and get burst", function() {
-                            subscriptionQosOnChange.minInterval = 0;
+                            subscriptionQosOnChange.minIntervalMs = 0;
                             var times = 100, spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {
                                 broadcastName: "broadcastWithEnum",
@@ -1260,7 +1260,7 @@ joynrTestRequire(
                                         spy.onReceive.reset();
                                         joynr.util.LongTimer.setTimeout(function() {
                                             timeout = true;
-                                        }, subscriptionQosMixed.minInterval / 2);
+                                        }, subscriptionQosMixed.minIntervalMs / 2);
                                     });
 
                                     waitsFor(
@@ -1268,7 +1268,7 @@ joynrTestRequire(
                                                 return timeout || spy.onReceive.callCount > 0;
                                             },
                                             "the second onChange publication to not occur",
-                                            subscriptionQosMixed.minInterval + safetyTimeout);
+                                            subscriptionQosMixed.minIntervalMs + safetyTimeout);
 
                                     runs(function() {
                                         expect(spy.onReceive).not.toHaveBeenCalled();
@@ -1278,7 +1278,7 @@ joynrTestRequire(
                                             function() {
                                                 return spy.onReceive.callCount > 0;
                                             },
-                                            "the second onChange publication occur after minInterval",
+                                            "the second onChange publication occur after minIntervalMs",
                                             provisioning.ttl + safetyTimeout);
 
                                     runs(function() {

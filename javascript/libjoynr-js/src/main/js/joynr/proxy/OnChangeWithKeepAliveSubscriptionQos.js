@@ -39,7 +39,7 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
      * automatically expire after the expiry date is reached. If no publications
      * were received for alertAfter Interval, publicationMissed will be called.
      * <br/>
-     * minInterval can be used to prevent too many messages being sent.
+     * minIntervalMs can be used to prevent too many messages being sent.
      *
      * @summary
      * Constructor of OnChangeWithKeepAliveSubscriptionQos object used
@@ -51,7 +51,9 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
      * @param {Object}
      *            [settings] the settings object for the constructor call
      * @param {Number}
-     *            [settings.minInterval] defines how often an update may
+     *            [settings.minInterval] Deprecated parameter. Use settings.minIntervalMs instead
+     * @param {Number}
+     *            [settings.minIntervalMs] defines how often an update may
      *            be sent
      * @param {Number}
      *            [settings.maxInterval] defines how long to wait before
@@ -66,7 +68,7 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
      *            <br/>
      *            <b>Minimum and Maximum Values</b>
      *            <ul>
-     *              <li>minimum value: {@link OnChangeWithKeepAliveSubscriptionQos#minInterval}</li>
+     *              <li>minimum value: {@link OnChangeWithKeepAliveSubscriptionQos#minIntervalMs}</li>
      *              <li>maximum value: unlimited</li>
      *            </ul>
      * @param {Number}
@@ -92,7 +94,7 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
      * @returns {OnChangeWithKeepAliveSubscriptionQos} a subscription
      *          Qos Object for subscriptions on <b>attributes</b>
      *
-     * @see {@link OnChangeSubscriptionQos} for more information on <b>minInterval</b>
+     * @see {@link OnChangeSubscriptionQos} for more information on <b>minIntervalMs</b>
      * @see {@link SubscriptionQos} for more information on <b>expiryDateMs</b>
      * and <b>publicationTtlMs</b>
      */
@@ -123,7 +125,7 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
 
         /**
          * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
-         * @name OnChangeWithKeepAliveSubscriptionQos#minInterval
+         * @name OnChangeWithKeepAliveSubscriptionQos#minIntervalMs
          * @type Number
          */
         /**
@@ -148,11 +150,11 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
          */
         Util.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
 
-        if (this.maxInterval < this.minInterval) {
+        if (this.maxInterval < this.minIntervalMs) {
             throw new Error("Wrong maxInterval with value "
                 + this.maxInterval
-                + ": it shall be higher than the specified minInterval of "
-                + this.minInterval);
+                + ": it shall be higher than the specified minIntervalMs of "
+                + this.minIntervalMs);
         }
 
         if (this.alertAfterInterval !== OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT

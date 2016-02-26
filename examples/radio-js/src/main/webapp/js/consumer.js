@@ -418,7 +418,7 @@ $(function() { // DOM ready
         });
 
         subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-            minInterval : 50
+            minIntervalMs : 50
         });
 
         subscriptionQosPeriodic = new joynr.proxy.PeriodicSubscriptionQos({
@@ -426,7 +426,7 @@ $(function() { // DOM ready
         });
 
         subscriptionQosOnChangeWithKeepAlive = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
-            minInterval : 500,
+            minIntervalMs : 500,
             maxInterval : 2000
         });
 
