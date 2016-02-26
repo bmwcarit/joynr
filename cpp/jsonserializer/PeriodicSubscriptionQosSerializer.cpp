@@ -44,6 +44,10 @@ void ClassDeserializerImpl<PeriodicSubscriptionQos>::deserialize(
             qos.setExpiryDateMs(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "publicationTtlMs") {
             qos.setPublicationTtlMs(field.value().getIntType<std::int64_t>());
+        } else if (field.name() == "period") {
+            qos.setPeriod(field.value().getIntType<std::int64_t>());
+        } else if (field.name() == "alertAfterInterval") {
+            qos.setAlertAfterInterval(field.value().getIntType<std::int64_t>());
         }
     }
 }
