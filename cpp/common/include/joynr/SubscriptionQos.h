@@ -235,12 +235,6 @@ public:
                  "instead.")]] static const std::int64_t&
     MAX_PUBLICATION_TTL();
 
-    /**
-     * @brief Returns the value for no expiry date time to live in milliseconds:
-     * 0; used only internally
-     */
-    static const std::int64_t& NO_EXPIRY_DATE_TTL();
-
     /** @brief Returns the value for no expiry date in milliseconds: 0 */
     static const std::int64_t& NO_EXPIRY_DATE();
 

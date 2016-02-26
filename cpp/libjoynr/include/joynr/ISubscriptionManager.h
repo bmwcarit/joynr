@@ -24,6 +24,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/SubscriptionQos.h"
 #include <string>
 #include <memory>
 
@@ -88,6 +89,13 @@ public:
      */
     virtual std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(
             const std::string& subscriptionId) = 0;
+
+    /**
+     * @brief Converts the expiry date of a subscription into a TTL.
+     * @param subscriptionQos the subscription QoS defining the subscription.
+     * @return the TTL in millis.
+     */
+    static std::int64_t convertExpiryDateIntoTtlMs(const joynr::SubscriptionQos& subscriptionQos);
 };
 } // namespace joynr
 #endif // ISUBSCRIPTIONMANAGER_H

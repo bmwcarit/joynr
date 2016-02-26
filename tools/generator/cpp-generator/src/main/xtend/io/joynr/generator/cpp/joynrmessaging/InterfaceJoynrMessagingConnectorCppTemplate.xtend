@@ -81,7 +81,6 @@ internalRequestObject.setMethodName("«method.joynrName»");
 #include "joynr/TypeUtil.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Future.h"
-#include <chrono>
 #include <cstdint>
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -291,13 +290,7 @@ bool «className»::usesClusterController() const{
 			JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
 			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
-			if (subscriptionQos.getExpiryDateMs() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-				clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
-			}
-			else{
-				std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-				clonedMessagingQos.setTtl(subscriptionQos.getExpiryDateMs() - now);
-			}
+			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(subscriptionQos));
 
 			std::shared_ptr<joynr::SubscriptionCallback<«returnType»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnType»>(subscriptionListener));
 			subscriptionManager->registerSubscription(
@@ -441,13 +434,7 @@ bool «className»::usesClusterController() const{
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
-		if (subscriptionQos.getExpiryDateMs() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-			clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
-		}
-		else{
-			std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-			clonedMessagingQos.setTtl(subscriptionQos.getExpiryDateMs() - now);
-		}
+		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(subscriptionQos));
 
 		std::shared_ptr<joynr::SubscriptionCallback<«returnTypes»>> subscriptionCallback(
 					new joynr::SubscriptionCallback<«returnTypes»>(subscriptionListener));

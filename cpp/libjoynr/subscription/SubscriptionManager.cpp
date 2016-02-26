@@ -108,13 +108,12 @@ void SubscriptionManager::registerSubscription(
             JOYNR_LOG_DEBUG(logger, "Will notify if updates are missed.");
             std::int64_t alertAfterInterval = SubscriptionUtil::getAlertInterval(qosVariant);
             JoynrTimePoint expiryDate(std::chrono::milliseconds(qos->getExpiryDateMs()));
+            if (qos->getExpiryDateMs() == SubscriptionQos::NO_EXPIRY_DATE()) {
+                expiryDate = JoynrTimePoint(
+                        std::chrono::milliseconds(std::numeric_limits<std::int64_t>::max()));
+            }
             std::int64_t periodicPublicationInterval =
                     SubscriptionUtil::getPeriodicPublicationInterval(qosVariant);
-
-            if (expiryDate.time_since_epoch().count() == SubscriptionQos::NO_EXPIRY_DATE()) {
-                expiryDate = JoynrTimePoint(
-                        std::chrono::milliseconds(SubscriptionQos::NO_EXPIRY_DATE_TTL()));
-            }
 
             subscription->missedPublicationRunnableHandle = missedPublicationScheduler->schedule(
                     new MissedPublicationRunnable(expiryDate,

@@ -60,12 +60,6 @@ const std::int64_t& SubscriptionQos::MAX_PUBLICATION_TTL()
     return MAX_PUBLICATION_TTL_MS();
 }
 
-const std::int64_t& SubscriptionQos::NO_EXPIRY_DATE_TTL()
-{
-    static const std::int64_t noExpiryDateTTL = std::numeric_limits<std::int64_t>::max(); // 2^63-1
-    return noExpiryDateTTL;
-}
-
 const std::int64_t& SubscriptionQos::NO_EXPIRY_DATE()
 {
     static std::int64_t noExpiryDate = 0;
