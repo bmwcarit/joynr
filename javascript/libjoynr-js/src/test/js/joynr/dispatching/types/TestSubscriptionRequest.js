@@ -28,7 +28,7 @@ joynrTestRequire("joynr/dispatching/types/TestSubscriptionRequest", [
     describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
 
         var qosSettings = {
-            period : 50,
+            periodMs : 50,
             expiryDateMs : 3,
             alertAfterInterval : 80,
             publicationTtlMs : 100

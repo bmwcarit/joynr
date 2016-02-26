@@ -48,7 +48,7 @@ joynrTestRequire("joynr/proxy/TestProxyEvent", [
         var subscriptionManagerSpy;
 
         var qosSettings = {
-            period : 50,
+            periodMs : 50,
             expiryDateMs : 3,
             alertAfterInterval : 80,
             publicationTtlMs : 100

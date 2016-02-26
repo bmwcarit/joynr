@@ -34,7 +34,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
 
         var qosSettings = {
             minIntervalMs : 50,
-            maxInterval : 51,
+            maxIntervalMs : 51,
             expiryDateMs : 4,
             alertAfterInterval : 80,
             publicationTtlMs : 100
@@ -54,7 +54,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
 
         function createSubscriptionQos(
                 minIntervalMs,
-                period,
+                periodMs,
                 onChange,
                 expiryDateMs,
                 alertAfterInterval,
@@ -63,14 +63,14 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             if (onChange) {
                 returnValue = new OnChangeWithKeepAliveSubscriptionQos({
                     minIntervalMs : minIntervalMs,
-                    maxInterval : period,
+                    maxIntervalMs : periodMs,
                     expiryDateMs : expiryDateMs,
                     alertAfterInterval : alertAfterInterval,
                     publicationTtlMs : publicationTtlMs
                 });
             } else {
                 returnValue = new PeriodicSubscriptionQos({
-                    period : period,
+                    periodMs : periodMs,
                     expiryDateMs : expiryDateMs,
                     alertAfterInterval : alertAfterInterval,
                     publicationTtlMs : publicationTtlMs
@@ -81,7 +81,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
 
         function testValues(
                 minIntervalMs,
-                period,
+                periodMs,
                 onChange,
                 expiryDateMs,
                 alertAfterInterval,
@@ -89,20 +89,20 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             var subscriptionQos =
                     createSubscriptionQos(
                             minIntervalMs,
-                            period,
+                            periodMs,
                             onChange,
                             expiryDateMs,
                             alertAfterInterval,
                             publicationTtlMs);
-            var expectedMaxInterval = period;
+            var expectedMaxIntervalMs = periodMs;
             if (onChange) {
                 var expectedMinIntervalMs = minIntervalMs;
 
                 expect(subscriptionQos.minIntervalMs).toBe(expectedMinIntervalMs);
 
-                expect(subscriptionQos.maxInterval).toBe(expectedMaxInterval);
+                expect(subscriptionQos.maxIntervalMs).toBe(expectedMaxIntervalMs);
             } else {
-                expect(subscriptionQos.period).toBe(expectedMaxInterval);
+                expect(subscriptionQos.periodMs).toBe(expectedMaxIntervalMs);
             }
             var expectedPublicationTtlMs = publicationTtlMs;
             expect(subscriptionQos.publicationTtlMs).toBe(expectedPublicationTtlMs);
@@ -118,11 +118,11 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(function() {
                 createSubscriptionQos(1, 2, false, 4, 5, -6);
             }).toThrow();
-            //wrong period
+            //wrong periodMs
             expect(function() {
                 createSubscriptionQos(1, 2, false, 4, 5, 100);
             }).toThrow();
-            //wrong alertAfterInterval (shall be higher then the period)
+            //wrong alertAfterInterval (shall be higher then the periodMs)
             expect(function() {
                 createSubscriptionQos(1, 50, false, 4, 5, 100);
             }).toThrow();
@@ -136,11 +136,11 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(function() {
                 testValues(-1, -2, true, -4, -5, 200);
             }).toThrow();
-            //wrong maxInterval (shall be higher than minIntervalMs)
+            //wrong maxIntervalMs (shall be higher than minIntervalMs)
             expect(function() {
                 testValues(60, -2, true, -4, -5, 200);
             }).toThrow();
-            //wrong alertAfterInterval (shall be higher than maxInterval)
+            //wrong alertAfterInterval (shall be higher than maxIntervalMs)
             expect(function() {
                 testValues(60, 62, true, -4, -5, 200);
             }).toThrow();
@@ -154,7 +154,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(function() {
                 testValues(0, 0, false, 0, 0, 0);
             }).toThrow();
-            //wrong period
+            //wrong periodMs
             expect(function() {
                 testValues(0, 0, false, 0, 0, 100);
             }).toThrow();
@@ -184,6 +184,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(deprecatedQos.expiryDateMs).toEqual(1000);
             expect(deprecatedQos.publicationTtlMs).toEqual(100);
             expect(deprecatedQos.minIntervalMs).toEqual(0);
+            expect(deprecatedQos.maxIntervalMs).toEqual(50);
         });
 
         it("throws on incorrectly typed values", function() {

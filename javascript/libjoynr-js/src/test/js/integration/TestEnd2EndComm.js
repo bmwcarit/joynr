@@ -81,13 +81,13 @@ joynrTestRequire(
 
                                     subscriptionQosInterval =
                                             new joynr.proxy.PeriodicSubscriptionQos({
-                                                period : 1000
+                                                periodMs : 1000
                                             });
 
                                     subscriptionQosMixed =
                                             new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
                                                 minIntervalMs : 100,
-                                                maxInterval : 1000
+                                                maxIntervalMs : 1000
                                             });
 
                                     IntegrationUtils.initializeWebWorker(
@@ -1238,7 +1238,7 @@ joynrTestRequire(
                                                 return (spy.onReceive.callCount > 0 || spy.onError.callCount > 0);
                                             },
                                             "the interval publication to occur",
-                                            subscriptionQosMixed.maxInterval + provisioning.ttl);
+                                            subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
 
                                     runs(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
@@ -1312,7 +1312,7 @@ joynrTestRequire(
                                             "onError"
                                         ]);
                                         subscriptionQosMixed.expiryDateMs =
-                                                subscriptionQosMixed.maxInterval * 1.5 + Date.now();
+                                                subscriptionQosMixed.maxIntervalMs * 1.5 + Date.now();
                                         radioProxy.isOn.subscribe({
                                             subscriptionQos : subscriptionQosMixed,
                                             onReceive : spy.onReceive,
@@ -1354,7 +1354,7 @@ joynrTestRequire(
                                                 return (spy.onReceive.callCount > 0 || spy.onError.callCount > 0);
                                             },
                                             "the interval onReceive to occur",
-                                            subscriptionQosMixed.maxInterval + provisioning.ttl);
+                                            subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
 
                                     runs(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
@@ -1363,7 +1363,7 @@ joynrTestRequire(
 
                                         joynr.util.LongTimer.setTimeout(function() {
                                             timeout = true;
-                                        }, subscriptionQosMixed.maxInterval + provisioning.ttl);
+                                        }, subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
                                     });
 
                                     waitsFor(
@@ -1371,7 +1371,7 @@ joynrTestRequire(
                                                 return timeout || spy.onReceive.callCount > 0;
                                             },
                                             "the interval onReceive not to occur again",
-                                            subscriptionQosMixed.maxInterval
+                                            subscriptionQosMixed.maxIntervalMs
                                                 + provisioning.ttl
                                                 + safetyTimeout);
 

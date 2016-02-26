@@ -422,12 +422,12 @@ $(function() { // DOM ready
         });
 
         subscriptionQosPeriodic = new joynr.proxy.PeriodicSubscriptionQos({
-            period : 1000
+            periodMs : 1000
         });
 
         subscriptionQosOnChangeWithKeepAlive = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
             minIntervalMs : 500,
-            maxInterval : 2000
+            maxIntervalMs : 2000
         });
 
         // create proxy

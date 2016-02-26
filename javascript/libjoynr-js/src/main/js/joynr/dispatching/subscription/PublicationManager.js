@@ -212,7 +212,7 @@ define(
                  * @private
                  */
                 function getPeriod(subscriptionInfo) {
-                    return subscriptionInfo.qos.maxInterval || subscriptionInfo.qos.period;
+                    return subscriptionInfo.qos.maxIntervalMs || subscriptionInfo.qos.periodMs;
                 }
 
                 /**
@@ -897,22 +897,22 @@ define(
                                         }, timeToEndDate);
                             }
 
-                            // Set up publication interval if maxInterval is a number
+                            // Set up publication interval if maxIntervalMs is a number
                             //(not (is not a number)) ...
-                            var period = getPeriod(subscriptionInfo);
+                            var periodMs = getPeriod(subscriptionInfo);
 
-                            if (!isNaN(period)) {
-                                if (period < MIN_PUBLICATION_INTERVAL) {
-                                    log.error("SubscriptionRequest error: period: "
-                                        + period
+                            if (!isNaN(periodMs)) {
+                                if (periodMs < MIN_PUBLICATION_INTERVAL) {
+                                    log.error("SubscriptionRequest error: periodMs: "
+                                        + periodMs
                                         + "is smaller than MIN_PUBLICATION_INTERVAL: "
                                         + MIN_PUBLICATION_INTERVAL);
-                                    // TODO: proper error handling when maxInterval is smaller than
+                                    // TODO: proper error handling when maxIntervalMs is smaller than
                                     // MIN_PUBLICATION_INTERVAL
                                 } else {
                                     // call the get method on the provider at the set interval
                                     subscriptionInfo.subscriptionInterval =
-                                            triggerPublicationTimer(subscriptionInfo, period);
+                                            triggerPublicationTimer(subscriptionInfo, periodMs);
                                 }
                             }
 
@@ -1037,7 +1037,7 @@ define(
                                         }, timeToEndDate);
                             }
 
-                            // Set up publication interval if maxInterval is a number
+                            // Set up publication interval if maxIntervalMs is a number
                             //(not (is not a number)) ...
                             var period = getPeriod(subscriptionInfo);
 
