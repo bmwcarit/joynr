@@ -52,29 +52,31 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     private static final long MIN_MAX_INTERVAL = 0L;
     private static final long MAX_MAX_INTERVAL = 2592000000L; // 30 days
 
-    private static final long MAX_ALERT_AFTER_INTERVAL = 2592000000L; // 30 days
     private static final long NO_ALERT_AFTER_INTERVAL = 0;
     private static final long DEFAULT_ALERT_AFTER_INTERVAL = NO_ALERT_AFTER_INTERVAL;
 
-    private long maxInterval;
-    private long alertAfterInterval;
+    private long maxIntervalMs = MAX_MAX_INTERVAL;
+    private long alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL;
 
     /**
      * Default Constructor
      */
-    protected OnChangeWithKeepAliveSubscriptionQos() {
+    public OnChangeWithKeepAliveSubscriptionQos() {
     }
 
     /**
+     * @deprecated This constructor will be deleted by 2017-01-01.
+     * Use the fluent interface instead.
+     *
      * Constructor of OnChangeWithKeepAliveSubscriptionQos object with specified
      * minInterval, maxInterval, and expiry date.
      *
-     * @param minInterval_ms
+     * @param minIntervalMs
      *            defines how often an update may be sent
-     * @param maxInterval_ms
+     * @param maxIntervalMs
      *            defines how long to wait before sending an update even if the
      *            value did not change
-     * @param expiryDate
+     * @param expiryDateMs
      *            how long is the subscription valid
      *
      * @see OnChangeSubscriptionQos#OnChangeSubscriptionQos(long, long, long)
@@ -88,26 +90,30 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      * @see #setAlertAfterInterval(long) setAlertAfterInterval(long)
      *            (alertAfterInterval will be set to its default value)
      */
-    public OnChangeWithKeepAliveSubscriptionQos(long minInterval_ms, long maxInterval_ms, long expiryDate) {
-        this(minInterval_ms,
-             maxInterval_ms,
-             expiryDate,
+    @Deprecated
+    public OnChangeWithKeepAliveSubscriptionQos(long minIntervalMs, long maxIntervalMs, long expiryDateMs) {
+        this(minIntervalMs,
+             maxIntervalMs,
+             expiryDateMs,
              DEFAULT_ALERT_AFTER_INTERVAL,
              SubscriptionQos.DEFAULT_PUBLICATION_TTL);
     }
 
     /**
+     * @deprecated This constructor will be deleted by 2017-01-01.
+     * Use the fluent interface instead.
+     *
      * Constructor of OnChangeWithKeepAliveSubscriptionQos object with specified
      * minInterval, maxInterval, expiry date, and alertAfterInterval.
      *
-     * @param minInterval_ms
+     * @param minIntervalMs
      *            defines how often an update may be sent
-     * @param maxInterval_ms
+     * @param maxIntervalMs
      *            defines how long to wait before sending an update even if the
      *            value did not change
-     * @param expiryDate
+     * @param expiryDateMs
      *            how long is the subscription valid
-     * @param alertAfterInterval_ms
+     * @param alertAfterIntervalMs
      *            defines how long to wait for an update before publicationMissed
      *            is called if no publications were received.
      *
@@ -121,11 +127,12 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            (publicationTtl will be set to its default value)
      * @see #setAlertAfterInterval(long)
      */
-    public OnChangeWithKeepAliveSubscriptionQos(long minInterval_ms,
-                                                long maxInterval_ms,
-                                                long expiryDate,
-                                                long alertAfterInterval_ms) {
-        this(minInterval_ms, maxInterval_ms, expiryDate, alertAfterInterval_ms, SubscriptionQos.DEFAULT_PUBLICATION_TTL);
+    @Deprecated
+    public OnChangeWithKeepAliveSubscriptionQos(long minIntervalMs,
+                                                long maxIntervalMs,
+                                                long expiryDateMs,
+                                                long alertAfterIntervalMs) {
+        this(minIntervalMs, maxIntervalMs, expiryDateMs, alertAfterIntervalMs, SubscriptionQos.DEFAULT_PUBLICATION_TTL);
     }
 
     /**
@@ -133,17 +140,17 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      * minInterval, maxInterval, expiry date, alertAfterInterval, and
      * publicationTtl (full parameter set).
      *
-     * @param minInterval_ms
+     * @param minIntervalMs
      *            defines how often an update may be sent
-     * @param maxInterval_ms
+     * @param maxIntervalMs
      *            defines how long to wait before sending an update even if the
      *            value did not change
-     * @param expiryDate_ms
+     * @param expiryDateMs
      *            how long is the subscription valid
-     * @param alertAfterInterval_ms
+     * @param alertAfterIntervalMs
      *            defines how long to wait for an update before publicationMissed
      *            is called if no publications were received.
-     * @param publicationTtl_ms
+     * @param publicationTtlMs
      *            time to live for publication messages
      *
      * @see OnChangeSubscriptionQos#OnChangeSubscriptionQos(long, long, long)
@@ -155,14 +162,15 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            for more information on <b>expiryDate</b> and <b>publicationTtl</b>
      * @see #setAlertAfterInterval(long)
      */
-    public OnChangeWithKeepAliveSubscriptionQos(long minInterval_ms,
-                                                long maxInterval_ms,
-                                                long expiryDate_ms,
-                                                long alertAfterInterval_ms,
-                                                long publicationTtl_ms) {
-        super(minInterval_ms, expiryDate_ms, publicationTtl_ms);
-        setMaxInterval(maxInterval_ms);
-        setAlertAfterInterval(alertAfterInterval_ms);
+    @Deprecated
+    public OnChangeWithKeepAliveSubscriptionQos(long minIntervalMs,
+                                                long maxIntervalMs,
+                                                long expiryDateMs,
+                                                long alertAfterIntervalMs,
+                                                long publicationTtlMs) {
+        super(minIntervalMs, expiryDateMs, publicationTtlMs);
+        setMaxInterval(maxIntervalMs);
+        setAlertAfterInterval(alertAfterIntervalMs);
     }
 
     /**
@@ -179,7 +187,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            notification at least every maxInterval milliseconds.
      */
     public long getMaxInterval() {
-        return maxInterval;
+        return maxIntervalMs;
     }
 
     /**
@@ -192,9 +200,9 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      * be seen as a sort of heart beat or keep alive interval, if no other
      * publication has been sent within that time.
      *
-     * @param maxInterval_ms
+     * @param maxIntervalMs
      *            The publisher will send a notification at least every
-     *            maxInterval_ms.<br>
+     *            maxIntervalMs.<br>
      *            <br>
      *            <b>Minimum and Maximum Values</b>
      *            <ul>
@@ -207,23 +215,21 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            Any value bigger than this maximum will be treated as the absolute
      *            maximum setting of {@value #MAX_MAX_INTERVAL} milliseconds.
      *            </ul>
+     * @return the subscriptionQos (fluent interface)
      */
-    public void setMaxInterval(long maxInterval_ms) {
-        if (maxInterval_ms < this.getMinInterval()) {
-            maxInterval_ms = this.getMinInterval();
+    public OnChangeWithKeepAliveSubscriptionQos setMaxInterval(long maxIntervalMs) {
+        if (maxIntervalMs < this.getMinInterval()) {
+            maxIntervalMs = this.getMinInterval();
+        } else if (maxIntervalMs < MIN_MAX_INTERVAL) {
+            this.maxIntervalMs = MIN_MAX_INTERVAL;
+        } else if (maxIntervalMs > MAX_MAX_INTERVAL) {
+            this.maxIntervalMs = MAX_MAX_INTERVAL;
+        } else if (alertAfterIntervalMs < maxIntervalMs) {
+            alertAfterIntervalMs = maxIntervalMs;
+        } else {
+            this.maxIntervalMs = maxIntervalMs;
         }
-        if (maxInterval_ms < MIN_MAX_INTERVAL) {
-            this.maxInterval = MIN_MAX_INTERVAL;
-            return;
-        }
-
-        if (maxInterval_ms > MAX_MAX_INTERVAL) {
-            this.maxInterval = MAX_MAX_INTERVAL;
-            return;
-        }
-
-        this.maxInterval = maxInterval_ms;
-
+        return this;
     }
 
     /**
@@ -239,7 +245,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      */
     @Override
     public long getAlertAfterInterval() {
-        return alertAfterInterval;
+        return alertAfterIntervalMs;
     }
 
     /**
@@ -248,43 +254,53 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      * If no notification was received within the last alert interval, a missed
      * publication notification will be raised.
      *
-     * @param alertAfterInterval_ms
+     * @param alertAfterIntervalMs
      *            the max time that can expire without receiving a publication
-     *            before an alert will be generated. If more than alertInterval_ms
+     *            before an alert will be generated. If more than alertIntervalMs
      *            pass without receiving a message, subscriptionManager will issue
      *            a publicationMissed.
      *            <ul>
      *            <li><b>Minimum</b> setting: The value cannot be set below the
      *            value of maxInterval <br>
-     *            Any value less than this minimum will cause no alerts to be generated
-     *            by setting the alertAfterInterval to NO_ALERT_AFTER_INTERVAL (0).
+     *            If a value is passed that is less than this minimum, maxInterval
+     *            will be used instead.
      *            <li>The absolute <b>maximum</b> setting is 2.592.000.000
      *            milliseconds (30 days). <br>
      *            Any value bigger than this maximum will be treated as the
      *            absolute maximum setting of 2.592.000.000 milliseconds.
      *            </ul>
      */
-    public void setAlertAfterInterval(final long alertAfterInterval_ms) {
-        if (alertAfterInterval_ms < maxInterval) {
-            this.alertAfterInterval = NO_ALERT_AFTER_INTERVAL;
-            logger.warn("alertAfterInterval_ms < maxInterval. AlertAfter deactivated");
-            return;
+    public void setAlertAfterInterval(final long alertAfterIntervalMs) {
+        if (alertAfterIntervalMs < maxIntervalMs) {
+            this.alertAfterIntervalMs = maxIntervalMs;
+            logger.warn("attempt to set alertAfterIntervalMs to a value smaller than maxInterval; setting to maxInterval instead");
         }
+    }
 
-        if (alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL) {
-            this.alertAfterInterval = MAX_ALERT_AFTER_INTERVAL;
-            logger.warn("alertAfterInterval_ms > maxInterval. Using MAX_ALERT_AFTER_INTERVAL: {}",
-                        MAX_ALERT_AFTER_INTERVAL);
-            return;
-        }
+    @Override
+    public OnChangeWithKeepAliveSubscriptionQos setExpiryDate(long expiryDateMs) {
+        return (OnChangeWithKeepAliveSubscriptionQos) super.setExpiryDate(expiryDateMs);
+    }
 
-        this.alertAfterInterval = alertAfterInterval_ms;
+    @Override
+    public OnChangeWithKeepAliveSubscriptionQos setMinInterval(long minIntervalMs) {
+        return (OnChangeWithKeepAliveSubscriptionQos) super.setMinInterval(minIntervalMs);
+    }
+
+    @Override
+    public OnChangeWithKeepAliveSubscriptionQos setPublicationTtl(long publicationTtlMs) {
+        return (OnChangeWithKeepAliveSubscriptionQos) super.setPublicationTtl(publicationTtlMs);
+    }
+
+    @Override
+    public OnChangeWithKeepAliveSubscriptionQos setValidityMs(long validityMs) {
+        return (OnChangeWithKeepAliveSubscriptionQos) super.setValidityMs(validityMs);
     }
 
     @Override
     @JsonIgnore
     public long getHeartbeat() {
-        return maxInterval;
+        return maxIntervalMs;
     }
 
     /**
@@ -296,8 +312,8 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (alertAfterInterval ^ (alertAfterInterval >>> 32));
-        result = prime * result + (int) (maxInterval ^ (maxInterval >>> 32));
+        result = prime * result + (int) (alertAfterIntervalMs ^ (alertAfterIntervalMs >>> 32));
+        result = prime * result + (int) (maxIntervalMs ^ (maxIntervalMs >>> 32));
         return result;
     }
 
@@ -319,10 +335,10 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
             return false;
         }
         OnChangeWithKeepAliveSubscriptionQos other = (OnChangeWithKeepAliveSubscriptionQos) obj;
-        if (alertAfterInterval != other.alertAfterInterval) {
+        if (alertAfterIntervalMs != other.alertAfterIntervalMs) {
             return false;
         }
-        if (maxInterval != other.maxInterval) {
+        if (maxIntervalMs != other.maxIntervalMs) {
             return false;
         }
         return true;

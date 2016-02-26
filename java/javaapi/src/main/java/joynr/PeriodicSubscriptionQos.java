@@ -50,7 +50,10 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * Maximum value for period in milliseconds: 2.592.000.000 (30 days)
      */
     private static final long MAX_PERIOD = 30L * 24L * 60L * 60L * 1000L; // 30 days
-
+    /**
+     * Default value for period in milliseconds: 60.000 (1 minute)
+     */
+    private static final long DEFAULT_PERIOD_MS = 60L * 1000L;
     /**
      * Minimum value for alertAfterInterval in milliseconds: MIN_PERIOD: 50
      */
@@ -68,29 +71,32 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      */
     private static final long NO_ALERT_AFTER_INTERVAL = 0L;
 
-    private long period = MIN_PERIOD;
-    private long alertAfterInterval = DEFAULT_ALERT_AFTER_INTERVAL;
+    private long periodMs = DEFAULT_PERIOD_MS;
+    private long alertAfterIntervalMs = DEFAULT_ALERT_AFTER_INTERVAL;
 
     /**
      * Default Constructor
      */
-    protected PeriodicSubscriptionQos() {
+    public PeriodicSubscriptionQos() {
     }
 
     /**
      * Constructor of PeriodicSubscriptionQos objects with full parameter set.
-     *
-     * @param period
+     * @deprecated This constructor will be deleted by 2017-01-01.
+     * Use the fluent interface instead:
+     * new PeriodicSubscriptionQos().setPeriodMs(periodMs)
+     *                              .setValidityMs(validityMs)
+     * @param periodMs
      *            The provider will send notifications every period in milliseconds
      *            independently of value changes.
-     * @param expiryDate
+     * @param expiryDateMs
      *            the end date of the subscription until which publications will
      *            be sent. This value is provided in milliseconds
      *            (since 1970-01-01T00:00:00.000).
-     * @param alertAfterInterval
+     * @param alertAfterIntervalMs
      *            defines how long to wait for an update before publicationMissed
      *            is called if no publications were received.
-     * @param publicationTtl
+     * @param publicationTtlMs
      *            time to live for publication messages
      *
      * @see #setPeriod(long)
@@ -99,24 +105,28 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      *           SubscriptionQos.SubscriptionQos(long, long)
      *           for more information on expiryDate and publicationTtl
      */
-    public PeriodicSubscriptionQos(long period, long expiryDate, long alertAfterInterval, long publicationTtl) {
-        super(expiryDate, publicationTtl);
-        setPeriod(period);
-        setAlertAfterInterval(alertAfterInterval);
+    @Deprecated
+    public PeriodicSubscriptionQos(long periodMs, long expiryDateMs, long alertAfterIntervalMs, long publicationTtlMs) {
+        super(expiryDateMs, publicationTtlMs);
+        setPeriod(periodMs);
+        setAlertAfterInterval(alertAfterIntervalMs);
     }
 
     /**
      * Constructor of PeriodicSubscriptionQos objects with specified period, expiry
      * date, and publicationTtl.
-     *
-     * @param period
+     * @deprecated This constructor will be deleted by 2017-01-01.
+     * Use the fluent interface instead:
+     * new PeriodicSubscriptionQos().setPeriodMs(periodMs)
+     *                              .setValidityMs(validityMs)
+     * @param periodMs
      *            The provider will send notifications every period in milliseconds
      *            independently of value changes.
-     * @param expiryDate
+     * @param expiryDateMs
      *            the end date of the subscription until which publications will
      *            be sent. This value is provided in milliseconds
      *            (since 1970-01-01T00:00:00.000).
-     * @param publicationTtl
+     * @param publicationTtlMs
      *            time to live for publication messages
      *
      * @see #setPeriod(long)
@@ -126,8 +136,9 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @see #setAlertAfterInterval(long) setAlertAfterInterval(long)
      *           (alertAfterInterval will be set to its default value)
      */
-    public PeriodicSubscriptionQos(long period, long expiryDate, long publicationTtl) {
-        this(period, expiryDate, DEFAULT_ALERT_AFTER_INTERVAL, publicationTtl);
+    @Deprecated
+    public PeriodicSubscriptionQos(long periodMs, long expiryDateMs, long publicationTtlMs) {
+        this(periodMs, expiryDateMs, DEFAULT_ALERT_AFTER_INTERVAL, publicationTtlMs);
     }
 
     /**
@@ -142,7 +153,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      */
     @Override
     public long getAlertAfterInterval() {
-        return alertAfterInterval;
+        return alertAfterIntervalMs;
     }
 
     /**
@@ -163,26 +174,26 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * <p>
      * Use {@link #clearAlertAfterInterval()} to remove missed publication notifications.
      *
-     * @param alertAfterInterval_ms
+     * @param alertAfterIntervalMs
      *            If more than alertInterval_ms pass without receiving a message,
      *            subscriptionManager will issue a publication missed.
+     * @return the subscriptionQos (fluent interface)
      *
      * @see #clearAlertAfterInterval()
      */
-    public void setAlertAfterInterval(final long alertAfterInterval_ms) {
-        if (alertAfterInterval_ms < period && alertAfterInterval_ms != NO_ALERT_AFTER_INTERVAL) {
-            this.alertAfterInterval = MIN_ALERT_AFTER_INTERVAL;
+    public PeriodicSubscriptionQos setAlertAfterInterval(final long alertAfterIntervalMs) {
+        if (alertAfterIntervalMs < periodMs && alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL) {
+            this.alertAfterIntervalMs = MIN_ALERT_AFTER_INTERVAL;
             logger.warn("alertAfterInterval_ms < MIN_ALERT_AFTER_INTERVAL. Using MIN_ALERT_AFTER_INTERVAL: {}",
                         MIN_ALERT_AFTER_INTERVAL);
-            return;
-        }
-        if (alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL) {
-            this.alertAfterInterval = MAX_ALERT_AFTER_INTERVAL;
+        } else if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL) {
+            this.alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL;
             logger.warn("alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL. Using MAX_ALERT_AFTER_INTERVAL: {}",
                         MAX_ALERT_AFTER_INTERVAL);
-            return;
+        } else {
+            this.alertAfterIntervalMs = alertAfterIntervalMs;
         }
-        this.alertAfterInterval = alertAfterInterval_ms;
+        return this;
     }
 
     /**
@@ -190,7 +201,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * alerts. No missed publication notifications will be raised.
      */
     public void clearAlertAfterInterval() {
-        alertAfterInterval = NO_ALERT_AFTER_INTERVAL;
+        alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL;
     }
 
     /**
@@ -201,7 +212,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @return The period value of the subscription in milliseconds.
      */
     public long getPeriod() {
-        return period;
+        return periodMs;
     }
 
     /**
@@ -221,31 +232,47 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * <li>The <b>default</b> setting is 50 milliseconds (MIN_PERIOD).
      * </ul>
      *
-     * @param period_ms
+     * @param periodMs
      *            The publisher will send a notification at least every period_ms.
+     * @return the subscriptionQos (fluent interface)
      */
-    public void setPeriod(long period_ms) {
-        if (period_ms < MIN_PERIOD) {
-            this.period = MIN_PERIOD;
+    public PeriodicSubscriptionQos setPeriod(long periodMs) {
+        if (periodMs < MIN_PERIOD) {
+            this.periodMs = MIN_PERIOD;
             logger.warn("alertAfterInterval_ms < MIN_PERIOD. Using MIN_PERIOD: {}", MIN_PERIOD);
-
-            return;
-        }
-        if (period_ms > MAX_PERIOD) {
-            this.period = MAX_PERIOD;
+        } else if (periodMs > MAX_PERIOD) {
+            this.periodMs = MAX_PERIOD;
             logger.warn("alertAfterInterval_ms > MAX_PERIOD. Using MAX_PERIOD: {}", MAX_PERIOD);
-            return;
+        } else {
+            this.periodMs = periodMs;
         }
-        this.period = period_ms;
-        if (this.alertAfterInterval != NO_ALERT_AFTER_INTERVAL && this.alertAfterInterval < this.period) {
-            this.alertAfterInterval = this.period;
+
+        if (this.alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL && this.alertAfterIntervalMs < this.periodMs) {
+            this.alertAfterIntervalMs = this.periodMs;
         }
+
+        return this;
+    }
+
+    @Override
+    public PeriodicSubscriptionQos setExpiryDate(long expiryDateMs) {
+        return (PeriodicSubscriptionQos) super.setExpiryDate(expiryDateMs);
+    }
+
+    @Override
+    public PeriodicSubscriptionQos setPublicationTtl(long publicationTtlMs) {
+        return (PeriodicSubscriptionQos) super.setPublicationTtl(publicationTtlMs);
+    }
+
+    @Override
+    public PeriodicSubscriptionQos setValidityMs(long validityMs) {
+        return (PeriodicSubscriptionQos) super.setValidityMs(validityMs);
     }
 
     @Override
     @JsonIgnore
     public long getHeartbeat() {
-        return period;
+        return periodMs;
     }
 
     /**
@@ -257,8 +284,8 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + (int) (alertAfterInterval ^ (alertAfterInterval >>> 32));
-        result = prime * result + (int) (period ^ (period >>> 32));
+        result = prime * result + (int) (alertAfterIntervalMs ^ (alertAfterIntervalMs >>> 32));
+        result = prime * result + (int) (periodMs ^ (periodMs >>> 32));
         return result;
     }
 
@@ -280,10 +307,10 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
             return false;
         }
         PeriodicSubscriptionQos other = (PeriodicSubscriptionQos) obj;
-        if (alertAfterInterval != other.alertAfterInterval) {
+        if (alertAfterIntervalMs != other.alertAfterIntervalMs) {
             return false;
         }
-        if (period != other.period) {
+        if (periodMs != other.periodMs) {
             return false;
         }
         return true;

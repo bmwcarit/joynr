@@ -35,32 +35,36 @@ import io.joynr.pubsub.SubscriptionQos;
  */
 public class OnChangeSubscriptionQos extends SubscriptionQos {
     private static final long serialVersionUID = 1L;
+    private static final long DEFAULT_MIN_INTERVAL = 1000;
     private static final long MIN_MIN_INTERVAL = 0L;
     private static final long MAX_MIN_INTERVAL = 2592000000L; // 30 days;
 
-    private long minInterval = MIN_MIN_INTERVAL;
+    private long minIntervalMs = DEFAULT_MIN_INTERVAL;
 
     /**
      * Default Constructor
      */
-    protected OnChangeSubscriptionQos() {
+    public OnChangeSubscriptionQos() {
     }
 
     /**
+     * @deprecated This constructor will be deleted by 2017-01-01.
+     * Use the fluent interface instead.
+     *
      * Constructor of OnChangeSubscriptionQos object used for subscriptions on
      * broadcasts in generated proxy objects
      *
-     * @param minInterval_ms
+     * @param minIntervalMs
      *            is used to prevent flooding. Publications will be sent
      *            maintaining this minimum interval provided, even if the value
      *            changes more often. This prevents the consumer from being
      *            flooded by updated values. The filtering happens on the
      *            provider's side, thus also preventing excessive network
      *            traffic. This value is provided in milliseconds.
-     * @param expiryDate
+     * @param expiryDateMs
      *            The expiryDate is the end date of the subscription. This value
      *            is provided in milliseconds (since 1970-01-01T00:00:00.000).
-     * @param publicationTtl_ms
+     * @param publicationTtlMs
      *            is the time-to-live for publication messages.
      *            NOTE minimum and maximum values apply.
      *
@@ -69,9 +73,10 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      *           SubscriptionQos.SubscriptionQos(long, long)
      *           for more information on expiryDate and publicationTtl
      */
-    public OnChangeSubscriptionQos(long minInterval_ms, long expiryDate, long publicationTtl_ms) {
-        super(expiryDate, publicationTtl_ms);
-        setMinInterval(minInterval_ms);
+    @Deprecated
+    public OnChangeSubscriptionQos(long minIntervalMs, long expiryDateMs, long publicationTtlMs) {
+        super(expiryDateMs, publicationTtlMs);
+        setMinInterval(minIntervalMs);
 
     }
 
@@ -89,7 +94,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      *         notifications.
      */
     public long getMinInterval() {
-        return minInterval;
+        return minIntervalMs;
     }
 
     /**
@@ -108,23 +113,35 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * will be rounded down.
      * </ul>
      *
-     * @param minInterval_ms
-     *            The publisher will keep a minimum idle time of minInterval_ms
+     * @param minIntervalMs
+     *            The publisher will keep a minimum idle time of minIntervalMs
      *            between two successive notifications.
+     * @return the subscriptionQos (fluent interface)
      */
-    public void setMinInterval(final long minInterval_ms) {
-        if (minInterval_ms < MIN_MIN_INTERVAL) {
-            this.minInterval = MIN_MIN_INTERVAL;
-            return;
+    public OnChangeSubscriptionQos setMinInterval(final long minIntervalMs) {
+        if (minIntervalMs < MIN_MIN_INTERVAL) {
+            this.minIntervalMs = MIN_MIN_INTERVAL;
+        } else if (minIntervalMs > MAX_MIN_INTERVAL) {
+            this.minIntervalMs = MAX_MIN_INTERVAL;
+        } else {
+            this.minIntervalMs = minIntervalMs;
         }
+        return this;
+    }
 
-        if (minInterval_ms > MAX_MIN_INTERVAL) {
-            this.minInterval = MAX_MIN_INTERVAL;
-            return;
-        }
+    @Override
+    public OnChangeSubscriptionQos setExpiryDate(long expiryDateMs) {
+        return (OnChangeSubscriptionQos) super.setExpiryDate(expiryDateMs);
+    }
 
-        this.minInterval = minInterval_ms;
+    @Override
+    public OnChangeSubscriptionQos setPublicationTtl(long publicationTtlMs) {
+        return (OnChangeSubscriptionQos) super.setPublicationTtl(publicationTtlMs);
+    }
 
+    @Override
+    public OnChangeSubscriptionQos setValidityMs(long validityMs) {
+        return (OnChangeSubscriptionQos) super.setValidityMs(validityMs);
     }
 
     /**
@@ -136,7 +153,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (minInterval ^ (minInterval >>> 32));
+        result = prime * result + (int) (minIntervalMs ^ (minIntervalMs >>> 32));
         return result;
     }
 
@@ -158,7 +175,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
             return false;
         }
         OnChangeSubscriptionQos other = (OnChangeSubscriptionQos) obj;
-        if (minInterval != other.minInterval) {
+        if (minIntervalMs != other.minIntervalMs) {
             return false;
         }
         return true;
