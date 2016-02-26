@@ -60,8 +60,10 @@ define(
              *              <li>default value: {@link SubscriptionQos.NO_EXPIRY_DATE}</li>
              *            </ul>
              * @param {Number}
-             *            [settings.publicationTtl=10 000] Time to live for publication
-             *            messages.<br/>
+             *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
+             * @param {Number}
+             *            [settings.publicationTtlMs=SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS]
+             *            Time to live for publication messages.<br/>
              *            <br/>
              *            If a notification message can not be delivered within its time
              *            to live, it will be deleted from the system. This value is
@@ -69,8 +71,8 @@ define(
              *            <br/>
              *            <b>Minimum and Default Values:</b>
              *            <ul>
-             *              <li>minimum value: {@link SubscriptionQos.MIN_PUBLICATION_TTL}</li>
-             *              <li>default value: {@link SubscriptionQos.DEFAULT_PUBLICATION_TTL}</li>
+             *              <li>minimum value: {@link SubscriptionQos.MIN_PUBLICATION_TTL_MS}</li>
+             *              <li>default value: {@link SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS}</li>
              *            </ul>
              *
              * @returns {SubscriptionQos}
@@ -105,10 +107,17 @@ define(
                             settings.expiryDateMs,
                             "Number",
                             "settings.expiryDateMs");
+                    if (settings.publicationTtl !== undefined) {
+                        log
+                                .warn("SubscriptionQos has been invoked with deprecated settings member \"publicationTtl\". "
+                                    + "By 2017-01-01, the publication ttl can only be specified with member \"publicationTtlMs\".");
+                        settings.publicationTtlMs = settings.publicationTtl;
+                        settings.publicationTtl = undefined;
+                    }
                     Util.checkPropertyIfDefined(
-                            settings.publicationTtl,
+                            settings.publicationTtlMs,
                             "Number",
-                            "settings.publicationTtl");
+                            "settings.publicationTtlMs");
                 }
 
                 /**
@@ -118,15 +127,15 @@ define(
                  */
                 /**
                  * See [constructor description]{@link SubscriptionQos}.
-                 * @name SubscriptionQos#publicationTtl
+                 * @name SubscriptionQos#publicationTtlMs
                  * @type Number
                  */
                 Util.extend(this, defaultSettings, settings);
-                if (this.publicationTtl < SubscriptionQos.MIN_PUBLICATION_TTL) {
-                    throw new Error("Wrong publicationttl with value "
-                        + this.publicationTtl
+                if (this.publicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS) {
+                    throw new Error("Wrong publication ttl with value "
+                        + this.publicationTtlMs
                         + ": it shall be higher than "
-                        + SubscriptionQos.MIN_PUBLICATION_TTL);
+                        + SubscriptionQos.MIN_PUBLICATION_TTL_MS);
                 }
 
                 if (this.expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS) {
@@ -138,16 +147,16 @@ define(
             }
 
             /**
-             * Minimal value for [publicationTtl]{@link SubscriptionQos#publicationTtl}.
+             * Minimal value for [publicationTtlMs]{@link SubscriptionQos#publicationTtlMs}.
              * See [constructor description]{@link SubscriptionQos}.
              *
-             * @name SubscriptionQos.MIN_PUBLICATION_TTL
+             * @name SubscriptionQos.MIN_PUBLICATION_TTL_MS
              * @type Number
              * @default 100
              * @static
              * @readonly
              */
-            SubscriptionQos.MIN_PUBLICATION_TTL = 100;
+            SubscriptionQos.MIN_PUBLICATION_TTL_MS = 100;
             /**
              * Minimal value for [expiryDateMs]{@link SubscriptionQos#expiryDateMs} in milliseconds
              * (0 secs). See [constructor description]{@link SubscriptionQos}.
@@ -179,20 +188,21 @@ define(
              */
             SubscriptionQos.NO_EXPIRY_DATE_TTL = Util.getMaxLongValue();
             /**
-             * Default value for [publicationTtl]{@link SubscriptionQos#publicationTtl} in
+             * Default value for [publicationTtlMs]{@link SubscriptionQos#publicationTtlMs} in
              * milliseconds (10 secs). See [constructor description]{@link SubscriptionQos}.
              *
-             * @name SubscriptionQos.DEFAULT_PUBLICATION_TTL
+             * @name SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS
              * @type Number
              * @default 10 000
              * @static
              * @readonly
              */
-            SubscriptionQos.DEFAULT_PUBLICATION_TTL = 10000;
+            SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS = 10000;
+            SubscriptionQos.DEFAULT_PUBLICATION_TTL = SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS;
 
             defaultSettings = {
                 expiryDateMs : SubscriptionQos.NO_EXPIRY_DATE,
-                publicationTtl : SubscriptionQos.DEFAULT_PUBLICATION_TTL
+                publicationTtlMs : SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS
             };
 
             return SubscriptionQos;

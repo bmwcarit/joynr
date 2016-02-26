@@ -202,7 +202,7 @@ define(
                     dispatcher.sendPublication({
                         from : subscriptionInfo.providerParticipantId,
                         to : subscriptionInfo.proxyParticipantId,
-                        expiryDate : (Date.now() + subscriptionInfo.qos.publicationTtl).toString()
+                        expiryDate : (Date.now() + subscriptionInfo.qos.publicationTtlMs).toString()
                     }, subscriptionPublication
                     );
                 }

@@ -37,7 +37,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             maxInterval : 51,
             expiryDateMs : 4,
             alertAfterInterval : 80,
-            publicationTtl : 100
+            publicationTtlMs : 100
         };
 
         it("is instantiable", function() {
@@ -58,7 +58,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                 onChange,
                 expiryDateMs,
                 alertAfterInterval,
-                publicationTtl) {
+                publicationTtlMs) {
             var returnValue;
             if (onChange) {
                 returnValue = new OnChangeWithKeepAliveSubscriptionQos({
@@ -66,14 +66,14 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                     maxInterval : period,
                     expiryDateMs : expiryDateMs,
                     alertAfterInterval : alertAfterInterval,
-                    publicationTtl : publicationTtl
+                    publicationTtlMs : publicationTtlMs
                 });
             } else {
                 returnValue = new PeriodicSubscriptionQos({
                     period : period,
                     expiryDateMs : expiryDateMs,
                     alertAfterInterval : alertAfterInterval,
-                    publicationTtl : publicationTtl
+                    publicationTtlMs : publicationTtlMs
                 });
             }
             return returnValue;
@@ -85,7 +85,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                 onChange,
                 expiryDateMs,
                 alertAfterInterval,
-                publicationTtl) {
+                publicationTtlMs) {
             var subscriptionQos =
                     createSubscriptionQos(
                             minInterval,
@@ -93,7 +93,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                             onChange,
                             expiryDateMs,
                             alertAfterInterval,
-                            publicationTtl);
+                            publicationTtlMs);
             var expectedMaxInterval = period;
             if (onChange) {
                 var expectedMinInterval = minInterval;
@@ -104,8 +104,8 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             } else {
                 expect(subscriptionQos.period).toBe(expectedMaxInterval);
             }
-            var expectedPulicationTtl = publicationTtl;
-            expect(subscriptionQos.publicationTtl).toBe(expectedPulicationTtl);
+            var expectedPublicationTtlMs = publicationTtlMs;
+            expect(subscriptionQos.publicationTtlMs).toBe(expectedPublicationTtlMs);
 
             expect(subscriptionQos.expiryDateMs).toBe(expiryDateMs);
 
@@ -114,7 +114,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
         }
 
         it("constructs with correct member values", function() {
-            //wrong publicationTtl
+            //wrong publicationTtlMs
             expect(function() {
                 createSubscriptionQos(1, 2, false, 4, 5, -6);
             }).toThrow();
@@ -128,7 +128,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             }).toThrow();
             testValues(1, 50, false, 4, 51, 100);
 
-            //wrong publicationTtl
+            //wrong publicationTtlMs
             expect(function() {
                 testValues(-1, -2, true, -4, -5, -6);
             }).toThrow();
@@ -150,7 +150,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             }).toThrow();
             testValues(60, 62, true, 10, 100, 200);
 
-            //wrong publicationTtl
+            //wrong publicationTtlMs
             expect(function() {
                 testValues(0, 0, false, 0, 0, 0);
             }).toThrow();
@@ -168,7 +168,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                         minInterval : OnChangeSubscriptionQos.MIN_INTERVAL,
                         expiryDateMs : SubscriptionQos.NO_EXPIRY_DATE, // see comment in SubscriptionQos (cause: javascript floating point stuff)
                         alertAfterInterval : OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT,
-                        publicationTtl : SubscriptionQos.DEFAULT_PUBLICATION_TTL
+                        publicationTtlMs : SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS
                     }));
         });
 
@@ -182,6 +182,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
 
             });
             expect(deprecatedQos.expiryDateMs).toEqual(1000);
+            expect(deprecatedQos.publicationTtlMs).toEqual(100);
         });
 
         it("throws on incorrectly typed values", function() {

@@ -51,7 +51,7 @@ joynrTestRequire("joynr/proxy/TestProxyEvent", [
             period : 50,
             expiryDateMs : 3,
             alertAfterInterval : 80,
-            publicationTtl : 100
+            publicationTtlMs : 100
         };
 
         function checkSpy(spy, errorExpected) {

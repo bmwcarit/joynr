@@ -67,13 +67,15 @@ define("joynr/proxy/PeriodicSubscriptionQos", [
      *              <li>default value: {@link PeriodicSubscriptionQos.NEVER_ALERT}</li>
      *            </ul>
      * @param {Number}
-     *            [settings.publicationTtl] Time to live for publication messages
+     *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
+     * @param {Number}
+     *            [settings.publicationTtlMs] Time to live for publication messages
      *
      * @returns {PeriodicSubscriptionQos} a subscription Qos Object for subscriptions
      *            on <b>attributes</b>
      *
      * @see {@link SubscriptionQos} for more information on <b>expiryDateMs</b>
-     * and <b>publicationTtl</b>
+     * and <b>publicationTtlMs</b>
      */
     function PeriodicSubscriptionQos(settings) {
         if (!(this instanceof PeriodicSubscriptionQos)) {
@@ -116,7 +118,7 @@ define("joynr/proxy/PeriodicSubscriptionQos", [
          */
         /**
          * See [constructor description]{@link PeriodicSubscriptionQos}.
-         * @name PeriodicSubscriptionQos#publicationTtl
+         * @name PeriodicSubscriptionQos#publicationTtlMs
          * @type Number
          */
         Util.extend(this, defaultSettings, settings, subscriptionQos);

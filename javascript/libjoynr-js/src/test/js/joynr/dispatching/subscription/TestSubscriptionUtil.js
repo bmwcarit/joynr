@@ -83,13 +83,13 @@ joynrTestRequire(
                                         maxInterval : period,
                                         expiryDateMs : Date.now() + subscriptionLength,
                                         alertAfterInterval : 0,
-                                        publicationTtl : 1000
+                                        publicationTtlMs : 1000
                                     });
                                 } else {
                                     qosSettings = new OnChangeSubscriptionQos({
                                         minInterval : minInterval || 0,
                                         expiryDateMs : Date.now() + subscriptionLength,
-                                        publicationTtl : 1000
+                                        publicationTtlMs : 1000
                                     });
                                 }
                             } else {
@@ -97,7 +97,7 @@ joynrTestRequire(
                                     period : period,
                                     expiryDateMs : Date.now() + subscriptionLength,
                                     alertAfterInterval : 0,
-                                    publicationTtl : 1000
+                                    publicationTtlMs : 1000
                                 });
                             }
 
@@ -130,7 +130,7 @@ joynrTestRequire(
                                 + info.qos.maxInterval
                                 + ",\"expiryDateMs\":"
                                 + info.qos.expiryDateMs
-                                + ",\"publicationTtl\":1000},\"lastPublication\":0,\"_typeName\":\"joynr.SubscriptionInformation\"}";
+                                + ",\"publicationTtlMs\":1000},\"lastPublication\":0,\"_typeName\":\"joynr.SubscriptionInformation\"}";
                         }
 
                         /**

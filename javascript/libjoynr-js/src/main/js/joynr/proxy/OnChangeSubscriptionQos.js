@@ -65,13 +65,15 @@ define("joynr/proxy/OnChangeSubscriptionQos", [
      * @param {Number}
      *            [settings.expiryDateMs] how long is the subscription valid
      * @param {Number}
-     *            [settings.publicationTtl] time to live for publication messages
+     *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
+     * @param {Number}
+     *            [settings.publicationTtlMs] time to live for publication messages
      *
      * @returns {OnChangeSubscriptionQos} a subscription Qos Object for subscriptions
      *            on <b>attributes and events</b>
      *
      * @see {@link SubscriptionQos} for more information on <b>expiryDateMs</b>
-     * and <b>publicationTtl</b>
+     * and <b>publicationTtlMs</b>
      */
     function OnChangeSubscriptionQos(settings) {
         if (!(this instanceof OnChangeSubscriptionQos)) {
@@ -105,7 +107,7 @@ define("joynr/proxy/OnChangeSubscriptionQos", [
          */
         /**
          * See [constructor description]{@link OnChangeSubscriptionQos}.
-         * @name OnChangeSubscriptionQos#publicationTtl
+         * @name OnChangeSubscriptionQos#publicationTtlMs
          * @type Number
          */
         Util.extend(this, defaultSettings, settings, subscriptionQos);

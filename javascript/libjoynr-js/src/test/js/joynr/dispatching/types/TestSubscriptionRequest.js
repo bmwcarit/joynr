@@ -31,7 +31,7 @@ joynrTestRequire("joynr/dispatching/types/TestSubscriptionRequest", [
             period : 50,
             expiryDateMs : 3,
             alertAfterInterval : 80,
-            publicationTtl : 100
+            publicationTtlMs : 100
         };
 
         it("is defined", function() {

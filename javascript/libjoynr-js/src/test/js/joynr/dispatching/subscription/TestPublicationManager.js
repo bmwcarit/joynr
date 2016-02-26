@@ -93,13 +93,13 @@ joynrTestRequire(
                                         maxInterval : period,
                                         expiryDateMs : expiryDateMs,
                                         alertAfterInterval : 0,
-                                        publicationTtl : 1000
+                                        publicationTtlMs : 1000
                                     });
                                 } else {
                                     qosSettings = new OnChangeSubscriptionQos({
                                         minInterval : minInterval || 50,
                                         expiryDateMs : expiryDateMs,
-                                        publicationTtl : 1000
+                                        publicationTtlMs : 1000
                                     });
                                 }
                             } else {
@@ -107,7 +107,7 @@ joynrTestRequire(
                                     period : period,
                                     expiryDateMs : expiryDateMs,
                                     alertAfterInterval : 0,
-                                    publicationTtl : 1000
+                                    publicationTtlMs : 1000
                                 });
                             }
 
@@ -348,7 +348,7 @@ joynrTestRequire(
                                                         {
                                                             from : providerId,
                                                             to : proxyId,
-                                                            expiryDate : (Date.now() + onChangeSubscriptionRequest.qos.publicationTtl)
+                                                            expiryDate : (Date.now() + onChangeSubscriptionRequest.qos.publicationTtlMs)
                                                                     .toString()
                                                         },
                                                         new SubscriptionPublication(

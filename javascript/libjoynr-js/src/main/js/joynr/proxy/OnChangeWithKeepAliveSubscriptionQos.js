@@ -84,7 +84,9 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
      *              <li>default value: {@link OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT}</li>
      *            </ul>
      * @param {Number}
-     *            [settings.publicationTtl] time to live for publication
+     *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
+     * @param {Number}
+     *            [settings.publicationTtlMs] time to live for publication
      *            messages
      *
      * @returns {OnChangeWithKeepAliveSubscriptionQos} a subscription
@@ -92,7 +94,7 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
      *
      * @see {@link OnChangeSubscriptionQos} for more information on <b>minInterval</b>
      * @see {@link SubscriptionQos} for more information on <b>expiryDateMs</b>
-     * and <b>publicationTtl</b>
+     * and <b>publicationTtlMs</b>
      */
     function OnChangeWithKeepAliveSubscriptionQos(settings) {
         if (!(this instanceof OnChangeWithKeepAliveSubscriptionQos)) {
@@ -141,7 +143,7 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
          */
         /**
          * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
-         * @name OnChangeWithKeepAliveSubscriptionQos#publicationTtl
+         * @name OnChangeWithKeepAliveSubscriptionQos#publicationTtlMs
          * @type Number
          */
         Util.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
