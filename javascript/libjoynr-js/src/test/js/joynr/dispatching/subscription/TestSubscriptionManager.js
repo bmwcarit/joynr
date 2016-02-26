@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ joynrTestRequire(
                                         }),
                                         broadcastName : "broadcastName",
                                         subscriptionQos : new OnChangeSubscriptionQos({
-                                            expiryDate : Date.now() + ttl
+                                            expiryDateMs : Date.now() + ttl
                                         })
                                     };
 
@@ -181,7 +181,7 @@ joynrTestRequire(
                                     attributeName : "testAttribute",
                                     qos : new OnChangeWithKeepAliveSubscriptionQos({
                                         alertAfterInterval : 100,
-                                        expiryDate : Date.now() + 250
+                                        expiryDateMs : Date.now() + 250
                                     }),
                                     onReceive : publicationReceivedSpy,
                                     onError : publicationMissedSpy
@@ -205,7 +205,7 @@ joynrTestRequire(
                                 expect(publicationMissedSpy.calls[0].args[0].subscriptionId).toEqual(subscriptionId);
                                 increaseFakeTime(101);
                                 expect(publicationMissedSpy.callCount).toEqual(2);
-                                // expiryDate should be reached, expect no more interactions
+                                // expiryDateMs should be reached, expect no more interactions
                                 increaseFakeTime(101);
                                 expect(publicationMissedSpy.callCount).toEqual(2);
                                 increaseFakeTime(101);
@@ -215,7 +215,7 @@ joynrTestRequire(
                         });
 
                         it(
-                                "sets messagingQos.ttl correctly according to subscriptionQos.expiryDate",
+                                "sets messagingQos.ttl correctly according to subscriptionQos.expiryDateMs",
                                 function() {
                                     var ttl = 250;
                                     var subscriptionSettings = {
@@ -225,7 +225,7 @@ joynrTestRequire(
                                         attributeName : "testAttribute",
                                         qos : new OnChangeWithKeepAliveSubscriptionQos({
                                             alertAfterInterval : 100,
-                                            expiryDate : Date.now() + ttl
+                                            expiryDateMs : Date.now() + ttl
                                         }),
                                         onReceive : function() {},
                                         onError : function() {}
@@ -253,7 +253,7 @@ joynrTestRequire(
                                         expect(
                                                 dispatcherSpy.sendSubscriptionRequest.calls[0].args[0].messagingQos.ttl)
                                                 .toEqual(ttl);
-                                        subscriptionSettings.qos.expiryDate =
+                                        subscriptionSettings.qos.expiryDateMs =
                                                 SubscriptionQos.NO_EXPIRY_DATE;
                                         subscriptionManager.registerSubscription(
                                                 subscriptionSettings).catch(function(error) {
@@ -324,7 +324,7 @@ joynrTestRequire(
                                     attributeName : "testAttribute",
                                     qos : new OnChangeWithKeepAliveSubscriptionQos({
                                         alertAfterInterval : 100,
-                                        expiryDate : Date.now() + 250
+                                        expiryDateMs : Date.now() + 250
                                     }),
                                     onReceive : publicationReceivedSpy,
                                     onError : publicationMissedSpy
@@ -377,7 +377,7 @@ joynrTestRequire(
                                     attributeName : "testAttribute",
                                     attributeType : TestEnum.ZERO._typeName,
                                     qos : new OnChangeSubscriptionQos({
-                                        expiryDate : Date.now() + 250
+                                        expiryDateMs : Date.now() + 250
                                     }),
                                     onReceive : publicationReceivedSpy,
                                     onError : publicationMissedSpy
@@ -445,7 +445,7 @@ joynrTestRequire(
                                          }
                                     ],
                                     qos : new OnChangeSubscriptionQos({
-                                        expiryDate : Date.now() + 250
+                                        expiryDateMs : Date.now() + 250
                                     }),
                                     onReceive : publicationReceivedSpy,
                                     onError : onErrorSpy
@@ -479,7 +479,7 @@ joynrTestRequire(
                                             attributeName : "testAttribute",
                                             qos : new OnChangeWithKeepAliveSubscriptionQos({
                                                 alertAfterInterval : 100,
-                                                expiryDate : Date.now() + 10000
+                                                expiryDateMs : Date.now() + 10000
                                             }),
                                             onReceive : publicationReceivedSpy,
                                             onError : publicationMissedSpy

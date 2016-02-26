@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
         var qosSettings = {
             minInterval : 50,
             maxInterval : 51,
-            expiryDate : 4,
+            expiryDateMs : 4,
             alertAfterInterval : 80,
             publicationTtl : 100
         };
@@ -56,7 +56,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                 minInterval,
                 period,
                 onChange,
-                expiryDate,
+                expiryDateMs,
                 alertAfterInterval,
                 publicationTtl) {
             var returnValue;
@@ -64,14 +64,14 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                 returnValue = new OnChangeWithKeepAliveSubscriptionQos({
                     minInterval : minInterval,
                     maxInterval : period,
-                    expiryDate : expiryDate,
+                    expiryDateMs : expiryDateMs,
                     alertAfterInterval : alertAfterInterval,
                     publicationTtl : publicationTtl
                 });
             } else {
                 returnValue = new PeriodicSubscriptionQos({
                     period : period,
-                    expiryDate : expiryDate,
+                    expiryDateMs : expiryDateMs,
                     alertAfterInterval : alertAfterInterval,
                     publicationTtl : publicationTtl
                 });
@@ -83,7 +83,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                 minInterval,
                 period,
                 onChange,
-                expiryDate,
+                expiryDateMs,
                 alertAfterInterval,
                 publicationTtl) {
             var subscriptionQos =
@@ -91,7 +91,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                             minInterval,
                             period,
                             onChange,
-                            expiryDate,
+                            expiryDateMs,
                             alertAfterInterval,
                             publicationTtl);
             var expectedMaxInterval = period;
@@ -107,7 +107,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             var expectedPulicationTtl = publicationTtl;
             expect(subscriptionQos.publicationTtl).toBe(expectedPulicationTtl);
 
-            expect(subscriptionQos.expiryDate).toBe(expiryDate);
+            expect(subscriptionQos.expiryDateMs).toBe(expiryDateMs);
 
             var expectedAlertAfterInterval = alertAfterInterval;
             expect(subscriptionQos.alertAfterInterval).toBe(expectedAlertAfterInterval);
@@ -166,10 +166,22 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(new OnChangeWithKeepAliveSubscriptionQos()).toEqual(
                     new OnChangeWithKeepAliveSubscriptionQos({
                         minInterval : OnChangeSubscriptionQos.MIN_INTERVAL,
-                        expiryDate : SubscriptionQos.NO_EXPIRY_DATE, // see comment in SubscriptionQos (cause: javascript floating point stuff)
+                        expiryDateMs : SubscriptionQos.NO_EXPIRY_DATE, // see comment in SubscriptionQos (cause: javascript floating point stuff)
                         alertAfterInterval : OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT,
                         publicationTtl : SubscriptionQos.DEFAULT_PUBLICATION_TTL
                     }));
+        });
+
+        it("create deprecated subscriptionQos objects", function() {
+            var deprecatedQos = new OnChangeWithKeepAliveSubscriptionQos({
+                minInterval : 0,
+                maxInterval : 50,
+                expiryDate : 1000,
+                alertAfterInterval : 200,
+                publicationTtl : 100
+
+            });
+            expect(deprecatedQos.expiryDateMs).toEqual(1000);
         });
 
         it("throws on incorrectly typed values", function() {

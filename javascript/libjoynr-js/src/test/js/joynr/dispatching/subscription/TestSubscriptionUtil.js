@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,21 +81,21 @@ joynrTestRequire(
                                     qosSettings = new OnChangeWithKeepAliveSubscriptionQos({
                                         minInterval : minInterval || 0,
                                         maxInterval : period,
-                                        expiryDate : Date.now() + subscriptionLength,
+                                        expiryDateMs : Date.now() + subscriptionLength,
                                         alertAfterInterval : 0,
                                         publicationTtl : 1000
                                     });
                                 } else {
                                     qosSettings = new OnChangeSubscriptionQos({
                                         minInterval : minInterval || 0,
-                                        expiryDate : Date.now() + subscriptionLength,
+                                        expiryDateMs : Date.now() + subscriptionLength,
                                         publicationTtl : 1000
                                     });
                                 }
                             } else {
                                 qosSettings = new PeriodicSubscriptionQos({
                                     period : period,
-                                    expiryDate : Date.now() + subscriptionLength,
+                                    expiryDateMs : Date.now() + subscriptionLength,
                                     alertAfterInterval : 0,
                                     publicationTtl : 1000
                                 });
@@ -128,8 +128,8 @@ joynrTestRequire(
                                 + info.qos.minInterval
                                 + ",\"maxInterval\":"
                                 + info.qos.maxInterval
-                                + ",\"expiryDate\":"
-                                + info.qos.expiryDate
+                                + ",\"expiryDateMs\":"
+                                + info.qos.expiryDateMs
                                 + ",\"publicationTtl\":1000},\"lastPublication\":0,\"_typeName\":\"joynr.SubscriptionInformation\"}";
                         }
 

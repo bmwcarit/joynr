@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,11 +103,11 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     + "\"");
                 return true;
             }
-            var expiryDate = subscriptionInfos[subscriptionId].qos.expiryDate;
+            var expiryDateMs = subscriptionInfos[subscriptionId].qos.expiryDateMs;
             // log.debug("Checking subscription end for subscriptionId: " + subscriptionId + "
-            // expiryDate: " + expiryDate + "
+            // expiryDateMs: " + expiryDateMs + "
             // current time: " + Date.now());
-            var ends = expiryDate <= Date.now() + delay_ms;
+            var ends = expiryDateMs <= Date.now() + delay_ms;
             // if (ends === true) {
             // log.info("Subscription end date reached for id: " + subscriptionId);
             // }
@@ -154,10 +154,10 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
         function calculateTtl(messagingQos, subscriptionQos) {
             var ttl;
-            if (subscriptionQos.expiryDate === SubscriptionQos.NO_EXPIRY_DATE) {
+            if (subscriptionQos.expiryDateMs === SubscriptionQos.NO_EXPIRY_DATE) {
                 ttl = defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
             } else {
-                ttl = subscriptionQos.expiryDate - Date.now();
+                ttl = subscriptionQos.expiryDateMs - Date.now();
             }
 
             return ttl;

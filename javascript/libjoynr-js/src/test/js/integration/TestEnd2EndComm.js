@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1061,7 +1061,7 @@ joynrTestRequire(
                         });
 
                         it("publishes a value with an ending subscription", function() {
-                            subscriptionQosMixed.expiryDate = subscriptionLength + Date.now();
+                            subscriptionQosMixed.expiryDateMs = subscriptionLength + Date.now();
                             publishesValue(subscriptionQosMixed);
                         });
 
@@ -1194,7 +1194,7 @@ joynrTestRequire(
                                             "onReceive",
                                             "onError"
                                         ]);
-                                        subscriptionQosMixed.expiryDate =
+                                        subscriptionQosMixed.expiryDateMs =
                                                 subscriptionLength + Date.now();
                                         radioProxy.mixedSubscriptions.subscribe({
                                             subscriptionQos : subscriptionQosMixed,
@@ -1311,7 +1311,7 @@ joynrTestRequire(
                                             "onReceive",
                                             "onError"
                                         ]);
-                                        subscriptionQosMixed.expiryDate =
+                                        subscriptionQosMixed.expiryDateMs =
                                                 subscriptionQosMixed.maxInterval * 1.5 + Date.now();
                                         radioProxy.isOn.subscribe({
                                             subscriptionQos : subscriptionQosMixed,

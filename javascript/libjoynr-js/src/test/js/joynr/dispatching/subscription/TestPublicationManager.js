@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,8 +81,8 @@ joynrTestRequire(
                                 subscriptionLength,
                                 onChange,
                                 minInterval) {
-                            var qosSettings, expiryDate, request;
-                            expiryDate =
+                            var qosSettings, expiryDateMs, request;
+                            expiryDateMs =
                                     subscriptionLength === SubscriptionQos.NO_EXPIRY_DATE
                                             ? SubscriptionQos.NO_EXPIRY_DATE
                                             : Date.now() + subscriptionLength;
@@ -91,21 +91,21 @@ joynrTestRequire(
                                     qosSettings = new OnChangeWithKeepAliveSubscriptionQos({
                                         minInterval : minInterval || 50,
                                         maxInterval : period,
-                                        expiryDate : expiryDate,
+                                        expiryDateMs : expiryDateMs,
                                         alertAfterInterval : 0,
                                         publicationTtl : 1000
                                     });
                                 } else {
                                     qosSettings = new OnChangeSubscriptionQos({
                                         minInterval : minInterval || 50,
-                                        expiryDate : expiryDate,
+                                        expiryDateMs : expiryDateMs,
                                         publicationTtl : 1000
                                     });
                                 }
                             } else {
                                 qosSettings = new PeriodicSubscriptionQos({
                                     period : period,
-                                    expiryDate : expiryDate,
+                                    expiryDateMs : expiryDateMs,
                                     alertAfterInterval : 0,
                                     publicationTtl : 1000
                                 });
@@ -561,7 +561,8 @@ joynrTestRequire(
                                     var times;
 
                                     runs(function() {
-                                        intervalSubscriptionRequest.qos.expiryDate = Date.now() - 1;
+                                        intervalSubscriptionRequest.qos.expiryDateMs =
+                                                Date.now() - 1;
                                         publicationManager.addPublicationProvider(
                                                 providerId,
                                                 provider);
@@ -741,7 +742,7 @@ joynrTestRequire(
                         it(
                                 "does not publish when an onChange subscription has an endDate in the past",
                                 function() {
-                                    onChangeSubscriptionRequest.qos.expiryDate = Date.now() - 1;
+                                    onChangeSubscriptionRequest.qos.expiryDateMs = Date.now() - 1;
 
                                     runs(function() {
                                         publicationManager.addPublicationProvider(
@@ -1544,7 +1545,7 @@ joynrTestRequire(
                         it(
                                 "does not publish when mixed subscription has an endDate in the past",
                                 function() {
-                                    mixedSubscriptionRequest.qos.expiryDate = Date.now() - 1;
+                                    mixedSubscriptionRequest.qos.expiryDateMs = Date.now() - 1;
 
                                     runs(function() {
                                         publicationManager.addPublicationProvider(

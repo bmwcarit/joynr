@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,9 @@ define("joynr/proxy/PeriodicSubscriptionQos", [
      *              <li>default value: {@link PeriodicSubscriptionQos.MIN_PERIOD}</li>
      *            </ul>
      * @param {Number}
-     *            [settings.expiryDate] how long is the subscription valid
+     *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
+     * @param {Number}
+     *            [settings.expiryDateMs] how long is the subscription valid
      * @param {Number}
      *            [settings.alertAfterInterval=0] defines how long to wait for an
      *            update before publicationMissed is called.<br/>
@@ -70,7 +72,7 @@ define("joynr/proxy/PeriodicSubscriptionQos", [
      * @returns {PeriodicSubscriptionQos} a subscription Qos Object for subscriptions
      *            on <b>attributes</b>
      *
-     * @see {@link SubscriptionQos} for more information on <b>expiryDate</b>
+     * @see {@link SubscriptionQos} for more information on <b>expiryDateMs</b>
      * and <b>publicationTtl</b>
      */
     function PeriodicSubscriptionQos(settings) {
@@ -104,7 +106,7 @@ define("joynr/proxy/PeriodicSubscriptionQos", [
          */
         /**
          * See [constructor description]{@link PeriodicSubscriptionQos}.
-         * @name PeriodicSubscriptionQos#expiryDate
+         * @name PeriodicSubscriptionQos#expiryDateMs
          * @type Number
          */
         /**

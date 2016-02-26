@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,9 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
      *              <li>maximum value: unlimited</li>
      *            </ul>
      * @param {Number}
-     *            [settings.expiryDate] how long is the subscription
+     *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
+     * @param {Number}
+     *            [settings.expiryDateMs] how long is the subscription
      *            valid
      * @param {Number}
      *            [settings.alertAfterInterval] defines how long to wait
@@ -89,7 +91,7 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
      *          Qos Object for subscriptions on <b>attributes</b>
      *
      * @see {@link OnChangeSubscriptionQos} for more information on <b>minInterval</b>
-     * @see {@link SubscriptionQos} for more information on <b>expiryDate</b>
+     * @see {@link SubscriptionQos} for more information on <b>expiryDateMs</b>
      * and <b>publicationTtl</b>
      */
     function OnChangeWithKeepAliveSubscriptionQos(settings) {
@@ -129,7 +131,7 @@ define("joynr/proxy/OnChangeWithKeepAliveSubscriptionQos", [
          */
         /**
          * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
-         * @name OnChangeWithKeepAliveSubscriptionQos#expiryDate
+         * @name OnChangeWithKeepAliveSubscriptionQos#expiryDateMs
          * @type Number
          */
         /**
