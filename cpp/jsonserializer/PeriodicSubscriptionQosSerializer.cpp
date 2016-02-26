@@ -44,8 +44,8 @@ void ClassDeserializerImpl<PeriodicSubscriptionQos>::deserialize(
             qos.setExpiryDateMs(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "publicationTtlMs") {
             qos.setPublicationTtlMs(field.value().getIntType<std::int64_t>());
-        } else if (field.name() == "period") {
-            qos.setPeriod(field.value().getIntType<std::int64_t>());
+        } else if (field.name() == "periodMs") {
+            qos.setPeriodMs(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "alertAfterInterval") {
             qos.setAlertAfterInterval(field.value().getIntType<std::int64_t>());
         }
@@ -61,7 +61,7 @@ void ClassSerializerImpl<PeriodicSubscriptionQos>::serialize(
     stream << R"("_typeName":")" << JoynrTypeId<SubscriptionQos>::getTypeName() << R"(",)";
     stream << R"("expiryDateMs": )" << qos.getExpiryDateMs() << R"(,)";
     stream << R"("publicationTtlMs": )" << qos.getPublicationTtlMs() << R"(,)";
-    stream << R"("period": )" << qos.getPeriod() << R"(,)";
+    stream << R"("periodMs": )" << qos.getPeriodMs() << R"(,)";
     stream << R"("alertAfterInterval": )" << qos.getAlertAfterInterval();
     stream << R"(})";
 }

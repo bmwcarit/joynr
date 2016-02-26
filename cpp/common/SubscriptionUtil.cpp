@@ -70,7 +70,7 @@ std::int64_t SubscriptionUtil::getPeriodicPublicationInterval(const Variant& qos
     }
     if (qos.is<PeriodicSubscriptionQos>()) {
         const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
-        return subscriptionQosPtr->getPeriod();
+        return subscriptionQosPtr->getPeriodMs();
     }
     return -1;
 }

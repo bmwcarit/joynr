@@ -22,6 +22,8 @@
 #include "joynr/SubscriptionQos.h"
 #include <cstdint>
 
+#include "joynr/Logger.h"
+
 namespace joynr
 {
 
@@ -59,12 +61,12 @@ public:
      * will be called if no publications were received.
      *
      * @see SubscriptionQos#setValidityMs
-     * @see PeriodicSubscriptionQos#setPeriod
+     * @see PeriodicSubscriptionQos#setPeriodMs
      * @see PeriodicSubscriptionQos#setAlertAfterInterval
      * @see SubscriptionQos#setPublicationTtlMs
      */
     PeriodicSubscriptionQos(const std::int64_t& validityMs,
-                            const std::int64_t& period,
+                            const std::int64_t& periodMs,
                             const std::int64_t& alertAfterInterval);
 
     /**
@@ -75,7 +77,16 @@ public:
      * @return The period in milliseconds. The publisher will send a
      *            notification every period ms.
      */
-    virtual std::int64_t getPeriod() const;
+    virtual std::int64_t getPeriodMs() const;
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#getPeriodMs
+     */
+    [[deprecated(
+            "Will be removed by end of the year 2016. Use getPeriodMs instead.")]] virtual std::
+            int64_t
+            getPeriod() const;
 
     /**
      * @brief Sets the period in milliseconds
@@ -95,7 +106,14 @@ public:
      * @param period
      *            The publisher will send a notification every period ms.
      */
-    virtual void setPeriod(const std::int64_t& period);
+    virtual void setPeriodMs(const std::int64_t& periodMs);
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#setPeriodMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use setPeriodMs instead.")]] virtual void
+    setPeriod(const std::int64_t& periodMs);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds
@@ -147,13 +165,35 @@ public:
     bool operator==(const PeriodicSubscriptionQos& other) const;
 
     /** @brief Returns the minimum value for the period in milliseconds: 50 */
-    static const std::int64_t& MIN_PERIOD();
+    static const std::int64_t& MIN_PERIOD_MS();
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#MIN_PERIOD_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MIN_PERIOD_MS "
+                 "instead.")]] static const std::int64_t&
+    MIN_PERIOD();
 
     /**
      * @brief Returns the maximum value for the period in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_PERIOD();
+    static const std::int64_t& MAX_PERIOD_MS();
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#MAX_PERIOD_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MAX_PERIOD_MS "
+                 "instead.")]] static const std::int64_t&
+    MAX_PERIOD();
+
+    /**
+     * @brief Returns the default value for the period in milliseconds:
+     * 60 000 (1 min)
+     */
+    static const std::int64_t& DEFAULT_PERIOD_MS();
 
     /**
      * @brief Returns the maximum value for the alertAfter interval in
@@ -176,13 +216,16 @@ protected:
      *
      * The provider will send notifications every period milliseconds,
      */
-    std::int64_t period;
+    std::int64_t periodMs;
 
     /**
      * @brief Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
      */
     std::int64_t alertAfterInterval;
+
+private:
+    ADD_LOGGER(PeriodicSubscriptionQos);
 };
 
 } // namespace joynr
