@@ -37,23 +37,23 @@ public abstract class SubscriptionQos implements JoynrType {
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionQos.class);
 
     private long expiryDateMs = NO_EXPIRY_DATE;
-    private long publicationTtlMs = DEFAULT_PUBLICATION_TTL;
+    private long publicationTtlMs = DEFAULT_PUBLICATION_TTL_MS;
 
     public static final int IGNORE_VALUE = -1;
     public static final long INFINITE_SUBSCRIPTION = Long.MAX_VALUE;
     /**
      * Minimum value for publicationTtl in milliseconds: 100.
      */
-    private static final long MIN_PUBLICATION_TTL = 100L;
+    private static final long MIN_PUBLICATION_TTL_MS = 100L;
     /**
      * Maximum value for publicationTtl in milliseconds: 2.592.000.000 (30 days).
      */
-    private static final long MAX_PUBLICATION_TTL = 2592000000L; // 30 days
+    private static final long MAX_PUBLICATION_TTL_MS = 2592000000L; // 30 days
 
     /**
      * Default value for publicationTtl in milliseconds: 10 000 (10 secs).
      */
-    protected static final long DEFAULT_PUBLICATION_TTL = 10000;
+    protected static final long DEFAULT_PUBLICATION_TTL_MS = 10000;
 
     /**
      * Expiry date value to disable expiration: {@value #NO_EXPIRY_DATE}.
@@ -82,7 +82,7 @@ public abstract class SubscriptionQos implements JoynrType {
      */
     @Deprecated
     public SubscriptionQos(long expiryDateMs) {
-        this(expiryDateMs, DEFAULT_PUBLICATION_TTL);
+        this(expiryDateMs, DEFAULT_PUBLICATION_TTL_MS);
     }
 
     /**
@@ -204,12 +204,12 @@ public abstract class SubscriptionQos implements JoynrType {
      * @return the subscriptionQos (fluent interface)
      */
     public SubscriptionQos setPublicationTtl(final long publicationTtlMs) {
-        if (publicationTtlMs < MIN_PUBLICATION_TTL) {
-            this.publicationTtlMs = MIN_PUBLICATION_TTL;
-            logger.warn("publicationTtlMs < MIN_PUBLICATION_TTL. Using MIN_PUBLICATION_TTL: {}", MIN_PUBLICATION_TTL);
-        } else if (publicationTtlMs > MAX_PUBLICATION_TTL) {
-            this.publicationTtlMs = MAX_PUBLICATION_TTL;
-            logger.warn("publicationTtlMs > MAX_PUBLICATION_TTL. Using MAX_PUBLICATION_TTL: {}", MAX_PUBLICATION_TTL);
+        if (publicationTtlMs < MIN_PUBLICATION_TTL_MS) {
+            this.publicationTtlMs = MIN_PUBLICATION_TTL_MS;
+            logger.warn("publicationTtlMs < MIN_PUBLICATION_TTL. Using MIN_PUBLICATION_TTL: {}", MIN_PUBLICATION_TTL_MS);
+        } else if (publicationTtlMs > MAX_PUBLICATION_TTL_MS) {
+            this.publicationTtlMs = MAX_PUBLICATION_TTL_MS;
+            logger.warn("publicationTtlMs > MAX_PUBLICATION_TTL. Using MAX_PUBLICATION_TTL: {}", MAX_PUBLICATION_TTL_MS);
         } else {
             this.publicationTtlMs = publicationTtlMs;
         }

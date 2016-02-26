@@ -45,11 +45,11 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     /**
      * Minimum value for period in milliseconds: 50
      */
-    private static final long MIN_PERIOD = 50L;
+    private static final long MIN_PERIOD_MS = 50L;
     /**
      * Maximum value for period in milliseconds: 2.592.000.000 (30 days)
      */
-    private static final long MAX_PERIOD = 30L * 24L * 60L * 60L * 1000L; // 30 days
+    private static final long MAX_PERIOD_MS = 30L * 24L * 60L * 60L * 1000L; // 30 days
     /**
      * Default value for period in milliseconds: 60.000 (1 minute)
      */
@@ -57,18 +57,18 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     /**
      * Maximum value for alertAfterInterval in milliseconds: 2.592.000.000 (30 days)
      */
-    private static final long MAX_ALERT_AFTER_INTERVAL = 30L * 24L * 60L * 60L * 1000L; // 30 days
+    private static final long MAX_ALERT_AFTER_INTERVAL_MS = 30L * 24L * 60L * 60L * 1000L; // 30 days
     /**
      * Default value for alertAfterInterval in milliseconds: 0 (no alert)
      */
-    private static final long DEFAULT_ALERT_AFTER_INTERVAL = 0L; // no alert
+    private static final long DEFAULT_ALERT_AFTER_INTERVAL_MS = 0L; // no alert
     /**
      * Value for alertAfterInterval to disable alert: 0
      */
     private static final long NO_ALERT_AFTER_INTERVAL = 0L;
 
     private long periodMs = DEFAULT_PERIOD_MS;
-    private long alertAfterIntervalMs = DEFAULT_ALERT_AFTER_INTERVAL;
+    private long alertAfterIntervalMs = DEFAULT_ALERT_AFTER_INTERVAL_MS;
 
     /**
      * Default Constructor
@@ -134,7 +134,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      */
     @Deprecated
     public PeriodicSubscriptionQos(long periodMs, long expiryDateMs, long publicationTtlMs) {
-        this(periodMs, expiryDateMs, DEFAULT_ALERT_AFTER_INTERVAL, publicationTtlMs);
+        this(periodMs, expiryDateMs, DEFAULT_ALERT_AFTER_INTERVAL_MS, publicationTtlMs);
     }
 
     /**
@@ -178,10 +178,10 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @see #clearAlertAfterInterval()
      */
     public PeriodicSubscriptionQos setAlertAfterInterval(final long alertAfterIntervalMs) {
-        if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL) {
-            this.alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL;
-            logger.warn("alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL. Using MAX_ALERT_AFTER_INTERVAL: {}",
-                        MAX_ALERT_AFTER_INTERVAL);
+        if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS) {
+            this.alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL_MS;
+            logger.warn("alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: {}",
+                        MAX_ALERT_AFTER_INTERVAL_MS);
         } else {
             this.alertAfterIntervalMs = alertAfterIntervalMs;
         }
@@ -191,7 +191,6 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
             logger.warn("alertAfterInterval_ms < MIN_ALERT_AFTER_INTERVAL and will therefore be set to the period: {}",
                         periodMs);
         }
-
         return this;
     }
 
@@ -236,12 +235,12 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @return the subscriptionQos (fluent interface)
      */
     public PeriodicSubscriptionQos setPeriod(long periodMs) {
-        if (periodMs < MIN_PERIOD) {
-            this.periodMs = MIN_PERIOD;
-            logger.warn("periodMs < MIN_PERIOD. Using MIN_PERIOD: {}", MIN_PERIOD);
-        } else if (periodMs > MAX_PERIOD) {
-            this.periodMs = MAX_PERIOD;
-            logger.warn("periodMs > MAX_PERIOD. Using MAX_PERIOD: {}", MAX_PERIOD);
+        if (periodMs < MIN_PERIOD_MS) {
+            this.periodMs = MIN_PERIOD_MS;
+            logger.warn("periodMs < MIN_PERIOD_MS. Using MIN_PERIOD_MS: {}", MIN_PERIOD_MS);
+        } else if (periodMs > MAX_PERIOD_MS) {
+            this.periodMs = MAX_PERIOD_MS;
+            logger.warn("periodMs > MAX_PERIOD_MS. Using MAX_PERIOD_MS: {}", MAX_PERIOD_MS);
         } else {
             this.periodMs = periodMs;
         }

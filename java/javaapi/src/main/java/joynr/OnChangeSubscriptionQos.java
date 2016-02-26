@@ -35,11 +35,11 @@ import io.joynr.pubsub.SubscriptionQos;
  */
 public class OnChangeSubscriptionQos extends SubscriptionQos {
     private static final long serialVersionUID = 1L;
-    private static final long DEFAULT_MIN_INTERVAL = 1000;
-    private static final long MIN_MIN_INTERVAL = 0L;
-    private static final long MAX_MIN_INTERVAL = 2592000000L; // 30 days;
+    private static final long DEFAULT_MIN_INTERVAL_MS = 1000;
+    private static final long MIN_MIN_INTERVAL_MS = 0L;
+    private static final long MAX_MIN_INTERVAL_MS = 2592000000L; // 30 days;
 
-    private long minIntervalMs = DEFAULT_MIN_INTERVAL;
+    private long minIntervalMs = DEFAULT_MIN_INTERVAL_MS;
 
     /**
      * Default Constructor
@@ -108,8 +108,8 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * <br>
      * <b>Minimum and Maximum Values</b>
      * <ul>
-     * <li><b>Minimum</b> minInterval: {@value #MIN_MIN_INTERVAL}.
-     * <li><b>Maximum</b> minInterval:{@value #MAX_MIN_INTERVAL}. Larger values
+     * <li><b>Minimum</b> minInterval: 0.
+     * <li><b>Maximum</b> minInterval: 2.592.000.000 (30 days). Larger values
      * will be rounded down.
      * </ul>
      *
@@ -119,10 +119,10 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * @return the subscriptionQos (fluent interface)
      */
     public OnChangeSubscriptionQos setMinInterval(final long minIntervalMs) {
-        if (minIntervalMs < MIN_MIN_INTERVAL) {
-            this.minIntervalMs = MIN_MIN_INTERVAL;
-        } else if (minIntervalMs > MAX_MIN_INTERVAL) {
-            this.minIntervalMs = MAX_MIN_INTERVAL;
+        if (minIntervalMs < MIN_MIN_INTERVAL_MS) {
+            this.minIntervalMs = MIN_MIN_INTERVAL_MS;
+        } else if (minIntervalMs > MAX_MIN_INTERVAL_MS) {
+            this.minIntervalMs = MAX_MIN_INTERVAL_MS;
         } else {
             this.minIntervalMs = minIntervalMs;
         }

@@ -49,15 +49,14 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
 
     private static final Logger logger = LoggerFactory.getLogger(OnChangeWithKeepAliveSubscriptionQos.class);
 
-    private static final long MIN_MAX_INTERVAL = 50L;
-    private static final long MAX_MAX_INTERVAL = 2592000000L; // 30 days
-    private static final long DEFAULT_MAX_INTERVAL = 60000L; // 1 minute
-
+    private static final long MIN_MAX_INTERVAL_MS = 50L;
+    private static final long MAX_MAX_INTERVAL_MS = 2592000000L; // 30 days
+    private static final long DEFAULT_MAX_INTERVAL_MS = 60000L; // 1 minute
     private static final long NO_ALERT_AFTER_INTERVAL = 0;
-    private static final long DEFAULT_ALERT_AFTER_INTERVAL = NO_ALERT_AFTER_INTERVAL;
-    private static final long MAX_ALERT_AFTER_INTERVAL = 2592000000L; // 30 days
+    private static final long DEFAULT_ALERT_AFTER_INTERVAL_MS = NO_ALERT_AFTER_INTERVAL;
+    private static final long MAX_ALERT_AFTER_INTERVAL_MS = 2592000000L; // 30 days
 
-    private long maxIntervalMs = DEFAULT_MAX_INTERVAL;
+    private long maxIntervalMs = DEFAULT_MAX_INTERVAL_MS;
     private long alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL;
 
     /**
@@ -97,8 +96,8 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
         this(minIntervalMs,
              maxIntervalMs,
              expiryDateMs,
-             DEFAULT_ALERT_AFTER_INTERVAL,
-             SubscriptionQos.DEFAULT_PUBLICATION_TTL);
+             DEFAULT_ALERT_AFTER_INTERVAL_MS,
+             SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
     }
 
     /**
@@ -134,7 +133,11 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
                                                 long maxIntervalMs,
                                                 long expiryDateMs,
                                                 long alertAfterIntervalMs) {
-        this(minIntervalMs, maxIntervalMs, expiryDateMs, alertAfterIntervalMs, SubscriptionQos.DEFAULT_PUBLICATION_TTL);
+        this(minIntervalMs,
+             maxIntervalMs,
+             expiryDateMs,
+             alertAfterIntervalMs,
+             SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
     }
 
     /**
@@ -209,33 +212,32 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            <b>Minimum and Maximum Values</b>
      *            <ul>
      *            <li>The absolute <b>minimum</b> setting is
-     *            {@value #MIN_MAX_INTERVAL} milliseconds. <br>
+     *            {@value #MIN_MAX_INTERVAL_MS} milliseconds. <br>
      *            Any value less than this minimum will be treated at the absolute
-     *            minimum setting of{@value #MIN_MAX_INTERVAL} milliseconds.
+     *            minimum setting of{@value #MIN_MAX_INTERVAL_MS} milliseconds.
      *            <li>The absolute <b>maximum</b> setting is
-     *            {@value #MAX_MAX_INTERVAL} milliseconds. <br>
+     *            {@value #MAX_MAX_INTERVAL_MS} milliseconds. <br>
      *            Any value bigger than this maximum will be treated as the absolute
-     *            maximum setting of {@value #MAX_MAX_INTERVAL} milliseconds.
+     *            maximum setting of {@value #MAX_MAX_INTERVAL_MS} milliseconds.
      *            </ul>
      * @return the subscriptionQos (fluent interface)
      */
     public OnChangeWithKeepAliveSubscriptionQos setMaxInterval(long maxIntervalMs) {
-        if (this.maxIntervalMs < MIN_MAX_INTERVAL) {
-            this.maxIntervalMs = MIN_MAX_INTERVAL;
-        } else if (this.maxIntervalMs > MAX_MAX_INTERVAL) {
-            this.maxIntervalMs = MAX_MAX_INTERVAL;
+        if (maxIntervalMs < MIN_MAX_INTERVAL_MS) {
+            this.maxIntervalMs = MIN_MAX_INTERVAL_MS;
+        } else if (maxIntervalMs > MAX_MAX_INTERVAL_MS) {
+            this.maxIntervalMs = MAX_MAX_INTERVAL_MS;
         } else {
             this.maxIntervalMs = maxIntervalMs;
         }
 
-        if (this.maxIntervalMs < getMinInterval()) {
-            this.maxIntervalMs = getMinInterval();
+        if (this.maxIntervalMs < this.getMinInterval()) {
+            this.maxIntervalMs = this.getMinInterval();
         }
 
         if (alertAfterIntervalMs != 0 && alertAfterIntervalMs < this.maxIntervalMs) {
             alertAfterIntervalMs = this.maxIntervalMs;
         }
-
         return this;
     }
 
@@ -276,12 +278,13 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            Any value bigger than this maximum will be treated as the
      *            absolute maximum setting of 2.592.000.000 milliseconds.
      *            </ul>
+     * @return the subscriptionQos (fluent interface)
      */
     public OnChangeWithKeepAliveSubscriptionQos setAlertAfterInterval(final long alertAfterIntervalMs) {
-        if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL) {
-            this.alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL;
-            logger.warn("alertAfterIntervalMs > maxInterval. Using MAX_ALERT_AFTER_INTERVAL: {}",
-                        MAX_ALERT_AFTER_INTERVAL);
+        if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS) {
+            this.alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL_MS;
+            logger.warn("alertAfterIntervalMs > maxInterval. Using MAX_ALERT_AFTER_INTERVAL_MS: {}",
+                        MAX_ALERT_AFTER_INTERVAL_MS);
         } else {
             this.alertAfterIntervalMs = alertAfterIntervalMs;
         }
