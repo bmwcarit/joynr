@@ -30,5 +30,6 @@
 	
 	<modules>
 		<module>performance</module>
+		<module>robustness</module>
 	</modules>
 </project>

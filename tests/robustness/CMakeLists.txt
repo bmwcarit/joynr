@@ -1,0 +1,319 @@
+cmake_minimum_required(VERSION 2.8.11)
+
+######## Project settings ########
+project(robustness-tests-0.16.0-SNAPSHOT)
+
+# Compile to a bin directory current directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lib/)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+# set required C++ standard
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if("${CMAKE_VERSION}" VERSION_LESS 3.1.0)
+    if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+endif("${CMAKE_VERSION}" VERSION_LESS 3.1.0)
+
+##### cmake options #####################
+
+option(
+    ENABLE_CLANG_FORMATTER
+    "Use clang-formatter to format source code?"
+    ON
+)
+message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
+
+option(
+    GENERATE_SOURCES
+    "Generate source files from Franca model?"
+    OFF
+)
+message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
+
+option(
+    USE_PLATFORM_GTEST_GMOCK
+    "Resolve dependency to gtest and gmock from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
+
+##### Start of build ####################
+
+include(../../cpp/tests/AddTest.cmake)
+include(../../cpp/CMake/AddExternalProject.cmake)
+
+# Pull in the Joynr configuration
+find_package(Joynr 0.16.0 REQUIRED)
+
+if(${GENERATE_SOURCES})
+    find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
+    message(STATUS "variable JoynrGenerator_FOUND=${JoynrGenerator_FOUND}")
+    message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
+    JoynrGenerator(
+        OUTPUTPATH ${CMAKE_SOURCE_DIR}/src/main/generated-cpp
+        MODELPATH ${CMAKE_SOURCE_DIR}/src/main/model/radio.fidl
+        GENERATION_LANGUAGE "cpp"
+    )
+endif(${GENERATE_SOURCES})
+
+if(ENABLE_CLANG_FORMATTER)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cpp/CMake")
+    include(LocateProgram)
+    LocateProgram(clang-format CLANG_FORMAT_PATH)
+    include(AddClangFormat)
+    add_custom_target(format)
+endif(ENABLE_CLANG_FORMATTER)
+
+######## Add Boost ########
+
+find_package(Boost 1.56.0 REQUIRED
+    COMPONENTS
+    system
+    filesystem
+)
+message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
+message(STATUS "variable Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
+
+include_directories(${Boost_INCLUDE_DIRS})
+
+if (USE_PLATFORM_GTEST_GMOCK)
+
+    find_package(GTest REQUIRED)
+    find_package(GMock REQUIRED)
+
+else (USE_PLATFORM_GTEST_GMOCK)
+
+    ### clone googletest git repository ###########################################################
+
+    # this repository contains both googletest and googlemock
+    AddExternalProject(
+        googletest-repo
+        DOWNLOAD_DIR "googletest-repo"
+        TIMEOUT 10
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG ddb8012e # there is no version tag on github; this is to make sure that a working version is used
+        CONFIGURE_COMMAND "" # Disable configuring
+        BUILD_COMMAND "" # Disable building
+    )
+
+    get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
+
+    ### Add google test ###########################################################
+
+    # build googletest library
+    AddExternalProject(
+        googletest
+        DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
+        SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googletest"
+        BUILD_BYPRODUCTS "${EP_PREFIX}/src/googletest-build/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        CMAKE_ARGS -Dgtest_force_shared_crt=ON
+                   -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
+    )
+
+    ExternalProject_Get_Property(googletest binary_dir)
+    set(googletest_binary_dir ${binary_dir})
+    message(STATUS "variable googletest_binary_dir=${googletest_binary_dir}")
+
+    # build googletest AFTER downloading the sources
+    add_dependencies(googletest googletest-repo)
+
+    # Specify include dir
+    ExternalProject_Get_Property(googletest source_dir)
+    set(googletest_source_dir ${source_dir})
+    message(STATUS "variable googletest_source_dir=${googletest_source_dir}")
+    set(GTEST_INCLUDE_DIRS ${googletest_source_dir}/include)
+    set(GTEST_LIBRARIES ${googletest_binary_dir}/libgtest.a)
+
+    ### Add google mock ###########################################################
+
+    # build googlemock library
+    AddExternalProject(
+        googlemock
+        DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
+        SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googlemock"
+        BUILD_BYPRODUCTS "${EP_PREFIX}/src/googlemock-build/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        CMAKE_ARGS -Dgtest_force_shared_crt=ON
+                   -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
+    )
+
+    ExternalProject_Get_Property(googlemock binary_dir)
+    set(googlemock_binary_dir ${binary_dir})
+    message(STATUS "variable googlemock_binary_dir=${googlemock_binary_dir}")
+
+    # build googlemock AFTER downloading the sources
+    add_dependencies(googlemock googletest-repo)
+
+    # Specify include dir
+    ExternalProject_Get_Property(googlemock source_dir)
+    set(googlemock_source_dir ${source_dir})
+    message(STATUS "variable googlemock_source_dir=${googlemock_source_dir}")
+    set(GMOCK_INCLUDE_DIRS ${googlemock_source_dir}/include)
+    set(GMOCK_LIBRARIES ${googlemock_binary_dir}/libgmock.a)
+
+endif(USE_PLATFORM_GTEST_GMOCK)
+
+
+##### Helper variables for using generated code ###########
+
+file(GLOB_RECURSE GENERATED_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "src/main/generated-cpp/include/*.h"
+)
+
+file(GLOB_RECURSE GENERATED_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "src/main/generated-cpp/*.cpp"
+)
+
+set(GENERATED_INCLUDE_DIRS
+    "src/main/generated-cpp/include"
+)
+
+# Put the Joynr_LIB_COMMON_INCLUDE_DIRS last so that it is possible to override types
+# defined in libjoynr
+
+
+# Use the generated header files for the consumer application
+set(robustness-tests-consumer_HEADERS
+    "src/main/cpp/AbstractRobustnessTest.h"
+)
+
+# Use the generated source files for the consumer application
+set(robustness-tests-consumer_SOURCES
+    "src/main/cpp/AbstractRobustnessTest.cpp"
+    "src/main/cpp/RobustnessTestCcCrash.cpp"
+)
+
+# Use the generated header files for the provider application
+set(robustness-tests-provider_HEADERS
+    ${GENERATED_HEADERS}
+    "src/main/cpp/RobustnessTestProvider.h"
+)
+
+# Use the generated source files for the provider application
+set(robustness-tests-provider_SOURCES
+    "src/main/cpp/RobustnessTestProvider.cpp"
+    "src/main/cpp/RobustnessTestProviderApplication.cpp"
+)
+
+# Link with the joynr libraries
+set(robustness-tests_LIBRARIES
+    ${Joynr_LIB_COMMON_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
+
+list(
+    APPEND robustness-tests_LIBRARIES
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
+)
+
+# Put the generated code into a library
+add_library(robustness-tests-generated SHARED
+    ${GENERATED_HEADERS}
+    ${GENERATED_SOURCES}
+)
+
+target_include_directories(
+    robustness-tests-generated
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+)
+
+if(NOT USE_PLATFORM_GTEST_GMOCK)
+    # make sure the external projects googletest and googlemock is built before this
+    add_dependencies(robustness-tests-generated googletest googlemock)
+endif(NOT USE_PLATFORM_GTEST_GMOCK)
+
+target_link_libraries(robustness-tests-generated
+    ${robustness-tests_LIBRARIES}
+)
+
+# Compile the provider application (requires: running cluster controller)
+# Communicates via WebSockets with cluster controller
+add_executable(robustness-tests-provider-ws
+    ${robustness-tests-provider_HEADERS}
+    ${robustness-tests-provider_SOURCES}
+)
+
+target_include_directories(
+    robustness-tests-provider-ws
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+)
+
+# Link the provider application
+target_link_libraries(robustness-tests-provider-ws
+    robustness-tests-generated
+    ${robustness-tests_LIBRARIES}
+    ${Joynr_LIB_WS_LIBRARIES}
+)
+
+
+# Compile the test application (requires: running cluster controller)
+# Communicates via WebSockets with cluster controller
+AddTest(
+    robustness-tests-ws
+    ${robustness-tests-consumer_HEADERS}
+    ${robustness-tests-consumer_SOURCES}
+)
+
+target_include_directories(
+    robustness-tests-ws
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+)
+
+# Link the test application
+target_link_libraries(robustness-tests-ws
+    robustness-tests-generated
+    ${robustness-tests_LIBRARIES}
+    ${Joynr_LIB_WS_LIBRARIES}
+)
+
+# copy joynr resources and default settings
+file(
+    COPY ${Joynr_RESOURCES_DIR}
+    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
+
+# copy joynr executables
+file(
+    COPY ${Joynr_EXECUTABLES}
+    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
+
+install(TARGETS
+            robustness-tests-provider-ws
+            robustness-tests-ws
+        RUNTIME DESTINATION bin COMPONENT bin
+)
+
+AddClangFormat(robustness-tests-provider-ws)
+AddClangFormat(robustness-tests-ws)
+
+if(NOT DEFINED JOYNR_SERVER_HOST)
+    set(JOYNR_SERVER_HOST "localhost")
+endif(NOT DEFINED JOYNR_SERVER_HOST)
+
+if(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
+    set(JOYNR_SERVER_HTTP_PORT "8080")
+endif(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp-resources/robustness-tests-provider.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/robustness-tests-provider.settings
+    @ONLY
+)
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp-resources/robustness-tests-consumer.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/robustness-tests-consumer.settings
+    @ONLY
+)
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp-resources/cc.messaging.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.messaging.settings
+    @ONLY
+)
