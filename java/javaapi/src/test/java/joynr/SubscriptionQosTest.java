@@ -93,7 +93,7 @@ public class SubscriptionQosTest {
         long minIntervalMs = 100;
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setExpiryDateMs(expiryDateMs)
                                                                                                                               .setPublicationTtlMs(publicationTtlMs)
-                                                                                                                              .setMaxInterval(maxIntervalMs)
+                                                                                                                              .setMaxIntervalMs(maxIntervalMs)
                                                                                                                               .setMinIntervalMs(minIntervalMs)
                                                                                                                               .setAlertAfterInterval(alertAfterIntervalMs);
         assertEquals(expiryDateMs, onChangeWithKeepAliveSubscriptionQos.getExpiryDate());
@@ -118,7 +118,7 @@ public class SubscriptionQosTest {
     public void alertAfterIntervalAdjustedIfSmallerThanMaxInterval() throws Exception {
         long alertAfterIntervalMs = 4000;
         long maxIntervalMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMaxInterval(maxIntervalMs)
+        OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMaxIntervalMs(maxIntervalMs)
                                                                                                                               .setAlertAfterInterval(alertAfterIntervalMs);
         assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxInterval());
         assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getAlertAfterInterval());
@@ -128,7 +128,7 @@ public class SubscriptionQosTest {
     public void maxIntervalAdjustedIfSmallerThanMinInterval() throws Exception {
         long minIntervalMs = 2000;
         long maxIntervalMs = 1000;
-        OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMaxInterval(maxIntervalMs)
+        OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMaxIntervalMs(maxIntervalMs)
                                                                                                                               .setMinIntervalMs(minIntervalMs);
         assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMinInterval());
         assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxInterval());

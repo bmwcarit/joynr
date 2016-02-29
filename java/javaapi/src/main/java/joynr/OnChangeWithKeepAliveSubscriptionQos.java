@@ -174,7 +174,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
                                                 long alertAfterIntervalMs,
                                                 long publicationTtlMs) {
         super(minIntervalMs, expiryDateMs, publicationTtlMs);
-        setMaxInterval(maxIntervalMs);
+        setMaxIntervalMs(maxIntervalMs);
         setAlertAfterInterval(alertAfterIntervalMs);
     }
 
@@ -222,7 +222,38 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            </ul>
      * @return the subscriptionQos (fluent interface)
      */
+    @Deprecated
     public OnChangeWithKeepAliveSubscriptionQos setMaxInterval(long maxIntervalMs) {
+        return setMaxIntervalMs(maxIntervalMs);
+    }
+
+    /**
+     * Set the maximum interval in milliseconds.
+     * <br>
+     * The provider will send publications every maximum interval in milliseconds,
+     * even if the value didn't change. It will send notifications more often if
+     * on-change notifications are enabled, the value changes more often, and the
+     * minimum interval QoS does not prevent it. The maximum interval can thus
+     * be seen as a sort of heart beat or keep alive interval, if no other
+     * publication has been sent within that time.
+     *
+     * @param maxIntervalMs
+     *            The publisher will send a notification at least every
+     *            maxIntervalMs.<br>
+     *            <br>
+     *            <b>Minimum and Maximum Values</b>
+     *            <ul>
+     *            <li>The absolute <b>minimum</b> setting is
+     *            {@value #MIN_MAX_INTERVAL_MS} milliseconds. <br>
+     *            Any value less than this minimum will be treated at the absolute
+     *            minimum setting of{@value #MIN_MAX_INTERVAL_MS} milliseconds.
+     *            <li>The absolute <b>maximum</b> setting is
+     *            {@value #MAX_MAX_INTERVAL_MS} milliseconds. <br>
+     *            Any value bigger than this maximum will be treated as the absolute
+     *            maximum setting of {@value #MAX_MAX_INTERVAL_MS} milliseconds.
+     *            </ul>
+     */
+    public OnChangeWithKeepAliveSubscriptionQos setMaxIntervalMs(long maxIntervalMs) {
         if (maxIntervalMs < MIN_MAX_INTERVAL_MS) {
             this.maxIntervalMs = MIN_MAX_INTERVAL_MS;
         } else if (maxIntervalMs > MAX_MAX_INTERVAL_MS) {
@@ -305,7 +336,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     public OnChangeWithKeepAliveSubscriptionQos setMinIntervalMs(long minIntervalMs) {
         super.setMinIntervalMs(minIntervalMs);
         // adjust maxInterval to match new minInterval
-        return setMaxInterval(maxIntervalMs);
+        return setMaxIntervalMs(maxIntervalMs);
     }
 
     @Override
