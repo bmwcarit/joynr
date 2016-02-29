@@ -44,7 +44,8 @@ public:
     static const std::string& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
 
     explicit WebSocketSettings(Settings& settings);
-    WebSocketSettings(const WebSocketSettings& other) = default;
+    WebSocketSettings(const WebSocketSettings&) = default;
+    WebSocketSettings(WebSocketSettings&&) = default;
 
     ~WebSocketSettings() = default;
 

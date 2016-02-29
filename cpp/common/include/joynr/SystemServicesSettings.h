@@ -33,7 +33,8 @@ class JOYNRCOMMON_EXPORT SystemServicesSettings
 {
 public:
     explicit SystemServicesSettings(Settings& settings);
-    SystemServicesSettings(const SystemServicesSettings& other) = default;
+    SystemServicesSettings(const SystemServicesSettings&) = default;
+    SystemServicesSettings(SystemServicesSettings&&) = default;
 
     ~SystemServicesSettings() = default;
 
