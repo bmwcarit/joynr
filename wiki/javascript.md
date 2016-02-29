@@ -215,6 +215,9 @@ then the subsequent dependent call should be made in the following then() call.
 	// call successful, handle response value
 }).catch(function(error) {
     // call failed, execute error handling
+    // The following objects are used to receive error details from provider side:
+    // - joynr.exceptions.ApplicationException (its member 'error' holds the error enumeration value)
+    // - joynr.exceptions.ProviderRuntimeException (with embedded 'detailMessage')
 });
 ```
 
@@ -654,8 +657,12 @@ either asynchronously or synchronously.
 ### Synchronous implementation
 ```javascript
 this.<method> = function(parameters) {
-    // handle method, return returnValue of type <returnType>
-    return returnValue;
+    // handle method, return returnValue of type <returnType> with
+    // return returnValue;
+    // - or -
+    // throw errorEnumerationValue;
+    // - or -
+    // throw new joynr.exceptions.ProviderRuntimeException({ detailMessage: "reason" });
 };
 ```
 
