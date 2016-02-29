@@ -68,7 +68,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      *            is the time-to-live for publication messages.
      *            NOTE minimum and maximum values apply.
      *
-     * @see #setMinInterval(long)
+     * @see #setMinIntervalMs(long)
      * @see SubscriptionQos#SubscriptionQos(long, long)
      *           SubscriptionQos.SubscriptionQos(long, long)
      *           for more information on expiryDate and publicationTtl
@@ -76,7 +76,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
     @Deprecated
     public OnChangeSubscriptionQos(long minIntervalMs, long expiryDateMs, long publicationTtlMs) {
         super(expiryDateMs, publicationTtlMs);
-        setMinInterval(minIntervalMs);
+        setMinIntervalMs(minIntervalMs);
 
     }
 
@@ -98,6 +98,8 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
     }
 
     /**
+     * @deprecated Use setMinIntervalMs instead
+     *
      * Set the minimum interval in milliseconds.
      * <br>
      * Publications will be sent maintaining this minimum interval provided,
@@ -118,7 +120,32 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      *            between two successive notifications.
      * @return the subscriptionQos (fluent interface)
      */
+    @Deprecated
     public OnChangeSubscriptionQos setMinInterval(final long minIntervalMs) {
+        return setMinIntervalMs(minIntervalMs);
+    }
+
+    /**
+     * Set the minimum interval in milliseconds.
+     * <br>
+     * Publications will be sent maintaining this minimum interval provided,
+     * even if the value changes more often. This prevents the consumer from
+     * being flooded by updated values. The filtering happens on the provider's
+     * side, thus also preventing excessive network traffic. This value is
+     * provided in milliseconds.<br>
+     * <br>
+     * <b>Minimum and Maximum Values</b>
+     * <ul>
+     * <li><b>Minimum</b> minInterval: 0. Smaller values will be rounded up.
+     * <li><b>Maximum</b> minInterval: 2.592.000.000 (30 days). Larger values
+     * will be rounded down.
+     * </ul>
+     *
+     * @param minIntervalMs
+     *            The publisher will keep a minimum idle time of minIntervalMs
+     *            between two successive notifications.
+     */
+    public OnChangeSubscriptionQos setMinIntervalMs(final long minIntervalMs) {
         if (minIntervalMs < MIN_MIN_INTERVAL_MS) {
             this.minIntervalMs = MIN_MIN_INTERVAL_MS;
         } else if (minIntervalMs > MAX_MIN_INTERVAL_MS) {

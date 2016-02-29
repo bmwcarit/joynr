@@ -302,8 +302,8 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     }
 
     @Override
-    public OnChangeWithKeepAliveSubscriptionQos setMinInterval(long minIntervalMs) {
-        super.setMinInterval(minIntervalMs);
+    public OnChangeWithKeepAliveSubscriptionQos setMinIntervalMs(long minIntervalMs) {
+        super.setMinIntervalMs(minIntervalMs);
         // adjust maxInterval to match new minInterval
         return setMaxInterval(maxIntervalMs);
     }

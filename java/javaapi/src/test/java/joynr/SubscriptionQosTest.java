@@ -38,7 +38,7 @@ public class SubscriptionQosTest {
         long minIntervalMs = 100;
         OnChangeSubscriptionQos onChangeSubscriptionQos = new OnChangeSubscriptionQos().setExpiryDateMs(expiryDateMs)
                                                                                        .setPublicationTtlMs(publicationTtlMs)
-                                                                                       .setMinInterval(minIntervalMs);
+                                                                                       .setMinIntervalMs(minIntervalMs);
         assertEquals(expiryDateMs, onChangeSubscriptionQos.getExpiryDate());
         assertEquals(publicationTtlMs, onChangeSubscriptionQos.getPublicationTtl());
         assertEquals(minIntervalMs, onChangeSubscriptionQos.getMinInterval());
@@ -94,7 +94,7 @@ public class SubscriptionQosTest {
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setExpiryDateMs(expiryDateMs)
                                                                                                                               .setPublicationTtlMs(publicationTtlMs)
                                                                                                                               .setMaxInterval(maxIntervalMs)
-                                                                                                                              .setMinInterval(minIntervalMs)
+                                                                                                                              .setMinIntervalMs(minIntervalMs)
                                                                                                                               .setAlertAfterInterval(alertAfterIntervalMs);
         assertEquals(expiryDateMs, onChangeWithKeepAliveSubscriptionQos.getExpiryDate());
         assertEquals(publicationTtlMs, onChangeWithKeepAliveSubscriptionQos.getPublicationTtl());
@@ -129,7 +129,7 @@ public class SubscriptionQosTest {
         long minIntervalMs = 2000;
         long maxIntervalMs = 1000;
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMaxInterval(maxIntervalMs)
-                                                                                                                              .setMinInterval(minIntervalMs);
+                                                                                                                              .setMinIntervalMs(minIntervalMs);
         assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMinInterval());
         assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxInterval());
     }
