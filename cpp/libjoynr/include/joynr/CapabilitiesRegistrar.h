@@ -102,46 +102,12 @@ public:
 
     template <class T>
     std::string remove(const std::string& domain, std::shared_ptr<T> provider)
-
     {
-        std::ignore = provider;
-
         std::string interfaceName = provider->getInterfaceName();
-
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
-
-        for (IDispatcher* currentDispatcher : dispatcherList) {
-            // TODO will the provider be registered at all dispatchers or
-            //     should it be configurable which ones are used to contact it.
-            assert(currentDispatcher != nullptr);
-            currentDispatcher->removeRequestCaller(participantId);
-        }
-
-        try {
-            discoveryProxy.remove(participantId);
-        } catch (const exceptions::JoynrException& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Unable to remove provider (participant ID: {}, domain: {}, interface: "
-                            "{} to discovery. Error: {}",
-                            participantId,
-                            domain,
-                            interfaceName,
-                            e.getMessage());
-        }
-
-        auto future = std::make_shared<joynr::Future<void>>();
-        auto callbackFct = [future]() { future->onSuccess(); };
-        messageRouter->removeNextHop(participantId, callbackFct);
-        future->wait();
-
-        if (!future->isOk()) {
-            JOYNR_LOG_ERROR(logger,
-                            "Unable to remove next hop (participant ID: {}) from message router.",
-                            participantId);
-        }
-
+        remove(participantId);
         return participantId;
     }
 
