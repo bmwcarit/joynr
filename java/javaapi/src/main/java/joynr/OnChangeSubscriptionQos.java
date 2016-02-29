@@ -136,8 +136,8 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
     }
 
     @Override
-    public OnChangeSubscriptionQos setPublicationTtl(long publicationTtlMs) {
-        return (OnChangeSubscriptionQos) super.setPublicationTtl(publicationTtlMs);
+    public OnChangeSubscriptionQos setPublicationTtlMs(long publicationTtlMs) {
+        return (OnChangeSubscriptionQos) super.setPublicationTtlMs(publicationTtlMs);
     }
 
     @Override

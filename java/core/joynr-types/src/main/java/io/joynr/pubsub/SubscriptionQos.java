@@ -77,7 +77,7 @@ public abstract class SubscriptionQos implements JoynrType {
      *            The expiryDate is the end date of the subscription. This value
      *            is provided in milliseconds (since 1970-01-01T00:00:00.000).
      *
-     * @see #setPublicationTtl(long) setPublicationTtl(long)
+     * @see #setPublicationTtlMs(long) setPublicationTtl(long)
      *            (publicationTtl will be set to its default value)
      */
     @Deprecated
@@ -105,12 +105,12 @@ public abstract class SubscriptionQos implements JoynrType {
      *            provided in milliseconds.
      *
      * @see #setExpiryDateMs(long)
-     * @see #setPublicationTtl(long)
+     * @see #setPublicationTtlMs(long)
      */
     @Deprecated
     public SubscriptionQos(long expiryDateMs, long publicationTtlMs) {
         setExpiryDateMs(expiryDateMs);
-        setPublicationTtl(publicationTtlMs);
+        setPublicationTtlMs(publicationTtlMs);
     }
 
     /**
@@ -205,6 +205,8 @@ public abstract class SubscriptionQos implements JoynrType {
     }
 
     /**
+     * @deprecated Use setPublicationTtlMs instead
+     *
      * Set the time-to-live for notification messages.
      * <br>
      * Notification messages will be sent with this time-to-live. If a notification message can not be delivered within
@@ -223,7 +225,31 @@ public abstract class SubscriptionQos implements JoynrType {
      *            </ul>
      * @return the subscriptionQos (fluent interface)
      */
+    @Deprecated
     public SubscriptionQos setPublicationTtl(final long publicationTtlMs) {
+        return setPublicationTtlMs(publicationTtlMs);
+    }
+
+    /**
+     * Set the time-to-live for notification messages.
+     * <br>
+     * Notification messages will be sent with this time-to-live. If a notification message can not be delivered within
+     * its time to live, it will be deleted from the system. This value is provided in milliseconds.
+     *
+     * @param publicationTtlMs
+     *            publicationTtlMs time-to-live in milliseconds.<br>
+     *            <br>
+     *            <b>Minimum and Default Values:</b>
+     *            <ul>
+     *            <li><b>Minimum</b> publicationTtlMs = 100.
+     *            Smaller values will be rounded up.
+     *            <li><b>Maximum</b> publicationTtlMs = 2.592.000.000 (30 days)
+     *            Larger values will be rounded down.
+     *            <li><b>Default</b> publicationTtlMs = 10 000 (10 secs)
+     *            </ul>
+     * @return the subscriptionQos (fluent interface)
+     */
+    public SubscriptionQos setPublicationTtlMs(final long publicationTtlMs) {
         if (publicationTtlMs < MIN_PUBLICATION_TTL_MS) {
             this.publicationTtlMs = MIN_PUBLICATION_TTL_MS;
             logger.warn("publicationTtlMs < MIN_PUBLICATION_TTL. Using MIN_PUBLICATION_TTL: {}", MIN_PUBLICATION_TTL_MS);

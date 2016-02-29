@@ -309,8 +309,8 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     }
 
     @Override
-    public OnChangeWithKeepAliveSubscriptionQos setPublicationTtl(long publicationTtlMs) {
-        return (OnChangeWithKeepAliveSubscriptionQos) super.setPublicationTtl(publicationTtlMs);
+    public OnChangeWithKeepAliveSubscriptionQos setPublicationTtlMs(long publicationTtlMs) {
+        return (OnChangeWithKeepAliveSubscriptionQos) super.setPublicationTtlMs(publicationTtlMs);
     }
 
     @Override

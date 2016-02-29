@@ -138,11 +138,11 @@ public class SubscriptionTimersTest {
                 + (alertAfterInterval - period); // plus time for the last possible alertAfterInterval to arrive
 
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
-        qos.setPublicationTtl(period);
+        qos.setPublicationTtlMs(period);
         qos.setExpiryDateMs(expiryDate);
         // alert 10 ms after a publication should have been received
         qos.setAlertAfterInterval(alertAfterInterval);
-        qos.setPublicationTtl(1000);
+        qos.setPublicationTtlMs(1000);
 
         // register a subscription
         AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,

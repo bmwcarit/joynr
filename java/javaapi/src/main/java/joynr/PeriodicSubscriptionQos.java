@@ -258,8 +258,8 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     }
 
     @Override
-    public PeriodicSubscriptionQos setPublicationTtl(long publicationTtlMs) {
-        return (PeriodicSubscriptionQos) super.setPublicationTtl(publicationTtlMs);
+    public PeriodicSubscriptionQos setPublicationTtlMs(long publicationTtlMs) {
+        return (PeriodicSubscriptionQos) super.setPublicationTtlMs(publicationTtlMs);
     }
 
     @Override
