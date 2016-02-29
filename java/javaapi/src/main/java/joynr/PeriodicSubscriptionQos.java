@@ -95,7 +95,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @param publicationTtlMs
      *            time to live for publication messages
      *
-     * @see #setPeriod(long)
+     * @see #setPeriodMs(long)
      * @see #setAlertAfterIntervalMs(long)
      * @see SubscriptionQos#SubscriptionQos(long, long)
      *           SubscriptionQos.SubscriptionQos(long, long)
@@ -104,7 +104,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     @Deprecated
     public PeriodicSubscriptionQos(long periodMs, long expiryDateMs, long alertAfterIntervalMs, long publicationTtlMs) {
         super(expiryDateMs, publicationTtlMs);
-        setPeriod(periodMs);
+        setPeriodMs(periodMs);
         setAlertAfterIntervalMs(alertAfterIntervalMs);
     }
 
@@ -125,7 +125,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @param publicationTtlMs
      *            time to live for publication messages
      *
-     * @see #setPeriod(long)
+     * @see #setPeriodMs(long)
      * @see SubscriptionQos#SubscriptionQos(long, long)
      *           SubscriptionQos.SubscriptionQos(long, long)
      *           for more information on expiryDate and publicationTtl
@@ -244,6 +244,8 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     }
 
     /**
+     * @deprecated use setPeriodMs instead
+     *
      * Set the period in milliseconds.
      * <br>
      * The provider will periodically send notifications every period milliseconds.
@@ -264,7 +266,33 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      *            The publisher will send a notification at least every period_ms.
      * @return the subscriptionQos (fluent interface)
      */
+    @Deprecated
     public PeriodicSubscriptionQos setPeriod(long periodMs) {
+        return setPeriodMs(periodMs);
+    }
+
+    /**
+     * Set the period in milliseconds.
+     * <br>
+     * The provider will periodically send notifications every period milliseconds.
+     * The period can thus be seen as a sort of heart beat.<br>
+     * <br>
+     * <b>Minimum, Maximum, and Default Values:</b>
+     * <ul>
+     * <li>The absolute <b>minimum</b> setting is 50 milliseconds.<br>
+     * Any value less than this minimum will be treated at the absolute minimum
+     * setting of 50 milliseconds.
+     * <li>The absolute <b>maximum</b> setting is 2.592.000.000 milliseconds (30 days).<br>
+     * Any value bigger than this maximum will be treated at the absolute maximum
+     * setting of 2.592.000.000 milliseconds (30 days).
+     * <li>The <b>default</b> setting is 50 milliseconds (MIN_PERIOD).
+     * </ul>
+     *
+     * @param periodMs
+     *            The publisher will send a notification at least every period_ms.
+     * @return
+     */
+    public PeriodicSubscriptionQos setPeriodMs(long periodMs) {
         if (periodMs < MIN_PERIOD_MS) {
             this.periodMs = MIN_PERIOD_MS;
             logger.warn("periodMs < MIN_PERIOD_MS. Using MIN_PERIOD_MS: {}", MIN_PERIOD_MS);

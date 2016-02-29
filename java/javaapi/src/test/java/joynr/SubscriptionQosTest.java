@@ -64,7 +64,7 @@ public class SubscriptionQosTest {
         long alertAfterIntervalMs = 3000;
         PeriodicSubscriptionQos periodicSubscriptionQos = new PeriodicSubscriptionQos().setExpiryDateMs(expiryDateMs)
                                                                                        .setPublicationTtlMs(publicationTtlMs)
-                                                                                       .setPeriod(periodMs)
+                                                                                       .setPeriodMs(periodMs)
                                                                                        .setAlertAfterIntervalMs(alertAfterIntervalMs);
         assertEquals(expiryDateMs, periodicSubscriptionQos.getExpiryDate());
         assertEquals(publicationTtlMs, periodicSubscriptionQos.getPublicationTtl());
@@ -108,7 +108,7 @@ public class SubscriptionQosTest {
     public void alertAfterIntervalAdjustedIfSmallerThanPeriod() throws Exception {
         long periodMs = 5000;
         long alertAfterIntervalMs = 1000;
-        PeriodicSubscriptionQos periodicSubscriptionQos = new PeriodicSubscriptionQos().setPeriod(periodMs)
+        PeriodicSubscriptionQos periodicSubscriptionQos = new PeriodicSubscriptionQos().setPeriodMs(periodMs)
                                                                                        .setAlertAfterIntervalMs(alertAfterIntervalMs);
         assertEquals(periodMs, periodicSubscriptionQos.getPeriod());
         assertEquals(periodMs, periodicSubscriptionQos.getAlertAfterInterval());
