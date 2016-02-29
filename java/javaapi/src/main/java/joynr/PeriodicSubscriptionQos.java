@@ -96,7 +96,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      *            time to live for publication messages
      *
      * @see #setPeriod(long)
-     * @see #setAlertAfterInterval(long)
+     * @see #setAlertAfterIntervalMs(long)
      * @see SubscriptionQos#SubscriptionQos(long, long)
      *           SubscriptionQos.SubscriptionQos(long, long)
      *           for more information on expiryDate and publicationTtl
@@ -105,7 +105,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     public PeriodicSubscriptionQos(long periodMs, long expiryDateMs, long alertAfterIntervalMs, long publicationTtlMs) {
         super(expiryDateMs, publicationTtlMs);
         setPeriod(periodMs);
-        setAlertAfterInterval(alertAfterIntervalMs);
+        setAlertAfterIntervalMs(alertAfterIntervalMs);
     }
 
     /**
@@ -129,7 +129,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @see SubscriptionQos#SubscriptionQos(long, long)
      *           SubscriptionQos.SubscriptionQos(long, long)
      *           for more information on expiryDate and publicationTtl
-     * @see #setAlertAfterInterval(long) setAlertAfterInterval(long)
+     * @see #setAlertAfterIntervalMs(long) setAlertAfterInterval(long)
      *           (alertAfterInterval will be set to its default value)
      */
     @Deprecated
@@ -153,6 +153,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     }
 
     /**
+     * @deprecated Use setAlertAfterIntervalMs instead
      * Set the alertAfterInterval in milliseconds. <br>
      * If no notification was received within the last alert interval, a missed
      * publication notification will be raised.<br>
@@ -177,7 +178,36 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      *
      * @see #clearAlertAfterInterval()
      */
+    @Deprecated
     public PeriodicSubscriptionQos setAlertAfterInterval(final long alertAfterIntervalMs) {
+        return setAlertAfterIntervalMs(alertAfterIntervalMs);
+    }
+
+    /**
+     * Set the alertAfterInterval in milliseconds. <br>
+     * If no notification was received within the last alert interval, a missed
+     * publication notification will be raised.<br>
+     * <br>
+     * <b>Minimum, Maximum, and Default Values:</b>
+     * <ul>
+     * <li>The absolute <b>minimum</b> setting is the period value. <br>
+     * Any value less than period will be replaced by the period setting.
+     * <li>The absolute <b>maximum</b> setting is 2.592.000.000 milliseconds (30 days). <br>
+     * Any value bigger than this maximum will be treated at the absolute maximum setting of
+     * 2.592.000.000 milliseconds.
+     * <li><b>Default</b> setting: 0 milliseconds (no alert).
+     * (no alert).
+     * </ul>
+     * <p>
+     * Use {@link #clearAlertAfterInterval()} to remove missed publication notifications.
+     *
+     * @param alertAfterIntervalMs
+     *            If more than alertInterval_ms pass without receiving a message,
+     *            subscriptionManager will issue a publication missed.
+     *
+     * @see #clearAlertAfterInterval()
+     */
+    public PeriodicSubscriptionQos setAlertAfterIntervalMs(final long alertAfterIntervalMs) {
         if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS) {
             this.alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL_MS;
             logger.warn("alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: {}",

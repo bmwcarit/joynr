@@ -141,7 +141,7 @@ public class SubscriptionTimersTest {
         qos.setPublicationTtlMs(period);
         qos.setExpiryDateMs(expiryDate);
         // alert 10 ms after a publication should have been received
-        qos.setAlertAfterInterval(alertAfterInterval);
+        qos.setAlertAfterIntervalMs(alertAfterInterval);
         qos.setPublicationTtlMs(1000);
 
         // register a subscription
