@@ -92,7 +92,7 @@ joynrTestRequire(
                                         minIntervalMs : minIntervalMs || 50,
                                         maxIntervalMs : periodMs,
                                         expiryDateMs : expiryDateMs,
-                                        alertAfterInterval : 0,
+                                        alertAfterIntervalMs : 0,
                                         publicationTtlMs : 1000
                                     });
                                 } else {
@@ -106,7 +106,7 @@ joynrTestRequire(
                                 qosSettings = new PeriodicSubscriptionQos({
                                     periodMs : periodMs,
                                     expiryDateMs : expiryDateMs,
-                                    alertAfterInterval : 0,
+                                    alertAfterIntervalMs : 0,
                                     publicationTtlMs : 1000
                                 });
                             }

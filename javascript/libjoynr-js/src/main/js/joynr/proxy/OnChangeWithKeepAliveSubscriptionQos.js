@@ -41,7 +41,7 @@ define(
              * Notifications will be sent if the subscribed value has changed or a time
              * interval without notifications has expired. The subscription will
              * automatically expire after the expiry date is reached. If no publications
-             * were received for alertAfter Interval, publicationMissed will be called.
+             * were received for alertAfterIntervalMs, publicationMissed will be called.
              * <br/>
              * minIntervalMs can be used to prevent too many messages being sent.
              *
@@ -83,8 +83,10 @@ define(
              *            [settings.expiryDateMs] how long is the subscription
              *            valid
              * @param {Number}
-             *            [settings.alertAfterInterval] defines how long to wait
-             *            for an update before publicationMissed is called<br/>
+             *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
+             * @param {Number}
+             *            [settings.alertAfterIntervalMs=OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT] defines how
+             *            long to wait for an update before publicationMissed is called<br/>
              *            <br/>
              *            <b>Minimum and Default Values:</b>
              *            <ul>
@@ -138,10 +140,17 @@ define(
                             settings.maxIntervalMs,
                             "Number",
                             "settings.maxIntervalMs");
+                    if (settings.alertAfterInterval !== undefined) {
+                        log
+                                .warn("OnChangeWithKeepAliveSubscriptionQos has been invoked with deprecated settings member \"alertAfterInterval\". "
+                                    + "By 2017-01-01, the min interval can only be specified with member \"alertAfterIntervalMs\".");
+                        settings.alertAfterIntervalMs = settings.alertAfterInterval;
+                        settings.alertAfterInterval = undefined;
+                    }
                     Util.checkPropertyIfDefined(
-                            settings.alertAfterInterval,
+                            settings.alertAfterIntervalMs,
                             "Number",
-                            "settings.alertAfterInterval");
+                            "settings.alertAfterIntervalMs");
                 }
 
                 /**
@@ -161,7 +170,7 @@ define(
                  */
                 /**
                  * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
-                 * @name OnChangeWithKeepAliveSubscriptionQos#alertAfterInterval
+                 * @name OnChangeWithKeepAliveSubscriptionQos#alertAfterIntervalMs
                  * @type Number
                  */
                 /**
@@ -178,17 +187,17 @@ define(
                         + this.minIntervalMs);
                 }
 
-                if (this.alertAfterInterval !== OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT
-                    && this.alertAfterInterval < this.maxIntervalMs) {
-                    throw new Error("Wrong alertAfterInterval with value "
-                        + this.alertAfterInterval
+                if (this.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT
+                    && this.alertAfterIntervalMs < this.maxIntervalMs) {
+                    throw new Error("Wrong alertAfterIntervalMs with value "
+                        + this.alertAfterIntervalMs
                         + ": it shall be higher than the specified maxIntervalMs of "
                         + this.maxIntervalMs);
                 }
             }
 
             /**
-             * Default value for [alertAfterInterval]{@link OnChangeWithKeepAliveSubscriptionQos#alertAfterInterval}.
+             * Default value for [alertAfterIntervalMs]{@link OnChangeWithKeepAliveSubscriptionQos#alertAfterIntervalMs}.
              * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
              *
              * @name OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT
@@ -200,7 +209,7 @@ define(
             OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT = 0;
 
             defaultSettings = {
-                alertAfterInterval : OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT
+                alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT
             };
 
             return OnChangeWithKeepAliveSubscriptionQos;

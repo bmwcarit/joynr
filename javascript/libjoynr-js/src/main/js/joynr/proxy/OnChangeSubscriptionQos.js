@@ -35,9 +35,7 @@ define(
              * This class stores quality of service settings used for subscriptions to
              * <b>broadcasts and attributes</b> in generated proxy objects. Notifications
              * will only be sent if the subscribed value has changed. The subscription
-             * will automatically expire after the expiry date is reached. If no
-             * publications were received for alertAfterInterval, publicationMissed
-             * will be called.<br/>
+             * will automatically expire after the expiry date is reached.<br/>
              * minIntervalMs can be used to prevent too many messages being sent.
              *
              * @summary

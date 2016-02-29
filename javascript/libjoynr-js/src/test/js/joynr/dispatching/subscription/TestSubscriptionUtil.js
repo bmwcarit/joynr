@@ -82,7 +82,7 @@ joynrTestRequire(
                                         minIntervalMs : minIntervalMs || 0,
                                         maxIntervalMs : periodMs,
                                         expiryDateMs : Date.now() + subscriptionLength,
-                                        alertAfterInterval : 0,
+                                        alertAfterIntervalMs : 0,
                                         publicationTtlMs : 1000
                                     });
                                 } else {
@@ -96,7 +96,7 @@ joynrTestRequire(
                                 qosSettings = new PeriodicSubscriptionQos({
                                     periodMs : periodMs,
                                     expiryDateMs : Date.now() + subscriptionLength,
-                                    alertAfterInterval : 0,
+                                    alertAfterIntervalMs : 0,
                                     publicationTtlMs : 1000
                                 });
                             }
@@ -124,7 +124,7 @@ joynrTestRequire(
                                 + info.subscriptionId
                                 + "\",\"subscribedToName\":\""
                                 + info.subscribedToName
-                                + "\",\"qos\":{\"_typeName\":\"joynr.OnChangeWithKeepAliveSubscriptionQos\",\"alertAfterInterval\":0,\"minIntervalMs\":"
+                                + "\",\"qos\":{\"_typeName\":\"joynr.OnChangeWithKeepAliveSubscriptionQos\",\"alertAfterIntervalMs\":0,\"minIntervalMs\":"
                                 + info.qos.minIntervalMs
                                 + ",\"maxIntervalMs\":"
                                 + info.qos.maxIntervalMs

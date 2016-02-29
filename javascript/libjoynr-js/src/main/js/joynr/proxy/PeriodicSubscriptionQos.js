@@ -36,7 +36,7 @@ define(
              * <b>attributes</b> in generated proxy objects. Notifications will only be
              * sent if the period has expired. The subscription will automatically expire
              * after the expiry date is reached. If no publications were received for
-             * alertAfter interval, publicationMissed will be called.
+             * alertAfterIntervalMs, publicationMissed will be called.
              *
              * @summary
              * Constructor of PeriodicSubscriptionQos object used for subscriptions
@@ -64,7 +64,9 @@ define(
              * @param {Number}
              *            [settings.expiryDateMs] how long is the subscription valid
              * @param {Number}
-             *            [settings.alertAfterInterval=0] defines how long to wait for an
+             *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
+             * @param {Number}
+             *            [settings.alertAfterIntervalMs=PeriodicSubscriptionQos.NEVER_ALERT] defines how long to wait for an
              *            update before publicationMissed is called.<br/>
              *            <br/>
              *            <b>Minimum and Default Values:</b>
@@ -109,10 +111,17 @@ define(
                         settings.period = undefined;
                     }
                     Util.checkPropertyIfDefined(settings.periodMs, "Number", "settings.periodMs");
+                    if (settings.alertAfterInterval !== undefined) {
+                        log
+                                .warn("PeriodicSubscriptionQos has been invoked with deprecated settings member \"alertAfterInterval\". "
+                                    + "By 2017-01-01, the min interval can only be specified with member \"alertAfterIntervalMs\".");
+                        settings.alertAfterIntervalMs = settings.alertAfterInterval;
+                        settings.alertAfterInterval = undefined;
+                    }
                     Util.checkPropertyIfDefined(
-                            settings.alertAfterInterval,
+                            settings.alertAfterIntervalMs,
                             "Number",
-                            "settings.alertAfterInterval");
+                            "settings.alertAfterIntervalMs");
                 }
 
                 /**
@@ -127,7 +136,7 @@ define(
                  */
                 /**
                  * See [constructor description]{@link PeriodicSubscriptionQos}.
-                 * @name PeriodicSubscriptionQos#alertAfterInterval
+                 * @name PeriodicSubscriptionQos#alertAfterIntervalMs
                  * @type Number
                  */
                 /**
@@ -144,10 +153,10 @@ define(
                         + PeriodicSubscriptionQos.MIN_PERIOD_MS);
                 }
 
-                if (this.alertAfterInterval !== PeriodicSubscriptionQos.NEVER_ALERT
-                    && this.alertAfterInterval < this.periodMs) {
-                    throw new Error("Wrong alertAfterInterval with value "
-                        + this.alertAfterInterval
+                if (this.alertAfterIntervalMs !== PeriodicSubscriptionQos.NEVER_ALERT
+                    && this.alertAfterIntervalMs < this.periodMs) {
+                    throw new Error("Wrong alertAfterIntervalMs with value "
+                        + this.alertAfterIntervalMs
                         + ": it shall be higher than the specified periodMs of "
                         + this.periodMs);
                 }
@@ -167,7 +176,7 @@ define(
             PeriodicSubscriptionQos.MIN_PERIOD_MS = 50;
             PeriodicSubscriptionQos.MIN_PERIOD = PeriodicSubscriptionQos.MIN_PERIOD_MS;
             /**
-             * Default value for [alertAfterInterval]{@link PeriodicSubscriptionQos#alertAfterInterval}.
+             * Default value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.
              * See [constructor description]{@link PeriodicSubscriptionQos}.
              *
              * @name PeriodicSubscriptionQos.NEVER_ALERT
@@ -180,7 +189,7 @@ define(
 
             defaultSettings = {
                 periodMs : PeriodicSubscriptionQos.MIN_PERIOD_MS,
-                alertAfterInterval : PeriodicSubscriptionQos.NEVER_ALERT
+                alertAfterIntervalMs : PeriodicSubscriptionQos.NEVER_ALERT
             };
 
             return PeriodicSubscriptionQos;

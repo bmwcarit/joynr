@@ -180,7 +180,7 @@ joynrTestRequire(
                                     messagingQos : new MessagingQos(),
                                     attributeName : "testAttribute",
                                     qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                        alertAfterInterval : 100,
+                                        alertAfterIntervalMs : 100,
                                         expiryDateMs : Date.now() + 250
                                     }),
                                     onReceive : publicationReceivedSpy,
@@ -224,7 +224,7 @@ joynrTestRequire(
                                         messagingQos : new MessagingQos(),
                                         attributeName : "testAttribute",
                                         qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                            alertAfterInterval : 100,
+                                            alertAfterIntervalMs : 100,
                                             expiryDateMs : Date.now() + ttl
                                         }),
                                         onReceive : function() {},
@@ -323,7 +323,7 @@ joynrTestRequire(
                                     messagingQos : new MessagingQos(),
                                     attributeName : "testAttribute",
                                     qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                        alertAfterInterval : 100,
+                                        alertAfterIntervalMs : 100,
                                         expiryDateMs : Date.now() + 250
                                     }),
                                     onReceive : publicationReceivedSpy,
@@ -478,7 +478,7 @@ joynrTestRequire(
                                             messagingQos : new MessagingQos(),
                                             attributeName : "testAttribute",
                                             qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                                alertAfterInterval : 100,
+                                                alertAfterIntervalMs : 100,
                                                 expiryDateMs : Date.now() + 10000
                                             }),
                                             onReceive : publicationReceivedSpy,

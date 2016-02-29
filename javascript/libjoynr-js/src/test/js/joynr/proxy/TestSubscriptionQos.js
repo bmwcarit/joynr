@@ -36,7 +36,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             minIntervalMs : 50,
             maxIntervalMs : 51,
             expiryDateMs : 4,
-            alertAfterInterval : 80,
+            alertAfterIntervalMs : 80,
             publicationTtlMs : 100
         };
 
@@ -57,7 +57,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                 periodMs,
                 onChange,
                 expiryDateMs,
-                alertAfterInterval,
+                alertAfterIntervalMs,
                 publicationTtlMs) {
             var returnValue;
             if (onChange) {
@@ -65,14 +65,14 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                     minIntervalMs : minIntervalMs,
                     maxIntervalMs : periodMs,
                     expiryDateMs : expiryDateMs,
-                    alertAfterInterval : alertAfterInterval,
+                    alertAfterIntervalMs : alertAfterIntervalMs,
                     publicationTtlMs : publicationTtlMs
                 });
             } else {
                 returnValue = new PeriodicSubscriptionQos({
                     periodMs : periodMs,
                     expiryDateMs : expiryDateMs,
-                    alertAfterInterval : alertAfterInterval,
+                    alertAfterIntervalMs : alertAfterIntervalMs,
                     publicationTtlMs : publicationTtlMs
                 });
             }
@@ -84,7 +84,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                 periodMs,
                 onChange,
                 expiryDateMs,
-                alertAfterInterval,
+                alertAfterIntervalMs,
                 publicationTtlMs) {
             var subscriptionQos =
                     createSubscriptionQos(
@@ -92,7 +92,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                             periodMs,
                             onChange,
                             expiryDateMs,
-                            alertAfterInterval,
+                            alertAfterIntervalMs,
                             publicationTtlMs);
             var expectedMaxIntervalMs = periodMs;
             if (onChange) {
@@ -109,8 +109,8 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
 
             expect(subscriptionQos.expiryDateMs).toBe(expiryDateMs);
 
-            var expectedAlertAfterInterval = alertAfterInterval;
-            expect(subscriptionQos.alertAfterInterval).toBe(expectedAlertAfterInterval);
+            var expectedAlertAfterIntervalMs = alertAfterIntervalMs;
+            expect(subscriptionQos.alertAfterIntervalMs).toBe(expectedAlertAfterIntervalMs);
         }
 
         it("constructs with correct member values", function() {
@@ -122,7 +122,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(function() {
                 createSubscriptionQos(1, 2, false, 4, 5, 100);
             }).toThrow();
-            //wrong alertAfterInterval (shall be higher then the periodMs)
+            //wrong alertAfterIntervalMs (shall be higher then the periodMs)
             expect(function() {
                 createSubscriptionQos(1, 50, false, 4, 5, 100);
             }).toThrow();
@@ -140,7 +140,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(function() {
                 testValues(60, -2, true, -4, -5, 200);
             }).toThrow();
-            //wrong alertAfterInterval (shall be higher than maxIntervalMs)
+            //wrong alertAfterIntervalMs (shall be higher than maxIntervalMs)
             expect(function() {
                 testValues(60, 62, true, -4, -5, 200);
             }).toThrow();
@@ -167,7 +167,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                     new OnChangeWithKeepAliveSubscriptionQos({
                         minIntervalMs : OnChangeSubscriptionQos.MIN_INTERVAL_MS,
                         expiryDateMs : SubscriptionQos.NO_EXPIRY_DATE, // see comment in SubscriptionQos (cause: javascript floating point stuff)
-                        alertAfterInterval : OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT,
+                        alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT,
                         publicationTtlMs : SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS
                     }));
         });
@@ -183,6 +183,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             });
             expect(deprecatedQos.expiryDateMs).toEqual(1000);
             expect(deprecatedQos.publicationTtlMs).toEqual(100);
+            expect(deprecatedQos.alertAfterIntervalMs).toEqual(200);
             expect(deprecatedQos.minIntervalMs).toEqual(0);
             expect(deprecatedQos.maxIntervalMs).toEqual(50);
         });

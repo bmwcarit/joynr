@@ -30,7 +30,7 @@ joynrTestRequire("joynr/dispatching/types/TestSubscriptionRequest", [
         var qosSettings = {
             periodMs : 50,
             expiryDateMs : 3,
-            alertAfterInterval : 80,
+            alertAfterIntervalMs : 80,
             publicationTtlMs : 100
         };
 

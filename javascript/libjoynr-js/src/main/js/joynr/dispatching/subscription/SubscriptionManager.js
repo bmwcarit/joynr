@@ -118,18 +118,18 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param {String}
          *            subscriptionId Id of the subscription to check
          * @param {Number}
-         *            alertAfterInterval maximum delay between two incoming publications
+         *            alertAfterIntervalMs maximum delay between two incoming publications
          */
-        function checkPublication(subscriptionId, alertAfterInterval) {
+        function checkPublication(subscriptionId, alertAfterIntervalMs) {
             var subscriptionListener = subscriptionListeners[subscriptionId];
             var timeSinceLastPublication = Date.now() - getLastPublicationTime(subscriptionId);
             // log.debug("timeSinceLastPublication : " + timeSinceLastPublication + "
-            // alertAfterInterval: " + alertAfterInterval);
-            if (alertAfterInterval > 0 && timeSinceLastPublication >= alertAfterInterval) {
+            // alertAfterIntervalMs: " + alertAfterIntervalMs);
+            if (alertAfterIntervalMs > 0 && timeSinceLastPublication >= alertAfterIntervalMs) {
                 // log.warn("publication missed for subscription id: " + subscriptionId);
                 if (subscriptionListener.onError) {
                     var publicationMissedException = new PublicationMissedException({
-                        detailMessage : "alertAfterInterval period exceeded without receiving publication",
+                        detailMessage : "alertAfterIntervalMs period exceeded without receiving publication",
                         subscriptionId : subscriptionId
                     });
                     subscriptionListener.onError(publicationMissedException);
@@ -137,17 +137,17 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             }
 
             var delay_ms;
-            if (timeSinceLastPublication > alertAfterInterval) {
-                delay_ms = alertAfterInterval;
+            if (timeSinceLastPublication > alertAfterIntervalMs) {
+                delay_ms = alertAfterIntervalMs;
             } else {
-                delay_ms = alertAfterInterval - timeSinceLastPublication;
+                delay_ms = alertAfterIntervalMs - timeSinceLastPublication;
             }
             if (!subscriptionEnds(subscriptionId, delay_ms)) {
 
                 // log.debug("Rescheduling checkPublication with delay: " + delay_ms);
                 publicationCheckTimerIds[subscriptionId] =
                         LongTimer.setTimeout(function checkPublicationDelay() {
-                            checkPublication(subscriptionId, alertAfterInterval);
+                            checkPublication(subscriptionId, alertAfterIntervalMs);
                         }, delay_ms);
             }
         }
@@ -186,16 +186,16 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 onError : parameters.onError
             });
 
-            var alertAfterInterval = subscriptionRequest.qos.alertAfterInterval;
-            if (alertAfterInterval !== undefined && alertAfterInterval > 0) {
+            var alertAfterIntervalMs = subscriptionRequest.qos.alertAfterIntervalMs;
+            if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
                 publicationCheckTimerIds[subscriptionRequest.subscriptionId] =
                         LongTimer.setTimeout(
                                 function checkPublicationAlertAfterInterval() {
                                     checkPublication(
                                             subscriptionRequest.subscriptionId,
-                                            alertAfterInterval);
+                                            alertAfterIntervalMs);
                                 },
-                                alertAfterInterval);
+                                alertAfterIntervalMs);
             }
 
         }
@@ -296,17 +296,17 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                                         },
                             onError : settings.onError
                         });
-                        var alertAfterInterval = settings.qos.alertAfterInterval;
-                        if (alertAfterInterval !== undefined && alertAfterInterval > 0) {
+                        var alertAfterIntervalMs = settings.qos.alertAfterIntervalMs;
+                        if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
                             publicationCheckTimerIds[subscriptionId] =
                                     LongTimer
                                             .setTimeout(
                                                     function checkPublicationAlertAfterInterval() {
                                                         checkPublication(
                                                                 subscriptionId,
-                                                                alertAfterInterval);
+                                                                alertAfterIntervalMs);
                                                     },
-                                                    alertAfterInterval);
+                                                    alertAfterIntervalMs);
                         }
                     });
                 };
