@@ -449,12 +449,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                 discoveryProviderAddress);
         discoveryProxy->setDiscoveryProxy(discoveryInProcessConnector);
     }
-    capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
-                                                      *discoveryProxy,
-                                                      libjoynrMessagingAddress,
-                                                      participantIdStorage,
-                                                      dispatcherAddress,
-                                                      messageRouter);
+    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
+                                                                    *discoveryProxy,
+                                                                    libjoynrMessagingAddress,
+                                                                    participantIdStorage,
+                                                                    dispatcherAddress,
+                                                                    messageRouter);
 
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
@@ -554,7 +554,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     inProcessPublicationSender = nullptr;
     delete joynrMessageSender;
     delete proxyFactory;
-    delete capabilitiesRegistrar;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     delete ccDbusMessageRouterAdapter;

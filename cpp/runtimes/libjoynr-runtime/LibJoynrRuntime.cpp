@@ -61,7 +61,6 @@ LibJoynrRuntime::~LibJoynrRuntime()
 {
     delete proxyFactory;
     delete inProcessDispatcher;
-    delete capabilitiesRegistrar;
     delete joynrMessageSender;
     delete joynrDispatcher;
     delete libjoynrSettings;
@@ -165,12 +164,12 @@ void LibJoynrRuntime::init(
                                               ->setCached(false)
                                               ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                                               ->build());
-    capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
-                                                      *discoveryProxy,
-                                                      libjoynrMessagingAddress,
-                                                      participantIdStorage,
-                                                      dispatcherAddress,
-                                                      messageRouter);
+    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
+                                                                    *discoveryProxy,
+                                                                    libjoynrMessagingAddress,
+                                                                    participantIdStorage,
+                                                                    dispatcherAddress,
+                                                                    messageRouter);
 }
 
 void LibJoynrRuntime::unregisterProvider(const std::string& participantId)

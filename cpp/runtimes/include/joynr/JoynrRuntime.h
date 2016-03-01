@@ -164,7 +164,7 @@ protected:
     /** @brief Creates and persists participant id */
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */
-    CapabilitiesRegistrar* capabilitiesRegistrar;
+    std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
     /** @brief System services settings */
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
