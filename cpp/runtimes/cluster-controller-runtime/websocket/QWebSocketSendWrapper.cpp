@@ -77,6 +77,8 @@ void QWebSocketSendWrapper::sendTextMessage(const QString& message)
 
 void QWebSocketSendWrapper::onSocketDisconnected()
 {
-    onConnectionClosed();
+    if (onConnectionClosed) {
+        onConnectionClosed();
+    }
 }
 }
