@@ -329,6 +329,22 @@
 					</systemProperties>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- disable the default execution for unit tests -->
+						<id>default-test</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<runOrder>alphabetical</runOrder>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>

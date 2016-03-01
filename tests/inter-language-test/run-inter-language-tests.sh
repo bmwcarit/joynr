@@ -122,7 +122,7 @@ function start_services {
 	echo '####################################################'
 	echo '# starting services'
 	echo '####################################################'
-	mvn $SPECIAL_MAVEN_OPTIONS jetty:run-war --quiet > $ILT_RESULTS_DIR/jetty_$1.log 2>&1 &
+	mvn $SPECIAL_MAVEN_OPTIONS jetty:run-war --quiet > $ILT_RESULTS_DIR/jetty-$1.log 2>&1 &
 	JETTY_PID=$!
 	echo "Starting Jetty with PID $JETTY_PID"
 	# wait until server is up and running or 60 seconds (= 30 * 2) timeout is exceeded
@@ -166,12 +166,12 @@ function start_cluster_controller {
 		echo "C++ build directory or build/bin directory does not exist!"
 		stopall
 	fi
-	CLUSTER_CONTROLLER_DIR=$ILT_BUILD_DIR/cluster_controller_bin
+	CLUSTER_CONTROLLER_DIR=$ILT_BUILD_DIR/cluster-controller-bin
 	cd $ILT_BUILD_DIR
 	rm -fr $CLUSTER_CONTROLLER_DIR
 	cp -a $ILT_BUILD_DIR/bin $CLUSTER_CONTROLLER_DIR
 	cd $CLUSTER_CONTROLLER_DIR
-	./cluster-controller > $ILT_RESULTS_DIR/clustercontroller_$1.log 2>&1 &
+	./cluster-controller > $ILT_RESULTS_DIR/clustercontroller-$1.log 2>&1 &
 	CLUSTER_CONTROLLER_PID=$!
 	echo "Started external cluster controller with PID $CLUSTER_CONTROLLER_PID in directory $CLUSTER_CONTROLLER_DIR"
 	# Allow some time for startup
@@ -205,7 +205,7 @@ function start_java_provider {
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ILT_RESULTS_DIR/provider_java.log 2>&1 &
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ILT_RESULTS_DIR/provider-java.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider with PID $PROVIDER_PID"
 	# Allow some time for startup
@@ -235,7 +235,7 @@ function start_cpp_provider {
 	rm -fr $PROVIDER_DIR
 	cp -a $ILT_BUILD_DIR/bin $PROVIDER_DIR
 	cd $PROVIDER_DIR
-	./ilt-provider-cc $DOMAIN > $ILT_RESULTS_DIR/provider_cpp.log 2>&1 &
+	./ilt-provider-cc $DOMAIN > $ILT_RESULTS_DIR/provider-cpp.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started C++ provider with PID $PROVIDER_PID in directory $PROVIDER_DIR"
 	# Allow some time for startup
@@ -247,7 +247,7 @@ function start_javascript_provider {
 	echo '# starting Javascript provider'
 	echo '####################################################'
 	cd $ILT_DIR
-	nohup npm run-script startprovider --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/provider_javascript.log 2>&1 &
+	nohup npm run-script startprovider --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/provider-javascript.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Javascript provider with PID $PROVIDER_PID"
 	# Allow some time for startup
@@ -260,7 +260,10 @@ function start_java_consumer {
 	echo '####################################################'
 	cd $ILT_DIR
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltConsumerApplication" -Dexec.args="$DOMAIN http:mqtt" >> $ILT_RESULTS_DIR/consumer_java_$1.log 2>&1
+	mkdir $ILT_RESULTS_DIR/consumer-java-$1
+	rm -fr $ILT_DIR/target/surefire-reports
+	mvn $SPECIAL_MAVEN_OPTIONS surefire:test -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-$1.log 2>&1
+	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-$1
 	SUCCESS=$?
 	if [ "$SUCCESS" != 0 ]
 	then
@@ -283,8 +286,8 @@ function start_cpp_consumer {
 	echo '# starting C++ consumer'
 	echo '####################################################'
 	cd $ILT_BUILD_DIR/bin
-	#./ilt-consumer-cc $DOMAIN >> $ILT_RESULTS_DIR/consumer_cpp_$1.log 2>&1
-	./ilt-consumer-ws $DOMAIN >> $ILT_RESULTS_DIR/consumer_cpp_$1.log 2>&1
+	#./ilt-consumer-cc $DOMAIN >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
+	./ilt-consumer-ws $DOMAIN >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]
@@ -311,7 +314,7 @@ function start_javascript_consumer {
 	rm -fr localStorageStorage
 	#npm install
 	#npm install jasmine-node
-	npm run-script startjasmine --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/consumer_javascript_$1.log 2>&1
+	npm run-script startjasmine --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/consumer-javascript-$1.log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]
@@ -371,7 +374,7 @@ echo '####################################################'
 echo '# RUN CHECKS WITH JAVA PROVIDER'
 echo '####################################################'
 echo '####################################################'
-PROVIDER="provider_java"
+PROVIDER="provider-java"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
 start_java_provider
@@ -386,7 +389,7 @@ echo '####################################################'
 echo '# RUN CHECKS WITH C++ PROVIDER'
 echo '####################################################'
 echo '####################################################'
-PROVIDER="provider_cpp"
+PROVIDER="provider-cpp"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
 start_cpp_provider
@@ -401,7 +404,7 @@ echo '####################################################'
 echo '# RUN CHECKS WITH JAVASCRIPT PROVIDER'
 echo '####################################################'
 echo '####################################################'
-PROVIDER="provider_javascript"
+PROVIDER="provider-javascript"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
 start_javascript_provider
