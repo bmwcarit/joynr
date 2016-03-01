@@ -161,6 +161,7 @@ This project has dependencies to:
   io.joynr.javascript:inter-tab under The Apache Software License, Version 2.0
   io.joynr.javascript:js-dependencies under The Apache Software License, Version 2.0
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
+  io.joynr.tests:inter-language-test under The Apache Software License, Version 2.0
   io.joynr.tests:robustness under The Apache Software License, Version 2.0
   io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
@@ -176,7 +177,6 @@ This project has dependencies to:
   io.joynr:basemodel under The Apache Software License, Version 2.0
   io.joynr:cpp under The Apache Software License, Version 2.0
   io.joynr:examples under The Apache Software License, Version 2.0
-  io.joynr:inter-language-test under The Apache Software License, Version 2.0
   io.joynr:java under The Apache Software License, Version 2.0
   io.joynr:javascript under The Apache Software License, Version 2.0
   io.joynr:joynr under The Apache Software License, Version 2.0

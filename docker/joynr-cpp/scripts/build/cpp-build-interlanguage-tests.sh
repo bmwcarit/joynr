@@ -40,13 +40,13 @@ io.joynr.tools.generator:joynr-generator-maven-plugin,\
 io.joynr.tools.generator:java-generator,\
 io.joynr.tools.generator:js-generator,\
 io.joynr.tools.generator:cpp-generator,\
-io.joynr:inter-language-test
+io.joynr.tests:inter-language-test
 
 rm -rf /data/build/inter-language-test
 mkdir /data/build/inter-language-test
 cd /data/build/inter-language-test
 
-cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 /data/src/inter-language-test
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 /data/src/tests/inter-language-test
 
 time make -j $JOBS
 

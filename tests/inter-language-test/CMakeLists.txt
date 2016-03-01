@@ -36,7 +36,7 @@ option(
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
 if(ENABLE_CLANG_FORMATTER)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cpp/CMake")
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cpp/CMake")
     include(LocateProgram)
     LocateProgram(clang-format CLANG_FORMAT_PATH)
     include(AddClangFormat)

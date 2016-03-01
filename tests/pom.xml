@@ -31,5 +31,6 @@
 	<modules>
 		<module>performance</module>
 		<module>robustness</module>
+		<module>inter-language-test</module>
 	</modules>
 </project>

@@ -37,9 +37,11 @@ then
 	JOYNR_SOURCE_DIR=`git rev-parse --show-toplevel`
 fi
 
+ILT_DIR=$JOYNR_SOURCE_DIR/tests/inter-language-test
+
 if [ -z "$ILT_BUILD_DIR" ]
 then
-	ILT_BUILD_DIR=$JOYNR_SOURCE_DIR/inter-language-test/build
+	ILT_BUILD_DIR=$ILT_DIR/build
 fi
 
 # if CI environment, source global settings
@@ -50,7 +52,7 @@ fi
 
 if [ -z "$ILT_RESULTS_DIR" ]
 then
-	ILT_RESULTS_DIR=$JOYNR_SOURCE_DIR/inter-language-test/ilt-results-$(date "+%Y-%m-%d-%H:%M:%S")
+	ILT_RESULTS_DIR=$ILT_DIR/ilt-results-$(date "+%Y-%m-%d-%H:%M:%S")
 fi
 
 # process ids for background stuff
@@ -94,19 +96,19 @@ function prechecks {
 		exit 1
 	fi
 
-	if [ ! -f "$JOYNR_SOURCE_DIR/inter-language-test/target/discovery.war" ]
+	if [ ! -f "$ILT_DIR/target/discovery.war" ]
 	then
 		echo 'Java environment not built'
 		exit 1
 	fi
 
-	if [ ! -f "$JOYNR_SOURCE_DIR/inter-language-test/target/bounceproxy.war" ]
+	if [ ! -f "$ILT_DIR/target/bounceproxy.war" ]
 	then
 		echo 'Java environment not built'
 		exit 1
 	fi
 
-	if [ ! -f "$JOYNR_SOURCE_DIR/inter-language-test/target/accesscontrol.war" ]
+	if [ ! -f "$ILT_DIR/target/accesscontrol.war" ]
 	then
 		echo 'Java environment not built'
 		exit 1
@@ -114,7 +116,7 @@ function prechecks {
 }
 
 function start_services {
-	cd $JOYNR_SOURCE_DIR/inter-language-test
+	cd $ILT_DIR
 	rm -f joynr.properties
 	rm -f joynr_participantIds.properties
 	echo '####################################################'
@@ -144,7 +146,7 @@ function start_services {
 function stop_services {
 	if [ -n "$JETTY_PID" ]
 	then
-		cd $JOYNR_SOURCE_DIR/inter-language-test
+		cd $ILT_DIR
 		echo '####################################################'
 		echo '# stopping services'
 		echo '####################################################'
@@ -200,7 +202,7 @@ function start_java_provider {
 	echo '####################################################'
 	echo '# starting Java provider'
 	echo '####################################################'
-	cd $JOYNR_SOURCE_DIR/inter-language-test
+	cd $ILT_DIR
 	rm -f java-provider.persistence_file
 	rm -f java-consumer.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ILT_RESULTS_DIR/provider_java.log 2>&1 &
@@ -216,7 +218,7 @@ function stop_provider {
 		echo '####################################################'
 		echo '# stopping provider'
 		echo '####################################################'
-		cd $JOYNR_SOURCE_DIR/inter-language-test
+		cd $ILT_DIR
 		disown $PROVIDER_PID
 		kill -9 $PROVIDER_PID
 		wait $PROVIDER_PID
@@ -244,7 +246,7 @@ function start_javascript_provider {
 	echo '####################################################'
 	echo '# starting Javascript provider'
 	echo '####################################################'
-	cd $JOYNR_SOURCE_DIR/inter-language-test
+	cd $ILT_DIR
 	nohup npm run-script startprovider --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/provider_javascript.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Javascript provider with PID $PROVIDER_PID"
@@ -256,7 +258,7 @@ function start_java_consumer {
 	echo '####################################################'
 	echo '# starting Java consumer'
 	echo '####################################################'
-	cd $JOYNR_SOURCE_DIR/inter-language-test
+	cd $ILT_DIR
 	rm -f java-consumer.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltConsumerApplication" -Dexec.args="$DOMAIN http:mqtt" >> $ILT_RESULTS_DIR/consumer_java_$1.log 2>&1
 	SUCCESS=$?
@@ -305,7 +307,7 @@ function start_javascript_consumer {
 	echo '####################################################'
 	echo '# starting Javascript consumer'
 	echo '####################################################'
-	cd $JOYNR_SOURCE_DIR/inter-language-test
+	cd $ILT_DIR
 	rm -fr localStorageStorage
 	#npm install
 	#npm install jasmine-node
@@ -342,7 +344,7 @@ prechecks
 # clean up
 rm -fr $ILT_RESULTS_DIR
 mkdir -p $ILT_RESULTS_DIR
-cd $JOYNR_SOURCE_DIR/inter-language-test
+cd $ILT_DIR
 rm -fr node_modules
 rm -fr localStorageStorage
 rm -fr reports
