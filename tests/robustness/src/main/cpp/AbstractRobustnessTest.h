@@ -20,6 +20,7 @@
 #define ABSTRACTROBUSTNESSTEST_H
 #include <cstdlib>
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "joynr/tests/robustness/TestInterfaceProxy.h"
 
@@ -190,4 +191,9 @@ protected:
 private:
     ADD_LOGGER(AbstractRobustnessTest);
 };
+
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
 #endif // ABSTRACTROBUSTNESSTEST_H
