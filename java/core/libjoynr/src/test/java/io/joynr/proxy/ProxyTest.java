@@ -18,8 +18,7 @@ package io.joynr.proxy;
  * limitations under the License.
  * #L%
  */
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -94,6 +93,7 @@ import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadca
 import joynr.vehicle.NavigationProxy;
 
 public class ProxyTest {
+    private static final long MAX_TTL_MS = 2592000000L;
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
     @Mock
@@ -176,6 +176,7 @@ public class ProxyTest {
         proxyBuilderFactory = new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                           injector.getInstance(ProxyInvocationHandlerFactory.class),
                                                           messageRouter,
+                                                          MAX_TTL_MS,
                                                           new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
 
         Mockito.doAnswer(new Answer<Object>() {
@@ -233,8 +234,33 @@ public class ProxyTest {
         messagingQos = new MessagingQos();
     }
 
-    private <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final Class<T> interfaceClass) {
-        return proxyBuilderFactory.get(domain, interfaceClass);
+    private <T extends JoynrInterface> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {
+        return (ProxyBuilderDefaultImpl<T>) proxyBuilderFactory.get(domain, interfaceClass);
+    }
+
+    @Test
+    public void createProxyWithMessageQosLargerThanMaxTtlUsesMax() throws Exception {
+        ProxyBuilderDefaultImpl<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
+        MessagingQos messagingQosTtlTooLarge = new MessagingQos(MAX_TTL_MS + 1);
+        proxyBuilder.setMessagingQos(messagingQosTtlTooLarge).setDiscoveryQos(discoveryQos).build();
+        assertTrue(proxyBuilder.messagingQos.getRoundTripTtl_ms() == MAX_TTL_MS);
+    }
+
+    @Test
+    public void createProxyWithMessageQosTtlEqualMaxTtlIsOk() throws Exception {
+        ProxyBuilderDefaultImpl<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
+        MessagingQos messagingQosTtlTooLarge = new MessagingQos(MAX_TTL_MS);
+        proxyBuilder.setMessagingQos(messagingQosTtlTooLarge).setDiscoveryQos(discoveryQos).build();
+        assertTrue(proxyBuilder.messagingQos.getRoundTripTtl_ms() == MAX_TTL_MS);
+    }
+
+    @Test
+    public void createProxyWithMessageQosTtlSmallerThanMaxTtlIsNotModified() throws Exception {
+        ProxyBuilderDefaultImpl<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
+        long messageTtl = 5000;
+        MessagingQos messagingQosTtlTooLarge = new MessagingQos(messageTtl);
+        proxyBuilder.setMessagingQos(messagingQosTtlTooLarge).setDiscoveryQos(discoveryQos).build();
+        assertTrue(proxyBuilder.messagingQos.getRoundTripTtl_ms() == messageTtl);
     }
 
     @Test

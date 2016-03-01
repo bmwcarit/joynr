@@ -43,7 +43,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
     private static final Logger logger = LoggerFactory.getLogger(ProxyBuilderDefaultImpl.class);
 
     private DiscoveryQos discoveryQos;
-    private MessagingQos messagingQos;
+    MessagingQos messagingQos;
     private Arbitrator arbitrator;
     private DiscoveryAsync localDiscoveryAggregator;
     private String domain;
@@ -55,15 +55,18 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
 
     private MessageRouter messageRouter;
     private Address libjoynrMessagingAddress;
+    private long maxMessagingTtl;
 
     ProxyBuilderDefaultImpl(DiscoveryAsync localDiscoveryAggregator,
                             String domain,
                             Class<T> interfaceClass,
                             ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
                             MessageRouter messageRouter,
+                            long maxMessagingTtl,
                             Address libjoynrMessagingAddress) {
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.messageRouter = messageRouter;
+        this.maxMessagingTtl = maxMessagingTtl;
         this.libjoynrMessagingAddress = libjoynrMessagingAddress;
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
@@ -135,6 +138,12 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
      */
     @Override
     public ProxyBuilder<T> setMessagingQos(final MessagingQos messagingQos) {
+        if (messagingQos.getRoundTripTtl_ms() > maxMessagingTtl) {
+            logger.warn("Error in MessageQos. domain: {} interface: {} Max allowed ttl: {}. Passed ttl: {}",
+                        new Object[]{ domain, interfaceName, maxMessagingTtl, messagingQos.getRoundTripTtl_ms() });
+            messagingQos.setTtl_ms(maxMessagingTtl);
+        }
+
         this.messagingQos = messagingQos;
         return this;
     }
@@ -177,7 +186,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
                                                                                                    messagingQos);
 
         // This order is necessary because the Arbitrator might return early
-        // But if the listener is set after the ProxyInvocationHandler the 
+        // But if the listener is set after the ProxyInvocationHandler the
         // Arbitrator cannot return early
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
 
