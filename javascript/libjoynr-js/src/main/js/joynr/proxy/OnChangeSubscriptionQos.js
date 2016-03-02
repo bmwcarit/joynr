@@ -59,9 +59,10 @@ define(
              *            provider's side, thus also preventing excessive network
              *            traffic.<br/>
              *            <br/>
-             *            <b>Minimum and Default Values:</b>
+             *            <b>Minimum, Maximum and Default Values:</b>
              *            <ul>
              *              <li>minimum value: {@link OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS}</li>
+             *              <li>maximum value: {@link OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS}</li>
              *              <li>default value: {@link OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS}</li>
              *            </ul>
              * @param {Number}
@@ -134,7 +135,12 @@ define(
                         + ": it shall be higher than "
                         + OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS);
                 }
-
+                if (this.minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS) {
+                    throw new Error("Wrong minIntervalMs with value "
+                        + this.minIntervalMs
+                        + ": it shall be lower than "
+                        + OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS);
+                }
             }
 
             /**
@@ -152,6 +158,18 @@ define(
              * @deprecated Use OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS instead. Will be removed by 01/01/2017
              */
             OnChangeSubscriptionQos.MIN_INTERVAL = OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS;
+
+            /**
+             * Maximum value for [minIntervalMs]{@link OnChangeSubscriptionQos#minIntervalMs}.
+             * See [constructor description]{@link OnChangeSubscriptionQos}.
+             *
+             * @name OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS
+             * @type Number
+             * @default 2 592 000 000 (30 days)
+             * @static
+             * @readonly
+             */
+            OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS = 2592000000;
 
             defaultSettings = {
                 minIntervalMs : OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS

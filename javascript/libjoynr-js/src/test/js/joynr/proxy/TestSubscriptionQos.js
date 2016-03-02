@@ -142,6 +142,18 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(function() {
                 testValues(-1, -2, true, -4, -5, 200);
             }).toThrow();
+            //wrong minIntervalMs (exceeds MAX_MIN_INTERVAL_MS)
+            expect(
+                    function() {
+                        testValues(
+                                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS + 1,
+                                62,
+                                true,
+                                10,
+                                100,
+                                200);
+                    }).toThrow();
+
             //wrong maxIntervalMs (shall be higher than minIntervalMs)
             expect(function() {
                 testValues(60, -2, true, -4, -5, 200);
