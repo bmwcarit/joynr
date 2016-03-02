@@ -76,7 +76,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
     @Deprecated
     public OnChangeSubscriptionQos(long minIntervalMs, long expiryDateMs, long publicationTtlMs) {
         super(expiryDateMs, publicationTtlMs);
-        setMinIntervalMs(minIntervalMs);
+        setMinIntervalMsInternal(minIntervalMs);
 
     }
 
@@ -146,15 +146,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      *            between two successive notifications.
      */
     public OnChangeSubscriptionQos setMinIntervalMs(final long minIntervalMs) {
-        if (minIntervalMs < MIN_MIN_INTERVAL_MS) {
-            this.minIntervalMs = MIN_MIN_INTERVAL_MS;
-        } else if (minIntervalMs > MAX_MIN_INTERVAL_MS) {
-            this.minIntervalMs = MAX_MIN_INTERVAL_MS;
-        } else {
-            this.minIntervalMs = minIntervalMs;
-        }
-
-        return this;
+        return setMinIntervalMsInternal(minIntervalMs);
     }
 
     @Override
@@ -207,6 +199,19 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
             return false;
         }
         return true;
+    }
+
+    // internal method required to prevent findbugs warning
+    private OnChangeSubscriptionQos setMinIntervalMsInternal(final long minIntervalMs) {
+        if (minIntervalMs < MIN_MIN_INTERVAL_MS) {
+            this.minIntervalMs = MIN_MIN_INTERVAL_MS;
+        } else if (minIntervalMs > MAX_MIN_INTERVAL_MS) {
+            this.minIntervalMs = MAX_MIN_INTERVAL_MS;
+        } else {
+            this.minIntervalMs = minIntervalMs;
+        }
+
+        return this;
     }
 
 }
