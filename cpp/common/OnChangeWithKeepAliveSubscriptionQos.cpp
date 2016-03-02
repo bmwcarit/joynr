@@ -199,6 +199,11 @@ std::int64_t OnChangeWithKeepAliveSubscriptionQos::getAlertAfterInterval() const
     return getAlertAfterIntervalMs();
 }
 
+void OnChangeWithKeepAliveSubscriptionQos::clearAlertAfterInterval()
+{
+    alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL();
+}
+
 OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::operator=(
         const OnChangeWithKeepAliveSubscriptionQos& other)
 {

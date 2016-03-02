@@ -202,6 +202,17 @@ public:
                  "instead.")]] virtual void
     setAlertAfterInterval(const std::int64_t& alertAfterIntervalMs);
 
+    /**
+     * @brief Resets alert after interval
+     *
+     * Resets the alertAfterInterval and disables the alert by setting its value to
+     * NO_ALERT_AFTER_INTERVAL.
+     *
+     * alertAfterInterval defines the time span in milliseconds after which a publicationMissed
+     * will be called if no publications were received.
+     */
+    virtual void clearAlertAfterInterval();
+
     /** @brief Assignment operator */
     OnChangeWithKeepAliveSubscriptionQos& operator=(
             const OnChangeWithKeepAliveSubscriptionQos& other);
