@@ -56,9 +56,7 @@ public:
     LocalDiscoveryAggregator(IRequestCallerDirectory& requestCallerDirectory,
                              const SystemServicesSettings& systemServicesSettings);
 
-    ~LocalDiscoveryAggregator() override;
-
-    void setDiscoveryProxy(joynr::system::IDiscoverySync* discoveryProxy);
+    void setDiscoveryProxy(std::unique_ptr<IDiscoverySync> discoveryProxy);
 
     // inherited from joynr::system::IDiscoverySync
     void add(const joynr::types::DiscoveryEntry& entry) override;
@@ -88,9 +86,7 @@ private:
     void checkForLocalAvailabilityAndAddInProcessConnection(
             joynr::types::DiscoveryEntry& discoveryEntry);
 
-    // this pointer doesn't hold ownership in case the proxy builder is not set
-    joynr::system::IDiscoverySync* discoveryProxy;
-    bool hasOwnershipOfDiscoveryProxy;
+    std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy;
     IRequestCallerDirectory& requestCallerDirectory;
     std::map<std::string, joynr::types::DiscoveryEntry> provisionedDiscoveryEntries;
     const SystemServicesSettings& systemServicesSettings;

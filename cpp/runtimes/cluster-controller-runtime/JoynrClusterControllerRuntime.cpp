@@ -440,14 +440,14 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     {
         using joynr::system::DiscoveryInProcessConnector;
-        DiscoveryInProcessConnector* discoveryInProcessConnector =
-                new DiscoveryInProcessConnector(subscriptionManager,
-                                                publicationManager,
-                                                inProcessPublicationSender,
-                                                std::string(), // can be ignored
-                                                discoveryProviderParticipantId,
-                                                discoveryProviderAddress);
-        discoveryProxy->setDiscoveryProxy(discoveryInProcessConnector);
+        auto discoveryInProcessConnector =
+                std::make_unique<DiscoveryInProcessConnector>(subscriptionManager,
+                                                              publicationManager,
+                                                              inProcessPublicationSender,
+                                                              std::string(), // can be ignored
+                                                              discoveryProviderParticipantId,
+                                                              discoveryProviderAddress);
+        discoveryProxy->setDiscoveryProxy(std::move(discoveryInProcessConnector));
     }
     capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
                                                                     *discoveryProxy,

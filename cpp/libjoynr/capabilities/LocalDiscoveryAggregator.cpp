@@ -36,8 +36,7 @@ namespace joynr
 LocalDiscoveryAggregator::LocalDiscoveryAggregator(
         IRequestCallerDirectory& requestCallerDirectory,
         const SystemServicesSettings& systemServicesSettings)
-        : discoveryProxy(nullptr),
-          hasOwnershipOfDiscoveryProxy(false),
+        : discoveryProxy(),
           requestCallerDirectory(requestCallerDirectory),
           provisionedDiscoveryEntries(),
           systemServicesSettings(systemServicesSettings)
@@ -62,23 +61,16 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
 }
 
-LocalDiscoveryAggregator::~LocalDiscoveryAggregator()
+void LocalDiscoveryAggregator::setDiscoveryProxy(
+        std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy)
 {
-    if (hasOwnershipOfDiscoveryProxy) {
-        delete discoveryProxy;
-    }
-}
-
-void LocalDiscoveryAggregator::setDiscoveryProxy(joynr::system::IDiscoverySync* discoveryProxy)
-{
-    this->discoveryProxy = discoveryProxy;
-    hasOwnershipOfDiscoveryProxy = true;
+    this->discoveryProxy = std::move(discoveryProxy);
 }
 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discoveryEntry)
 {
-    if (discoveryProxy == nullptr) {
+    if (!discoveryProxy) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
@@ -105,7 +97,7 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
                                       const std::string& interfaceName,
                                       const joynr::types::DiscoveryQos& discoveryQos)
 {
-    if (discoveryProxy == nullptr) {
+    if (!discoveryProxy) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
@@ -125,7 +117,7 @@ void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
     if (entry != provisionedDiscoveryEntries.end()) {
         result = entry->second;
     } else {
-        if (discoveryProxy == nullptr) {
+        if (!discoveryProxy) {
             throw exceptions::JoynrRuntimeException(
                     "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                     "local capabilitites directory.");
@@ -138,7 +130,7 @@ void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::remove(const std::string& participantId)
 {
-    if (discoveryProxy == nullptr) {
+    if (!discoveryProxy) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
