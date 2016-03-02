@@ -22,6 +22,7 @@
 define("joynr/dispatching/subscription/SubscriptionManager", [
     "global/Promise",
     "joynr/messaging/MessagingQos",
+    "joynr/start/settings/defaultMessagingSettings",
     "joynr/proxy/SubscriptionQos",
     "joynr/dispatching/types/SubscriptionStop",
     "joynr/dispatching/types/SubscriptionRequest",
@@ -38,6 +39,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 ], function(
         Promise,
         MessagingQos,
+        defaultMessagingSettings,
         SubscriptionQos,
         SubscriptionStop,
         SubscriptionRequest,
@@ -153,7 +155,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         function calculateTtl(messagingQos, subscriptionQos) {
             var ttl;
             if (subscriptionQos.expiryDate === SubscriptionQos.NO_EXPIRY_DATE) {
-                ttl = SubscriptionQos.NO_EXPIRY_DATE_TTL - Date.now();
+                ttl = defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
             } else {
                 ttl = subscriptionQos.expiryDate - Date.now();
             }

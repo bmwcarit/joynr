@@ -17,8 +17,11 @@
  * #L%
  */
 
-define("joynr/messaging/MessagingQos", [ "joynr/util/UtilInternal"
-], function(Util) {
+define("joynr/messaging/MessagingQos", [
+    "joynr/start/settings/defaultMessagingSettings",
+    "joynr/system/LoggerFactory",
+    "joynr/util/UtilInternal"
+], function(defaultMessagingSettings, LoggerFactory, Util) {
 
     var defaultSettings = {
         ttl : 60000
@@ -35,6 +38,9 @@ define("joynr/messaging/MessagingQos", [ "joynr/util/UtilInternal"
      * @returns {MessagingQos} a messaging Qos Object
      */
     function MessagingQos(settings) {
+        var errorMsg;
+        var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
+
         if (!(this instanceof MessagingQos)) {
             // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
             return new MessagingQos(settings);
@@ -48,7 +54,17 @@ define("joynr/messaging/MessagingQos", [ "joynr/util/UtilInternal"
          * @name MessagingQos#ttl
          * @type Number
          */
-        this.ttl = settings.ttl;
+        if (settings.ttl > defaultMessagingSettings.MAX_MESSAGING_TTL_MS) {
+            this.ttl = defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
+            errorMsg =
+                    "Error in MessageQos. Max allowed ttl: "
+                        + defaultMessagingSettings.MAX_MESSAGING_TTL_MS
+                        + ". Passed ttl: "
+                        + settings.ttl;
+            log.warn(errorMsg);
+        } else {
+            this.ttl = settings.ttl;
+        }
     }
 
     /**

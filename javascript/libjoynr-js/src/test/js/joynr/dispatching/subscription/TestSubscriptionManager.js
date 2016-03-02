@@ -25,6 +25,7 @@ joynrTestRequire(
         [
             "joynr/dispatching/subscription/SubscriptionManager",
             "joynr/messaging/MessagingQos",
+            "joynr/start/settings/defaultMessagingSettings",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionStop",
             "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
@@ -41,6 +42,7 @@ joynrTestRequire(
         function(
                 SubscriptionManager,
                 MessagingQos,
+                defaultMessagingSettings,
                 SubscriptionRequest,
                 SubscriptionStop,
                 OnChangeWithKeepAliveSubscriptionQos,
@@ -274,9 +276,7 @@ joynrTestRequire(
                                                 .toEqual(2);
                                         expect(
                                                 dispatcherSpy.sendSubscriptionRequest.calls[1].args[0].messagingQos.ttl)
-                                                .toEqual(
-                                                        SubscriptionQos.NO_EXPIRY_DATE_TTL
-                                                            - (fakeTime - 1));
+                                                .toEqual(defaultMessagingSettings.MAX_MESSAGING_TTL_MS);
                                     });
 
                                 });

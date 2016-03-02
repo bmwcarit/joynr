@@ -19,8 +19,10 @@
  * #L%
  */
 
-joynrTestRequire("joynr/messaging/TestMessagingQos", [ "joynr/messaging/MessagingQos"
-], function(MessagingQos) {
+joynrTestRequire("joynr/messaging/TestMessagingQos", [
+    "joynr/start/settings/defaultMessagingSettings",
+    "joynr/messaging/MessagingQos"
+], function(defaultMessagingSettings, MessagingQos) {
 
     describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
         it("is instantiable", function() {
@@ -61,6 +63,14 @@ joynrTestRequire("joynr/messaging/TestMessagingQos", [ "joynr/messaging/Messagin
             testValues(123456, 1234567);
             testValues(0, 0);
             testValues(-123456, -1234567);
+        });
+
+        it("prevents ttl values larger than maxTtl", function() {
+            expect(new MessagingQos({
+                ttl : defaultMessagingSettings.MAX_MESSAGING_TTL_MS + 1
+            })).toEqual(new MessagingQos({
+                ttl : defaultMessagingSettings.MAX_MESSAGING_TTL_MS
+            }));
         });
     });
 
