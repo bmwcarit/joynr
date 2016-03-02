@@ -89,9 +89,10 @@ define(
              *            [settings.alertAfterIntervalMs=OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL]
              *            defines how long to wait for an update before publicationMissed is called<br/>
              *            <br/>
-             *            <b>Minimum and Default Values:</b>
+             *            <b>Minimum, Maximum and Default Values:</b>
              *            <ul>
              *              <li>minimum value: {@link OnChangeWithKeepAliveSubscriptionQos#maxIntervalMs}</li>
+             *              <li>maximum value: {@link OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS}</li>
              *              <li>default value: {@link OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL}</li>
              *            </ul>
              * @param {Number}
@@ -195,6 +196,14 @@ define(
                         + ": it shall be higher than the specified maxIntervalMs of "
                         + this.maxIntervalMs);
                 }
+
+                if (this.alertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
+                    throw new Error("Wrong alertAfterIntervalMs with value "
+                        + this.alertAfterIntervalMs
+                        + ": it shall be lower than "
+                        + OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
+                }
+
             }
 
             /**
@@ -213,6 +222,18 @@ define(
              */
             OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT =
                     OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+
+            /**
+             * Maximum value for [alertAfterIntervalMs]{@link OnChangeWithKeepAliveSubscriptionQos#alertAfterIntervalMs}.
+             * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
+             *
+             * @name OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+             * @type Number
+             * @default 2 592 000 000 (30 days)
+             * @static
+             * @readonly
+             */
+            OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS = 2592000000;
 
             defaultSettings = {
                 alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
