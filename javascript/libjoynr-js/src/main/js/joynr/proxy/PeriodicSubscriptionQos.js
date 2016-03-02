@@ -179,6 +179,18 @@ define(
                         + PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
                 }
 
+                /**
+                 * The function clearAlertAfterInterval resets the alter after interval to
+                 * the value PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+                 *
+                 *
+                 * @name PeriodicSubscriptionQos#clearAlertAfterInterval
+                 * @function
+                 */
+                this.clearAlertAfterInterval = function clearAlertAfterInterval() {
+                    this.alertAfterIntervalMs = PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+                };
+
             }
 
             /**

@@ -307,6 +307,37 @@ joynrTestRequire(
                             expect(fixture.expiryDateMs).toBe(SubscriptionQos.NO_EXPIRY_DATE);
                         });
 
+                        it(
+                                "PeriodicSubscriptionQos.clearAlertAfterInterval clears the alert after interval",
+                                function() {
+                                    var alertAfterIntervalMs =
+                                            PeriodicSubscriptionQos.DEFAULT_PERIOD_MS + 1;
+                                    var fixture = new PeriodicSubscriptionQos({
+                                        alertAfterIntervalMs : alertAfterIntervalMs
+                                    });
+
+                                    expect(fixture.alertAfterIntervalMs).toBe(alertAfterIntervalMs);
+                                    fixture.clearAlertAfterInterval();
+                                    expect(fixture.alertAfterIntervalMs).toBe(
+                                            PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL);
+                                });
+
+                        it(
+                                "OnChangeWithKeepAliveSubscriptionQos.clearAlertAfterInterval clears the alert after interval",
+                                function() {
+                                    var alertAfterIntervalMs =
+                                            OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS + 1;
+                                    var fixture = new OnChangeWithKeepAliveSubscriptionQos({
+                                        alertAfterIntervalMs : alertAfterIntervalMs
+                                    });
+
+                                    expect(fixture.alertAfterIntervalMs).toBe(alertAfterIntervalMs);
+                                    fixture.clearAlertAfterInterval();
+                                    expect(fixture.alertAfterIntervalMs)
+                                            .toBe(
+                                                    OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL);
+                                });
+
                         it("create deprecated subscriptionQos objects", function() {
                             var deprecatedQos = new OnChangeWithKeepAliveSubscriptionQos({
                                 minInterval : 0,
