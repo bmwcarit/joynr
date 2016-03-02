@@ -54,9 +54,10 @@ define(
              *            how often an update may be sent even if the value did not change
              *            (independently from value changes).<br/>
              *            <br/>
-             *            <b>Minimum and Default Values:</b>
+             *            <b>Minimum, Maximum and Default Values:</b>
              *            <ul>
              *              <li>minimum value: {@link PeriodicSubscriptionQos.MIN_PERIOD_MS}</li>
+             *              <li>maximum value: {@link PeriodicSubscriptionQos.MAX_PERIOD_MS}</li>
              *              <li>default value: {@link PeriodicSubscriptionQos.MIN_PERIOD_MS}</li>
              *            </ul>
              * @param {Number}
@@ -155,6 +156,13 @@ define(
                         + PeriodicSubscriptionQos.MIN_PERIOD_MS);
                 }
 
+                if (this.periodMs > PeriodicSubscriptionQos.MAX_PERIOD_MS) {
+                    throw new Error("Wrong periodMs with value "
+                        + this.periodMs
+                        + ": it shall be lower than "
+                        + PeriodicSubscriptionQos.MAX_PERIOD_MS);
+                }
+
                 if (this.alertAfterIntervalMs !== PeriodicSubscriptionQos.NEVER_ALERT
                     && this.alertAfterIntervalMs < this.periodMs) {
                     throw new Error("Wrong alertAfterIntervalMs with value "
@@ -177,6 +185,19 @@ define(
              */
             PeriodicSubscriptionQos.MIN_PERIOD_MS = 50;
             PeriodicSubscriptionQos.MIN_PERIOD = PeriodicSubscriptionQos.MIN_PERIOD_MS;
+
+            /**
+             * Maximum value for [periodMs]{@link PeriodicSubscriptionQos#periodMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.MAX_PERIOD_MS
+             * @type Number
+             * @default 2 592 000 000 (30 days)
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.MAX_PERIOD_MS = 2592000000;
+
             /**
              * Default value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.
              * See [constructor description]{@link PeriodicSubscriptionQos}.

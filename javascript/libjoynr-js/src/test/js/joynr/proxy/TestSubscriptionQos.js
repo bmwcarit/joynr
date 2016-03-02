@@ -124,6 +124,28 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(function() {
                 createSubscriptionQos(1, 2, false, 4, 5, 100);
             }).toThrow();
+            //wrong periodMs (exceeds MIN_PERIOD_MS)
+            expect(
+                    function() {
+                        createSubscriptionQos(
+                                1,
+                                PeriodicSubscriptionQos.MIN_PERIOD_MS - 1,
+                                false,
+                                4,
+                                5,
+                                100);
+                    }).toThrow();
+            //wrong periodMs (exceeds MAX_PERIOD_MS)
+            expect(
+                    function() {
+                        createSubscriptionQos(
+                                1,
+                                PeriodicSubscriptionQos.MAX_PERIOD_MS + 1,
+                                false,
+                                4,
+                                5,
+                                100);
+                    }).toThrow();
             //wrong alertAfterIntervalMs (shall be higher then the periodMs)
             expect(function() {
                 createSubscriptionQos(1, 50, false, 4, 5, 100);
