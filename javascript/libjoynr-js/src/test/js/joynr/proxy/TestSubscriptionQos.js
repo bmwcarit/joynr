@@ -202,9 +202,22 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
 
         });
 
-        it("constructs with correct default values", function() {
-            var fixture = new OnChangeWithKeepAliveSubscriptionQos();
-            expect(fixture.minIntervalMs).toEqual(OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS);
+        it(
+                "constructs OnChangeWithKeepAliveSubscriptionQos with correct default values",
+                function() {
+                    var fixture = new OnChangeWithKeepAliveSubscriptionQos();
+                    expect(fixture.minIntervalMs).toEqual(
+                            OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS);
+                    expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
+                    expect(fixture.alertAfterIntervalMs).toEqual(
+                            OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT);
+                    expect(fixture.publicationTtlMs).toEqual(
+                            SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
+                });
+
+        it("constructs PeriodicSubscriptionQos with correct default values", function() {
+            var fixture = new PeriodicSubscriptionQos();
+            expect(fixture.periodMs).toEqual(PeriodicSubscriptionQos.DEFAULT_PERIOD_MS);
             expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
             expect(fixture.alertAfterIntervalMs).toEqual(
                     OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT);

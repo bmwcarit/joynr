@@ -50,7 +50,7 @@ define(
              * @param {Number}
              *            [settings.period] Deprecated parameter. Use settings.periodMs instead
              * @param {Number}
-             *            [settings.periodMs=PeriodicSubscriptionQos.MIN_PERIOD_MS] defines 
+             *            [settings.periodMs=PeriodicSubscriptionQos.DEFAULT_PERIOD_MS] defines
              *            how often an update may be sent even if the value did not change
              *            (independently from value changes).<br/>
              *            <br/>
@@ -58,7 +58,7 @@ define(
              *            <ul>
              *              <li>minimum value: {@link PeriodicSubscriptionQos.MIN_PERIOD_MS}</li>
              *              <li>maximum value: {@link PeriodicSubscriptionQos.MAX_PERIOD_MS}</li>
-             *              <li>default value: {@link PeriodicSubscriptionQos.MIN_PERIOD_MS}</li>
+             *              <li>default value: {@link PeriodicSubscriptionQos.DEFAULT_PERIOD_MS}</li>
              *            </ul>
              * @param {Number}
              *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
@@ -174,7 +174,7 @@ define(
             }
 
             /**
-             * Minimal and default value for [periodMs]{@link PeriodicSubscriptionQos#periodMs}.
+             * Minimal value for [periodMs]{@link PeriodicSubscriptionQos#periodMs}.
              * See [constructor description]{@link PeriodicSubscriptionQos}.
              *
              * @name PeriodicSubscriptionQos.MIN_PERIOD_MS
@@ -199,6 +199,18 @@ define(
             PeriodicSubscriptionQos.MAX_PERIOD_MS = 2592000000;
 
             /**
+             * Default value for [periodMs]{@link PeriodicSubscriptionQos#periodMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.DEFAULT_PERIOD_MS
+             * @type Number
+             * @default 60000
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.DEFAULT_PERIOD_MS = 60000;
+
+            /**
              * Default value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.
              * See [constructor description]{@link PeriodicSubscriptionQos}.
              *
@@ -211,7 +223,7 @@ define(
             PeriodicSubscriptionQos.NEVER_ALERT = 0;
 
             defaultSettings = {
-                periodMs : PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                periodMs : PeriodicSubscriptionQos.DEFAULT_PERIOD_MS,
                 alertAfterIntervalMs : PeriodicSubscriptionQos.NEVER_ALERT
             };
 
