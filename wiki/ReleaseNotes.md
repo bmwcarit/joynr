@@ -1,3 +1,18 @@
+#joynr 0.16.0
+
+##API relevant changes
+* **[JS]** Naming change for subscription qos parameters. Added suffix "Ms" to all
+  timing related settings expected in the qos constructor. For backward compatibiliy reasons,
+  the old way of specifying parameters is still possible, but will be removed by 01/01/2017.
+* **[JS]** API change of subscription qos. It is now possible to specify the validity (relative
+  from current time) instead of an absolute expiry date. In addition, added the function
+  subscriptionQos.clearExpiryDate() and subscriptionQos.clearAlertAfterInterval() to
+  invalidate a previous specified expiry date or the alert after interval. Added
+  missing default values and lower/upper limits for some of the qos parameters.
+
+##Other changes
+None.
+
 #joynr 0.15.1
 
 This is a minor bug fix release.
