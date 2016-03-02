@@ -214,7 +214,7 @@ define(
                     }
 
                     try {
-                        var foundValidOperationSignature, checkResult, catchedErrors = [];
+                        var foundValidOperationSignature, checkResult, caughtErrors = [];
 
                         // cycle through multiple available operation signatures
                         for (i = 0; i < proxyOperation.operationSignatures.length
@@ -227,7 +227,7 @@ define(
                                             operationArguments || {});
                             if (checkResult !== undefined) {
                                 if (checkResult.errorMessage !== undefined) {
-                                    catchedErrors.push(checkResult.errorMessage);
+                                    caughtErrors.push(checkResult.errorMessage);
                                 } else {
                                     foundValidOperationSignature = checkResult.signature;
                                 }
@@ -247,7 +247,7 @@ define(
                                                 + "' with the arguments: '"
                                                 + JSON.stringify(operationArguments)
                                                 + "'. The following errors occured during signature check: "
-                                                + JSON.stringify(catchedErrors)));
+                                                + JSON.stringify(caughtErrors)));
                         }
 
                         // passed in (right-most) messagingQos have precedence; undefined values are
