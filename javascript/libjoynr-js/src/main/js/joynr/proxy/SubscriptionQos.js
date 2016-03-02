@@ -76,9 +76,10 @@ define(
              *            to live, it will be deleted from the system. This value is
              *            provided in milliseconds.<br/>
              *            <br/>
-             *            <b>Minimum and Default Values:</b>
+             *            <b>Minimum, Maximum and Default Values:</b>
              *            <ul>
              *              <li>minimum value: {@link SubscriptionQos.MIN_PUBLICATION_TTL_MS}</li>
+             *              <li>maximum value: {@link SubscriptionQos.MAX_PUBLICATION_TTL_MS}</li>
              *              <li>default value: {@link SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS}</li>
              *            </ul>
              *
@@ -154,6 +155,13 @@ define(
                         + SubscriptionQos.MIN_PUBLICATION_TTL_MS);
                 }
 
+                if (this.publicationTtlMs > SubscriptionQos.MAX_PUBLICATION_TTL_MS) {
+                    throw new Error("Wrong publication ttl with value "
+                        + this.publicationTtlMs
+                        + ": it shall be lower than "
+                        + SubscriptionQos.MAX_PUBLICATION_TTL_MS);
+                }
+
                 if (this.expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS) {
                     throw new Error("Wrong expiry date with value "
                         + this.expiryDateMs
@@ -184,6 +192,19 @@ define(
              * @readonly
              */
             SubscriptionQos.MIN_PUBLICATION_TTL_MS = 100;
+
+            /**
+             * Maximum value for [publicationTtlMs]{@link SubscriptionQos#publicationTtlMs}.
+             * See [constructor description]{@link SubscriptionQos}.
+             *
+             * @name SubscriptionQos.MAX_PUBLICATION_TTL_MS
+             * @type Number
+             * @default 2 592 000 000 (30 days)
+             * @static
+             * @readonly
+             */
+            SubscriptionQos.MAX_PUBLICATION_TTL_MS = 2592000000;
+
             /**
              * Minimal value for [expiryDateMs]{@link SubscriptionQos#expiryDateMs} in milliseconds
              * (0 secs). See [constructor description]{@link SubscriptionQos}.

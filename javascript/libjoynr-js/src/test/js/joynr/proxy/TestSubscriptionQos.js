@@ -134,6 +134,10 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(function() {
                 testValues(-1, -2, true, -4, -5, -6);
             }).toThrow();
+            //wrong publicationTtlMs
+            expect(function() {
+                testValues(60, 62, true, 10, 100, SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1);
+            }).toThrow();
             //wrong minIntervalMs
             expect(function() {
                 testValues(-1, -2, true, -4, -5, 200);
