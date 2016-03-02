@@ -57,3 +57,35 @@ TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, maxIntervalMsDefaultValueIsSetP
             onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs()
     );
 }
+
+TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, maxIntervalMsMinimumValueIsSetProperly)
+{
+    std::int64_t validityMs = 100000;
+    std::int64_t alertAfterIntervalMs = 4000;
+    std::int64_t toSmallMaxIntervalMs = OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS() - 1;
+    std::int64_t minIntervalMs = toSmallMaxIntervalMs - 1;
+
+    {
+        OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos(
+                    validityMs,
+                    minIntervalMs,
+                    toSmallMaxIntervalMs,
+                    alertAfterIntervalMs
+        );
+
+        EXPECT_EQ(
+                OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS(),
+                onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs()
+        );
+    }
+    {
+        OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos;
+        onChangeWithKeepAliveSubscriptionQos.setMaxIntervalMs(toSmallMaxIntervalMs);
+
+        EXPECT_EQ(
+                OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS(),
+                onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs()
+        );
+    }
+
+}

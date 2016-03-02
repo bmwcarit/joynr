@@ -28,6 +28,12 @@ static bool isOnChangeWithKeepAliveSubscriptionQosSerializer =
         Variant::registerType<OnChangeWithKeepAliveSubscriptionQos>(
                 "joynr.OnChangeWithKeepAliveSubscriptionQos");
 
+const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS()
+{
+    static std::int64_t minMaxInterval = 50UL;
+    return minMaxInterval;
+}
+
 const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL_MS()
 {
     static std::int64_t maxMaxInterval = 2592000000UL;
@@ -102,13 +108,13 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
 
 void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(const std::int64_t& maxIntervalMs)
 {
-    if (maxIntervalMs < getMinIntervalMs()) {
+    if (maxIntervalMs < MIN_MAX_INTERVAL_MS()) {
         JOYNR_LOG_WARN(logger,
                        "Trying to set invalid maxIntervalMs ({} ms), which is smaller than "
                        "MIN_MAX_INTERVAL_MS ({} ms). MIN_MAX_INTERVAL_MS will be used instead.",
                        maxIntervalMs,
                        MIN_MAX_INTERVAL_MS());
-        this->maxIntervalMs = getMinIntervalMs();
+        this->maxIntervalMs = MIN_MAX_INTERVAL_MS();
         // note: don't return here as we nned to check dependend values at the end of this method
     } else if (maxIntervalMs > MAX_MAX_INTERVAL_MS()) {
         JOYNR_LOG_WARN(logger,
@@ -122,6 +128,15 @@ void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(const std::int64_t& 
     } else {
         // default case
         this->maxIntervalMs = maxIntervalMs;
+    }
+    // check dependendencies: maxIntervalMs is not smaller than minIntervalMs
+    if (this->maxIntervalMs < getMinIntervalMs()) {
+        JOYNR_LOG_WARN(logger,
+                       "maxIntervalMs ({} ms) is smaller than minIntervalMs ({} ms). Setting "
+                       "maxIntervalMs to minIntervalMs.",
+                       maxIntervalMs,
+                       getMinIntervalMs());
+        this->maxIntervalMs = getMinIntervalMs();
     }
     // check dependendencies: allertAfterIntervalMs is not smaller than maxIntervalMs
     if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() &&

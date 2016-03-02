@@ -221,6 +221,11 @@ public:
     bool operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const;
 
     /** @brief
+     * Returns the minimum value for the maximum interval in milliseconds: 50
+     */
+    static const std::int64_t& MIN_MAX_INTERVAL_MS();
+
+    /** @brief
      * Returns the maximum value for the maximum interval in milliseconds:
      * 2 592 000 000 (30 days)
      */
