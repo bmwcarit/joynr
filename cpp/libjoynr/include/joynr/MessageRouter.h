@@ -162,7 +162,7 @@ private:
 
     std::unique_ptr<MessageQueue> messageQueue;
     Timer messageQueueCleanerTimer;
-    std::unordered_set<std::string>* runningParentResolves;
+    std::unordered_set<std::string> runningParentResolves;
     std::shared_ptr<IAccessController> accessController;
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     mutable std::mutex parentResolveMutex;

@@ -62,7 +62,6 @@ MessageRouter::~MessageRouter()
 {
     messageQueueCleanerTimer.shutdown();
     messageScheduler.shutdown();
-    delete runningParentResolves;
 }
 
 MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
@@ -79,7 +78,7 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
           incomingAddress(),
           messageQueue(std::move(messageQueue)),
           messageQueueCleanerTimer(),
-          runningParentResolves(new std::unordered_set<std::string>()),
+          runningParentResolves(),
           accessController(nullptr),
           securityManager(std::move(securityManager)),
           parentResolveMutex()
@@ -111,7 +110,7 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
           incomingAddress(incomingAddress),
           messageQueue(std::move(messageQueue)),
           messageQueueCleanerTimer(),
-          runningParentResolves(new std::unordered_set<std::string>()),
+          runningParentResolves(),
           accessController(nullptr),
           securityManager(nullptr),
           parentResolveMutex()
@@ -210,8 +209,8 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
             std::lock_guard<std::mutex> lock(parentResolveMutex);
-            if (runningParentResolves->find(destinationPartId) == runningParentResolves->end()) {
-                runningParentResolves->insert(destinationPartId);
+            if (runningParentResolves.find(destinationPartId) == runningParentResolves.end()) {
+                runningParentResolves.insert(destinationPartId);
                 std::function<void(const bool&)> onSuccess =
                         [this, destinationPartId](const bool& resolved) {
                     if (resolved) {
@@ -261,8 +260,8 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
 void MessageRouter::removeRunningParentResolvers(const std::string& destinationPartId)
 {
     std::lock_guard<std::mutex> lock(parentResolveMutex);
-    if (runningParentResolves->find(destinationPartId) != runningParentResolves->end()) {
-        runningParentResolves->erase(destinationPartId);
+    if (runningParentResolves.find(destinationPartId) != runningParentResolves.end()) {
+        runningParentResolves.erase(destinationPartId);
     }
 }
 
