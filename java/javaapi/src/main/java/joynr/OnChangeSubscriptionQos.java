@@ -19,6 +19,8 @@ package joynr;
  * #L%
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 
 /**
@@ -34,6 +36,8 @@ import io.joynr.pubsub.SubscriptionQos;
  * minInterval can be used to prevent too many messages being sent.
  */
 public class OnChangeSubscriptionQos extends SubscriptionQos {
+    private static final Logger logger = LoggerFactory.getLogger(OnChangeSubscriptionQos.class);
+
     private static final long serialVersionUID = 1L;
     private static final long DEFAULT_MIN_INTERVAL_MS = 1000;
     private static final long MIN_MIN_INTERVAL_MS = 0L;
@@ -205,8 +209,10 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
     private OnChangeSubscriptionQos setMinIntervalMsInternal(final long minIntervalMs) {
         if (minIntervalMs < MIN_MIN_INTERVAL_MS) {
             this.minIntervalMs = MIN_MIN_INTERVAL_MS;
+            logger.warn("minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: {}", MIN_MIN_INTERVAL_MS);
         } else if (minIntervalMs > MAX_MIN_INTERVAL_MS) {
             this.minIntervalMs = MAX_MIN_INTERVAL_MS;
+            logger.warn("minIntervalMs > MAX_MIN_INTERVAL_MS. Using MAX_MIN_INTERVAL_MS: {}", MAX_MIN_INTERVAL_MS);
         } else {
             this.minIntervalMs = minIntervalMs;
         }

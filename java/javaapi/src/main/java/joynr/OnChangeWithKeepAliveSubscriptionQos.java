@@ -256,8 +256,10 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     public OnChangeWithKeepAliveSubscriptionQos setMaxIntervalMs(long maxIntervalMs) {
         if (maxIntervalMs < MIN_MAX_INTERVAL_MS) {
             this.maxIntervalMs = MIN_MAX_INTERVAL_MS;
+            logger.warn("maxIntervalMs < MIN_MAX_INTERVAL_MS. Using MIN_MAX_INTERVAL_MS: {}", MIN_MAX_INTERVAL_MS);
         } else if (maxIntervalMs > MAX_MAX_INTERVAL_MS) {
             this.maxIntervalMs = MAX_MAX_INTERVAL_MS;
+            logger.warn("maxIntervalMs > MAX_MAX_INTERVAL_MS. Using MAX_MAX_INTERVAL_MS: {}", MAX_MAX_INTERVAL_MS);
         } else {
             this.maxIntervalMs = maxIntervalMs;
         }
@@ -268,6 +270,8 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
 
         if (alertAfterIntervalMs != 0 && alertAfterIntervalMs < this.maxIntervalMs) {
             alertAfterIntervalMs = this.maxIntervalMs;
+            logger.warn("alertAfterIntervalMs < maxIntervalMs. Setting alertAfterIntervalMs = maxIntervalMs: {}",
+                        this.maxIntervalMs);
         }
         return this;
     }

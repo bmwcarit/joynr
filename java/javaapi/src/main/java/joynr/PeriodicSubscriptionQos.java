@@ -305,6 +305,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
 
         if (this.alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL && this.alertAfterIntervalMs < this.periodMs) {
             this.alertAfterIntervalMs = this.periodMs;
+            logger.warn("alertAfterIntervalMs < periodMs. Setting alertAfterIntervalMs = periodMs: {}", this.periodMs);
         }
 
         return this;
