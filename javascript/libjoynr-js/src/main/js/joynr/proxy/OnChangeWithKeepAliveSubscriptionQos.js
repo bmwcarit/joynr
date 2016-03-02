@@ -76,7 +76,7 @@ define(
              *            <ul>
              *              <li>minimum value: {@link OnChangeWithKeepAliveSubscriptionQos#minIntervalMs} or
              *                                 {@link OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS}</li>
-             *              <li>maximum value: unlimited</li>
+             *              <li>maximum value: {@link OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS}</li>
              *            </ul>
              * @param {Number}
              *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
@@ -190,6 +190,13 @@ define(
                         + OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS);
                 }
 
+                if (this.maxIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS) {
+                    throw new Error("Wrong maxIntervalMs with value "
+                        + this.maxIntervalMs
+                        + ": it shall be lower than "
+                        + OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS);
+                }
+
                 if (this.maxIntervalMs < this.minIntervalMs) {
                     throw new Error("Wrong maxIntervalMs with value "
                         + this.maxIntervalMs
@@ -267,6 +274,18 @@ define(
              * @readonly
              */
             OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS = 50;
+
+            /**
+             * Maximum value for [maxIntervalMs]{@link OnChangeWithKeepAliveSubscriptionQos#maxIntervalMs}.
+             * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
+             *
+             * @name OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS
+             * @type Number
+             * @default 2 592 000 000 (30 days)
+             * @static
+             * @readonly
+             */
+            OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS = 2592000000;
 
             defaultSettings =
                     {

@@ -220,6 +220,17 @@ joynrTestRequire(
                                                         -5,
                                                         200);
                                             }).toThrow();
+                                    //wrong maxIntervalMs (exceeds OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS)
+                                    expect(
+                                            function() {
+                                                testValues(
+                                                        10,
+                                                        OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS + 1,
+                                                        true,
+                                                        -4,
+                                                        -5,
+                                                        200);
+                                            }).toThrow();
                                     //wrong alertAfterIntervalMs (shall be higher than maxIntervalMs)
                                     expect(function() {
                                         testValues(60, 62, true, -4, -5, 200);
