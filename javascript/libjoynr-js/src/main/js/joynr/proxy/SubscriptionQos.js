@@ -144,6 +144,17 @@ define(
                         + ": it shall be higher than "
                         + SubscriptionQos.MIN_EXPIRY_MS);
                 }
+
+                /**
+                 * The function clearExpiryDate resets the expiry date to the default value SubscriptionQos.NO_EXPIRY_DATE
+                 *
+                 *
+                 * @name SubsriptionQos#clearExpiryDate
+                 * @function
+                 */
+                this.clearExpiryDate = function clearExpiryDate() {
+                    this.expiryDateMs = SubscriptionQos.NO_EXPIRY_DATE;
+                };
             }
 
             /**

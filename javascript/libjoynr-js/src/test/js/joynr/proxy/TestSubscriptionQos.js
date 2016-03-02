@@ -163,13 +163,21 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
         });
 
         it("constructs with correct default values", function() {
-            expect(new OnChangeWithKeepAliveSubscriptionQos()).toEqual(
-                    new OnChangeWithKeepAliveSubscriptionQos({
-                        minIntervalMs : OnChangeSubscriptionQos.MIN_INTERVAL_MS,
-                        expiryDateMs : SubscriptionQos.NO_EXPIRY_DATE, // see comment in SubscriptionQos (cause: javascript floating point stuff)
-                        alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT,
-                        publicationTtlMs : SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS
-                    }));
+            var fixture = new OnChangeWithKeepAliveSubscriptionQos();
+            expect(fixture.minIntervalMs).toEqual(OnChangeSubscriptionQos.MIN_INTERVAL_MS);
+            expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
+            expect(fixture.alertAfterIntervalMs).toEqual(OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT);
+            expect(fixture.publicationTtlMs).toEqual(SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
+        });
+
+        it("SubscriptionQos.clearExpiryDate clears the expiry date", function() {
+            var fixture = new OnChangeWithKeepAliveSubscriptionQos({
+                expiryDateMs : 1234
+            });
+
+            expect(fixture.expiryDateMs).toBe(1234);
+            fixture.clearExpiryDate();
+            expect(fixture.expiryDateMs).toBe(SubscriptionQos.NO_EXPIRY_DATE);
         });
 
         it("create deprecated subscriptionQos objects", function() {
