@@ -60,6 +60,13 @@ define(
              *              <li>default value: {@link SubscriptionQos.NO_EXPIRY_DATE}</li>
              *            </ul>
              * @param {Number}
+             *            [settings.validityMs] The validity of the subscription relative to the current time.
+             *            <br/>
+             *            <b>Special Values:</b>
+             *            <ul>
+             *              <li>minimum value: 0</li>
+             *            </ul>
+             * @param {Number}
              *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
              * @param {Number}
              *            [settings.publicationTtlMs=SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS]
@@ -102,6 +109,15 @@ define(
                                     + "By 2017-01-01, the expiry date can only be specified with member \"expiryDateMs\".");
                         settings.expiryDateMs = settings.expiryDate;
                         settings.expiryDate = undefined;
+                    }
+                    if (settings.validityMs !== undefined) {
+                        if (settings.expiryDateMs !== undefined) {
+                            log
+                                    .warn("SubscriptionQos has been invoked with settings member \"expiryDateMs\" and \"validityMs\"."
+                                        + " Please ensure that only one of these values is set. Using \"validityMs\"");
+                        }
+                        settings.expiryDateMs = Date.now() + settings.validityMs;
+                        settings.validityMs = undefined;
                     }
                     Util.checkPropertyIfDefined(
                             settings.expiryDateMs,

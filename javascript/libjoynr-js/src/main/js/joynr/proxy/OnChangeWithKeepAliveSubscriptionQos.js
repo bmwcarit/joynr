@@ -83,6 +83,8 @@ define(
              *            [settings.expiryDateMs] how long is the subscription
              *            valid
              * @param {Number}
+             *            [settings.validityMs] The validity of the subscription relative to the current time.
+             * @param {Number}
              *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
              * @param {Number}
              *            [settings.alertAfterIntervalMs=OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT] defines how

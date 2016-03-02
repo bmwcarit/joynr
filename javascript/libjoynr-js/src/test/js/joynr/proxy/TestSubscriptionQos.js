@@ -23,12 +23,14 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
     "joynr/proxy/SubscriptionQos",
     "joynr/proxy/PeriodicSubscriptionQos",
     "joynr/proxy/OnChangeSubscriptionQos",
-    "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos"
+    "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
+    "Date"
 ], function(
         SubscriptionQos,
         PeriodicSubscriptionQos,
         OnChangeSubscriptionQos,
-        OnChangeWithKeepAliveSubscriptionQos) {
+        OnChangeWithKeepAliveSubscriptionQos,
+        Date) {
 
     describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
 
@@ -166,7 +168,8 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             var fixture = new OnChangeWithKeepAliveSubscriptionQos();
             expect(fixture.minIntervalMs).toEqual(OnChangeSubscriptionQos.MIN_INTERVAL_MS);
             expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
-            expect(fixture.alertAfterIntervalMs).toEqual(OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT);
+            expect(fixture.alertAfterIntervalMs).toEqual(
+                    OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT);
             expect(fixture.publicationTtlMs).toEqual(SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
         });
 
@@ -195,6 +198,22 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(deprecatedQos.minIntervalMs).toEqual(0);
             expect(deprecatedQos.maxIntervalMs).toEqual(50);
         });
+
+        it(
+                "subscription qos accepts validity instead of expiry date as constructor member",
+                function() {
+                    var fakeTime = 374747473;
+                    var validityMs = 23232;
+                    spyOn(Date, "now").andCallFake(function() {
+                        return fakeTime;
+                    });
+
+                    var fixture = new OnChangeWithKeepAliveSubscriptionQos({
+                        validityMs : validityMs
+                    });
+                    expect(fixture.validityMs).toBe(undefined);
+                    expect(fixture.expiryDateMs).toBe(fakeTime + validityMs);
+                });
 
         it("throws on incorrectly typed values", function() {
             // all arguments
