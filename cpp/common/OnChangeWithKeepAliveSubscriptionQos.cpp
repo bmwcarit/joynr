@@ -30,8 +30,8 @@ static bool isOnChangeWithKeepAliveSubscriptionQosSerializer =
 
 const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL_MS()
 {
-    static std::int64_t defaultMaxInterval = 2592000000UL;
-    return defaultMaxInterval;
+    static std::int64_t maxMaxInterval = 2592000000UL;
+    return maxMaxInterval;
 }
 
 const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL()
