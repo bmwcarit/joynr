@@ -210,7 +210,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
                             OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS);
                     expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
                     expect(fixture.alertAfterIntervalMs).toEqual(
-                            OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT);
+                            OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL);
                     expect(fixture.publicationTtlMs).toEqual(
                             SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
                 });
@@ -220,7 +220,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(fixture.periodMs).toEqual(PeriodicSubscriptionQos.DEFAULT_PERIOD_MS);
             expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
             expect(fixture.alertAfterIntervalMs).toEqual(
-                    OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT);
+                    OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL);
             expect(fixture.publicationTtlMs).toEqual(SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
         });
 

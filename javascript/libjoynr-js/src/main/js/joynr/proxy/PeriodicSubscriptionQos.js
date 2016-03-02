@@ -69,13 +69,13 @@ define(
              * @param {Number}
              *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
              * @param {Number}
-             *            [settings.alertAfterIntervalMs=PeriodicSubscriptionQos.NEVER_ALERT] defines how long to wait for an
+             *            [settings.alertAfterIntervalMs=PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL] defines how long to wait for an
              *            update before publicationMissed is called.<br/>
              *            <br/>
              *            <b>Minimum and Default Values:</b>
              *            <ul>
              *              <li>minimum value: {@link PeriodicSubscriptionQos#period}</li>
-             *              <li>default value: {@link PeriodicSubscriptionQos.NEVER_ALERT}</li>
+             *              <li>default value: {@link PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL}</li>
              *            </ul>
              * @param {Number}
              *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
@@ -163,7 +163,7 @@ define(
                         + PeriodicSubscriptionQos.MAX_PERIOD_MS);
                 }
 
-                if (this.alertAfterIntervalMs !== PeriodicSubscriptionQos.NEVER_ALERT
+                if (this.alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
                     && this.alertAfterIntervalMs < this.periodMs) {
                     throw new Error("Wrong alertAfterIntervalMs with value "
                         + this.alertAfterIntervalMs
@@ -214,17 +214,21 @@ define(
              * Default value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.
              * See [constructor description]{@link PeriodicSubscriptionQos}.
              *
-             * @name PeriodicSubscriptionQos.NEVER_ALERT
+             * @name PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
              * @type Number
              * @default 0
              * @static
              * @readonly
              */
-            PeriodicSubscriptionQos.NEVER_ALERT = 0;
+            PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL = 0;
+            /**
+             * @deprecated Use PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL instead. Will be removed by 01/01/2017
+             */
+            PeriodicSubscriptionQos.NEVER_ALERT = PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
 
             defaultSettings = {
                 periodMs : PeriodicSubscriptionQos.DEFAULT_PERIOD_MS,
-                alertAfterIntervalMs : PeriodicSubscriptionQos.NEVER_ALERT
+                alertAfterIntervalMs : PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
             };
 
             return PeriodicSubscriptionQos;

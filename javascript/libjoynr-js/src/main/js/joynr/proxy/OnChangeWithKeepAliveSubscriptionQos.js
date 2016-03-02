@@ -86,13 +86,13 @@ define(
              * @param {Number}
              *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
              * @param {Number}
-             *            [settings.alertAfterIntervalMs=OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT] defines how
-             *            long to wait for an update before publicationMissed is called<br/>
+             *            [settings.alertAfterIntervalMs=OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL]
+             *            defines how long to wait for an update before publicationMissed is called<br/>
              *            <br/>
              *            <b>Minimum and Default Values:</b>
              *            <ul>
              *              <li>minimum value: {@link OnChangeWithKeepAliveSubscriptionQos#maxIntervalMs}</li>
-             *              <li>default value: {@link OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT}</li>
+             *              <li>default value: {@link OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL}</li>
              *            </ul>
              * @param {Number}
              *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
@@ -188,7 +188,7 @@ define(
                         + this.minIntervalMs);
                 }
 
-                if (this.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT
+                if (this.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
                     && this.alertAfterIntervalMs < this.maxIntervalMs) {
                     throw new Error("Wrong alertAfterIntervalMs with value "
                         + this.alertAfterIntervalMs
@@ -201,16 +201,21 @@ define(
              * Default value for [alertAfterIntervalMs]{@link OnChangeWithKeepAliveSubscriptionQos#alertAfterIntervalMs}.
              * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
              *
-             * @name OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT
+             * @name OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
              * @type Number
              * @default 0
              * @static
              * @readonly
              */
-            OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT = 0;
+            OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL = 0;
+            /**
+             * @deprecated Use OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL instead. Will be removed by 01/01/2017
+             */
+            OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT =
+                    OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
 
             defaultSettings = {
-                alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT
+                alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
             };
 
             return OnChangeWithKeepAliveSubscriptionQos;
