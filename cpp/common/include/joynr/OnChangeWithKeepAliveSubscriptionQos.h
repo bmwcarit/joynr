@@ -73,13 +73,13 @@ public:
      * @see SubscriptionQos#setValidityMs
      * @see OnChangeSubscriptionQos#setMinIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
-     * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterInterval
+     * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterIntervalMs
      * @see SubscriptionQos#setPublicationTtlMs
      */
     OnChangeWithKeepAliveSubscriptionQos(const std::int64_t& validityMs,
                                          const std::int64_t& minIntervalMs,
                                          const std::int64_t& maxIntervalMs,
-                                         const std::int64_t& alertAfterInterval);
+                                         const std::int64_t& alertAfterIntervalMs);
 
     /**
      * @brief Sets minimum interval in milliseconds
@@ -160,10 +160,18 @@ public:
      * If no notification was received within the last alertAfter interval, a
      * missed publication notification will be raised by the Subscription Manager.
      *
-     * @return alertAfterInterval (time span in milliseconds after which a
+     * @return alertAfterIntervalMs (time span in milliseconds after which a
      * publicationMissed will be called if no publications were received)
      */
-    virtual std::int64_t getAlertAfterInterval() const;
+    virtual std::int64_t getAlertAfterIntervalMs() const;
+
+    /**
+     * @deprecated
+     * @see OnChangeWithKeepAliveSubscriptionQos#getAlertAfterIntervalMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use getAlertAfterIntervalMs "
+                 "instead.")]] virtual std::int64_t
+    getAlertAfterInterval() const;
 
     /**
      * @brief Sets the alertAfter interval in milliseconds
@@ -184,7 +192,15 @@ public:
      * @param alertAfterInterval Time span in milliseconds after which a
      * publicationMissed will be called if no publications were received.
      */
-    virtual void setAlertAfterInterval(const std::int64_t& alertAfterInterval);
+    virtual void setAlertAfterIntervalMs(const std::int64_t& alertAfterIntervalMs);
+
+    /**
+     * @deprecated
+     * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterIntervalMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use setAlertAfterIntervalMs "
+                 "instead.")]] virtual void
+    setAlertAfterInterval(const std::int64_t& alertAfterIntervalMs);
 
     /** @brief Assignment operator */
     OnChangeWithKeepAliveSubscriptionQos& operator=(
@@ -211,13 +227,29 @@ public:
      * @brief Returns the maximum value for the alertAfter interval in
      * milliseconds: 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& MAX_ALERT_AFTER_INTERVAL_MS();
+
+    /**
+     * @deprecated
+     * @see OnChangeWithKeepAliveSubscriptionQos#MAX_ALERT_AFTER_INTERVAL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MAX_ALERT_AFTER_INTERVAL_MS "
+                 "instead.")]] static const std::int64_t&
+    MAX_ALERT_AFTER_INTERVAL();
 
     /**
      * @brief Returns the default value for the alertAfter interval in
      * milliseconds: 0 (NO_ALERT_AFTER_INTERVAL)
      */
-    static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL_MS();
+
+    /**
+     * @deprecated
+     * @see OnChangeWithKeepAliveSubscriptionQos#DEFAULT_ALERT_AFTER_INTERVAL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_ALERT_AFTER_INTERVAL_MS "
+                 "instead.")]] static const std::int64_t&
+    DEFAULT_ALERT_AFTER_INTERVAL();
 
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
     static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
@@ -235,7 +267,7 @@ protected:
      * @brief time span in milliseconds after which a publicationMissed
      * will be called if no publications were received
      */
-    std::int64_t alertAfterInterval;
+    std::int64_t alertAfterIntervalMs;
 
 private:
     ADD_LOGGER(OnChangeWithKeepAliveSubscriptionQos);

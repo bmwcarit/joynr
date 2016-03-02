@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
     // be delivered within its TTL, it will be deleted from the system.
     // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
     //       missed publication notification (depending on the value of the alert interval QoS).
-    subscriptionQos.setAlertAfterInterval(10 * 1000);
+    subscriptionQos.setAlertAfterIntervalMs(10 * 1000);
 
     // Subscriptions go to a listener object
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> listener(

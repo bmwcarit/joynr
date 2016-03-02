@@ -46,8 +46,8 @@ void ClassDeserializerImpl<OnChangeWithKeepAliveSubscriptionQos>::deserialize(
             qos.setMinIntervalMs(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "maxIntervalMs") {
             qos.setMaxIntervalMs(field.value().getIntType<std::int64_t>());
-        } else if (field.name() == "alertAfterInterval") {
-            qos.setAlertAfterInterval(field.value().getIntType<std::int64_t>());
+        } else if (field.name() == "alertAfterIntervalMs") {
+            qos.setAlertAfterIntervalMs(field.value().getIntType<std::int64_t>());
         }
     }
 }
@@ -64,7 +64,7 @@ void ClassSerializerImpl<OnChangeWithKeepAliveSubscriptionQos>::serialize(
     stream << R"("publicationTtlMs": )" << qos.getPublicationTtlMs() << R"(,)";
     stream << R"("minIntervalMs": )" << qos.getMinIntervalMs() << R"(,)";
     stream << R"("maxIntervalMs": )" << qos.getMaxIntervalMs() << R"(,)";
-    stream << R"("alertAfterInterval": )" << qos.getAlertAfterInterval();
+    stream << R"("alertAfterIntervalMs": )" << qos.getAlertAfterIntervalMs();
     stream << R"(})";
 }
 

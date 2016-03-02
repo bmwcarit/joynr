@@ -38,7 +38,7 @@ std::int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
         const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
                 &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-        return subscriptionQosPtr->getAlertAfterInterval();
+        return subscriptionQosPtr->getAlertAfterIntervalMs();
     }
     if (qos.is<PeriodicSubscriptionQos>()) {
         const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
