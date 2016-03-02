@@ -209,6 +209,17 @@ joynrTestRequire(
                                     expect(function() {
                                         testValues(60, -2, true, -4, -5, 200);
                                     }).toThrow();
+                                    //wrong maxIntervalMs (below OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS)
+                                    expect(
+                                            function() {
+                                                testValues(
+                                                        10,
+                                                        OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS - 1,
+                                                        true,
+                                                        -4,
+                                                        -5,
+                                                        200);
+                                            }).toThrow();
                                     //wrong alertAfterIntervalMs (shall be higher than maxIntervalMs)
                                     expect(function() {
                                         testValues(60, 62, true, -4, -5, 200);

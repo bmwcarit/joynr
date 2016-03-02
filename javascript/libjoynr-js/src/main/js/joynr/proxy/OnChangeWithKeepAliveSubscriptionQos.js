@@ -74,7 +74,8 @@ define(
              *            <br/>
              *            <b>Minimum and Maximum Values</b>
              *            <ul>
-             *              <li>minimum value: {@link OnChangeWithKeepAliveSubscriptionQos#minIntervalMs}</li>
+             *              <li>minimum value: {@link OnChangeWithKeepAliveSubscriptionQos#minIntervalMs} or
+             *                                 {@link OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS}</li>
              *              <li>maximum value: unlimited</li>
              *            </ul>
              * @param {Number}
@@ -182,6 +183,13 @@ define(
                  */
                 Util.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
 
+                if (this.maxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS) {
+                    throw new Error("Wrong maxIntervalMs with value "
+                        + this.maxIntervalMs
+                        + ": it shall be higher than "
+                        + OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS);
+                }
+
                 if (this.maxIntervalMs < this.minIntervalMs) {
                     throw new Error("Wrong maxIntervalMs with value "
                         + this.maxIntervalMs
@@ -247,6 +255,18 @@ define(
              */
             OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS =
                     OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+
+            /**
+             * Minimal value for [maxIntervalMs]{@link OnChangeWithKeepAliveSubscriptionQos#maxIntervalMs}.
+             * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
+             *
+             * @name OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS
+             * @type Number
+             * @default 50
+             * @static
+             * @readonly
+             */
+            OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS = 50;
 
             defaultSettings =
                     {
