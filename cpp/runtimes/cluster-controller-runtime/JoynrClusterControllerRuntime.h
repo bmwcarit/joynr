@@ -142,7 +142,6 @@ protected:
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
     WebSocketCcMessagingSkeleton* wsCcMessagingSkeleton;
-    IPlatformSecurityManager* securityManager;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;

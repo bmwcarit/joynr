@@ -141,7 +141,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
           wsSettings(*settings),
           wsCcMessagingSkeleton(nullptr),
-          securityManager(nullptr),
           httpMessagingIsRunning(false),
           mqttMessagingIsRunning(false),
           doMqttMessaging(false),
@@ -162,19 +161,21 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     wsSettings.printSettings();
 
     // Initialise security manager
-    securityManager = new DummyPlatformSecurityManager();
+    std::unique_ptr<IPlatformSecurityManager> securityManager =
+            std::make_unique<DummyPlatformSecurityManager>();
 
     // CAREFUL: the factory creates an old style dispatcher, not the new one!
     inProcessDispatcher = new InProcessDispatcher();
     /* CC */
     // create the messaging stub factory
-    MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
+    auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(std::make_unique<DbusMessagingStubFactory>());
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
     // init message router
-    messageRouter = std::make_shared<MessageRouter>(messagingStubFactory, securityManager);
+    messageRouter =
+            std::make_shared<MessageRouter>(messagingStubFactory, std::move(securityManager));
 
     const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
     assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());

@@ -288,7 +288,8 @@ public:
     }
 
     MockMessageRouter():
-        MessageRouter(nullptr, nullptr, 0) {
+        MessageRouter(std::unique_ptr<joynr::IMessagingStubFactory>(), std::unique_ptr<joynr::IPlatformSecurityManager>(), 0)
+    {
         EXPECT_CALL(
                 *this,
                 addNextHop(_,_,_)

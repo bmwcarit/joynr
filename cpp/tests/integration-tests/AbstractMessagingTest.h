@@ -76,10 +76,10 @@ public:
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
         messagingStubFactory(new MessagingStubFactory()),
-        messageRouter(new MessageRouter(messagingStubFactory, nullptr))
+        messageRouter(nullptr)
     {
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
-
+        messageRouter = std::make_unique<MessageRouter>(std::unique_ptr<MessagingStubFactory>(messagingStubFactory), std::unique_ptr<IPlatformSecurityManager>());
         qos.setTtl(10000);
     }
 

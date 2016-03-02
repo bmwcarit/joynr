@@ -75,12 +75,13 @@ void LibJoynrRuntime::init(
         std::shared_ptr<joynr::system::RoutingTypes::Address> ccMessagingAddress)
 {
     // create messaging stub factory
-    MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
+    auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
     messagingStubFactory->registerStubFactory(std::move(middlewareMessagingStubFactory));
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 
     // create message router
-    messageRouter = std::make_shared<MessageRouter>(messagingStubFactory, libjoynrMessagingAddress);
+    messageRouter = std::make_shared<MessageRouter>(
+            std::move(messagingStubFactory), libjoynrMessagingAddress);
 
     startLibJoynrMessagingSkeleton(*messageRouter);
 
@@ -142,7 +143,9 @@ void LibJoynrRuntime::init(
                                 ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
-    messageRouter->setParentRouter(routingProxy, ccMessagingAddress, routingProviderParticipantId);
+    messageRouter->setParentRouter(std::unique_ptr<system::RoutingProxy>(routingProxy),
+                                   ccMessagingAddress,
+                                   routingProviderParticipantId);
     delete routingProxyBuilder;
 
     // setup discovery

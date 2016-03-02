@@ -70,15 +70,16 @@ class Address;
 class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingAbstractProvider
 {
 public:
-    MessageRouter(IMessagingStubFactory* messagingStubFactory,
-                  IPlatformSecurityManager* securityManager,
+    // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
+    MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+                  std::unique_ptr<IPlatformSecurityManager> securityManager,
                   int maxThreads = 6,
-                  MessageQueue* messageQueue = new MessageQueue());
+                  std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
-    MessageRouter(IMessagingStubFactory* messagingStubFactory,
+    MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                   std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress,
                   int maxThreads = 6,
-                  MessageQueue* messageQueue = new MessageQueue());
+                  std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
     ~MessageRouter() override;
 
@@ -136,7 +137,7 @@ public:
 
     void setAccessController(std::shared_ptr<IAccessController> accessController);
 
-    void setParentRouter(joynr::system::RoutingProxy* parentRouter,
+    void setParentRouter(std::unique_ptr<joynr::system::RoutingProxy> parentRouter,
                          std::shared_ptr<system::RoutingTypes::Address> parentAddress,
                          std::string parentParticipantId);
 
@@ -150,20 +151,20 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
-    IMessagingStubFactory* messagingStubFactory;
+    std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     Directory<std::string, joynr::system::RoutingTypes::Address> routingTable;
     ReadWriteLock routingTableLock;
     ThreadPoolDelayedScheduler messageScheduler;
-    joynr::system::RoutingProxy* parentRouter;
+    std::unique_ptr<joynr::system::RoutingProxy> parentRouter;
     std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress;
     std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress;
     ADD_LOGGER(MessageRouter);
 
-    MessageQueue* messageQueue;
+    std::unique_ptr<MessageQueue> messageQueue;
     Timer messageQueueCleanerTimer;
     std::unordered_set<std::string>* runningParentResolves;
     std::shared_ptr<IAccessController> accessController;
-    IPlatformSecurityManager* securityManager;
+    std::unique_ptr<IPlatformSecurityManager> securityManager;
     mutable std::mutex parentResolveMutex;
 
     void addNextHopToParent(std::string participantId,

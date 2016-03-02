@@ -16,17 +16,19 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
+#include <cstdint>
+#include <chrono>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include <chrono>
-#include <cstdint>
 
 using ::testing::AllOf;
 using ::testing::Property;
@@ -39,11 +41,18 @@ public:
     MessageRouterTest() :
         settings(),
         messagingSettings(settings),
-        messagingStubFactory(new MockMessagingStubFactory()),
-        messageQueue(new MessageQueue()),
-        messageRouter(new MessageRouter(messagingStubFactory, nullptr, 6, messageQueue)),
+        messageQueue(nullptr),
+        messagingStubFactory(nullptr),
+        messageRouter(nullptr),
         joynrMessage()
     {
+        auto messageQueue = std::make_unique<MessageQueue>();
+        this->messageQueue = messageQueue.get();
+
+        auto messagingStubFactory = std::make_unique<MockMessagingStubFactory>();
+        this->messagingStubFactory = messagingStubFactory.get();
+
+        messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory), std::unique_ptr<IPlatformSecurityManager>(), 6, std::move(messageQueue));
         // provision global capabilities directory
         std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(
             new system::RoutingTypes::ChannelAddress(
@@ -62,7 +71,6 @@ public:
 
     ~MessageRouterTest() {
         std::remove(settingsFileName.c_str());
-        delete messagingStubFactory;
     }
 
     void SetUp(){
@@ -74,9 +82,9 @@ protected:
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
-    MockMessagingStubFactory* messagingStubFactory;
     MessageQueue* messageQueue;
-    MessageRouter* messageRouter;
+    MockMessagingStubFactory* messagingStubFactory;
+    std::unique_ptr<MessageRouter> messageRouter;
     JoynrMessage joynrMessage;
     void routeMessageToAddress(
             const std::string& destinationParticipantId,

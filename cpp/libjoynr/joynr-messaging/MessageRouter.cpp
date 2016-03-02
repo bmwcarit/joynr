@@ -21,7 +21,6 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/MessagingStubFactory.h"
-#include "joynr/Directory.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -30,7 +29,6 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/JsonSerializer.h"
 #include "cluster-controller/access-control/IAccessController.h"
 #include "joynr/IPlatformSecurityManager.h"
 
@@ -64,32 +62,26 @@ MessageRouter::~MessageRouter()
 {
     messageQueueCleanerTimer.shutdown();
     messageScheduler.shutdown();
-    if (parentRouter != nullptr) {
-        delete parentRouter;
-    }
-    delete messagingStubFactory;
-    delete messageQueue;
     delete runningParentResolves;
-    delete securityManager;
 }
 
-MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
-                             IPlatformSecurityManager* securityManager,
+MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+                             std::unique_ptr<IPlatformSecurityManager> securityManager,
                              int maxThreads,
-                             MessageQueue* messageQueue)
+                             std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
-          messagingStubFactory(messagingStubFactory),
+          messagingStubFactory(std::move(messagingStubFactory)),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
           messageScheduler(maxThreads, "MessageRouter"),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(),
-          messageQueue(messageQueue),
+          messageQueue(std::move(messageQueue)),
           messageQueueCleanerTimer(),
           runningParentResolves(new std::unordered_set<std::string>()),
           accessController(nullptr),
-          securityManager(securityManager),
+          securityManager(std::move(securityManager)),
           parentResolveMutex()
 {
     messageQueueCleanerTimer.addTimer(
@@ -105,19 +97,19 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
     providerQos.setSupportsOnChangeSubscriptions(false);
 }
 
-MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
+MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                              std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress,
                              int maxThreads,
-                             MessageQueue* messageQueue)
+                             std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
-          messagingStubFactory(messagingStubFactory),
+          messagingStubFactory(std::move(messagingStubFactory)),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
           messageScheduler(maxThreads, "MessageRouter"),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(incomingAddress),
-          messageQueue(messageQueue),
+          messageQueue(std::move(messageQueue)),
           messageQueueCleanerTimer(),
           runningParentResolves(new std::unordered_set<std::string>()),
           accessController(nullptr),
@@ -151,17 +143,17 @@ void MessageRouter::setAccessController(std::shared_ptr<IAccessController> acces
 }
 
 void MessageRouter::setParentRouter(
-        joynr::system::RoutingProxy* parentRouter,
+        std::unique_ptr<system::RoutingProxy> parentRouter,
         std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress,
         std::string parentParticipantId)
 {
-    this->parentRouter = parentRouter;
-    this->parentAddress = parentAddress;
+    this->parentRouter = std::move(parentRouter);
+    this->parentAddress = std::move(parentAddress);
 
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
-    addProvisionedNextHop(parentParticipantId, parentAddress);
-    addNextHopToParent(parentRouter->getProxyParticipantId());
+    addProvisionedNextHop(parentParticipantId, this->parentAddress);
+    addNextHopToParent(this->parentRouter->getProxyParticipantId());
 }
 
 bool MessageRouter::isChildMessageRouter()
@@ -170,7 +162,7 @@ bool MessageRouter::isChildMessageRouter()
         return false;
     }
     // if an incoming address is set, a parent message router is needed for correct configuration
-    return parentRouter != nullptr && parentAddress;
+    return parentRouter && parentAddress;
 }
 
 /**
