@@ -50,7 +50,7 @@ define(
              * @param {Number}
              *            [settings.minInterval] Deprecated parameter. Use settings.minIntervalMs instead
              * @param {Number}
-             *            [settings.minIntervalMs=OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS] defines how often
+             *            [settings.minIntervalMs=OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS] defines how often
              *            an update may be sent<br/>
              *            It is used to prevent flooding. Publications will be sent
              *            maintaining this minimum interval provided, even if the value
@@ -63,7 +63,7 @@ define(
              *            <ul>
              *              <li>minimum value: {@link OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS}</li>
              *              <li>maximum value: {@link OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS}</li>
-             *              <li>default value: {@link OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS}</li>
+             *              <li>default value: {@link OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS}</li>
              *            </ul>
              * @param {Number}
              *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
@@ -144,7 +144,7 @@ define(
             }
 
             /**
-             * Minimum and default value for [minIntervalMs]{@link OnChangeSubscriptionQos#minIntervalMs}.
+             * Minimum value for [minIntervalMs]{@link OnChangeSubscriptionQos#minIntervalMs}.
              * See [constructor description]{@link OnChangeSubscriptionQos}.
              *
              * @name OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
@@ -171,8 +171,20 @@ define(
              */
             OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS = 2592000000;
 
+            /**
+             * Default value for [minIntervalMs]{@link OnChangeSubscriptionQos#minIntervalMs}.
+             * See [constructor description]{@link OnChangeSubscriptionQos}.
+             *
+             * @name OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS
+             * @type Number
+             * @default 1000
+             * @static
+             * @readonly
+             */
+            OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS = 1000;
+
             defaultSettings = {
-                minIntervalMs : OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
+                minIntervalMs : OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS
             };
 
             return OnChangeSubscriptionQos;
