@@ -86,14 +86,14 @@ define(
              * @param {Number}
              *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
              * @param {Number}
-             *            [settings.alertAfterIntervalMs=OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL]
+             *            [settings.alertAfterIntervalMs=OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS]
              *            defines how long to wait for an update before publicationMissed is called<br/>
              *            <br/>
              *            <b>Minimum, Maximum and Default Values:</b>
              *            <ul>
              *              <li>minimum value: {@link OnChangeWithKeepAliveSubscriptionQos#maxIntervalMs}</li>
              *              <li>maximum value: {@link OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS}</li>
-             *              <li>default value: {@link OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL}</li>
+             *              <li>default value: {@link OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS}</li>
              *            </ul>
              * @param {Number}
              *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
@@ -235,9 +235,23 @@ define(
              */
             OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS = 2592000000;
 
-            defaultSettings = {
-                alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
-            };
+            /**
+             * Default value for [alertAfterIntervalMs]{@link OnChangeWithKeepAliveSubscriptionQos#alertAfterIntervalMs}.
+             * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
+             *
+             * @name OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
+             * @type Number
+             * @default OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+             * @static
+             * @readonly
+             */
+            OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS =
+                    OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+
+            defaultSettings =
+                    {
+                        alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
+                    };
 
             return OnChangeWithKeepAliveSubscriptionQos;
 

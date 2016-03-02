@@ -69,14 +69,14 @@ define(
              * @param {Number}
              *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
              * @param {Number}
-             *            [settings.alertAfterIntervalMs=PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL] defines how long to wait for an
+             *            [settings.alertAfterIntervalMs=PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS] defines how long to wait for an
              *            update before publicationMissed is called.<br/>
              *            <br/>
              *            <b>Minimum, Maximum and Default Values:</b>
              *            <ul>
              *              <li>minimum value: {@link PeriodicSubscriptionQos#period}</li>
              *              <li>maximum value: {@link PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS}</li>
-             *              <li>default value: {@link PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL}</li>
+             *              <li>default value: {@link PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS}</li>
              *            </ul>
              * @param {Number}
              *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
@@ -246,9 +246,22 @@ define(
              */
             PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS = 2592000000;
 
+            /**
+             * Default value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
+             * @type Number
+             * @default PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS =
+                    PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+
             defaultSettings = {
                 periodMs : PeriodicSubscriptionQos.DEFAULT_PERIOD_MS,
-                alertAfterIntervalMs : PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+                alertAfterIntervalMs : PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
             };
 
             return PeriodicSubscriptionQos;

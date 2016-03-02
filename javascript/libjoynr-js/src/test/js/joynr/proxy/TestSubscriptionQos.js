@@ -252,7 +252,7 @@ joynrTestRequire(
                                             SubscriptionQos.NO_EXPIRY_DATE);
                                     expect(fixture.alertAfterIntervalMs)
                                             .toEqual(
-                                                    OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL);
+                                                    OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS);
                                     expect(fixture.publicationTtlMs).toEqual(
                                             SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
                                 });
@@ -267,7 +267,7 @@ joynrTestRequire(
                                             SubscriptionQos.NO_EXPIRY_DATE);
                                     expect(fixture.alertAfterIntervalMs)
                                             .toEqual(
-                                                    OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL);
+                                                    OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS);
                                     expect(fixture.publicationTtlMs).toEqual(
                                             SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
                                 });
