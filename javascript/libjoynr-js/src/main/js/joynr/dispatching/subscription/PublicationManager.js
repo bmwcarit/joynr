@@ -1037,10 +1037,6 @@ define(
                                         }, timeToEndDate);
                             }
 
-                            // Set up publication interval if maxIntervalMs is a number
-                            //(not (is not a number)) ...
-                            var period = getPeriod(subscriptionInfo);
-
                             // save subscriptionInfo to subscriptionId => subscription and
                             // ProviderEvent => subscription map
                             subscriptionInfos[subscriptionId] = subscriptionInfo;
