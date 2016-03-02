@@ -215,7 +215,7 @@ public abstract class SubscriptionQos implements JoynrType {
      * @param publicationTtlMs
      *            publicationTtlMs time-to-live in milliseconds.<br>
      *            <br>
-     *            <b>Minimum and Default Values:</b>
+     *            <b>Minimum, Maximum and Default Values:</b>
      *            <ul>
      *            <li><b>Minimum</b> publicationTtlMs = {@value #MIN_PUBLICATION_TTL_MS}.
      *            Smaller values will be rounded up.
@@ -239,7 +239,7 @@ public abstract class SubscriptionQos implements JoynrType {
      * @param publicationTtlMs
      *            publicationTtlMs time-to-live in milliseconds.<br>
      *            <br>
-     *            <b>Minimum and Default Values:</b>
+     *            <b>Minimum, Maximum and Default Values:</b>
      *            <ul>
      *            <li><b>Minimum</b> publicationTtlMs = {@value #MIN_PUBLICATION_TTL_MS}.
      *            Smaller values will be rounded up.

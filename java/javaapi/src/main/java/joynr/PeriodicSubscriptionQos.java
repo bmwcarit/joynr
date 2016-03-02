@@ -39,9 +39,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class PeriodicSubscriptionQos extends SubscriptionQos implements HeartbeatSubscriptionInformation {
     private static final long serialVersionUID = 1L;
-
     private static final Logger logger = LoggerFactory.getLogger(PeriodicSubscriptionQos.class);
 
+    /**
+     * Value for alertAfterInterval to disable alert: 0
+     */
+    private static final long NO_ALERT_AFTER_INTERVAL = 0L;
     /**
      * Minimum value for period in milliseconds: 50
      */
@@ -59,13 +62,9 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      */
     private static final long MAX_ALERT_AFTER_INTERVAL_MS = 30L * 24L * 60L * 60L * 1000L; // 30 days
     /**
-     * Default value for alertAfterInterval in milliseconds: 0 (no alert)
+     * Default value for alertAfterInterval in milliseconds: no alert
      */
-    private static final long DEFAULT_ALERT_AFTER_INTERVAL_MS = 0L; // no alert
-    /**
-     * Value for alertAfterInterval to disable alert: 0
-     */
-    private static final long NO_ALERT_AFTER_INTERVAL = 0L;
+    private static final long DEFAULT_ALERT_AFTER_INTERVAL_MS = NO_ALERT_AFTER_INTERVAL;
 
     private long periodMs = DEFAULT_PERIOD_MS;
     private long alertAfterIntervalMs = DEFAULT_ALERT_AFTER_INTERVAL_MS;
