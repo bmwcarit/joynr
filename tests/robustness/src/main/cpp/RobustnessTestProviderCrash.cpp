@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2016 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,24 @@
  */
 #include "AbstractRobustnessTest.h"
 
-class RobustnessTestCcCrash : public AbstractRobustnessTest
+class RobustnessTestProviderCrash : public AbstractRobustnessTest
 {
-public:
-    RobustnessTestCcCrash() = default;
 };
 
-TEST_F(RobustnessTestCcCrash, call_methodWithStringParameters)
+TEST_F(RobustnessTestProviderCrash, call_methodWithStringParameters)
 {
     callMethodWithStringParameters();
 }
 
-TEST_F(RobustnessTestCcCrash, call_methodWithStringParametersAfterCCRestart)
+TEST_F(RobustnessTestProviderCrash, call_methodWithStringParametersAfterProviderRestart)
 {
-    callMethodWithStringParametersAfterCcRestart();
+    killProvider();
+    startProvider();
+    callMethodWithStringParameters();
 }
 
-TEST_F(RobustnessTestCcCrash, call_methodWithStringParametersBeforeCCRestart)
+TEST_F(RobustnessTestProviderCrash, call_methodWithStringParametersBeforeProviderRestart)
 {
-    // kill the cluster controller before request is sent
-    callMethodWithStringParametersBeforeCcOrProviderRestart(true, false);
+    // kill the provider before the request is sent
+    callMethodWithStringParametersBeforeCcOrProviderRestart(false, true);
 }

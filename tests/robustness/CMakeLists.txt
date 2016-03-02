@@ -184,6 +184,7 @@ set(robustness-tests-consumer_HEADERS
 set(robustness-tests-consumer_SOURCES
     "src/main/cpp/AbstractRobustnessTest.cpp"
     "src/main/cpp/RobustnessTestCcCrash.cpp"
+    "src/main/cpp/RobustnessTestProviderCrash.cpp"
 )
 
 # Use the generated header files for the provider application
