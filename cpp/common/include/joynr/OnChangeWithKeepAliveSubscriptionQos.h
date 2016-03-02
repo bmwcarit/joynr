@@ -226,6 +226,12 @@ public:
      */
     static const std::int64_t& MAX_MAX_INTERVAL_MS();
 
+    /** @brief
+     * Returns the maximum value for the maximum interval in milliseconds:
+     * 60 000 (1 minute)
+     */
+    static const std::int64_t& DEFAULT_MAX_INTERVAL_MS();
+
     /**
      * @deprecated
      * @see OnChangeWithKeepAliveSubscriptionQos#MAX_MAX_INTERVAL_MS

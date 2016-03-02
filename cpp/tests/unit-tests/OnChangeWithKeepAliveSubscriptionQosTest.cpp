@@ -34,7 +34,8 @@ public:
 
 TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, clearAlertAfterInterval)
 {
-    std::int64_t alertAfterIntervalMs = 4000;
+    std::int64_t alertAfterIntervalMs =
+            OnChangeWithKeepAliveSubscriptionQos::DEFAULT_MAX_INTERVAL_MS() + 4000;
 
     OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos;
     onChangeWithKeepAliveSubscriptionQos.setAlertAfterIntervalMs(alertAfterIntervalMs);
@@ -45,5 +46,14 @@ TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, clearAlertAfterInterval)
     EXPECT_EQ(
             OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL(),
             onChangeWithKeepAliveSubscriptionQos.getAlertAfterIntervalMs()
+    );
+}
+
+TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, maxIntervalMsDefaultValueIsSetProperly)
+{
+    OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos;
+    EXPECT_EQ(
+            OnChangeWithKeepAliveSubscriptionQos::DEFAULT_MAX_INTERVAL_MS(),
+            onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs()
     );
 }
