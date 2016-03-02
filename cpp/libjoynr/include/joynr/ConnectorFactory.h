@@ -42,13 +42,13 @@ public:
                      JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory);
     ~ConnectorFactory();
     template <class T>
-    T* create(const std::string& domain,
-              const std::string proxyParticipantId,
-              const std::string& providerParticipantId,
-              const MessagingQos& qosSettings,
-              IClientCache* cache,
-              bool cached,
-              const joynr::types::CommunicationMiddleware::Enum& connection)
+    std::unique_ptr<T> create(const std::string& domain,
+                              const std::string proxyParticipantId,
+                              const std::string& providerParticipantId,
+                              const MessagingQos& qosSettings,
+                              IClientCache* cache,
+                              bool cached,
+                              const joynr::types::CommunicationMiddleware::Enum& connection)
     {
 
         if (inProcessConnectorFactory->canBeCreated(connection)) {

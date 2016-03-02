@@ -48,22 +48,22 @@ public:
     bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
 
     template <class T>
-    T* create(const std::string& domain,
-              const std::string proxyParticipantId,
-              const std::string& providerParticipantId,
-              const MessagingQos& qosSettings,
-              IClientCache* cache,
-              bool cached)
+    std::unique_ptr<T> create(const std::string& domain,
+                              const std::string proxyParticipantId,
+                              const std::string& providerParticipantId,
+                              const MessagingQos& qosSettings,
+                              IClientCache* cache,
+                              bool cached)
     {
         using Connector = typename JoynrMessagingTraits<T>::Connector;
-        return new Connector(messageSender,
-                             subscriptionManager,
-                             domain,
-                             proxyParticipantId,
-                             providerParticipantId,
-                             qosSettings,
-                             cache,
-                             cached);
+        return std::make_unique<Connector>(messageSender,
+                                           subscriptionManager,
+                                           domain,
+                                           proxyParticipantId,
+                                           providerParticipantId,
+                                           qosSettings,
+                                           cache,
+                                           cached);
     }
 
 private:

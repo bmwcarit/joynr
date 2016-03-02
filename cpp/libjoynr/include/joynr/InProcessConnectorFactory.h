@@ -53,19 +53,20 @@ public:
     virtual ~InProcessConnectorFactory() = default;
 
     template <class T>
-    T* create(const std::string& proxyParticipantId, const std::string& providerParticipantId)
+    std::unique_ptr<T> create(const std::string& proxyParticipantId,
+                              const std::string& providerParticipantId)
     {
         std::shared_ptr<RequestCaller> requestCaller =
                 requestCallerDirectory->lookupRequestCaller(providerParticipantId);
         auto inProcessEndpointAddress = std::make_shared<InProcessAddress>(requestCaller);
 
         using Connector = typename InProcessTraits<T>::Connector;
-        return new Connector(subscriptionManager,
-                             publicationManager,
-                             inProcessPublicationSender,
-                             proxyParticipantId,
-                             providerParticipantId,
-                             inProcessEndpointAddress);
+        return std::make_unique<Connector>(subscriptionManager,
+                                           publicationManager,
+                                           inProcessPublicationSender,
+                                           proxyParticipantId,
+                                           providerParticipantId,
+                                           inProcessEndpointAddress);
     }
 
 private:
