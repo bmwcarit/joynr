@@ -170,9 +170,10 @@ include(LocateProgram)
 # use a shared object or are included through joynr header files into the user's code.
 # Mosquitto is only required when the cluster controller build is enabled.
 if(NOT (USE_PLATFORM_SPDLOG AND USE_PLATFORM_JSMN AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
-    install(CODE "message(FATAL_ERROR
-\"Install target is not available as long as external platform dependencies are used. \
-For more information see USE_PLATFORM_SPDLOG, USE_PLATFORM_JSMN and USE_PLATFORM_MOSQUITTO.\")")
+    set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
+    set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
+    set(codeMsg "${codeMsg} USE_PLATFORM_JSMN and USE_PLATFORM_MOSQUITTO.\")")
+    install(CODE "${codeMsg}")
 endif()
 
 #### END: Prevent install-target execution if platform dependencies are not used #####
