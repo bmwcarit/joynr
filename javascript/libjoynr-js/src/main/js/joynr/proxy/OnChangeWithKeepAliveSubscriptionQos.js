@@ -62,8 +62,8 @@ define(
              * @param {Number}
              *            [settings.maxInterval] Deprecated parameter. Use settings.maxIntervalMs instead
              * @param {Number}
-             *            [settings.maxIntervalMs] defines how long to wait before
-             *            sending an update even if the value did not change<br/>
+             *            [settings.maxIntervalMs=OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS]
+             *            defines how long to wait before sending an update even if the value did not change<br/>
              *            The provider will send publications every maximum interval in
              *            milliseconds, even if the value didn't change. It will send
              *            notifications more often if on-change notifications are enabled,
@@ -72,11 +72,12 @@ define(
              *            of heart beat or keep alive interval, if no other publication
              *            has been sent within that time.<br/>
              *            <br/>
-             *            <b>Minimum and Maximum Values</b>
+             *            <b>Minimum, Maximum and Default Values</b>
              *            <ul>
              *              <li>minimum value: {@link OnChangeWithKeepAliveSubscriptionQos#minIntervalMs} or
              *                                 {@link OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS}</li>
              *              <li>maximum value: {@link OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS}</li>
+             *              <li>default value: {@link OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS}</li>
              *            </ul>
              * @param {Number}
              *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
@@ -287,9 +288,22 @@ define(
              */
             OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS = 2592000000;
 
+            /**
+             * Default value for [maxIntervalMs]{@link OnChangeWithKeepAliveSubscriptionQos#maxIntervalMs}.
+             * See [constructor description]{@link OnChangeWithKeepAliveSubscriptionQos}.
+             *
+             * @name OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS
+             * @type Number
+             * @default 60000
+             * @static
+             * @readonly
+             */
+            OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS = 60000;
+
             defaultSettings =
                     {
-                        alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
+                        alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS,
+                        maxIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS
                     };
 
             return OnChangeWithKeepAliveSubscriptionQos;

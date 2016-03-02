@@ -270,6 +270,9 @@ joynrTestRequire(
                                     var fixture = new OnChangeWithKeepAliveSubscriptionQos();
                                     expect(fixture.minIntervalMs).toEqual(
                                             OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS);
+                                    expect(fixture.maxIntervalMs)
+                                            .toEqual(
+                                                    OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS);
                                     expect(fixture.expiryDateMs).toEqual(
                                             SubscriptionQos.NO_EXPIRY_DATE);
                                     expect(fixture.alertAfterIntervalMs)

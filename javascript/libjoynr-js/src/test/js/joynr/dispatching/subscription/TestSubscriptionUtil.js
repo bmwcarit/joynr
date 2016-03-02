@@ -124,10 +124,10 @@ joynrTestRequire(
                                 + info.subscriptionId
                                 + "\",\"subscribedToName\":\""
                                 + info.subscribedToName
-                                + "\",\"qos\":{\"_typeName\":\"joynr.OnChangeWithKeepAliveSubscriptionQos\",\"alertAfterIntervalMs\":0,\"minIntervalMs\":"
-                                + info.qos.minIntervalMs
-                                + ",\"maxIntervalMs\":"
+                                + "\",\"qos\":{\"_typeName\":\"joynr.OnChangeWithKeepAliveSubscriptionQos\",\"alertAfterIntervalMs\":0,\"maxIntervalMs\":"
                                 + info.qos.maxIntervalMs
+                                + ",\"minIntervalMs\":"
+                                + info.qos.minIntervalMs
                                 + ",\"expiryDateMs\":"
                                 + info.qos.expiryDateMs
                                 + ",\"publicationTtlMs\":1000},\"lastPublication\":0,\"_typeName\":\"joynr.SubscriptionInformation\"}";

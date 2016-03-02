@@ -171,6 +171,7 @@ joynrTestRequire(
                                     jasmine.createSpy('publicationReceivedSpy');
                             var publicationMissedSpy = jasmine.createSpy('publicationMissedSpy');
                             var subscriptionId;
+                            var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
 
                             runs(function() {
                                 //log.debug("registering subscription");
@@ -180,8 +181,8 @@ joynrTestRequire(
                                     messagingQos : new MessagingQos(),
                                     attributeName : "testAttribute",
                                     qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                        alertAfterIntervalMs : 100,
-                                        expiryDateMs : Date.now() + 250
+                                        alertAfterIntervalMs : alertAfterIntervalMs,
+                                        expiryDateMs : Date.now() + 50 + 2 * alertAfterIntervalMs
                                     }),
                                     onReceive : publicationReceivedSpy,
                                     onError : publicationMissedSpy
@@ -199,16 +200,16 @@ joynrTestRequire(
 
                             runs(function() {
                                 expect(publicationMissedSpy).not.toHaveBeenCalled();
-                                increaseFakeTime(101);
+                                increaseFakeTime(alertAfterIntervalMs + 1);
                                 expect(publicationMissedSpy).toHaveBeenCalled();
                                 expect(publicationMissedSpy.calls[0].args[0] instanceof PublicationMissedException);
                                 expect(publicationMissedSpy.calls[0].args[0].subscriptionId).toEqual(subscriptionId);
-                                increaseFakeTime(101);
+                                increaseFakeTime(alertAfterIntervalMs + 1);
                                 expect(publicationMissedSpy.callCount).toEqual(2);
                                 // expiryDateMs should be reached, expect no more interactions
-                                increaseFakeTime(101);
+                                increaseFakeTime(alertAfterIntervalMs + 1);
                                 expect(publicationMissedSpy.callCount).toEqual(2);
-                                increaseFakeTime(101);
+                                increaseFakeTime(alertAfterIntervalMs + 1);
                                 expect(publicationMissedSpy.callCount).toEqual(2);
                             });
 
@@ -224,7 +225,7 @@ joynrTestRequire(
                                         messagingQos : new MessagingQos(),
                                         attributeName : "testAttribute",
                                         qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                            alertAfterIntervalMs : 100,
+                                            alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS,
                                             expiryDateMs : Date.now() + ttl
                                         }),
                                         onReceive : function() {},
@@ -285,13 +286,14 @@ joynrTestRequire(
                             var publicationReceivedSpy =
                                     jasmine.createSpy('publicationReceivedSpy');
                             var publicationMissedSpy = jasmine.createSpy('publicationMissedSpy');
+                            var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
 
                             var resolveSpy =
                                     {
                                         // called when the subscription is registered successfully (see below)
                                         resolveMethod : function(subscriptionId) {
                                             // increase time by 50ms and see if alert was triggered
-                                            increaseFakeTime(50);
+                                            increaseFakeTime(alertAfterIntervalMs / 2);
                                             expect(publicationMissedSpy).not.toHaveBeenCalled();
                                             var publication = new SubscriptionPublication({
                                                 response : ["test"],
@@ -302,10 +304,10 @@ joynrTestRequire(
                                             // make sure publication payload is forwarded
                                             expect(publicationReceivedSpy).toHaveBeenCalledWith(
                                                     publication.response[0]);
-                                            increaseFakeTime(51);
+                                            increaseFakeTime((alertAfterIntervalMs / 2) + 1);
                                             // make sure no alert is triggered if publication is received
                                             expect(publicationMissedSpy).not.toHaveBeenCalled();
-                                            increaseFakeTime(101);
+                                            increaseFakeTime(alertAfterIntervalMs + 1);
                                             // if no publications follow alert should be triggered again
                                             expect(publicationMissedSpy).toHaveBeenCalled();
 
@@ -323,8 +325,8 @@ joynrTestRequire(
                                     messagingQos : new MessagingQos(),
                                     attributeName : "testAttribute",
                                     qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                        alertAfterIntervalMs : 100,
-                                        expiryDateMs : Date.now() + 250
+                                        alertAfterIntervalMs : alertAfterIntervalMs,
+                                        expiryDateMs : Date.now() + 50 + 2 * alertAfterIntervalMs
                                     }),
                                     onReceive : publicationReceivedSpy,
                                     onError : publicationMissedSpy
@@ -469,6 +471,7 @@ joynrTestRequire(
                                     var publicationMissedSpy =
                                             jasmine.createSpy('publicationMissedSpy');
                                     var subscriptionId;
+                                    var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
 
                                     runs(function() {
                                         //log.debug("registering subscription");
@@ -478,8 +481,8 @@ joynrTestRequire(
                                             messagingQos : new MessagingQos(),
                                             attributeName : "testAttribute",
                                             qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                                alertAfterIntervalMs : 100,
-                                                expiryDateMs : Date.now() + 10000
+                                                alertAfterIntervalMs : alertAfterIntervalMs,
+                                                expiryDateMs : Date.now() + 5 * alertAfterIntervalMs
                                             }),
                                             onReceive : publicationReceivedSpy,
                                             onError : publicationMissedSpy
@@ -501,11 +504,11 @@ joynrTestRequire(
                                             500);
 
                                     runs(function() {
-                                        increaseFakeTime(50);
+                                        increaseFakeTime(alertAfterIntervalMs / 2);
                                         expect(publicationMissedSpy).not.toHaveBeenCalled();
-                                        increaseFakeTime(51);
+                                        increaseFakeTime((alertAfterIntervalMs / 2) + 1);
                                         expect(publicationMissedSpy).toHaveBeenCalled();
-                                        increaseFakeTime(101);
+                                        increaseFakeTime(alertAfterIntervalMs + 1);
                                         expect(publicationMissedSpy.callCount).toEqual(2);
 
                                         // unsubscribe and expect no more missed publication alerts
@@ -526,11 +529,11 @@ joynrTestRequire(
                                                     subscriptionStop : subscriptionStop,
                                                     messagingQos : unsubscrMsgQos
                                                 });
-                                        increaseFakeTime(101);
+                                        increaseFakeTime(alertAfterIntervalMs + 1);
                                         expect(publicationMissedSpy.callCount).toEqual(2);
-                                        increaseFakeTime(101);
+                                        increaseFakeTime(alertAfterIntervalMs + 1);
                                         expect(publicationMissedSpy.callCount).toEqual(2);
-                                        increaseFakeTime(101);
+                                        increaseFakeTime(alertAfterIntervalMs + 1);
                                         expect(publicationMissedSpy.callCount).toEqual(2);
                                     });
                                 });
