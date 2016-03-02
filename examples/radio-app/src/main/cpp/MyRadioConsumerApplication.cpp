@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
     // value didn't change. It will send notifications more often if on-change notifications are
     // enabled, the value changes more often, and the minimum interval QoS does not prevent it. The
     // maximum interval can thus be seen as a sort of heart beat.
-    subscriptionQos.setMaxInterval(8 * 1000);
+    subscriptionQos.setMaxIntervalMs(8 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.

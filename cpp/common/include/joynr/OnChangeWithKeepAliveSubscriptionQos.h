@@ -22,6 +22,7 @@
 #include <cstdint>
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -71,13 +72,13 @@ public:
      *
      * @see SubscriptionQos#setValidityMs
      * @see OnChangeSubscriptionQos#setMinIntervalMs
-     * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
+     * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterInterval
      * @see SubscriptionQos#setPublicationTtlMs
      */
     OnChangeWithKeepAliveSubscriptionQos(const std::int64_t& validityMs,
                                          const std::int64_t& minIntervalMs,
-                                         const std::int64_t& maxInterval,
+                                         const std::int64_t& maxIntervalMs,
                                          const std::int64_t& alertAfterInterval);
 
     /**
@@ -89,7 +90,7 @@ public:
      * @param minInterval Minimum interval in milliseconds
      *
      * @see OnChangeSubscriptionQos#setMinIntervalMs
-     * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
+     * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
      */
     void setMinIntervalMs(const std::int64_t& minIntervalMs) override;
 
@@ -110,10 +111,18 @@ public:
      * minimum interval QoS does not prevent it. The maximum interval can thus be
      * seen as a sort of heart beat.
      *
-     * @return maxInterval
+     * @return maxIntervalMs
      *            The publisher will send a notification at least every maxInterval ms.
      */
-    virtual std::int64_t getMaxInterval() const;
+    virtual std::int64_t getMaxIntervalMs() const;
+
+    /**
+     * @deprecated
+     * @see OnChangeWithKeepAliveSubscriptionQos#getMaxIntervalMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use getMaxIntervalMs "
+                 "instead.")]] virtual std::int64_t
+    getMaxInterval() const;
 
     /**
      * @brief Sets maximum interval in milliseconds
@@ -132,10 +141,18 @@ public:
      * will be rounded down.
      * </ul>
      *
-     * @param maxInterval
+     * @param maxIntervalMs
      *            The publisher will send a notification at least every maxInterval_ms.
      */
-    virtual void setMaxInterval(const std::int64_t& maxInterval);
+    virtual void setMaxIntervalMs(const std::int64_t& maxIntervalMs);
+
+    /**
+     * @deprecated
+     * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use setMaxIntervalMs "
+                 "instead.")]] virtual void
+    setMaxInterval(const std::int64_t& maxIntervalMs);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds
@@ -180,7 +197,15 @@ public:
      * Returns the maximum value for the maximum interval in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_MAX_INTERVAL();
+    static const std::int64_t& MAX_MAX_INTERVAL_MS();
+
+    /**
+     * @deprecated
+     * @see OnChangeWithKeepAliveSubscriptionQos#MAX_MAX_INTERVAL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MAX_MAX_INTERVAL_MS "
+                 "instead.")]] static const std::int64_t&
+    MAX_MAX_INTERVAL();
 
     /**
      * @brief Returns the maximum value for the alertAfter interval in
@@ -204,13 +229,16 @@ protected:
      * The provider will send notifications every maximum interval in milliseconds,
      * even if the value didn't change.
      */
-    std::int64_t maxInterval;
+    std::int64_t maxIntervalMs;
 
     /**
      * @brief time span in milliseconds after which a publicationMissed
      * will be called if no publications were received
      */
     std::int64_t alertAfterInterval;
+
+private:
+    ADD_LOGGER(OnChangeWithKeepAliveSubscriptionQos);
 };
 
 } // namespace joynr

@@ -66,7 +66,7 @@ std::int64_t SubscriptionUtil::getPeriodicPublicationInterval(const Variant& qos
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
         const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
                 &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-        return subscriptionQosPtr->getMaxInterval();
+        return subscriptionQosPtr->getMaxIntervalMs();
     }
     if (qos.is<PeriodicSubscriptionQos>()) {
         const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
