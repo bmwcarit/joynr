@@ -110,8 +110,8 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * <br>
      * <b>Minimum and Maximum Values</b>
      * <ul>
-     * <li><b>Minimum</b> minInterval: 0.
-     * <li><b>Maximum</b> minInterval: 2.592.000.000 (30 days). Larger values
+     * <li><b>Minimum</b> minInterval: {@value #MIN_MIN_INTERVAL_MS}. Smaller values will be rounded up.
+     * <li><b>Maximum</b> minInterval: {@value #MAX_MIN_INTERVAL_MS}. Larger values
      * will be rounded down.
      * </ul>
      *
@@ -136,8 +136,8 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * <br>
      * <b>Minimum and Maximum Values</b>
      * <ul>
-     * <li><b>Minimum</b> minInterval: 0. Smaller values will be rounded up.
-     * <li><b>Maximum</b> minInterval: 2.592.000.000 (30 days). Larger values
+     * <li><b>Minimum</b> minInterval: {@value #MIN_MIN_INTERVAL_MS}. Smaller values will be rounded up.
+     * <li><b>Maximum</b> minInterval: {@value #MAX_MIN_INTERVAL_MS}. Larger values
      * will be rounded down.
      * </ul>
      *

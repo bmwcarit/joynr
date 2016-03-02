@@ -217,11 +217,11 @@ public abstract class SubscriptionQos implements JoynrType {
      *            <br>
      *            <b>Minimum and Default Values:</b>
      *            <ul>
-     *            <li><b>Minimum</b> publicationTtlMs = 100.
+     *            <li><b>Minimum</b> publicationTtlMs = {@value #MIN_PUBLICATION_TTL_MS}.
      *            Smaller values will be rounded up.
-     *            <li><b>Maximum</b> publicationTtlMs = 2.592.000.000 (30 days)
+     *            <li><b>Maximum</b> publicationTtlMs = {@value #MAX_PUBLICATION_TTL_MS}.
      *            Larger values will be rounded down.
-     *            <li><b>Default</b> publicationTtlMs = 10 000 (10 secs)
+     *            <li><b>Default</b> publicationTtlMs = {@value #DEFAULT_PUBLICATION_TTL_MS}.
      *            </ul>
      * @return the subscriptionQos (fluent interface)
      */
@@ -241,11 +241,11 @@ public abstract class SubscriptionQos implements JoynrType {
      *            <br>
      *            <b>Minimum and Default Values:</b>
      *            <ul>
-     *            <li><b>Minimum</b> publicationTtlMs = 100.
+     *            <li><b>Minimum</b> publicationTtlMs = {@value #MIN_PUBLICATION_TTL_MS}.
      *            Smaller values will be rounded up.
-     *            <li><b>Maximum</b> publicationTtlMs = 2.592.000.000 (30 days)
+     *            <li><b>Maximum</b> publicationTtlMs = {@value #MAX_PUBLICATION_TTL_MS}.
      *            Larger values will be rounded down.
-     *            <li><b>Default</b> publicationTtlMs = 10 000 (10 secs)
+     *            <li><b>Default</b> publicationTtlMs = {@value #DEFAULT_PUBLICATION_TTL_MS}.
      *            </ul>
      * @return the subscriptionQos (fluent interface)
      */
