@@ -170,7 +170,7 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
 
         it("constructs with correct default values", function() {
             var fixture = new OnChangeWithKeepAliveSubscriptionQos();
-            expect(fixture.minIntervalMs).toEqual(OnChangeSubscriptionQos.MIN_INTERVAL_MS);
+            expect(fixture.minIntervalMs).toEqual(OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS);
             expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
             expect(fixture.alertAfterIntervalMs).toEqual(
                     OnChangeWithKeepAliveSubscriptionQos.NEVER_ALERT);

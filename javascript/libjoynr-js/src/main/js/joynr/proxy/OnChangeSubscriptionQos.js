@@ -50,7 +50,7 @@ define(
              * @param {Number}
              *            [settings.minInterval] Deprecated parameter. Use settings.minIntervalMs instead
              * @param {Number}
-             *            [settings.minIntervalMs=OnChangeSubscriptionQos.MIN_INTERVAL_MS] defines how often
+             *            [settings.minIntervalMs=OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS] defines how often
              *            an update may be sent<br/>
              *            It is used to prevent flooding. Publications will be sent
              *            maintaining this minimum interval provided, even if the value
@@ -61,8 +61,8 @@ define(
              *            <br/>
              *            <b>Minimum and Default Values:</b>
              *            <ul>
-             *              <li>minimum value: {@link OnChangeSubscriptionQos.MIN_INTERVAL_MS}</li>
-             *              <li>default value: {@link OnChangeSubscriptionQos.MIN_INTERVAL_MS}</li>
+             *              <li>minimum value: {@link OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS}</li>
+             *              <li>default value: {@link OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS}</li>
              *            </ul>
              * @param {Number}
              *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
@@ -128,11 +128,11 @@ define(
                  * @type Number
                  */
                 Util.extend(this, defaultSettings, settings, subscriptionQos);
-                if (this.minIntervalMs < OnChangeSubscriptionQos.MIN_INTERVAL_MS) {
+                if (this.minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS) {
                     throw new Error("Wrong minIntervalMs with value "
                         + this.minIntervalMs
                         + ": it shall be higher than "
-                        + OnChangeSubscriptionQos.MIN_INTERVAL_MS);
+                        + OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS);
                 }
 
             }
@@ -141,17 +141,20 @@ define(
              * Minimum and default value for [minIntervalMs]{@link OnChangeSubscriptionQos#minIntervalMs}.
              * See [constructor description]{@link OnChangeSubscriptionQos}.
              *
-             * @name OnChangeSubscriptionQos.MIN_INTERVAL_MS
+             * @name OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
              * @type Number
              * @default 0
              * @static
              * @readonly
              */
-            OnChangeSubscriptionQos.MIN_INTERVAL_MS = 0;
-            OnChangeSubscriptionQos.MIN_INTERVAL = OnChangeSubscriptionQos.MIN_INTERVAL_MS;
+            OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS = 0;
+            /**
+             * @deprecated Use OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS instead. Will be removed by 01/01/2017
+             */
+            OnChangeSubscriptionQos.MIN_INTERVAL = OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS;
 
             defaultSettings = {
-                minIntervalMs : OnChangeSubscriptionQos.MIN_INTERVAL_MS
+                minIntervalMs : OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
             };
 
             return OnChangeSubscriptionQos;
