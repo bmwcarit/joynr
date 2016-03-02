@@ -72,9 +72,10 @@ define(
              *            [settings.alertAfterIntervalMs=PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL] defines how long to wait for an
              *            update before publicationMissed is called.<br/>
              *            <br/>
-             *            <b>Minimum and Default Values:</b>
+             *            <b>Minimum, Maximum and Default Values:</b>
              *            <ul>
              *              <li>minimum value: {@link PeriodicSubscriptionQos#period}</li>
+             *              <li>maximum value: {@link PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS}</li>
              *              <li>default value: {@link PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL}</li>
              *            </ul>
              * @param {Number}
@@ -171,6 +172,13 @@ define(
                         + this.periodMs);
                 }
 
+                if (this.alertAfterIntervalMs > PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
+                    throw new Error("Wrong alertAfterIntervalMs with value "
+                        + this.alertAfterIntervalMs
+                        + ": it shall be lower than "
+                        + PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
+                }
+
             }
 
             /**
@@ -225,6 +233,18 @@ define(
              * @deprecated Use PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL instead. Will be removed by 01/01/2017
              */
             PeriodicSubscriptionQos.NEVER_ALERT = PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+
+            /**
+             * Maximum value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+             * @type Number
+             * @default 2 592 000 000 (30 days)
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS = 2592000000;
 
             defaultSettings = {
                 periodMs : PeriodicSubscriptionQos.DEFAULT_PERIOD_MS,

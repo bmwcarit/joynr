@@ -184,6 +184,17 @@ joynrTestRequire("joynr/proxy/TestSubscriptionQos", [
             expect(function() {
                 testValues(60, 62, true, -4, -5, 200);
             }).toThrow();
+            //wrong alertAfterIntervalMs (exceeds MAX_ALERT_AFTER_INTERVAL_MS)
+            expect(
+                    function() {
+                        testValues(
+                                60,
+                                62,
+                                true,
+                                -4,
+                                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
+                                200);
+                    }).toThrow();
             //wrong expiryDate
             expect(function() {
                 testValues(60, -2, true, -4, 100, 200);
