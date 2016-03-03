@@ -52,7 +52,13 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
                     libjoynrMessagingAddress->toString());
     auto connectionEstablishedSemaphore = std::make_shared<Semaphore>(0);
     auto connectCallback = [this, initializationMsg, connectionEstablishedSemaphore]() mutable {
-        websocket->sendTextMessage(initializationMsg);
+        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
+            // initialization message will be sent after reconnect
+            JOYNR_LOG_ERROR(logger,
+                            "Sending websocket initialization message failed. Error: {}",
+                            e.getMessage());
+        };
+        websocket->sendTextMessage(initializationMsg, onFailure);
         if (connectionEstablishedSemaphore) {
             connectionEstablishedSemaphore->notify();
             connectionEstablishedSemaphore = nullptr;

@@ -57,9 +57,15 @@ public:
     bool isInitialized() const override;
     bool isConnected() const override;
 
-    void send(const std::string& msg) override;
-    void sendTextMessage(const std::string& msg);
-    void sendBinaryMessage(const std::string& msg);
+    void send(const std::string& msg,
+              const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+            override;
+    void sendTextMessage(
+            const std::string& msg,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
+    void sendBinaryMessage(
+            const std::string& msg,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
 private:
     void reconnect();

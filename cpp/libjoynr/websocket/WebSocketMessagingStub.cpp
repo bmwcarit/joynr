@@ -51,8 +51,7 @@ void WebSocketMessagingStub::transmit(
 
     std::string serializedMessage = JsonSerializer::serialize(message);
     JOYNR_LOG_TRACE(logger, ">>>> OUTGOING >>>> {}", serializedMessage);
-    // TODO handle errors in webSocket->send
-    webSocket->send(serializedMessage);
+    webSocket->send(serializedMessage, onFailure);
 }
 
 } // namespace joynr

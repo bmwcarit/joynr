@@ -52,7 +52,9 @@ public:
      */
     ~QWebSocketSendWrapper() override;
 
-    void send(const std::string& message) override;
+    void send(const std::string& message,
+              const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+            override;
 
     void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected) override;
 

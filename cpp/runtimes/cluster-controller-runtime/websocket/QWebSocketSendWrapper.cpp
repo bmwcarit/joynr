@@ -44,8 +44,11 @@ QWebSocketSendWrapper::~QWebSocketSendWrapper()
     websocket->deleteLater();
 }
 
-void QWebSocketSendWrapper::send(const std::string& message)
+void QWebSocketSendWrapper::send(
+        const std::string& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
+    std::ignore = onFailure;
     emit queueTextMessage(QString::fromStdString(message));
 }
 
