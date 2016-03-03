@@ -288,7 +288,9 @@ public class LongPollChannel {
     }
 
     public void shutdown() {
-        logger.info("SHUTTING down long poll for {}", httpget.getURI().toASCIIString());
+        if (httpget != null && httpget.getURI() != null) {
+            logger.info("SHUTTING down long poll for {}", httpget.getURI().toASCIIString());
+        }
         shutdown = true;
 
         if (httpclient != null) {
