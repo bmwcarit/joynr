@@ -87,3 +87,5 @@ add_subdirectory(src/main/cpp/provider)
 
 ### provider application ###
 add_subdirectory(src/main/cpp/provider-app)
+
+add_subdirectory(src/main/cpp/short-circuit)
