@@ -130,6 +130,9 @@ joynrTestRequire(
                             }
                             expect(subscriptionQos.publicationTtlMs).toBe(expectedPublicationTtlMs);
 
+                            if (expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS) {
+                                expiryDateMs = SubscriptionQos.MIN_EXPIRY_MS;
+                            }
                             expect(subscriptionQos.expiryDateMs).toBe(expiryDateMs);
 
                             var expectedAlertAfterIntervalMs = alertAfterIntervalMs;
@@ -257,9 +260,8 @@ joynrTestRequire(
                                                         200);
                                             }).toThrow();
                                     //wrong expiryDate
-                                    expect(function() {
-                                        testValues(60, -2, true, -4, 100, 200);
-                                    }).toThrow();
+                                    expect(testValues(60, -2, true, -4, 100, 200).expiryDateMs)
+                                            .toEqual(SubscriptionQos.MIN_EXPIRY_MS);
                                     testValues(60, 62, true, 10, 100, 200);
 
                                     //wrong publicationTtlMs

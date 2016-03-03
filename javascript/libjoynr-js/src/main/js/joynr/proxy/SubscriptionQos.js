@@ -163,10 +163,9 @@ define(
                 }
 
                 if (this.expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS) {
-                    throw new Error("Wrong expiry date with value "
-                        + this.expiryDateMs
-                        + ": it shall be higher than "
+                    log.warn("expiryDateMs < MIN_EXPIRY_MS. Using MIN_EXPIRY_MS: "
                         + SubscriptionQos.MIN_EXPIRY_MS);
+                    this.expiryDateMs = SubscriptionQos.MIN_EXPIRY_MS;
                 }
 
                 /**
