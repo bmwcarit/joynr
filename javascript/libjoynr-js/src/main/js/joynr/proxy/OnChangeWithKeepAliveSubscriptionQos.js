@@ -204,17 +204,17 @@ define(
 
                 if (this.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
                     && this.alertAfterIntervalMs < this.maxIntervalMs) {
-                    throw new Error("Wrong alertAfterIntervalMs with value "
-                        + this.alertAfterIntervalMs
-                        + ": it shall be higher than the specified maxIntervalMs of "
+                    log.warn("alertAfterIntervalMs < maxIntervalMs. Using maxIntervalMs: "
                         + this.maxIntervalMs);
+                    this.alertAfterIntervalMs = this.maxIntervalMs;
                 }
 
                 if (this.alertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
-                    throw new Error("Wrong alertAfterIntervalMs with value "
-                        + this.alertAfterIntervalMs
-                        + ": it shall be lower than "
-                        + OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
+                    log
+                            .warn("alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: "
+                                + OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
+                    this.alertAfterIntervalMs =
+                            OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
                 }
 
                 /**

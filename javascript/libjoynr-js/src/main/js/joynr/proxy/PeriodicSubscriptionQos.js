@@ -166,17 +166,15 @@ define(
 
                 if (this.alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
                     && this.alertAfterIntervalMs < this.periodMs) {
-                    throw new Error("Wrong alertAfterIntervalMs with value "
-                        + this.alertAfterIntervalMs
-                        + ": it shall be higher than the specified periodMs of "
-                        + this.periodMs);
+                    log.warn("alertAfterIntervalMs < periodMs. Using periodMs: " + this.periodMs);
+                    this.alertAfterIntervalMs = this.periodMs;
                 }
 
                 if (this.alertAfterIntervalMs > PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
-                    throw new Error("Wrong alertAfterIntervalMs with value "
-                        + this.alertAfterIntervalMs
-                        + ": it shall be lower than "
-                        + PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
+                    log
+                            .warn("alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: "
+                                + PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
+                    this.alertAfterIntervalMs = PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
                 }
 
                 /**

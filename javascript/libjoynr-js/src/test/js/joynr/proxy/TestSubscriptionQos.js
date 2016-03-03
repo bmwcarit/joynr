@@ -147,6 +147,14 @@ joynrTestRequire(
                             expect(subscriptionQos.expiryDateMs).toBe(expiryDateMs);
 
                             var expectedAlertAfterIntervalMs = alertAfterIntervalMs;
+                            if (expectedAlertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
+                                expectedAlertAfterIntervalMs =
+                                        OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
+                            }
+                            if (expectedAlertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+                                && expectedAlertAfterIntervalMs < expectedMaxIntervalMs) {
+                                expectedAlertAfterIntervalMs = expectedMaxIntervalMs;
+                            }
                             expect(subscriptionQos.alertAfterIntervalMs).toBe(
                                     expectedAlertAfterIntervalMs);
                             return subscriptionQos;
@@ -186,20 +194,20 @@ joynrTestRequire(
                                                         100);
                                             }).toThrow();
                                     //wrong alertAfterIntervalMs (shall be higher then the periodMs)
-                                    expect(function() {
-                                        createSubscriptionQos(1, 50, false, 4, 5, 100);
-                                    }).toThrow();
+                                    expect(
+                                            createSubscriptionQos(1, 50, false, 4, 5, 100).alertAfterIntervalMs)
+                                            .toEqual(50);
                                     //wrong alertAfterIntervalMs (exceed MAX_ALERT_AFTER_INTERVAL_MS)
                                     expect(
-                                            function() {
-                                                createSubscriptionQos(
-                                                        1,
-                                                        50,
-                                                        false,
-                                                        4,
-                                                        OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
-                                                        100);
-                                            }).toThrow();
+                                            createSubscriptionQos(
+                                                    1,
+                                                    50,
+                                                    false,
+                                                    4,
+                                                    OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
+                                                    100).alertAfterIntervalMs)
+                                            .toEqual(
+                                                    OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
                                     testValues(1, 50, false, 4, 51, 100);
 
                                     //wrong publicationTtlMs
@@ -234,41 +242,40 @@ joynrTestRequire(
                                             .toEqual(60);
                                     //wrong maxIntervalMs (below OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS)
                                     expect(
-                                                testValues(
-                                                        10,
-                                                        OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS - 1,
-                                                        true,
-                                                        -4,
-                                                        -5,
+                                            testValues(
+                                                    10,
+                                                    OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS - 1,
+                                                    true,
+                                                    -4,
+                                                    -5,
                                                     200).maxIntervalMs)
                                             .toEqual(
                                                     OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS);
                                     //wrong maxIntervalMs (exceeds OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS)
                                     expect(
-                                                testValues(
-                                                        10,
-                                                        OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS + 1,
-                                                        true,
-                                                        -4,
-                                                        -5,
+                                            testValues(
+                                                    10,
+                                                    OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS + 1,
+                                                    true,
+                                                    -4,
+                                                    -5,
                                                     200).maxIntervalMs)
                                             .toEqual(
                                                     OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS);
                                     //wrong alertAfterIntervalMs (shall be higher than maxIntervalMs)
-                                    expect(function() {
-                                        testValues(60, 62, true, -4, -5, 200);
-                                    }).toThrow();
+                                    expect(
+                                            testValues(60, 62, true, -4, -5, 200).alertAfterIntervalMs)
+                                            .toEqual(62);
                                     //wrong alertAfterIntervalMs (exceeds MAX_ALERT_AFTER_INTERVAL_MS)
                                     expect(
-                                            function() {
-                                                testValues(
-                                                        60,
-                                                        62,
-                                                        true,
-                                                        -4,
-                                                        PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
-                                                        200);
-                                            }).toThrow();
+                                            testValues(
+                                                    60,
+                                                    62,
+                                                    true,
+                                                    -4,
+                                                    PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
+                                                    200).alertAfterIntervalMs).toEqual(
+                                            PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
                                     //wrong expiryDate
                                     expect(testValues(60, -2, true, -4, 100, 200).expiryDateMs)
                                             .toEqual(SubscriptionQos.MIN_EXPIRY_MS);
