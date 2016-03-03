@@ -668,7 +668,7 @@
  						<goals>
  							<goal>jsdoc3</goal>
  						</goals>
- 						<phase>process-sources</phase>
+ 						<phase>install</phase>
  					</execution>
 				</executions>
 				<configuration>
