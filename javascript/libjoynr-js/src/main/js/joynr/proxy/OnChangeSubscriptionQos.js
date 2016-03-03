@@ -50,8 +50,8 @@ define(
              * @param {Number}
              *            [settings.minInterval] Deprecated parameter. Use settings.minIntervalMs instead
              * @param {Number}
-             *            [settings.minIntervalMs=0] defines how often an update may be
-             *            sent<br/>
+             *            [settings.minIntervalMs=OnChangeSubscriptionQos.MIN_INTERVAL_MS] defines how often
+             *            an update may be sent<br/>
              *            It is used to prevent flooding. Publications will be sent
              *            maintaining this minimum interval provided, even if the value
              *            changes more often. This prevents the consumer from being

@@ -80,8 +80,7 @@ define(
              * @param {Number}
              *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
              * @param {Number}
-             *            [settings.expiryDateMs] how long is the subscription
-             *            valid
+             *            [settings.expiryDateMs] how long is the subscription valid
              * @param {Number}
              *            [settings.validityMs] The validity of the subscription relative to the current time.
              * @param {Number}

@@ -50,8 +50,8 @@ define(
              * @param {Number}
              *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
              * @param {Number}
-             *            [settings.expiryDateMs=0] The expiry date is the end date of the
-             *            subscription. This value is provided in milliseconds
+             *            [settings.expiryDateMs=SubscriptionQos.NO_EXPIRY_DATE] The expiry date is the
+             *            end date of the subscription. This value is provided in milliseconds
              *            (since 1970-01-01T00:00:00.000).<br/>
              *            <br/>
              *            <b>Minimum and Default Values:</b>
