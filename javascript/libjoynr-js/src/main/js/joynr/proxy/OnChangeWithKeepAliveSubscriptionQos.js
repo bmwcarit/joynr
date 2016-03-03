@@ -185,24 +185,21 @@ define(
                 Util.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
 
                 if (this.maxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS) {
-                    throw new Error("Wrong maxIntervalMs with value "
-                        + this.maxIntervalMs
-                        + ": it shall be higher than "
+                    log.warn("maxIntervalMs < MIN_MAX_INTERVAL_MS. Using MIN_MAX_INTERVAL_MS: "
                         + OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS);
+                    this.maxIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS;
                 }
 
                 if (this.maxIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS) {
-                    throw new Error("Wrong maxIntervalMs with value "
-                        + this.maxIntervalMs
-                        + ": it shall be lower than "
+                    log.warn("maxIntervalMs > MAX_MAX_INTERVAL_MS. Using MAX_MAX_INTERVAL_MS: "
                         + OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS);
+                    this.maxIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS;
                 }
 
                 if (this.maxIntervalMs < this.minIntervalMs) {
-                    throw new Error("Wrong maxIntervalMs with value "
-                        + this.maxIntervalMs
-                        + ": it shall be higher than the specified minIntervalMs of "
+                    log.warn("maxIntervalMs < minIntervalMs. Using minIntervalMs: "
                         + this.minIntervalMs);
+                    this.maxIntervalMs = this.minIntervalMs;
                 }
 
                 if (this.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
