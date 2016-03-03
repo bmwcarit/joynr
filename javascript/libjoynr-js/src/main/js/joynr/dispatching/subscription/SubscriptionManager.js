@@ -155,11 +155,12 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         function calculateTtl(messagingQos, subscriptionQos) {
             var ttl;
             if (subscriptionQos.expiryDateMs === SubscriptionQos.NO_EXPIRY_DATE) {
-                ttl = defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
-            } else {
-                ttl = subscriptionQos.expiryDateMs - Date.now();
+                return defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
             }
-
+            ttl = SubscriptionQos.expiryDateMs - Date.now();
+            if (ttl > defaultMessagingSettings.MAX_MESSAGING_TTL_MS) {
+                return defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
+            }
             return ttl;
         }
 
