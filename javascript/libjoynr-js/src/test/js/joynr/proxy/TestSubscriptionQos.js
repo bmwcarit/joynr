@@ -122,6 +122,12 @@ joynrTestRequire(
                                 expect(subscriptionQos.periodMs).toBe(expectedMaxIntervalMs);
                             }
                             var expectedPublicationTtlMs = publicationTtlMs;
+                            if (expectedPublicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS) {
+                                expectedPublicationTtlMs = SubscriptionQos.MIN_PUBLICATION_TTL_MS;
+                            }
+                            if (expectedPublicationTtlMs > SubscriptionQos.MAX_PUBLICATION_TTL_MS) {
+                                expectedPublicationTtlMs = SubscriptionQos.MAX_PUBLICATION_TTL_MS;
+                            }
                             expect(subscriptionQos.publicationTtlMs).toBe(expectedPublicationTtlMs);
 
                             expect(subscriptionQos.expiryDateMs).toBe(expiryDateMs);
@@ -129,6 +135,7 @@ joynrTestRequire(
                             var expectedAlertAfterIntervalMs = alertAfterIntervalMs;
                             expect(subscriptionQos.alertAfterIntervalMs).toBe(
                                     expectedAlertAfterIntervalMs);
+                            return subscriptionQos;
                         }
 
                         it(
@@ -182,31 +189,29 @@ joynrTestRequire(
                                     testValues(1, 50, false, 4, 51, 100);
 
                                     //wrong publicationTtlMs
-                                    expect(function() {
-                                        testValues(-1, -2, true, -4, -5, -6);
-                                    }).toThrow();
+                                    expect(testValues(-1, -2, true, -4, -5, -6).publicationTtlMs)
+                                            .toEqual(SubscriptionQos.MIN_PUBLICATION_TTL_MS);
                                     //wrong publicationTtlMs
                                     expect(
-                                            function() {
-                                                testValues(
-                                                        60,
-                                                        62,
-                                                        true,
-                                                        10,
-                                                        100,
-                                                        SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1);
-                                            }).toThrow();
+                                            testValues(
+                                                    60,
+                                                    62,
+                                                    true,
+                                                    10,
+                                                    100,
+                                                    SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1).publicationTtlMs)
+                                            .toEqual(SubscriptionQos.MAX_PUBLICATION_TTL_MS);
                                     //wrong minIntervalMs
                                     expect(testValues(-1, -2, true, -4, -5, 200).minIntervalMs)
                                             .toEqual(OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS);
                                     //wrong minIntervalMs (exceeds MAX_MIN_INTERVAL_MS)
                                     expect(
-                                                testValues(
-                                                        OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS + 1,
-                                                        62,
-                                                        true,
-                                                        10,
-                                                        100,
+                                            testValues(
+                                                    OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS + 1,
+                                                    62,
+                                                    true,
+                                                    10,
+                                                    100,
                                                     200).minIntervalMs).toEqual(
                                             OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS);
 
