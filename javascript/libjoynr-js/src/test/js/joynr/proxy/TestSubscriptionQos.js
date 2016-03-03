@@ -105,6 +105,13 @@ joynrTestRequire(
                                             alertAfterIntervalMs,
                                             publicationTtlMs);
                             var expectedMaxIntervalMs = periodMs;
+                            if (minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS) {
+                                minIntervalMs = OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS;
+                            }
+                            if (minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS) {
+                                minIntervalMs = OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS;
+                            }
+
                             if (onChange) {
                                 var expectedMinIntervalMs = minIntervalMs;
 
@@ -190,20 +197,18 @@ joynrTestRequire(
                                                         SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1);
                                             }).toThrow();
                                     //wrong minIntervalMs
-                                    expect(function() {
-                                        testValues(-1, -2, true, -4, -5, 200);
-                                    }).toThrow();
+                                    expect(testValues(-1, -2, true, -4, -5, 200).minIntervalMs)
+                                            .toEqual(OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS);
                                     //wrong minIntervalMs (exceeds MAX_MIN_INTERVAL_MS)
                                     expect(
-                                            function() {
                                                 testValues(
                                                         OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS + 1,
                                                         62,
                                                         true,
                                                         10,
                                                         100,
-                                                        200);
-                                            }).toThrow();
+                                                    200).minIntervalMs).toEqual(
+                                            OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS);
 
                                     //wrong maxIntervalMs (shall be higher than minIntervalMs)
                                     expect(function() {

@@ -130,16 +130,14 @@ define(
                  */
                 Util.extend(this, defaultSettings, settings, subscriptionQos);
                 if (this.minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS) {
-                    throw new Error("Wrong minIntervalMs with value "
-                        + this.minIntervalMs
-                        + ": it shall be higher than "
+                    log.warn("minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: "
                         + OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS);
+                    this.minIntervalMs = OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS;
                 }
                 if (this.minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS) {
-                    throw new Error("Wrong minIntervalMs with value "
-                        + this.minIntervalMs
-                        + ": it shall be lower than "
+                    log.warn("minIntervalMs > MAX_MIN_INTERVAL_MS. Using MAX_MIN_INTERVAL_MS: "
                         + OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS);
+                    this.minIntervalMs = OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS;
                 }
             }
 
