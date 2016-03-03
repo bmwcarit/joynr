@@ -23,7 +23,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include "PerformanceTestEchoProvider.h"
+#include "../provider/PerformanceTestEchoProvider.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 
