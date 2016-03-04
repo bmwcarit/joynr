@@ -18,8 +18,10 @@
  */
 #include "AbstractRobustnessTest.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 
 using joynr::OnChangeSubscriptionQos;
+using joynr::OnChangeWithKeepAliveSubscriptionQos;
 
 class RobustnessTestProviderCrash : public AbstractRobustnessTest
 {
@@ -84,5 +86,42 @@ TEST_F(RobustnessTestProviderCrash, subscribeTo_broadcastWithSingleStringParamet
         ADD_FAILURE() << "stopFireBroadcastWithSingleStringParameter failed with: "
                       << e.getMessage();
     }
-    // TOOD similar test for subscriptions after provider restart and before provider restart
+}
+
+TEST_F(RobustnessTestProviderCrash, subscribeToAttributeString)
+{
+    Semaphore semaphore(0);
+    auto mockListener = std::make_shared<MockSubscriptionListenerOneType<std::string>>();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    EXPECT_CALL(*mockListener, onReceive(_)).WillRepeatedly(ReleaseSemaphore(&semaphore));
+
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos;
+    subscriptionQos.setMinIntervalMs(5 * 1000);
+    subscriptionQos.setMaxIntervalMs(30 * 1000);
+    subscriptionQos.setValidityMs(120 * 1000);
+    proxy->subscribeToAttributeString(mockListener, subscriptionQos);
+
+    // the first publication should arrive immediately after subscription is done
+    try {
+        // Wait for a subscription message to arrive
+        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(60)))
+                << "attribute publication did not arrive in time";
+    } catch (const joynr::exceptions::JoynrRuntimeException& e) {
+        ADD_FAILURE() << "waiting for attribute publication failed with: " << e.getMessage();
+    }
+
+    // kill and restart the provider while the time period until the next
+    // publication happens is passing; the time period must be long enough
+    // so that no further publication is sent until the provider got killed
+    killProvider();
+    startProvider();
+
+    try {
+        // Wait for a subscription message to arrive
+        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(60)))
+                << "attribute publication did not arrive in time";
+    } catch (const joynr::exceptions::JoynrRuntimeException& e) {
+        ADD_FAILURE() << "waiting for attribute publication failed with: " << e.getMessage();
+    }
 }
