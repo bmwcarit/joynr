@@ -36,6 +36,8 @@ WebSocketPpClient::WebSocketPpClient(const WebSocketSettings& wsSettings)
           thread(),
           connection(),
           isRunning(true),
+          ioService(),
+          reconnectTimer(ioService),
           state(State::Disconnected),
           onTextMessageReceivedCallback(),
           onBinaryMessageReceived(),
@@ -45,7 +47,7 @@ WebSocketPpClient::WebSocketPpClient(const WebSocketSettings& wsSettings)
           reconnectSleepTimeMs(wsSettings.getReconnectSleepTimeMs())
 {
     websocketpp::lib::error_code initializationError;
-    endpoint.init_asio(initializationError);
+    endpoint.init_asio(&ioService, initializationError);
     if (initializationError) {
         JOYNR_LOG_FATAL(
                 logger, "error during WebSocketPp initialization: ", initializationError.message());
@@ -96,8 +98,19 @@ void WebSocketPpClient::connect(system::RoutingTypes::WebSocketAddress address)
     thread = std::thread(&Client::run, &endpoint);
 }
 
-void WebSocketPpClient::reconnect()
+void WebSocketPpClient::reconnect(const boost::system::error_code& reconnectTimerError)
 {
+    if (reconnectTimerError == boost::asio::error::operation_aborted) {
+        // Assume WebSocketPp.close() has been called
+        JOYNR_LOG_DEBUG(logger,
+                        "reconnect aborted after shutdown, error code from reconnect timer: {}",
+                        reconnectTimerError.message());
+        return;
+    } else if (reconnectTimerError) {
+        JOYNR_LOG_ERROR(logger,
+                        "reconnect called with error code from reconnect timer: {}",
+                        reconnectTimerError.message());
+    }
     bool secure = address.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS;
     assert(!secure && "SSL is not yet supported");
     websocketpp::uri uri(secure, address.getHost(), address.getPort(), address.getPath());
@@ -116,6 +129,21 @@ void WebSocketPpClient::reconnect()
 
     state = State::Connecting;
     endpoint.connect(connectionPtr);
+}
+
+void WebSocketPpClient::delayedReconnect()
+{
+    boost::system::error_code reconnectTimerError;
+    reconnectTimer.expires_from_now(reconnectSleepTimeMs, reconnectTimerError);
+    if (reconnectTimerError) {
+        JOYNR_LOG_FATAL(logger,
+                        "Error from reconnect timer: {}: {}",
+                        reconnectTimerError.value(),
+                        reconnectTimerError.message());
+    } else {
+        reconnectTimer.async_wait(
+                std::bind(&WebSocketPpClient::reconnect, this, std::placeholders::_1));
+    }
 }
 
 void WebSocketPpClient::sendTextMessage(
@@ -149,6 +177,9 @@ void WebSocketPpClient::sendBinaryMessage(
 void WebSocketPpClient::close()
 {
     isRunning = false;
+    boost::system::error_code timerError;
+    // ignore errors
+    reconnectTimer.cancel(timerError);
     if (state == State::Connected) {
         disconnect();
     }
@@ -207,9 +238,8 @@ void WebSocketPpClient::onConnectionClosed(ConnectionHandle hdl)
             onConnectionClosedCallback();
         }
     } else {
-        std::this_thread::sleep_for(reconnectSleepTimeMs);
         JOYNR_LOG_DEBUG(logger, "connection closed unexpectedly. Trying to reconnect...");
-        reconnect();
+        delayedReconnect();
     }
 }
 
@@ -220,11 +250,10 @@ void WebSocketPpClient::onConnectionFailed(ConnectionHandle hdl)
         JOYNR_LOG_DEBUG(logger, "connection closed");
     } else {
         Client::connection_ptr con = endpoint.get_con_from_hdl(hdl);
-        std::this_thread::sleep_for(reconnectSleepTimeMs);
         JOYNR_LOG_ERROR(logger,
                         "websocket connection failed - error: {}. Trying to reconnect...",
                         con->get_ec().message());
-        reconnect();
+        delayedReconnect();
     }
 }
 

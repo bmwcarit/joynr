@@ -26,6 +26,9 @@
 #include <websocketpp/config/asio_client.hpp>
 #include <websocketpp/client.hpp>
 
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/io_service.hpp>
+
 #include "joynr/Logger.h"
 #include "joynr/IWebSocketSendInterface.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -68,7 +71,9 @@ public:
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
 private:
-    void reconnect();
+    void reconnect(
+            const boost::system::error_code& reconnectTimerError = boost::system::error_code());
+    void delayedReconnect();
     void disconnect();
     void onConnectionOpened(ConnectionHandle hdl);
     void onConnectionClosed(ConnectionHandle hdl);
@@ -79,6 +84,9 @@ private:
     std::thread thread;
     ConnectionHandle connection;
     std::atomic<bool> isRunning;
+
+    boost::asio::io_service ioService;
+    boost::asio::steady_timer reconnectTimer;
 
     std::atomic<State> state;
     std::function<void(const std::string&)> onTextMessageReceivedCallback;
