@@ -19,8 +19,9 @@
  * #L%
  */
 
-var prettyLog = require("./logging.js").prettyLog;
-var error = require("./logging.js").error;
+var logging = require("./logging.js");
+var prettyLog = logging.prettyLog;
+var error = logging.error;
 
 var Promise = require("joynr/lib/bluebird.js").Promise;
 
@@ -442,14 +443,14 @@ exports.implementation = {
                 reject(new joynr.exceptions.ProviderRuntimeException(
                         {detailMessage: "methodWithStringsAndSpecifiedStringOutLength: Maximum length exceeded"}));
             } else {
-                console.log("### opArgs.int32StringLengthArg: " + opArgs.int32StringLengthArg);
+                log("### opArgs.int32StringLengthArg: " + opArgs.int32StringLengthArg);
                 var stringOutValue = "";
-                console.log("### before for: " + stringOutValue);
+                log("### before for: " + stringOutValue);
                 for (i = 0; i < opArgs.int32StringLengthArg; i++) {
-                    console.log("### for: " + i);
+                    log("### for: " + i);
                     stringOutValue += "A";
                 }
-                console.log("### after for: " + stringOutValue);
+                log("### after for: " + stringOutValue);
                 resolve({stringOut: stringOutValue});
             }
         });

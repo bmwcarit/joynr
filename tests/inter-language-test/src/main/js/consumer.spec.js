@@ -42,7 +42,7 @@ var tests = [];
 // report test result, if called multple times,
 // updates result
 var reportTest = function(name, status) {
-    console.log("reportTest called: " + name + ", status: " + status);
+    log("reportTest called: " + name + ", status: " + status);
     var i;
     for (i = 0; i < tests.length; i++) {
         if (tests[i].name === name) {
@@ -2577,7 +2577,7 @@ describe("Consumer test", function() {
         if (initialized === false) {
 
             runs(function() {
-                console.log("Environment not yet setup");
+                log("Environment not yet setup");
                 joynr.load(provisioning).then(function(loadedJoynr) {
                     log("joynr started");
                     joynr = loadedJoynr;
@@ -2608,7 +2608,7 @@ describe("Consumer test", function() {
                 initialized = true;
             });
         } else {
-            console.log("Environment already setup");
+            log("Environment already setup");
         }
     });
 

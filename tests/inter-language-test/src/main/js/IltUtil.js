@@ -57,13 +57,13 @@ IltUtil = {};
 
 
 IltUtil.checkBoolean = function(booleanValue) {
-    console.log("IltUtil.checkBoolean called with " + booleanValue);
+    log("IltUtil.checkBoolean called with " + booleanValue);
     expect(booleanValue).toBeTruthy();
     if (booleanValue === true){
-        console.log("IltUtil.checkBoolean returning true");
+        log("IltUtil.checkBoolean returning true");
         return true;
     } else {
-        console.log("IltUtil.checkBoolean returning false");
+        log("IltUtil.checkBoolean returning false");
         return false;
     }
 }
