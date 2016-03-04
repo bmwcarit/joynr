@@ -19,13 +19,13 @@
  * #L%
  */
 
-var logging = require("./logging.js");
-var prettyLog = logging.prettyLog;
-var error = logging.error;
-
 var Promise = require("joynr/lib/bluebird.js").Promise;
 
 var joynr = require("joynr");
+var testbase = require("test-base");
+var log = testbase.logging.log;
+var prettyLog = testbase.logging.prettyLog;
+var error = testbase.logging.error;
 
 var IltUtil = require("./IltUtil.js");
 var ExtendedEnumerationWithPartlyDefinedValues = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues.js");

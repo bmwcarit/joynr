@@ -19,8 +19,9 @@
  * #L%
  */
 
-var log = require("./logging.js").log;
-var prettyLog = require("./logging.js").prettyLog;
+var testbase = require("test-base");
+var log = testbase.logging.log;
+var prettyLog = testbase.logging.prettyLog;
 
 var showHelp = function(modes) {
     var optionsText;

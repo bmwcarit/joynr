@@ -17,8 +17,8 @@
  * #L%
  */
 
-var log = require("./logging.js").log;
 var joynr = require("joynr");
+var log = require("test-base").logging.log;
 
 // imports
 joynr.interlanguagetest = {};

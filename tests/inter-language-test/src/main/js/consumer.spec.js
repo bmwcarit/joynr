@@ -20,9 +20,11 @@
  * #L%
  */
 
-var log = require("./logging.js").log;
-var prettyLog = require("./logging.js").prettyLog;
 var IltUtil = require("./IltUtil.js");
+
+var testbase = require("test-base");
+var log = testbase.logging.log;
+var prettyLog = testbase.logging.prettyLog;
 
 var ExtendedEnumerationWithPartlyDefinedValues = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues.js");
 var ExtendedInterfaceEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedInterfaceEnumerationInTypeCollection.js");
@@ -35,120 +37,7 @@ var MapStringString = require("../generated-javascript/joynr/interlanguagetest/n
 
 var Promise = require("joynr/lib/bluebird.js").Promise;
 
-// test results
-
-var tests = [];
-
-// report test result, if called multple times,
-// updates result
-var reportTest = function(name, status) {
-    log("reportTest called: " + name + ", status: " + status);
-    var i;
-    for (i = 0; i < tests.length; i++) {
-        if (tests[i].name === name) {
-            tests[i].result = status;
-            return;
-        }
-    }
-
-    // new entry
-    var result = { "name" : name, "result" : status };
-    tests.push(result);
-};
-
-var evaluateAndPrintResults = function() {
-    var exitCode;
-    var cntFailed = 0;
-    var cntSkipped = 0;
-    var cntOk = 0;
-    var cols = 75;
-    var buffer = '===========================================================================';
-    var filler = '...........................................................................';
-    var horizontalRuler = buffer;
-    var result;
-    var length;
-    var output;
-    log(horizontalRuler);
-    log("INTERLANGUAGE TEST SUMMARY (JAVASCRIPT CONSUMER):");
-    log(horizontalRuler);
-    for (var i = 0; i < tests.length; i++) {
-        result = tests[i].result;
-        length = cols - tests[i].name.length - result.length;
-        length = (length > 0) ? length : 1;
-        output = tests[i].name + filler.substring(0, length) + result;
-        log(output);
-        if (tests[i].result === "OK") {
-            cntOk++;
-        } else if (tests[i].result === "FAILED") {
-            cntFailed++;
-        } else if (tests[i].result === "SKIPPED") {
-            cntSkipped++;
-        }
-    }
-    log(horizontalRuler);
-    log("Tests executed: " + (cntOk + cntFailed) + ", Success: " + cntOk + ", Failures: " + cntFailed + ", Skipped: " + cntSkipped);
-    log(horizontalRuler);
-    if (cntFailed > 0) {
-        log("Final result: FAILED");
-        exitCode = 1;
-    } else {
-        log("Final result: SUCCESS");
-        exitCode = 0;
-    }
-    log(horizontalRuler);
-    return exitCode;
-};
-
-(function() {
-    var IltReporter = function() {
-    };
-
-    IltReporter.prototype = {
-    reportRunnerResults: function(runner) {
-            var exitCode = evaluateAndPrintResults();
-            /*
-             * for some unknown reason, the jasmine test does not
-             * exit, but keeps on hanging. Thus do the exit manually
-             * here as a workaround.
-             * NOTE: Using the parameter --forceexit does not work
-             * either, since then the "reportRunnerResults" is not
-             * getting called.
-             */
-            process.exit(exitCode);
-    },
-
-    reportRunnerStarting: function(runner) {
-            // intentionally left empty
-    },
-
-    reportSpecResults: function(spec) {
-            var results = spec.results();
-            if (results) {
-                if (results.skipped) {
-                    reportTest(results.description, "SKIPPED");
-                } else {
-                    if (results.failedCount > 0) {
-                        reportTest(results.description, "FAILED");
-                    } else {
-                        reportTest(results.description, "OK");
-                    }
-                }
-            }
-    },
-
-    reportSpecStarting: function(spec) {
-            // intentionally left empty
-    },
-
-    reportSuiteResults: function(suite) {
-            // intentionally left empty
-    }
-};
-
-    jasmine.IltReporter = IltReporter;
-})();
-
-jasmine.getEnv().addReporter(new jasmine.IltReporter());
+jasmine.getEnv().addReporter(new testbase.TestReporter());
 
 var runTests = function(testInterfaceProxy, joynr, onDone) {
     // test implementations
@@ -2567,7 +2456,7 @@ log("domain: " + domain);
 describe("Consumer test", function() {
 
     var joynr = require("joynr");
-    var provisioning = require("./provisioning_common.js");
+    var provisioning = testbase.provisioning_common;
     var initialized = false;
     var testInterfaceProxy;
 
@@ -2595,6 +2484,7 @@ describe("Consumer test", function() {
                     }).catch(function(error) {
                         log("error building testInterfaceProxy: " + error);
                     });
+                    return loadedJoynr;
                 }).catch(function(error) {
                     throw error;
                 });
