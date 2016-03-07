@@ -28,6 +28,7 @@
 #include "joynr/ProxyBuilder.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/ProxyFactory.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/LocalDiscoveryAggregator.h"
@@ -150,12 +151,14 @@ protected:
             : proxyFactory(nullptr),
               participantIdStorage(nullptr),
               capabilitiesRegistrar(nullptr),
+              messagingSettings(settings),
               systemServicesSettings(settings),
               dispatcherAddress(nullptr),
               messageRouter(nullptr),
               discoveryProxy(nullptr),
               publicationManager(nullptr)
     {
+        messagingSettings.printSettings();
         systemServicesSettings.printSettings();
     }
 
@@ -165,6 +168,10 @@ protected:
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
+    /**
+     * @brief Messaging settings
+     */
+    MessagingSettings messagingSettings;
     /** @brief System services settings */
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */

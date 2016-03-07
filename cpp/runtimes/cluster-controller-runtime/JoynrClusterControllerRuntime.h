@@ -133,7 +133,6 @@ protected:
     ConnectorFactory* connectorFactory;
     // take ownership, so a pointer is used
     Settings* settings;
-    MessagingSettings messagingSettings;
     LibjoynrSettings libjoynrSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION

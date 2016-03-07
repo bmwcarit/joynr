@@ -133,7 +133,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
           joynrMessagingConnectorFactory(nullptr),
           connectorFactory(nullptr),
           settings(settings),
-          messagingSettings(*settings),
           libjoynrSettings(*settings),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
           dbusSettings(nullptr),
