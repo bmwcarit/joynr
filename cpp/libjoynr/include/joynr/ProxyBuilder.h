@@ -68,7 +68,8 @@ public:
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
                  std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress,
-                 std::shared_ptr<MessageRouter> messageRouter);
+                 std::shared_ptr<MessageRouter> messageRouter,
+                 std::uint64_t messagingMaximumTtlMs);
 
     /** Destructor */
     ~ProxyBuilder() override;
@@ -194,6 +195,7 @@ private:
 
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
+    std::uint64_t messagingMaximumTtlMs;
 };
 
 template <class T>
@@ -201,7 +203,8 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
                               joynr::system::IDiscoverySync& discoveryProxy,
                               const std::string& domain,
                               std::shared_ptr<system::RoutingTypes::Address> dispatcherAddress,
-                              std::shared_ptr<MessageRouter> messageRouter)
+                              std::shared_ptr<MessageRouter> messageRouter,
+                              std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
           cached(false),
           hasArbitrationStarted(false),
@@ -215,7 +218,8 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           discoveryTimeout(-1),
           dispatcherAddress(dispatcherAddress),
-          messageRouter(messageRouter)
+          messageRouter(messageRouter),
+          messagingMaximumTtlMs(messagingMaximumTtlMs)
 {
 }
 
@@ -273,6 +277,10 @@ template <class T>
 ProxyBuilder<T>* ProxyBuilder<T>::setMessagingQos(const MessagingQos& messagingQos)
 {
     this->messagingQos = messagingQos;
+    // check validity of messaging maximum TTL
+    if (this->messagingQos.getTtl() > messagingMaximumTtlMs) {
+        this->messagingQos.setTtl(messagingMaximumTtlMs);
+    }
     return this;
 }
 

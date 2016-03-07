@@ -124,8 +124,13 @@ public:
                     "Exception in JoynrRuntime: Creating a proxy before "
                     "startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(
-                proxyFactory, *discoveryProxy, domain, dispatcherAddress, messageRouter);
+        ProxyBuilder<TIntfProxy>* builder =
+                new ProxyBuilder<TIntfProxy>(proxyFactory,
+                                             *discoveryProxy,
+                                             domain,
+                                             dispatcherAddress,
+                                             messageRouter,
+                                             messagingSettings.getMaximumTtlMs());
         return builder;
     }
 
