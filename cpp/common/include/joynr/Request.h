@@ -56,8 +56,6 @@ public:
     void setParamDatatypes(std::vector<std::string> paramDatatypes);
 
 private:
-    static Variant parameterType(const Variant& param);
-
     std::string requestReplyId;
     std::string methodName;
     std::vector<Variant> params;
