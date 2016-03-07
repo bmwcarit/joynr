@@ -26,7 +26,7 @@ namespace joynr
 
 INIT_LOGGER(DummyPlatformSecurityManager);
 
-std::string DummyPlatformSecurityManager::getCurrentProcessUserId()
+std::string DummyPlatformSecurityManager::getCurrentProcessUserId() const
 {
     return std::string("USER");
 }

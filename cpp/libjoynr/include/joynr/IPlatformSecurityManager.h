@@ -36,7 +36,7 @@ public:
     /**
      * @return the platform user ID of the running process.
      */
-    virtual std::string getCurrentProcessUserId() = 0;
+    virtual std::string getCurrentProcessUserId() const = 0;
 
     /**
      * @param message

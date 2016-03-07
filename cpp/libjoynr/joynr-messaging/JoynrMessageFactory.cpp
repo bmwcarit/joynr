@@ -46,7 +46,7 @@ JoynrMessageFactory::~JoynrMessageFactory()
 JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
                                                 const std::string& receiverId,
                                                 const MessagingQos& qos,
-                                                const Request& payload)
+                                                const Request& payload) const
 {
     // create message and set type
     JoynrMessage msg;
@@ -58,7 +58,7 @@ JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
 JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
                                               const std::string& receiverId,
                                               const MessagingQos& qos,
-                                              const Reply& payload)
+                                              const Reply& payload) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY);
@@ -69,7 +69,7 @@ JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
 JoynrMessage JoynrMessageFactory::createOneWay(const std::string& senderId,
                                                const std::string& receiverId,
                                                const MessagingQos& qos,
-                                               const Reply& payload)
+                                               const Reply& payload) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
@@ -81,7 +81,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
         const std::string& senderId,
         const std::string& receiverId,
         const MessagingQos& qos,
-        const SubscriptionPublication& payload)
+        const SubscriptionPublication& payload) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION);
@@ -93,10 +93,11 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionRequest(const std::string& senderId,
-                                                            const std::string& receiverId,
-                                                            const MessagingQos& qos,
-                                                            const SubscriptionRequest& payload)
+JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
+        const std::string& senderId,
+        const std::string& receiverId,
+        const MessagingQos& qos,
+        const SubscriptionRequest& payload) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
@@ -112,7 +113,7 @@ JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
         const std::string& senderId,
         const std::string& receiverId,
         const MessagingQos& qos,
-        const BroadcastSubscriptionRequest& payload)
+        const BroadcastSubscriptionRequest& payload) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
@@ -127,7 +128,7 @@ JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
 JoynrMessage JoynrMessageFactory::createSubscriptionReply(const std::string& senderId,
                                                           const std::string& receiverId,
                                                           const MessagingQos& qos,
-                                                          const SubscriptionReply& payload)
+                                                          const SubscriptionReply& payload) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
@@ -142,7 +143,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionReply(const std::string& sen
 JoynrMessage JoynrMessageFactory::createSubscriptionStop(const std::string& senderId,
                                                          const std::string& receiverId,
                                                          const MessagingQos& qos,
-                                                         const SubscriptionStop& payload)
+                                                         const SubscriptionStop& payload) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
@@ -158,7 +159,7 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const std::string& senderParticipantId,
                                   const std::string& receiverParticipantId,
                                   const std::int64_t ttl,
-                                  const std::string& payload)
+                                  const std::string& payload) const
 {
     msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
     msg.setHeaderFrom(senderParticipantId);

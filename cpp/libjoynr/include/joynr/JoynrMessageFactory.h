@@ -50,42 +50,43 @@ public:
     JoynrMessage createRequest(const std::string& senderId,
                                const std::string& receiverId,
                                const MessagingQos& qos,
-                               const Request& payload);
+                               const Request& payload) const;
 
     JoynrMessage createReply(const std::string& senderId,
                              const std::string& receiverId,
                              const MessagingQos& qos,
-                             const Reply& payload);
+                             const Reply& payload) const;
 
     JoynrMessage createOneWay(const std::string& senderId,
                               const std::string& receiverId,
                               const MessagingQos& qos,
-                              const Reply& payload);
+                              const Reply& payload) const;
 
     JoynrMessage createSubscriptionPublication(const std::string& senderId,
                                                const std::string& receiverId,
                                                const MessagingQos& qos,
-                                               const SubscriptionPublication& payload);
+                                               const SubscriptionPublication& payload) const;
 
     JoynrMessage createSubscriptionRequest(const std::string& senderId,
                                            const std::string& receiverId,
                                            const MessagingQos& qos,
-                                           const SubscriptionRequest& payload);
+                                           const SubscriptionRequest& payload) const;
 
-    JoynrMessage createBroadcastSubscriptionRequest(const std::string& senderId,
-                                                    const std::string& receiverId,
-                                                    const MessagingQos& qos,
-                                                    const BroadcastSubscriptionRequest& payload);
+    JoynrMessage createBroadcastSubscriptionRequest(
+            const std::string& senderId,
+            const std::string& receiverId,
+            const MessagingQos& qos,
+            const BroadcastSubscriptionRequest& payload) const;
 
     JoynrMessage createSubscriptionReply(const std::string& senderId,
                                          const std::string& receiverId,
                                          const MessagingQos& qos,
-                                         const SubscriptionReply& payload);
+                                         const SubscriptionReply& payload) const;
 
     JoynrMessage createSubscriptionStop(const std::string& senderId,
                                         const std::string& receiverId,
                                         const MessagingQos& qos,
-                                        const SubscriptionStop& payload);
+                                        const SubscriptionStop& payload) const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageFactory);
@@ -94,19 +95,19 @@ private:
                  const std::string& senderParticipantId,
                  const std::string& receiverParticipantId,
                  const std::int64_t ttl,
-                 const std::string& payload);
+                 const std::string& payload) const;
 
     void initReplyMsg(JoynrMessage& msg,
                       const std::string& senderParticipantId,
                       const std::string& receiverParticipantId,
                       const std::int64_t ttl,
-                      const Reply& payload);
+                      const Reply& payload) const;
 
     void initSubscriptionPublicationMsg(JoynrMessage& msg,
                                         const std::string& senderParticipantId,
                                         const std::string& receiverParticipantId,
                                         const std::int64_t ttl,
-                                        const SubscriptionPublication& payload);
+                                        const SubscriptionPublication& payload) const;
 
     IPlatformSecurityManager* securityManager;
     ADD_LOGGER(JoynrMessageFactory);
