@@ -1,4 +1,8 @@
 [messaging]
+# The maximum allowed TTL value for joynr messages.
+# 2592000000 = 30 days in milliseconds
+max-ttl-ms=2592000000
+
 broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
 bounceproxy-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/bounceproxy/
 
