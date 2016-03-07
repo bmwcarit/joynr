@@ -97,14 +97,6 @@ public:
     }
 
     /**
-      * Converts a int32_t object into a int object
-      */
-    static int toQt(const std::int32_t& stdValue)
-    {
-        return static_cast<int>(stdValue);
-    }
-
-    /**
       * Converts a int into a std::uint32_t
       */
     static std::uint32_t toStdUInt32(const int& qtValue)
@@ -134,14 +126,6 @@ public:
     static std::uint64_t toStdUInt64(const std::int64_t& qtValue)
     {
         return static_cast<std::uint64_t>(qtValue);
-    }
-
-    /**
-      * Converts a std::uint64_t object into a std::int64_t object
-      */
-    static std::int64_t toQt(const std::uint64_t& stdValue)
-    {
-        return static_cast<std::int64_t>(stdValue);
     }
 
     /**
