@@ -33,7 +33,7 @@ struct PerformanceTest
      * @returns average duration of a function call in milliseconds
      */
     template <typename Function, typename... Args>
-    double benchmark(Function&& fun, Args&&... args)
+    double benchmark(Function&& fun, Args&&... args) const
     {
         using Clock = std::chrono::steady_clock;
         using ClockResolution = std::chrono::microseconds;
@@ -50,7 +50,7 @@ struct PerformanceTest
     }
 
     template <typename Function, typename... Args>
-    void executeBenchmark(Function&& fun, Args&&... args, std::true_type)
+    void executeBenchmark(Function&& fun, Args&&... args, std::true_type) const
     {
         for (std::size_t i = 0; i < Runs; ++i) {
             fun(std::forward<Args>(args)...);
@@ -58,7 +58,7 @@ struct PerformanceTest
     }
 
     template <typename Function, typename... Args>
-    void executeBenchmark(Function&& fun, Args&&... args, std::false_type)
+    void executeBenchmark(Function&& fun, Args&&... args, std::false_type) const
     {
         using ResultType = decltype(fun(args...));
         // In order to prevent compiler optimization, the result of the function call
@@ -69,7 +69,7 @@ struct PerformanceTest
     }
 
     template <typename Function, typename... Args>
-    void runAndPrintAverage(const std::string& name, Function&& fun, Args&&... args)
+    void runAndPrintAverage(const std::string& name, Function&& fun, Args&&... args) const
     {
         double averageDuration =
                 benchmark(std::forward<Function>(fun), std::forward<Args>(args)...);
