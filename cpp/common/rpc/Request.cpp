@@ -24,9 +24,8 @@ namespace joynr
 
 bool isRequestTypeRegistered = Variant::registerType<Request>("joynr.Request");
 
-Request::Request() : requestReplyId(), methodName(), params(), paramDatatypes()
+Request::Request() : requestReplyId(util::createUuid()), methodName(), params(), paramDatatypes()
 {
-    this->requestReplyId = util::createUuid();
 }
 
 bool Request::operator==(const Request& other) const
@@ -40,9 +39,9 @@ const std::string& Request::getRequestReplyId() const
     return requestReplyId;
 }
 
-void Request::setRequestReplyId(const std::string& requestReplyId)
+void Request::setRequestReplyId(std::string requestReplyId)
 {
-    this->requestReplyId = requestReplyId;
+    this->requestReplyId = std::move(requestReplyId);
 }
 
 const std::string& Request::getMethodName() const
@@ -61,15 +60,15 @@ std::vector<Variant> Request::getParams() const
 }
 
 // Set the parameters - called by the json deserializer
-void Request::setParams(const std::vector<Variant>& params)
+void Request::setParams(std::vector<Variant> params)
 {
-    this->params = params;
+    this->params = std::move(params);
 }
 
 void Request::addParam(Variant value, std::string datatype)
 {
-    this->params.push_back(value);
-    this->paramDatatypes.push_back(datatype);
+    this->params.push_back(std::move(value));
+    this->paramDatatypes.push_back(std::move(datatype));
 }
 
 std::vector<std::string> Request::getParamDatatypes() const
@@ -78,9 +77,9 @@ std::vector<std::string> Request::getParamDatatypes() const
 }
 
 // Set the parameter datatypes - called by the json deserializer
-void Request::setParamDatatypes(const std::vector<std::string>& paramDatatypes)
+void Request::setParamDatatypes(std::vector<std::string> paramDatatypes)
 {
-    this->paramDatatypes = paramDatatypes;
+    this->paramDatatypes = std::move(paramDatatypes);
 }
 
 } // namespace joynr
