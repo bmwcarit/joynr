@@ -49,7 +49,26 @@ public:
         runAndPrintAverage(getTestName("serialization"), fun);
     }
 
+    void runFullMessageSerializationBenchmark() const
+    {
+        auto fun = [this]() {
+            joynr::JoynrMessage message = this->createMessage();
+            return joynr::JsonSerializer::serialize(message);
+        };
+        runAndPrintAverage(getTestName("full message serialization"), fun);
+    }
+
     void runDeSerializationBenchmark() const
+    {
+        joynr::JoynrMessage message = createMessage();
+        auto fun = [&message]() {
+            return joynr::JsonSerializer::deserialize<joynr::Request>(message.getPayload());
+        };
+
+        runAndPrintAverage(getTestName("deserialization"), fun);
+    }
+
+    void runFullMessageDeSerializationBenchmark() const
     {
         // create a message, serialize it and then benchmark the deserialization
         joynr::JoynrMessage message = createMessage();
@@ -63,7 +82,7 @@ public:
             return req;
         };
 
-        runAndPrintAverage(getTestName("deserialization"), fun);
+        runAndPrintAverage(getTestName("full message deserialization"), fun);
     }
 
 private:

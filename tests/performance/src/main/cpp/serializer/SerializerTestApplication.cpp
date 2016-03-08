@@ -34,8 +34,12 @@ int main()
     auto fun = [length](auto generator) {
         using Generator = decltype(generator);
         SerializerPerformanceTest<Generator> test(length);
+
         test.runSerializationBenchmark();
         test.runDeSerializationBenchmark();
+
+        test.runFullMessageSerializationBenchmark();
+        test.runFullMessageDeSerializationBenchmark();
     };
 
     boost::fusion::for_each(Generators(), fun);
