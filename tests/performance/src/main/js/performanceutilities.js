@@ -36,47 +36,60 @@ PerformanceUtilities.createString = function(length, defaultChar) {
     return String(new Array(length + 1).join(defaultChar))
 };
 
+PerformanceUtilities.createRandomNumber = function createRandomNumber(max) {
+    return Math.floor(Math.random()*(max+1));
+};
+
 /**
- * Reads command line arguments from process.env. If an argument is not
+ * Reads command line arguments from environment. If an argument is not
  * available, a default value will be used.
  */
 PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
+    var domain, stringLength, byteArrayLength, numRuns, timeout, viacc;
+
     if(environment.domain != undefined) {
-    	domain = process.env.domain;
+        domain = environment.domain;
     } else {
-    	domain = "test_domain";
+        domain = "test_domain";
     }
 
     if(environment.stringlength != undefined) {
-        stringLength = process.env.stringlength;
+        stringLength = environment.stringlength;
     } else {
-    	stringLength = 10;
+        stringLength = 10;
     }
 
     if(environment.bytearraylength != undefined) {
-        byteArrayLength = process.env.bytearraylength;
+        byteArrayLength = environment.bytearraylength;
     } else {
-    	byteArrayLength = 100;
+        byteArrayLength = 100;
     }
 
     if(environment.runs != undefined) {
-        numRuns = process.env.runs;
+        numRuns = environment.runs;
     } else {
-    	numRuns = 10000;
+        numRuns = 10000;
     }
 
     if(environment.timeout != undefined) {
-    	timeout = process.env.timeout;
+        timeout = environment.timeout;
     } else {
-    	timeout = 3600000;
+        timeout = 3600000;
+    }
+
+    if(environment.viacc != undefined) {
+        viacc = environment.viacc;
+    } else {
+        viacc = 'true';
     }
 
     return {
-    	'stringLength' : stringLength,
-    	'byteArrayLength' : byteArrayLength,
-    	'numRuns' : numRuns,
-    	'timeout' : timeout,
-    	'domain' : domain
+        'stringLength' : stringLength,
+        'byteArrayLength' : byteArrayLength,
+        'numRuns' : numRuns,
+        'timeout' : timeout,
+        'domain' : domain,
+        'viacc' : viacc
     };
 };
 

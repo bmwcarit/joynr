@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,43 +19,73 @@
  * #L%
  */
 
-describe("js consumer performance test", function() {
-    var joynrModule = require("joynr");
+var Promise = require("joynr/lib/bluebird.js").Promise;
+var joynr = require("joynr");
+var uuid = require('uuid');
+var testbase = require("test-base");
+var PerformanceUtilities = require("./performanceutilities.js");
+var ComplexStruct = require("../generated-javascript/joynr/tests/performance/Types/ComplexStruct.js");
 
-    var PerformanceUtilities = require("./performanceutilities.js");
-    var ComplexStruct = require("../generated-javascript/joynr/tests/performance/Types/ComplexStruct.js");
+var prettyLog = testbase.logging.prettyLog;
+var error = testbase.logging.error;
+var log = testbase.logging.log;
+var timeout = 600000;
+
+jasmine.getEnv().addReporter(new testbase.TestReporter());
+
+var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
+
+console.log("Using domain " + options.domain);
+console.error("Performing " + options.numRuns + " runs");
+
+//disable log
+console.log = function() {};
+
+var registerProvider = function(joynr) {
+    var providerQos = new joynr.types.ProviderQos({
+        customParameters : [],
+        providerVersion : 1,
+        priority : Date.now(),
+        scope : joynr.types.ProviderScope.LOCAL,
+        onChangeSubscriptions : true
+    });
+
+    var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
+    var EchoProviderImpl = require("./EchoProviderImpl.js");
+    var echoProvider = joynr.providerBuilder.build(
+            EchoProvider,
+            EchoProviderImpl.implementation);
+
+    joynr.capabilities.registerCapability("", options.domain, echoProvider, providerQos).then(function() {
+        log("provider registered successfully");
+    }).catch(function(error) {
+        log("error registering provider: " + error.toString());
+    });
+}
+
+describe("js consumer performance test", function() {
 
     var initialized = false;
     var echoProxy;
-    var joynr;
-
-    var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
-
-    console.log("Using domain " + options.domain);
-    console.error("Performing " + options.numRuns + " runs");
 
     beforeEach(function() {
         var ready = false;
+        var spy = jasmine.createSpyObj("spy", [ "callback"]);
 
         if (initialized === false) {
-            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
-
-            spy.onFulfilled.reset();
-            spy.onError.reset();
 
             runs(function() {
                 console.log("Environment not yet setup");
-
-                var provisioning = require("./provisioning_common.js");
-
-                joynrModule.load(provisioning).then(function(loadedJoynr) {
-                	console.log("Joynr started");
-
+                joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
+                    log("joynr started");
                     joynr = loadedJoynr;
-
-                    var messagingQos = new joynr.messaging.MessagingQos({ ttl : 1200000 });
+                    if (options.viacc !== 'true') {
+                        registerProvider(joynr);
+                    }
+                    var messagingQos = new joynr.messaging.MessagingQos({
+                        ttl : timeout
+                    });
                     var EchoProxy = require("../generated-javascript/joynr/tests/performance/EchoProxy.js");
-
                     joynr.proxyBuilder.build(EchoProxy, {
                         domain : options.domain,
                         messagingQos : messagingQos
@@ -65,9 +95,9 @@ describe("js consumer performance test", function() {
 
                         ready = true;
                     }).catch(function(error) {
-                        console.log("Error building echoProxy: " + error);
+                        log("Error building echoProxy: " + error);
                     });
-
+                    return loadedJoynr;
                 }).catch(function(error) {
                     throw error;
                 });
@@ -75,112 +105,107 @@ describe("js consumer performance test", function() {
 
             waitsFor(function() {
                 return ready;
-            }, "Joynr proxy build", 15000);
+            }, "joynr proxy build", options.timeout);
 
             runs(function() {
                 initialized = true;
-
                 // The warmup run is supposed to ensure that the initialization process finished
                 console.log("Performing warmup run");
-                echoProxy.echoString( { data: "Init string" } ).then(spy.onFulfilled).catch(spy.onError);
+                echoProxy.echoString( { data: "Init string" } ).then(spy.callback).catch(spy.callback);
             });
 
             waitsFor(function() {
-                return spy.onFulfilled.callCount + spy.onError.callCount >= 0;
+                return spy.callback.callCount >= 0;
             }, "Warmup run", options.timeout);
         } else {
             console.log("Environment already setup");
         }
     });
 
-    it("EchoString", function() {
+    var executeBenchmark = function(benchmarkName, benchmark) {
         var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
         var startTime;
-
         spy.onFulfilled.reset();
         spy.onError.reset();
-
         runs(function() {
-            var args = { data: PerformanceUtilities.createString(options.stringLength, "x") };
-            startTime = new Date().getTime();
-
-            for(var i = 0; i < options.numRuns ; i++) {
-                echoProxy.echoString(args).then(spy.onFulfilled).catch(spy.onError);
+            log("call echoComplexStruct " + options.numRuns + " times");
+            startTime = Date.now();
+            for (var i = 1; i <= options.numRuns; i++) {
+                benchmark(i).then(spy.onFulfilled).catch(spy.onError);
             }
         });
 
         waitsFor(function() {
             return spy.onFulfilled.callCount + spy.onError.callCount >= options.numRuns;
-        }, "echoString", options.timeout);
+        }, "callEchoComplexStruct", timeout);
 
         runs(function() {
-            var elapsedTime = new Date().getTime() - startTime;
+            expect(spy.onFulfilled.callCount+ '').toEqual(options.numRuns);
+            expect(spy.onError.callCount).toEqual(0);
+            var elapsedTimeMs = Date.now() - startTime;
 
             // Write the result to stderr, because this way we can collect all required data easier.
-            console.error("EchoString took " + elapsedTime + " ms. " + options.numRuns / (elapsedTime / 1000) + " msgs/s");
+/*
+ *            error("call \"" + benchmarkName + "\" \t# roundtrips: " + options.numRuns + "\tin time (ms): \t" + elapsedTimeMs);
+ *            error("call \"" + benchmarkName + "\" \taverage time (ms) per roundtrip: \t" + elapsedTimeMs / options.numRuns);
+ * 
+ */
+            error(benchmarkName + " took " + elapsedTimeMs + " ms. " + options.numRuns / (elapsedTimeMs / 1000) + " msgs/s");
         });
+    };
+
+    it("EchoString", function() {
+        var testProcedure = function(i) {
+            var args = {
+                data : PerformanceUtilities.createString(options.stringLength-2, "x") + "-" + i
+            };
+            return echoProxy.echoString(args).then(function(returnValues) {
+                if (args.data !== returnValues.responseData) {
+                    throw new Error("Echo " + returnValues.responseData + " does not match input data: " + args.data);
+                }
+                return returnValues;
+            });
+        }
+        executeBenchmark("echoString", testProcedure);
     });
 
-    it("EchoStruct", function() {
-        var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
-        var startTime;
-
-        spy.onFulfilled.reset();
-        spy.onError.reset();
-
-        runs(function() {
-            var inputStruct = new ComplexStruct();
-
-            inputStruct.num32 = 1234;
-            inputStruct.num64 = 42;
-            inputStruct.data = PerformanceUtilities.createByteArray(options.byteArrayLength, 1);
-            inputStruct.str = PerformanceUtilities.createString(options.stringLength, "x");
-
-            var args = { data: inputStruct };
-            startTime = new Date().getTime();
-
-            for(var i = 0; i < options.numRuns ; i++) {
-                echoProxy.echoComplexStruct(args).then(spy.onFulfilled).catch(spy.onError);
-            }
-        });
-
-        waitsFor(function() {
-            return spy.onFulfilled.callCount + spy.onError.callCount >= options.numRuns;
-        }, "echoComplexStruct", options.timeout);
-
-        runs(function() {
-            var elapsedTime = new Date().getTime() - startTime;
-
-            // Write the result to stderr, because this way we can collect all required data easier.
-            console.error("echoComplexStruct test case took " + elapsedTime + " ms. " + options.numRuns / (elapsedTime / 1000) + " msgs/s");
-        });
+    it("EchoComplexStruct", function() {
+        var testProcedure = function(i) {
+            var args = {
+                data : new ComplexStruct({
+                    num32 : PerformanceUtilities.createRandomNumber(100000),
+                    num64 : PerformanceUtilities.createRandomNumber(1000000),
+                    data : PerformanceUtilities.createByteArray(options.byteArrayLength, 1),
+                    str : PerformanceUtilities.createString(options.stringLength-2, "x") + "-" + i
+                })
+            };
+            return echoProxy.echoComplexStruct(args).then(function(returnValues) {
+                if (JSON.stringify(args.data) !== JSON.stringify(returnValues.responseData)) {
+                    throw new Error("Echo " + returnValues.responseData + " does not match input data: " + args.data);
+                }
+                return returnValues;
+            });
+        }
+        executeBenchmark("echoComplexStruct", testProcedure);
     });
 
     it("EchoByteArray", function() {
-        var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
-        var startTime;
+        var args = {
+            data : PerformanceUtilities.createByteArray(options.byteArrayLength, 1)
+        };
 
-        spy.onFulfilled.reset();
-        spy.onError.reset();
+        var testProcedure = function(i) {
+            var firstElement = PerformanceUtilities.createRandomNumber(256);
+            args.data[0] = firstElement;
+            return echoProxy.echoByteArray(args).then(function(returnValues) {
+                if (args.data.length !== returnValues.responseData.length ||
+                    firstElement !== returnValues.responseData[0]) {
+                    throw new Error("Echo " + returnValues.responseData + " does not match input data: " + args.data);
+                }
 
-        runs(function() {
-            var args = { data: PerformanceUtilities.createByteArray(options.byteArrayLength, 1) };
-            startTime = new Date().getTime();
-
-            for(var i = 0; i < options.numRuns ; i++) {
-                echoProxy.echoByteArray(args).then(spy.onFulfilled).catch(spy.onError);
-            }
-        });
-
-        waitsFor(function() {
-            return spy.onFulfilled.callCount + spy.onError.callCount >= options.numRuns;
-        }, "echoByteArray", options.timeout);
-
-        runs(function() {
-            var elapsedTime = new Date().getTime() - startTime;
-
-            // Write the result to stderr, because this way we can collect all required data easier.
-            console.error("echoByteArray took " + elapsedTime + " ms. " + options.numRuns / (elapsedTime / 1000) + " msgs/s");
-        });
+                return returnValues;
+            });
+        }
+        executeBenchmark("echoByteArray", testProcedure);
     });
 });
