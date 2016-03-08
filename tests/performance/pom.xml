@@ -143,6 +143,8 @@
 						</goals>
 						<configuration>
 							<sources>
+								<source>src/main/js</source>
+								<source>src/main/generated-javascript</source>
 								<source>src/main/generated-java</source>
 								<source>src/main/model</source>
 							</sources>

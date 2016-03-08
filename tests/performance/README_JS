@@ -1,0 +1,15 @@
+The following instruction helps you in getting the performance test running
+
+mvn install
+npm install -g npm@latest
+npm install
+
+Then run the node applications by doing the following:
+
+1. ensure a cluster controller allowing to be connected via web socket is running and accessible
+2. start a provider
+   npm run-script startprovider --performance-test:domain=<DOMAIN>
+3. start the javascript consumer test
+   npm run-script startjasmine --performance-test:domain=<DOMAIN> [--peformance-test:times=<TIMES>] [--performance-test:viacc=<on|off>]
+
+Steps 1 and 2 are only required, if the parameter --performance-test:viacc is set to on for the 3. step
