@@ -242,7 +242,7 @@ define(
                 }
 
                 var loggingMessagingQos = new MessagingQos({
-                    ttl : Date.now() + relativeTtl
+                    ttl : relativeTtl
                 });
                 loggingManager = Object.freeze(new LoggingManager());
                 LoggerFactory.init(loggingManager);
