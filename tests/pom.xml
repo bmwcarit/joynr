@@ -29,6 +29,7 @@
 	</parent>
 	
 	<modules>
+		<module>test-base</module>
 		<module>performance</module>
 		<module>robustness</module>
 		<module>inter-language-test</module>

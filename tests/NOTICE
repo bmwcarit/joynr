@@ -53,6 +53,7 @@ This project has dependencies to:
   io.joynr.tests:inter-language-test under The Apache Software License, Version 2.0
   io.joynr.tests:robustness under The Apache Software License, Version 2.0
   io.joynr:performance under The Apache Software License, Version 2.0
+  io.joynr:test-base under The Apache Software License, Version 2.0
   io.joynr:tests under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
