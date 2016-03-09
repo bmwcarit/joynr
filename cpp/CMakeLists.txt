@@ -865,9 +865,6 @@ install(
     DESTINATION "${CMAKE_INSTALL_DOCDIR}"
 )
 
-######### Documentation settings ########
-#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
 # cpack settings
 include(InstallRequiredSystemLibraries)
 
