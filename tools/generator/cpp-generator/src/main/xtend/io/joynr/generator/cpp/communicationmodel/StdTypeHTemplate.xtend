@@ -49,6 +49,7 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 
 «getDllExportIncludeStatement()»
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <cstddef>
@@ -149,6 +150,15 @@ public:
 	 * @return true if objects are not equal, false otherwise
 	 */
 	bool operator!=(const «typeName»& «typeName.toFirstLower»Obj) const;
+
+	/**
+	 * @return a copy of this object
+	 */
+	 «IF !hasExtendsDeclaration(type)»
+	 std::unique_ptr<«getRootType(type).joynrName»> virtual clone() const;
+	 «ELSE»
+	 std::unique_ptr<«getRootType(type).joynrName»> clone() const override;
+	 «ENDIF»
 
 	// getters
 	«FOR member: getMembers(type)»

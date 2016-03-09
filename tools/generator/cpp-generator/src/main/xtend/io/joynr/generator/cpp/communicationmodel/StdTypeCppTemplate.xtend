@@ -174,6 +174,10 @@ std::size_t hash_value(«typeName» const& «typeName.toFirstLower»Value)
 	return «typeName.toFirstLower»Value.hashCode();
 }
 
+std::unique_ptr<«getRootType(type).joynrName»> «typeName»::clone() const {
+	return std::make_unique<«typeName»>(const_cast<«typeName»&>(*this));
+}
+
 «getNamespaceEnder(type, true)»
 '''
 }

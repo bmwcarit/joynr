@@ -22,6 +22,8 @@ import java.util.HashSet
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FStructType
 
 class CppStdTypeUtil extends CppTypeUtil {
 
@@ -132,6 +134,14 @@ class CppStdTypeUtil extends CppTypeUtil {
 		else {
 			super.getDefaultValue(element)
 		}
+	}
+
+	def FCompoundType getRootType(FCompoundType datatype)
+	{
+		if (datatype instanceof FStructType && (datatype as FStructType).base == null)
+			return (datatype as FStructType)
+		else
+			return getRootType((datatype as FStructType).base)
 	}
 
 	def getForwardDeclaration(FType datatype)'''
