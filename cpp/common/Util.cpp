@@ -18,9 +18,11 @@
  */
 #include "joynr/Util.h"
 
+#include <fstream>
 #include <regex>
 #include <cctype>
 #include <iterator>
+#include <stdexcept>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -34,6 +36,35 @@ namespace joynr
 
 namespace util
 {
+
+void saveStringToFile(const std::string& fileName, const std::string& strToSave)
+{
+    std::fstream file;
+    file.open(fileName, std::ios::out);
+    if (!file.is_open()) {
+        throw std::runtime_error("Could not open file " + fileName + " for writing.");
+    }
+
+    // save input string to file
+    file << strToSave;
+}
+
+std::string loadStringFromFile(const std::string& fileName)
+{
+    // read from file
+    std::ifstream inStream(fileName.c_str(), std::ios::in | std::ios::binary);
+    if (!inStream.is_open()) {
+        throw std::runtime_error("Could not open file " + fileName + " for reading.");
+    }
+
+    std::string fileContents;
+    inStream.seekg(0, std::ios::end);
+    fileContents.resize(inStream.tellg());
+    inStream.seekg(0, std::ios::beg);
+    inStream.read(&fileContents[0], fileContents.size());
+    inStream.close();
+    return fileContents;
+}
 
 std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream)
 {
