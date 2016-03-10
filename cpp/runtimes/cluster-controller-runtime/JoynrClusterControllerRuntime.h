@@ -100,6 +100,7 @@ public:
     void registerDiscoveryProvider();
 
 protected:
+    void importMessageRouterFromFile();
     void initializeAllDependencies();
 
     IDispatcher* joynrDispatcher;

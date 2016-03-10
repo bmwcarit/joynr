@@ -197,12 +197,14 @@ public:
         callbackMap.erase(keyId);
     }
 
+protected:
+    std::unordered_map<Key, std::shared_ptr<T>, Hash, EqualTo> callbackMap;
+    ADD_LOGGER(Directory);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
-    std::unordered_map<Key, std::shared_ptr<T>, Hash, EqualTo> callbackMap;
     std::mutex mutex;
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
-    ADD_LOGGER(Directory);
 };
 
 template <typename Key, typename T, typename Hash, typename EqualTo>

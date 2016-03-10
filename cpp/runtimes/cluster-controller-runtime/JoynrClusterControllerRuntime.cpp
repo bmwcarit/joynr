@@ -149,6 +149,11 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
     initializeAllDependencies();
 }
 
+void JoynrClusterControllerRuntime::importMessageRouterFromFile()
+{
+    messageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
+}
+
 void JoynrClusterControllerRuntime::initializeAllDependencies()
 {
     /**
@@ -175,6 +180,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // init message router
     messageRouter =
             std::make_shared<MessageRouter>(messagingStubFactory, std::move(securityManager));
+
+    importMessageRouterFromFile();
 
     const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
     assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());

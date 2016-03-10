@@ -33,7 +33,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingAbstractProvider.h"
-#include "joynr/Directory.h"
+#include "joynr/RoutingTable.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Timer.h"
@@ -146,13 +146,16 @@ public:
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             std::function<void()> onSuccess = nullptr);
 
+    void saveRoutingTable();
+    void loadRoutingTable(std::string fileName);
+
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
-    Directory<std::string, const joynr::system::RoutingTypes::Address> routingTable;
+    RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     ThreadPoolDelayedScheduler messageScheduler;
     std::unique_ptr<joynr::system::RoutingProxy> parentRouter;
@@ -166,6 +169,7 @@ private:
     std::shared_ptr<IAccessController> accessController;
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     mutable std::mutex parentResolveMutex;
+    std::string routingTableFileName;
 
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,

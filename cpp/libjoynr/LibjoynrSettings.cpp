@@ -17,6 +17,7 @@
  * #L%
  */
 #include "joynr/LibjoynrSettings.h"
+
 #include "joynr/Settings.h"
 #include "joynr/Logger.h"
 
@@ -30,18 +31,33 @@ LibjoynrSettings::LibjoynrSettings(Settings& settings) : settings(settings)
     checkSettings();
 }
 
-void LibjoynrSettings::checkSettings() const
+void LibjoynrSettings::checkSettings()
 {
     // set default values
     if (!settings.contains(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME())) {
-        settings.set(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(),
-                     DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        setParticipantIdsPersistenceFilename(DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+    }
+
+    if (!settings.contains(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME())) {
+        setMessageRouterPersistenceFilename(DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME());
     }
 }
 
 const std::string& LibjoynrSettings::SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()
 {
     static const std::string value("lib-joynr/participantids-persistence-file");
+    return value;
+}
+
+const std::string& LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()
+{
+    static const std::string value("lib-joynr/message-router-persistence-file");
+    return value;
+}
+
+const std::string& LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME()
+{
+    static const std::string value("MessageRouter.persist");
     return value;
 }
 
@@ -63,6 +79,16 @@ const std::string& LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAG
     return value;
 }
 
+std::string LibjoynrSettings::getMessageRouterPersistenceFilename() const
+{
+    return settings.get<std::string>(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME());
+}
+
+void LibjoynrSettings::setMessageRouterPersistenceFilename(const std::string& filename)
+{
+    settings.set(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME(), filename);
+}
+
 std::string LibjoynrSettings::getParticipantIdsPersistenceFilename() const
 {
     return settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
@@ -79,6 +105,11 @@ void LibjoynrSettings::printSettings() const
                     "SETTING: {}  = {}",
                     SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(),
                     settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME(),
+                    settings.get<std::string>(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()));
 }
 
 } // namespace joynr

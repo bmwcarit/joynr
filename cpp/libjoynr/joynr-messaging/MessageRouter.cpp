@@ -82,7 +82,8 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
           runningParentResolves(),
           accessController(nullptr),
           securityManager(std::move(securityManager)),
-          parentResolveMutex()
+          parentResolveMutex(),
+          routingTableFileName()
 {
     messageQueueCleanerTimer.addTimer(
             [this](Timer::TimerId) { this->messageQueue->removeOutdatedMessages(); },
@@ -109,7 +110,8 @@ MessageRouter::MessageRouter(
           runningParentResolves(),
           accessController(nullptr),
           securityManager(nullptr),
-          parentResolveMutex()
+          parentResolveMutex(),
+          routingTableFileName()
 {
     messageQueueCleanerTimer.addTimer(
             [this](Timer::TimerId) { this->messageQueue->removeOutdatedMessages(); },
@@ -467,12 +469,38 @@ void MessageRouter::addNextHopToParent(
     }
 }
 
+void MessageRouter::loadRoutingTable(std::string fileName)
+{
+    // update reference file
+    routingTableFileName = std::move(fileName);
+
+    WriteLocker lock(routingTableLock);
+    try {
+        routingTable.deserializeFromJson(joynr::util::loadStringFromFile(routingTableFileName));
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+    }
+}
+
+void MessageRouter::saveRoutingTable()
+{
+    WriteLocker lock(routingTableLock);
+    try {
+        joynr::util::saveStringToFile(routingTableFileName, routingTable.serializeToJson());
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+    }
+}
+
 void MessageRouter::addToRoutingTable(
         std::string participantId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
-    WriteLocker lock(routingTableLock);
-    routingTable.add(participantId, address);
+    {
+        WriteLocker lock(routingTableLock);
+        routingTable.add(participantId, address);
+    }
+    saveRoutingTable();
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -485,6 +513,7 @@ void MessageRouter::removeNextHop(
         WriteLocker lock(routingTableLock);
         routingTable.remove(participantId);
     }
+    saveRoutingTable();
 
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
             [onError](const exceptions::JoynrException& error) {

@@ -16,9 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <PrettyPrint.h>
 #include <limits>
+#include <memory>
+
+#include <gtest/gtest.h>
+#include <boost/algorithm/string/predicate.hpp>
+
+#include <PrettyPrint.h>
 #include "joynr/Util.h"
 #include "joynr/types/TestTypes/TEnum.h"
 #include "joynr/types/TestTypes/TStruct.h"
@@ -37,11 +41,15 @@
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/MapSerializer.h"
+#include "joynr/RoutingTable.h"
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include <chrono>
@@ -1105,4 +1113,26 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
     EXPECT_EQ(qos, desQos);
+}
+
+TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
+{
+    RoutingTable routingTable("routingTable");
+    routingTable.add("WebSocketAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>());
+    routingTable.add("ChannelAddress", std::make_shared<joynr::system::RoutingTypes::ChannelAddress>());
+    routingTable.add("MqttAddress", std::make_shared<joynr::system::RoutingTypes::MqttAddress>());
+    routingTable.add("BrowserAddress", std::make_shared<joynr::system::RoutingTypes::BrowserAddress>());
+    routingTable.add("CommonApiDbusAddress", std::make_shared<joynr::system::RoutingTypes::CommonApiDbusAddress>());
+    routingTable.add("WebSocketClientAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>());
+
+    const std::string serializedRoutingTable = routingTable.serializeToJson();
+    JOYNR_LOG_TRACE(logger, serializedRoutingTable);
+
+    routingTable.deserializeFromJson(serializedRoutingTable);
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("WebSocketAddress")->toString(), "WebSocketAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("ChannelAddress")->toString(), "ChannelAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("MqttAddress")->toString(), "MqttAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("BrowserAddress")->toString(), "BrowserAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("CommonApiDbusAddress")->toString(), "CommonApiDbusAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("WebSocketClientAddress")->toString(), "WebSocketClientAddress"));
 }
