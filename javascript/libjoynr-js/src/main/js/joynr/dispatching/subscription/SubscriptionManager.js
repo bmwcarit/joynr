@@ -152,12 +152,12 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             }
         }
 
-        function calculateTtl(messagingQos, subscriptionQos) {
+        function calculateTtl(subscriptionQos) {
             var ttl;
             if (subscriptionQos.expiryDateMs === SubscriptionQos.NO_EXPIRY_DATE) {
                 return defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
             }
-            ttl = SubscriptionQos.expiryDateMs - Date.now();
+            ttl = subscriptionQos.expiryDateMs - Date.now();
             if (ttl > defaultMessagingSettings.MAX_MESSAGING_TTL_MS) {
                 return defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
             }
@@ -221,8 +221,6 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            settings.proxyId participantId of the sender
          * @param {String}
          *            settings.providerId participantId of the receiver
-         * @param {MessagingQos}
-         *            settings.messagingQos quality-of-service parameters such as time-to-live
          * @param {String}
          *            settings.attributeType the type of the subscribing attribute
          * @param {String}
@@ -266,7 +264,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         });
 
                         var messagingQos = new MessagingQos({
-                            ttl : calculateTtl(settings.messagingQos, subscriptionRequest.qos)
+                            ttl : calculateTtl(subscriptionRequest.qos)
                         });
 
                         subscriptionResolvedMap[subscriptionId] = resolve;
@@ -321,8 +319,6 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            parameters.proxyId participantId of the sender
          * @param {String}
          *            parameters.providerId participantId of the receiver
-         * @param {MessagingQos}
-         *            parameters.messagingQos quality-of-service parameters such as time-to-live
          * @param {String}
          *            parameters.broadcastName the name of the broadcast being subscribed to
          * @param {String[]}
@@ -357,7 +353,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 subscriptionResolvedMap[subscriptionRequest.subscriptionId] = resolve;
 
                 messagingQos = new MessagingQos({
-                    ttl : calculateTtl(parameters.messagingQos, subscriptionRequest.qos)
+                    ttl : calculateTtl(subscriptionRequest.qos)
                 });
 
                 dispatcher.sendBroadcastSubscriptionRequest({

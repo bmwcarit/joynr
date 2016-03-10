@@ -513,7 +513,6 @@ joynrTestRequire(
                                     .toHaveBeenCalledWith({
                                         proxyId : proxyParticipantId,
                                         providerId : providerParticipantId,
-                                        messagingQos : messagingQos,
                                         attributeName : "isOn",
                                         attributeType : "Boolean",
                                         qos : subscriptionQos,

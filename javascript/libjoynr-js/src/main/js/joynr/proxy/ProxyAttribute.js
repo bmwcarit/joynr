@@ -128,20 +128,10 @@ define(
                  * @returns {Object} an A+ promise
                  */
                 function executeSubscriptionRequest(requestSettings) {
-                    // passed in (right-most) messagingQos have precedence; undefined values are
-                    // ignored
-                    var messagingQos =
-                            Util.extend(
-                                    new MessagingQos(),
-                                    parent.messagingQos,
-                                    settings.messagingQos,
-                                    requestSettings.messagingQos);
-
                     // return promise to caller
                     return settings.dependencies.subscriptionManager.registerSubscription({
                         proxyId : parent.proxyParticipantId,
                         providerId : parent.providerParticipantId,
-                        messagingQos : messagingQos,
                         attributeName : attributeName,
                         attributeType : attributeType,
                         qos : requestSettings.subscriptionQos,

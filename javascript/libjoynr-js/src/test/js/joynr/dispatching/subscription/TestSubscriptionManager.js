@@ -118,9 +118,6 @@ joynrTestRequire(
                                     var parameters = {
                                         proxyId : "subscriber",
                                         providerId : "provider",
-                                        messagingQos : new MessagingQos({
-                                            ttl : ttl
-                                        }),
                                         broadcastName : "broadcastName",
                                         subscriptionQos : new OnChangeSubscriptionQos({
                                             expiryDateMs : Date.now() + ttl
@@ -178,7 +175,6 @@ joynrTestRequire(
                                 subscriptionManager.registerSubscription({
                                     proxyId : "subscriber",
                                     providerId : "provider",
-                                    messagingQos : new MessagingQos(),
                                     attributeName : "testAttribute",
                                     qos : new OnChangeWithKeepAliveSubscriptionQos({
                                         alertAfterIntervalMs : alertAfterIntervalMs,
@@ -222,7 +218,6 @@ joynrTestRequire(
                                     var subscriptionSettings = {
                                         proxyId : "subscriber",
                                         providerId : "provider",
-                                        messagingQos : new MessagingQos(),
                                         attributeName : "testAttribute",
                                         qos : new OnChangeWithKeepAliveSubscriptionQos({
                                             alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS,
@@ -375,7 +370,6 @@ joynrTestRequire(
                                 subscriptionManager.registerSubscription({
                                     proxyId : "subscriber",
                                     providerId : "provider",
-                                    messagingQos : new MessagingQos(),
                                     attributeName : "testAttribute",
                                     attributeType : TestEnum.ZERO._typeName,
                                     qos : new OnChangeSubscriptionQos({
@@ -430,7 +424,6 @@ joynrTestRequire(
                                 subscriptionManager.registerBroadcastSubscription({
                                     proxyId : "subscriber",
                                     providerId : "provider",
-                                    messagingQos : new MessagingQos(),
                                     broadcastName : "broadcastName",
                                     broadcastParameter : [
                                          {
@@ -478,7 +471,6 @@ joynrTestRequire(
                                         subscriptionManager.registerSubscription({
                                             proxyId : "subscriber",
                                             providerId : "provider",
-                                            messagingQos : new MessagingQos(),
                                             attributeName : "testAttribute",
                                             qos : new OnChangeWithKeepAliveSubscriptionQos({
                                                 alertAfterIntervalMs : alertAfterIntervalMs,
