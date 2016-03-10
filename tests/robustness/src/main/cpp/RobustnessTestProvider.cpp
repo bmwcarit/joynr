@@ -61,7 +61,7 @@ void RobustnessTestProvider::methodWithDelayedResponse(
 {
     JOYNR_LOG_WARN(logger, "methodWithDelayedResponse - START");
 
-    std::this_thread::sleep_for(std::chrono::seconds(delayArg));
+    std::this_thread::sleep_for(std::chrono::milliseconds(delayArg));
 
     JOYNR_LOG_WARN(logger, "methodWithDelayedResponse - OK");
     onSuccess("done");
