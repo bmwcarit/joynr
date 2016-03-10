@@ -181,16 +181,25 @@ class JavaTypeUtil extends AbstractTypeUtil {
 			case FBasicTypeId::DOUBLE: "Double"
 			case FBasicTypeId::STRING: "String"
 			case FBasicTypeId::BYTE_BUFFER: "Byte[]"
-			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.joynrName)
+			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.getName)
 		}
 	}
 
 	override getTypeName(FType datatype) {
-		if (datatype.isTypeDef) {
-			datatype.typeDefType.actualType.joynrName
-		} else {
-			datatype.joynrName
+		if (isEnum(datatype)){
+			return datatype.enumType.joynrName;
 		}
+		if (isPrimitive(datatype)){
+			return datatype.getPrimitive.typeName
+		}
+		if (isCompound(datatype)){
+			return datatype.compoundType.joynrName
+		}
+		if (isMap(datatype)){
+			return datatype.mapType.joynrName
+		}
+		throw new IllegalStateException("JavaTypeUtil.getTypeName: unsupported state, datatype " +
+			datatype.joynrName + " could not be mapped to an implementation datatype")
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {

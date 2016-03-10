@@ -129,6 +129,12 @@ interface test {
 
 	attribute TypeDefForTStruct typeDefForTStruct
 
+	attribute TypeDefForTStruct[] typeDefForTStructArray
+
+	attribute TypeDefForPrimitive typeDefForPrimitive
+
+	attribute TypeDefForPrimitive[] typeDefForPrimitiveArray
+
 	method addNumbers {
 		in {
 			Int32 first
@@ -220,10 +226,10 @@ interface test {
 
 	method  methodWithPrimitiveTypeDef{
 		in {
-			TypeDefForTStruct input
+			TypeDefForPrimitive input
 		}
 		out {
-			TypeDefForTStruct result
+			TypeDefForPrimitive result
 		}
 	}
 
