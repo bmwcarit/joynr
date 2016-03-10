@@ -33,7 +33,6 @@ joynrTestRequire("joynr/provider/TestProviderQos", [
                     value : "theValue"
                 })
                 ],
-                providerVersion : 123,
                 priority : 1234,
                 scope : ProviderScope.LOCAL,
                 supportsOnChangeSubscriptions : true
@@ -47,7 +46,6 @@ joynrTestRequire("joynr/provider/TestProviderQos", [
                     value : "theValue"
                 })
                 ],
-                providerVersion : 123,
                 priority : 1234,
                 scope : ProviderScope.LOCAL,
                 onChangeSubscriptions : true
@@ -61,13 +59,11 @@ joynrTestRequire("joynr/provider/TestProviderQos", [
         function testValues(customParameters, version, priority, scope, onChangeSubscriptions) {
             var providerQos = new ProviderQos({
                 customParameters : customParameters,
-                providerVersion : version,
                 priority : priority,
                 scope : scope,
                 onChangeSubscriptions : onChangeSubscriptions
             });
             expect(providerQos.customParameters).toEqual(customParameters);
-            expect(providerQos.providerVersion).toEqual(version);
             expect(providerQos.priority).toEqual(priority);
             expect(providerQos.scope).toEqual(scope);
             expect(providerQos.onChangeSubscriptions).toEqual(onChangeSubscriptions);

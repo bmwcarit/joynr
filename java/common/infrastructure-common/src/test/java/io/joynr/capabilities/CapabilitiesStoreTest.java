@@ -97,7 +97,7 @@ public class CapabilitiesStoreTest {
         String domain = "testDomain";
         String participantId = "testparticipantId";
 
-        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 1, 0L, ProviderScope.GLOBAL, true);
+        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.GLOBAL, true);
         Address endpointAddress = new ChannelAddress("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
                                                                    GpsAsync.INTERFACE_NAME,
@@ -130,7 +130,7 @@ public class CapabilitiesStoreTest {
 
         String domain = "testDomain";
         String participantId = "testparticipantId";
-        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 1, 0L, ProviderScope.LOCAL, true);
+        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.LOCAL, true);
         Address endpointAddress = new ChannelAddress("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
                                                                    GpsAsync.INTERFACE_NAME,
@@ -164,7 +164,7 @@ public class CapabilitiesStoreTest {
 
         String domain = "testDomain";
         String participantId = "testparticipantId";
-        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 1, 0L, scope, true);
+        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
         Address endpointAddress = new ChannelAddress("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
                                                                    GpsAsync.INTERFACE_NAME,
@@ -246,7 +246,7 @@ public class CapabilitiesStoreTest {
 
         String domain = "testDomain";
         String participantId = "testparticipantId";
-        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 1, 0L, scope, true);
+        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
         Address endpointAddress = new ChannelAddress("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
                                                                    GpsAsync.INTERFACE_NAME,

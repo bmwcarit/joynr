@@ -50,11 +50,6 @@ typeCollection {
 		 */
 
 		<**
-			@description: the version of the provider
-		**>
-		Int32 providerVersion
-
-		<**
 			@description: the priority value of the provider used for discovery
 		**>
 		Int64 priority

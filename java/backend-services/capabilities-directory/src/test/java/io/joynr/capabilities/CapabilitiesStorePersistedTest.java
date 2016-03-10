@@ -159,7 +159,7 @@ public class CapabilitiesStorePersistedTest {
     public void testMultipleCapEntryRegistrations() {
         String domain = "testDomain";
 
-        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 1, 0L, ProviderScope.GLOBAL, true);
+        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.GLOBAL, true);
         AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
         String participantId1 = UUID.randomUUID().toString();
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
@@ -199,7 +199,7 @@ public class CapabilitiesStorePersistedTest {
 
         String domain = "testDomain";
         String participantId = "testparticipantId";
-        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 1, 0L, ProviderScope.LOCAL, true);
+        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.LOCAL, true);
         AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
                                                                         GpsAsync.INTERFACE_NAME,
@@ -233,7 +233,7 @@ public class CapabilitiesStorePersistedTest {
 
         String domain = "testDomain";
         String participantId = "testparticipantId";
-        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 1, 0L, scope, true);
+        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
         AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
                                                                         GpsAsync.class,
@@ -315,7 +315,7 @@ public class CapabilitiesStorePersistedTest {
 
         String domain = "testDomain";
         String participantId = UUID.randomUUID().toString();
-        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 5, 0L, scope, true);
+        ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
         AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
                                                                         GpsAsync.INTERFACE_NAME,

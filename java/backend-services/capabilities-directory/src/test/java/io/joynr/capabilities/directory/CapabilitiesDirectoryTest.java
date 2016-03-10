@@ -47,7 +47,7 @@ public class CapabilitiesDirectoryTest {
     String interface2 = "interface2";
     String interface3 = "Interface3";
 
-    ProviderQos providerQos = new ProviderQos(CUSTOM_PARAMETERS, 1, 1L, ProviderScope.GLOBAL, true);
+    ProviderQos providerQos = new ProviderQos(CUSTOM_PARAMETERS, 1L, ProviderScope.GLOBAL, true);
     CapabilityInformation capInfo1;
     CapabilityInformation capInfo2;
     CapabilityInformation capInfo3;

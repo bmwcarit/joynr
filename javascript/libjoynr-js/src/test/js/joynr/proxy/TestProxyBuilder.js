@@ -99,7 +99,6 @@ joynrTestRequire(
                                 interfaceName : interfaceName,
                                 providerQos : new ProviderQos({
                                     customParameter : [],
-                                    providerVersion : 1,
                                     priority : 1,
                                     scope : ProviderScope.GLOBAL,
                                     supportsOnChangeSubscriptions : true

@@ -994,7 +994,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
                 R"("providerQos": {)"
                 R"("_typeName":"joynr.types.ProviderQos",)"
                 R"("customParameters": [],)"
-                R"("providerVersion": 4,)"
                 R"("priority": 2,)"
                 R"("scope": "GLOBAL",)"
                 R"("supportsOnChangeSubscriptions": false},)"
@@ -1007,7 +1006,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
 
     types::ProviderQos qos;
     qos.setPriority(2);
-    qos.setProviderVersion(4);
     types::CapabilityInformation capabilityInformation;
     capabilityInformation.setChannelId("channeldId");
     capabilityInformation.setDomain("domain");
@@ -1052,12 +1050,11 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
 TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
     joynr::types::ProviderQos qos;
 
-    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"providerVersion\":3,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
+    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
 
     joynr::types::ProviderQos providerQos = JsonSerializer::deserialize<joynr::types::ProviderQos>(jsonProviderQos);
 
     EXPECT_EQ(providerQos.getScope(), joynr::types::ProviderScope::LOCAL);
-    EXPECT_EQ(providerQos.getProviderVersion(), 3);
     EXPECT_EQ(providerQos.getPriority(), 5);
 }
 
@@ -1065,9 +1062,8 @@ TEST_F(JsonSerializerTest, serialize_ProviderQos) {
     joynr::types::ProviderQos qos;
     qos.setScope(joynr::types::ProviderScope::LOCAL);
     qos.setPriority(5);
-    qos.setProviderVersion(-1);
 
-    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\": [],\"providerVersion\": -1,\"priority\": 5,\"scope\": \"LOCAL\",\"supportsOnChangeSubscriptions\": false}");
+    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\": [],\"priority\": 5,\"scope\": \"LOCAL\",\"supportsOnChangeSubscriptions\": false}");
 
     std::string result = JsonSerializer::serialize<joynr::types::ProviderQos>(qos);
 

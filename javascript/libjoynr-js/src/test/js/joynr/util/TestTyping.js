@@ -371,7 +371,6 @@ joynrTestRequire(
                                     providerQos = {
                                         _typeName : "joynr.types.ProviderQos",
                                         customParameters : [],
-                                        providerVersion : 123,
                                         priority : 234,
                                         scope : "GLOBAL",
                                         supportsOnChangeSubscriptions : false
@@ -399,7 +398,6 @@ joynrTestRequire(
                                                         qos : new ProviderQos(
                                                                 {
                                                                     customParameters : providerQos.customParameters,
-                                                                    providerVersion : providerQos.providerVersion,
                                                                     priority : providerQos.priority,
                                                                     scope : ProviderScope.GLOBAL,
                                                                     supportsOnChangeSubscriptions : providerQos.supportsOnChangeSubscriptions

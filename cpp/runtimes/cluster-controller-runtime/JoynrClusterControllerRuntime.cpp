@@ -519,7 +519,6 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
 
     joynr::types::ProviderQos routingProviderQos;
     routingProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
-    routingProviderQos.setProviderVersion(1);
     routingProviderQos.setPriority(1);
     routingProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
     routingProviderQos.setSupportsOnChangeSubscriptions(false);
@@ -538,7 +537,6 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 
     joynr::types::ProviderQos discoveryProviderQos;
     discoveryProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
-    discoveryProviderQos.setProviderVersion(1);
     discoveryProviderQos.setPriority(1);
     discoveryProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
     discoveryProviderQos.setSupportsOnChangeSubscriptions(false);

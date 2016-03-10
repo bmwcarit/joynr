@@ -63,7 +63,6 @@ joynrTestRequire(
                                     interfaceName : "myInterfaceName",
                                     qos : new ProviderQos({
                                         customParameters : [],
-                                        providerVersion : 1,
                                         priority : 1,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -75,7 +74,6 @@ joynrTestRequire(
                                     interfaceName : "myInterfaceName",
                                     qos : new ProviderQos({
                                         customParameters : [],
-                                        providerVersion : 1,
                                         priority : 4,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -96,7 +94,6 @@ joynrTestRequire(
                                                 value : "theValue"
                                             })
                                         ],
-                                        providerVersion : 1,
                                         priority : 3,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -117,7 +114,6 @@ joynrTestRequire(
                                                 value : "theValue"
                                             })
                                         ],
-                                        providerVersion : 1,
                                         priority : 5,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -138,7 +134,6 @@ joynrTestRequire(
                                                 value : "theValue"
                                             })
                                         ],
-                                        providerVersion : 1,
                                         priority : 2,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true

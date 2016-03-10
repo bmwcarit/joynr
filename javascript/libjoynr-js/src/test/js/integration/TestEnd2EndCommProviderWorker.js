@@ -94,7 +94,6 @@ function initializeTest(provisioningSuffix, providedDomain) {
             libjoynrAsync = asynclib;
             providerQos = new libjoynrAsync.types.ProviderQos({
                 customParameters : [],
-                providerVersion : 1,
                 priority : Date.now(),
                 scope : libjoynrAsync.types.ProviderScope.GLOBAL,
                 onChangeSubscriptions : true

@@ -81,7 +81,6 @@ joynrTestRequire(
                             value : "theValue"
                         })
                         ],
-                        providerVersion : 123,
                         priority : 1234,
                         scope : discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
                                 ? ProviderScope.LOCAL
@@ -103,7 +102,6 @@ joynrTestRequire(
                             value : "theValue"
                         })
                         ],
-                        providerVersion : 123,
                         priority : 1234,
                         scope : discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
                                 ? ProviderScope.LOCAL
@@ -734,7 +732,6 @@ joynrTestRequire(
                                         value : "theValue"
                                     })
                                     ],
-                                    providerVersion : 123,
                                     priority : 1234,
                                     scope : scope,
                                     onChangeSubscription : true
@@ -753,7 +750,6 @@ joynrTestRequire(
                                         value : "theValue"
                                     })
                                     ],
-                                    providerVersion : 123,
                                     priority : 1234,
                                     scope : scope,
                                     onChangeSubscription : true

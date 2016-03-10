@@ -32,7 +32,6 @@ joynrTestRequire("joynr/capabilities/TestCapabilityInformation", [
             interfaceName : "vehicle/cdsnavigation",
             providerQos : new ProviderQos({
                 customParameters : [],
-                providerVersion : 1,
                 priority : 1,
                 scope : ProviderScope.GLOBAL,
                 supportsOnChangeSubscriptions : true

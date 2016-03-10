@@ -321,7 +321,6 @@ joynrTestRequire(
                                    // the Provider
                                     var providerQos = new joynr.types.ProviderQos({
                                         customParameters : [],
-                                        providerVersion : 1,
                                         priority : Date.now(),
                                         scope : joynr.types.ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -888,7 +887,6 @@ joynrTestRequire(
 
                                         providerQos = new joynr.types.ProviderQos({
                                             customParameters : [],
-                                            providerVersion : 1,
                                             priority : Date.now(),
                                             scope : joynr.types.ProviderScope.GLOBAL,
                                             onChangeSubscriptions : true

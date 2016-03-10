@@ -165,7 +165,6 @@ TEST_F(SystemServicesDiscoveryTest, add)
     );
     joynr::types::ProviderQos providerQos(
                 std::vector<joynr::types::CustomParameter>(), // custom provider parameters
-                1,                                      // provider version
                 1,                                      // priority
                 joynr::types::ProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions
@@ -223,7 +222,6 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     );
     joynr::types::ProviderQos providerQos(
                 std::vector<joynr::types::CustomParameter>(), // custom provider parameters
-                1,                                      // provider version
                 1,                                      // priority
                 joynr::types::ProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions

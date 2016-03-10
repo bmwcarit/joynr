@@ -101,7 +101,6 @@ joynr.load(provisioning).then(function(loadedJoynr) {
 
     var providerQos = new joynr.types.ProviderQos({
         customParameters : [],
-        providerVersion : 1,
         priority : Date.now(),
         scope : joynr.types.ProviderScope.GLOBAL,
         onChangeSubscriptions : true

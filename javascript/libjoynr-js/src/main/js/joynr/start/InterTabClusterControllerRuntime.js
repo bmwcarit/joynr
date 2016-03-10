@@ -607,7 +607,6 @@ define(
 
                             providerQos = new ProviderQos({
                                 customParameters : [],
-                                providerVersion : 1,
                                 priority : Date.now(),
                                 scope : ProviderScope.LOCAL
                             });
