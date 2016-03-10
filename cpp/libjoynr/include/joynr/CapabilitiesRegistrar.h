@@ -55,7 +55,9 @@ public:
             std::shared_ptr<MessageRouter> messageRouter);
 
     template <class T>
-    std::string add(const std::string& domain, std::shared_ptr<T> provider)
+    std::string add(const std::string& domain,
+                    std::shared_ptr<T> provider,
+                    const types::ProviderQos& providerQos)
     {
 
         std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
@@ -76,7 +78,7 @@ public:
         std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {
                 joynr::types::CommunicationMiddleware::JOYNR};
         joynr::types::DiscoveryEntry entry(
-                domain, interfaceName, participantId, provider->getProviderQos(), connections);
+                domain, interfaceName, participantId, providerQos, connections);
         try {
             discoveryProxy.add(entry);
         } catch (const exceptions::JoynrException& e) {
