@@ -65,8 +65,7 @@ static const bool is«joynrName»SerializerRegistered =
 template <>
 void ClassSerializerImpl<«joynrName»>::serialize(const «joynrName» &«joynrName.toFirstLower»Var, std::ostream& stream)
 {
-	MapSerializer::serialize<«type.keyType.typeName», «type.valueType.typeName»>(
-				"«fqJoynrName»",
+        MapSerializer::serialize("«fqJoynrName»",
 				«joynrName.toFirstLower»Var,
 				stream);
 

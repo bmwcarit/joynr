@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -327,7 +327,13 @@ struct SelectedDeserializer<std::vector<T>>
  * @brief partial specialization for map deserialization
  */
 template <typename T>
-struct ClassDeserializerImpl<T, std::enable_if_t<util::IsDerivedFromTemplate<std::map, T>::value>>
+struct ClassDeserializerImpl<T,
+        std::enable_if_t<
+            util::IsDerivedFromTemplate<std::map, T>::value
+            ||
+            util::IsDerivedFromTemplate<std::unordered_map, T>::value
+            >
+        >
 {
     static void deserialize(T& map, IObject& object)
     {
