@@ -87,24 +87,6 @@ typeCollection {
 		GLOBAL_ONLY
 	}
 
-	<** @description: Enumeration specifying the different means for communication **>
-	enumeration CommunicationMiddleware {
-		<** @description: Joynr internal communication **>
-		JOYNR
-		<** @description: Communication using CommonAPI over DBus **>
-		COMMONAPI_DBUS
-		<** @description: Communication using Browser **>
-		BROWSER
-		<** @description: Communication using web sockets **>
-		WEBSOCKET
-		<** @description: Communication using Some IP protocol **>
-		SOME_IP
-		<** @description: Communication using in process means **>
-		IN_PROCESS
-		<** @description: None of the above **>
-		NONE
-	}
-
 	<** @description: Discovery quality of service settings **>
 	struct DiscoveryQos {
 		<** @description: The maximum age of a cached entry in milliseconds **>
@@ -115,7 +97,7 @@ typeCollection {
 		Boolean providerMustSupportOnChange
 	}
 
-	struct DiscoveryEntry {
+	struct DiscoveryEntry polymorphic {
 		<** @description: semantic version information **>
 		Version providerVersion
 		<** @description: the domain to register the provider with **>
@@ -126,11 +108,13 @@ typeCollection {
 		String participantId
 		<** @description: the qos of the provider **>
 		ProviderQos qos
-		<**
-			@description: a list of communications middlewares that can be used
-				to access the provider
-		**>
-		CommunicationMiddleware[] connections
+		<** @description: the date in millis since epoch when the source for this provider last contacted the directory **>
+		Int64 lastSeenDateMs
+	}
+
+	struct GlobalDiscoveryEntry extends DiscoveryEntry {
+		<** @description: the serialized transport-middleware-specific address where the provider can be reached **>
+		String address
 	}
 
 	<** @description: the capability information holding the information for a provider **>
