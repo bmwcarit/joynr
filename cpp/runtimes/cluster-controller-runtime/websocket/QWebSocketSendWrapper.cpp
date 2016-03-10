@@ -48,6 +48,8 @@ void QWebSocketSendWrapper::send(
         const std::string& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
+    // TODO handle message errors after QWebSockets is replaced by WebSocket++
+    // to retrigger a message if it failed to send via websockets
     std::ignore = onFailure;
     emit queueTextMessage(QString::fromStdString(message));
 }
