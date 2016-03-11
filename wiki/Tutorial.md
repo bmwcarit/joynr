@@ -420,10 +420,12 @@ but more recent versions should also work here.
 For both, consumer and provider, the backend (Bounceproxy and Discovery) has to be started first.
 
 ### Starting the Backend
-The following Maven command will start a [Jetty Server](http://eclipse.org/jetty/) on `localhost:8080` and automatically deploy Bounceproxy and Discovery services:
+The following Maven command will start a [Jetty Server](http://eclipse.org/jetty/) on
+`localhost:8080` and automatically deploy
+[Bounceproxy and Discovery services](using_joynr.md#discovery-directories):
 
 ```bash
-<RADIO_HOME>$ mvn jetty:run-war
+<RADIO_HOME>$ mvn jetty:run
 ```
 
 ### Java
