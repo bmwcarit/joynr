@@ -23,16 +23,8 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
     "joynr/types/DiscoveryEntry",
     "joynr/types/CapabilityInformation",
     "joynr/capabilities/ParticipantIdStorage",
-    "joynr/types/CommunicationMiddleware",
     "joynr/types/Version"
-], function(
-        Promise,
-        Util,
-        DiscoveryEntry,
-        CapabilityInformation,
-        ParticipantIdStorage,
-        CommunicationMiddleware,
-        Version) {
+], function(Promise, Util, DiscoveryEntry, CapabilityInformation, ParticipantIdStorage, Version) {
 
     /**
      * The Capabilities Registrar
@@ -156,8 +148,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                         interfaceName : provider.interfaceName,
                         participantId : participantId,
                         qos : providerQos,
-                        connections : [ CommunicationMiddleware.JOYNR
-                        ]
+                        lastSeenDateMs : Date.now()
                     }));
 
                     return Promise.all([

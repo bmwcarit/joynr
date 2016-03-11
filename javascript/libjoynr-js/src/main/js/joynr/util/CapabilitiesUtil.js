@@ -48,7 +48,7 @@ define("joynr/util/CapabilitiesUtil", [ "joynr/types/DiscoveryEntry"
             interfaceName : capabilityInformation.interfaceName,
             qos : capabilityInformation.providerQos,
             participantId : capabilityInformation.participantId,
-            connections : []
+            lastSeenDateMs : Date.now()
         });
     };
 

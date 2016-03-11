@@ -65,7 +65,8 @@ joynrTestRequire(
                     ], 123, 1234, discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
                             ? true
                             : false, true),
-                    participandId : "700"
+                    participandId : "700",
+                    lastSeenDateMs : Date.now()
                 });
             }
 

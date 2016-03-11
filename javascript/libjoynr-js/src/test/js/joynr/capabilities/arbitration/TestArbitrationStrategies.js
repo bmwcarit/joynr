@@ -97,6 +97,7 @@ joynrTestRequire(
                                     }),
                                     domain : "myWithKeywordDomain",
                                     interfaceName : "myInterfaceName",
+                                    lastSeenDateMs : Date.now(),
                                     qos : new ProviderQos({
                                         customParameters : [
                                             new CustomParameter({
@@ -121,6 +122,7 @@ joynrTestRequire(
                                     }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceNameKeyword",
+                                    lastSeenDateMs : Date.now(),
                                     qos : new ProviderQos({
                                         customParameters : [
                                             new CustomParameter({
@@ -145,6 +147,7 @@ joynrTestRequire(
                                     }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceName",
+                                    lastSeenDateMs : Date.now(),
                                     qos : new ProviderQos({
                                         customParameters : [
                                             new CustomParameter({

@@ -31,7 +31,6 @@ joynrTestRequire(
             "joynr/provider/ProviderAttributeNotifyReadWrite",
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderScope",
-            "joynr/types/Version",
             "uuid",
             "joynr/types/CommunicationMiddleware"
         ],
@@ -44,8 +43,7 @@ joynrTestRequire(
                 DiscoveryEntry,
                 ProviderScope,
                 Version,
-                uuid,
-                CommunicationMiddleware) {
+                uuid) {
             describe(
                     "libjoynr-js.joynr.capabilities.CapabilitiesRegistrar",
                     function() {
@@ -238,20 +236,22 @@ joynrTestRequire(
                                 });
 
                         it("registers capability at capabilities stub", function() {
+                            var actualDiscoveryEntry;
+                            var upperBound;
+                            var lowerBound = Date.now();
                             capabilitiesRegistrar.registerProvider(
                                     domain,
                                     provider,
                                     providerQos);
+                            upperBound = Date.now();
                             expect(discoveryStubSpy.add).toHaveBeenCalled();
-                            expect(discoveryStubSpy.add).toHaveBeenCalledWith(new DiscoveryEntry({
-                                providerVersion : new Version(),
-                                domain : domain,
-                                interfaceName : provider.interfaceName,
-                                participantId : participantId,
-                                qos : providerQos,
-                                connections : [ CommunicationMiddleware.JOYNR
-                                ]
-                            }));
+                            actualDiscoveryEntry = discoveryStubSpy.add.calls[0].args[0];
+                            expect(actualDiscoveryEntry.domain).toEqual(domain);
+                            expect(actualDiscoveryEntry.interfaceName).toEqual(provider.interfaceName);
+                            expect(actualDiscoveryEntry.participantId).toEqual(participantId);
+                            expect(actualDiscoveryEntry.qos).toEqual(providerQos);
+                            expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeLessThan(lowerBound);
+                            expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeGreaterThan(upperBound);
                         });
 
                         it("registers logging context with the ContextManager", function() {

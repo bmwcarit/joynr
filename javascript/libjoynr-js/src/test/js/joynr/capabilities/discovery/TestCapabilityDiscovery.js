@@ -113,7 +113,7 @@ joynrTestRequire(
                         onChangeSubscriptions : true
                     }),
                     participantId : "700",
-                    connections : []
+                    lastSeenDateMs : 123
                 });
             }
 
@@ -414,6 +414,7 @@ joynrTestRequire(
                                 globalCapCacheEntries,
                                 globalCapabilityInfos,
                                 expectedReturnValue) {
+                            var startDateMs = Date.now();
                             var onFulfilledSpy = jasmine.createSpy("onFulfilled" + descriptor), onRejectedSpy =
                                     jasmine.createSpy("onRejected" + descriptor);
                             var localCapStoreSpy =
@@ -463,8 +464,18 @@ joynrTestRequire(
                                 if (expectedReturnValue === undefined) {
                                     expect(onFulfilledSpy).not.toHaveBeenCalled();
                                 } else {
-                                    expect(onFulfilledSpy)
-                                            .toHaveBeenCalledWith(expectedReturnValue);
+                                    var i;
+                                    var endDateMs = Date.now();
+                                    var fulfilledWith = onFulfilledSpy.calls[0].args[0];
+                                    expect(fulfilledWith.length).toEqual(expectedReturnValue.length);
+                                    for (i = 0; i<fulfilledWith.length; i++) {
+                                        expect(fulfilledWith[i].domain).toEqual(expectedReturnValue[i].domain);
+                                        expect(fulfilledWith[i].interfaceName).toEqual(expectedReturnValue[i].interfaceName);
+                                        expect(fulfilledWith[i].participantId).toEqual(expectedReturnValue[i].participantId);
+                                        expect(fulfilledWith[i].qos).toEqual(expectedReturnValue[i].qos);
+                                        expect(fulfilledWith[i].lastSeenDateMs >= startDateMs).toBeTruthy();
+                                        expect(fulfilledWith[i].lastSeenDateMs <= endDateMs).toBeTruthy();
+                                    }
                                 }
                             });
                         }
@@ -741,7 +752,8 @@ joynrTestRequire(
                                     scope : scope,
                                     onChangeSubscription : true
                                 }),
-                                participantId : "700"
+                                participantId : "700",
+                                lastSeenDateMs : 123
                             });
                         }
 
