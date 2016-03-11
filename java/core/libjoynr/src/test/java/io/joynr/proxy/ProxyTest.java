@@ -84,7 +84,6 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
@@ -189,18 +188,16 @@ public class ProxyTest {
                                                                    TestInterface.INTERFACE_NAME,
                                                                    toParticipantId,
                                                                    new ProviderQos(),
-                                                                   new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                                   System.currentTimeMillis());
 
                 DiscoveryEntry[] fakeCapabilitiesResult = { discoveryEntry };
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);
                 return null;
             }
-        })
-               .when(localDiscoveryAggregator)
-               .lookup(Mockito.<Callback> any(),
-                       Mockito.<String> any(),
-                       Mockito.<String> any(),
-                       Mockito.<joynr.types.DiscoveryQos> any());
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<joynr.types.DiscoveryQos> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override

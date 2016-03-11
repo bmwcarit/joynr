@@ -56,7 +56,6 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.CapabilityInformation;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -100,21 +99,21 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                                     GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                                                                                     capabilitiesDirectoryParticipantId,
                                                                                                     new ProviderQos(),
-                                                                                                    new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
+                                                                                                    System.currentTimeMillis()),
                                                                                  new ChannelAddress(capabiltitiesDirectoryChannelId)));
         this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(new Version(),
                                                                                                     discoveryDirectoriesDomain,
                                                                                                     ChannelUrlDirectory.INTERFACE_NAME,
                                                                                                     channelUrlDirectoryParticipantId,
                                                                                                     new ProviderQos(),
-                                                                                                    new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
+                                                                                                    System.currentTimeMillis()),
                                                                                  new ChannelAddress(channelUrlDirectoryChannelId)));
         this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(new Version(),
                                                                                                     discoveryDirectoriesDomain,
                                                                                                     GlobalDomainAccessController.INTERFACE_NAME,
                                                                                                     domainAccessControllerParticipantId,
                                                                                                     new ProviderQos(),
-                                                                                                    new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
+                                                                                                    System.currentTimeMillis()),
                                                                                  new ChannelAddress(domainAccessControllerChannelId)));
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(proxyBuilderFactory,
@@ -201,12 +200,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         // Remove endpoint addresses
-        for (CommunicationMiddleware communicationMiddleware : discoveryEntry.getConnections()) {
-            if (communicationMiddleware == CommunicationMiddleware.JOYNR) {
-                messageRouter.removeNextHop(discoveryEntry.getParticipantId());
-                break;
-            }
-        }
+        messageRouter.removeNextHop(discoveryEntry.getParticipantId());
     }
 
     @Override

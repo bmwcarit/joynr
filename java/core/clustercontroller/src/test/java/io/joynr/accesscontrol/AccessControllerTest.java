@@ -33,7 +33,6 @@ import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
@@ -107,7 +106,7 @@ public class AccessControllerTest {
                                                            testInterface,
                                                            toParticipantId,
                                                            new ProviderQos(),
-                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                           System.currentTimeMillis());
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(discoveryEntry);
     }
 

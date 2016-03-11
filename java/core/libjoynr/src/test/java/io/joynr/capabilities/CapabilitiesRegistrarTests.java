@@ -42,7 +42,6 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.proxy.Callback;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
@@ -116,7 +115,7 @@ public class CapabilitiesRegistrarTests {
                                                                    TestInterface.INTERFACE_NAME,
                                                                    participantId,
                                                                    providerQos,
-                                                                   new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR })));
+                                                                   System.currentTimeMillis())));
 
         verify(requestCallerFactory).create(provider);
 

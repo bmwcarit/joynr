@@ -30,7 +30,6 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
 import joynr.system.Discovery;
 import joynr.system.DiscoveryProxy;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryQos;
 import joynr.types.DiscoveryScope;
@@ -43,7 +42,6 @@ public class LocalDiscoveryAggregatorTest {
 
     private String systemServicesDomain;
     private String discoveryProviderParticipantId;
-    private CommunicationMiddleware clusterControllerConnection;
     private LocalDiscoveryAggregator localDiscoveryAggregator;
     private DiscoveryEntry discoveryProviderEntry;
 
@@ -62,11 +60,9 @@ public class LocalDiscoveryAggregatorTest {
     public void setUp() {
         systemServicesDomain = "test.system.service.domain";
         discoveryProviderParticipantId = "test.discovery.provider.participant";
-        clusterControllerConnection = CommunicationMiddleware.NONE;
         localDiscoveryAggregator = new LocalDiscoveryAggregator(systemServicesDomain,
                                                                 discoveryProviderParticipantId,
-                                                                "routingProviderParticipantId",
-                                                                clusterControllerConnection);
+                                                                "routingProviderParticipantId");
         localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyMock);
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
@@ -75,7 +71,7 @@ public class LocalDiscoveryAggregatorTest {
                                                     Discovery.INTERFACE_NAME,
                                                     discoveryProviderParticipantId,
                                                     providerQos,
-                                                    new CommunicationMiddleware[]{ clusterControllerConnection });
+                                                    System.currentTimeMillis());
 
     }
 
@@ -86,7 +82,7 @@ public class LocalDiscoveryAggregatorTest {
                                                            "anyInterface",
                                                            "anyParticipant",
                                                            new ProviderQos(),
-                                                           new CommunicationMiddleware[]{ clusterControllerConnection });
+                                                           System.currentTimeMillis());
         localDiscoveryAggregator.add(addCallback, discoveryEntry);
         Mockito.verify(discoveryProxyMock, Mockito.times(1)).add(Mockito.any(Callback.class),
                                                                  Mockito.eq(discoveryEntry));
@@ -121,7 +117,7 @@ public class LocalDiscoveryAggregatorTest {
                                                            "anyInterface",
                                                            "anyParticipant",
                                                            new ProviderQos(),
-                                                           new CommunicationMiddleware[]{ clusterControllerConnection });
+                                                           System.currentTimeMillis());
         localDiscoveryAggregator.add(addCallback, discoveryEntry);
         Mockito.verify(addCallback, Mockito.never()).resolve();
 

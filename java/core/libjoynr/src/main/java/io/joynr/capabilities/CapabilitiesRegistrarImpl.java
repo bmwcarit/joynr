@@ -36,7 +36,6 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
@@ -83,7 +82,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                            provider.getInterfaceName(),
                                                            participantId,
                                                            providerQos,
-                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                           System.currentTimeMillis());
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);

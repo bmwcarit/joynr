@@ -26,7 +26,6 @@ import com.google.common.collect.Lists;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.CapabilityInformation;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 
 /**
@@ -40,7 +39,7 @@ public class CapabilityUtils {
                                   capabilityEntry.getInterfaceName(),
                                   capabilityEntry.getParticipantId(),
                                   capabilityEntry.getProviderQos(),
-                                  new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                  System.currentTimeMillis());
     }
 
     @CheckForNull
@@ -54,7 +53,7 @@ public class CapabilityUtils {
                                   capabilityInformation.getInterfaceName(),
                                   capabilityInformation.getParticipantId(),
                                   capabilityInformation.getProviderQos(),
-                                  new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                  System.currentTimeMillis());
     }
 
     public static CapabilityEntry capabilitiesInfo2CapabilityEntry(CapabilityInformation capabilityInformation) {

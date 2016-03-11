@@ -63,10 +63,13 @@ import joynr.exceptions.ApplicationException;
 import joynr.exceptions.IllegalAccessException;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
@@ -1174,4 +1177,35 @@ public class SerializationTest {
         Assert.assertEquals(reply, receivedReply);
     }
 
+    @Test
+    public void serializeSubtype() throws Exception {
+
+        MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
+
+        String serializedMqttAddress = objectMapper.writeValueAsString(mqttAddress);
+
+        Address receivedAddress = objectMapper.readValue(serializedMqttAddress, Address.class);
+        Assert.assertTrue(receivedAddress instanceof MqttAddress);
+        Assert.assertEquals(mqttAddress, receivedAddress);
+    }
+
+    @Test
+    public void serializeSubtypeInCompoundType() throws Exception {
+
+        MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
+        GlobalDiscoveryEntry globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                             "domain",
+                                                                             "interface",
+                                                                             "participantId",
+                                                                             new ProviderQos(),
+                                                                             System.currentTimeMillis(),
+                                                                             objectMapper.writeValueAsString(mqttAddress));
+
+        String serializedGlobalDiscoveryEntry = objectMapper.writeValueAsString(globalDiscoveryEntry);
+
+        GlobalDiscoveryEntry receivedDiscoveryEntry = objectMapper.readValue(serializedGlobalDiscoveryEntry,
+                                                                             GlobalDiscoveryEntry.class);
+        Assert.assertTrue(objectMapper.readValue(receivedDiscoveryEntry.getAddress(), Address.class) instanceof MqttAddress);
+        Assert.assertEquals(globalDiscoveryEntry, receivedDiscoveryEntry);
+    }
 }

@@ -42,7 +42,6 @@ import java.util.List;
 
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
@@ -142,7 +141,7 @@ public class LocalCapabilitiesDirectoryTest {
                                             TestInterface.INTERFACE_NAME,
                                             participantId,
                                             providerQos,
-                                            new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                            System.currentTimeMillis());
         capabilityInformation = new CapabilityInformation(new Version(47, 11),
                                                           domain,
                                                           TestInterface.INTERFACE_NAME,
@@ -195,7 +194,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                  TestInterface.INTERFACE_NAME,
                                                                  participantId,
                                                                  providerQos,
-                                                                 new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                                 System.currentTimeMillis());
         final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(new Version(47, 11),
                                                                         domain,
                                                                         TestInterface.INTERFACE_NAME,
@@ -248,7 +247,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                  TestInterface.INTERFACE_NAME,
                                                                  participantId,
                                                                  providerQos,
-                                                                 new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                                 System.currentTimeMillis());
         final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(new Version(47, 11),
                                                                         domain,
                                                                         TestInterface.INTERFACE_NAME,
@@ -367,7 +366,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
-                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                           System.currentTimeMillis());
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
@@ -483,7 +482,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
-                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                           System.currentTimeMillis());
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
@@ -563,7 +562,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                    interfaceName1,
                                                                    participantId1,
                                                                    providerQos,
-                                                                   new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                                   System.currentTimeMillis());
         localCapabilitiesDirectory.add(expectedDiscoveryEntry);
         DiscoveryEntry retrievedCapabilityEntry = localCapabilitiesDirectory.lookup(participantId1, discoveryQos);
         Assert.assertEquals(expectedDiscoveryEntry, retrievedCapabilityEntry);
@@ -602,7 +601,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
-                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                           System.currentTimeMillis());
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
