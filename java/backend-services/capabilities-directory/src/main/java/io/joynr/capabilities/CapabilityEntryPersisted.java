@@ -42,7 +42,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import joynr.system.RoutingTypes.Address;
-import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -122,25 +122,14 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
         this.interfaceName = name;
     }
 
-    public CapabilityEntryPersisted(CapabilityInformation capabilityInformation) {
-        this(capabilityInformation.getProviderVersion(),
-             capabilityInformation.getDomain(),
-             capabilityInformation.getInterfaceName(),
-             capabilityInformation.getQos(),
-             capabilityInformation.getParticipantId(),
+    public CapabilityEntryPersisted(GlobalDiscoveryEntry globalDiscoveryEntry) {
+        this(globalDiscoveryEntry.getProviderVersion(),
+             globalDiscoveryEntry.getDomain(),
+             globalDiscoveryEntry.getInterfaceName(),
+             globalDiscoveryEntry.getQos(),
+             globalDiscoveryEntry.getParticipantId(),
              System.currentTimeMillis(),
-             new JoynrMessagingEndpointAddressPersisted(capabilityInformation.getAddress()));
-    }
-
-    public static CapabilityEntryPersisted fromCapabilityInformation(CapabilityInformation capInfo) {
-        return new CapabilityEntryPersisted(capInfo.getProviderVersion(),
-                                            capInfo.getDomain(),
-                                            capInfo.getInterfaceName(),
-                                            capInfo.getQos(),
-                                            capInfo.getParticipantId(),
-                                            System.currentTimeMillis(),
-                                            // Assume the Capability entry is not local because it has been serialized
-                                            new JoynrMessagingEndpointAddressPersisted(capInfo.getAddress()));
+             new JoynrMessagingEndpointAddressPersisted(globalDiscoveryEntry.getAddress()));
     }
 
     @Override

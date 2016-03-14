@@ -26,6 +26,7 @@ import javax.persistence.Table;
 
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 @Entity
 @Table(name = "discovery_entries")
@@ -39,13 +40,14 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
         super(globalDiscoveryEntryObj);
     }
 
-    GlobalDiscoveryEntryPersisted(String domain,
+    GlobalDiscoveryEntryPersisted(Version providerVersion,
+                                  String domain,
                                   String interfaceName,
                                   String participantId,
                                   ProviderQos qos,
                                   long lastSeenDateMs,
                                   String address) {
-        super(domain, interfaceName, participantId, qos, lastSeenDateMs, address);
+        super(providerVersion, domain, interfaceName, participantId, qos, lastSeenDateMs, address);
     }
 
     @Override

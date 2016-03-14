@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
-import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,9 +61,9 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public Promise<DeferredVoid> add(CapabilityInformation capabilityInformation) {
+    public Promise<DeferredVoid> add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         DeferredVoid deferred = new DeferredVoid();
-        CapabilityEntry capabilityEntry = new CapabilityEntryPersisted(capabilityInformation);
+        CapabilityEntry capabilityEntry = new CapabilityEntryPersisted(globalDiscoveryEntry);
         logger.debug("registered capability: {}", capabilityEntry);
         capabiltiesStore.add(capabilityEntry);
         deferred.resolve();
@@ -71,12 +71,12 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public Promise<DeferredVoid> add(CapabilityInformation[] capabilitiesInformation) {
+    public Promise<DeferredVoid> add(GlobalDiscoveryEntry[] globalDiscoveryEntries) {
         DeferredVoid deferred = new DeferredVoid();
         // TODO check interfaces before adding them
         List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
-        for (CapabilityInformation capInfo : capabilitiesInformation) {
-            capabilityEntries.add(new CapabilityEntryPersisted(capInfo));
+        for (GlobalDiscoveryEntry globalDiscoveryEntry : globalDiscoveryEntries) {
+            capabilityEntries.add(new CapabilityEntryPersisted(globalDiscoveryEntry));
         }
 
         logger.debug("registered capabilities: interface {}", capabilityEntries.toString());
@@ -111,13 +111,13 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         Lookup1Deferred deferred = new Lookup1Deferred();
         logger.debug("Searching channels for domain: " + domain + " interfaceName: " + interfaceName + " {}");
         Collection<CapabilityEntry> entryCollection = capabiltiesStore.lookup(domain, interfaceName);
-        CapabilityInformation[] capabilityInformationList = new CapabilityInformation[entryCollection.size()];
+        GlobalDiscoveryEntry[] globalDiscoveryEntries = new GlobalDiscoveryEntry[entryCollection.size()];
         int index = 0;
         for (CapabilityEntry entry : entryCollection) {
-            capabilityInformationList[index] = CapabilityUtils.capabilityEntry2Information(entry);
+            globalDiscoveryEntries[index] = CapabilityUtils.capabilityEntry2GlobalDiscoveryEntry(entry);
             index++;
         }
-        deferred.resolve(capabilityInformationList);
+        deferred.resolve(globalDiscoveryEntries);
         return new Promise<Lookup1Deferred>(deferred);
     }
 
@@ -129,7 +129,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         if (capEntry == null) {
             deferred.resolve(null);
         } else {
-            deferred.resolve(CapabilityUtils.capabilityEntry2Information(capEntry));
+            deferred.resolve(CapabilityUtils.capabilityEntry2GlobalDiscoveryEntry(capEntry));
         }
         return new Promise<Lookup2Deferred>(deferred);
     }

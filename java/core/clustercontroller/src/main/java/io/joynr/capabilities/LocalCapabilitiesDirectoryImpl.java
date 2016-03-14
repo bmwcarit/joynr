@@ -57,7 +57,7 @@ import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -152,19 +152,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         // Register globally
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
 
-            final CapabilityInformation capabilityInformation = CapabilityUtils.discoveryEntry2Information(discoveryEntry,
+            final GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
                                                                                                            globalAddress);
-            if (capabilityInformation != null) {
+            if (globalDiscoveryEntry != null) {
 
-                logger.info("starting global registration for " + capabilityInformation.getDomain() + " : "
-                        + capabilityInformation.getInterfaceName());
+                logger.info("starting global registration for " + globalDiscoveryEntry.getDomain() + " : "
+                        + globalDiscoveryEntry.getInterfaceName());
 
                 globalCapabilitiesClient.add(new Callback<Void>() {
 
                     @Override
                     public void onSuccess(Void nothing) {
-                        logger.info("global registration for " + capabilityInformation.getDomain() + " : "
-                                + capabilityInformation.getInterfaceName() + " completed");
+                        logger.info("global registration for " + globalDiscoveryEntry.getDomain() + " : "
+                                + globalDiscoveryEntry.getInterfaceName() + " completed");
                         deferred.resolve();
                         globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry,
                                                                                             globalAddress));
@@ -174,7 +174,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     public void onFailure(JoynrRuntimeException exception) {
                         deferred.reject(new ProviderRuntimeException(exception.toString()));
                     }
-                }, capabilityInformation);
+                }, globalDiscoveryEntry);
             }
         } else {
             deferred.resolve();
@@ -336,8 +336,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return retrievedCapabilitiyEntry;
     }
 
-    private void registerIncomingEndpoints(Collection<CapabilityInformation> caps) {
-        for (CapabilityInformation ce : caps) {
+    private void registerIncomingEndpoints(Collection<GlobalDiscoveryEntry> caps) {
+        for (GlobalDiscoveryEntry ce : caps) {
             // TODO can a CapabilityEntry coming from the GlobalCapabilityDirectoy have more than one
             // EndpointAddress?
             // TODO when are entries purged from the messagingEndpointDirectory?
@@ -363,12 +363,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (cachedGlobalCapability != null) {
             capabilitiesCallback.processCapabilityReceived(CapabilityUtils.capabilityEntry2DiscoveryEntry(cachedGlobalCapability));
         } else {
-            globalCapabilitiesClient.lookup(new Callback<CapabilityInformation>() {
+            globalCapabilitiesClient.lookup(new Callback<GlobalDiscoveryEntry>() {
 
                 @Override
-                public void onSuccess(@CheckForNull CapabilityInformation capInfo) {
+                public void onSuccess(@CheckForNull GlobalDiscoveryEntry capInfo) {
                     if (capInfo != null) {
-                        DiscoveryEntry discoveryEntry = CapabilityUtils.capabilitiesInfo2DiscoveryEntry(capInfo);
+                        DiscoveryEntry discoveryEntry = CapabilityUtils.globalDiscoveryEntry2DiscoveryEntry(capInfo);
                         registerIncomingEndpoints(Lists.newArrayList(capInfo));
                         globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry,
                                                                                             capInfo.getAddress()));
@@ -400,12 +400,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         final Collection<CapabilityEntry> localCapabilities = mixinCapabilities == null ? new LinkedList<CapabilityEntry>()
                 : mixinCapabilities;
 
-        globalCapabilitiesClient.lookup(new Callback<List<CapabilityInformation>>() {
+        globalCapabilitiesClient.lookup(new Callback<List<GlobalDiscoveryEntry>>() {
 
             @Override
-            public void onSuccess(List<CapabilityInformation> capInfo) {
+            public void onSuccess(List<GlobalDiscoveryEntry> capInfo) {
                 if (capInfo != null) {
-                    Collection<CapabilityEntry> caps = CapabilityUtils.capabilityInformationList2Entries(capInfo);
+                    Collection<CapabilityEntry> caps = CapabilityUtils.globalDiscoveryEntryList2Entries(capInfo);
 
                     registerIncomingEndpoints(capInfo);
                     globalCapabilitiesCache.add(caps);
@@ -432,21 +432,21 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (unregisterAllRegisteredCapabilities) {
             Set<CapabilityEntry> allCapabilities = localCapabilitiesStore.getAllCapabilities();
 
-            List<CapabilityInformation> capInfoList = new ArrayList<>(allCapabilities.size());
+            List<GlobalDiscoveryEntry> capInfoList = new ArrayList<>(allCapabilities.size());
 
             for (CapabilityEntry capabilityEntry : allCapabilities) {
                 if (capabilityEntry.getProviderQos().getScope() == ProviderScope.GLOBAL) {
-                    CapabilityInformation capabilityInformation = CapabilityUtils.capabilityEntry2Information(capabilityEntry);
-                    capInfoList.add(capabilityInformation);
+                    GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.capabilityEntry2GlobalDiscoveryEntry(capabilityEntry);
+                    capInfoList.add(globalDiscoveryEntry);
                 }
             }
 
             if (capInfoList.size() > 0) {
                 try {
-                    Function<? super CapabilityInformation, String> transfomerFct = new Function<CapabilityInformation, String>() {
+                    Function<? super GlobalDiscoveryEntry, String> transfomerFct = new Function<GlobalDiscoveryEntry, String>() {
 
                         @Override
-                        public String apply(CapabilityInformation input) {
+                        public String apply(GlobalDiscoveryEntry input) {
                             return input != null ? input.getParticipantId() : null;
                         }
                     };

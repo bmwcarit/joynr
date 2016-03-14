@@ -68,7 +68,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.TestEnum;
-import joynr.types.CapabilityInformation;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
@@ -366,36 +365,37 @@ public class SerializationTest {
     }
 
     @Test
-    public void serializeAndDeserializeCapabilityInformationTest() throws Exception {
+    public void serializeAndDeserializeGlobalDiscoveryEntryTest() throws Exception {
         ProviderQos qos = new ProviderQos();
         String channelAddress = "channelId";
-        final CapabilityInformation[] capInfos = { new CapabilityInformation(new Version(47, 11),
-                                                                             "domain",
-                                                                             "interface",
-                                                                             qos,
-                                                                             channelAddress,
-                                                                             "participantId") };
+        final GlobalDiscoveryEntry[] capInfos = { new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                           "domain",
+                                                                           "interface",
+                                                                           "participantId",
+                                                                           qos,
+                                                                           System.currentTimeMillis(),
+                                                                           channelAddress) };
 
         String writeValueAsString = null;
 
         writeValueAsString = objectMapper.writeValueAsString(capInfos);
         System.err.println(writeValueAsString);
-        assertTrue(writeValueAsString.startsWith("[{\"_typeName\":\"joynr.types.CapabilityInformation\""));
+        assertTrue(writeValueAsString.startsWith("[{\"_typeName\":\"joynr.types.GlobalDiscoveryEntry\""));
 
-        CapabilityInformation[] readValue = objectMapper.readValue(writeValueAsString, CapabilityInformation[].class);
+        GlobalDiscoveryEntry[] readValue = objectMapper.readValue(writeValueAsString, GlobalDiscoveryEntry[].class);
         assertArrayEquals(capInfos, readValue);
 
-        CapabilityInformation capabilityInformation = new CapabilityInformation(new Version(47, 11),
-                                                                                "domain",
-                                                                                "interface",
-                                                                                qos,
-                                                                                channelAddress,
-                                                                                "participantId");
-        writeValueAsString = objectMapper.writeValueAsString(capabilityInformation);
-        // assertTrue(writeValueAsString.startsWith("{\"_typeName\":\"joynr.types.CapabilityInformation\""));
+        GlobalDiscoveryEntry globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                             "domain",
+                                                                             "interface",
+                                                                             "participantId",
+                                                                             qos,
+                                                                             System.currentTimeMillis(),
+                                                                             channelAddress);
+        writeValueAsString = objectMapper.writeValueAsString(globalDiscoveryEntry);
         System.err.println(writeValueAsString);
-        CapabilityInformation readCapInfo = objectMapper.readValue(writeValueAsString, CapabilityInformation.class);
-        assertEquals(capabilityInformation, readCapInfo);
+        GlobalDiscoveryEntry readCapInfo = objectMapper.readValue(writeValueAsString, GlobalDiscoveryEntry.class);
+        assertEquals(globalDiscoveryEntry, readCapInfo);
 
     }
 
@@ -633,12 +633,13 @@ public class SerializationTest {
     public void serializeReplyWithCapabilityInfoArray() throws JsonGenerationException, JsonMappingException,
                                                        IOException {
 
-        Object response = new CapabilityInformation[]{ new CapabilityInformation(new Version(47, 11),
-                                                                                 "domain",
-                                                                                 "interface",
-                                                                                 new ProviderQos(),
-                                                                                 "channelId",
-                                                                                 "participantId") };
+        Object response = new GlobalDiscoveryEntry[]{ new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                               "domain",
+                                                                               "interface",
+                                                                               "participantId",
+                                                                               new ProviderQos(),
+                                                                               123L,
+                                                                               "channelId") };
         Reply reply = new Reply(UUID.randomUUID().toString(), response);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
@@ -654,10 +655,10 @@ public class SerializationTest {
 
         JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
         Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
-        CapabilityInformation[] convertValue = objectMapper.convertValue(receivedReply.getResponse()[0],
-                                                                         CapabilityInformation[].class);
+        GlobalDiscoveryEntry[] convertValue = objectMapper.convertValue(receivedReply.getResponse()[0],
+                                                                        GlobalDiscoveryEntry[].class);
 
-        Assert.assertArrayEquals((CapabilityInformation[]) reply.getResponse()[0], convertValue);
+        Assert.assertArrayEquals((GlobalDiscoveryEntry[]) reply.getResponse()[0], convertValue);
 
         ComplexTestType2[] complexTestType2Array = { new ComplexTestType2(3, 4), new ComplexTestType2(5, 6) };
         ArrayList<ComplexTestType2> customListParam2List = new ArrayList<ComplexTestType2>();

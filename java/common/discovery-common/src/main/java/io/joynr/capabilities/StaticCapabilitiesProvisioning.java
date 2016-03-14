@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,11 +52,11 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
         Object entries = properties.get(provisioningEntry);
         Object newEntries = null;
         try {
-            newEntries = objectMapper.readValue((String) entries, new TypeReference<List<CapabilityInformation>>() {
+            newEntries = objectMapper.readValue((String) entries, new TypeReference<List<GlobalDiscoveryEntry>>() {
             });
-            List<CapabilityInformation> castedEntries = (List<CapabilityInformation>) newEntries;
-            for (CapabilityInformation capabilityInformation : castedEntries) {
-                CapabilityEntry capabilityEntry = CapabilityUtils.capabilitiesInfo2CapabilityEntry(capabilityInformation);
+            List<GlobalDiscoveryEntry> castedEntries = (List<GlobalDiscoveryEntry>) newEntries;
+            for (GlobalDiscoveryEntry globalDiscoveryEntry : castedEntries) {
+                CapabilityEntry capabilityEntry = CapabilityUtils.globalDiscoveryEntry2CapabilityEntry(globalDiscoveryEntry);
                 capabilityEntries.add(capabilityEntry);
             }
         } catch (Exception e) {

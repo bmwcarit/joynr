@@ -38,7 +38,7 @@ import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.servlet.JoynrWebServlet;
-import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
 
 @Singleton
@@ -57,13 +57,13 @@ public class DiscoveryInformationServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        Set<CapabilityInformation> globalCapabilities = new HashSet<CapabilityInformation>();
+        Set<GlobalDiscoveryEntry> globalCapabilities = new HashSet<GlobalDiscoveryEntry>();
         Set<CapabilityEntry> allCapabilities = capabilitiesStore.getAllCapabilities();
         for (CapabilityEntry capabilityEntry : allCapabilities) {
             if (capabilityEntry.getProviderQos().getScope() == ProviderScope.GLOBAL) {
                 try {
-                    CapabilityInformation capabilityInformation = CapabilityUtils.capabilityEntry2Information(capabilityEntry);
-                    globalCapabilities.add(capabilityInformation);
+                    GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.capabilityEntry2GlobalDiscoveryEntry(capabilityEntry);
+                    globalCapabilities.add(globalDiscoveryEntry);
                 } catch (Exception e) {
                     log("error adding channel information", e);
                 }

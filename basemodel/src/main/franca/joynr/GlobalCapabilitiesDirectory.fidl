@@ -35,26 +35,26 @@ interface GlobalCapabilitiesDirectory{
 	version {major 0 minor 1}
 
 	<**
-		@description: Registers a list of capability information with the
+		@description: Registers a list of GlobalDiscoveryEntry with the
 			directory.
 	**>
 	method add {
 		in {
-			<** @description: the list of capabilities to register **>
-			CapabilityInformation[] capabilities
+			<** @description: the list of globalDiscoveryEntries to register **>
+			GlobalDiscoveryEntry[] globalDiscoveryEntries
 		}
 	}
 
-	<** @description: Registers capability information with the directory. **>
+	<** @description: Registers a GlobalDiscoveryEntry with the directory. **>
 	method add {
 		in {
-			<** @description: the capability to register **>
-			CapabilityInformation capability
+			<** @description: the globalDiscoveryEntry to register **>
+			GlobalDiscoveryEntry globalDiscoveryEntry
 		}
 	}
 
 	<**
-		@description: Looks up a list of capabilities for a given domain,
+		@description: Looks up a list of GlobalDiscoveryEntry for a given domain,
 			interface name and provider QoS.
 	**>
 	method lookup {
@@ -67,12 +67,12 @@ interface GlobalCapabilitiesDirectory{
 
 		out {
 			<** @description: a list of matching capabilities **>
-			CapabilityInformation[] result
+			GlobalDiscoveryEntry[] result
 		}
 	}
 
 	<**
-		@description: Looks up the capability information for a given
+		@description: Looks up the GlobalDiscoveryEntry for a given
 			participant ID.
 	**>
 	method lookup {
@@ -81,28 +81,28 @@ interface GlobalCapabilitiesDirectory{
 			String participantId
 		}
 		out{
-			<** @description: the matching capability **>
-			CapabilityInformation result
+			<** @description: the matching GlobalDiscoveryEntry **>
+			GlobalDiscoveryEntry result
 		}
 	}
 	<**
-		@description: Unregisters a list of capabilities from the directory.
+		@description: Unregisters a list of GlobalDiscoveryEntry from the directory.
 	**>
 	method remove {
 		in {
 			<**
-				@description: the list of participant IDs, for which the
-					capability has to be removed
+				@description: the list of participant IDs, for which a
+					GlobalDiscoveryEntry has to be removed
 			**>
 			String[] participantIds
 		}
 	}
 
-	<** @description: Unregisters a capability from the directory. **>
+	<** @description: Unregisters a GlobalDiscoveryEntry from the directory. **>
 	method remove {
 		in {
 			<**
-				@description: the participant ID for which the capability has
+				@description: the participant ID for which the GlobalDiscoveryEntry has
 					to be removed
 			**>
 			String participantId

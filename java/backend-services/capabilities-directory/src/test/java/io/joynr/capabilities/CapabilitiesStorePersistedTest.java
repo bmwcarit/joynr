@@ -32,7 +32,7 @@ import java.util.UUID;
 
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -136,13 +136,14 @@ public class CapabilitiesStorePersistedTest {
         testProviderQos.setScope(ProviderScope.LOCAL);
 
         testProviderQos.setCustomParameters(new CustomParameter[]{ new CustomParameter("key", "value") });
-        CapabilityInformation capabilityInformation = new CapabilityInformation(new Version(47, 11),
-                                                                                testDomain,
-                                                                                GpsAsync.INTERFACE_NAME,
-                                                                                testProviderQos,
-                                                                                channelAddressSerialized,
-                                                                                testParticipantId);
-        checkCapabilityEntry(new CapabilityEntryPersisted(capabilityInformation));
+        GlobalDiscoveryEntry globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                             testDomain,
+                                                                             GpsAsync.INTERFACE_NAME,
+                                                                             testParticipantId,
+                                                                             testProviderQos,
+                                                                             System.currentTimeMillis(),
+                                                                             channelAddressSerialized);
+        checkCapabilityEntry(new CapabilityEntryPersisted(globalDiscoveryEntry));
     }
 
     @Test

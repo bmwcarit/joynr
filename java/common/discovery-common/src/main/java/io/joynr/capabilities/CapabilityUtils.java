@@ -30,7 +30,9 @@ import com.google.inject.Inject;
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
-import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.ProviderQos;
+import joynr.types.Version;
 import joynr.types.DiscoveryEntry;
 
 /**
@@ -51,7 +53,7 @@ public class CapabilityUtils {
     }
 
     @CheckForNull
-    public static CapabilityInformation capabilityEntry2Information(CapabilityEntry capabilityEntry) {
+    public static GlobalDiscoveryEntry capabilityEntry2GlobalDiscoveryEntry(CapabilityEntry capabilityEntry) {
         String address = null;
         if (capabilityEntry.getAddresses() != null && !capabilityEntry.getAddresses().isEmpty()) {
             try {
@@ -61,61 +63,100 @@ public class CapabilityUtils {
             }
         }
 
-        return new CapabilityInformation(capabilityEntry.getProviderVersion(),
-                                         capabilityEntry.getDomain(),
-                                         capabilityEntry.getInterfaceName(),
-                                         capabilityEntry.getProviderQos(),
-                                         address,
-                                         capabilityEntry.getParticipantId());
+        return new GlobalDiscoveryEntry(capabilityEntry.getProviderVersion(),
+                                        capabilityEntry.getDomain(),
+                                        capabilityEntry.getInterfaceName(),
+                                        capabilityEntry.getParticipantId(),
+                                        capabilityEntry.getProviderQos(),
+                                        System.currentTimeMillis(),
+                                        address);
     }
 
-    public static DiscoveryEntry capabilitiesInfo2DiscoveryEntry(CapabilityInformation capabilityInformation) {
-        return new DiscoveryEntry(capabilityInformation.getProviderVersion(),
-                                  capabilityInformation.getDomain(),
-                                  capabilityInformation.getInterfaceName(),
-                                  capabilityInformation.getParticipantId(),
-                                  capabilityInformation.getQos(),
+    public static DiscoveryEntry globalDiscoveryEntry2DiscoveryEntry(GlobalDiscoveryEntry globalDiscoveryEntry) {
+        return new DiscoveryEntry(globalDiscoveryEntry.getProviderVersion(),
+                                  globalDiscoveryEntry.getDomain(),
+                                  globalDiscoveryEntry.getInterfaceName(),
+                                  globalDiscoveryEntry.getParticipantId(),
+                                  globalDiscoveryEntry.getQos(),
                                   System.currentTimeMillis());
     }
 
-    public static CapabilityEntry capabilitiesInfo2CapabilityEntry(CapabilityInformation capabilityInformation) {
+    public static CapabilityEntry globalDiscoveryEntry2CapabilityEntry(GlobalDiscoveryEntry globalDiscoveryEntry) {
         Address address;
         try {
-            address = objectMapper.readValue(capabilityInformation.getAddress(), Address.class);
+            address = objectMapper.readValue(globalDiscoveryEntry.getAddress(), Address.class);
         } catch (IOException e) {
             throw new JoynrRuntimeException(e);
         }
-        return new CapabilityEntryImpl(capabilityInformation.getProviderVersion(),
-                                       capabilityInformation.getDomain(),
-                                       capabilityInformation.getInterfaceName(),
-                                       capabilityInformation.getQos(),
-                                       capabilityInformation.getParticipantId(),
+
+        return new CapabilityEntryImpl(globalDiscoveryEntry.getProviderVersion(),
+                                       globalDiscoveryEntry.getDomain(),
+                                       globalDiscoveryEntry.getInterfaceName(),
+                                       globalDiscoveryEntry.getQos(),
+                                       globalDiscoveryEntry.getParticipantId(),
                                        System.currentTimeMillis(),
                                        address);
     }
 
-    public static Collection<CapabilityEntry> capabilityInformationList2Entries(List<CapabilityInformation> capInfoList) {
+    public static Collection<CapabilityEntry> globalDiscoveryEntryList2Entries(List<GlobalDiscoveryEntry> globalDiscoveryEntries) {
         Collection<CapabilityEntry> capEntryCollection = Lists.newArrayList();
-        for (CapabilityInformation capInfo : capInfoList) {
-            capEntryCollection.add(capabilitiesInfo2CapabilityEntry(capInfo));
+        for (GlobalDiscoveryEntry globalDiscoveryEntry : globalDiscoveryEntries) {
+            capEntryCollection.add(globalDiscoveryEntry2CapabilityEntry(globalDiscoveryEntry));
         }
         return capEntryCollection;
     }
 
-    public static CapabilityInformation discoveryEntry2Information(DiscoveryEntry discoveryEntry, Address globalAddress) {
+    public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(String domain,
+                                                               String interfaceName,
+                                                               String participantId,
+                                                               ProviderQos qos,
+                                                               Long lastSeenDateMs,
+                                                               Address address) {
+        return newGlobalDiscoveryEntry(new Version(),
+                                       domain,
+                                       interfaceName,
+                                       participantId,
+                                       qos,
+                                       lastSeenDateMs,
+                                       address);
+    }
+
+    public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(Version providerVesion,
+                                                               String domain,
+                                                               String interfaceName,
+                                                               String participantId,
+                                                               ProviderQos qos,
+                                                               Long lastSeenDateMs,
+                                                               Address address) {
+        return new GlobalDiscoveryEntry(providerVesion,
+                                        domain,
+                                        interfaceName,
+                                        participantId,
+                                        qos,
+                                        lastSeenDateMs,
+                                        serializeAddress(address));
+    }
+
+    public static GlobalDiscoveryEntry discoveryEntry2GlobalDiscoveryEntry(DiscoveryEntry discoveryEntry,
+                                                                           Address globalAddress) {
+
+        return new GlobalDiscoveryEntry(discoveryEntry.getProviderVersion(),
+                                        discoveryEntry.getDomain(),
+                                        discoveryEntry.getInterfaceName(),
+                                        discoveryEntry.getParticipantId(),
+                                        discoveryEntry.getQos(),
+                                        System.currentTimeMillis(),
+                                        serializeAddress(globalAddress));
+    }
+
+    private static String serializeAddress(Address globalAddress) {
         String serializedAddress;
         try {
             serializedAddress = objectMapper.writeValueAsString(globalAddress);
         } catch (JsonProcessingException e) {
             throw new JoynrRuntimeException(e);
         }
-
-        return new CapabilityInformation(discoveryEntry.getProviderVersion(),
-                                         discoveryEntry.getDomain(),
-                                         discoveryEntry.getInterfaceName(),
-                                         discoveryEntry.getQos(),
-                                         serializedAddress,
-                                         discoveryEntry.getParticipantId());
+        return serializedAddress;
     }
 
     public static CapabilityEntry discoveryEntry2CapEntry(DiscoveryEntry discoveryEntry, String globalAddressString) {

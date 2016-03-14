@@ -23,16 +23,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
 
 public class CapabilitiesEntryModel {
     private final String title;
     private final String heading;
-    private final ConcurrentHashMap<String, List<CapabilityInformation>> entries;
+    private final ConcurrentHashMap<String, List<GlobalDiscoveryEntry>> entries;
 
     public CapabilitiesEntryModel(String title,
                                   String heading,
-                                  ConcurrentHashMap<String, List<CapabilityInformation>> entries) {
+                                  ConcurrentHashMap<String, List<GlobalDiscoveryEntry>> entries) {
         this.title = title;
         this.heading = heading;
         this.entries = entries;
@@ -46,7 +46,7 @@ public class CapabilitiesEntryModel {
         return heading;
     }
 
-    public Map<String, List<CapabilityInformation>> getEntries() {
+    public Map<String, List<GlobalDiscoveryEntry>> getEntries() {
         return entries;
     }
 }
