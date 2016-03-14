@@ -4,3 +4,4 @@
 /.settings
 /gen
 /src/main/generated*
+joynr.properties
