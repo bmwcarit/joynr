@@ -68,7 +68,10 @@ public:
     template <class TIntfProvider>
     std::string registerProvider(const std::string& domain, std::shared_ptr<TIntfProvider> provider)
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
         joynr::types::ProviderQos providerQos = provider->getProviderQos();
+#pragma GCC diagnostic pop
         return registerProvider<TIntfProvider>(domain, provider, providerQos);
     }
 
