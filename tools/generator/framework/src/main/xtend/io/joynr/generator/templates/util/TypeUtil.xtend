@@ -137,11 +137,11 @@ class TypeUtil {
 	}
 
 	def boolean isDouble(FTypeRef typeRef) {
-		return getPrimitive(typeRef) == FBasicTypeId::DOUBLE;
+		return isPrimitive(typeRef) && (getPrimitive(typeRef) == FBasicTypeId::DOUBLE);
 	}
 
 	def boolean isFloat(FTypeRef typeRef) {
-		return getPrimitive(typeRef) == FBasicTypeId::FLOAT;
+		return isPrimitive(typeRef) && (getPrimitive(typeRef) == FBasicTypeId::FLOAT);
 	}
 
 	def boolean isFloat(FBasicTypeId type) {
@@ -165,7 +165,7 @@ class TypeUtil {
 	}
 
 	def boolean isString(FTypeRef typeRef) {
-		return getPrimitive(typeRef) == FBasicTypeId::STRING;
+		return isPrimitive(typeRef) && (getPrimitive(typeRef) == FBasicTypeId::STRING);
 	}
 
 	def boolean isByte(FBasicTypeId type) {
@@ -177,10 +177,7 @@ class TypeUtil {
 	}
 
 	def boolean isByteBuffer(FTypeRef typeRef) {
-		if (typeRef == null){
-			return false;
-		}
-		return isByteBuffer(getPrimitive(typeRef))
+		return isPrimitive(typeRef) && (isByteBuffer(getPrimitive(typeRef)))
 	}
 
 	def boolean isPrimitive(FType type){
@@ -197,6 +194,9 @@ class TypeUtil {
 		if (type instanceof FArrayType){
 			return getPrimitive(type.elementType)
 		}
+		throw new IllegalStateException(
+			"TypeUtil.getPrimitive(" + type.joynrName + ") can not determ the primitive type"
+		);
 	}
 
 	def FBasicTypeId getPrimitive(FTypeRef type){

@@ -148,7 +148,7 @@ std::string «typeName»::toString() const {
 			typeAsString << " unprinted List «memberName»  ";
 		«ELSEIF isByteBuffer(memberType)»
 			typeAsString << " unprinted ByteBuffer «memberName»  ";
-		«ELSEIF isString(getPrimitive(memberType))»
+		«ELSEIF isString(memberType)»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»();
 		«ELSEIF isEnum(memberType)»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»Internal();
