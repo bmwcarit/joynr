@@ -120,12 +120,14 @@ public class MyRadioProvider extends RadioAbstractProvider {
 
 ```c++
 ...
-class MyRadioProvider : public joyn::vehicle::RadioProvider {
+class MyRadioProvider : public joyn::vehicle::DefaultRadioProvider {
 public:
     ...
-    void addFavoriteStation(joynr::RequestStatus& status,
-                             bool& returnValue,
-                             joynr::vehicle::RadioStation radioStation);
+    void addFavoriteStation(
+        const joynr::vehicle::RadioStation& newFavoriteStation,
+        std::function<void(const bool& success)> onSuccess,
+        std::function<void(const joynr::vehicle::Radio::AddFavoriteStationErrorEnum::Enum&
+            errorEnum)> onError);
     ...
 }
 ```
@@ -135,17 +137,18 @@ public:
 
 ```c++
 ...
-void MyRadioProvider::addFavoriteStation(RequestStatus& status,
-                                          bool& returnValue,
-                                          vehicle::RadioStation radioStation)
+void MyRadioProvider::addFavoriteStation(
+    const vehicle::RadioStation& radioStation,
+    std::function<void(const bool& returnValue)> onSuccess,
+    std::function<void(const joynr::vehicle::Radio::AddFavoriteStationErrorEnum::Enum&)> onError
+)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
 
     MyRadioHelper::prettyLog(
-            logger, QString("addFavoriteStation(%1)").arg(radioStation.toString()));
-    stationsList.append(radioStation);
-    returnValue = true;
-    status.setCode(RequestStatusCode::OK);
+            logger, "addFavoriteStation(" + radioStation.toString() + ")");
+    stationsList.push_back(radioStation);
+    onSuccess(true);
 }
 ...
 ```
@@ -164,21 +167,19 @@ can be stopped by hitting `q`. The provider will be unregistered and the applica
 
 ```c++
 ...
-JoynRuntime* runtime = JoynRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
-// Initialise the quality of service settings
+JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
+// Initialize the quality of service settings
 // Set the priority so that the consumer application always uses the most recently started provider
 types::ProviderQos providerQos;
 providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 // Register the provider
-QSharedPointer<MyRadioProvider> provider(new MyRadioProvider(providerQos));
-QString authenticationToken("MyRadioProvider_authToken");
-runtime->registerCapability<vehicle::RadioProvider>(
-        providerDomain, provider, authenticationToken);
+std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
+runtime->registerProvider<vehicle::RadioProvider>(providerDomain, provider, providerQos);
 ...
 
 // Unregister the provider
-runtime->unregisterCapability<vehicle::RadioProvider>(
-        providerDomain, provider, authenticationToken);
+runtime->unregisterProvider<vehicle::RadioProvider>(
+        providerDomain, provider);
 
 ```
 
@@ -189,8 +190,10 @@ runtime->unregisterCapability<vehicle::RadioProvider>(
 ...
 public static void main(String[] args) {
 ...
-    JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig, modules).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class,
-                                                                                                                                    appConfig));
+    JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig, runtimeModule,
+        new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class, appConfig) {
+        ...
+    });
     joynrApplication.run();
 
     joynrApplication.shutdown();
@@ -198,14 +201,15 @@ public static void main(String[] args) {
 
 @Override
 public void run() {
-    provider = new MyRadioProvider();
-    runtime.registerCapability(localDomain, provider, AUTH_TOKEN);
+    provider = new MyRadioProvider(providerScope);
+    ProviderQos providerQos = new ProviderQos();
+    runtime.registerProvider(localDomain, provider, providerQos);
 }
 
 @Override
 public void shutdown() {
     if (provider != null) {
-        runtime.unregisterCapability(localDomain, provider, AUTH_TOKEN);
+        runtime.unregisterProvider(localDomain, provider);
     }
     runtime.shutdown(true);
 }
@@ -240,11 +244,11 @@ int main(int argc, char* argv[])
 {
     ...
     JoynrRuntime* runtime =
-            JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
+            JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
     ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
-            runtime->getProxyBuilder<vehicle::RadioProxy>(providerDomain);
+            runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
     std::int64_t qosMsgTtl = 30000;                // Time to live is 30 secs in one direction
@@ -270,30 +274,35 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy
-    vehicle::RadioProxy* proxy = proxyBuilder->setRuntimeQos(MessagingQos(qosMsgTtl))
-                                         ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
+    vehicle::RadioProxy* proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
                                          ->setCached(false)
                                          ->setDiscoveryQos(discoveryQos)
                                          ->build();
 
-    RequestStatus status;
-
     vehicle::RadioStation currentStation;
-    proxy->getCurrentStation(status, currentStation);
-    assert(status.successful());
-    MyRadioHelper::prettyLog(logger, QString("ATTRIBUTE GET: %1").arg(currentStation.toString()));
+    try {
+        proxy->getCurrentStation(status, currentStation);
+    } catch (exceptions::JoynrException& e) {
+        assert(false);
+    }
+
+    MyRadioHelper::prettyLog(logger, "ATTRIBUTE GET: " + currentStation.toString())
 
     // add favorite radio station
     vehicle::RadioStation favoriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
     bool success;
-    proxy->addFavoriteStation(status, success, favoriteStation);
-    MyRadioHelper::prettyLog(
+    try {
+        proxy->addFavoriteStation(success, favoriteStation);
+        MyRadioHelper::prettyLog(
             logger,
-            QString("METHOD: added favorite station: %1").arg(favoriteStation.toString()));
+            "METHOD: added favorite station: " + favoriteStation.toString());
+    } catch (exceptions::ApplicationException e) {
+        ...
+    }
 
     // shuffle the stations
-    MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));
-    proxy->shuffleStations(status);
+    MyRadioHelper::prettyLog(logger, "METHOD: calling shuffle stations");
+    proxy->shuffleStations();
 }
 ...
 ```
@@ -305,8 +314,10 @@ int main(int argc, char* argv[])
     ...
     public static void main(String[] args) throws IOException {
         ...
-        JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
-                                                                                                                                 appConfig));
+        JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
+                                                                                                                                 appConfig) {
+            ...
+        });
         myRadioConsumerApp.run();
 
         myRadioConsumerApp.shutdown();
@@ -378,9 +389,9 @@ int main(int argc, char* argv[])
                                                                                     }
 
                                                                                     @Override
-                                                                                    public void publicationMissed() {
+                                                                                    public void onError(JoynrRuntimeException error) {
                                                                                         LOG.info(PRINT_BORDER
-                                                                                                + "ATTRIBUTE SUBSCRIPTION: publication missed "
+                                                                                                + "ATTRIBUTE SUBSCRIPTION: " + error
                                                                                                 + PRINT_BORDER);
                                                                                     }
                                                                                 },

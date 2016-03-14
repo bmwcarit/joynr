@@ -90,15 +90,18 @@ The following base imports are required for a Java Consumer application:
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.exceptions.ApplicationException;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -106,7 +109,9 @@ import java.io.IOException;
 import java.util.Properties;
 import joynr.<Package>.<Interface>Proxy;
 import com.google.inject.Inject;
+import com.google.inject.Module;
 import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
 ```
 
 ## The base class
@@ -157,8 +162,7 @@ public static void main(String[] args) throws IOException {
     Properties appConfig = new Properties();
     appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
-     Module runtimeModule = Modules.override(
-       new LibjoynrWebSocketRuntimeModule()).with(new MqttPahoModule())
+    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
 
     JoynrApplication myConsumerApp =
       new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(
@@ -291,6 +295,8 @@ public void run() {
     try {
         <ReturnType> retval;
         retval = <interface>Proxy.<method>([inputVal1, ..., inputValN]);
+    } catch (ApplicationException e) {
+        // optional special error handling in case model contains error enumeration
     } catch (JoynrRuntimeException e) {
         // error handling
     }
@@ -315,6 +321,8 @@ public void run() {
         //   retval.<returnParameter1>
         //   ...
         //   retval.<returnParameterN>
+    } catch (ApplicationException e) {
+        // optional special error handling in case model contains error enumeration
     } catch (JoynrRuntimeException e) {
         // error handling
     }
@@ -338,10 +346,12 @@ Example for calls with single return parameter:
 import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 public class MyCallback implements Callback<<ReturnType>> {
+    @Override
     void onSuccess(<ReturnType> result) {
         // handle result
     }
 
+    @Override
     void onFailure(JoynrRuntimeException error) {
         // handle error
     }
@@ -384,6 +394,7 @@ public void onFailure(<Method>ErrorEnum errorEnum) {
 
 }
 ```
+
 ### Async Remote Procedure calls with Multiple Return Parameters
 
 In case of multiple return parameters the parameters will be wrapped into a class named
@@ -821,7 +832,7 @@ interfaces.
 
 For each Franca interface implemented, the providing application creates an instance of
 ```My<Interface>Provider```, which implements the service for that particular interface, and
-registers it as a capability at the Joynr Middleware.
+registers it as a provider at the Joynr Middleware.
 
 The example below shows the code for one interface:
 
@@ -858,6 +869,7 @@ public class MyProviderApplication extends AbstractJoynrApplication {
 ### The main method
 
 ```java
+
 public static void main(String[] args) {
     String localDomain = "<ProviderDomain>";
     Properties joynrConfig = new Properties();
@@ -865,8 +877,10 @@ public static void main(String[] args) {
     joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
     Properties appConfig = new Properties();
     provisionAccessControl(joynrConfig, localDomain);
+    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
     JoynrApplication joynrApplication =
         new JoynrInjectorFactory(joynrConfig,
+            runtimeModule,
             new StaticDomainAccessControlProvisioningModule()).createApplication(
             new JoynrApplicationModule(MyProviderApplication.class, appConfig)
         );
@@ -876,7 +890,7 @@ public static void main(String[] args) {
 ```
 
 ### The run method
-The run method registers the interface specific provider class instance as capability. From that
+The run method registers the interface specific provider class instance. From that
 time on, the provider will be reachable from outside and react on incoming requests (e.g. method
 RPC etc.). It can be found by consumers through Discovery.
 Any specific broadcast filters must be added prior to registry.
@@ -888,8 +902,14 @@ public void run() {
 
     // for any filter of a broadcast with filter
     <interface>provider.addBroadcastFilter(new <Filter>BroadcastFilter());
+    ProviderQos providerQos = new ProviderQos();
+    // use setters on providerQos as required
+    // set the priority, used for (default) arbitration by highest priority
+    long priorityValue;
+    // set priorityValue
+    providerQos.setPriority(priorityValue);
 
-    runtime.registerProvider(localDomain, <interface>provider);
+    runtime.registerProvider(localDomain, <interface>provider, providerQos);
 
     // loop here
 }
@@ -897,7 +917,7 @@ public void run() {
 
 ### The shutdown method
 The ```shutdown``` method should be called on exit of the application. It should cleanly unregister
-any capabilities the application had registered earlier.
+any providers the application had registered earlier.
 
 ```java
 @Override
@@ -1004,13 +1024,6 @@ public class My<Interface>Provider extends <Interface>AbstractProvider {
     ...
     // default constructor
     public My<Interface>Provider() {
-        // set the priority, used for (default) arbitration by highest priority
-        long priorityValue;
-        ...
-        // set priorityValue
-        ...
-        providerQos.setPriority(priorityValue);
-        ...
         // initialize members and attributes here, if any
     }
     ...
@@ -1089,6 +1102,8 @@ should be rejected until the number of outstanding activities falls below the li
 // for any Franca type named "<Type>" used
 import joynr.<Package>.<TypeCollection>.<Type>;
 ...
+// in case of single return parameter
+
 @Override
 public Promise<Deferred<<ReturnType>>> <method>(... parameters ...) {
     Deferred<<ReturnType>> deferred = new Deferred<<ReturnType>>();
@@ -1110,6 +1125,33 @@ public Promise<Deferred<<ReturnType>>> <method>(... parameters ...) {
     ...
     // from current thread
     return new Promise<Deferred<<ReturnType>>>(deferred);
+}
+
+// in case of multiple return parameters
+
+@Override
+public Promise<<Method>Deferred>> <method>(... parameters ...) {
+    <Method>Deferred deferred = new <Method>Deferred();
+    <ReturnType1> returnValue1;
+    ...
+    <ReturnTypeN> returnValueN;
+    ...
+    // start some activity to perform the task;
+    // if complex, execute this asynchronously by background thread;
+    // once the task is finished, resolve the Promise providing
+    // the returnValue, if any (see following line).
+    deferred.resolve(returnValue1, ..., returnValueN);
+
+    // For methods which are modelled with error enumerations, the Promise can be rejected with such
+    // an error enumeration. It is then wrapped in an ApplicationException which serves as container
+    // for the actual error enumeration.
+    deferred.reject(<ErrorEnum>.<VALUE>);
+
+    // If no errors are modelled, the Deferred can be rejected with a ProviderRuntimeException
+    deferred.reject(new ProviderRuntimeException(<errorMessage>));
+    ...
+    // from current thread
+    return new Promise<<Method>Deferred>(deferred);
 }
 ```
 
