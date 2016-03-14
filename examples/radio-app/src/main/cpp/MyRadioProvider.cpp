@@ -34,14 +34,6 @@ MyRadioProvider::MyRadioProvider()
           countryGeoPositionMap(),
           mutex()
 {
-    // Initialise the quality of service settings
-    // Set the priority so that the consumer application always uses the most recently
-    // started provider
-    std::chrono::milliseconds millisSinceEpoch =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch());
-    providerQos.setPriority(millisSinceEpoch.count());
-
     stationsList.push_back(
             vehicle::RadioStation("ABC Trible J", true, vehicle::Country::AUSTRALIA));
     stationsList.push_back(vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY));
