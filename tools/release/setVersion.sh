@@ -18,9 +18,18 @@ echo sed -i '' 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version
 sed -i '' 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
 
 echo sed -i '' 's/find_package(Joynr .*/find_package(Joynr '${newVersionFiltered}' REQUIRED)/g' \
-examples/radio-app/CMakeLists.txt inter-language-test/CMakeLists.txt
+examples/radio-app/CMakeLists.txt \
+tests/inter-language-test/CMakeLists.txt \
+tests/performance-test/CMakeLists.txt \
+tests/robustness-test/CMakeLists.txt \
+tests/system-integration-test/CMakeLists.txt
+
 sed -i '' 's/find_package(Joynr .*/find_package(Joynr '${newVersionFiltered}' REQUIRED)/g' \
-examples/radio-app/CMakeLists.txt inter-language-test/CMakeLists.txt
+examples/radio-app/CMakeLists.txt \
+tests/inter-language-test/CMakeLists.txt \
+tests/performance-test/CMakeLists.txt \
+tests/robustness-test/CMakeLists.txt \
+tests/system-integration-test/CMakeLists.txt
 
 echo mvn versions:set -o -P android,javascript -DnewVersion=$2
 mvn versions:set -o -P android,javascript -DnewVersion=$2
@@ -31,10 +40,15 @@ echo "sed files..."
 
 sed -i '' 's/'$oldVersion'/'$newVersion'/g' \
 cpp/CMakeLists.txt \
-inter-language-test/CMakeLists.txt \
-inter-language-test/package.json \
+tests/inter-language-test/CMakeLists.txt \
+tests/inter-language-test/package.json \
+tests/performance-test/CMakeLists.txt \
+tests/performance-test/package.json \
+tests/robustness-test/CMakeLists.txt \
+tests/robustness-test/package.json \
+tests/system-integration-test/CMakeLists.txt \
+tests/test-base/src/main/js/package.json \
 examples/radio-app/CMakeLists.txt \
-examples/joynr-system-integration-test/CMakeLists.txt \
 android/robolectric-integration-tests/src/test/AndroidManifest.xml \
 android/robolectric-unittests/src/main/AndroidManifest.xml \
 examples/android-location-provider/AndroidManifest.xml \
