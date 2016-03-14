@@ -36,13 +36,13 @@ mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -Dski
 io.joynr.tools.generator:generator-framework,\
 io.joynr.tools.generator:joynr-generator-maven-plugin,\
 io.joynr.tools.generator:cpp-generator,\
-io.joynr.examples:joynr-system-integration-test
+io.joynr.tests:system-integration
 
 rm -rf /data/build/joynr-system-integration-test/
 mkdir /data/build/joynr-system-integration-test
 cd /data/build/joynr-system-integration-test
 
-cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 /data/src/examples/joynr-system-integration-test
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 /data/src/tests/system-integration-test
 
 time make -j $JOBS
 

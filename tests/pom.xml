@@ -33,5 +33,6 @@
 		<module>performance</module>
 		<module>robustness</module>
 		<module>inter-language-test</module>
+		<module>system-integration-test</module>
 	</modules>
 </project>

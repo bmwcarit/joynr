@@ -30,7 +30,6 @@
 
 	<modules>
 		<module>radio-app</module>
-		<module>joynr-system-integration-test</module>
 		<module>location-tester</module>
 	</modules>
 	<profiles>
