@@ -87,8 +87,12 @@ public:
     template <class TIntfProxy>
     ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
     {
-        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(
-                proxyFactory.get(), *discoveryProxy, domain, dispatcherAddress, messageRouter);
+        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(proxyFactory.get(),
+                                                                         *discoveryProxy,
+                                                                         domain,
+                                                                         dispatcherAddress,
+                                                                         messageRouter,
+                                                                         maximumTtlMs);
         return builder;
     }
 
@@ -108,6 +112,7 @@ private:
     std::unique_ptr<ProxyFactory> proxyFactory;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
+    std::uint64_t maximumTtlMs;
 };
 
 } // namespace joynr
