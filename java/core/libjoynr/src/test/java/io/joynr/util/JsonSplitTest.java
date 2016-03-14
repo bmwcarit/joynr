@@ -89,7 +89,7 @@ public class JsonSplitTest {
 
         //string may contain \"
         inputStream = "{\"mes\\\"sa{ge\":{one:two}}{\"id\":35}";
-        //inputStream:{"mes\"sa{ge":{one:two}}{"id":35} 
+        //inputStream:{"mes\"sa{ge":{one:two}}{"id":35}
         splitResults = Utilities.splitJson(inputStream);
         Assert.assertEquals("Splitting failed with escaped \" within string", 2, splitResults.size());
         Assert.assertEquals("Splitting failed with escaped \" within string",

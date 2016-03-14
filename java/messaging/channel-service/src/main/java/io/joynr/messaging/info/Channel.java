@@ -24,9 +24,9 @@ import java.net.URI;
 
 /**
  * Class representing a messaging channel in a channel service.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class Channel {
 
@@ -40,7 +40,7 @@ public class Channel {
 
     /**
      * Creates a new channel.
-     * 
+     *
      * @param bounceProxy
      *            the bounce proxy that handles communication for this channel.
      *            Must not be <code>null</code>.
@@ -49,7 +49,7 @@ public class Channel {
      * @param channelLocation
      *            the URL of the channel which is used for cluster controllers
      *            for messaging on this channel. Must not be <code>null</code>.
-     * 
+     *
      * @throws IllegalArgumentException
      *             if any parameter is <code>null</code>
      */
@@ -74,7 +74,7 @@ public class Channel {
 
     /**
      * Returns the identifier of this channel.
-     * 
+     *
      * @return channel ID. Should not be <code>null</code>.
      */
     public String getChannelId() {
@@ -84,8 +84,8 @@ public class Channel {
     /**
      * Returns information about the bounce proxy handling communication for
      * this channel.
-     * 
-     * @return information about the bounce proxy. Should not be <code>null</code>. 
+     *
+     * @return information about the bounce proxy. Should not be <code>null</code>.
      */
     public BounceProxyInformation getBounceProxy() {
         return this.bounceProxy;
@@ -94,7 +94,7 @@ public class Channel {
     /**
      * Returns the location of the channel as it is used by cluster controllers
      * to send messages to and retrieve messages from the channel.
-     * 
+     *
      * @return a location. Should not be <code>null</code>.
      */
     public URI getLocation() {

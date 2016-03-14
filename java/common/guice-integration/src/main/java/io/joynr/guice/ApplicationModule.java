@@ -24,9 +24,9 @@ import java.util.Properties;
 import com.google.inject.name.Names;
 
 /**
- * This class is used to configure the Guice InjectorFactory when creating applications. 
+ * This class is used to configure the Guice InjectorFactory when creating applications.
  * This module binds the unique identifier of the application as well as the subclass of IApplication
- * which is binded for instantiaton. 
+ * which is binded for instantiaton.
  */
 public class ApplicationModule extends PropertyLoadingModule {
 
@@ -34,7 +34,7 @@ public class ApplicationModule extends PropertyLoadingModule {
     protected Class<? extends IApplication> fApplicationClass;
 
     /**
-     * @param applicationClass the class used for application instantiation 
+     * @param applicationClass the class used for application instantiation
      */
     public ApplicationModule(Class<? extends IApplication> applicationClass) {
         this(applicationClass.getName(), applicationClass);
@@ -42,7 +42,7 @@ public class ApplicationModule extends PropertyLoadingModule {
 
     /**
      * @param appId the unique identified of the applicaiton to be generated
-     * @param applicationClass the class used for application instantiation 
+     * @param applicationClass the class used for application instantiation
      */
     public ApplicationModule(String appId, Class<? extends IApplication> applicationClass) {
         this(appId, applicationClass, new Properties());
@@ -50,7 +50,7 @@ public class ApplicationModule extends PropertyLoadingModule {
 
     /**
      * @param appId the unique identified of the applicaiton to be generated
-     * @param applicationClass the class used for application instantiation 
+     * @param applicationClass the class used for application instantiation
      * @param properties application specific properties to be binded via this module
      */
     public ApplicationModule(String appId, Class<? extends IApplication> applicationClass, Properties properties) {

@@ -25,7 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * used to mark an AbstractJoynApplication as not being loadable by the messageingservlet 
+ * used to mark an AbstractJoynApplication as not being loadable by the messageingservlet
  * @author david.katz
  *
  */

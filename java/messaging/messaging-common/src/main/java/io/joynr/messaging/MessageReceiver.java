@@ -46,7 +46,7 @@ public interface MessageReceiver {
     void resume();
 
     /**
-     * @param messageArrivedListener the listener to be informed about received messages and errors 
+     * @param messageArrivedListener the listener to be informed about received messages and errors
      * @param receiverStatusListeners list of status listeners providing callbacks
      * for successful or failed start
      * @return a future that signals when the receiver is ready to be used.

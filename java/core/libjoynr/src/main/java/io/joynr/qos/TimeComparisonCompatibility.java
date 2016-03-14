@@ -20,7 +20,7 @@ package io.joynr.qos;
  */
 
 /**
- * This interface should be implemented by objects that want to have their time-stamp assessed by 
+ * This interface should be implemented by objects that want to have their time-stamp assessed by
  * Quality of Service compatibility constraints.
  *
  */

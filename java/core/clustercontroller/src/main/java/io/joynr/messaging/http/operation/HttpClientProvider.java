@@ -62,7 +62,7 @@ public class HttpClientProvider implements Provider<CloseableHttpClient> {
 
     public CloseableHttpClient createHttpClient(MessagingSettings mySettings, Properties withProperties) {
 
-        // Create a HTTP client that uses the default pooling connection manager 
+        // Create a HTTP client that uses the default pooling connection manager
         // and is configured by system properties
         HttpClientBuilder httpClientBuilder = HttpClients.custom()
                                                          .setDefaultCredentialsProvider(null)
