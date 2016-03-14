@@ -88,9 +88,9 @@ function update() {
             var participant = entry.participantId;
             var domain = entry.domain;
             var interfaceName = entry.interfaceName;
-            var priority = entry.providerQos.priority;
-            var version = entry.providerQos.version;
-            var keywords =  extractKeywords(entry.providerQos.customParameters); 
+            var priority = entry.qos.priority;
+            var version = entry.qos.version;
+            var keywords =  extractKeywords(entry.qos.customParameters); 
             
             if(address === undefined) {
                 address = "undefined";

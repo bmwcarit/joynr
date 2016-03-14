@@ -74,7 +74,7 @@ public class CapabilityUtils {
                                   capabilityInformation.getDomain(),
                                   capabilityInformation.getInterfaceName(),
                                   capabilityInformation.getParticipantId(),
-                                  capabilityInformation.getProviderQos(),
+                                  capabilityInformation.getQos(),
                                   System.currentTimeMillis());
     }
 
@@ -88,7 +88,7 @@ public class CapabilityUtils {
         return new CapabilityEntryImpl(capabilityInformation.getProviderVersion(),
                                        capabilityInformation.getDomain(),
                                        capabilityInformation.getInterfaceName(),
-                                       capabilityInformation.getProviderQos(),
+                                       capabilityInformation.getQos(),
                                        capabilityInformation.getParticipantId(),
                                        System.currentTimeMillis(),
                                        address);

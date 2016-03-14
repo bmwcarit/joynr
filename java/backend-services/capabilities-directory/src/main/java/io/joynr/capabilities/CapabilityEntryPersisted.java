@@ -126,7 +126,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
         this(capabilityInformation.getProviderVersion(),
              capabilityInformation.getDomain(),
              capabilityInformation.getInterfaceName(),
-             capabilityInformation.getProviderQos(),
+             capabilityInformation.getQos(),
              capabilityInformation.getParticipantId(),
              System.currentTimeMillis(),
              new JoynrMessagingEndpointAddressPersisted(capabilityInformation.getAddress()));
@@ -136,7 +136,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
         return new CapabilityEntryPersisted(capInfo.getProviderVersion(),
                                             capInfo.getDomain(),
                                             capInfo.getInterfaceName(),
-                                            capInfo.getProviderQos(),
+                                            capInfo.getQos(),
                                             capInfo.getParticipantId(),
                                             System.currentTimeMillis(),
                                             // Assume the Capability entry is not local because it has been serialized

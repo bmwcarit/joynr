@@ -129,7 +129,7 @@ typeCollection {
 		String interfaceName
 
 		<** @description: the provider quality of service settings **>
-		ProviderQos providerQos
+		ProviderQos qos
 
 		<** @description: the serialized address of the provider **>
 		String address
