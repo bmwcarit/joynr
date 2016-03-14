@@ -517,7 +517,13 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
     // provision the participant ID for the routing provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerProvider<joynr::system::RoutingProvider>(domain, routingProvider);
+    joynr::types::ProviderQos routingProviderQos;
+    routingProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
+    routingProviderQos.setProviderVersion(1);
+    routingProviderQos.setPriority(1);
+    routingProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
+    routingProviderQos.setSupportsOnChangeSubscriptions(false);
+    registerProvider<joynr::system::RoutingProvider>(domain, routingProvider, routingProviderQos);
 }
 
 void JoynrClusterControllerRuntime::registerDiscoveryProvider()

@@ -88,12 +88,6 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
             [](Timer::TimerId) {},
             1000,
             true);
-
-    providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
-    providerQos.setProviderVersion(1);
-    providerQos.setPriority(1);
-    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    providerQos.setSupportsOnChangeSubscriptions(false);
 }
 
 MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
@@ -120,12 +114,6 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
             [](Timer::TimerId) {},
             1000,
             true);
-
-    providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
-    providerQos.setProviderVersion(1);
-    providerQos.setPriority(1);
-    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    providerQos.setSupportsOnChangeSubscriptions(false);
 }
 
 void MessageRouter::addProvisionedNextHop(
