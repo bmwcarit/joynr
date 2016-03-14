@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import joynr.exceptions.ProviderRuntimeException;
-import joynr.types.ProviderScope;
 import joynr.vehicle.Country;
 import joynr.vehicle.GeoPosition;
 import joynr.vehicle.Radio.AddFavoriteStationErrorEnum;
@@ -51,12 +50,6 @@ public class MyRadioProvider extends RadioAbstractProvider {
     private int currentStationIndex = 0;
 
     public MyRadioProvider() {
-        this(ProviderScope.GLOBAL);
-    }
-
-    public MyRadioProvider(ProviderScope providerScope) {
-        providerQos.setPriority(System.currentTimeMillis());
-        providerQos.setScope(providerScope);
         stationsList.add(new RadioStation("ABC Trible J", true, Country.AUSTRALIA));
         stationsList.add(new RadioStation("Radio Popolare", false, Country.ITALY));
         stationsList.add(new RadioStation("JAZZ.FM91", false, Country.CANADA));

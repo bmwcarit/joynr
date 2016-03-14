@@ -42,8 +42,7 @@ public class SubscriptionTestsProviderImpl extends DefaulttestProvider {
 
     List<Integer> list = new ArrayList<Integer>();
 
-    public SubscriptionTestsProviderImpl(ProviderQos providerQos) {
-        this.providerQos = providerQos;
+    public SubscriptionTestsProviderImpl() {
         testAttribute = 42;
         complexTestAttribute = new GpsLocation();
         complexTestAttribute.setLatitude(48.143554);
@@ -51,10 +50,6 @@ public class SubscriptionTestsProviderImpl extends DefaulttestProvider {
         complexTestAttribute.setAltitude(6.0);
         complexTestAttribute.setGpsFix(GpsFixEnum.MODE3D);
         ATTRIBUTEWITHCAPITALLETTERS = 42;
-    }
-
-    public SubscriptionTestsProviderImpl() {
-        this(new ProviderQos());
     }
 
     @Override

@@ -108,7 +108,7 @@ public class CapabilitiesRegistrarTests {
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
         when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
-        registrar.registerProvider(domain, provider);
+        registrar.registerProvider(domain, provider, providerQos);
         verify(localDiscoveryAggregator).add(any(Callback.class),
                                              eq(new DiscoveryEntry(domain,
                                                                    TestInterface.INTERFACE_NAME,

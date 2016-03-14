@@ -66,12 +66,6 @@ import static org.junit.Assert.fail;
 public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractBroadcastEnd2EndTest.class);
 
-    protected static class TestProvider extends DefaulttestProvider {
-        public TestProvider(ProviderQos providerQos) {
-            this.providerQos = providerQos;
-        }
-    }
-
     // This timeout must be shared by all integration test environments and
     // cannot be too short.
     private static final int CONST_DEFAULT_TEST_TIMEOUT = 8000;
@@ -79,7 +73,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     @Rule
     public TestName name = new TestName();
 
-    private static TestProvider provider;
+    private static DefaulttestProvider provider;
     private static testProxy proxy;
     private String domain;
 
@@ -136,8 +130,8 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
 
-        provider = new TestProvider(providerQos);
-        Future<Void> voidFuture = providerRuntime.registerProvider(domain, provider);//.waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        provider = new DefaulttestProvider();
+        Future<Void> voidFuture = providerRuntime.registerProvider(domain, provider, providerQos);//.waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
         voidFuture.get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 

@@ -26,8 +26,10 @@ import joynr.types.ProviderQos;
 
 public interface JoynrProvider {
     /**
+     * @deprecated Will be removed by end of the year 2016. Use external ProviderQos as input for {@link io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)} instead.
      * @return provider QoS that applies to this provider instance.
      */
+    @Deprecated
     ProviderQos getProviderQos();
 
     /**

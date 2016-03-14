@@ -37,6 +37,7 @@ import java.util.Properties;
 
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
+import joynr.types.ProviderQos;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -56,6 +57,8 @@ public class ShutdownTest {
     @Mock
     private MessageReceiver messageReceiverMock;
 
+    private ProviderQos providerQos;
+
     @Before
     public void setup() {
         Properties factoryPropertiesProvider = new Properties();
@@ -73,12 +76,14 @@ public class ShutdownTest {
                                                                                    })).createApplication(DummyJoynrApplication.class);
 
         provider = new DefaulttestProvider();
+        providerQos = new ProviderQos();
+        providerQos.setPriority(System.currentTimeMillis());
     }
 
     @Test(expected = JoynrShutdownException.class)
     public void testRegisterAfterShutdown() {
         dummyApplication.shutdown();
-        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider);
+        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider, providerQos);
     }
 
     @Test(expected = JoynrShutdownException.class)
@@ -87,7 +92,7 @@ public class ShutdownTest {
     public void testProxyCallAfterShutdown() throws DiscoveryException, JoynrIllegalStateException,
                                             InterruptedException {
         Mockito.when(messageReceiverMock.getChannelId()).thenReturn("ShutdownTestChannelId");
-        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider);
+        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider, providerQos);
         ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
                                                                                              testProxy.class);
         testProxy proxy = proxyBuilder.setDiscoveryQos(new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, 0))

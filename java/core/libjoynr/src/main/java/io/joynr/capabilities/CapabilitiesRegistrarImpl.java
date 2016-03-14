@@ -38,6 +38,7 @@ import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
+import joynr.types.ProviderQos;
 
 @Singleton
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
@@ -74,12 +75,12 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      * io.joynr.provider.JoynrProvider, java.lang.Class)
      */
     @Override
-    public Future<Void> registerProvider(final String domain, JoynrProvider provider) {
+    public Future<Void> registerProvider(final String domain, JoynrProvider provider, ProviderQos providerQos) {
         String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
                                                            provider.getInterfaceName(),
                                                            participantId,
-                                                           provider.getProviderQos(),
+                                                           providerQos,
                                                            new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 

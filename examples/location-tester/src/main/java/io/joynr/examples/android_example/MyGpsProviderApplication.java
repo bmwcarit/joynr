@@ -39,6 +39,7 @@ import jline.console.ConsoleReader;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,8 +167,10 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
 
     @Override
     public void run() {
+        ProviderQos providerQos = new ProviderQos();
         provider = new MyGpsProvider();
-        runtime.registerProvider(localDomain, provider);
+        providerQos.setPriority(System.currentTimeMillis());
+        runtime.registerProvider(localDomain, provider, providerQos);
 
         ConsoleReader console;
         try {
