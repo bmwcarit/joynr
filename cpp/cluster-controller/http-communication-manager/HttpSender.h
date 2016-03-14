@@ -82,6 +82,15 @@ private:
                                    std::chrono::milliseconds curlTimeout);
     std::string resolveUrlForChannelId(const std::string& channelId,
                                        std::chrono::milliseconds curlTimeout);
+
+    void handleCurlError(
+            const HttpResult& sendMessageResult,
+            const std::chrono::milliseconds& delay,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) const;
+    void handleHttpError(
+            const HttpResult& sendMessageResult,
+            const std::chrono::milliseconds& delay,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) const;
 };
 
 } // namespace joynr

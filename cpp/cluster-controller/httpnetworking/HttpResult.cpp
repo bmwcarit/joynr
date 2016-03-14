@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,9 @@ std::string HttpResult::getErrorMessage() const
         case CURLE_SSL_CONNECT_ERROR:
             return std::string("SSL connection error");
         default:
-            return FormatString("Error during HTTP request/response, curl error code : %1")
+            return FormatString("Error during HTTP request/response, curl error code: %1: %2")
                     .arg(curlError)
+                    .arg(curl_easy_strerror(static_cast<CURLcode>(curlError)))
                     .str();
         }
     } else {
