@@ -530,7 +530,14 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
     // provision the participant ID for the discovery provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
-    registerProvider<joynr::system::DiscoveryProvider>(domain, discoveryProvider);
+    joynr::types::ProviderQos discoveryProviderQos;
+    discoveryProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
+    discoveryProviderQos.setProviderVersion(1);
+    discoveryProviderQos.setPriority(1);
+    discoveryProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
+    discoveryProviderQos.setSupportsOnChangeSubscriptions(false);
+    registerProvider<joynr::system::DiscoveryProvider>(
+            domain, discoveryProvider, discoveryProviderQos);
 }
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
