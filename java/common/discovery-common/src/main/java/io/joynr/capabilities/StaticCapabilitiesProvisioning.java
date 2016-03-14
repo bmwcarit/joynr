@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 
 import org.slf4j.Logger;
@@ -57,13 +56,8 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
             });
             List<CapabilityInformation> castedEntries = (List<CapabilityInformation>) newEntries;
             for (CapabilityInformation capabilityInformation : castedEntries) {
-                capabilityEntries.add(new CapabilityEntryImpl(capabilityInformation.getProviderVersion(),
-                                                              capabilityInformation.getDomain(),
-                                                              capabilityInformation.getInterfaceName(),
-                                                              capabilityInformation.getProviderQos(),
-                                                              capabilityInformation.getParticipantId(),
-                                                              System.currentTimeMillis(),
-                                                              new ChannelAddress(capabilityInformation.getChannelId())));
+                CapabilityEntry capabilityEntry = CapabilityUtils.capabilitiesInfo2CapabilityEntry(capabilityInformation);
+                capabilityEntries.add(capabilityEntry);
             }
         } catch (Exception e) {
             logger.error("unable to load provisioned capabilities. "

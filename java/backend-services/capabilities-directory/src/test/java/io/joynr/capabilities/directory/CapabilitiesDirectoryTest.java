@@ -25,6 +25,8 @@ import io.joynr.provider.PromiseKeeper;
 import java.util.Properties;
 import java.util.UUID;
 
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
@@ -36,6 +38,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class CapabilitiesDirectoryTest {
 
     private static final CustomParameter[] CUSTOM_PARAMETERS = {};
@@ -43,6 +47,8 @@ public class CapabilitiesDirectoryTest {
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
 
     String channelId = "capabilitiesProvider";
+    Address channelAddres = new ChannelAddress(channelId);
+    String channelAddresSerialized;
     String domain = "com";
     String interface1 = "interface1";
     String interface2 = "interface2";
@@ -61,8 +67,8 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Before
-    public void setUp() {
-
+    public void setUp() throws Exception {
+        channelAddresSerialized = new ObjectMapper().writeValueAsString(channelAddres);
         String participantId1 = "testParticipantId1_" + UUID.randomUUID().toString();
         String participantId2 = "testParticipantId2_" + UUID.randomUUID().toString();
         String participantId3 = "testParticipantId3_" + UUID.randomUUID().toString();
@@ -71,19 +77,19 @@ public class CapabilitiesDirectoryTest {
                                              domain,
                                              interface1,
                                              providerQos,
-                                             channelId,
+                                             channelAddresSerialized,
                                              participantId1);
         capInfo2 = new CapabilityInformation(new Version(47, 11),
                                              domain,
                                              interface2,
                                              providerQos,
-                                             channelId,
+                                             channelAddresSerialized,
                                              participantId2);
         capInfo3 = new CapabilityInformation(new Version(47, 11),
                                              domain,
                                              interface3,
                                              providerQos,
-                                             channelId,
+                                             channelAddresSerialized,
                                              participantId3);
 
     }

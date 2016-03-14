@@ -1,6 +1,6 @@
 package io.joynr.capabilities;
 
-/*
+import java.io.IOException; /*
  * #%L
  * %%
  * Copyright (C) 2011 - 2016 BMW Car IT GmbH
@@ -21,8 +21,13 @@ package io.joynr.capabilities;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.CheckForNull;
-import com.google.common.collect.Lists;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+
+import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.CapabilityInformation;
@@ -32,6 +37,9 @@ import joynr.types.DiscoveryEntry;
  * Conversion helpers for CapabilityInformation, CapabilityEntry and DiscoveryEntry
  */
 public class CapabilityUtils {
+
+    @Inject
+    private static ObjectMapper objectMapper;
 
     public static DiscoveryEntry capabilityEntry2DiscoveryEntry(CapabilityEntry capabilityEntry) {
         return new DiscoveryEntry(capabilityEntry.getProviderVersion(),
@@ -44,7 +52,21 @@ public class CapabilityUtils {
 
     @CheckForNull
     public static CapabilityInformation capabilityEntry2Information(CapabilityEntry capabilityEntry) {
-        return capabilityEntry.toCapabilityInformation();
+        String address = null;
+        if (capabilityEntry.getAddresses() != null && !capabilityEntry.getAddresses().isEmpty()) {
+            try {
+                address = objectMapper.writeValueAsString(capabilityEntry.getAddresses().get(0));
+            } catch (JsonProcessingException e) {
+                throw new JoynrRuntimeException(e);
+            }
+        }
+
+        return new CapabilityInformation(capabilityEntry.getProviderVersion(),
+                                         capabilityEntry.getDomain(),
+                                         capabilityEntry.getInterfaceName(),
+                                         capabilityEntry.getProviderQos(),
+                                         address,
+                                         capabilityEntry.getParticipantId());
     }
 
     public static DiscoveryEntry capabilitiesInfo2DiscoveryEntry(CapabilityInformation capabilityInformation) {
@@ -57,13 +79,19 @@ public class CapabilityUtils {
     }
 
     public static CapabilityEntry capabilitiesInfo2CapabilityEntry(CapabilityInformation capabilityInformation) {
+        Address address;
+        try {
+            address = objectMapper.readValue(capabilityInformation.getAddress(), Address.class);
+        } catch (IOException e) {
+            throw new JoynrRuntimeException(e);
+        }
         return new CapabilityEntryImpl(capabilityInformation.getProviderVersion(),
                                        capabilityInformation.getDomain(),
                                        capabilityInformation.getInterfaceName(),
                                        capabilityInformation.getProviderQos(),
                                        capabilityInformation.getParticipantId(),
                                        System.currentTimeMillis(),
-                                       RoutingTypesUtil.fromAddressString(capabilityInformation.getChannelId()));
+                                       address);
     }
 
     public static Collection<CapabilityEntry> capabilityInformationList2Entries(List<CapabilityInformation> capInfoList) {
@@ -75,11 +103,18 @@ public class CapabilityUtils {
     }
 
     public static CapabilityInformation discoveryEntry2Information(DiscoveryEntry discoveryEntry, Address globalAddress) {
+        String serializedAddress;
+        try {
+            serializedAddress = objectMapper.writeValueAsString(globalAddress);
+        } catch (JsonProcessingException e) {
+            throw new JoynrRuntimeException(e);
+        }
+
         return new CapabilityInformation(discoveryEntry.getProviderVersion(),
                                          discoveryEntry.getDomain(),
                                          discoveryEntry.getInterfaceName(),
                                          discoveryEntry.getQos(),
-                                         RoutingTypesUtil.toAddressString(globalAddress),
+                                         serializedAddress,
                                          discoveryEntry.getParticipantId());
     }
 

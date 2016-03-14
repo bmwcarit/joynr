@@ -62,6 +62,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryTest {
@@ -81,7 +83,8 @@ public class LocalCapabilitiesDirectoryTest {
     protected CapabilitiesCache globalCapabilitiesCacheMock;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
-    private String channelId;
+    private ChannelAddress channelAddress;
+    private String channelAddressSerialized;
     private DiscoveryEntry discoveryEntry;
     private CapabilityInformation capabilityInformation;
 
@@ -91,9 +94,11 @@ public class LocalCapabilitiesDirectoryTest {
 
     @SuppressWarnings("unchecked")
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
 
-        channelId = "testChannelId";
+        channelAddress = new ChannelAddress("testChannelId");
+        ObjectMapper objectMapper = new ObjectMapper();
+        channelAddressSerialized = objectMapper.writeValueAsString(channelAddress);
 
         Answer<Void> answer = new Answer<Void>() {
 
@@ -123,11 +128,12 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         capabiltitiesDirectoryChannelId,
                                                                         domainAccessControllerParticipantId,
                                                                         domainAccessControllerChannelId,
-                                                                        new ChannelAddress(channelId),
+                                                                        new ChannelAddress(channelAddressSerialized),
                                                                         localCapabilitiesStoreMock,
                                                                         globalCapabilitiesCacheMock,
                                                                         messageRouter,
-                                                                        proxyBuilderFactoryMock);
+                                                                        proxyBuilderFactoryMock,
+                                                                        new ObjectMapper());
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] parameterList = { new CustomParameter("key1", "value1"),
@@ -146,7 +152,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                           domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
-                                                          channelId,
+                                                          channelAddressSerialized,
                                                           participantId);
     }
 
@@ -171,7 +177,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                           "test",
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
-                                                          "chan",
+                                                          channelAddressSerialized,
                                                           "participantId");
 
         localCapabilitiesDirectory.add(discoveryEntry);
@@ -205,7 +211,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                           domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
-                                                          channelId,
+                                                          channelAddressSerialized,
                                                           participantId);
 
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
@@ -258,7 +264,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                           domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
-                                                          channelId,
+                                                          channelAddressSerialized,
                                                           participantId);
 
         Mockito.doAnswer(createAddAnswerWithError())
@@ -397,7 +403,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                   domain1,
                                                                   interfaceName1,
                                                                   new ProviderQos(),
-                                                                  "channelId",
+                                                                  channelAddressSerialized,
                                                                   "globalParticipant");
         caps.add(capInfo);
         Mockito.doAnswer(createAnswer(caps))
@@ -499,7 +505,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                   domain1,
                                                                   interfaceName1,
                                                                   new ProviderQos(),
-                                                                  "channelId",
+                                                                  channelAddressSerialized,
                                                                   "globalParticipant");
         caps.add(capInfo);
         Mockito.doAnswer(createAnswer(caps))
@@ -618,7 +624,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                   domain1,
                                                                   interfaceName1,
                                                                   new ProviderQos(),
-                                                                  "channelId",
+                                                                  channelAddressSerialized,
                                                                   "globalParticipant");
         caps.add(capInfo);
         Mockito.doAnswer(createAnswer(caps))

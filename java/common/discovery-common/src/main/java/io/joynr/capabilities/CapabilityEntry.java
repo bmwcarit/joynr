@@ -22,7 +22,6 @@ package io.joynr.capabilities;
 import java.util.List;
 
 import joynr.system.RoutingTypes.Address;
-import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -31,8 +30,6 @@ public interface CapabilityEntry {
     enum Origin {
         LOCAL, REMOTE
     };
-
-    public CapabilityInformation toCapabilityInformation();
 
     public Version getProviderVersion();
 

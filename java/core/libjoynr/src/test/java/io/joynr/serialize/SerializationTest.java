@@ -368,11 +368,12 @@ public class SerializationTest {
     @Test
     public void serializeAndDeserializeCapabilityInformationTest() throws Exception {
         ProviderQos qos = new ProviderQos();
+        String channelAddress = "channelId";
         final CapabilityInformation[] capInfos = { new CapabilityInformation(new Version(47, 11),
                                                                              "domain",
                                                                              "interface",
                                                                              qos,
-                                                                             "channelId",
+                                                                             channelAddress,
                                                                              "participantId") };
 
         String writeValueAsString = null;
@@ -388,7 +389,7 @@ public class SerializationTest {
                                                                                 "domain",
                                                                                 "interface",
                                                                                 qos,
-                                                                                "channelId",
+                                                                                channelAddress,
                                                                                 "participantId");
         writeValueAsString = objectMapper.writeValueAsString(capabilityInformation);
         // assertTrue(writeValueAsString.startsWith("{\"_typeName\":\"joynr.types.CapabilityInformation\""));

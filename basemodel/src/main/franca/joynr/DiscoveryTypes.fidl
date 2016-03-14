@@ -131,8 +131,8 @@ typeCollection {
 		<** @description: the provider quality of service settings **>
 		ProviderQos providerQos
 
-		<** @description: the channel id of the provider **>
-		String channelId
+		<** @description: the serialized address of the provider **>
+		String address
 
 		<** @description: the participant id of the provider **>
 		String participantId

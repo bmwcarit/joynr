@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
@@ -130,7 +129,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
              capabilityInformation.getProviderQos(),
              capabilityInformation.getParticipantId(),
              System.currentTimeMillis(),
-             new JoynrMessagingEndpointAddressPersisted(capabilityInformation.getChannelId()));
+             new JoynrMessagingEndpointAddressPersisted(capabilityInformation.getAddress()));
     }
 
     public static CapabilityEntryPersisted fromCapabilityInformation(CapabilityInformation capInfo) {
@@ -141,28 +140,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
                                             capInfo.getParticipantId(),
                                             System.currentTimeMillis(),
                                             // Assume the Capability entry is not local because it has been serialized
-                                            new JoynrMessagingEndpointAddressPersisted(capInfo.getChannelId()));
-    }
-
-    @Override
-    @CheckForNull
-    public CapabilityInformation toCapabilityInformation() {
-        String channelId = null;
-        for (Address endpointAddress : getAddresses()) {
-            if (endpointAddress instanceof JoynrMessagingEndpointAddressPersisted) {
-                channelId = ((JoynrMessagingEndpointAddressPersisted) endpointAddress).getChannelId();
-                break;
-            }
-        }
-        if (channelId == null) {
-            return null;
-        }
-        return new CapabilityInformation(getProviderVersion(),
-                                         getDomain(),
-                                         getInterfaceName(),
-                                         new ProviderQos(getProviderQos()),
-                                         channelId,
-                                         getParticipantId());
+                                            new JoynrMessagingEndpointAddressPersisted(capInfo.getAddress()));
     }
 
     @Override

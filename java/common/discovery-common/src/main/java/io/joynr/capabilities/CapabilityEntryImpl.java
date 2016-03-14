@@ -23,11 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -66,52 +62,6 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         origin = Origin.LOCAL;
         this.addresses = new ArrayList<Address>();
         this.addresses.addAll(Arrays.asList(addresses));
-    }
-
-    public CapabilityEntryImpl(CapabilityInformation capInfo) {
-        this(capInfo.getProviderVersion(),
-             capInfo.getDomain(),
-             capInfo.getInterfaceName(),
-             capInfo.getProviderQos(),
-             capInfo.getParticipantId(),
-             System.currentTimeMillis(),
-             // Assume the Capability entry is not local because it has been serialized
-             new ChannelAddress(capInfo.getChannelId()));
-    }
-
-    public static CapabilityEntryImpl fromCapabilityInformation(CapabilityInformation capInfo) {
-        return new CapabilityEntryImpl(capInfo.getProviderVersion(),
-                                       capInfo.getDomain(),
-                                       capInfo.getInterfaceName(),
-                                       capInfo.getProviderQos(),
-                                       capInfo.getParticipantId(),
-                                       System.currentTimeMillis(),
-                                       // Assume the Capability entry is not local because it has been serialized
-                                       new ChannelAddress(capInfo.getChannelId()));
-    }
-
-    /* (non-Javadoc)
-     * @see io.joynr.capabilities.CapabilityEntry#toCapabilityInformation()
-     */
-    @Override
-    @CheckForNull
-    public CapabilityInformation toCapabilityInformation() {
-        String channelId = null;
-        for (Address endpointAddress : getAddresses()) {
-            if (endpointAddress instanceof ChannelAddress) {
-                channelId = ((ChannelAddress) endpointAddress).getChannelId();
-                break;
-            }
-        }
-        if (channelId == null) {
-            return null;
-        }
-        return new CapabilityInformation(getProviderVersion(),
-                                         getDomain(),
-                                         getInterfaceName(),
-                                         new ProviderQos(getProviderQos()),
-                                         channelId,
-                                         getParticipantId());
     }
 
     /* (non-Javadoc)

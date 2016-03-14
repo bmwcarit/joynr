@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
@@ -45,6 +46,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -61,13 +63,16 @@ public class CapabilitiesStorePersistedTest {
     CapabilitiesStore store;
     String testDomain;
     String testParticipantId;
-    String testChannelId;
+    String testChannelId = "testChannelId";
+    Address channelAddress = new ChannelAddress(testChannelId);
+    String channelAddressSerialized;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        channelAddressSerialized = new ObjectMapper().writeValueAsString(channelAddress);
         testDomain = "testDomain";
         testParticipantId = "testParticipantId";
-        testChannelId = "testChannelId";
+
         Injector injector = Guice.createInjector(new JpaPersistModule("CapabilitiesDirectory"), new AbstractModule() {
 
             @Override
@@ -135,14 +140,13 @@ public class CapabilitiesStorePersistedTest {
                                                                                 testDomain,
                                                                                 GpsAsync.INTERFACE_NAME,
                                                                                 testProviderQos,
-                                                                                testChannelId,
+                                                                                channelAddressSerialized,
                                                                                 testParticipantId);
         checkCapabilityEntry(new CapabilityEntryPersisted(capabilityInformation));
     }
 
     @Test
     public void testValidEntry() throws Exception {
-        String endpointAddress = "EndpointAddress1";
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
         CustomParameter keywordParameter = new CustomParameterPersisted(testParticipantId,
@@ -155,7 +159,7 @@ public class CapabilitiesStorePersistedTest {
                                                                        providerQos,
                                                                        testParticipantId,
                                                                        System.currentTimeMillis(),
-                                                                       new JoynrMessagingEndpointAddressPersisted(endpointAddress));
+                                                                       new JoynrMessagingEndpointAddressPersisted(channelAddressSerialized));
         checkCapabilityEntry(capabilityEntry);
     }
 
@@ -164,7 +168,7 @@ public class CapabilitiesStorePersistedTest {
         String domain = "testDomain";
 
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.GLOBAL, true);
-        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
+        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted(channelAddressSerialized);
         String participantId1 = UUID.randomUUID().toString();
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(new Version(47, 11),
                                                                         domain,
@@ -206,7 +210,7 @@ public class CapabilitiesStorePersistedTest {
         String domain = "testDomain";
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.LOCAL, true);
-        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
+        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted(channelAddressSerialized);
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(new Version(47, 11),
                                                                         domain,
                                                                         GpsAsync.INTERFACE_NAME,
@@ -241,7 +245,7 @@ public class CapabilitiesStorePersistedTest {
         String domain = "testDomain";
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
-        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
+        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted(channelAddressSerialized);
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(new Version(47, 11),
                                                                         domain,
                                                                         GpsAsync.class,
@@ -292,7 +296,7 @@ public class CapabilitiesStorePersistedTest {
                                                                         providerQos,
                                                                         participantId + "2",
                                                                         System.currentTimeMillis(),
-                                                                        new JoynrMessagingEndpointAddressPersisted("testChannel2"));
+                                                                        new JoynrMessagingEndpointAddressPersisted(channelAddressSerialized));
 
         store.add(capabilityEntry2);
 
@@ -326,7 +330,7 @@ public class CapabilitiesStorePersistedTest {
         String domain = "testDomain";
         String participantId = UUID.randomUUID().toString();
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
-        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
+        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted(channelAddressSerialized);
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(new Version(47, 11),
                                                                         domain,
                                                                         GpsAsync.INTERFACE_NAME,
@@ -356,7 +360,7 @@ public class CapabilitiesStorePersistedTest {
                                                                     providerQos,
                                                                     participantId + "Fake",
                                                                     System.currentTimeMillis(),
-                                                                    new JoynrMessagingEndpointAddressPersisted("testChannelFake"));
+                                                                    new JoynrMessagingEndpointAddressPersisted(channelAddressSerialized));
         store.add(capEntryFake);
 
         capabilities = store.getAllCapabilities();
@@ -367,7 +371,7 @@ public class CapabilitiesStorePersistedTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        AddressPersisted endpointAddress2 = new JoynrMessagingEndpointAddressPersisted("testChannelOverride");
+        AddressPersisted endpointAddress2 = new JoynrMessagingEndpointAddressPersisted(channelAddressSerialized);
         CapabilityEntry capabilityEntry2 = new CapabilityEntryPersisted(new Version(47, 11),
                                                                         domain,
                                                                         GpsAsync.class,

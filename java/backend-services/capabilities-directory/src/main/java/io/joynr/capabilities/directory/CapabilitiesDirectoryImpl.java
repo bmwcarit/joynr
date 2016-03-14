@@ -23,6 +23,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityEntryPersisted;
+import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
@@ -113,7 +114,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         CapabilityInformation[] capabilityInformationList = new CapabilityInformation[entryCollection.size()];
         int index = 0;
         for (CapabilityEntry entry : entryCollection) {
-            capabilityInformationList[index] = entry.toCapabilityInformation();
+            capabilityInformationList[index] = CapabilityUtils.capabilityEntry2Information(entry);
             index++;
         }
         deferred.resolve(capabilityInformationList);
@@ -128,7 +129,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         if (capEntry == null) {
             deferred.resolve(null);
         } else {
-            deferred.resolve(capEntry.toCapabilityInformation());
+            deferred.resolve(CapabilityUtils.capabilityEntry2Information(capEntry));
         }
         return new Promise<Lookup2Deferred>(deferred);
     }

@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package io.joynr.capabilities;
  * limitations under the License.
  * #L%
  */
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +28,8 @@ import java.util.Set;
 import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -54,7 +57,6 @@ import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.CapabilityInformation;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
@@ -75,6 +77,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private Address globalAddress;
 
+    private ObjectMapper objectMapper;
+
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public LocalCapabilitiesDirectoryImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
@@ -88,12 +92,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           CapabilitiesStore localCapabilitiesStore,
                                           CapabilitiesCache globalCapabilitiesCache,
                                           MessageRouter messageRouter,
-                                          ProxyBuilderFactory proxyBuilderFactory) {
+                                          ProxyBuilderFactory proxyBuilderFactory,
+                                          ObjectMapper objectMapper) {
         this.globalAddress = globalAddress;
         // CHECKSTYLE:ON
         this.messageRouter = messageRouter;
         this.localCapabilitiesStore = localCapabilitiesStore;
         this.globalCapabilitiesCache = globalCapabilitiesCache;
+        this.objectMapper = objectMapper;
         this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(new Version(),
                                                                                                     discoveryDirectoriesDomain,
                                                                                                     GlobalCapabilitiesDirectory.INTERFACE_NAME,
@@ -335,8 +341,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             // TODO can a CapabilityEntry coming from the GlobalCapabilityDirectoy have more than one
             // EndpointAddress?
             // TODO when are entries purged from the messagingEndpointDirectory?
-            if (ce.getParticipantId() != null && ce.getChannelId() != null) {
-                messageRouter.addNextHop(ce.getParticipantId(), RoutingTypesUtil.fromAddressString(ce.getChannelId()));
+            if (ce.getParticipantId() != null && ce.getAddress() != null) {
+                Address address;
+                try {
+                    address = objectMapper.readValue(ce.getAddress(), Address.class);
+                } catch (IOException e) {
+                    throw new JoynrRuntimeException(e);
+                }
+                messageRouter.addNextHop(ce.getParticipantId(), address);
             }
         }
     }
@@ -359,7 +371,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         DiscoveryEntry discoveryEntry = CapabilityUtils.capabilitiesInfo2DiscoveryEntry(capInfo);
                         registerIncomingEndpoints(Lists.newArrayList(capInfo));
                         globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry,
-                                                                                            capInfo.getChannelId()));
+                                                                                            capInfo.getAddress()));
                         capabilitiesCallback.processCapabilityReceived(discoveryEntry);
                     } else {
                         capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));

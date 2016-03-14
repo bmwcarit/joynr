@@ -41,6 +41,7 @@ import com.google.inject.name.Names;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.CapabilitiesRegistrarImpl;
+import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -132,7 +133,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
 
-        requestStaticInjection(RpcUtils.class, JoynrAppenderManagerFactory.class);
+        requestStaticInjection(CapabilityUtils.class, RpcUtils.class, JoynrAppenderManagerFactory.class);
 
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);

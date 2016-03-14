@@ -27,7 +27,7 @@ function init() {
         "sTitle": ""
     },
     {
-        "sTitle": "Channel"
+        "sTitle": "Address"
     },
 
     {
@@ -84,7 +84,7 @@ function update() {
         
         for (var i=0; i<data.length; i++ ) {
             var entry = data[i];
-            var channel = entry.channelId;
+            var address = entry.address;
             var participant = entry.participantId;
             var domain = entry.domain;
             var interfaceName = entry.interfaceName;
@@ -92,8 +92,8 @@ function update() {
             var version = entry.providerQos.version;
             var keywords =  extractKeywords(entry.providerQos.customParameters); 
             
-            if(channel === undefined) {
-                channel = "undefined";
+            if(address === undefined) {
+                address = "undefined";
             }
             if(participant === undefined) {
                 participant = "undefined";
@@ -113,7 +113,7 @@ function update() {
             
             var row = [];
             row.push(trash(participant));
-            row.push(channel);
+            row.push(address);
             row.push(participant);
             row.push(domain);
             row.push(interfaceName);

@@ -36,11 +36,9 @@ import com.google.inject.Inject;
 
 import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.channel.ChannelUrlDirectoyImpl;
-import io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted;
+import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.servlet.JoynrWebServlet;
 import joynr.types.CapabilityInformation;
-import joynr.types.ChannelUrlInformation;
 import joynr.types.ProviderScope;
 
 @Singleton
@@ -49,12 +47,10 @@ public class DiscoveryInformationServlet extends HttpServlet {
     private static final long serialVersionUID = 8839103126167589803L;
     private transient CapabilitiesStore capabilitiesStore;
     transient private Gson gson = new GsonBuilder().create();
-    transient private ChannelUrlDirectoyImpl channelUrlDirectory;
 
     @Inject
-    public DiscoveryInformationServlet(CapabilitiesStore capabilitiesStore, ChannelUrlDirectoyImpl channelUrlDirectory) {
+    public DiscoveryInformationServlet(CapabilitiesStore capabilitiesStore) {
         this.capabilitiesStore = capabilitiesStore;
-        this.channelUrlDirectory = channelUrlDirectory;
     }
 
     @Override
@@ -65,20 +61,8 @@ public class DiscoveryInformationServlet extends HttpServlet {
         Set<CapabilityEntry> allCapabilities = capabilitiesStore.getAllCapabilities();
         for (CapabilityEntry capabilityEntry : allCapabilities) {
             if (capabilityEntry.getProviderQos().getScope() == ProviderScope.GLOBAL) {
-                String channelId = "";
-                String channelUrl = "";
                 try {
-                    JoynrMessagingEndpointAddressPersisted address = (JoynrMessagingEndpointAddressPersisted) capabilityEntry.getAddresses()
-                                                                                                                             .get(0);
-
-                    channelId = address.getChannelId();
-                    ChannelUrlInformation channelUrlInformation = channelUrlDirectory.getRegisteredChannels()
-                                                                                     .get(channelId);
-                    if (channelUrlInformation != null) {
-                        channelUrl = channelUrlInformation.getUrls()[0];
-                    }
-                    CapabilityInformation capabilityInformation = capabilityEntry.toCapabilityInformation();
-                    capabilityInformation.setChannelId(channelId + ":" + channelUrl);
+                    CapabilityInformation capabilityInformation = CapabilityUtils.capabilityEntry2Information(capabilityEntry);
                     globalCapabilities.add(capabilityInformation);
                 } catch (Exception e) {
                     log("error adding channel information", e);
