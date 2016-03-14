@@ -23,6 +23,7 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/InProcessPublicationSender.h"
+#include "joynr/types/ProviderQos.h"
 
 namespace joynr
 {
@@ -72,9 +73,11 @@ public:
     ShortCircuitRuntime();
 
     template <class TIntfProvider>
-    std::string registerProvider(const std::string& domain, std::shared_ptr<TIntfProvider> provider)
+    std::string registerProvider(const std::string& domain,
+                                 std::shared_ptr<TIntfProvider> provider,
+                                 const types::ProviderQos& providerQos)
     {
-        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider);
+        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider, providerQos);
     }
 
     template <class TIntfProvider>

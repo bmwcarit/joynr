@@ -24,6 +24,7 @@
 #include "joynr/tests/performance/EchoProxy.h"
 #include "../provider/PerformanceTestEchoProvider.h"
 #include "../common/PerformanceTest.h"
+#include "joynr/types/ProviderQos.h"
 
 #include "ShortCircuitRuntime.h"
 
@@ -36,7 +37,17 @@ struct ShortCircuitTest : public PerformanceTest<1000>
     ShortCircuitTest()
     {
         echoProvider = std::make_shared<PerformanceTestEchoProvider>();
-        runtime.registerProvider<tests::performance::EchoProvider>(domainName, echoProvider);
+        // default uses a priority that is the current time,
+        // causing arbitration to the last started instance if highest priority arbitrator is used
+        std::chrono::milliseconds millisSinceEpoch =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch());
+        types::ProviderQos echoProviderQos;
+        echoProviderQos.setPriority(millisSinceEpoch.count());
+        echoProviderQos.setScope(joynr::types::ProviderScope::GLOBAL);
+        echoProviderQos.setSupportsOnChangeSubscriptions(true);
+        runtime.registerProvider<tests::performance::EchoProvider>(
+                domainName, echoProvider, echoProviderQos);
         std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder(
                 runtime.createProxyBuilder<tests::performance::EchoProxy>(domainName));
         echoProxy.reset(proxyBuilder->setDiscoveryQos(joynr::DiscoveryQos())->build());
