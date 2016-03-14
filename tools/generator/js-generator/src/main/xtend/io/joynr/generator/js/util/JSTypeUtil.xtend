@@ -35,6 +35,7 @@ import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
+import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 
@@ -65,6 +66,34 @@ class JSTypeUtil extends AbstractTypeUtil {
 		primitiveDataTypeDefaultValue.put(FBasicTypeId::UNDEFINED,"");
 
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(primitiveDataTypeDefaultValue);
+	}
+
+	override isCompound(FType type) {
+		if (type instanceof FTypeDef){
+			return isCompound(type.actualType)
+		}
+		return super.isCompound(type)
+	}
+
+	override getCompoundType(FType type) {
+		if (type instanceof FTypeDef){
+			return getCompoundType(type.actualType)
+		}
+		return super.getCompoundType(type)
+	}
+
+	override isPrimitive(FType type) {
+		if (type instanceof FTypeDef){
+			return isPrimitive(type.actualType)
+		}
+		return super.isPrimitive(type)
+	}
+
+	override getPrimitive(FType type) {
+		if (type instanceof FTypeDef){
+			return getPrimitive(type.actualType)
+		}
+		return super.getPrimitive(type)
 	}
 
 	override getTypeName(FBasicTypeId datatype) {

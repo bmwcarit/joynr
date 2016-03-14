@@ -187,9 +187,6 @@ class TypeUtil {
 		if (type instanceof FArrayType){
 			return isPrimitive(type.elementType)
 		}
-		if (type instanceof FTypeDef){
-			return isPrimitive(type.actualType)
-		}
 		return false;
 	}
 
@@ -199,9 +196,6 @@ class TypeUtil {
 		}
 		if (type instanceof FArrayType){
 			return getPrimitive(type.elementType)
-		}
-		if (type instanceof FTypeDef){
-			return getPrimitive(type.actualType)
 		}
 	}
 
@@ -256,9 +250,6 @@ class TypeUtil {
 		}
 		else if (type instanceof FCompoundType){
 			return type;
-		}
-		else if (type instanceof FTypeDef){
-			return getCompoundType(type.actualType)
 		}
 	}
 
