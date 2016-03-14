@@ -55,9 +55,9 @@ public:
      * @param key
      * @return
      */
-    bool contains(const Key& key)
+    bool contains(const Key& key) const
     {
-        return cacheMap.find(key) != cacheMap.end();
+        return cacheMap.find(key) != cacheMap.cend();
     }
     /**
      * @brief object to lookup object in the cache

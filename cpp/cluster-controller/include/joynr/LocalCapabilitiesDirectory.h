@@ -163,6 +163,11 @@ public:
     void removeProviderRegistrationObserver(
             std::shared_ptr<IProviderRegistrationObserver> observer);
 
+    void saveToFile();
+    void loadFromFile(std::string fileName);
+    std::string serializeToJson() const;
+    void deserializeFromJson(const std::string& jsonString);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
@@ -194,15 +199,19 @@ private:
                                              std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
 
-    static void convertDiscoveryEntryIntoCapabilityEntry(
+    void convertDiscoveryEntryIntoCapabilityEntry(
             const joynr::types::DiscoveryEntry& discoveryEntry,
             CapabilityEntry& capabilityEntry);
-    static void convertCapabilityEntryIntoDiscoveryEntry(
-            const CapabilityEntry& capabilityEntry,
-            joynr::types::DiscoveryEntry& discoveryEntry);
-    static void convertCapabilityEntriesIntoDiscoveryEntries(
+    void convertCapabilityEntryIntoDiscoveryEntry(const CapabilityEntry& capabilityEntry,
+                                                  joynr::types::DiscoveryEntry& discoveryEntry);
+    void convertCapabilityEntriesIntoDiscoveryEntries(
             const std::vector<CapabilityEntry>& capabilityEntries,
             std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+    void convertDiscoveryEntriesIntoCapabilityEntries(
+            const std::vector<types::DiscoveryEntry>& discoveryEntries,
+            std::vector<CapabilityEntry>& capabilityEntries);
+
+    void cleanCaches();
 
     ADD_LOGGER(LocalCapabilitiesDirectory);
     ICapabilitiesClient* capabilitiesClient;
@@ -219,6 +228,8 @@ private:
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
     MqttSettings mqttSettings;
+
+    std::string localCapabilitiesDirectoryFileName;
 
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);

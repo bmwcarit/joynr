@@ -33,6 +33,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
 #include "joynr/JsonSerializer.h"
+#include "joynr/Logger.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;
@@ -216,9 +217,12 @@ protected:
     std::shared_ptr<MockLocalCapabilitiesDirectoryCallback> callback;
     std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
     void registerReceivedCapabilities(const std::string& addressType, const std::string& channelId);
+    ADD_LOGGER(LocalCapabilitiesDirectoryTest);
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectoryTest);
 };
+
+INIT_LOGGER(LocalCapabilitiesDirectoryTest);
 
 const std::string LocalCapabilitiesDirectoryTest::INTERFACE_1_NAME("myInterfaceA");
 const std::string LocalCapabilitiesDirectoryTest::INTERFACE_2_NAME("myInterfaceB");
@@ -928,4 +932,40 @@ TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerHttpAd
     const std::string addressType = "http";
     const std::string channelId = "http_TEST_channelId";
     registerReceivedCapabilities(addressType, channelId);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, serializerTest)
+{
+    const std::string DOMAIN_NAME = "LocalCapabilitiesDirectorySerializerTest_Domain";
+    const std::string INTERFACE_NAME = "LocalCapabilitiesDirectorySerializerTest_InterfaceName";
+
+    std::vector<std::string> participantIds {util::createUuid(),util::createUuid(),util::createUuid()};
+    joynr::types::DiscoveryEntry entry1 (DOMAIN_NAME,INTERFACE_NAME, participantIds[0],types::ProviderQos(),{joynr::types::CommunicationMiddleware::JOYNR});
+    joynr::types::DiscoveryEntry entry2 (DOMAIN_NAME,INTERFACE_NAME, participantIds[1],types::ProviderQos(),{joynr::types::CommunicationMiddleware::JOYNR});
+    joynr::types::DiscoveryEntry entry3 (DOMAIN_NAME,INTERFACE_NAME, participantIds[2],types::ProviderQos(),{joynr::types::CommunicationMiddleware::JOYNR});
+
+    localCapabilitiesDirectory->add(entry1);
+    localCapabilitiesDirectory->add(entry2);
+    localCapabilitiesDirectory->add(entry3);
+
+    // serialize
+    const std::string serializedJson { localCapabilitiesDirectory->serializeToJson() };
+    JOYNR_LOG_TRACE(logger, serializedJson);
+
+    localCapabilitiesDirectory->cleanCache(std::chrono::milliseconds::zero());
+    JOYNR_LOG_TRACE(logger, localCapabilitiesDirectory->serializeToJson());
+
+    // deserialize and check content
+    localCapabilitiesDirectory->deserializeFromJson(serializedJson);
+
+    localCapabilitiesDirectory->lookup(participantIds[0], callback);
+    EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
+    callback->clearResults();
+
+    localCapabilitiesDirectory->lookup(participantIds[1], callback);
+    EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
+    callback->clearResults();
+
+    localCapabilitiesDirectory->lookup(participantIds[2], callback);
+    EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
 }

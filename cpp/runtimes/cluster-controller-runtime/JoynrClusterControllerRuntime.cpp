@@ -154,6 +154,12 @@ void JoynrClusterControllerRuntime::importMessageRouterFromFile()
     messageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
 }
 
+void JoynrClusterControllerRuntime::importPersistedLocalCapabilitiesDirectory()
+{
+    localCapabilitiesDirectory->loadFromFile(
+            libjoynrSettings.getLocalCapabilitiesDirectoryPersistenceFilename());
+}
+
 void JoynrClusterControllerRuntime::initializeAllDependencies()
 {
     /**
@@ -398,6 +404,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
             messagingSettings, capabilitiesClient, *messageRouter);
+
+    importPersistedLocalCapabilitiesDirectory();
+
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     dbusSettings = new DbusSettings(*settings);
     dbusSettings->printSettings();
