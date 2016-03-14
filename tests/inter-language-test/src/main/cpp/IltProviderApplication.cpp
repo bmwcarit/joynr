@@ -22,6 +22,7 @@
 #include "joynr/JoynrRuntime.h"
 #include "IltStringBroadcastFilter.h"
 #include "joynr/Semaphore.h"
+#include "joynr/types/ProviderQos.h"
 #include <memory>
 #include <string>
 #include <iostream>
@@ -73,6 +74,14 @@ int main(int argc, char* argv[])
 
     // create provider instance
     std::shared_ptr<IltProvider> provider(new IltProvider());
+    // Initialise the quality of service settings
+    // Set the priority so that the consumer application always uses the most recently
+    // started provider
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    joynr::types::ProviderQos iltProviderQos;
+    iltProviderQos.setPriority(millisSinceEpoch.count());
 
     // add any broadcast filters here (later)
     std::shared_ptr<IltStringBroadcastFilter> myStringBroadcastFilter(
@@ -80,7 +89,8 @@ int main(int argc, char* argv[])
     provider->addBroadcastFilter(myStringBroadcastFilter);
 
     // Register the provider
-    runtime->registerProvider<interlanguagetest::TestInterfaceProvider>(providerDomain, provider);
+    runtime->registerProvider<interlanguagetest::TestInterfaceProvider>(
+            providerDomain, provider, iltProviderQos);
 
     JOYNR_LOG_INFO(logger, "********************************************************************");
     JOYNR_LOG_INFO(logger, "Provider is registered");
