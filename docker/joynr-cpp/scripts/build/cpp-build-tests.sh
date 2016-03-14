@@ -6,7 +6,8 @@ set -e
 source /data/src/docker/joynr-base/scripts/global.sh
 
 START=$(date +%s)
-JOBS=$(nproc)
+JOBS=4
+CLANGFORMATTER='ON'
 
 TESTS=(inter-language-test performance-test robustness-test system-integration-test)
 
@@ -20,7 +21,7 @@ function join_strings
 function usage
 {
     local joined_tests=$(join_strings " | " "${TESTS[@]}")
-    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X]"
+    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF]"
     echo "default jobs is $JOBS"
 }
 
@@ -31,6 +32,9 @@ while [ "$1" != "" ]; do
     case $1 in
         --jobs )                shift
                                 JOBS=$1
+                                ;;
+        --clangformatter )      shift
+                                CLANGFORMATTER=$1
                                 ;;
         * )                     usage
                                 exit 1
@@ -75,7 +79,10 @@ rm -rf /data/build/tests
 mkdir /data/build/tests
 cd /data/build/tests
 
-cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 ${SRC_FOLDER}
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
+      -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
+      -DJOYNR_SERVER=localhost:8080 \
+      ${SRC_FOLDER}
 
 time make -j $JOBS
 
