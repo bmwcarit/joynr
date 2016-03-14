@@ -1,0 +1,7 @@
+# this project includes all test subdirectories
+project(joynr-tests)
+
+add_subdirectory(inter-language-test)
+add_subdirectory(performance-test)
+add_subdirectory(robustness-test)
+add_subdirectory(system-integration-test)
