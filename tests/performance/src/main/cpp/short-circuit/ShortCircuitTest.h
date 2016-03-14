@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <algorithm>
+#include <numeric>
 
 #include "joynr/tests/performance/EchoProxy.h"
 #include "../provider/PerformanceTestEchoProvider.h"
