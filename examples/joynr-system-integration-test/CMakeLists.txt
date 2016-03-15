@@ -105,7 +105,6 @@ set(
 # Provider headers
 set(
     jsit-provider_HEADERS
-    ${GENERATED_HEADERS}
     "src/main/cpp/SystemIntegrationTestProvider.h"
 )
 
@@ -114,26 +113,6 @@ set(
     jsit-provider_SOURCES
     "src/main/cpp/SystemIntegrationTestProvider.cpp"
     "src/main/cpp/ProviderApplication.cpp"
-)
-
-# Link with the joynr libraries
-set(
-    jsit_LIBRARIES
-    ${Joynr_LIB_COMMON_LIBRARIES}
-)
-
-# Put the generated code into a library and put the library in the bin directory
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
-add_library(
-    jsit SHARED
-    ${GENERATED_HEADERS}
-    ${GENERATED_SOURCES}
-)
-
-target_link_libraries(
-    jsit
-    ${jsit_LIBRARIES}
 )
 
 # copy joynr resources and settings
@@ -154,13 +133,14 @@ add_executable(
     jsit-provider-ws
     ${jsit-provider_HEADERS}
     ${jsit-provider_SOURCES}
+    ${GENERATED_HEADERS}
+    ${GENERATED_SOURCES}
 )
 
 # Link the provider application
 target_link_libraries(
     jsit-provider-ws
-    jsit
-    ${jsit_LIBRARIES}
+    ${Joynr_LIB_COMMON_LIBRARIES}
     ${Joynr_LIB_WS_LIBRARIES}
 )
 
@@ -170,13 +150,14 @@ add_executable(
     jsit-consumer-ws
     ${jsit-consumer_HEADERS}
     ${jsit-consumer_SOURCES}
+    ${GENERATED_HEADERS}
+    ${GENERATED_SOURCES}
 )
 
 # Link the consumer application
 target_link_libraries(
     jsit-consumer-ws
-    jsit
-    ${jsit_LIBRARIES}
+    ${Joynr_LIB_COMMON_LIBRARIES}
     ${Joynr_LIB_WS_LIBRARIES}
 )
 
@@ -188,7 +169,6 @@ install(
 )
 
 if(ENABLE_CLANG_FORMATTER)
-    AddClangFormat(jsit)
     AddClangFormat(jsit-consumer-ws)
     AddClangFormat(jsit-provider-ws)
 endif(ENABLE_CLANG_FORMATTER)
