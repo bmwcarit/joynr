@@ -22,6 +22,8 @@
 namespace joynr
 {
 
+INIT_LOGGER(InProcessConnectorFactory);
+
 InProcessConnectorFactory::InProcessConnectorFactory(
         ISubscriptionManager* subscriptionManager,
         PublicationManager* publicationManager,

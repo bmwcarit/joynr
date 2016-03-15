@@ -19,14 +19,15 @@
 #ifndef INPROCESSCONNECTORFACTORY_H
 #define INPROCESSCONNECTORFACTORY_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/InProcessAddress.h"
-#include "joynr/types/CommunicationMiddleware.h"
-#include "joynr/IRequestCallerDirectory.h"
-
 #include <string>
 #include <memory>
+
+#include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
+#include "joynr/InProcessAddress.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/IRequestCallerDirectory.h"
 
 namespace joynr
 {
@@ -58,6 +59,13 @@ public:
     {
         std::shared_ptr<RequestCaller> requestCaller =
                 requestCallerDirectory->lookupRequestCaller(providerParticipantId);
+
+        // early exit if the providerParticipantId could not be found
+        if (requestCaller == nullptr) {
+            JOYNR_LOG_ERROR(logger, "Cannot create connector: Provider participant ID not found.");
+            return nullptr;
+        }
+
         auto inProcessEndpointAddress = std::make_shared<InProcessAddress>(requestCaller);
 
         using Connector = typename InProcessTraits<T>::Connector;
@@ -75,6 +83,7 @@ private:
     PublicationManager* publicationManager;
     InProcessPublicationSender* inProcessPublicationSender;
     IRequestCallerDirectory* requestCallerDirectory;
+    ADD_LOGGER(InProcessConnectorFactory);
 };
 
 } // namespace joynr

@@ -87,7 +87,9 @@ private:
     void runImpl(std::false_type)
     {
         std::shared_ptr<typename D::Value> val = directory->lookup(keyId);
-        directory->remove(keyId);
+        if (val) {
+            directory->remove(keyId);
+        }
     }
 
     /*
@@ -138,12 +140,23 @@ public:
         JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", callbackMap.size());
     }
 
+    /*
+     * Returns the element with the given keyId. In case the element could not be found nullptr is
+     * returned.
+     */
     std::shared_ptr<T> lookup(const Key& keyId) override
     {
         std::lock_guard<std::mutex> lock(mutex);
-        return callbackMap[keyId];
+        auto found = callbackMap.find(keyId);
+        if (found == callbackMap.cend()) {
+            return nullptr;
+        }
+        return found->second;
     }
 
+    /*
+     * Returns true if an element with the given keyId could be found. False otherwise.
+     */
     bool contains(const Key& keyId) override
     {
         std::lock_guard<std::mutex> lock(mutex);
@@ -175,6 +188,9 @@ public:
         callBackRemoverScheduler.schedule(removerRunnable, std::chrono::milliseconds(ttl_ms));
     }
 
+    /*
+     * Remove element with key == keyID
+     */
     void remove(const Key& keyId) override
     {
         std::lock_guard<std::mutex> lock(mutex);
