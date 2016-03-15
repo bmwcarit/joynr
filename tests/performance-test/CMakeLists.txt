@@ -44,6 +44,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/cluster-controller/resource
 find_package(Boost 1.56.0 REQUIRED
     COMPONENTS
     filesystem
+    program_options
 )
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -77,6 +78,8 @@ add_subdirectory(src/main/cpp/provider)
 
 ### provider application ###
 add_subdirectory(src/main/cpp/provider-app)
+
+add_subdirectory(src/main/cpp/consumer-app)
 
 add_subdirectory(src/main/cpp/short-circuit)
 
