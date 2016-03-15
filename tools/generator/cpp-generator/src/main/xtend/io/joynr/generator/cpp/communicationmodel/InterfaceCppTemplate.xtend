@@ -124,6 +124,9 @@ const std::string& I«interfaceName»Base::INTERFACE_NAME()
 	return INTERFACE_NAME;
 }
 
+const std::uint32_t I«interfaceName»Base::MAJOR_VERSION = «majorVersion»;
+const std::uint32_t I«interfaceName»Base::MINOR_VERSION = «minorVersion»;
+
 «getNamespaceEnder(serviceInterface)»
 '''
 }

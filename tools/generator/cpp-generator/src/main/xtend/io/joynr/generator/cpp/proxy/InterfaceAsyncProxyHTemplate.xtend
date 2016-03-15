@@ -74,7 +74,10 @@ namespace exceptions
 #include <memory>
 
 «getNamespaceStarter(serviceInterface)»
-/** @brief proxy class for asynchronous calls of interface «interfaceName» */
+/** @brief proxy class for asynchronous calls of interface «interfaceName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
 public:
 

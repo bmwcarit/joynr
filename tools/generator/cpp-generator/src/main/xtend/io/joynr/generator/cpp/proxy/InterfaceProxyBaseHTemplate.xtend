@@ -66,7 +66,11 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
 
 «getNamespaceStarter(serviceInterface)»
-/** @brief Proxy base class for interface «interfaceName» */
+/**
+ * @brief Proxy base class for interface «interfaceName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Subscription {
 public:
 	/**

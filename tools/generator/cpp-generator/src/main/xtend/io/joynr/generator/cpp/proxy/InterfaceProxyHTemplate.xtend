@@ -75,7 +75,11 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 #endif
 
 «getNamespaceStarter(serviceInterface)»
-/** @brief Proxy class for interface «interfaceName» */
+/**
+ * @brief Proxy class for interface «interfaceName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «getDllExportMacro()» «className» : virtual public I«interfaceName», virtual public «syncClassName», virtual public «asyncClassName» {
 public:
 	/**

@@ -63,7 +63,11 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 #include <memory>
 
 «getNamespaceStarter(serviceInterface)»
-/** @brief Synchronous proxy for interface «interfaceName» */
+/**
+ * @brief Synchronous proxy for interface «interfaceName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
 public:
 	/**

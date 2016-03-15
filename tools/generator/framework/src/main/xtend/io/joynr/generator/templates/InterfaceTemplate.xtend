@@ -24,9 +24,15 @@ import org.franca.core.franca.FInterface
  */
 abstract class InterfaceTemplate {
 	protected FInterface serviceInterface
+	protected var majorVersion = 0
+	protected var minorVersion = 0
 
 	new(FInterface francaIntf) {
 		this.serviceInterface = francaIntf
+		if (francaIntf.version != null) {
+			majorVersion = francaIntf.version.major;
+			minorVersion = francaIntf.version.minor;
+		}
 	}
 
 	def CharSequence generate()

@@ -75,11 +75,13 @@ typeCollection testTypes {
 	}
 }
 
+interface TestWithoutVersion {
+}
 
 //this interface starts in lower case (in contrary to our modelling guidelines) for testing purposes
 interface test {
 
-	version { major 0 minor 1 }
+	version { major 47 minor 11 }
 
 	attribute testTypes.TestEnum enumAttribute
 

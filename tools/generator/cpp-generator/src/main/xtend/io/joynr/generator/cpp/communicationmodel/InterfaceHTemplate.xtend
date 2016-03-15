@@ -91,6 +91,8 @@ namespace exceptions
 
 /**
  * @brief Base interface.
+ *
+ * @version «majorVersion».«minorVersion»
  */
 class «getDllExportMacro()» I«interfaceName»Base {
 public:
@@ -98,11 +100,22 @@ public:
 	virtual ~I«interfaceName»Base() = default;
 
 	static const std::string& INTERFACE_NAME();
+	/**
+	 * @brief MAJOR_VERSION The major version of this provider interface as specified in the
+	 * Franca model.
+	 */
+	static const std::uint32_t MAJOR_VERSION;
+	/**
+	 * @brief MINOR_VERSION The minor version of this provider interface as specified in the
+	 * Franca model.
+	 */
+	static const std::uint32_t MINOR_VERSION;
 };
 
 /**
  * @brief This is the «interfaceName» synchronous interface.
  *
+ * @version «majorVersion».«minorVersion»
  */
 class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
 public:
@@ -115,6 +128,7 @@ public:
 /**
  * @brief This is the «interfaceName» asynchronous interface.
  *
+ * @version «majorVersion».«minorVersion»
  */
 class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
 public:
@@ -124,6 +138,11 @@ public:
 	«produceAsyncMethodDeclarations(serviceInterface,true, true)»
 };
 
+/**
+ * @brief This is the «interfaceName» interface.
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
 public:
 	~I«interfaceName»() override = default;
