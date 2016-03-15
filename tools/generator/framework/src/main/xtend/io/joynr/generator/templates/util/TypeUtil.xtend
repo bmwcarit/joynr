@@ -576,4 +576,12 @@ class TypeUtil {
 		}
 		return false
 	}
+
+	def FTypeRef resolveTypeDef(FTypeRef typeRef) {
+		if (typeRef.isTypeDef) {
+			return resolveTypeDef(typeRef.typeDefType.actualType)
+		} else {
+			return typeRef
+		}
+	}
 }
