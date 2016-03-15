@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(robustness-tests-0.16.0-SNAPSHOT)
+project(robustness-tests-0.17.0-SNAPSHOT)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -47,7 +47,7 @@ include(../../cpp/tests/AddTest.cmake)
 include(../../cpp/CMake/AddExternalProject.cmake)
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.16.0 REQUIRED)
+find_package(Joynr 0.17.0 REQUIRED)
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
