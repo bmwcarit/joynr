@@ -22,6 +22,7 @@ import types.Localisation.* from "LocalisationTypes.fidl"
 import types.TestTypes.* from "TestTypes.fidl"
 
 typeCollection testTypes {
+	version { major 48 minor 12 }
 
 	enumeration TestEnum {
 		ZERO = 0
@@ -76,12 +77,34 @@ typeCollection testTypes {
 }
 
 interface TestWithoutVersion {
+	struct StructInsideInterfaceWithoutVersion {
+		Int32 a
+	}
+
+	enumeration EnumInsideInterfaceWithoutVersion {
+		A
+	}
+
+	map MapInsideInterfaceWithoutVersion {
+		String to Int32
+	}
 }
 
 //this interface starts in lower case (in contrary to our modelling guidelines) for testing purposes
 interface test {
-
 	version { major 47 minor 11 }
+
+	struct StructInsideInterface {
+		Int16 a
+	}
+
+	enumeration EnumInsideInterface {
+		A
+	}
+
+	map MapInsideInterface {
+		String to Int32
+	}
 
 	attribute testTypes.TestEnum enumAttribute
 
