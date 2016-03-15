@@ -87,23 +87,24 @@ void «interfaceName»RequestInterpreter::execute(
 		«FOR attribute : attributes»
 			«val attributeName = attribute.joynrName»
 			«val returnType = getTypeName(attribute)»
+			«val attributeType = attribute.type.resolveTypeDef»
 		«IF attribute.readable»
 			if (methodName == "get«attributeName.toFirstUpper»"){
 				std::function<void(«returnType» «attributeName»)> requestCallerOnSuccess =
 						[onSuccess] («returnType» «attributeName») {
 							std::vector<Variant> outParams;
 								outParams.push_back(
-									«IF isEnum(attribute.type) && isArray(attribute)»
-										joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
-									«ELSEIF isEnum(attribute.type)»
-										Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
-									«ELSEIF isArray(attribute)»
-										joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attribute.joynrName»)
-									«ELSEIF isCompound(attribute.type)»
-										Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
-									«ELSEIF isMap(attribute.type)»
-										Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
-									«ELSEIF isByteBuffer(attribute.type)»
+									«IF attributeType.isEnum && attribute.isArray»
+										joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attributeType.derived)»>(«attribute.joynrName»))
+									«ELSEIF attributeType.isEnum»
+										Variant::make<«attribute.typeName»>(«attribute.joynrName»)
+									«ELSEIF attribute.isArray»
+										joynr::TypeUtil::toVariant<«attributeType.typeName»>(«attribute.joynrName»)
+									«ELSEIF attributeType.isCompound»
+										Variant::make<«attribute.typeName»>(«attribute.joynrName»)
+									«ELSEIF attributeType.isMap»
+										Variant::make<«attribute.typeName»>(«attribute.joynrName»)
+									«ELSEIF attributeType.isByteBuffer»
 										joynr::TypeUtil::toVariant(«attribute.joynrName»)
 									«ELSE»
 										Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
@@ -119,16 +120,16 @@ void «interfaceName»RequestInterpreter::execute(
 			if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
 				try {
 					Variant «attributeName»Var(paramValues.at(0));
-					«IF isEnum(attribute.type) && isArray(attribute)»
-						«val attributeRef = joynrGenerationPrefix + "::util::convertVariantVectorToEnumVector<" + getTypeNameOfContainingClass(attribute.type.derived) + ">(" + attributeName + "Var.get<std::vector<Variant>>())"»
+					«IF attributeType.isEnum && isArray(attribute)»
+						«val attributeRef = joynrGenerationPrefix + "::util::convertVariantVectorToEnumVector<" + getTypeNameOfContainingClass(attributeType.derived) + ">(" + attributeName + "Var.get<std::vector<Variant>>())"»
 						assert(«attributeName»Var.is<std::vector<Variant>>());
 						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 							«attributeRef»;
-					«ELSEIF isEnum(attribute.type)»
-						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
-							«joynrGenerationPrefix»::util::convertVariantToEnum<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»Var);
-					«ELSEIF isArray(attribute)»
-						«val attributeRef = joynrGenerationPrefix + "::util::convertVariantVectorToVector<" + getTypeName(attribute.type) + ">(paramList)"»
+					«ELSEIF attributeType.isEnum»
+						«attribute.typeName» typedInput«attributeName.toFirstUpper» =
+							«joynrGenerationPrefix»::util::convertVariantToEnum<«getTypeNameOfContainingClass(attributeType.derived)»>(«attributeName»Var);
+					«ELSEIF attribute.isArray»
+						«val attributeRef = joynrGenerationPrefix + "::util::convertVariantVectorToVector<" + attributeType.typeName + ">(paramList)"»
 						if (!«attributeName»Var.is<std::vector<Variant>>()) {
 							onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
 							return;
@@ -136,7 +137,7 @@ void «interfaceName»RequestInterpreter::execute(
 						std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
 						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 								«attributeRef»;
-					«ELSEIF isByteBuffer(attribute.type)»
+					«ELSEIF attributeType.isByteBuffer»
 						//isArray
 						if (!«attributeName»Var.is<std::vector<Variant>>()) {
 							onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
@@ -146,17 +147,17 @@ void «interfaceName»RequestInterpreter::execute(
 						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 								«joynrGenerationPrefix»::util::convertVariantVectorToVector<«byteBufferElementType»>(paramList);
 					«ELSE»
-						«var attributeRef = if (attribute.type.float)
+						«var attributeRef = if (attributeType.float)
 												"static_cast<float>(" + attributeName + "Var.get<double>())"
-											else if (attribute.type.string)
-												"joynr::util::removeEscapeFromSpecialChars(" + attributeName + "Var.get<" + getTypeName(attribute) + ">())"
+											else if (attributeType.string)
+												"joynr::util::removeEscapeFromSpecialChars(" + attributeName + "Var.get<" + attribute.typeName + ">())"
 											else
 												attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
 						«IF getTypeName(attribute).startsWith("std::int")»
 							if (!(«attributeName»Var.is<std::uint64_t>() || «attributeName»Var.is<std::int64_t>())) {
 						«ELSEIF getTypeName(attribute).startsWith("std::uint")»
 							if (!«attributeName»Var.is<std::uint64_t>()) {
-						«ELSEIF attribute.type.float»
+						«ELSEIF attributeType.float»
 							if (!«attributeName»Var.is<double>()) {
 						«ELSE»
 							if (!«attributeName»Var.is<«getTypeName(attribute)»>()) {
@@ -197,18 +198,19 @@ void «interfaceName»RequestInterpreter::execute(
 						[onSuccess](«outputTypedParamList»){
 							std::vector<Variant> outParams;
 							«FOR param : method.outputParameters»
+								«val paramType = param.type.resolveTypeDef»
 								outParams.push_back(
-										«IF isEnum(param.type) && isArray(param)»
-											joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.joynrName»))
-										«ELSEIF isEnum(param.type)»
+										«IF paramType.isEnum && param.isArray»
+											joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(paramType.derived)»>(«param.joynrName»))
+										«ELSEIF paramType.isEnum»
 											Variant::make<«getTypeName(param)»>(«param.joynrName»)
-										«ELSEIF isArray(param)»
-											joynr::TypeUtil::toVariant<«getTypeName(param.type)»>(«param.joynrName»)
-										«ELSEIF isCompound(param.type)»
+										«ELSEIF param.isArray»
+											joynr::TypeUtil::toVariant<«paramType.typeName»>(«param.joynrName»)
+										«ELSEIF paramType.isCompound»
 											Variant::make<«getTypeName(param)»>(«param.joynrName»)
-										«ELSEIF isMap(param.type)»
+										«ELSEIF paramType.isMap»
 											Variant::make<«getTypeName(param)»>(«param.joynrName»)
-										«ELSEIF isByteBuffer(param.type)»
+										«ELSEIF paramType.isByteBuffer»
 											joynr::TypeUtil::toVariant(«param.joynrName»)
 										«ELSE»
 											Variant::make<«getTypeName(param)»>(«param.joynrName»)
@@ -223,23 +225,24 @@ void «interfaceName»RequestInterpreter::execute(
 				try {
 					«FOR input : inputParams»
 						«val inputName = input.joynrName»
+						«val inputType = input.type.resolveTypeDef»
 						Variant «inputName»Var(paramValues.at(«iterator2=iterator2+1»));
-						«IF isEnum(input.type) && isArray(input)»
+						«IF inputType.isEnum && input.isArray»
 							//isEnumArray
-							«getTypeName(input)» «inputName» =
-								«joynrGenerationPrefix»::util::convertVariantVectorToEnumVector<«getTypeNameOfContainingClass(input.type.derived)»> («inputName»Var.get<std::vector<Variant>>());
-						«ELSEIF isEnum(input.type)»
+							«input.typeName» «inputName» =
+								«joynrGenerationPrefix»::util::convertVariantVectorToEnumVector<«getTypeNameOfContainingClass(inputType.derived)»> («inputName»Var.get<std::vector<Variant>>());
+						«ELSEIF inputType.isEnum»
 							//isEnum
-							«getTypeName(input)» «inputName» = «joynrGenerationPrefix»::util::convertVariantToEnum<«buildPackagePath(input.type.derived, "::", true) + "::" + input.type.joynrName»>(«inputName»Var);
-						«ELSEIF isArray(input)»
+							«input.typeName» «inputName» = «joynrGenerationPrefix»::util::convertVariantToEnum<«buildPackagePath(inputType.derived, "::", true) + "::" + inputType.joynrName»>(«inputName»Var);
+						«ELSEIF input.isArray»
 							//isArray
 							if (!«inputName»Var.is<std::vector<Variant>>()) {
 								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
 								return;
 							}
 							std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
-							std::vector<«getTypeName(input.type)»> «inputName» = «joynrGenerationPrefix»::util::convertVariantVectorToVector<«getTypeName(input.type)»>(«inputName»VarList);
-						«ELSEIF isByteBuffer(input.type)»
+							std::vector<«inputType.typeName»> «inputName» = «joynrGenerationPrefix»::util::convertVariantVectorToVector<«inputType.typeName»>(«inputName»VarList);
+						«ELSEIF inputType.isByteBuffer»
 							//isArray
 							if (!«inputName»Var.is<std::vector<Variant>>()) {
 								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
@@ -248,18 +251,18 @@ void «interfaceName»RequestInterpreter::execute(
 							std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
 							std::vector<«byteBufferElementType»> «inputName» = «joynrGenerationPrefix»::util::convertVariantVectorToVector<«byteBufferElementType»>(«inputName»VarList);
 						«ELSE»
-							//«getTypeName(input)»
-							«var inputRef = if (input.type.float)
+							//«input.typeName»
+							«var inputRef = if (inputType.float)
 												"static_cast<float>(" + inputName + "Var.get<double>())"
-											else if (input.type.string)
-												"joynr::util::removeEscapeFromSpecialChars(" + inputName + "Var.get<" + getTypeName(input) + ">())"
+											else if (inputType.string)
+												"joynr::util::removeEscapeFromSpecialChars(" + inputName + "Var.get<" + input.typeName + ">())"
 											else
 												inputName + "Var.get<" + getTypeName(input) + ">()"»
 							«IF getTypeName(input).startsWith("std::int")»
 								if (!(«inputName»Var.is<std::uint64_t>() || «inputName»Var.is<std::int64_t>())) {
 							«ELSEIF getTypeName(input).startsWith("std::uint")»
 								if (!«inputName»Var.is<std::uint64_t>()) {
-							«ELSEIF input.type.float»
+							«ELSEIF inputType.float»
 								if (!«inputName»Var.is<double>()) {
 							«ELSE»
 								if (!«inputName»Var.is<«getTypeName(input)»>()) {
