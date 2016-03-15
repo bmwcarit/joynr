@@ -22,8 +22,6 @@ package io.joynr.performance;
 import io.joynr.provider.Promise;
 import joynr.tests.performance.EchoAbstractProvider;
 import joynr.tests.performance.Types.ComplexStruct;
-import joynr.types.ProviderQos;
-import joynr.types.ProviderScope;
 
 public class EchoProviderImpl extends EchoAbstractProvider {
 
@@ -46,11 +44,5 @@ public class EchoProviderImpl extends EchoAbstractProvider {
         EchoComplexStructDeferred deferred = new EchoComplexStructDeferred();
         deferred.resolve(data);
         return new Promise<EchoComplexStructDeferred>(deferred);
-    }
-
-    @Override
-    public ProviderQos getProviderQos() {
-        providerQos.setScope(ProviderScope.LOCAL);
-        return providerQos;
     }
 }

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package joynr.tests.performance;
+package io.joynr.performance;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

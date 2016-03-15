@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package joynr.tests.performance;
+package io.joynr.performance;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -30,7 +30,7 @@ import org.apache.commons.cli.ParseException;
  * Takes the command line arguments of the application, parses and checks them.
  * The parsed data is provided through getter methods.
  */
-public class PerformanceTestConsumerInvocationParameters {
+public class ConsumerInvocationParameters {
 
     /**
      * Determines whether the communication with the provider shall be synchronous or asynchronous.
@@ -62,7 +62,7 @@ public class PerformanceTestConsumerInvocationParameters {
     private static int stringDataLength = 10;
     private static int byteArraySize = 100;
 
-    public PerformanceTestConsumerInvocationParameters(String[] args) throws Exception {
+    public ConsumerInvocationParameters(String[] args) throws Exception {
         CommandLine commandLine = parseCommandLineArgs(args);
 
         domainName = commandLine.getOptionValue(CMDLINE_OPTIONNAME_DOMAINNAME);

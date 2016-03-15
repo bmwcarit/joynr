@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package joynr.tests.performance;
+package io.joynr.performance;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -35,20 +35,21 @@ import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import jline.internal.Log;
-import joynr.tests.performance.PerformanceTestConsumerInvocationParameters.COMMUNICATIONMODE;
+import io.joynr.performance.ConsumerInvocationParameters.COMMUNICATIONMODE;
+import joynr.tests.performance.EchoProxy;
 import joynr.tests.performance.Types.ComplexStruct;
 
-public class PerformanceTestConsumerApplication extends AbstractJoynrApplication {
+public class ConsumerApplication extends AbstractJoynrApplication {
 
     private static final String STATIC_PERSISTENCE_FILE = "java-consumer.persistence_file";
     private static final int ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS = 10; // 10 milliseconds
 
-    private static PerformanceTestConsumerInvocationParameters invocationParameters = null;
+    private static ConsumerInvocationParameters invocationParameters = null;
 
     public static void main(String[] args) {
 
         try {
-            invocationParameters = new PerformanceTestConsumerInvocationParameters(args);
+            invocationParameters = new ConsumerInvocationParameters(args);
         } catch (Exception exception) {
             System.err.println(exception.getMessage());
             System.exit(-1);
@@ -74,7 +75,7 @@ public class PerformanceTestConsumerApplication extends AbstractJoynrApplication
 
         Module runtimeModule = new LibjoynrWebSocketRuntimeModule();
 
-        return new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(PerformanceTestConsumerApplication.class,
+        return new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(ConsumerApplication.class,
                                                                                                                  appConfig));
     }
 
@@ -291,7 +292,9 @@ public class PerformanceTestConsumerApplication extends AbstractJoynrApplication
     }
 
     private void printTestResult(long timeDeltaMilliseconds) {
-        System.err.format("Test case took %d ms\n", timeDeltaMilliseconds);
+        System.err.format("Test case took %d ms. %.2f Msgs/s transmitted\n",
+                          timeDeltaMilliseconds,
+                          (double) invocationParameters.getNumberOfRuns() / ((double) timeDeltaMilliseconds / 1000.0));
     }
 
     private <type> void printFailureStatistic(int numFailures, int numRuns) {
