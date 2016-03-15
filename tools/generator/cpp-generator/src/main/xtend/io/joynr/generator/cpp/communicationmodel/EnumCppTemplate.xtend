@@ -25,7 +25,7 @@ import io.joynr.generator.templates.EnumTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FEnumerationType
 
-class StdEnumCppTemplate implements EnumTemplate {
+class EnumCppTemplate implements EnumTemplate {
 
 	@Inject
 	private extension TemplateBase

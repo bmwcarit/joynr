@@ -42,8 +42,8 @@ class CommunicationModelGenerator {
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
 
-	@Inject StdEnumHTemplate stdEnumH;
-	@Inject StdEnumCppTemplate stdEnumCpp;
+	@Inject EnumHTemplate enumH;
+	@Inject EnumCppTemplate enumCpp;
 
 	@Inject StdTypeHTemplate stdTypeH;
 	@Inject StdTypeCppTemplate stdTypeCpp;
@@ -251,14 +251,14 @@ class CommunicationModelGenerator {
 		generateFile(
 			headerFileSystem,
 			headerFilename + ".h",
-			stdEnumH,
+			enumH,
 			enumType
 		)
 
 		generateFile(
 			sourceFileSystem,
 			sourceFilename + ".cpp",
-			stdEnumCpp,
+			enumCpp,
 			enumType
 		)
 
