@@ -3519,7 +3519,7 @@ public:
 
     ~AttributeEnumerationListener() override = default;
 
-    void onReceive(const joynr::interlanguagetest::Enumeration::Enum& enumerationOut)
+    void onReceive(const joynr::interlanguagetest::Enumeration::Enum& enumerationOut) override
     {
         JOYNR_LOG_INFO(logger, "callSubscribeAttributeEnumeration - callback - got broadcast");
         if (enumerationOut != joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_2) {
@@ -3534,7 +3534,7 @@ public:
         subscribeAttributeEnumerationCallbackDone = true;
     }
 
-    void onError(const joynr::exceptions::JoynrRuntimeException& error)
+    void onError(const joynr::exceptions::JoynrRuntimeException& error) override
     {
         JOYNR_LOG_INFO(logger, "callSubscribeAttributeEnumeration - callback - got error");
         subscribeAttributeEnumerationCallbackResult = false;
@@ -3612,7 +3612,7 @@ public:
 
     ~AttributeWithExceptionListener() override = default;
 
-    void onReceive(const bool& value)
+    void onReceive(const bool& value) override
     {
         JOYNR_LOG_INFO(
                 logger,
@@ -3621,7 +3621,7 @@ public:
         subscribeAttributeWithExceptionCallbackDone = true;
     }
 
-    void onError(const joynr::exceptions::JoynrRuntimeException& error)
+    void onError(const joynr::exceptions::JoynrRuntimeException& error) override
     {
         if (error.getTypeName() == "joynr.exceptions.ProviderRuntimeException") {
             if (error.getMessage() == "Exception from getAttributeWithException") {

@@ -118,11 +118,11 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
     // Provider: (runtime1)
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    auto testProvider = std::make_shared<MockTestProvider>(providerQos);
+    auto testProvider = std::make_shared<MockTestProvider>();
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -661,11 +661,12 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    auto testProvider = std::make_shared<MockTestProvider>(providerQos);
+    auto testProvider = std::make_shared<MockTestProvider>();
     testProvider->setListOfInts(expectedValues, [](){}, [](const joynr::exceptions::JoynrRuntimeException&){});
     std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
-            testProvider
+            testProvider,
+            providerQos
     );
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -929,11 +930,11 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 TEST_P(CombinedEnd2EndTest, call_async_void_operation) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    auto testProvider = std::make_shared<MockTestProvider>(providerQos);
+    auto testProvider = std::make_shared<MockTestProvider>();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -973,13 +974,14 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation) {
 TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    auto testProvider = std::make_shared<MockTestProvider>(providerQos);
+    auto testProvider = std::make_shared<MockTestProvider>();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2550));
 
     std::string testProviderParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
-            testProvider
+            testProvider,
+            providerQos
     );
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2550));

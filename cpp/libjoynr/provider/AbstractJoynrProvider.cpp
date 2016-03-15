@@ -24,11 +24,16 @@
 namespace joynr
 {
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
 AbstractJoynrProvider::AbstractJoynrProvider()
         : providerQos(), lock(), attributeListeners(), broadcastListeners(), broadcastFilters()
 {
 }
+#pragma GCC diagnostic pop
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
 AbstractJoynrProvider::~AbstractJoynrProvider()
 {
     // Delete all attribute listeners
@@ -39,10 +44,14 @@ AbstractJoynrProvider::~AbstractJoynrProvider()
         }
     }
 }
+#pragma GCC diagnostic pop
 
 types::ProviderQos AbstractJoynrProvider::getProviderQos() const
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
     return providerQos;
+#pragma GCC diagnostic pop
 }
 
 void AbstractJoynrProvider::registerAttributeListener(const std::string& attributeName,

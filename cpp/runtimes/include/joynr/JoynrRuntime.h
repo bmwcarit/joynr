@@ -68,9 +68,32 @@ public:
     template <class TIntfProvider>
     std::string registerProvider(const std::string& domain, std::shared_ptr<TIntfProvider> provider)
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
+        joynr::types::ProviderQos providerQos = provider->getProviderQos();
+#pragma GCC diagnostic pop
+        return registerProvider<TIntfProvider>(domain, provider, providerQos);
+    }
+
+    /**
+     * @brief Registers a provider with the joynr communication framework.
+     * @tparam TIntfProvider The interface class of the provider to register. The corresponding
+     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
+     * @param domain The domain to register the provider on. Has to be
+     * identical at the client to be able to find the provider.
+     * @param provider The provider instance to register.
+     * @param providerQos The qos associated with the registered provider.
+     * @return The globaly unique participant ID of the provider. It is assigned by the joynr
+     * communication framework.
+     */
+    template <class TIntfProvider>
+    std::string registerProvider(const std::string& domain,
+                                 std::shared_ptr<TIntfProvider> provider,
+                                 const joynr::types::ProviderQos& providerQos)
+    {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider);
+        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider, providerQos);
     }
 
     /**

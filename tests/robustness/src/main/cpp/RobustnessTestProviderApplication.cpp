@@ -25,6 +25,7 @@
 
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Semaphore.h"
+#include "joynr/types/ProviderQos.h"
 
 using joynr::JoynrRuntime;
 using joynr::Semaphore;
@@ -68,10 +69,20 @@ int main(int argc, char** argv)
     // create provider instance
     std::shared_ptr<joynr::RobustnessTestProvider> provider(new joynr::RobustnessTestProvider());
 
+    // default uses a priority that is the current time,
+    // causing arbitration to the last started instance if highest priority arbitrator is used
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    joynr::types::ProviderQos robustnessProviderQos;
+    robustnessProviderQos.setPriority(millisSinceEpoch.count());
+    robustnessProviderQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    robustnessProviderQos.setSupportsOnChangeSubscriptions(true);
+
     // Register the provider
     std::string providerParticipantId =
             runtime->registerProvider<joynr::tests::robustness::TestInterfaceProvider>(
-                    providerDomain, provider);
+                    providerDomain, provider, robustnessProviderQos);
 
     JOYNR_LOG_INFO(logger, "***********************");
     JOYNR_LOG_INFO(logger, "Provider is registered. ParticipantId: {}", providerParticipantId);

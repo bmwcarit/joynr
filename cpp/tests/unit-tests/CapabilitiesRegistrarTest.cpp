@@ -88,10 +88,6 @@ TEST_F(CapabilitiesRegistrarTest, add){
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
-    EXPECT_CALL(*mockProvider, getProviderQos())
-            .Times(1)
-            .WillOnce(Return(testQos))
-    ;
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
     EXPECT_CALL(
@@ -106,7 +102,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
                 )
     ).WillOnce(Return());
 
-    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider);
+    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider, testQos);
     EXPECT_EQ(expectedParticipantId, participantId);
 }
 
@@ -155,9 +151,6 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
-    EXPECT_CALL(*mockProvider, getProviderQos())
-            .Times(1)
-            .WillRepeatedly(Return(testQos));
 
     EXPECT_CALL(
                 mockDiscovery,
@@ -182,7 +175,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     capabilitiesRegistrar->addDispatcher(mockDispatcher1);
     capabilitiesRegistrar->addDispatcher(mockDispatcher2);
 
-    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider);
+    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider, testQos);
     EXPECT_EQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;
@@ -207,9 +200,6 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
-    EXPECT_CALL(*mockProvider, getProviderQos())
-            .Times(1)
-            .WillRepeatedly(Return(testQos));
 
     EXPECT_CALL(
                 mockDiscovery,
@@ -232,7 +222,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     EXPECT_CALL(*mockDispatcher2, addRequestCaller(expectedParticipantId,_))
             .Times(1);
 
-    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider);
+    std::string participantId = capabilitiesRegistrar->add(domain, mockProvider, testQos);
     EXPECT_EQ(expectedParticipantId, participantId);
 
     delete mockDispatcher1;

@@ -113,13 +113,7 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 
 TEST_P(End2EndRPCTest, call_void_operation)
 {
-    auto mockProvider = std::make_shared<MockTestProvider>(types::ProviderQos(
-            std::vector<types::CustomParameter>(),
-            1,
-            1,
-            types::ProviderScope::GLOBAL,
-            false
-    ));
+    auto mockProvider = std::make_shared<MockTestProvider>();
 
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));

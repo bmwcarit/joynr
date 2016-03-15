@@ -12,6 +12,8 @@
  * Add missing default values and min/max limits for the QoS parameters.
  * The old interface is deprecated but still available for backward compatibility reasons and might
    be removed by end of 2016.
+* **[C++]** Provider QoS are passed in at provider registration on the joynr runtime. Storing the
+  provider QoS in the provider object itself is deprecated and removed by the end of 2016.
 
 ##Other changes
 None.

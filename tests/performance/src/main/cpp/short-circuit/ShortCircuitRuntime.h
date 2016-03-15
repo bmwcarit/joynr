@@ -23,6 +23,7 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/InProcessPublicationSender.h"
+#include "joynr/types/ProviderQos.h"
 
 namespace joynr
 {
@@ -72,9 +73,11 @@ public:
     ShortCircuitRuntime();
 
     template <class TIntfProvider>
-    std::string registerProvider(const std::string& domain, std::shared_ptr<TIntfProvider> provider)
+    std::string registerProvider(const std::string& domain,
+                                 std::shared_ptr<TIntfProvider> provider,
+                                 const types::ProviderQos& providerQos)
     {
-        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider);
+        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider, providerQos);
     }
 
     template <class TIntfProvider>
@@ -87,8 +90,12 @@ public:
     template <class TIntfProxy>
     ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
     {
-        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(
-                proxyFactory.get(), *discoveryProxy, domain, dispatcherAddress, messageRouter);
+        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(proxyFactory.get(),
+                                                                         *discoveryProxy,
+                                                                         domain,
+                                                                         dispatcherAddress,
+                                                                         messageRouter,
+                                                                         maximumTtlMs);
         return builder;
     }
 
@@ -108,6 +115,7 @@ private:
     std::unique_ptr<ProxyFactory> proxyFactory;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
+    std::uint64_t maximumTtlMs;
 };
 
 } // namespace joynr
