@@ -184,7 +184,7 @@ bool «className»::usesClusterController() const{
 			«ELSEIF attributeType.isEnum»
 				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
 			«ELSEIF attribute.isArray»
-				internalRequestObject.addParam(joynr::TypeUtil::toVariant<«getTypeName(attributeType)»>(«attributeName»), "«attribute.joynrTypeName»");
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant<«attributeType.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
 			«ELSEIF attributeType.isCompound»
 				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
 			«ELSEIF attributeType.isMap»

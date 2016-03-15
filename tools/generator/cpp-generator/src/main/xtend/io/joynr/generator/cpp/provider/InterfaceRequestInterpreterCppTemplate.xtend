@@ -86,12 +86,11 @@ void «interfaceName»RequestInterpreter::execute(
 	«IF !attributes.empty»
 		«FOR attribute : attributes»
 			«val attributeName = attribute.joynrName»
-			«val returnType = getTypeName(attribute)»
 			«val attributeType = attribute.type.resolveTypeDef»
 		«IF attribute.readable»
 			if (methodName == "get«attributeName.toFirstUpper»"){
-				std::function<void(«returnType» «attributeName»)> requestCallerOnSuccess =
-						[onSuccess] («returnType» «attributeName») {
+				std::function<void(«attribute.typeName» «attributeName»)> requestCallerOnSuccess =
+						[onSuccess] («attribute.typeName» «attributeName») {
 							std::vector<Variant> outParams;
 								outParams.push_back(
 									«IF attributeType.isEnum && attribute.isArray»
@@ -107,7 +106,7 @@ void «interfaceName»RequestInterpreter::execute(
 									«ELSEIF attributeType.isByteBuffer»
 										joynr::TypeUtil::toVariant(«attribute.joynrName»)
 									«ELSE»
-										Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+										Variant::make<«attribute.typeName»>(«attribute.joynrName»)
 									«ENDIF»
 							);
 							onSuccess(std::move(outParams));
@@ -123,7 +122,7 @@ void «interfaceName»RequestInterpreter::execute(
 					«IF attributeType.isEnum && isArray(attribute)»
 						«val attributeRef = joynrGenerationPrefix + "::util::convertVariantVectorToEnumVector<" + getTypeNameOfContainingClass(attributeType.derived) + ">(" + attributeName + "Var.get<std::vector<Variant>>())"»
 						assert(«attributeName»Var.is<std::vector<Variant>>());
-						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+						«attribute.typeName» typedInput«attributeName.toFirstUpper» =
 							«attributeRef»;
 					«ELSEIF attributeType.isEnum»
 						«attribute.typeName» typedInput«attributeName.toFirstUpper» =
@@ -135,7 +134,7 @@ void «interfaceName»RequestInterpreter::execute(
 							return;
 						}
 						std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
-						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+						«attribute.typeName» typedInput«attributeName.toFirstUpper» =
 								«attributeRef»;
 					«ELSEIF attributeType.isByteBuffer»
 						//isArray
@@ -144,7 +143,7 @@ void «interfaceName»RequestInterpreter::execute(
 							return;
 						}
 						std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
-						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+						«attribute.typeName» typedInput«attributeName.toFirstUpper» =
 								«joynrGenerationPrefix»::util::convertVariantVectorToVector<«byteBufferElementType»>(paramList);
 					«ELSE»
 						«var attributeRef = if (attributeType.float)
@@ -152,20 +151,20 @@ void «interfaceName»RequestInterpreter::execute(
 											else if (attributeType.string)
 												"joynr::util::removeEscapeFromSpecialChars(" + attributeName + "Var.get<" + attribute.typeName + ">())"
 											else
-												attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
-						«IF getTypeName(attribute).startsWith("std::int")»
+												attributeName + "Var.get<" + attribute.typeName + ">()"»
+						«IF attribute.typeName.startsWith("std::int")»
 							if (!(«attributeName»Var.is<std::uint64_t>() || «attributeName»Var.is<std::int64_t>())) {
-						«ELSEIF getTypeName(attribute).startsWith("std::uint")»
+						«ELSEIF attribute.typeName.startsWith("std::uint")»
 							if (!«attributeName»Var.is<std::uint64_t>()) {
 						«ELSEIF attributeType.float»
 							if (!«attributeName»Var.is<double>()) {
 						«ELSE»
-							if (!«attributeName»Var.is<«getTypeName(attribute)»>()) {
+							if (!«attributeName»Var.is<«attribute.typeName»>()) {
 						«ENDIF»
 							onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
 							return;
 						}
-						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+						«attribute.typeName» typedInput«attributeName.toFirstUpper» =
 								«attributeRef»;
 					«ENDIF»
 					std::function<void()> requestCallerOnSuccess =
@@ -190,7 +189,7 @@ void «interfaceName»RequestInterpreter::execute(
 			«var iterator = -1»
 			if (methodName == "«methodName»" && paramTypes.size() == «inputParams.size»
 				«FOR input : inputParams»
-					&& paramTypes.at(«iterator=iterator+1») == "«getJoynrTypeName(input)»"
+					&& paramTypes.at(«iterator=iterator+1») == "«input.joynrTypeName»"
 				«ENDFOR»
 			) {
 				«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
@@ -237,7 +236,7 @@ void «interfaceName»RequestInterpreter::execute(
 						«ELSEIF input.isArray»
 							//isArray
 							if (!«inputName»Var.is<std::vector<Variant>>()) {
-								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
+								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
 								return;
 							}
 							std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
@@ -245,7 +244,7 @@ void «interfaceName»RequestInterpreter::execute(
 						«ELSEIF inputType.isByteBuffer»
 							//isArray
 							if (!«inputName»Var.is<std::vector<Variant>>()) {
-								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
+								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
 								return;
 							}
 							std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
@@ -257,20 +256,20 @@ void «interfaceName»RequestInterpreter::execute(
 											else if (inputType.string)
 												"joynr::util::removeEscapeFromSpecialChars(" + inputName + "Var.get<" + input.typeName + ">())"
 											else
-												inputName + "Var.get<" + getTypeName(input) + ">()"»
-							«IF getTypeName(input).startsWith("std::int")»
+												inputName + "Var.get<" + input.typeName + ">()"»
+							«IF input.typeName.startsWith("std::int")»
 								if (!(«inputName»Var.is<std::uint64_t>() || «inputName»Var.is<std::int64_t>())) {
-							«ELSEIF getTypeName(input).startsWith("std::uint")»
+							«ELSEIF input.typeName.startsWith("std::uint")»
 								if (!«inputName»Var.is<std::uint64_t>()) {
 							«ELSEIF inputType.float»
 								if (!«inputName»Var.is<double>()) {
 							«ELSE»
-								if (!«inputName»Var.is<«getTypeName(input)»>()) {
+								if (!«inputName»Var.is<«input.typeName»>()) {
 							«ENDIF»
-								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
+								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
 								return;
 							}
-							«getTypeName(input)» «inputName» = «inputRef»;
+							«input.typeName» «inputName» = «inputRef»;
 						«ENDIF»
 					«ENDFOR»
 					«requestCallerName»->«methodName»(
