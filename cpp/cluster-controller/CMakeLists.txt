@@ -31,6 +31,11 @@ else(USE_PLATFORM_MOSQUITTO)
     )
 
     ExternalProject_Get_Property(mosquitto SOURCE_DIR)
+
+    # The directory does not exist when the import targets are checked. As a workaround
+    # we need to create it here. Otherwise the initial cmake call will fail.
+    file(MAKE_DIRECTORY ${SOURCE_DIR}/lib/cpp)
+
     set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib/cpp ${SOURCE_DIR}/lib)
     set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib/cpp ${SOURCE_DIR}/lib PARENT_SCOPE)
     message(STATUS "variable MOSQUITTO_INCLUDE_DIRS=${MOSQUITTO_INCLUDE_DIRS}")
