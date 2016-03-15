@@ -503,10 +503,6 @@ class TypeUtil {
 		return typedElement.array
 	}
 
-	def boolean isArray(FType type) {
-		return type.array
-	}
-
 	def boolean hasExtendsDeclaration(FCompoundType datatype) {
 		if (datatype instanceof FStructType && (datatype as FStructType).base!=null) {
 			return true
