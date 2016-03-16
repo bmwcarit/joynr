@@ -168,8 +168,13 @@ class ProviderGenerator extends InterfaceTemplate {
 					 «ENDIF»
 					 «appendJSDocSummaryAndWriteSeeAndDescription(operation, "* ")»
 					 *
-					 «writeJSDocForSignature(operation, "* ")»
+					 «writeJSDocForSignature(providerName, operation, "* ")»
 					 */
+					«IF operation.outputParameters.size>1»
+						/**
+						 «writeJSDocTypedefForMultipleReturnValues(providerName, operation, methodName, "* ")»
+						 */
+					«ENDIF»
 				«ENDFOR»
 				this.«methodName» = new dependencies.ProviderOperation(this, implementation.«methodName», "«methodName»", [
 					«FOR operation: getMethods(francaIntf, methodName) SEPARATOR ","»

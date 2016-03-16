@@ -151,8 +151,13 @@ class ProxyGenerator extends InterfaceTemplate {
 				 «ENDIF»
 				 «appendJSDocSummaryAndWriteSeeAndDescription(operation, "* ")»
 				 *
-				 «writeJSDocForSignature(operation, "* ")»
+				 «writeJSDocForSignature(proxyName, operation, "* ")»
 				 */
+				«IF operation.outputParameters.size>1»
+					/**
+					 «writeJSDocTypedefForMultipleReturnValues(proxyName, operation, operationName, "* ")»
+					 */
+				«ENDIF»
 			«ENDFOR»
 			this.«operationName» = new settings.proxyElementTypes.ProxyOperation(this, settings, "«operationName»", [
 				«FOR operation: getMethods(francaIntf, operationName) SEPARATOR ","»
