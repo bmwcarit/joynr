@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -25,7 +26,7 @@ import io.joynr.generator.templates.EnumTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FEnumerationType
 
-class EnumCppTemplate implements EnumTemplate {
+class EnumCppTemplate extends EnumTemplate {
 
 	@Inject
 	private extension TemplateBase
@@ -39,7 +40,12 @@ class EnumCppTemplate implements EnumTemplate {
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FEnumerationType type)
+	@Inject
+	new(@Assisted FEnumerationType type) {
+		super(type)
+	}
+
+	override generate()
 '''
 «val typeName = type.joynrName»
 «warning»

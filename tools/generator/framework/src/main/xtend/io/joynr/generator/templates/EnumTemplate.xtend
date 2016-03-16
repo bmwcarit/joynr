@@ -22,9 +22,14 @@ package io.joynr.generator.templates;
 import org.franca.core.franca.FEnumerationType;
 
 /*
- * This interface shall be used by all generation templates which process a Franca enumeration type
+ * This class shall be used by all generation templates which process a Franca enumeration type
  */
-public interface EnumTemplate {
+abstract class EnumTemplate {
+	protected FEnumerationType type
+	
+	new(FEnumerationType type) {
+		this.type = type
+	}
 
-    public CharSequence generate(FEnumerationType enumType);
+	def CharSequence generate()
 }

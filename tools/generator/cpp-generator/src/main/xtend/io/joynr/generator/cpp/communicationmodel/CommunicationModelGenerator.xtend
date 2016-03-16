@@ -18,8 +18,6 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerCppTemplate
-import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerHTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerCppTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerHTemplate
 import io.joynr.generator.cpp.util.CppStdTypeUtil
@@ -40,9 +38,6 @@ class CommunicationModelGenerator {
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
 
-	@Inject EnumHTemplate enumH;
-	@Inject EnumCppTemplate enumCpp;
-
 	@Inject MapHTemplate mapH;
 	@Inject MapCppTemplate mapCpp;
 
@@ -50,8 +45,6 @@ class CommunicationModelGenerator {
 
 	@Inject MapSerializerHTemplate mapSerializerH;
 	@Inject MapSerializerCppTemplate mapSerializerCpp;
-	@Inject EnumSerializerHTemplate enumSerializerH;
-	@Inject EnumSerializerCppTemplate enumSerializerCpp;
 
 	@Inject CppTemplateFactory templateFactory;
 
@@ -241,31 +234,31 @@ class CommunicationModelGenerator {
 		String headerFilename,
 		String sourceFilename
 	) {
+		var enumHTemplate = templateFactory.createEnumHTemplate(enumType)
 		generateFile(
 			headerFileSystem,
 			headerFilename + ".h",
-			enumH,
-			enumType
+			enumHTemplate
 		)
 
+		var enumCppTemplate = templateFactory.createEnumCppTemplate(enumType)
 		generateFile(
 			sourceFileSystem,
 			sourceFilename + ".cpp",
-			enumCpp,
-			enumType
+			enumCppTemplate
 		)
 
+		var enumSerializerHTemplate = templateFactory.createEnumSerializerHTemplate(enumType)
 		generateFile(
 			headerFileSystem,
 			headerFilename + "Serializer.h",
-			enumSerializerH,
-			enumType
+			enumSerializerHTemplate
 		)
+		var enumSerializerCppTemplate = templateFactory.createEnumSerializerCppTemplate(enumType)
 		generateFile(
 			sourceFileSystem,
 			sourceFilename + "Serializer.cpp",
-			enumSerializerCpp,
-			enumType
+			enumSerializerCppTemplate
 		)
 
 	}

@@ -19,10 +19,10 @@ package io.joynr.generator.interfaces
 
 import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
-import io.joynr.generator.communicationmodel.EnumTypeTemplate
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
@@ -31,8 +31,8 @@ class InterfacesTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension NamingUtil
 	@Inject extension InterfaceUtil
-	@Inject extension EnumTypeTemplate
 	@Inject extension TemplateBase
+	@Inject JavaTemplateFactory templateFactory
 
 	@Inject
 	new(@Assisted FInterface francaIntf) {
@@ -73,8 +73,9 @@ public interface «className»  {
 	«FOR method: getMethods(francaIntf)»
 		«var enumType = method.errors»
 		«IF enumType != null»
+			«var enumTypeTemplate = templateFactory.createEnumTypeTemplate(enumType)»
 			«enumType.name = methodToErrorEnumName.get(method)»
-			«generateEnumCode(enumType)»
+			«enumTypeTemplate.generateEnumCode()»
 
 		«ENDIF»
 	«ENDFOR»

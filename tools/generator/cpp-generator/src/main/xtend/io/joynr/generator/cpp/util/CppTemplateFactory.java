@@ -20,12 +20,17 @@ package io.joynr.generator.cpp.util;
  */
 
 import org.franca.core.franca.FCompoundType;
+import org.franca.core.franca.FEnumerationType;
 import org.franca.core.franca.FInterface;
 
+import io.joynr.generator.cpp.communicationmodel.EnumCppTemplate;
+import io.joynr.generator.cpp.communicationmodel.EnumHTemplate;
 import io.joynr.generator.cpp.communicationmodel.InterfaceCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.InterfaceHTemplate;
 import io.joynr.generator.cpp.communicationmodel.TypeCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.TypeHTemplate;
+import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerCppTemplate;
+import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerHTemplate;
 import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerHTemplate;
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderCppTemplate;
@@ -110,4 +115,13 @@ public interface CppTemplateFactory {
     TypeSerializerHTemplate createTypeSerializerHTemplate(FCompoundType type);
 
     TypeSerializerCppTemplate createTypeSerializerCppTemplate(FCompoundType type);
+
+    EnumHTemplate createEnumHTemplate(FEnumerationType type);
+
+    EnumCppTemplate createEnumCppTemplate(FEnumerationType type);
+
+    EnumSerializerHTemplate createEnumSerializerHTemplate(FEnumerationType type);
+
+    EnumSerializerCppTemplate createEnumSerializerCppTemplate(FEnumerationType type);
+
 }

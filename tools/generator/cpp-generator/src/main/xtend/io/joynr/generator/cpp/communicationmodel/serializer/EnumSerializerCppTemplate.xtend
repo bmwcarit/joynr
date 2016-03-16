@@ -17,6 +17,7 @@ package io.joynr.generator.cpp.communicationmodel.serializer
  * limitations under the License.
  */
 
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.EnumTemplate
@@ -24,7 +25,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FEnumerationType
 
-class EnumSerializerCppTemplate implements EnumTemplate{
+class EnumSerializerCppTemplate extends EnumTemplate {
 
 	@Inject
 	private extension CppStdTypeUtil
@@ -35,7 +36,12 @@ class EnumSerializerCppTemplate implements EnumTemplate{
 	@Inject
 	private extension TemplateBase
 
-	override generate(FEnumerationType type)
+	@Inject
+	new(@Assisted FEnumerationType type) {
+		super(type)
+	}
+
+	override generate()
 '''
 «val joynrName = type.joynrName»
 «val typeName = type.typeName»

@@ -20,9 +20,11 @@ package io.joynr.generator.util;
  */
 
 import org.franca.core.franca.FCompoundType;
+import org.franca.core.franca.FEnumerationType;
 import org.franca.core.franca.FInterface;
 
 import io.joynr.generator.communicationmodel.ComplexTypeTemplate;
+import io.joynr.generator.communicationmodel.EnumTypeTemplate;
 import io.joynr.generator.interfaces.InterfaceAsyncTemplate;
 import io.joynr.generator.interfaces.InterfaceBroadcastTemplate;
 import io.joynr.generator.interfaces.InterfaceSubscriptionTemplate;
@@ -53,4 +55,6 @@ public interface JavaTemplateFactory {
     InterfaceProxyTemplate createInterfaceProxyTemplate(FInterface francaIntf);
 
     ComplexTypeTemplate createComplexTypeTemplate(FCompoundType type);
+
+    EnumTypeTemplate createEnumTypeTemplate(FEnumerationType type);
 }

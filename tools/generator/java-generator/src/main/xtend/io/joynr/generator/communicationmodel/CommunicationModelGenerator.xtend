@@ -42,9 +42,6 @@ class CommunicationModelGenerator {
 	@Inject
 	MapTypeTemplate mapTemplate
 
-	@Inject
-	EnumTypeTemplate enumTemplate
-
 	def doGenerate(FModel fModel, IFileSystemAccess fsa){
 		for( type: getCompoundDataTypes(fModel)){
 			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
@@ -64,11 +61,11 @@ class CommunicationModelGenerator {
 			if (type.isPartOfTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
+			var enumTypeTemplate = templateFactory.createEnumTypeTemplate(type)
 			generateFile(
 				fsa,
 				path + type.joynrName + ".java",
-				enumTemplate,
-				type
+				enumTypeTemplate
 			)
 		}
 

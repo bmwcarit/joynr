@@ -24,17 +24,23 @@ import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FEnumerationType
+import com.google.inject.assistedinject.Assisted
 
-class EnumTypeTemplate implements EnumTemplate{
+class EnumTypeTemplate extends EnumTemplate {
 
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
-	override generate(FEnumerationType enumType)
+	@Inject
+	new(@Assisted FEnumerationType type) {
+		super(type)
+	}
+
+	override generate()
 '''
-«val packagePath = enumType.buildPackagePath(".", true)»
+«val packagePath = type.buildPackagePath(".", true)»
 «warning()»
 
 package «packagePath»;
@@ -43,17 +49,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-«generateEnumCode(enumType)»
+«generateEnumCode()»
 '''
 
-	def generateEnumCode(FEnumerationType enumType)
+	def generateEnumCode()
 '''
-«val typeName = enumType.joynrName»
+«val typeName = type.joynrName»
 /**
-«appendJavadocSummaryAndWriteSeeAndDescription(enumType, " *")»
+«appendJavadocSummaryAndWriteSeeAndDescription(type, " *")»
  */
 public enum «typeName» {
-	«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType) SEPARATOR ","»
+	«FOR enumValue : getEnumElementsAndBaseEnumElements(type) SEPARATOR ","»
 	/**
 	 * «appendJavadocComment(enumValue, "* ")»
 	 */
@@ -64,7 +70,7 @@ public enum «typeName» {
 
 	static{
 		«var ordinal = -1»
-		«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType)»
+		«FOR enumValue : getEnumElementsAndBaseEnumElements(type)»
 			«{
 				ordinal = if (enumValue.value.enumeratorValue == null)
 							ordinal+1
