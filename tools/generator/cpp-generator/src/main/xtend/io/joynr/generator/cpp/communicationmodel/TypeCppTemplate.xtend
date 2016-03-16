@@ -25,7 +25,7 @@ import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FCompoundType
 
-class StdTypeCppTemplate implements CompoundTypeTemplate{
+class TypeCppTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension TemplateBase

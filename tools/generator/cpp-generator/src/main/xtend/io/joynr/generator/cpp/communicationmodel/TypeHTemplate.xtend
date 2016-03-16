@@ -25,7 +25,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FCompoundType
 
-class StdTypeHTemplate implements CompoundTypeTemplate{
+class TypeHTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions

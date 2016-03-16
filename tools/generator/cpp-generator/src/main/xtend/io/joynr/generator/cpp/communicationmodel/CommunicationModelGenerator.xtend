@@ -45,8 +45,8 @@ class CommunicationModelGenerator {
 	@Inject EnumHTemplate enumH;
 	@Inject EnumCppTemplate enumCpp;
 
-	@Inject StdTypeHTemplate stdTypeH;
-	@Inject StdTypeCppTemplate stdTypeCpp;
+	@Inject TypeHTemplate typeH;
+	@Inject TypeCppTemplate typeCpp;
 
 	@Inject MapHTemplate mapH;
 	@Inject MapCppTemplate mapCpp;
@@ -86,14 +86,14 @@ class CommunicationModelGenerator {
 			generateFile(
 				headerFileSystem,
 				headerpath + getGenerationTypeName(type) + ".h",
-				stdTypeH,
+				typeH,
 				type
 			)
 
 			generateFile(
 				sourceFileSystem,
 				sourcepath + getGenerationTypeName(type) + ".cpp",
-				stdTypeCpp,
+				typeCpp,
 				type
 			)
 
