@@ -89,6 +89,18 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *
          * @function
          * @name CapabilitiesRegistrar#registerCapability
+         * @deprecated registerCapability will be removed by 01.01.2017. Please use registerProvider instead.
+         */
+        this.registerCapability =
+            function registerCapability() {
+            return this.registerProvider.apply(this, arguments);
+        };
+
+        /**
+         * Registers a provider so that it is publicly available
+         *
+         * @function
+         * @name CapabilitiesRegistrar#registerProvider
          *
          * @param {String}
          *            authToken - currently used to differentiate between multiple providers for the same domain/interface. Use an empty
@@ -106,8 +118,8 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *
          * @returns {Object} an A+ promise
          */
-        this.registerCapability =
-                function registerCapability(
+        this.registerProvider =
+                function registerProvider(
                         authToken,
                         domain,
                         provider,
@@ -163,6 +175,18 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *
          * @function
          * @name CapabilitiesRegistrar#unregisterCapability
+         * @deprecated unregisterCapability will be removed by 01.01.2017. Please use unregisterProvider instead.
+         */
+        this.unregisterCapability =
+            function unregisterCapability() {
+            return this.unregisterProvider.apply(this, arguments);
+        };
+
+        /**
+         * Unregisters a provider so that it is not publicly available anymore
+         *
+         * @function
+         * @name CapabilitiesRegistrar#unregisterProvider
          * @param {String}
          *            authToken - currently used to differentiate between multiple providers
          *            for the same domain/interface. Use an empty string if only registering
@@ -175,7 +199,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *            provider.interfaceName
          * @returns {Object} an A+ promise
          */
-        this.unregisterCapability = function unregisterCapability(authToken, domain, provider) {
+        this.unregisterProvider = function unregisterProvider(authToken, domain, provider) {
             // retrieve participantId
             var participantId = participantIdStorage.getParticipantId(authToken, domain, provider);
 
