@@ -120,10 +120,27 @@ public abstract class SubscriptionQos implements JoynrType {
      * You will not receive any notifications (neither value notifications
      * nor missed publication notifications) after this date.
      *
+     * @deprecated Use the fluent interface:
+     *  new SubscriptionQos().getExpiryDateMs()
      * @return the end date of the subscription. <br>This value is provided in
      *            milliseconds (since 1970-01-01T00:00:00.000).
      */
+    @Deprecated
     public long getExpiryDate() {
+        return expiryDateMs;
+    }
+
+    /**
+     * Get the end date of the subscription.
+     * <br>
+     * The provider will send notifications until the expiry date is reached.
+     * You will not receive any notifications (neither value notifications
+     * nor missed publication notifications) after this date.
+     *
+     * @return the end date of the subscription. <br>This value is provided in
+     *            milliseconds (since 1970-01-01T00:00:00.000).
+     */
+    public long getExpiryDateMs() {
         return expiryDateMs;
     }
 
