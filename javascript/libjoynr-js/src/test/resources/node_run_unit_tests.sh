@@ -80,6 +80,7 @@ TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/proxy/TestProxyEvent.js
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/proxy/TestSubscriptionQos.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestUtil.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestJSONSerializer.js"
+TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestTypeGenerator.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestLongTimer.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestTyping.js"
 #We do not use cookies with node. Instead we are using localStorage

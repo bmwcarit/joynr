@@ -37,6 +37,7 @@
                 "joynr/vehicle": "../test-classes/joynr/vehicle",
                 "joynr/tests": "../test-classes/joynr/tests",
                 "joynr/types/TestTypes": "../test-classes/joynr/types/TestTypes",
+                "joynr/types/TestTypesWithoutVersion": "../test-classes/joynr/types/TestTypesWithoutVersion",
                 "joynr/datatypes": "../test-classes/joynr/datatypes",
                 "test/data": "../test-classes/test/data",
                 "JstdConsoleAppender" : "../test-classes/logging/JstdConsoleAppender"
