@@ -34,6 +34,7 @@ using ::testing::AllOf;
 using ::testing::Property;
 using ::testing::Invoke;
 using ::testing::Unused;
+using ::testing::AtLeast;
 
 using namespace joynr;
 
@@ -114,6 +115,7 @@ TEST_F(ProviderArbitratorTest, arbitrationTimeout) {
 
     auto start = std::chrono::system_clock::now();
 
+    EXPECT_CALL(*mockProviderArbitrator, attemptArbitration()).Times(AtLeast(1));
     mockProviderArbitrator->startArbitration();
 
     // Wait for timeout
