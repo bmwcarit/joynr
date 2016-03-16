@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.inprocess
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
@@ -28,7 +29,7 @@ import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
+class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -38,7 +39,12 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 	@Inject private extension AttributeUtil
 	@Inject private extension InterfaceSubscriptionUtil
 
-	override  generate(FInterface serviceInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
 «val interfaceName = serviceInterface.joynrName»
 «val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+

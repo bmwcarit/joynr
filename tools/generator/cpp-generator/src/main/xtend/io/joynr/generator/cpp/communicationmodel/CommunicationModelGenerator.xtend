@@ -33,6 +33,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModel
+import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class CommunicationModelGenerator {
 
@@ -40,9 +41,6 @@ class CommunicationModelGenerator {
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
-
-	@Inject InterfaceHTemplate interfaceH;
-	@Inject InterfaceCppTemplate interfaceCpp;
 
 	@Inject StdEnumHTemplate stdEnumH;
 	@Inject StdEnumCppTemplate stdEnumCpp;
@@ -61,6 +59,8 @@ class CommunicationModelGenerator {
 	@Inject MapSerializerCppTemplate mapSerializerCpp;
 	@Inject EnumSerializerHTemplate enumSerializerH;
 	@Inject EnumSerializerCppTemplate enumSerializerCpp;
+
+	@Inject CppTemplateFactory templateFactory;
 
 	def doGenerate(FModel fModel,
 		IFileSystemAccess sourceFileSystem,
@@ -195,18 +195,18 @@ class CommunicationModelGenerator {
 			val sourcepath = interfacePath + getPackageSourceDirectory(serviceInterface) + File::separator 
 			val headerpath = headerInterfacePath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
 
+			var interfaceHTemplate = templateFactory.createInterfaceHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerpath + "I" + serviceInterface.joynrName + ".h",
-				interfaceH,
-				serviceInterface
+				interfaceHTemplate
 			);
 
+			var interfaceCppTemplate = templateFactory.createInterfaceCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + "I" + serviceInterface.joynrName + ".cpp",
-				interfaceCpp,
-				serviceInterface
+				interfaceCppTemplate
 			);
 
 			generateErrorEnumTypes(

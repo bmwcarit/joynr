@@ -18,6 +18,7 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -31,7 +32,7 @@ import java.util.HashMap
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
-class InterfaceProviderTemplate implements InterfaceTemplate{
+class InterfaceProviderTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension InterfaceUtil
@@ -39,6 +40,11 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 	@Inject extension AttributeUtil
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
+
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToDeferredName) {
 		init(serviceInterface, methodToDeferredName, new ArrayList<FMethod>());
@@ -75,7 +81,7 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 		}
 	}
 
-	override generate(FInterface serviceInterface) {
+	override generate() {
 		var methodToDeferredName = new HashMap<FMethod, String>();
 		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();

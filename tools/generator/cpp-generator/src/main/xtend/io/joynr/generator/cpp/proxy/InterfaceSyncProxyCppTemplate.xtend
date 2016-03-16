@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
@@ -28,7 +29,7 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
+class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
@@ -37,24 +38,29 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	@Inject private extension MethodUtil
 	@Inject private extension CppInterfaceUtil
 
-	override generate(FInterface fInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
-«val interfaceName =  fInterface.joynrName»
+«val interfaceName =  serviceInterface.joynrName»
 «val className = interfaceName + "Proxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«syncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«syncClassName».h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/DispatcherUtils.h"
 
-«FOR datatype: getRequiredIncludesFor(fInterface)»
+«FOR datatype: getRequiredIncludesFor(serviceInterface)»
 	#include «datatype»
 «ENDFOR»
 
-«getNamespaceStarter(fInterface)»
+«getNamespaceStarter(serviceInterface)»
 // The proxies will contain all arbitration checks
 // the connectors will contain the JSON related code
 
@@ -71,7 +77,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 {
 }
 
-«FOR attribute: getAttributes(fInterface)»
+«FOR attribute: getAttributes(serviceInterface)»
 	«var attributeName = attribute.joynrName»
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
@@ -105,7 +111,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	«ENDIF»
 
 «ENDFOR»
-«FOR method: getMethods(fInterface)»
+«FOR method: getMethods(serviceInterface)»
 	«var methodName = method.name»
 	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 	«var params = getCommaSeperatedUntypedInputParameterList(method)»
@@ -126,6 +132,6 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	}
 
 «ENDFOR»
-«getNamespaceEnder(fInterface)»
+«getNamespaceEnder(serviceInterface)»
 '''
 }

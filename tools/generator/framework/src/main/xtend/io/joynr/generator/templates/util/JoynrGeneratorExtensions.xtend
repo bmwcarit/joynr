@@ -23,7 +23,6 @@ import com.google.inject.name.Named
 import io.joynr.generator.templates.BroadcastTemplate
 import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.EnumTemplate
-import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.MapTemplate
 import java.io.BufferedReader
 import java.io.IOException
@@ -45,6 +44,7 @@ import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import io.joynr.generator.templates.TypeDefTemplate
 import org.franca.core.franca.FTypeDef
+import io.joynr.generator.templates.InterfaceTemplate
 
 abstract class JoynrGeneratorExtensions {
 
@@ -192,14 +192,13 @@ abstract class JoynrGeneratorExtensions {
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		InterfaceTemplate generator,
-		FInterface serviceInterface
+		InterfaceTemplate generator
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate(serviceInterface).toString);
+			fsa.generateFile(path, generator.generate.toString);
 		}
 	}
 

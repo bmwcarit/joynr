@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.joynrmessaging
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
@@ -31,7 +32,7 @@ import java.io.File
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
-class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
+class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -41,6 +42,11 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 	@Inject private extension MethodUtil
 	@Inject private extension BroadcastUtil
 	@Inject private extension CppInterfaceUtil
+
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
 
 	def produceParameterSetters(FMethod method)
 '''
@@ -66,7 +72,7 @@ internalRequestObject.setMethodName("«method.joynrName»");
 «ENDFOR»
 '''
 
-	override generate(FInterface serviceInterface)
+	override generate()
 '''
 «val interfaceName = serviceInterface.joynrName»
 «val methodToErrorEnumName = serviceInterface.methodToErrorEnumName()»

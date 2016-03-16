@@ -18,6 +18,7 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -31,7 +32,7 @@ import java.util.HashMap
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
-class InterfaceAsyncTemplate implements InterfaceTemplate{
+class InterfaceAsyncTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension InterfaceUtil
@@ -39,6 +40,12 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 	@Inject extension NamingUtil
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
+
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName,  HashMap<FMethod, String> methodToErrorEnumName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods) {
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 		var uniqueMultioutMethodSignatureToOutputContainerName = new HashMap<String, String>();
@@ -100,7 +107,7 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 		}
 	}
 
-	override generate(FInterface serviceInterface) {
+	override generate() {
 		var methodToCallbackName = new HashMap<FMethod, String>();
 		var methodToFutureName = new HashMap<FMethod, String>();
 		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName

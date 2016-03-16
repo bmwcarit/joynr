@@ -18,28 +18,34 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceProxyCppTemplate implements InterfaceTemplate{
+class InterfaceProxyCppTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject private extension NamingUtil
 
-	override generate(FInterface fInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
-«val interfaceName =  fInterface.joynrName»
+«val interfaceName =  serviceInterface.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«className».h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className».h"
 
-«getNamespaceStarter(fInterface)»
+«getNamespaceStarter(serviceInterface)»
 «className»::«className»(
 		std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
@@ -55,6 +61,6 @@ class InterfaceProxyCppTemplate implements InterfaceTemplate{
 {
 }
 
-«getNamespaceEnder(fInterface)»
+«getNamespaceEnder(serviceInterface)»
 '''
 }

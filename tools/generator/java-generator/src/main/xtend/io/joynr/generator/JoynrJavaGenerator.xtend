@@ -18,13 +18,16 @@ package io.joynr.generator
  */
 
 import com.google.common.collect.Sets
+import com.google.inject.AbstractModule
 import com.google.inject.Inject
+import com.google.inject.assistedinject.FactoryModuleBuilder
 import io.joynr.generator.communicationmodel.CommunicationModelGenerator
 import io.joynr.generator.filter.FilterGenerator
 import io.joynr.generator.interfaces.InterfaceGenerator
 import io.joynr.generator.provider.ProviderGenerator
 import io.joynr.generator.proxy.ProxyGenerator
 import io.joynr.generator.util.IgnoreSVNFileFilter
+import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import java.io.FileNotFoundException
@@ -62,6 +65,14 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 
 	override getLanguageId() {
 		"java"
+	}
+
+	override getGeneratorModule() {
+		new AbstractModule() {
+			override protected configure() {
+				install(new FactoryModuleBuilder().build(JavaTemplateFactory))
+			}
+		}
 	}
 
 	/*

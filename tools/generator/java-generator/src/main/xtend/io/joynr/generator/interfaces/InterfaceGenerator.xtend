@@ -19,6 +19,7 @@ package io.joynr.generator.interfaces
 
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -29,22 +30,8 @@ class InterfaceGenerator {
 	@Inject
 	extension JoynrJavaGeneratorExtensions	
 	@Inject
-	extension NamingUtil	
-
-	@Inject
-	InterfacesTemplate interfaces
-
-	@Inject
-	InterfaceSyncTemplate interfaceSync
-
-	@Inject
-	InterfaceAsyncTemplate interfaceAsync
-
-	@Inject
-	InterfaceSubscriptionTemplate interfaceSubscription
-
-	@Inject
-	InterfaceBroadcastTemplate interfaceBroadcast
+	extension NamingUtil
+	@Inject JavaTemplateFactory templateFactory
 
 	def doGenerate(FInterface serviceInterface, IFileSystemAccess fsa){
 
@@ -52,42 +39,42 @@ class InterfaceGenerator {
 
 		var serviceName =  serviceInterface.joynrName
 
+		var interfacesTemplate = templateFactory.createInterfacesTemplate(serviceInterface)
 		generateFile(
 			fsa,
 			path + serviceName + ".java",
-			interfaces,
-			serviceInterface
+			interfacesTemplate
 		);
 
+		var interfaceSyncTemplate = templateFactory.createInterfaceSyncTemplate(serviceInterface)
 		generateFile(
 			fsa,
 			path + serviceName + "Sync.java",
-			interfaceSync,
-			serviceInterface
+			interfaceSyncTemplate
 		);
 
+		var interfaceAsyncTemplate = templateFactory.createInterfaceAsyncTemplate(serviceInterface)
 		generateFile(
 			fsa,
 			path + serviceName + "Async.java",
-			interfaceAsync,
-			serviceInterface
+			interfaceAsyncTemplate
 		);
 
 		if (serviceInterface.attributes.size>0){
+			var interfaceSubscriptionTemplate = templateFactory.createInterfaceSubscriptionTemplate(serviceInterface)
 			generateFile(
 				fsa,
 				path + serviceName + "SubscriptionInterface.java",
-				interfaceSubscription,
-				serviceInterface
+				interfaceSubscriptionTemplate
 			);
 		}
 		
 		if (serviceInterface.broadcasts.size>0){
+			var interfaceBroadcastTemplate = templateFactory.createInterfaceBroadcastTemplate(serviceInterface)
 			generateFile(
 				fsa,
 				path + serviceName + "BroadcastInterface.java",
-				interfaceBroadcast,
-				serviceInterface
+				interfaceBroadcastTemplate
 			);
 		}
 	}

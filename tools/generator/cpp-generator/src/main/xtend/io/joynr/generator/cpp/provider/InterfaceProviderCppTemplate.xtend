@@ -18,16 +18,17 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
-class InterfaceProviderCppTemplate implements InterfaceTemplate{
+class InterfaceProviderCppTemplate extends InterfaceTemplate {
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -35,7 +36,12 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
 
-	override generate(FInterface serviceInterface) {
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate() {
 		var selector = TypeSelector::defaultTypeSelector
 		selector.transitiveTypes(true)
 '''

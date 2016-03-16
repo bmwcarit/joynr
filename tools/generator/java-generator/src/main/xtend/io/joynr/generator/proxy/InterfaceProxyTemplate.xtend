@@ -18,32 +18,38 @@ package io.joynr.generator.proxy
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 
-class InterfaceProxyTemplate implements InterfaceTemplate{
+class InterfaceProxyTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
-	override generate(FInterface fInterface) {
-		val interfaceName =  fInterface.joynrName
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate() {
+		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "Async"
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
 		val broadcastClassName = interfaceName + "BroadcastInterface"
-		val packagePath = getPackagePathWithJoynrPrefix(fInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 		'''
 
 		«warning()»
 		package «packagePath»;
 
-		public interface «className» extends «asyncClassName», «syncClassName»«IF fInterface.attributes.size>0», «subscriptionClassName»«ENDIF»«IF fInterface.broadcasts.size>0», «broadcastClassName»«ENDIF» {
-		    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(fInterface, "/")»/«interfaceName»";
+		public interface «className» extends «asyncClassName», «syncClassName»«IF serviceInterface.attributes.size>0», «subscriptionClassName»«ENDIF»«IF serviceInterface.broadcasts.size>0», «broadcastClassName»«ENDIF» {
+		    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»";
 		}
 		'''
 	}

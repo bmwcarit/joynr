@@ -23,17 +23,13 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
+import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class InProcessGenerator {
 
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
-
-	@Inject
-	InterfaceInProcessConnectorHTemplate interfaceInProcessConnectorH;
-
-	@Inject
-	InterfaceInProcessConnectorCPPTemplate interfaceInProcessConnectorCPP;
+	@Inject CppTemplateFactory templateFactory;
 
 	def doGenerate(FModel model,
 		IFileSystemAccess sourceFileSystem,
@@ -46,18 +42,18 @@ class InProcessGenerator {
 			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
 			val serviceName = serviceInterface.joynrName
 
+			var interfaceInProcessConnectorHTemplate = templateFactory.createInterfaceInProcessConnectorHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerpath + serviceName + "InProcessConnector.h",
-				interfaceInProcessConnectorH,
-				serviceInterface
+				interfaceInProcessConnectorHTemplate
 			);
 
+			var interfaceInProcessConnectorCPPTemplate = templateFactory.createInterfaceInProcessConnectorCPPTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + serviceName + "InProcessConnector.cpp",
-				interfaceInProcessConnectorCPP,
-				serviceInterface
+				interfaceInProcessConnectorCPPTemplate
 			);
 		}
 	}

@@ -19,6 +19,7 @@ package io.joynr.generator.cpp
 
 import com.google.common.collect.Sets
 import com.google.inject.AbstractModule
+import com.google.inject.assistedinject.FactoryModuleBuilder
 import io.joynr.generator.AbstractJoynrGenerator
 import io.joynr.generator.cpp.communicationmodel.CommunicationModelGenerator
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderGenerator
@@ -40,6 +41,7 @@ import org.franca.core.dsl.FrancaPersistenceManager
 import org.franca.core.franca.FModel
 
 import static com.google.common.base.Preconditions.*
+import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class JoynrCppGenerator extends AbstractJoynrGenerator{
 
@@ -70,6 +72,7 @@ class JoynrCppGenerator extends AbstractJoynrGenerator{
 		new AbstractModule() {
 			override protected configure() {
 				bind(typeof(TypeUtil)).to(typeof(CppStdTypeUtil))
+				install(new FactoryModuleBuilder().build(CppTemplateFactory))
 			}
 		}
 	}

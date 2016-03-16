@@ -19,6 +19,7 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
@@ -27,14 +28,19 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 
-class InterfaceBroadcastTemplate implements InterfaceTemplate{
+class InterfaceBroadcastTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension NamingUtil
 	@Inject extension BroadcastUtil
 	@Inject extension TemplateBase
 
-	override generate(FInterface serviceInterface) {
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate() {
 		val interfaceName = serviceInterface.joynrName
 		val broadcastClassName = interfaceName + "BroadcastInterface"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
