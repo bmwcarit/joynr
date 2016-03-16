@@ -617,7 +617,6 @@ joynrTestRequire(
                                                                     .toEqual(
                                                                             joynr.participantIdStorage
                                                                                     .getParticipantId(
-                                                                                            "",
                                                                                             domain,
                                                                                             radioProvider));
                                                             radioProxy = newRadioProxy;

@@ -33,9 +33,6 @@ define("joynr/capabilities/ParticipantIdStorage", [], function() {
          * @name ParticipantIdStorage#getParticipantId
          *
          * @param {String}
-         *            authToken - currently used to differentiate between multiple providers for the same domain/interface. Use an empty
-         *            string if only registering one provider per domain/interface
-         * @param {String}
          *            domain
          * @param {Object}
          *            provider
@@ -44,9 +41,9 @@ define("joynr/capabilities/ParticipantIdStorage", [], function() {
          *
          * @returns {String} the retrieved or generated participantId
          */
-        this.getParticipantId = function getParticipantId(authToken, domain, provider) {
+        this.getParticipantId = function getParticipantId(domain, provider) {
             var interfaceNameDotted = provider.interfaceName.replace("/", ".");
-            var key = "joynr.participant." + domain + "." + interfaceNameDotted + "." + authToken;
+            var key = "joynr.participant." + domain + "." + interfaceNameDotted;
             var participantId = persistency.getItem(key);
             if (!participantId) {
                 participantId = domain + "." + interfaceNameDotted + "." + uuid();

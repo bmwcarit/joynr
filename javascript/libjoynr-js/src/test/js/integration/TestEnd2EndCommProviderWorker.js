@@ -416,7 +416,6 @@ function startTest() {
             }, 10);
         }, mixedSubscriptionDelay);
         resolve(libjoynrAsync.participantIdStorage.getParticipantId(
-                "",
                 providerDomain,
                 radioProvider));
     });

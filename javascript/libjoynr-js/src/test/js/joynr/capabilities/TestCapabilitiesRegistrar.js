@@ -198,7 +198,6 @@ joynrTestRequire(
                                     providerQos);
                             expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalled();
                             expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalledWith(
-                                    authToken,
                                     domain,
                                     provider);
                         });
