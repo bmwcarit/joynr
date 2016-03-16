@@ -24,8 +24,9 @@ import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FCompoundType
+import com.google.inject.assistedinject.Assisted
 
-class TypeSerializerHTemplate implements CompoundTypeTemplate{
+class TypeSerializerHTemplate extends CompoundTypeTemplate {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -39,7 +40,12 @@ class TypeSerializerHTemplate implements CompoundTypeTemplate{
 	@Inject
 	private extension TemplateBase
 
-	override generate(FCompoundType type)
+	@Inject
+	new(@Assisted FCompoundType type) {
+		super(type)
+	}
+
+	override generate()
 '''
 «val joynrName = type.joynrName»
 «val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true)+"_"+joynrName+"_SERIALIZER_H").toUpperCase»

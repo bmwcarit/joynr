@@ -19,8 +19,10 @@ package io.joynr.generator.util;
  * #L%
  */
 
+import org.franca.core.franca.FCompoundType;
 import org.franca.core.franca.FInterface;
 
+import io.joynr.generator.communicationmodel.ComplexTypeTemplate;
 import io.joynr.generator.interfaces.InterfaceAsyncTemplate;
 import io.joynr.generator.interfaces.InterfaceBroadcastTemplate;
 import io.joynr.generator.interfaces.InterfaceSubscriptionTemplate;
@@ -49,4 +51,6 @@ public interface JavaTemplateFactory {
     InterfaceAbstractProviderTemplate createInterfaceAbstractProviderTemplate(FInterface francaIntf);
 
     InterfaceProxyTemplate createInterfaceProxyTemplate(FInterface francaIntf);
+
+    ComplexTypeTemplate createComplexTypeTemplate(FCompoundType type);
 }

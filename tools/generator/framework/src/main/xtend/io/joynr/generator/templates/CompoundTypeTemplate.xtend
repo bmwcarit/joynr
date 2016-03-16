@@ -22,9 +22,14 @@ package io.joynr.generator.templates;
 import org.franca.core.franca.FCompoundType;
 
 /*
- * This interface shall be used by all generation templates which process a Franca compound type
+ * This class shall be used by all generation templates which process a Franca compound type
  */
-public interface CompoundTypeTemplate {
+abstract class CompoundTypeTemplate {
+	protected FCompoundType type
 
-    public CharSequence generate(FCompoundType compoundType);
+	new(FCompoundType type) {
+		this.type = type
+	}
+
+	def CharSequence generate()
 }

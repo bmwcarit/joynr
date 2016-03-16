@@ -32,7 +32,6 @@ import org.eclipse.emf.ecore.impl.BasicEObjectImpl
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
-import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
@@ -247,14 +246,13 @@ abstract class JoynrGeneratorExtensions {
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		CompoundTypeTemplate generator,
-		FCompoundType compoundType
+		CompoundTypeTemplate generator
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate(compoundType).toString);
+			fsa.generateFile(path, generator.generate.toString);
 		}
 	}
 

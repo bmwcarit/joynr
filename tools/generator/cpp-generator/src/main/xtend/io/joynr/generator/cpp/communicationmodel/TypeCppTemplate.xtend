@@ -24,8 +24,9 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FCompoundType
+import com.google.inject.assistedinject.Assisted
 
-class TypeCppTemplate implements CompoundTypeTemplate{
+class TypeCppTemplate extends CompoundTypeTemplate {
 
 	@Inject
 	private extension TemplateBase
@@ -39,7 +40,12 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 	@Inject
 	private extension NamingUtil
 
-	override generate(FCompoundType type) '''
+	@Inject
+	new(@Assisted FCompoundType type) {
+		super(type)
+	}
+
+	override generate() '''
 «val typeName = type.joynrName»
 «warning»
 

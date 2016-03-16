@@ -19,10 +19,15 @@ package io.joynr.generator.cpp.util;
  * #L%
  */
 
+import org.franca.core.franca.FCompoundType;
 import org.franca.core.franca.FInterface;
 
 import io.joynr.generator.cpp.communicationmodel.InterfaceCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.InterfaceHTemplate;
+import io.joynr.generator.cpp.communicationmodel.TypeCppTemplate;
+import io.joynr.generator.cpp.communicationmodel.TypeHTemplate;
+import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerCppTemplate;
+import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerHTemplate;
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderCppTemplate;
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderHTemplate;
 import io.joynr.generator.cpp.inprocess.InterfaceInProcessConnectorCPPTemplate;
@@ -97,4 +102,12 @@ public interface CppTemplateFactory {
     InterfaceAsyncProxyHTemplate createInterfaceAsyncProxyHTemplate(FInterface francaIntf);
 
     InterfaceAsyncProxyCppTemplate createInterfaceAsyncProxyCppTemplate(FInterface francaIntf);
+
+    TypeHTemplate createTypeHTemplate(FCompoundType type);
+
+    TypeCppTemplate createTypeCppTemplate(FCompoundType type);
+
+    TypeSerializerHTemplate createTypeSerializerHTemplate(FCompoundType type);
+
+    TypeSerializerCppTemplate createTypeSerializerCppTemplate(FCompoundType type);
 }

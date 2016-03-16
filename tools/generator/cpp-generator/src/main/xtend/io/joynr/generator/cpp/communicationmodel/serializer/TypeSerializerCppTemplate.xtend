@@ -26,8 +26,9 @@ import javax.inject.Inject
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FTypeRef
+import com.google.inject.assistedinject.Assisted
 
-class TypeSerializerCppTemplate implements CompoundTypeTemplate{
+class TypeSerializerCppTemplate extends CompoundTypeTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -41,7 +42,12 @@ class TypeSerializerCppTemplate implements CompoundTypeTemplate{
 	@Inject
 	private extension TemplateBase
 
-	override generate(FCompoundType type)
+	@Inject
+	new(@Assisted FCompoundType type) {
+		super(type)
+	}
+
+	override generate()
 '''
 «val joynrName = type.joynrName»
 «val typeName = type.typeName»

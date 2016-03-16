@@ -22,8 +22,6 @@ import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerCppTem
 import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerHTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerCppTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerHTemplate
-import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerCppTemplate
-import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerHTemplate
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -45,16 +43,11 @@ class CommunicationModelGenerator {
 	@Inject EnumHTemplate enumH;
 	@Inject EnumCppTemplate enumCpp;
 
-	@Inject TypeHTemplate typeH;
-	@Inject TypeCppTemplate typeCpp;
-
 	@Inject MapHTemplate mapH;
 	@Inject MapCppTemplate mapCpp;
 
 	@Inject TypeDefHTemplate typeDefH;
 
-	@Inject TypeSerializerHTemplate typeSerializerH;
-	@Inject TypeSerializerCppTemplate typeSerializerCpp;
 	@Inject MapSerializerHTemplate mapSerializerH;
 	@Inject MapSerializerCppTemplate mapSerializerCpp;
 	@Inject EnumSerializerHTemplate enumSerializerH;
@@ -83,32 +76,32 @@ class CommunicationModelGenerator {
 				sourcepath += type.typeCollectionName + File::separator
 			}
 
+			var typeHTemplate = templateFactory.createTypeHTemplate(type)
 			generateFile(
 				headerFileSystem,
 				headerpath + getGenerationTypeName(type) + ".h",
-				typeH,
-				type
+				typeHTemplate
 			)
 
+			var typeCppTemplate = templateFactory.createTypeCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + getGenerationTypeName(type) + ".cpp",
-				typeCpp,
-				type
+				typeCppTemplate
 			)
 
+			var typeSerializerHTemplate = templateFactory.createTypeSerializerHTemplate(type)
 			generateFile(
 				headerFileSystem,
 				headerpath + getGenerationTypeName(type) + "Serializer.h",
-				typeSerializerH,
-				type
+				typeSerializerHTemplate
 			)
 
+			var typeSerializerCppTemplate = templateFactory.createTypeSerializerCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + getGenerationTypeName(type) + "Serializer.cpp",
-				typeSerializerCpp,
-				type
+				typeSerializerCppTemplate
 			)
 		}
 
