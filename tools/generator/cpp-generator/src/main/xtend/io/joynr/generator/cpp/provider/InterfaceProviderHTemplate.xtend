@@ -45,8 +45,8 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"Provider_h").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -57,18 +57,18 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/IJoynrProvider.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include "joynr/RequestCallerFactory.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 «getDllExportIncludeStatement()»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 /**
  * @brief Provider class for interface «interfaceName»
@@ -100,10 +100,10 @@ public:
 	 */
 	static const std::uint32_t MINOR_VERSION;
 
-	«IF !serviceInterface.attributes.empty»
+	«IF !francaIntf.attributes.empty»
 		// attributes
 	«ENDIF»
-	«FOR attribute : serviceInterface.attributes»
+	«FOR attribute : francaIntf.attributes»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
 			/**
@@ -147,11 +147,11 @@ public:
 		«ENDIF»
 
 	«ENDFOR»
-	«IF !serviceInterface.methods.empty»
+	«IF !francaIntf.methods.empty»
 		// methods
 	«ENDIF»
-	«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
-	«FOR method : serviceInterface.methods»
+	«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
+	«FOR method : francaIntf.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		/**
@@ -184,10 +184,10 @@ public:
 		) = 0;
 
 	«ENDFOR»
-	«IF !serviceInterface.broadcasts.empty»
+	«IF !francaIntf.broadcasts.empty»
 		// broadcasts
 	«ENDIF»
-	«FOR broadcast : serviceInterface.broadcasts»
+	«FOR broadcast : francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		/**
 		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete
@@ -203,9 +203,9 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 
-«var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
+«var packagePrefix = getPackagePathWithJoynrPrefix(francaIntf, "::")»
 
 namespace joynr {
 

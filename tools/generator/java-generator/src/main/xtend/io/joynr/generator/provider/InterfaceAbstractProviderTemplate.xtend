@@ -42,10 +42,10 @@ class InterfaceAbstractProviderTemplate extends InterfaceTemplate {
 	}
 
 	override generate() {
-		val interfaceName =  serviceInterface.joynrName
+		val interfaceName =  francaIntf.joynrName
 		val className = interfaceName + "AbstractProvider"
 		val providerInterfaceName = interfaceName + "Provider"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
 «warning()»
@@ -53,7 +53,7 @@ package «packagePath»;
 
 import io.joynr.provider.AbstractJoynrProvider;
 
-«FOR datatype : getRequiredIncludesFor(serviceInterface, false, false, false, true, true)»
+«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true)»
 	import «datatype»;
 «ENDFOR»
 
@@ -69,7 +69,7 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 		return «providerInterfaceName».INTERFACE_NAME;
 	}
 
-	«FOR attribute : getAttributes(serviceInterface)»
+	«FOR attribute : getAttributes(francaIntf)»
 		«val attributeName = attribute.joynrName»
 		«val attributeType = attribute.typeName»
 		«IF isNotifiable(attribute)»
@@ -80,7 +80,7 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 		«ENDIF»
 	«ENDFOR»
 
-	«FOR broadcast : serviceInterface.broadcasts»
+	«FOR broadcast : francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		@Override
 		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {

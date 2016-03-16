@@ -36,20 +36,20 @@ class InterfaceProxyTemplate extends InterfaceTemplate {
 	}
 
 	override generate() {
-		val interfaceName =  serviceInterface.joynrName
+		val interfaceName =  francaIntf.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "Async"
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
 		val broadcastClassName = interfaceName + "BroadcastInterface"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 		'''
 
 		«warning()»
 		package «packagePath»;
 
-		public interface «className» extends «asyncClassName», «syncClassName»«IF serviceInterface.attributes.size>0», «subscriptionClassName»«ENDIF»«IF serviceInterface.broadcasts.size>0», «broadcastClassName»«ENDIF» {
-		    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»";
+		public interface «className» extends «asyncClassName», «syncClassName»«IF francaIntf.attributes.size>0», «subscriptionClassName»«ENDIF»«IF francaIntf.broadcasts.size>0», «broadcastClassName»«ENDIF» {
+		    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
 		}
 		'''
 	}

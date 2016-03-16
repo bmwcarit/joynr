@@ -45,9 +45,9 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "ProxyBase"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"ProxyBase_h").toUpperCase»
 «warning()»
 
@@ -55,7 +55,7 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include "joynr/system/RoutingTypes/Address.h"
@@ -63,15 +63,15 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 
 «getDllExportIncludeStatement()»
 #include "joynr/ProxyBase.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 /**
  * @brief Proxy base class for interface «interfaceName»
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Subscription {
+class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«interfaceName»Subscription {
 public:
 	/**
 	 * @brief Parameterized constructor
@@ -101,7 +101,7 @@ public:
 			const joynr::types::CommunicationMiddleware::Enum& connection
 	) override;
 
-	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+	«FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 		«val returnType = attribute.typeName»
 		«var attributeName = attribute.joynrName»
 		/**
@@ -133,7 +133,7 @@ public:
 		void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId) override;
 	«ENDFOR»
 
-	«FOR broadcast: serviceInterface.broadcasts»
+	«FOR broadcast: francaIntf.broadcasts»
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«var broadcastName = broadcast.joynrName»
 		«IF isSelective(broadcast)»
@@ -204,7 +204,7 @@ protected:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

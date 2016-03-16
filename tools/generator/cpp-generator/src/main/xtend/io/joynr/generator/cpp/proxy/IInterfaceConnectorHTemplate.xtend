@@ -41,8 +41,8 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_I"+interfaceName+"Connector_h").toUpperCase»
 «warning()»
 
@@ -50,11 +50,11 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: cppStdTypeUtil.getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: cppStdTypeUtil.getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/IConnector.h"
@@ -68,7 +68,7 @@ namespace joynr {
 	class OnChangeSubscriptionQos;
 } // namespace joynr
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 class «getDllExportMacro()» I«interfaceName»Subscription{
 	/**
 	  * in  - subscriptionListener      std::shared_ptr to a SubscriptionListener which will receive the updates.
@@ -78,7 +78,7 @@ class «getDllExportMacro()» I«interfaceName»Subscription{
 public:
 	virtual ~I«interfaceName»Subscription() = default;
 
-	«produceSubscribeUnsubscribeMethods(serviceInterface, true)»
+	«produceSubscribeUnsubscribeMethods(francaIntf, true)»
 };
 
 class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», public joynr::IConnector, virtual public I«interfaceName»Subscription{
@@ -87,7 +87,7 @@ public:
 	~I«interfaceName»Connector() override = default;
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

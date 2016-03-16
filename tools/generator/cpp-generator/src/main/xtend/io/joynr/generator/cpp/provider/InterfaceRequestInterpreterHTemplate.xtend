@@ -38,8 +38,8 @@ class InterfaceRequestInterpreterHTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"RequestInterpreter_h").toUpperCase»
 «warning()»
 
@@ -58,7 +58,7 @@ class InterfaceRequestInterpreterHTemplate extends InterfaceTemplate {
 #include <string>
 #include <vector>
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 /** @brief RequestInterpreter class for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»RequestInterpreter: public joynr::IRequestInterpreter {
@@ -92,7 +92,7 @@ private:
 	ADD_LOGGER(«interfaceName»RequestInterpreter);
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

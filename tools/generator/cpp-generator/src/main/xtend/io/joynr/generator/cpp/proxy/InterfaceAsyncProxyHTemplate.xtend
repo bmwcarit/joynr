@@ -42,10 +42,10 @@ class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"AsyncProxy_h").toUpperCase»
 «warning()»
 
@@ -54,7 +54,7 @@ class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
 
 namespace joynr
 {
@@ -67,13 +67,13 @@ namespace exceptions
 } // namespace exceptions
 } // namespace joynr
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 /** @brief proxy class for asynchronous calls of interface «interfaceName»
  *
  * @version «majorVersion».«minorVersion»
@@ -99,16 +99,16 @@ public:
 			bool cached
 	);
 
-	«produceAsyncGetterDeclarations(serviceInterface, false)»
-	«produceAsyncSetterDeclarations(serviceInterface, false)»
-	«produceAsyncMethodDeclarations(serviceInterface, false, true)»
+	«produceAsyncGetterDeclarations(francaIntf, false)»
+	«produceAsyncSetterDeclarations(francaIntf, false)»
+	«produceAsyncMethodDeclarations(francaIntf, false, true)»
 
 	friend class «className»;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«asyncClassName»);
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 
 '''

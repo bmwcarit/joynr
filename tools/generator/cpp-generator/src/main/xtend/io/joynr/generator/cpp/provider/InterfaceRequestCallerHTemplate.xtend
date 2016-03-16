@@ -44,8 +44,8 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"RequestCaller_h").toUpperCase»
 «warning()»
 #include <functional>
@@ -57,14 +57,14 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 «getDllExportIncludeStatement()»
 #include "joynr/RequestCaller.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include <memory>
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 class «interfaceName»Provider;
 
@@ -80,10 +80,10 @@ public:
 	/** @brief Destructor */
 	~«interfaceName»RequestCaller() override = default;
 
-	«IF !serviceInterface.attributes.empty»
+	«IF !francaIntf.attributes.empty»
 		// attributes
 	«ENDIF»
-	«FOR attribute : serviceInterface.attributes»
+	«FOR attribute : francaIntf.attributes»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
 			/**
@@ -119,10 +119,10 @@ public:
 		«ENDIF»
 
 	«ENDFOR»
-	«IF !serviceInterface.methods.empty»
+	«IF !francaIntf.methods.empty»
 		// methods
 	«ENDIF»
-	«FOR method : serviceInterface.methods»
+	«FOR method : francaIntf.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		/**
@@ -183,10 +183,10 @@ public:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
-	std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider;
+	std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider;
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

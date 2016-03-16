@@ -45,22 +45,22 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«syncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«syncClassName».h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/DispatcherUtils.h"
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+«FOR datatype: getRequiredIncludesFor(francaIntf)»
 	#include «datatype»
 «ENDFOR»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 // The proxies will contain all arbitration checks
 // the connectors will contain the JSON related code
 
@@ -77,7 +77,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 {
 }
 
-«FOR attribute: getAttributes(serviceInterface)»
+«FOR attribute: getAttributes(francaIntf)»
 	«var attributeName = attribute.joynrName»
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
@@ -111,7 +111,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	«ENDIF»
 
 «ENDFOR»
-«FOR method: getMethods(serviceInterface)»
+«FOR method: getMethods(francaIntf)»
 	«var methodName = method.name»
 	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 	«var params = getCommaSeperatedUntypedInputParameterList(method)»
@@ -132,6 +132,6 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	}
 
 «ENDFOR»
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }

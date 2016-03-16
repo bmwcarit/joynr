@@ -42,10 +42,10 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"SyncProxy_h").toUpperCase»
 «warning()»
 
@@ -54,15 +54,15 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 /**
  * @brief Synchronous proxy for interface «interfaceName»
  *
@@ -88,16 +88,16 @@ public:
 			bool cached
 	);
 
-	«produceSyncGetterDeclarations(serviceInterface, false)»
-	«produceSyncSetterDeclarations(serviceInterface, false)»
-	«produceSyncMethodDeclarations(serviceInterface, false)»
+	«produceSyncGetterDeclarations(francaIntf, false)»
+	«produceSyncSetterDeclarations(francaIntf, false)»
+	«produceSyncMethodDeclarations(francaIntf, false)»
 
 	friend class «className»;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«syncClassName»);
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

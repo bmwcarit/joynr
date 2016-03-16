@@ -23,12 +23,12 @@ import org.franca.core.franca.FInterface
  * This is the base class used by all generation templates which process a Franca interface type
  */
 abstract class InterfaceTemplate {
-	protected FInterface serviceInterface
+	protected FInterface francaIntf
 	protected var majorVersion = 0
 	protected var minorVersion = 0
 
 	new(FInterface francaIntf) {
-		this.serviceInterface = francaIntf
+		this.francaIntf = francaIntf
 		if (francaIntf.version != null) {
 			majorVersion = francaIntf.version.major;
 			minorVersion = francaIntf.version.minor;

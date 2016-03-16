@@ -89,12 +89,12 @@ class InterfaceSyncTemplate extends InterfaceTemplate {
 	override generate() {
 		var methodToReturnTypeName = new HashMap<FMethod, String>();
 		var uniqueMultioutMethods = new ArrayList<FMethod>();
-		init(serviceInterface, methodToReturnTypeName, uniqueMultioutMethods);
-		val interfaceName =  serviceInterface.joynrName
+		init(francaIntf, methodToReturnTypeName, uniqueMultioutMethods);
+		val interfaceName =  francaIntf.joynrName
 		val syncClassName = interfaceName + "Sync"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		val hasMethodWithArguments = hasMethodWithArguments(serviceInterface);
-		val hasWriteAttribute = hasWriteAttribute(serviceInterface);
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val hasMethodWithArguments = hasMethodWithArguments(francaIntf);
+		val hasWriteAttribute = hasWriteAttribute(francaIntf);
 		'''
 «warning()»
 
@@ -107,17 +107,17 @@ import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 «ENDIF»
 
 import io.joynr.exceptions.JoynrRuntimeException;
-«IF hasMethodWithErrorEnum(serviceInterface)»
+«IF hasMethodWithErrorEnum(francaIntf)»
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
 	import «datatype»;
 «ENDFOR»
 
 public interface «syncClassName» extends «interfaceName», JoynrSyncInterface {
 
-«FOR attribute: getAttributes(serviceInterface) SEPARATOR "\n"»
+«FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
 	«var attributeName = attribute.joynrName»
 	«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 	«var getAttribute = "get" + attributeName.toFirstUpper»
@@ -149,7 +149,7 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 		}
 «ENDFOR»
 
-«FOR method: getMethods(serviceInterface) SEPARATOR "\n"»
+«FOR method: getMethods(francaIntf) SEPARATOR "\n"»
 	«var methodName = method.joynrName»
 	«var outputParameters = method.typeNamesForOutputParameter»
 		/*

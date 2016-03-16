@@ -42,9 +42,9 @@ class InterfaceSubscriptionTemplate extends InterfaceTemplate {
 	}
 
 	override generate() {
-		val interfaceName =  serviceInterface.joynrName
+		val interfaceName =  francaIntf.joynrName
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
 		«warning()»
@@ -52,19 +52,19 @@ class InterfaceSubscriptionTemplate extends InterfaceTemplate {
 
 		import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 
-		«IF getAttributes(serviceInterface).size > 0 && hasReadAttribute(serviceInterface)»
+		«IF getAttributes(francaIntf).size > 0 && hasReadAttribute(francaIntf)»
 		import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
 		import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 		import io.joynr.pubsub.SubscriptionQos;
 		«ENDIF»
 
-		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true, false)»
+		«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, true, false)»
 			import «datatype»;
 		«ENDFOR»
 
 		public interface «subscriptionClassName» extends JoynrSubscriptionInterface, «interfaceName» {
 
-		«FOR attribute: getAttributes(serviceInterface)»
+		«FOR attribute: getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 			«IF isNotifiable(attribute)»

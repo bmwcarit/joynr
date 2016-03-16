@@ -37,15 +37,15 @@ class InterfaceProxyCppTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 «className»::«className»(
 		std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
@@ -61,6 +61,6 @@ class InterfaceProxyCppTemplate extends InterfaceTemplate {
 {
 }
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }

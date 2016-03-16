@@ -46,24 +46,24 @@ class InterfaceProviderCppTemplate extends InterfaceTemplate {
 		selector.transitiveTypes(true)
 '''
 «warning()»
-«val interfaceName = serviceInterface.joynrName»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
+«val interfaceName = francaIntf.joynrName»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/MetaTypeRegistrar.h"
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
 #include "joynr/TypeUtil.h"
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 «interfaceName»Provider::«interfaceName»Provider()
 {
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
 
-	«val typeObjs = getAllComplexTypes(serviceInterface, selector)»
+	«val typeObjs = getAllComplexTypes(francaIntf, selector)»
 
 	«IF !typeObjs.isEmpty()»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
@@ -94,14 +94,14 @@ class InterfaceProviderCppTemplate extends InterfaceTemplate {
 
 const std::string& «interfaceName»Provider::INTERFACE_NAME()
 {
-	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»");
+	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»");
 	return INTERFACE_NAME;
 }
 
 const std::uint32_t «interfaceName»Provider::MAJOR_VERSION = «majorVersion»;
 const std::uint32_t «interfaceName»Provider::MINOR_VERSION = «minorVersion»;
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }
 }

@@ -45,13 +45,13 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«asyncClassName».h"
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«asyncClassName».h"
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
@@ -61,7 +61,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 #include "joynr/exceptions/JoynrException.h"
 #include <cassert>
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 «asyncClassName»::«asyncClassName»(
 		std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
@@ -75,7 +75,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 {
 }
 
-«FOR attribute: getAttributes(serviceInterface)»
+«FOR attribute: getAttributes(francaIntf)»
 	«var attributeName = attribute.joynrName»
 	«var attributeType = attribute.typeName»
 	«IF attribute.readable»
@@ -128,14 +128,14 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 
 	«ENDIF»
 «ENDFOR»
-«FOR method: getMethods(serviceInterface)»
+«FOR method: getMethods(francaIntf)»
 	«var methodName = method.joynrName»
 	«var outputParameters = method.commaSeparatedOutputParameterTypes»
 	«var inputParamList = getCommaSeperatedUntypedInputParameterList(method)»
 	/*
 	 * «methodName»
 	 */
-	«produceAsyncMethodSignature(serviceInterface, method, asyncClassName)»
+	«produceAsyncMethodSignature(francaIntf, method, asyncClassName)»
 	{
 		if (connector==nullptr){
 			«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
@@ -154,6 +154,6 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 	}
 
 «ENDFOR»
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }

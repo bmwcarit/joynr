@@ -59,8 +59,8 @@ class DefaultInterfaceProviderHTemplate extends InterfaceTemplate{
 
 	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_Default"+interfaceName+"Provider_h").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -69,28 +69,28 @@ class DefaultInterfaceProviderHTemplate extends InterfaceTemplate{
 #include <functional>
 
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include "joynr/Logger.h"
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»AbstractProvider.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»AbstractProvider.h"
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
-class «getDllExportMacro()» Default«interfaceName»Provider : public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»AbstractProvider {
+class «getDllExportMacro()» Default«interfaceName»Provider : public «getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»AbstractProvider {
 
 public:
 	Default«interfaceName»Provider();
 
 	~Default«interfaceName»Provider() override;
 
-	«IF !serviceInterface.attributes.empty»
+	«IF !francaIntf.attributes.empty»
 		// attributes
 	«ENDIF»
-	«FOR attribute : serviceInterface.attributes»
+	«FOR attribute : francaIntf.attributes»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
 			void get«attributeName.toFirstUpper»(
@@ -109,11 +109,11 @@ public:
 		«ENDIF»
 
 	«ENDFOR»
-	«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
-	«IF !serviceInterface.methods.empty»
+	«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
+	«IF !francaIntf.methods.empty»
 		// methods
 	«ENDIF»
-	«FOR method : serviceInterface.methods»
+	«FOR method : francaIntf.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		void «method.joynrName»(
@@ -141,7 +141,7 @@ public:
 
 	«ENDFOR»
 protected:
-	«FOR attribute : getAttributes(serviceInterface)»
+	«FOR attribute : getAttributes(francaIntf)»
 		«attribute.typeName» «attribute.joynrName»;
 	«ENDFOR»
 
@@ -150,7 +150,7 @@ private:
 
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 
 #endif // «headerGuard»
 '''

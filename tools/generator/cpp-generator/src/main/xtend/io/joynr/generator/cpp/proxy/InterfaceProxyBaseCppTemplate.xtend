@@ -45,17 +45,17 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val serviceName =  serviceInterface.joynrName»
+«val serviceName =  francaIntf.joynrName»
 «val className = serviceName + "ProxyBase"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/ISubscriptionListener.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«serviceName»InProcessConnector.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«serviceName»JoynrMessagingConnector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»InProcessConnector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»JoynrMessagingConnector.h"
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 «className»::«className»(
 		std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
@@ -75,7 +75,7 @@ void «className»::handleArbitrationFinished(
 		const std::string &providerParticipantId,
 		const joynr::types::CommunicationMiddleware::Enum& connection
 ) {
-	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«serviceName»Connector>(
+	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«serviceName»Connector>(
 				domain,
 				proxyParticipantId,
 				providerParticipantId,
@@ -88,7 +88,7 @@ void «className»::handleArbitrationFinished(
 	joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, connection);
 }
 
-«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+«FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 	«var attributeName = attribute.joynrName»
 	«val returnType = attribute.typeName»
 	void «className»::unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId)
@@ -136,7 +136,7 @@ void «className»::handleArbitrationFinished(
 
 «ENDFOR»
 
-«FOR broadcast: serviceInterface.broadcasts»
+«FOR broadcast: francaIntf.broadcasts»
 	«var broadcastName = broadcast.joynrName»
 	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 	void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId)
@@ -153,7 +153,7 @@ void «className»::handleArbitrationFinished(
 
 	«IF isSelective(broadcast)»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					const «serviceInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+					const «francaIntf.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 					const joynr::OnChangeSubscriptionQos& subscriptionQos) {
 	«ELSE»
@@ -182,7 +182,7 @@ void «className»::handleArbitrationFinished(
 
 	«IF isSelective(broadcast)»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					const «serviceInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+					const «francaIntf.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 					const joynr::OnChangeSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId) {
@@ -214,6 +214,6 @@ void «className»::handleArbitrationFinished(
 	}
 «ENDFOR»
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }

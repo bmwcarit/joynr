@@ -48,30 +48,30 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«var interfaceName = serviceInterface.joynrName»
+«var interfaceName = francaIntf.joynrName»
 «warning()»
 #include <functional>
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
-«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
+«FOR datatype: getRequiredIncludesFor(francaIntf)»
 	#include «datatype»
 «ENDFOR»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
-«IF !serviceInterface.methods.empty || !serviceInterface.attributes.empty»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
+«IF !francaIntf.methods.empty || !francaIntf.attributes.empty»
 	#include "joynr/TypeUtil.h"
 «ENDIF»
 
-«getNamespaceStarter(serviceInterface)»
-«interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider)
+«getNamespaceStarter(francaIntf)»
+«interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider)
 	: joynr::RequestCaller(provider->getInterfaceName()),
 	  provider(provider)
 {
 }
 
-«IF !serviceInterface.attributes.empty»
+«IF !francaIntf.attributes.empty»
 	// attributes
 «ENDIF»
-«FOR attribute : serviceInterface.attributes»
+«FOR attribute : francaIntf.attributes»
 	«var attributeName = attribute.joynrName»
 	«val returnType = attribute.typeName»
 	«IF attribute.readable»
@@ -121,11 +121,11 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	«ENDIF»
 
 «ENDFOR»
-«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
-«IF !serviceInterface.methods.empty»
+«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
+«IF !francaIntf.methods.empty»
 	// methods
 «ENDIF»
-«FOR method : serviceInterface.methods»
+«FOR method : francaIntf.methods»
 	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
 	«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
@@ -201,7 +201,7 @@ void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::stri
 	provider->unregisterBroadcastListener(broadcastName, broadcastListener);
 }
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 
 def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName) {

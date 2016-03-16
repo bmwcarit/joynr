@@ -41,9 +41,9 @@ class InterfaceBroadcastTemplate extends InterfaceTemplate {
 	}
 
 	override generate() {
-		val interfaceName = serviceInterface.joynrName
+		val interfaceName = francaIntf.joynrName
 		val broadcastClassName = interfaceName + "BroadcastInterface"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
 «warning()»
@@ -55,13 +55,13 @@ import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 import joynr.BroadcastFilterParameters;
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, false, true)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, true)»
 	import «datatype»;
 «ENDFOR»
 
 public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterface, «interfaceName» {
 
-«FOR broadcast : serviceInterface.broadcasts»
+«FOR broadcast : francaIntf.broadcasts»
 	«val broadcastName = broadcast.joynrName»
 	«val filterParameters = getFilterParameters(broadcast)»
 	«val filterParameterType = broadcastName.toFirstUpper + "BroadcastFilterParameters"»

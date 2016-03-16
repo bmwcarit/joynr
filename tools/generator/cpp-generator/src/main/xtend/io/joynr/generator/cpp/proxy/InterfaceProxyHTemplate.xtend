@@ -45,11 +45,11 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"Proxy_h").toUpperCase»
 «warning()»
 
@@ -57,15 +57,15 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include <memory>
 
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«syncClassName».h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«asyncClassName».h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«syncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«asyncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 
 #ifdef _MSC_VER
 	// Visual C++ gives a warning which is caused by diamond inheritance, but this is
@@ -74,7 +74,7 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 	#pragma warning( disable : 4250 )
 #endif
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 /**
  * @brief Proxy class for interface «interfaceName»
  *
@@ -99,7 +99,7 @@ public:
 			const joynr::MessagingQos& qosSettings,
 			bool cached
 	);
-	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+	«FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 		«var attributeName = attribute.joynrName»
 		«val returnType = attribute.typeName»
 
@@ -143,7 +143,7 @@ public:
 		}
 	«ENDFOR»
 
-	«FOR broadcast: serviceInterface.broadcasts»
+	«FOR broadcast: francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 
@@ -231,7 +231,7 @@ public:
 	~«className»() override = default;
 
 	// attributes
-	«FOR attribute: getAttributes(serviceInterface)»
+	«FOR attribute: getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
 			using «asyncClassName»::get«attributeName.toFirstUpper»Async;
@@ -244,7 +244,7 @@ public:
 	«ENDFOR»
 
 	// operations
-	«FOR methodName: getUniqueMethodNames(serviceInterface)»
+	«FOR methodName: getUniqueMethodNames(francaIntf)»
 		using «asyncClassName»::«methodName»Async;
 		using «syncClassName»::«methodName»;
 
@@ -253,7 +253,7 @@ private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 
 #endif // «headerGuard»
 '''

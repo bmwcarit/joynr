@@ -46,24 +46,24 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 
 	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
+«val interfaceName = francaIntf.joynrName»
 «warning()»
 #include <functional>
 #include <tuple>
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
 
 #include "joynr/Request.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
 #include <cassert>
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 INIT_LOGGER(«interfaceName»RequestInterpreter);
 
@@ -72,8 +72,8 @@ INIT_LOGGER(«interfaceName»RequestInterpreter);
 }
 
 «val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
-«val attributes = getAttributes(serviceInterface)»
-«val methods = getMethods(serviceInterface)»
+«val attributes = getAttributes(francaIntf)»
+«val methods = getMethods(francaIntf)»
 void «interfaceName»RequestInterpreter::execute(
 		std::shared_ptr<joynr::RequestCaller> requestCaller,
 		const std::string& methodName,
@@ -188,7 +188,7 @@ void «interfaceName»RequestInterpreter::execute(
 		«ENDFOR»
 	«ENDIF»
 	«IF methods.size>0»
-		«FOR method: getMethods(serviceInterface)»
+		«FOR method: getMethods(francaIntf)»
 			«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
 			«val methodName = method.joynrName»
 			«val inputParams = getInputParameters(method)»
@@ -295,6 +295,6 @@ void «interfaceName»RequestInterpreter::execute(
 	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + methodName));
 }
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }

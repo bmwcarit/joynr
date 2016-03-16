@@ -39,11 +39,11 @@ class InterfacesTemplate extends InterfaceTemplate {
 		super(francaIntf)
 	}
 	override generate() {
-		val interfaceName =  serviceInterface.joynrName
+		val interfaceName =  francaIntf.joynrName
 		val className = interfaceName
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		val hasMethodWithImplicitErrorEnum = hasMethodWithImplicitErrorEnum(serviceInterface)
-		val methodToErrorEnumName = serviceInterface.methodToErrorEnumName()
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val hasMethodWithImplicitErrorEnum = hasMethodWithImplicitErrorEnum(francaIntf)
+		val methodToErrorEnumName = francaIntf.methodToErrorEnumName()
 		'''
 
 		«warning()»
@@ -57,7 +57,7 @@ import java.util.List;
 «ENDIF»
 
 import com.fasterxml.jackson.core.type.TypeReference;
-«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+«FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
 
@@ -68,9 +68,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.TreeSet;
 @SuppressWarnings("unused")
 public interface «className»  {
-	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»";
+	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
 
-	«FOR method: getMethods(serviceInterface)»
+	«FOR method: getMethods(francaIntf)»
 		«var enumType = method.errors»
 		«IF enumType != null»
 			«enumType.name = methodToErrorEnumName.get(method)»
