@@ -76,19 +76,19 @@ public class PublicationTimer extends PubSubTimerBase {
                             RequestCaller requestCaller,
                             PublicationManager publicationManager,
                             AttributePollInterpreter attributePollInterpreter) {
-        super(publicationInformation.getQos().getExpiryDate(), publicationInformation.getState());
+        super(publicationInformation.getQos().getExpiryDateMs(), publicationInformation.getState());
         this.publicationManager = publicationManager;
 
         SubscriptionQos qos = publicationInformation.getQos();
 
         this.publicationInformation = publicationInformation;
-        this.publicationTtl = qos.getPublicationTtl();
+        this.publicationTtl = qos.getPublicationTtlMs();
 
         boolean hasSubscriptionHeartBeat = qos instanceof HeartbeatSubscriptionInformation;
         boolean isOnChangeSubscription = qos instanceof OnChangeSubscriptionQos;
 
-        this.period = hasSubscriptionHeartBeat ? ((HeartbeatSubscriptionInformation) qos).getHeartbeat() : 0;
-        this.minInterval = isOnChangeSubscription ? ((OnChangeSubscriptionQos) qos).getMinInterval() : 0;
+        this.period = hasSubscriptionHeartBeat ? ((HeartbeatSubscriptionInformation) qos).getPeriodMs() : 0;
+        this.minInterval = isOnChangeSubscription ? ((OnChangeSubscriptionQos) qos).getMinIntervalMs() : 0;
 
         this.requestCaller = requestCaller;
         this.attributePollInterpreter = attributePollInterpreter;

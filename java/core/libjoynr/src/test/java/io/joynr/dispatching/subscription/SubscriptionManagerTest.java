@@ -168,7 +168,7 @@ public class SubscriptionManagerTest {
         Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
         Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                                  Mockito.eq(qos.getExpiryDate()),
+                                                  Mockito.eq(qos.getExpiryDateMs()),
                                                   Mockito.eq(TimeUnit.MILLISECONDS));
         Mockito.verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
                                                                      Mockito.any(ScheduledFuture.class));
@@ -197,7 +197,7 @@ public class SubscriptionManagerTest {
         Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
         Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                                  Mockito.eq(qos.getExpiryDate()),
+                                                  Mockito.eq(qos.getExpiryDateMs()),
                                                   Mockito.eq(TimeUnit.MILLISECONDS));
         Mockito.verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
                                                                      Mockito.any(ScheduledFuture.class));

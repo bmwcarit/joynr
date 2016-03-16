@@ -3,7 +3,7 @@ package joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,12 +128,30 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @see SubscriptionQos#SubscriptionQos(long, long)
      *           SubscriptionQos.SubscriptionQos(long, long)
      *           for more information on expiryDate and publicationTtl
-     * @see #setAlertAfterIntervalMs(long) setAlertAfterInterval(long)
+     * @see #setAlertAfterIntervalMs(long)
      *           (alertAfterInterval will be set to its default value)
      */
     @Deprecated
     public PeriodicSubscriptionQos(long periodMs, long expiryDateMs, long publicationTtlMs) {
         this(periodMs, expiryDateMs, DEFAULT_ALERT_AFTER_INTERVAL_MS, publicationTtlMs);
+    }
+
+    /**
+     * @deprecated Use getAlertAfterIntervalMs instead
+     *
+     * Get the alertAfterInterval in milliseconds. <br>
+     * If no notification was received within the last alert interval, a missed
+     * publication notification will be raised.
+     *
+     * @return The alertAfterInterval in milliseconds. If more than
+     *         alertAfterInterval milliseconds pass without receiving a message,
+     *         the subscriptionManager will issue a publicationMissed. If set
+     *         to 0, never alert.
+     */
+    @Override
+    @Deprecated
+    public long getAlertAfterInterval() {
+        return getAlertAfterIntervalMs();
     }
 
     /**
@@ -147,7 +165,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      *         to 0, never alert.
      */
     @Override
-    public long getAlertAfterInterval() {
+    public long getAlertAfterIntervalMs() {
         return alertAfterIntervalMs;
     }
 
@@ -232,13 +250,27 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     }
 
     /**
+     * @deprecated Use getPeriodMs instead
+     *
      * Get the period in milliseconds. <br>
      * The provider will periodically send notifications every period milliseconds.
      * The period can thus be seen as a sort of heart beat.
      *
      * @return The period value of the subscription in milliseconds.
      */
+    @Deprecated
     public long getPeriod() {
+        return getPeriodMs();
+    }
+
+    /**
+     * Get the period in milliseconds. <br>
+     * The provider will periodically send notifications every period milliseconds.
+     * The period can thus be seen as a sort of heart beat.
+     *
+     * @return The period value of the subscription in milliseconds.
+     */
+    public long getPeriodMs() {
         return periodMs;
     }
 
@@ -330,7 +362,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     @Deprecated
     /**
      * @deprecated this method will be removed by 2017-01-01.
-     * Use getPeriod() instead.
+     * Use getPeriodMs() instead.
      */
     public long getHeartbeat() {
         return periodMs;
