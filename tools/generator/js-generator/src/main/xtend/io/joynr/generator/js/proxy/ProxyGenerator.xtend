@@ -3,7 +3,7 @@ package io.joynr.generator.js.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,6 +220,33 @@ class ProxyGenerator extends InterfaceTemplate {
 				value: "«getFQN(francaIntf)»"
 			});
 		};
+
+		/**
+		 * @name «proxyName»#MAJOR_VERSION
+		 * @constant {Number}
+		 * @default «majorVersion»
+		 * @summary The MAJOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«proxyName», 'MAJOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «majorVersion»
+		});
+		/**
+		 * @name «proxyName»#MINOR_VERSION
+		 * @constant {Number}
+		 * @default «minorVersion»
+		 * @summary The MINOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«proxyName», 'MINOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «minorVersion»
+			});
 
 		«proxyName».getUsedDatatypes = function getUsedDatatypes(){
 			return [

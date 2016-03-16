@@ -3,7 +3,7 @@ package io.joynr.generator.js.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -247,6 +247,33 @@ class ProviderGenerator extends InterfaceTemplate {
 
 			return Object.freeze(this);
 		};
+
+		/**
+		 * @name «providerName»#MAJOR_VERSION
+		 * @constant {Number}
+		 * @default «majorVersion»
+		 * @summary The MAJOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«providerName», 'MAJOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «majorVersion»
+		});
+		/**
+		 * @name «providerName»#MINOR_VERSION
+		 * @constant {Number}
+		 * @default «minorVersion»
+		 * @summary The MINOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«providerName», 'MINOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «minorVersion»
+		});
 
 		«IF requireJSSupport»
 		// AMD support
