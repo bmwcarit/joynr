@@ -28,6 +28,10 @@
 #include "joynr/types/TestTypes/TEverythingExtendedStruct.h"
 #include "joynr/types/TestTypes/TEverythingExtendedExtendedStruct.h"
 #include "joynr/types/TestTypes/TEnum.h"
+#include "joynr/tests/StructInsideInterface.h"
+#include "joynr/tests/testTypes/ComplexTestType.h"
+#include "joynr/tests/StructInsideInterfaceWithoutVersion.h"
+#include "joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion.h"
 
 using namespace joynr::types;
 
@@ -374,3 +378,34 @@ TEST_F(StdComplexDataTypeTest, mapTypeListInitialization) {
     EXPECT_EQ(map["lorem"], "ipsum");
 }
 
+TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideInterface) {
+    std::uint32_t expectedMajorVersion = 47;
+    std::uint32_t expectedMinorVersion = 11;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::tests::StructInsideInterface::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::tests::StructInsideInterface::MINOR_VERSION);
+}
+
+TEST_F(StdComplexDataTypeTest, defaultVersionIsSetInStructInsideInterfaceWithoutVersion) {
+    std::uint32_t expectedMajorVersion = 0;
+    std::uint32_t expectedMinorVersion = 0;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::tests::StructInsideInterfaceWithoutVersion::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::tests::StructInsideInterfaceWithoutVersion::MINOR_VERSION);
+}
+
+TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideTypeCollection) {
+    std::uint32_t expectedMajorVersion = 48;
+    std::uint32_t expectedMinorVersion = 12;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::tests::testTypes::ComplexTestType::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::tests::testTypes::ComplexTestType::MINOR_VERSION);
+}
+
+TEST_F(StdComplexDataTypeTest, defaultVersionIsSetInStructInsideTypeCollectionWithoutVersion) {
+    std::uint32_t expectedMajorVersion = 0;
+    std::uint32_t expectedMinorVersion = 0;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::MINOR_VERSION);
+}

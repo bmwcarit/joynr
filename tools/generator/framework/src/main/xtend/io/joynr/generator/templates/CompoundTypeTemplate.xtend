@@ -19,16 +19,26 @@ package io.joynr.generator.templates;
  * #L%
  */
 
-import org.franca.core.franca.FCompoundType;
+import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FTypeCollection
 
 /*
  * This class shall be used by all generation templates which process a Franca compound type
  */
 abstract class CompoundTypeTemplate {
 	protected FCompoundType type
+	protected var majorVersion = 0
+	protected var minorVersion = 0
 
 	new(FCompoundType type) {
 		this.type = type
+		if (type.eContainer instanceof FTypeCollection) {
+			val interface = type.eContainer as FTypeCollection
+			if (interface.version != null) {
+				majorVersion = interface.version.major
+				minorVersion = interface.version.minor
+			}
+		}
 	}
 
 	def CharSequence generate()
