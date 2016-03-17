@@ -46,13 +46,13 @@ AbstractJoynrProvider::~AbstractJoynrProvider()
 }
 #pragma GCC diagnostic pop
 
-types::ProviderQos AbstractJoynrProvider::getProviderQos() const
-{
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
+types::ProviderQos AbstractJoynrProvider::getProviderQos() const
+{
     return providerQos;
-#pragma GCC diagnostic pop
 }
+#pragma GCC diagnostic pop
 
 void AbstractJoynrProvider::registerAttributeListener(const std::string& attributeName,
                                                       IAttributeListener* attributeListener)
