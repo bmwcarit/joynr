@@ -55,8 +55,11 @@ INPUTDATA_STRINGLENGTH=10
 # If a test case has to transmit a byte array, the length will be determined by this constant
 INPUTDATA_BYTEARRAYSIZE=100
 
+MQTT_BROKER_URI="tcp://localhost:1883"
+
 # Process IDs for processes which must be terminated later
 JETTY_PID=""
+MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
 PROVIDER_PID=""
 
@@ -92,12 +95,25 @@ function startJetty {
     waitUntilJettyStarted
 }
 
-function startClusterController {
+function startMosquitto {
+    echo '### Starting mosquitto ###'
+
+    MOSQUITTO_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/mosquitto_stdout.txt
+    MOSQUITTO_STDERR=$PERFORMANCETESTS_RESULTS_DIR/mosquitto_stderr.txt
+
+    mosquitto -c /etc/mosquitto/mosquitto.conf 1>$MOSQUITTO_STDOUT 2>$MOSQUITTO_STDERR & MOSQUITTO_PID=$!
+
+    sleep 2
+
+    echo 'Mosquitto started'
+}
+
+function startCppClusterController {
     echo '### Starting cluster controller ###'
 
     CC_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/cc_stdout.txt
     CC_STDERR=$PERFORMANCETESTS_RESULTS_DIR/cc_stderr.txt
-    CC_CONFIG_FILE=$PERFORMANCETESTS_BUILD_DIR/bin/resources/cc-default-messaging.settings
+    CC_CONFIG_FILE=$PERFORMANCETESTS_BUILD_DIR/bin/resources/$1
 
     cd $JOYNR_BUILD_DIR/bin/
     ./cluster-controller $CC_CONFIG_FILE 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
@@ -108,8 +124,8 @@ function startClusterController {
     echo "Cluster controller started"
 }
 
-function startPerformanceTestProvider {
-    echo '### Starting performance test provider ###'
+function startCppPerformanceTestProvider {
+    echo '### Starting c++ performance test provider ###'
 
     PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
@@ -127,6 +143,26 @@ function startPerformanceTestProvider {
     ./performance-provider-app $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     sleep 5
 
+    echo "C++ performance test provider started"
+}
+
+function startJavaPerformanceTestProvider {
+    echo '### Starting java performance test provider (in process cc) ###'
+
+    PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
+    PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
+
+    CONSUMERCLASS="io.joynr.performance.EchoProviderApplication"
+    CONSUMERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URI"
+
+    cd $JOYNR_SOURCE_DIR/tests/performance
+
+    mvn exec:java -o \
+        -Dexec.mainClass="$CONSUMERCLASS" \
+        -Dexec.args="$CONSUMERARGS" \
+        1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    sleep 5
+
     echo "Performance test provider started"
 }
 
@@ -136,13 +172,17 @@ function performSingleJavaConsumerTest {
     STDOUT_PARAM=$3
     REPORTFILE_PARAM=$4
 
-    CONSUMERCLASS="joynr.tests.performance.PerformanceTestConsumerApplication"
+    CONSUMERCLASS="io.joynr.performance.ConsumerApplication"
     CONSUMERARGS="-d $DOMAINNAME -w $JAVA_WARMUPS -r $SINGLECONSUMER_RUNS \
                   -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
                   -sl $INPUTDATA_STRINGLENGTH"
 
-    mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
-       -Dexec.args="$CONSUMERARGS" 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+    cd $JOYNR_SOURCE_DIR/tests/performance
+
+    mvn exec:java -o \
+        -Dexec.mainClass="$CONSUMERCLASS" \
+        -Dexec.args="$CONSUMERARGS" 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+    sleep 3
 }
 
 function performMultiJavaConsumerTest {
@@ -151,10 +191,12 @@ function performMultiJavaConsumerTest {
     STDOUT_PARAM=$3
     REPORTFILE_PARAM=$4
 
-    CONSUMERCLASS="joynr.tests.performance.PerformanceTestConsumerApplication"
+    CONSUMERCLASS="io.joynr.performance.ConsumerApplication"
     CONSUMERARGS="-d $DOMAINNAME -w $JAVA_WARMUPS -r $MULTICONSUMER_RUNS \
                   -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
                   -sl $INPUTDATA_STRINGLENGTH"
+
+    cd $JOYNR_SOURCE_DIR/tests/performance
 
     TEST_PIDS=()
     for (( i=0; i < $MULTICONSUMER_NUMINSTANCES; ++i ))
@@ -174,6 +216,8 @@ function performJsConsumerTest {
     STDOUT_PARAM=$1
     REPORTFILE_PARAM=$2
 
+    cd $JOYNR_SOURCE_DIR/tests/performance
+
     npm run-script --performance-test:runs=$SINGLECONSUMER_RUNS \
                    --performance-test:domain=$DOMAINNAME \
                    --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
@@ -181,15 +225,111 @@ function performJsConsumerTest {
                      jsconsumertest 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
 }
 
-function startPerformanceTest {
+function stopJetty {
+    echo "Stopping jetty"
+    cd $JOYNR_SOURCE_DIR/cpp/tests/
+    mvn jetty:stop --quiet
+    wait $JETTY_PID
+    JETTY_PID=""
+}
+
+function stopMosquitto {
+    echo "Stopping mosquitto"
+    kill $MOSQUITTO_PID
+    wait $MOSQUITTO_PID
+    MOSQUITTO_PID=""
+}
+
+function stopCppClusterController {
+    echo "Killing C++ CC"
+    kill $CLUSTER_CONTROLLER_PID
+    wait $CLUSTER_CONTROLLER_PID
+    CLUSTER_CONTROLLER_PID=""
+}
+
+function stopAnyProvider {
+    echo "Killing provider"
+    # pkill is required if maven is used to start a provider. Maven launches the
+    # provider as a child process, which seems not to be killed automatically along
+    # with the parent process
+    pkill -P $PROVIDER_PID
+    kill $PROVIDER_PID
+    wait $PROVIDER_PID
+    PROVIDER_PID=""
+}
+
+function echoUsage {
+    echo "Usage: run-performance-tests.sh -y <joynr-build-dir> -p <performance-build-dir> \
+-s <joynr-source-dir> -r <performance-results-dir> \
+-t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|JS_ASYNC_MOSQUITTO|OAP_TO_BACKEND_MOSQ|ALL> \
+-x <number-of-runs>"
+}
+
+function checkDirExists {
+    if [ -z "$1" ] || [ ! -d "$1" ]
+    then
+        echo "Directory \"$1\" does not exist"
+        echoUsage
+        exit 1
+    fi
+}
+
+while getopts "y:p:s:r:t:x:" OPTIONS;
+do
+    case $OPTIONS in
+        p)
+            PERFORMANCETESTS_BUILD_DIR=${OPTARG%/}
+            ;;
+        y)
+            JOYNR_BUILD_DIR=${OPTARG%/}
+            ;;
+        r)
+            PERFORMANCETESTS_RESULTS_DIR=${OPTARG%/}
+            ;;
+        s)
+            JOYNR_SOURCE_DIR=${OPTARG%/}
+            ;;
+        t)
+            TESTCASE=$OPTARG
+            ;;
+        x)
+            SINGLECONSUMER_RUNS=$OPTARG
+            MULTICONSUMER_RUNS=$OPTARG
+            ;;
+        \?)
+            echoUsage
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
+   [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && [ "$TESTCASE" != "ALL" ] && \
+   [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
+then
+    echo "\"$TESTCASE\" is not a valid testcase"
+    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, OAP_TO_BACKEND_MOSQ OR ALL"
+    echoUsage
+    exit 1
+fi
+
+checkDirExists $JOYNR_SOURCE_DIR
+checkDirExists $JOYNR_BUILD_DIR
+checkDirExists $PERFORMANCETESTS_BUILD_DIR
+checkDirExists $PERFORMANCETESTS_RESULTS_DIR
+
+REPORTFILE=$PERFORMANCETESTS_RESULTS_DIR/performancetest-result.txt
+STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer-stdout.txt
+
+rm -f $STDOUT
+rm -f $REPORTFILE
+
+if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
+then
+    startCppClusterController cc-default-messaging.settings
+    startCppPerformanceTestProvider
+
     echo "### Starting performance tests ###"
-
-    REPORTFILE=$PERFORMANCETESTS_RESULTS_DIR/performancetest_result.txt
-    STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer_stdout.txt
-
-    cd $JOYNR_SOURCE_DIR/tests/performance-test
-    rm -f $STDOUT
-    rm -f $REPORTFILE
 
     if [ "$TESTCASE" == "JAVA_ASYNC" ] || [ "$TESTCASE" == "ALL" ]
     then
@@ -229,90 +369,28 @@ function startPerformanceTest {
 
     if [ "$TESTCASE" == "JS_ASYNC" ] || [ "$TESTCASE" == "ALL" ]
     then
-        echo "Testcase: JS ASYNC" | tee -a $REPORTFILE
+        echo "Testcase: JS_ASYNC" | tee -a $REPORTFILE
         performJsConsumerTest $STDOUT $REPORTFILE
     fi
 
-    echo "### Performance tests finished ####"
-}
-
-function stopAllProcesses {
-    echo "### Stopping all processes ###"
-
-    echo "Killing provider"
-    kill $PROVIDER_PID
-    wait $PROVIDER_PID
-    PROVIDER_PID=""
-
-    echo "Killing CC"
-    kill $CLUSTER_CONTROLLER_PID
-    wait $CLUSTER_CONTROLLER_PID
-    CLUSTER_CONTROLLER_PID=""
-
-    echo "Stopping jetty"
-    cd $JOYNR_SOURCE_DIR/cpp/tests/
-    mvn jetty:stop --quiet
-    wait $JETTY_PID
-    JETTY_PID=""
-}
-
-function echoUsage {
-    echo "Usage: run-performance-tests.sh -y <joynr-build-dir> -p <performance-build-dir> \
--s <joynr-source-dir> -r <performance-results-dir> \
--t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|ALL>"
-}
-
-function checkDirExists {
-    if [ -z "$1" ] || [ ! -d "$1" ]
-    then
-        echo "Directory \"$1\" does not exist"
-        echoUsage
-        exit 1
-    fi
-}
-
-while getopts "y:p:s:r:t:" OPTIONS;
-do
-    case $OPTIONS in
-        p)
-            PERFORMANCETESTS_BUILD_DIR=${OPTARG%/}
-            ;;
-        y)
-            JOYNR_BUILD_DIR=${OPTARG%/}
-            ;;
-        r)
-            PERFORMANCETESTS_RESULTS_DIR=${OPTARG%/}
-            ;;
-        s)
-            JOYNR_SOURCE_DIR=${OPTARG%/}
-            ;;
-        t)
-            TESTCASE=$OPTARG
-            ;;
-        \?)
-            echoUsage
-            exit 1
-            ;;
-    esac
-done
-
-if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
-   [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && [ "$TESTCASE" != "ALL" ] && \
-   [ "$TESTCASE" != "JS_ASYNC" ]
-then
-    echo "\"$TESTCASE\" is not a valid testcase"
-    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC OR ALL"
-    echoUsage
-    exit 1
+    stopAnyProvider
+    stopCppClusterController
 fi
 
-checkDirExists $JOYNR_SOURCE_DIR
-checkDirExists $JOYNR_BUILD_DIR
-checkDirExists $PERFORMANCETESTS_BUILD_DIR
-checkDirExists $PERFORMANCETESTS_RESULTS_DIR
+if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
+then
+    startJetty
+    startMosquitto
+    startCppClusterController default-messaging.settings
+    startJavaPerformanceTestProvider
 
-startJetty
-startClusterController
-startPerformanceTestProvider
-startPerformanceTest
-stopAllProcesses
+    echo "### Starting performance tests ###"
+
+    echo "Testcase: OAP_TO_BACKEND_MOSQ" | tee -a $REPORTFILE
+    performJsConsumerTest $STDOUT $REPORTFILE
+
+    stopAnyProvider
+    stopCppClusterController
+    stopMosquitto
+    stopJetty
+fi
