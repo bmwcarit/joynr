@@ -1,5 +1,13 @@
 package io.joynr.messaging.channel;
 
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+
 /*
  * #%L
  * %%
@@ -27,16 +35,10 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
-
-import java.io.IOException;
-
 import joynr.JoynrMessage;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
+import joynr.system.RoutingTypes.MqttAddress;
 
 public class ChannelMessagingSkeleton implements IMessagingSkeleton {
     private final MessageRouter messageRouter;
@@ -45,10 +47,15 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
 
     private MessageReceiver messageReceiver;
 
+    private ObjectMapper objectMapper;
+
     @Inject
-    public ChannelMessagingSkeleton(MessageRouter messageRouter, MessageReceiver messageReceiver) {
+    public ChannelMessagingSkeleton(MessageRouter messageRouter,
+                                    MessageReceiver messageReceiver,
+                                    ObjectMapper objectMapper) {
         this.messageRouter = messageRouter;
         this.messageReceiver = messageReceiver;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -71,7 +78,18 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
 
     private void addRequestorToMessageRouter(String requestorParticipantId, String replyToChannelId) {
         if (replyToChannelId != null && !replyToChannelId.isEmpty()) {
-            messageRouter.addNextHop(requestorParticipantId, new ChannelAddress(replyToChannelId));
+            Address address = null;
+            if (replyToChannelId.contains("MqttAddress")) {
+                try {
+                    address = objectMapper.readValue(replyToChannelId, MqttAddress.class);
+                } catch (IOException e) {
+                    logger.warn("Unable to parse MqttAddress from " + replyToChannelId, e);
+                }
+            }
+            if (address == null) {
+                address = new ChannelAddress(replyToChannelId);
+            }
+            messageRouter.addNextHop(requestorParticipantId, address);
         } else {
             /*
              * TODO make sure that all requests (ie not one-way) also have replyTo
