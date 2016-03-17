@@ -383,8 +383,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
 
             providerQos.priority = Date.now();
             // register provider at the given providerDomain
-            libjoynrAsync.capabilities.registerCapability(
-                    "",
+            libjoynrAsync.registration.registerProvider(
                     providerDomain,
                     radioProvider,
                     providerQos).then(function() {
@@ -421,5 +420,5 @@ function startTest() {
     });
 }
 function terminateTest() {
-    return libjoynrAsync.capabilities.unregisterCapability("", providerDomain, radioProvider);
+    return libjoynrAsync.registration.unregisterProvider(providerDomain, radioProvider);
 }

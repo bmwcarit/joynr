@@ -660,8 +660,7 @@ define(
                                                 }
                                             });
                             registerDiscoveryProviderPromise =
-                                    capabilitiesRegistrar.registerCapability(
-                                            "",
+                                    capabilitiesRegistrar.registerProvider(
                                             "io.joynr",
                                             discoveryProvider,
                                             providerQos);
@@ -703,8 +702,7 @@ define(
                                         }
                                     });
                             registerRoutingProviderPromise =
-                                    capabilitiesRegistrar.registerCapability(
-                                            "",
+                                    capabilitiesRegistrar.registerProvider(
                                             "io.joynr",
                                             routingProvider,
                                             providerQos);

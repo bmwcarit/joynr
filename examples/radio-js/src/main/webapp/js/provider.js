@@ -267,8 +267,7 @@ $(function() { // DOM ready
                     radioProvider.newStationDiscovered.addBroadcastFilter(new GeocastBroadcastFilter());
                     radioProvider.newStationDiscovered.addBroadcastFilter(new TrafficServiceBroadcastFilter());
 
-                    joynr.capabilities.registerCapability(
-                            "RadioProvider.authToken",
+                    joynr.registration.registerProvider(
                             domain,
                             radioProvider,
                             new joynr.types.ProviderQos({
@@ -280,14 +279,14 @@ $(function() { // DOM ready
                             })).then(
                             function() {
                                 log(
-                                        "joynr.capabilities.registerCapability.done",
+                                        "joynr.registration.registerProvider.done",
                                         "successfully registered Radio provider on domain \""
                                             + domain
                                             + "\".");
                             }).catch(
                             function(error) {
                                 log(
-                                        "joynr.capabilities.registerCapability.fail",
+                                        "joynr.registration.registerProvider.fail",
                                         "error registering Radio provider. Reason: "
                                             + error.toString());
                             });
@@ -302,20 +301,19 @@ $(function() { // DOM ready
         // unregister joynr provider
         $("input#btnUnregisterProvider").click(
                 function() {
-                    joynr.capabilities.unregisterCapability(
-                            "RadioProvider.authToken",
+                    joynr.registration.unregisterProvider(
                             domain,
                             radioProvider).then(
                             function() {
                                 log(
-                                        "joynr.capabilities.unregisterCapability.done",
+                                        "joynr.registration.unregisterProvider.done",
                                         "successfully unregistered Radio provider on domain \""
                                             + domain
                                             + "\".");
                             }).catch(
                             function(error) {
                                 log(
-                                        "joynr.capabilities.unregisterCapability.fail",
+                                        "joynr.registration.unregisterProvider.fail",
                                         "error unregistering Radio provider. Reason: " + error);
                             });
                     $("input#btnRegisterProvider").attr("disabled", false);

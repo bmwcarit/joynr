@@ -92,6 +92,7 @@ joynrTestRequire("joynr/start/TestInProcessRuntime", [
             expect(runtime.typeRegistry).toBeDefined();
 
             expect(runtime.capabilities).toBeUndefined();
+            expect(runtime.registration).toBeUndefined();
             expect(runtime.proxyBuilder).toBeUndefined();
 
             startInProcessRuntime();
@@ -99,6 +100,7 @@ joynrTestRequire("joynr/start/TestInProcessRuntime", [
             runs(function() {
                 expect(runtime.typeRegistry).toBeDefined();
                 expect(runtime.capabilities).toBeDefined();
+                expect(runtime.registration).toBeDefined();
                 expect(runtime.proxyBuilder).toBeDefined();
             });
         });
