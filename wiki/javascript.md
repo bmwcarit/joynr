@@ -609,7 +609,7 @@ var <interface>ProviderQos;
 <interface>Provider.<broadcast>.addBroadcastFilter(new <Filter>BroadcastFilter());
 
 // setup <interface>ProviderQos
-joynr.capabilities.registerProvider(
+joynr.registration.registerProvider(
     domain,
     <interface>Provider,
     <interface>ProviderQos
@@ -626,7 +626,7 @@ represents the provider implementation.
 
 ```javascript
 // provider should have been set and registered previously
-joynr.capabilities.unregisterProvider(
+joynr.registration.unregisterProvider(
     domain,
     <Interface>provider
 ).then(function() {
