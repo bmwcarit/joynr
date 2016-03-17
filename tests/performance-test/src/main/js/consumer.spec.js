@@ -21,7 +21,6 @@
 
 var Promise = require("joynr/lib/bluebird.js").Promise;
 var joynr = require("joynr");
-var uuid = require('uuid');
 var testbase = require("test-base");
 var PerformanceUtilities = require("./performanceutilities.js");
 var ComplexStruct = require("../generated-javascript/joynr/tests/performance/Types/ComplexStruct.js");
@@ -144,12 +143,6 @@ describe("js consumer performance test", function() {
             expect(spy.onError.callCount).toEqual(0);
             var elapsedTimeMs = Date.now() - startTime;
 
-            // Write the result to stderr, because this way we can collect all required data easier.
-/*
- *            error("call \"" + benchmarkName + "\" \t# roundtrips: " + options.numRuns + "\tin time (ms): \t" + elapsedTimeMs);
- *            error("call \"" + benchmarkName + "\" \taverage time (ms) per roundtrip: \t" + elapsedTimeMs / options.numRuns);
- * 
- */
             error(benchmarkName + " took " + elapsedTimeMs + " ms. " + options.numRuns / (elapsedTimeMs / 1000) + " msgs/s");
         });
     };

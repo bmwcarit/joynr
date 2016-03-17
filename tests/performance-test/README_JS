@@ -4,12 +4,13 @@ mvn install
 npm install -g npm@latest
 npm install
 
-Then run the node applications by doing the following:
+In order to run the end-to-end test, do the following:
 
-1. ensure a cluster controller allowing to be connected via web socket is running and accessible
-2. start a provider
+1. make sure that a cluster controller is running and is accessible via WebSockets
+2. start a provider:
    npm run-script startprovider --performance-test:domain=<DOMAIN>
 3. start the javascript consumer test
-   npm run-script startjasmine --performance-test:domain=<DOMAIN> [--peformance-test:times=<TIMES>] [--performance-test:viacc=<on|off>]
+   npm run-script jsconsumertest --performance-test:domain=<DOMAIN> [--performance-test:runs=<TIMES>]
 
-Steps 1 and 2 are only required, if the parameter --performance-test:viacc is set to on for the 3. step
+In order to run the short-circuit-test:
+    npm run-script jsconsumertest --performance-test:domain=<DOMAIN> --performance-test:viacc=FALSE [--performance-test:runs=<TIMES>]
