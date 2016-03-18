@@ -43,7 +43,7 @@ fi
 
 if [ -z "$ROBUSTNESS_BUILD_DIR" ]
 then
-	ROBUSTNESS_BUILD_DIR=$JOYNR_SOURCE_DIR/tests/robustness/build
+	ROBUSTNESS_BUILD_DIR=$JOYNR_SOURCE_DIR/tests/robustness-test/build
 fi
 
 # if CI environment, source global settings
@@ -54,7 +54,7 @@ fi
 
 if [ -z "$ROBUSTNESS_RESULTS_DIR" ]
 then
-	ROBUSTNESS_RESULTS_DIR=$JOYNR_SOURCE_DIR/tests/robustness/robustness-results-$(date "+%Y-%m-%d-%H:%M:%S")
+	ROBUSTNESS_RESULTS_DIR=$JOYNR_SOURCE_DIR/tests/robustness-test/robustness-results-$(date "+%Y-%m-%d-%H:%M:%S")
 fi
 
 # Expand the PATH in order to let the test consumers find
@@ -94,19 +94,19 @@ function prechecks {
 		exit 1
 	fi
 
-	if [ ! -f "$JOYNR_SOURCE_DIR/tests/robustness/target/discovery.war" ]
+	if [ ! -f "$JOYNR_SOURCE_DIR/tests/robustness-test/target/discovery.war" ]
 	then
 		echo 'Java environment not built'
 		exit 1
 	fi
 
-	if [ ! -f "$JOYNR_SOURCE_DIR/tests/robustness/target/bounceproxy.war" ]
+	if [ ! -f "$JOYNR_SOURCE_DIR/tests/robustness-test/target/bounceproxy.war" ]
 	then
 		echo 'Java environment not built'
 		exit 1
 	fi
 
-	if [ ! -f "$JOYNR_SOURCE_DIR/tests/robustness/target/accesscontrol.war" ]
+	if [ ! -f "$JOYNR_SOURCE_DIR/tests/robustness-test/target/accesscontrol.war" ]
 	then
 		echo 'Java environment not built'
 		exit 1
@@ -114,7 +114,7 @@ function prechecks {
 }
 
 function start_services {
-	cd $JOYNR_SOURCE_DIR/tests/robustness
+	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -f joynr.properties
 	rm -f joynr_participantIds.properties
 	echo '####################################################'
@@ -144,7 +144,7 @@ function start_services {
 function stop_services {
 	if [ -n "$JETTY_PID" ]
 	then
-		cd $JOYNR_SOURCE_DIR/tests/robustness
+		cd $JOYNR_SOURCE_DIR/tests/robustness-test
 		echo '####################################################'
 		echo '# stopping services'
 		echo '####################################################'
@@ -181,7 +181,7 @@ function stop_any_cluster_controller {
 	echo '####################################################'
 	echo '# stopping C++ clustercontroller'
 	echo '####################################################'
-	$JOYNR_SOURCE_DIR/tests/robustness/kill-clustercontroller.sh
+	$JOYNR_SOURCE_DIR/tests/robustness-test/kill-clustercontroller.sh
 }
 
 function test_failed {
@@ -320,7 +320,7 @@ function start_javascript_consumer {
 	echo '####################################################'
 	echo '# starting Javascript consumer'
 	echo '####################################################'
-	cd $JOYNR_SOURCE_DIR/tests/robustness
+	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -fr localStorageStorage
 	npm run-script startjasmine --robustness-test:domain=$DOMAIN --robustness-test:cmdPath=$JOYNR_SOURCE_DIR/tests/robustness > $ROBUSTNESS_RESULTS_DIR/consumer_javascript_$1.log 2>&1
 	SUCCESS=$?
@@ -347,7 +347,7 @@ prechecks
 # clean up
 rm -fr $ROBUSTNESS_RESULTS_DIR
 mkdir -p $ROBUSTNESS_RESULTS_DIR
-cd $JOYNR_SOURCE_DIR/tests/robustness
+cd $JOYNR_SOURCE_DIR/tests/robustness-test
 rm -fr node_modules
 rm -fr localStorageStorage
 rm -fr reports

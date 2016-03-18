@@ -39,13 +39,13 @@ io.joynr.tools.generator:generator-framework,\
 io.joynr.tools.generator:joynr-generator-maven-plugin,\
 io.joynr.tools.generator:js-generator,\
 io.joynr.tools.generator:cpp-generator,\
-io.joynr.tests:robustness
+io.joynr.tests:robustness-test
 
 rm -rf /data/build/robustness
 mkdir /data/build/robustness
 cd /data/build/robustness
 
-cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 /data/src/tests/robustness
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR -DJOYNR_SERVER=localhost:8080 /data/src/tests/robustness-test
 
 time make -j $JOBS
 

@@ -151,7 +151,7 @@ protected:
 
     void killClusterController()
     {
-        int status = std::system("kill-clustercontroller.sh");
+        int status = std::system("./kill-clustercontroller.sh");
         if (!WIFEXITED(status) || WEXITSTATUS(status)) {
             FAIL() << "kill-clustercontroller failed";
         }
@@ -159,7 +159,7 @@ protected:
 
     void startClusterController()
     {
-        int status = std::system("start-clustercontroller.sh");
+        int status = std::system("./start-clustercontroller.sh");
         if (!WIFEXITED(status) || WEXITSTATUS(status)) {
             FAIL() << "start-clustercontroller failed";
         }
@@ -167,7 +167,7 @@ protected:
 
     void killProvider()
     {
-        int status = std::system("kill-provider.sh");
+        int status = std::system("./kill-provider.sh");
         if (!WIFEXITED(status) || WEXITSTATUS(status)) {
             FAIL() << "kill-provider failed";
         }
@@ -176,7 +176,7 @@ protected:
     void startProvider()
     {
         // providerDomain
-        std::string cmd = "start-provider.sh cpp " + providerDomain;
+        std::string cmd = "./start-provider.sh cpp " + providerDomain;
         int status = std::system(cmd.c_str());
         if (!WIFEXITED(status) || WEXITSTATUS(status)) {
             FAIL() << "start-provider failed";

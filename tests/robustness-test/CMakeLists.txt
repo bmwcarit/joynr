@@ -167,6 +167,10 @@ file(GLOB_RECURSE GENERATED_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "src/main/generated-cpp/*.cpp"
 )
 
+file(GLOB_RECURSE TEST_SCRIPTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "*.sh"
+)
+
 set(GENERATED_INCLUDE_DIRS
     "src/main/generated-cpp/include"
 )
@@ -274,15 +278,12 @@ target_link_libraries(robustness-tests-ws
     ${Joynr_LIB_WS_LIBRARIES}
 )
 
-# copy joynr resources and default settings
+# copy runtime dependencies to output directory
 file(
-    COPY ${Joynr_RESOURCES_DIR}
-    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-)
-
-# copy joynr executables
-file(
-    COPY ${Joynr_EXECUTABLES}
+    COPY
+    ${Joynr_RESOURCES_DIR}
+    ${Joynr_EXECUTABLES}
+    ${TEST_SCRIPTS}
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
