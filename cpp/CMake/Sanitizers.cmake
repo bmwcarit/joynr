@@ -4,7 +4,7 @@ macro(AddSanitizerConfig CONFIG_NAME SANITIZER OPTIMIZER_LEVEL)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND ${ARGC} GREATER 3)
         SET(BLACKLIST_FLAG " -fsanitize-blacklist=${CMAKE_CURRENT_LIST_DIR}/sanitizer-blacklist/${ARGV3}")
     endif()
-    set(COMPILER_FLAGS "-O${OPTIMIZER_LEVEL} -g -fsanitize=${SANITIZER} -fno-omit-frame-pointer -fno-optimize-sibling-calls${BLACKLIST_FLAG}")
+    set(COMPILER_FLAGS "-O${OPTIMIZER_LEVEL} -g -fsanitize=${SANITIZER} -DBOOST_ASIO_HAS_STD_CHRONO -fno-inline -fno-omit-frame-pointer -fno-optimize-sibling-calls${BLACKLIST_FLAG}")
     set(CMAKE_C_FLAGS_${CONFIG_NAME} ${COMPILER_FLAGS}
         CACHE STRING "C compiler flags when building for ${CONFIG_NAME}"
     )
@@ -31,6 +31,10 @@ endmacro(AddSanitizerConfig)
 # AddressSanitizer (ASan) is a memory error detector for C/C++.
 # see https://github.com/google/sanitizers/wiki/AddressSanitizer for more information.
 AddSanitizerConfig(ASAN address 1)
+
+# LeakSanitizer (LSan) is a memory leak detector for C/C++.
+# see https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer for more information.
+AddSanitizerConfig(LSAN leak 1)
 
 # ThreadSanitizer (TSan) is a data race detector for C/C++.
 # see https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual for more information.
