@@ -56,11 +56,13 @@ class MapTypeGenerator extends MapTemplate {
 		 * This is the generated map type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
 		 * <br/>Generation date: «generationDate»
 		 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
+		 *
+		 * @returns {«type.joynrName»} a new instance of a «type.joynrName»
 		 */
 		var «type.joynrName» = function «type.joynrName»(settings){
 			if (!(this instanceof «type.joynrName»)) {
 				// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-				return new «type.joynrName»(members);
+				return new «type.joynrName»(settings);
 			}
 
 			/**
@@ -77,18 +79,19 @@ class MapTypeGenerator extends MapTemplate {
 			});
 
 			if (settings !== undefined) {
-				var clone = JSON.parse(JSON.stringify(settings));
-				for (var key in clone) {
-					this[key] = clone[key];
+				var clone = JSON.parse(JSON.stringify(settings)), settingKey;
+				for (settingKey in clone) {
+					this[settingKey] = clone[settingKey];
 				}
 			}
 
 			Object.defineProperty(this, 'checkMembers', {
 				enumerable: false,
 				value: function checkMembers(check) {
-					for (var key in this) {
-						if (this.hasOwnProperty(key)) {
-							check(this[key], «type.valueType.checkPropertyTypeName(false)», key);
+					var memberKey;
+					for (memberKey in this) {
+						if (this.hasOwnProperty(memberKey)) {
+							check(this[memberKey], «type.valueType.checkPropertyTypeName(false)», memberKey);
 						}
 					}
 				}
