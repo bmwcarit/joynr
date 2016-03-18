@@ -142,7 +142,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * @param minIntervalMs
      *            The publisher will keep a minimum idle time of minIntervalMs
      *            between two successive notifications.
-     * @return the subscriptionQos (fluent interface)
+     * @return this (fluent interface).
      */
     @Deprecated
     public OnChangeSubscriptionQos setMinInterval(final long minIntervalMs) {
@@ -168,6 +168,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * @param minIntervalMs
      *            The publisher will keep a minimum idle time of minIntervalMs
      *            between two successive notifications.
+     * @return this (fluent interface).
      */
     public OnChangeSubscriptionQos setMinIntervalMs(final long minIntervalMs) {
         return setMinIntervalMsInternal(minIntervalMs);

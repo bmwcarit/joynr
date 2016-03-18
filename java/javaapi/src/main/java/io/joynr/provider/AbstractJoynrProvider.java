@@ -42,7 +42,8 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
     protected ConcurrentHashMap<String, List<BroadcastFilter>> broadcastFilters;
     /**
      * Provider quality of service settings
-     * @deprecated Will be removed by end of the year 2016. Use external ProviderQos as input for {@link io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)} instead.
+     * @deprecated Will be removed by end of the year 2016. Use external ProviderQos as input for
+     * <code>io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)}</code> instead.
      */
     @Deprecated
     protected ProviderQos providerQos = new ProviderQos();
@@ -54,7 +55,8 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
     }
 
     /**
-     * @deprecated Will be removed by end of the year 2016. Use external ProviderQos as input for {@link io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)} instead.
+     * @deprecated Will be removed by end of the year 2016. Use external ProviderQos as input for
+     * <code>io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)}</code> instead.
      * @return provider QoS that applies to this provider instance.
      */
     @Deprecated

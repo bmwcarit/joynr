@@ -223,6 +223,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      *            subscriptionManager will issue a publication missed.
      *
      * @see #clearAlertAfterInterval()
+     * @return this (fluent interface).
      */
     public PeriodicSubscriptionQos setAlertAfterIntervalMs(final long alertAfterIntervalMs) {
         if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS) {
@@ -321,7 +322,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      *
      * @param periodMs
      *            The publisher will send a notification at least every period_ms.
-     * @return
+     * @return this (fluent interface).
      */
     public PeriodicSubscriptionQos setPeriodMs(long periodMs) {
         if (periodMs < MIN_PERIOD_MS) {

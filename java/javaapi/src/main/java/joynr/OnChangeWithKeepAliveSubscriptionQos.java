@@ -260,7 +260,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            Any value bigger than this maximum will be treated as the absolute
      *            maximum setting of {@value #MAX_MAX_INTERVAL_MS} milliseconds.
      *            </ul>
-     * @return the subscriptionQos (fluent interface)
+     * @return this (fluent interface).
      */
     @Deprecated
     public OnChangeWithKeepAliveSubscriptionQos setMaxInterval(long maxIntervalMs) {
@@ -292,6 +292,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            Any value bigger than this maximum will be treated as the absolute
      *            maximum setting of {@value #MAX_MAX_INTERVAL_MS} milliseconds.
      *            </ul>
+     * @return this (fluent interface).
      */
     public OnChangeWithKeepAliveSubscriptionQos setMaxIntervalMs(long maxIntervalMs) {
         if (maxIntervalMs < MIN_MAX_INTERVAL_MS) {
@@ -374,7 +375,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            Any value bigger than this maximum will be treated as the
      *            absolute maximum setting of 2.592.000.000 milliseconds.
      *            </ul>
-     * @return the subscriptionQos (fluent interface)
+     * @return this (fluent interface).
      */
     @Deprecated
     public OnChangeWithKeepAliveSubscriptionQos setAlertAfterInterval(final long alertAfterIntervalMs) {
@@ -402,7 +403,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
      *            Any value bigger than this maximum will be treated as the
      *            absolute maximum setting of 2.592.000.000 milliseconds.
      *            </ul>
-     * @return the subscriptionQos (fluent interface)
+     * @return this (fluent interface).
      */
     public OnChangeWithKeepAliveSubscriptionQos setAlertAfterIntervalMs(final long alertAfterIntervalMs) {
         if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS) {
