@@ -56,11 +56,13 @@ class EnumTypeGenerator extends EnumTemplate {
 		 * This is the generated enum type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
 		 * <br/>Generation date: «generationDate»
 		 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
+		 *
+		 * @returns {«type.joynrName»} a new instance of a «type.joynrName»
 		 */
 		var «type.joynrName» = function «type.joynrName»(settings){
 			if (!(this instanceof «type.joynrName»)) {
 				// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-				return new «type.joynrName»(members);
+				return new «type.joynrName»(settings);
 			}
 
 			/**
