@@ -68,9 +68,12 @@ Default«interfaceName»Provider::Default«interfaceName»Provider() :
 	std::chrono::milliseconds millisSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
 			std::chrono::system_clock::now().time_since_epoch()
 	);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
 	providerQos.setPriority(millisSinceEpoch.count());
 	providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
 	providerQos.setSupportsOnChangeSubscriptions(true);
+#pragma GCC diagnostic pop
 }
 
 Default«interfaceName»Provider::~Default«interfaceName»Provider()
@@ -147,8 +150,9 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		«ENDFOR»
 		«FOR argument : method.outputParameters»
 			«val outputParamType = argument.typeName»
-			«IF !isArray(argument) && argument.type.predefined != null»
-				«val type = argument.type.predefined»
+			«val argumentType = argument.type.resolveTypeDef»
+			«IF !argument.isArray && argumentType.isPrimitive»
+				«val type = argumentType.getPrimitive»
 				«IF type==FBasicTypeId.STRING»
 					«outputParamType» «argument.joynrName» = "Hello World";
 				«ELSEIF type==FBasicTypeId.BOOLEAN»

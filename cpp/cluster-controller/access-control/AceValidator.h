@@ -20,9 +20,10 @@
 #ifndef ACEVALIDATOR_H
 #define ACEVALIDATOR_H
 
+#include <boost/optional.hpp>
+
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
-#include "joynr/Optional.h"
 
 namespace joynr
 {
@@ -33,10 +34,12 @@ namespace joynr
 class AceValidator
 {
 public:
-    AceValidator(
-            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& masterAceOptional,
-            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& mediatorAceOptional,
-            const Optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerAceOptional);
+    AceValidator(const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+                         masterAceOptional,
+                 const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+                         mediatorAceOptional,
+                 const boost::optional<infrastructure::DacTypes::OwnerAccessControlEntry>&
+                         ownerAceOptional);
 
     ~AceValidator() = default;
 
@@ -49,11 +52,11 @@ public:
     bool isMediatorValid();
 
 private:
-    Optional<infrastructure::DacTypes::MasterAccessControlEntry> masterAceOptional;
-    Optional<infrastructure::DacTypes::MasterAccessControlEntry> mediatorAceOptional;
-    Optional<infrastructure::DacTypes::OwnerAccessControlEntry> ownerAceOptional;
+    boost::optional<infrastructure::DacTypes::MasterAccessControlEntry> masterAceOptional;
+    boost::optional<infrastructure::DacTypes::MasterAccessControlEntry> mediatorAceOptional;
+    boost::optional<infrastructure::DacTypes::OwnerAccessControlEntry> ownerAceOptional;
 
-    bool validateOwner(infrastructure::DacTypes::MasterAccessControlEntry targetMasterAce);
+    bool validateOwner(const infrastructure::DacTypes::MasterAccessControlEntry& targetMasterAce);
 };
 
 } // namespace joynr

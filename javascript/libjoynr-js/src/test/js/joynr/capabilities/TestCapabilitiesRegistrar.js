@@ -152,14 +152,13 @@ joynrTestRequire(
                         });
 
                         it("is has all members", function() {
-                            expect(capabilitiesRegistrar.registerCapability).toBeDefined();
-                            expect(typeof capabilitiesRegistrar.registerCapability === "function")
+                            expect(capabilitiesRegistrar.registerProvider).toBeDefined();
+                            expect(typeof capabilitiesRegistrar.registerProvider === "function")
                                     .toBeTruthy();
                         });
 
                         it("is checks the provider's implementation", function() {
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
+                            capabilitiesRegistrar.registerProvider(
                                     domain,
                                     provider,
                                     providerQos);
@@ -176,8 +175,7 @@ joynrTestRequire(
 
                                     expect(
                                             function() {
-                                                capabilitiesRegistrar.registerCapability(
-                                                        authToken,
+                                                capabilitiesRegistrar.registerProvider(
                                                         domain,
                                                         provider,
                                                         providerQos);
@@ -191,21 +189,18 @@ joynrTestRequire(
                                 });
 
                         it("fetches participantId from the participantIdStorage", function() {
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
+                            capabilitiesRegistrar.registerProvider(
                                     domain,
                                     provider,
                                     providerQos);
                             expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalled();
                             expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalledWith(
-                                    authToken,
                                     domain,
                                     provider);
                         });
 
                         it("registers next hop with routing table", function() {
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
+                            capabilitiesRegistrar.registerProvider(
                                     domain,
                                     provider,
                                     providerQos);
@@ -216,8 +211,7 @@ joynrTestRequire(
                         });
 
                         it("registers provider at RequestReplyManager", function() {
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
+                            capabilitiesRegistrar.registerProvider(
                                     domain,
                                     provider,
                                     providerQos);
@@ -230,8 +224,7 @@ joynrTestRequire(
                         it(
                                 "registers a provider with PublicationManager if it has an attribute",
                                 function() {
-                                    capabilitiesRegistrar.registerCapability(
-                                            authToken,
+                                    capabilitiesRegistrar.registerProvider(
                                             domain,
                                             provider,
                                             providerQos);
@@ -242,8 +235,7 @@ joynrTestRequire(
                                 });
 
                         it("registers capability at capabilities stub", function() {
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
+                            capabilitiesRegistrar.registerProvider(
                                     domain,
                                     provider,
                                     providerQos);
@@ -262,8 +254,7 @@ joynrTestRequire(
                             var loggingContext = {
                                 myContext : "myContext"
                             };
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
+                            capabilitiesRegistrar.registerProvider(
                                     domain,
                                     provider,
                                     providerQos,
@@ -281,8 +272,7 @@ joynrTestRequire(
                             ]);
 
                             runs(function() {
-                                capabilitiesRegistrar.registerCapability(
-                                        authToken,
+                                capabilitiesRegistrar.registerProvider(
                                         domain,
                                         provider,
                                         providerQos).then(spy.onFulfilled).catch(spy.onRejected);
@@ -312,8 +302,7 @@ joynrTestRequire(
                                     discoveryStubSpy.add.andReturn(Promise.reject(new Error("Some error.")));
 
                                     runs(function() {
-                                        capabilitiesRegistrar.registerCapability(
-                                                authToken,
+                                        capabilitiesRegistrar.registerProvider(
                                                 domain,
                                                 provider,
                                                 providerQos).then(spy.onFulfilled).catch(spy.onRejected);
@@ -333,6 +322,15 @@ joynrTestRequire(
                                     });
                                 });
 
+                        it("passes calls to deprecated registerCapabilitiy to registerProvider without authToken", function() {
+                            spyOn(capabilitiesRegistrar, "registerProvider");
+                            capabilitiesRegistrar.registerCapability(
+                                    authToken,
+                                    domain,
+                                    provider,
+                                    providerQos);
+                            expect(capabilitiesRegistrar.registerProvider).toHaveBeenCalledWith(domain, provider, providerQos);
+                        });
                     });
 
         }); // require

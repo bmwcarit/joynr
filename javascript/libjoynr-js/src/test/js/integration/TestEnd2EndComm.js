@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,18 +76,18 @@ joynrTestRequire(
 
                                     subscriptionQosOnChange =
                                             new joynr.proxy.OnChangeSubscriptionQos({
-                                                minInterval : 50
+                                                minIntervalMs : 50
                                             });
 
                                     subscriptionQosInterval =
                                             new joynr.proxy.PeriodicSubscriptionQos({
-                                                period : 1000
+                                                periodMs : 1000
                                             });
 
                                     subscriptionQosMixed =
                                             new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
-                                                minInterval : 100,
-                                                maxInterval : 1000
+                                                minIntervalMs : 100,
+                                                maxIntervalMs : 1000
                                             });
 
                                     IntegrationUtils.initializeWebWorker(
@@ -608,7 +608,7 @@ joynrTestRequire(
                         });
 
                         it("subscribe to broadcastWithEnum and get burst", function() {
-                            subscriptionQosOnChange.minInterval = 0;
+                            subscriptionQosOnChange.minIntervalMs = 0;
                             var times = 100, spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {
                                 broadcastName: "broadcastWithEnum",
@@ -1061,7 +1061,7 @@ joynrTestRequire(
                         });
 
                         it("publishes a value with an ending subscription", function() {
-                            subscriptionQosMixed.expiryDate = subscriptionLength + Date.now();
+                            subscriptionQosMixed.expiryDateMs = subscriptionLength + Date.now();
                             publishesValue(subscriptionQosMixed);
                         });
 
@@ -1194,7 +1194,7 @@ joynrTestRequire(
                                             "onReceive",
                                             "onError"
                                         ]);
-                                        subscriptionQosMixed.expiryDate =
+                                        subscriptionQosMixed.expiryDateMs =
                                                 subscriptionLength + Date.now();
                                         radioProxy.mixedSubscriptions.subscribe({
                                             subscriptionQos : subscriptionQosMixed,
@@ -1238,7 +1238,7 @@ joynrTestRequire(
                                                 return (spy.onReceive.callCount > 0 || spy.onError.callCount > 0);
                                             },
                                             "the interval publication to occur",
-                                            subscriptionQosMixed.maxInterval + provisioning.ttl);
+                                            subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
 
                                     runs(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
@@ -1260,7 +1260,7 @@ joynrTestRequire(
                                         spy.onReceive.reset();
                                         joynr.util.LongTimer.setTimeout(function() {
                                             timeout = true;
-                                        }, subscriptionQosMixed.minInterval / 2);
+                                        }, subscriptionQosMixed.minIntervalMs / 2);
                                     });
 
                                     waitsFor(
@@ -1268,7 +1268,7 @@ joynrTestRequire(
                                                 return timeout || spy.onReceive.callCount > 0;
                                             },
                                             "the second onChange publication to not occur",
-                                            subscriptionQosMixed.minInterval + safetyTimeout);
+                                            subscriptionQosMixed.minIntervalMs + safetyTimeout);
 
                                     runs(function() {
                                         expect(spy.onReceive).not.toHaveBeenCalled();
@@ -1278,7 +1278,7 @@ joynrTestRequire(
                                             function() {
                                                 return spy.onReceive.callCount > 0;
                                             },
-                                            "the second onChange publication occur after minInterval",
+                                            "the second onChange publication occur after minIntervalMs",
                                             provisioning.ttl + safetyTimeout);
 
                                     runs(function() {
@@ -1311,8 +1311,8 @@ joynrTestRequire(
                                             "onReceive",
                                             "onError"
                                         ]);
-                                        subscriptionQosMixed.expiryDate =
-                                                subscriptionQosMixed.maxInterval * 1.5 + Date.now();
+                                        subscriptionQosMixed.expiryDateMs =
+                                                subscriptionQosMixed.maxIntervalMs * 1.5 + Date.now();
                                         radioProxy.isOn.subscribe({
                                             subscriptionQos : subscriptionQosMixed,
                                             onReceive : spy.onReceive,
@@ -1354,7 +1354,7 @@ joynrTestRequire(
                                                 return (spy.onReceive.callCount > 0 || spy.onError.callCount > 0);
                                             },
                                             "the interval onReceive to occur",
-                                            subscriptionQosMixed.maxInterval + provisioning.ttl);
+                                            subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
 
                                     runs(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
@@ -1363,7 +1363,7 @@ joynrTestRequire(
 
                                         joynr.util.LongTimer.setTimeout(function() {
                                             timeout = true;
-                                        }, subscriptionQosMixed.maxInterval + provisioning.ttl);
+                                        }, subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
                                     });
 
                                     waitsFor(
@@ -1371,7 +1371,7 @@ joynrTestRequire(
                                                 return timeout || spy.onReceive.callCount > 0;
                                             },
                                             "the interval onReceive not to occur again",
-                                            subscriptionQosMixed.maxInterval
+                                            subscriptionQosMixed.maxIntervalMs
                                                 + provisioning.ttl
                                                 + safetyTimeout);
 

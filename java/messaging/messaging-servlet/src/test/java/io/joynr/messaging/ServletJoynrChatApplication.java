@@ -24,6 +24,7 @@ import io.joynr.provider.Promise;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.chat.DefaultMessengerProvider;
 import joynr.chat.MessageTypeCollection.Message;
+import joynr.types.ProviderQos;
 
 public class ServletJoynrChatApplication extends AbstractJoynrApplication {
 
@@ -47,7 +48,9 @@ public class ServletJoynrChatApplication extends AbstractJoynrApplication {
             }
 
         };
-        runtime.registerProvider(localDomain, provider);
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setPriority(System.currentTimeMillis());
+        runtime.registerProvider(localDomain, provider, providerQos);
     }
 
     @Override

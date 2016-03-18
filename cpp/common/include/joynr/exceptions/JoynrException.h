@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 
 #include "joynr/JoynrCommonExport.h"
 
+#include <chrono>
 #include <exception>
 #include <string>
 #include "joynr/Variant.h"
@@ -42,7 +43,7 @@ public:
      *
      * @param other The JoynrException to be copied from.
      */
-    JoynrException(const JoynrException& other) noexcept;
+    JoynrException(const JoynrException& other) = default;
     ~JoynrException() noexcept override = default;
     /**
      * @return The detail message string of the exception.
@@ -53,7 +54,7 @@ public:
      */
     virtual const std::string getMessage() const noexcept;
     /**
-     * return The typeName of the exception used for serialization.
+     * return The typeName of the exception used for serialization and logging.
      */
     virtual const std::string getTypeName() const;
     /**
@@ -65,7 +66,7 @@ public:
      */
     bool operator==(const JoynrException& other) const;
     /**
-     * @brief The typeName of the exception used for serialization.
+     * @brief The typeName of the exception used for serialization and logging.
      */
     static const std::string TYPE_NAME;
     /**
@@ -112,7 +113,7 @@ public:
     const std::string getTypeName() const override;
     JoynrRuntimeException* clone() const override;
     /**
-     * @brief The typeName used for serialization.
+     * @brief The typeName used for serialization and logging.
      */
     static const std::string TYPE_NAME;
 };
@@ -136,9 +137,89 @@ public:
     const std::string getTypeName() const override;
     JoynrTimeOutException* clone() const override;
     /**
-     * @brief The typeName used for serialization.
+     * @brief The typeName used for serialization and logging.
      */
     static const std::string TYPE_NAME;
+};
+
+/**
+ * @brief Joynr exception to report unresolvable send errors
+ */
+class JOYNRCOMMON_EXPORT JoynrMessageNotSentException : public JoynrRuntimeException
+{
+public:
+    /**
+     * @brief Constructor for a JoynrMessageNotSentException without detail message.
+     */
+    JoynrMessageNotSentException() noexcept = default;
+    /**
+     * @brief Constructor for a JoynrMessageNotSentException with detail message.
+     *
+     * @param message reason why the message could not be sent
+     */
+    explicit JoynrMessageNotSentException(const std::string& message) noexcept;
+    const std::string getTypeName() const override;
+    JoynrMessageNotSentException* clone() const override;
+    /**
+     * @brief The typeName used for serialization and logging.
+     */
+    static const std::string TYPE_NAME;
+};
+
+/**
+ * @brief Joynr exception to report send errors which might be solved after some delay.
+ */
+class JOYNRCOMMON_EXPORT JoynrDelayMessageException : public JoynrRuntimeException
+{
+public:
+    /**
+     * @brief Constructor for a JoynrDelayMessageException without detail message and default delay.
+     */
+    JoynrDelayMessageException() noexcept;
+    /**
+     * @brief Copy Constructor
+     *
+     * @param other The JoynrDelayMessageException to copy from.
+     */
+    JoynrDelayMessageException(const JoynrDelayMessageException& other) = default;
+    /**
+     * @brief Constructor for a JoynrDelayMessageException with detail message and default delay.
+     *
+     * @param message reason why the message is being delayed
+     */
+    explicit JoynrDelayMessageException(const std::string& message) noexcept;
+    /**
+     * @brief Constructor for a JoynrDelayMessageException with detail message and delay.
+     *
+     * @param message reason why the message is being delayed
+     */
+    explicit JoynrDelayMessageException(const std::chrono::milliseconds delayMs,
+                                        const std::string& message) noexcept;
+    /**
+     * @return The delay in milliseconds.
+     */
+    std::chrono::milliseconds getDelayMs() const noexcept;
+    /**
+     * @brief Set the delay.
+     *
+     * @param delayMs The delay in milliseconds.
+     */
+    virtual void setDelayMs(const std::chrono::milliseconds& delayMs) noexcept;
+    const std::string getTypeName() const override;
+    JoynrDelayMessageException* clone() const override;
+    /**
+     * Equality operator
+     */
+    bool operator==(const JoynrDelayMessageException& other) const;
+
+    /**
+     * @brief The typeName used for serialization and logging.
+     */
+    static const std::string TYPE_NAME;
+    static const std::chrono::milliseconds DEFAULT_DELAY_MS;
+
+private:
+    std::chrono::milliseconds delayMs;
 };
 
 /**
@@ -174,7 +255,7 @@ public:
     const std::string getTypeName() const override;
     DiscoveryException* clone() const override;
     /**
-     * @brief The typeName used for serialization.
+     * @brief The typeName used for serialization and logging.
      */
     static const std::string TYPE_NAME;
 };
@@ -199,7 +280,7 @@ public:
     const std::string getTypeName() const override;
     MethodInvocationException* clone() const override;
     /**
-     * @brief The typeName used for serialization.
+     * @brief The typeName used for serialization and logging.
      */
     static const std::string TYPE_NAME;
 };
@@ -225,7 +306,7 @@ public:
     const std::string getTypeName() const override;
     ProviderRuntimeException* clone() const override;
     /**
-     * @brief The typeName used for serialization.
+     * @brief The typeName used for serialization and logging.
      */
     static const std::string TYPE_NAME;
 };
@@ -245,7 +326,7 @@ public:
      *
      * @param other The PublicationMissedException to copy from.
      */
-    PublicationMissedException(const PublicationMissedException& other) noexcept;
+    PublicationMissedException(const PublicationMissedException& other) = default;
     /**
      * @brief Constructor for a PublicationMissedException with subscription ID.
      *
@@ -272,7 +353,7 @@ public:
      */
     bool operator==(const PublicationMissedException& other) const;
     /**
-     * @brief The typeName used for serialization.
+     * @brief The typeName used for serialization and logging.
      */
     static const std::string TYPE_NAME;
 
@@ -297,7 +378,7 @@ public:
      *
      * @param other The ApplicationException to copy from.
      */
-    ApplicationException(const ApplicationException& other) noexcept;
+    ApplicationException(const ApplicationException& other) = default;
 
     /**
      * @brief Constructor for an ApplicationException with detail message.
@@ -305,7 +386,8 @@ public:
      * @param message Description of the reported error
      * @param value The error Enum value
      * @param name The error Enum literal
-     * @param typeName the type name of the error enumeration type (used for serialization)
+     * @param typeName the type name of the error enumeration type (used for serialization and
+     * logging)
      */
     ApplicationException(const std::string& message,
                          const Variant& value,
@@ -350,7 +432,7 @@ public:
      */
     bool operator==(const ApplicationException& other) const;
     /**
-     * @brief The typeName of the exception used for serialization.
+     * @brief The typeName of the exception used for serialization and logging.
      */
     static const std::string TYPE_NAME;
 

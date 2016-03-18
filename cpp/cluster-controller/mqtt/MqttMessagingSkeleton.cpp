@@ -32,12 +32,13 @@ MqttMessagingSkeleton::MqttMessagingSkeleton(MessageRouter& messageRouter)
 {
 }
 
-void MqttMessagingSkeleton::transmit(JoynrMessage& message)
+void MqttMessagingSkeleton::transmit(
+        JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        // TODO ca: check if replyTo header info is available?
         std::string replyChannelId = message.getHeaderReplyChannelId();
 
         try {
@@ -48,7 +49,7 @@ void MqttMessagingSkeleton::transmit(JoynrMessage& message)
             messageRouter.addNextHop(message.getHeaderFrom(), addressPtr);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,
-                            "could not deserialize MqqtAddress from {} - error: {}",
+                            "could not deserialize MqttAddress from {} - error: {}",
                             replyChannelId,
                             e.what());
             // do not try to route the message if address is not valid
@@ -56,7 +57,11 @@ void MqttMessagingSkeleton::transmit(JoynrMessage& message)
         }
     }
 
-    messageRouter.route(message);
+    try {
+        messageRouter.route(message);
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        onFailure(e);
+    }
 }
 
 void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
@@ -68,6 +73,10 @@ void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
             JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
             return;
         }
+        if (msg.getPayload().empty()) {
+            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
+            return;
+        }
         if (!msg.containsHeaderExpiryDate()) {
             JOYNR_LOG_ERROR(logger,
                             "received message [msgId=[{}] without decay time - dropping message",
@@ -75,10 +84,17 @@ void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
             return;
         }
         JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
-        transmit(msg);
+
+        auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Incoming Message with ID {} could not be sent! reason: {}",
+                            msg.getHeaderMessageId(),
+                            e.getMessage());
+        };
+        transmit(msg, onFailure);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
-                        "Unable to deserialize message. Raw message: {} - error:",
+                        "Unable to deserialize message. Raw message: {} - error: {}",
                         message,
                         e.what());
     }

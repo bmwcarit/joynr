@@ -40,6 +40,7 @@ import joynr.types.ProviderScope;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -49,6 +50,7 @@ import java.util.Properties;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = "./src/test/AndroidManifest.xml")
+@Ignore
 public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
 
     private TestActivity activity;

@@ -82,9 +82,6 @@ private:
     /*! Lifecycle for @ref threads */
     void threadLifecycle();
 
-    /*! Report thread statistics */
-    void reportThreadPoolStats();
-
 private:
     /*! Logger */
     ADD_LOGGER(ThreadPool);

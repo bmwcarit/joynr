@@ -28,6 +28,7 @@
 #include "joynr/ProxyBuilder.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/ProxyFactory.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/LocalDiscoveryAggregator.h"
@@ -52,10 +53,7 @@ public:
     /**
      * @brief Destroys a JoynrRuntime instance
      */
-    virtual ~JoynrRuntime()
-    {
-        delete discoveryProxy;
-    }
+    virtual ~JoynrRuntime() = default;
 
     /**
      * @brief Registers a provider with the joynr communication framework.
@@ -70,9 +68,32 @@ public:
     template <class TIntfProvider>
     std::string registerProvider(const std::string& domain, std::shared_ptr<TIntfProvider> provider)
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
+        joynr::types::ProviderQos providerQos = provider->getProviderQos();
+#pragma GCC diagnostic pop
+        return registerProvider<TIntfProvider>(domain, provider, providerQos);
+    }
+
+    /**
+     * @brief Registers a provider with the joynr communication framework.
+     * @tparam TIntfProvider The interface class of the provider to register. The corresponding
+     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
+     * @param domain The domain to register the provider on. Has to be
+     * identical at the client to be able to find the provider.
+     * @param provider The provider instance to register.
+     * @param providerQos The qos associated with the registered provider.
+     * @return The globaly unique participant ID of the provider. It is assigned by the joynr
+     * communication framework.
+     */
+    template <class TIntfProvider>
+    std::string registerProvider(const std::string& domain,
+                                 std::shared_ptr<TIntfProvider> provider,
+                                 const joynr::types::ProviderQos& providerQos)
+    {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider);
+        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider, providerQos);
     }
 
     /**
@@ -126,8 +147,13 @@ public:
                     "Exception in JoynrRuntime: Creating a proxy before "
                     "startMessaging was called is not yet supported.");
         }
-        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(
-                proxyFactory, *discoveryProxy, domain, dispatcherAddress, messageRouter);
+        ProxyBuilder<TIntfProxy>* builder =
+                new ProxyBuilder<TIntfProxy>(proxyFactory,
+                                             *discoveryProxy,
+                                             domain,
+                                             dispatcherAddress,
+                                             messageRouter,
+                                             messagingSettings.getMaximumTtlMs());
         return builder;
     }
 
@@ -153,12 +179,14 @@ protected:
             : proxyFactory(nullptr),
               participantIdStorage(nullptr),
               capabilitiesRegistrar(nullptr),
+              messagingSettings(settings),
               systemServicesSettings(settings),
               dispatcherAddress(nullptr),
               messageRouter(nullptr),
               discoveryProxy(nullptr),
               publicationManager(nullptr)
     {
+        messagingSettings.printSettings();
         systemServicesSettings.printSettings();
     }
 
@@ -167,7 +195,11 @@ protected:
     /** @brief Creates and persists participant id */
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */
-    CapabilitiesRegistrar* capabilitiesRegistrar;
+    std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
+    /**
+     * @brief Messaging settings
+     */
+    MessagingSettings messagingSettings;
     /** @brief System services settings */
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
@@ -175,7 +207,7 @@ protected:
     /** @brief MessageRouter instance */
     std::shared_ptr<MessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */
-    LocalDiscoveryAggregator* discoveryProxy;
+    std::unique_ptr<LocalDiscoveryAggregator> discoveryProxy;
     /**
      * @brief Publication manager receives subscription requests and prepares publications
      * which are send back to the subscription manager.

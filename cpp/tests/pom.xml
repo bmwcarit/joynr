@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>0.15.1</version>
+		<version>0.16.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -81,16 +81,6 @@
 						</goals>
 						<configuration>
 							<model>${basedir}/../../basemodel/src/test/franca</model>
-						</configuration>
-					</execution>
-					<execution>
-						<id>generate-cpp-test-classes</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>${basedir}/model</model>
 						</configuration>
 					</execution>
 				</executions>

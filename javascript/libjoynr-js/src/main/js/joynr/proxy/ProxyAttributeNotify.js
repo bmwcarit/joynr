@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,18 +62,6 @@ define("joynr/proxy/ProxyAttributeNotify", [ "joynr/proxy/ProxyAttribute"
          *
          * @param {Object|SubscriptionQos}
          *            settings.subscriptionQos the subscription quality of service object
-         * @param {Number}
-         *            settings.subscriptionQos.minInterval defines how often an update may be sent
-         * @param {Number}
-         *            settings.subscriptionQos.maxInterval defines how long to wait before sending
-         *            an update even if the value did not change or when onChange is false
-         * @param {Number}
-         *            settings.subscriptionQos.expiryDate how long is the subscription valid
-         * @param {Number}
-         *            settings.subscriptionQos.alertAfterInterval defines how long to wait for an
-         *            update before publicationMissed is called
-         * @param {Number}
-         *            settings.subscriptionQos.publicationTtl time to live for publication messages
          *
          * @param {string}
          *            settings.subscriptionId optional parameter subscriptionId to reuse a

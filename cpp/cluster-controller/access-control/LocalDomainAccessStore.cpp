@@ -403,23 +403,23 @@ std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const std::s
     JOYNR_LOG_DEBUG(logger, "execute: entering getDomainRoleEntries with userId {}", userId);
 
     std::vector<DomainRoleEntry> domainRoles;
-    Optional<DomainRoleEntry> masterDre = getDomainRole(userId, Role::MASTER);
+    boost::optional<DomainRoleEntry> masterDre = getDomainRole(userId, Role::MASTER);
     if (masterDre) {
         // add dre to resultset only if it defines role for some domain
-        domainRoles.push_back(masterDre.getValue());
+        domainRoles.push_back(*masterDre);
     }
 
-    Optional<DomainRoleEntry> ownerDre = getDomainRole(userId, Role::OWNER);
+    boost::optional<DomainRoleEntry> ownerDre = getDomainRole(userId, Role::OWNER);
     if (ownerDre) {
         // add dre to resultset only if it defines role for some domain
-        domainRoles.push_back(ownerDre.getValue());
+        domainRoles.push_back(*ownerDre);
     }
 
     return domainRoles;
 }
 
-Optional<DomainRoleEntry> LocalDomainAccessStore::getDomainRole(const std::string& uid,
-                                                                Role::Enum role)
+boost::optional<DomainRoleEntry> LocalDomainAccessStore::getDomainRole(const std::string& uid,
+                                                                       Role::Enum role)
 {
     // Execute a query to get the domain role entry
     QSqlQuery query;
@@ -436,11 +436,13 @@ Optional<DomainRoleEntry> LocalDomainAccessStore::getDomainRole(const std::strin
         domains.push_back(query.value(domainField).toString().toStdString());
     }
 
+    boost::optional<DomainRoleEntry> entry;
     if (domains.empty()) {
-        return Optional<DomainRoleEntry>::createNull();
+        return entry;
     }
 
-    return DomainRoleEntry(uid, domains, role);
+    entry = DomainRoleEntry(uid, domains, role);
+    return entry;
 }
 
 bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntry)
@@ -511,7 +513,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
     return extractMasterAces(query);
 }
 
-Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntry(
+boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntry(
         const std::string& uid,
         const std::string& domain,
         const std::string& interfaceName,
@@ -588,7 +590,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
     return extractMasterAces(query);
 }
 
-Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntry(
+boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntry(
         const std::string& uid,
         const std::string& domain,
         const std::string& interfaceName,
@@ -609,14 +611,14 @@ bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
 
     bool updateSuccess = false;
 
-    Optional<MasterAccessControlEntry> masterAceOptional =
+    boost::optional<MasterAccessControlEntry> masterAceOptional =
             getMasterAccessControlEntry(updatedMediatorAce.getUid(),
                                         updatedMediatorAce.getDomain(),
                                         updatedMediatorAce.getInterfaceName(),
                                         updatedMediatorAce.getOperation());
     AceValidator aceValidator(masterAceOptional,
-                              Optional<MasterAccessControlEntry>(updatedMediatorAce),
-                              Optional<OwnerAccessControlEntry>::createNull());
+                              boost::optional<MasterAccessControlEntry>(updatedMediatorAce),
+                              boost::optional<OwnerAccessControlEntry>());
 
     if (aceValidator.isMediatorValid()) {
         // Add/update a mediator ACE
@@ -688,7 +690,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
     return extractOwnerAces(query);
 }
 
-Optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntry(
+boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntry(
         const std::string& userId,
         const std::string& domain,
         const std::string& interfaceName,
@@ -709,19 +711,19 @@ bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
 
     bool updateSuccess = false;
 
-    Optional<MasterAccessControlEntry> masterAceOptional =
+    boost::optional<MasterAccessControlEntry> masterAceOptional =
             getMasterAccessControlEntry(updatedOwnerAce.getUid(),
                                         updatedOwnerAce.getDomain(),
                                         updatedOwnerAce.getInterfaceName(),
                                         updatedOwnerAce.getOperation());
-    Optional<MasterAccessControlEntry> mediatorAceOptional =
+    boost::optional<MasterAccessControlEntry> mediatorAceOptional =
             getMediatorAccessControlEntry(updatedOwnerAce.getUid(),
                                           updatedOwnerAce.getDomain(),
                                           updatedOwnerAce.getInterfaceName(),
                                           updatedOwnerAce.getOperation());
     AceValidator aceValidator(masterAceOptional,
                               mediatorAceOptional,
-                              Optional<OwnerAccessControlEntry>(updatedOwnerAce));
+                              boost::optional<OwnerAccessControlEntry>(updatedOwnerAce));
 
     if (aceValidator.isOwnerValid()) {
         QSqlQuery query;
@@ -1033,13 +1035,14 @@ QSqlQuery LocalDomainAccessStore::createGetAceQuery(const std::string& sqlQuery,
 }
 
 template <typename T>
-Optional<T> LocalDomainAccessStore::firstEntry(const std::vector<T>& list)
+boost::optional<T> LocalDomainAccessStore::firstEntry(const std::vector<T>& list)
 {
-    if (list.empty()) {
-        return Optional<T>::createNull();
+    boost::optional<T> entry;
+    if (!list.empty()) {
+        entry = *list.begin();
     }
 
-    return *list.begin();
+    return entry;
 }
 
 } // namespace joynr

@@ -105,8 +105,8 @@ TEST_F(AccessControlAlgorithmTest, permissionWithMasterAceOnly)
     masterAce.setDefaultRequiredTrustLevel(TrustLevel::HIGH);
     Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<OwnerAccessControlEntry>::createNull(),
+                boost::optional<MasterAccessControlEntry>(),
+                boost::optional<OwnerAccessControlEntry>(),
                 TrustLevel::HIGH);
 
     EXPECT_EQ(Permission::YES, consumerPermission);
@@ -117,8 +117,8 @@ TEST_F(AccessControlAlgorithmTest, permissionMessageTrustLevelDoesntMatchAce) {
     masterAce.setDefaultRequiredTrustLevel(TrustLevel::MID);
     Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<OwnerAccessControlEntry>::createNull(),
+                boost::optional<MasterAccessControlEntry>(),
+                boost::optional<OwnerAccessControlEntry>(),
                 TrustLevel::LOW);
 
     EXPECT_EQ(Permission::NO, consumerPermission);
@@ -127,9 +127,9 @@ TEST_F(AccessControlAlgorithmTest, permissionMessageTrustLevelDoesntMatchAce) {
 TEST_F(AccessControlAlgorithmTest, permissionWithAllAceNull) {
 
     Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<OwnerAccessControlEntry>::createNull(),
+                boost::optional<MasterAccessControlEntry>(),
+                boost::optional<MasterAccessControlEntry>(),
+                boost::optional<OwnerAccessControlEntry>(),
                 TrustLevel::HIGH);
 
     EXPECT_EQ(Permission::NO, consumerPermission);
@@ -147,7 +147,7 @@ TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndMediatorAce) {
     Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
                 mediatorAce,
-                Optional<OwnerAccessControlEntry>::createNull(),
+                boost::optional<OwnerAccessControlEntry>(),
                 TrustLevel::LOW);
 
     EXPECT_EQ(Permission::ASK, consumerPermission);
@@ -157,9 +157,9 @@ TEST_F(AccessControlAlgorithmTest, permissionWithMediatorOnly) {
     mediatorAce.setDefaultConsumerPermission(Permission::YES);
     mediatorAce.setDefaultRequiredTrustLevel(TrustLevel::MID);
     Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
-                Optional<MasterAccessControlEntry>::createNull(),
+                boost::optional<MasterAccessControlEntry>(),
                 mediatorAce,
-                Optional<OwnerAccessControlEntry>::createNull(),
+                boost::optional<OwnerAccessControlEntry>(),
                 TrustLevel::HIGH);
 
     EXPECT_EQ(Permission::YES, consumerPermission);
@@ -180,7 +180,7 @@ TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndInvalidMediatorAce) {
     Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
                 mediatorAce,
-                Optional<OwnerAccessControlEntry>::createNull(),
+                boost::optional<OwnerAccessControlEntry>(),
                 TrustLevel::HIGH);
 
     EXPECT_EQ(Permission::NO, consumerPermission);
@@ -228,8 +228,8 @@ TEST_F(AccessControlAlgorithmTest, permissionWithOwnerAceOnly) {
     ownerAce.setRequiredTrustLevel(TrustLevel::HIGH);
 
     Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
-                Optional<MasterAccessControlEntry>::createNull(),
-                Optional<MasterAccessControlEntry>::createNull(),
+                boost::optional<MasterAccessControlEntry>(),
+                boost::optional<MasterAccessControlEntry>(),
                 ownerAce,
                 TrustLevel::HIGH);
 
@@ -244,7 +244,7 @@ TEST_F(AccessControlAlgorithmTest, permissionWithMediatorAndInvalidOwnerAce) {
     ownerAce.setConsumerPermission(Permission::ASK);
 
     Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
-                Optional<MasterAccessControlEntry>::createNull(),
+                boost::optional<MasterAccessControlEntry>(),
                 mediatorAce,
                 ownerAce,
                 TrustLevel::HIGH);
@@ -261,7 +261,7 @@ TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndInvalidOwnerAce) {
 
     Permission::Enum consumerPermission = accessControlAlgorithm.getConsumerPermission(
                 masterAce,
-                Optional<MasterAccessControlEntry>::createNull(),
+                boost::optional<MasterAccessControlEntry>(),
                 ownerAce,
                 TrustLevel::HIGH);
 

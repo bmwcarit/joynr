@@ -168,7 +168,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         /**
          * @name WebSocketLibjoynrRuntime#typeRegistry
          * @type TypeRegistry
-         * @field
          */
         Object.defineProperty(this, "typeRegistry", {
             get : function() {
@@ -178,9 +177,20 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         });
 
         /**
+         * @name WebSocketLibjoynrRuntime#registration
+         * @type CapabilitiesRegistrar
+         */
+        Object.defineProperty(this, "registration", {
+            get : function() {
+                return capabilitiesRegistrar;
+            },
+            enumerable : true
+        });
+
+        /**
          * @name WebSocketLibjoynrRuntime#capabilities
          * @type CapabilitiesRegistrar
-         * @field
+         * @deprecated capabilities will be removed by 01.01.2017. please use registration instead
          */
         Object.defineProperty(this, "capabilities", {
             get : function() {
@@ -192,7 +202,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         /**
          * @name WebSocketLibjoynrRuntime#providerBuilder
          * @type ProviderBuilder
-         * @field
          */
         Object.defineProperty(this, "providerBuilder", {
             get : function() {
@@ -204,7 +213,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         /**
          * @name WebSocketLibjoynrRuntime#proxyBuilder
          * @type ProxyBuilder
-         * @field
          */
         Object.defineProperty(this, "proxyBuilder", {
             get : function() {
@@ -216,7 +224,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         /**
          * @name WebSocketLibjoynrRuntime#participantIdStorage
          * @type ParticipantIdStorage
-         * @field
          */
         Object.defineProperty(this, "participantIdStorage", {
             get : function() {
@@ -228,7 +235,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         /**
          * @name WebSocketLibjoynrRuntime#logging
          * @type LoggingManager
-         * @field
          */
         Object.defineProperty(this, "logging", {
             get : function() {

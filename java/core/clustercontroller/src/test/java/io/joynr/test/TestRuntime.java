@@ -24,11 +24,18 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
+import joynr.types.ProviderQos;
 
 public class TestRuntime implements JoynrRuntime {
 
+    @Deprecated
     @Override
     public Future<Void> registerProvider(String domain, JoynrProvider provider) {
+        return null;
+    }
+
+    @Override
+    public Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos) {
         return null;
     }
 

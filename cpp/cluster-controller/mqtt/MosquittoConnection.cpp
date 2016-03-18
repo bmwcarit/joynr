@@ -44,17 +44,30 @@ MosquittoConnection::MosquittoConnection(const BrokerUrl& brokerUrl)
 
 void MosquittoConnection::on_disconnect(int rc)
 {
-    JOYNR_LOG_DEBUG(logger, "Disconnected from tcp://{}:{}", mqttSettings.host, mqttSettings.port);
-
-    std::ignore = rc;
+    if (rc == 0) {
+        JOYNR_LOG_DEBUG(
+                logger, "Disconnected from tcp://{}:{}", mqttSettings.host, mqttSettings.port);
+    } else {
+        JOYNR_LOG_ERROR(logger,
+                        "Unexpectedly disconnected from tcp://{}:{}, error: {}",
+                        mqttSettings.host,
+                        mqttSettings.port,
+                        rc);
+    }
 }
 
 void MosquittoConnection::on_log(int level, const char* str)
 {
-    JOYNR_LOG_DEBUG(logger, "Mosquitto Log: {}", str);
-
-    std::ignore = level;
-    std::ignore = str;
+    if (level == MOSQ_LOG_ERR) {
+        JOYNR_LOG_ERROR(logger, "Mosquitto Log: {}", str);
+    } else if (level == MOSQ_LOG_WARNING) {
+        JOYNR_LOG_WARN(logger, "Mosquitto Log: {}", str);
+    } else if (level == MOSQ_LOG_INFO) {
+        JOYNR_LOG_INFO(logger, "Mosquitto Log: {}", str);
+    } else {
+        // MOSQ_LOG_NOTICE || MOSQ_LOG_DEBUG || any other log level
+        JOYNR_LOG_DEBUG(logger, "Mosquitto Log: {}", str);
+    }
 }
 
 void MosquittoConnection::on_error()

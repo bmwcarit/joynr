@@ -90,15 +90,6 @@ public:
         EXPECT_CALL(*this, getListOfStrings(_,_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
     }
-    MockTestProvider(joynr::types::ProviderQos qos) :
-        DefaulttestProvider()
-    {
-        providerQos = qos;
-        EXPECT_CALL(*this, getLocation(_,_))
-                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
-        EXPECT_CALL(*this, getListOfStrings(_,_))
-                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
-    }
 
     ~MockTestProvider() = default;
 
@@ -268,7 +259,8 @@ public:
                     const joynr::ByteBuffer& result
             )> onSuccess,
             std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
-    ) {
+    ) override
+    {
         std::ignore = onError;
         onSuccess(
                 input

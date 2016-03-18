@@ -19,31 +19,44 @@
 #ifndef WEBSOCKETSETTINGS_H
 #define WEBSOCKETSETTINGS_H
 
-#include "joynr/Logger.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-
+#include <chrono>
 #include <string>
+
+#include "joynr/Logger.h"
 
 namespace joynr
 {
 
 class Settings;
 
+namespace system
+{
+namespace RoutingTypes
+{
+class WebSocketAddress;
+} // namespace RoutingTypes
+} // namespace system
+
 class WebSocketSettings
 {
 public:
     static const std::string& SETTING_CC_MESSAGING_URL();
+    static const std::string& SETTING_RECONNECT_SLEEP_TIME_MS();
 
     static const std::string& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
 
     explicit WebSocketSettings(Settings& settings);
-    WebSocketSettings(const WebSocketSettings& other) = default;
+    WebSocketSettings(const WebSocketSettings&) = default;
+    WebSocketSettings(WebSocketSettings&&) = default;
 
     ~WebSocketSettings() = default;
 
     std::string getClusterControllerMessagingUrl() const;
     void setClusterControllerMessagingUrl(const std::string& url);
     system::RoutingTypes::WebSocketAddress createClusterControllerMessagingAddress() const;
+
+    std::chrono::milliseconds getReconnectSleepTimeMs() const;
+    void setReconnectSleepTimeMs(const std::chrono::milliseconds reconnectSleepTimeMs);
 
     void printSettings() const;
 

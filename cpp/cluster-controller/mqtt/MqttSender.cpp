@@ -44,7 +44,10 @@ void MqttSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirec
     std::ignore = settings;
 }
 
-void MqttSender::sendMessage(const std::string& channelId, const JoynrMessage& message)
+void MqttSender::sendMessage(
+        const std::string& channelId,
+        const JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     JOYNR_LOG_DEBUG(logger, "sendMessage: ...");
 
@@ -57,7 +60,8 @@ void MqttSender::sendMessage(const std::string& channelId, const JoynrMessage& m
 
     util::logSerializedMessage(logger, "Sending Message: ", serializedMessage);
 
-    mosquittoPublisher.publishMessage(channelId, message.getHeaderTo(), payloadLength, payload);
+    mosquittoPublisher.publishMessage(
+            channelId, message.getHeaderTo(), onFailure, payloadLength, payload);
 }
 
 void MqttSender::registerReceiveQueueStartedCallback(

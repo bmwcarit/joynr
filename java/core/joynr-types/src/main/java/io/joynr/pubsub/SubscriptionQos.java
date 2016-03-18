@@ -3,7 +3,7 @@ package io.joynr.pubsub;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,24 +36,24 @@ public abstract class SubscriptionQos implements JoynrType {
 
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionQos.class);
 
-    private long expiryDate;
-    private long publicationTtl;
+    private long expiryDateMs = NO_EXPIRY_DATE;
+    private long publicationTtlMs = DEFAULT_PUBLICATION_TTL_MS;
 
     public static final int IGNORE_VALUE = -1;
     public static final long INFINITE_SUBSCRIPTION = Long.MAX_VALUE;
     /**
      * Minimum value for publicationTtl in milliseconds: 100.
      */
-    private static final long MIN_PUBLICATION_TTL = 100L;
+    private static final long MIN_PUBLICATION_TTL_MS = 100L;
     /**
      * Maximum value for publicationTtl in milliseconds: 2.592.000.000 (30 days).
      */
-    private static final long MAX_PUBLICATION_TTL = 2592000000L; // 30 days
+    private static final long MAX_PUBLICATION_TTL_MS = 2592000000L; // 30 days
 
     /**
      * Default value for publicationTtl in milliseconds: 10 000 (10 secs).
      */
-    protected static final long DEFAULT_PUBLICATION_TTL = 10000;
+    protected static final long DEFAULT_PUBLICATION_TTL_MS = 10000;
 
     /**
      * Expiry date value to disable expiration: {@value #NO_EXPIRY_DATE}.
@@ -63,45 +63,71 @@ public abstract class SubscriptionQos implements JoynrType {
     /**
      * Default Constructor
      */
-    protected SubscriptionQos() {
-        this(NO_EXPIRY_DATE);
+    public SubscriptionQos() {
     }
 
     /**
      * Constructor of SubscriptionQos object with specified expiry date.
      *
-     * @param expiryDate
+     * @deprecated This constructor will be deleted by 2017-01-01.
+     * Use the fluent interface instead:
+     *  new SubscriptionQos().setExpiryDate() or
+     *  new SubscriptionQos().setValidity()
+     * @param expiryDateMs
      *            The expiryDate is the end date of the subscription. This value
      *            is provided in milliseconds (since 1970-01-01T00:00:00.000).
      *
-     * @see #setPublicationTtl(long) setPublicationTtl(long)
+     * @see #setPublicationTtlMs(long) setPublicationTtl(long)
      *            (publicationTtl will be set to its default value)
      */
-    public SubscriptionQos(long expiryDate) {
-        this(expiryDate, DEFAULT_PUBLICATION_TTL);
+    @Deprecated
+    public SubscriptionQos(long expiryDateMs) {
+        this(expiryDateMs, DEFAULT_PUBLICATION_TTL_MS);
     }
 
     /**
      * Constructor of SubscriptionQos object with specified expiry date and
      * publication ttl (full parameter set).
      *
-     * @param expiryDate
+     * @deprecated Use the fluent interface:
+     *  new SubscriptionQos().setExpiryDate() or
+     *  new SubscriptionQos().setValidity()
+     *
+     * @param expiryDateMs
      *            the end date of the subscription until which publications will
      *            be sent. This value is provided in milliseconds
      *            (since 1970-01-01T00:00:00.000).
-     * @param publicationTtl
+     * @param publicationTtlMs
      *            is the time-to-live for publication messages.<br>
      * <br>
      *            If a notification message can not be delivered within its time
      *            to live, it will be deleted from the system. This value is
      *            provided in milliseconds.
      *
-     * @see #setExpiryDate(long)
-     * @see #setPublicationTtl(long)
+     * @see #setExpiryDateMs(long)
+     * @see #setPublicationTtlMs(long)
      */
-    public SubscriptionQos(long expiryDate, long publicationTtl) {
-        setExpiryDate(expiryDate);
-        setPublicationTtl(publicationTtl);
+    @Deprecated
+    public SubscriptionQos(long expiryDateMs, long publicationTtlMs) {
+        setExpiryDateMs(expiryDateMs);
+        setPublicationTtlMs(publicationTtlMs);
+    }
+
+    /**
+     * @deprecated Use getExpiryDateMs() instead
+     *
+     * Get the end date of the subscription.
+     * <br>
+     * The provider will send notifications until the expiry date is reached.
+     * You will not receive any notifications (neither value notifications
+     * nor missed publication notifications) after this date.
+     *
+     * @return the end date of the subscription. <br>This value is provided in
+     *            milliseconds (since 1970-01-01T00:00:00.000).
+     */
+    @Deprecated
+    public long getExpiryDate() {
+        return getExpiryDateMs();
     }
 
     /**
@@ -114,29 +140,87 @@ public abstract class SubscriptionQos implements JoynrType {
      * @return the end date of the subscription. <br>This value is provided in
      *            milliseconds (since 1970-01-01T00:00:00.000).
      */
-    public long getExpiryDate() {
-        return expiryDate;
+    public long getExpiryDateMs() {
+        return expiryDateMs;
     }
 
     /**
-     * Set the end date of the subscription. The publications will automatically
-     * expire at that date.
+     * @deprecated Use setExpiryDateMs instead
+     *
+     * Set the end date of the subscription, in milliseconds (since 1970-01-01T00:00:00.000 ).
+     * The publications will automatically expire at that date.
+     * <br>
+     * The provider will send notifications until the expiry date is reached.
+     * You will not receive any notifications (neither value notifications
+     * nor missed publication notifications) after this date.
+     * @param expiryDateMs
+     *            is the end date of the subscription. <br>
+     *            This value is provided in milliseconds (since 1970-01-01T00:00:00.000).
+     *            {@value #NO_EXPIRY_DATE} means NO_EXPIRY_DATE.
+     * @return the subscriptionQos (fluent interface)
+     */
+    @Deprecated
+    public SubscriptionQos setExpiryDate(final long expiryDateMs) {
+        return setExpiryDateMs(expiryDateMs);
+    }
+
+    /**
+     * Set the end date of the subscription, in milliseconds (since 1970-01-01T00:00:00.000 ).
+     * The publications will automatically expire at that date.
      * <br>
      * The provider will send notifications until the expiry date is reached.
      * You will not receive any notifications (neither value notifications
      * nor missed publication notifications) after this date.
      *
-     * @param expiryDate_ms
+     * @param expiryDateMs
      *            is the end date of the subscription. <br>
      *            This value is provided in milliseconds (since 1970-01-01T00:00:00.000).
      *            {@value #NO_EXPIRY_DATE} means NO_EXPIRY_DATE.
+     * @return the subscriptionQos (fluent interface)
      */
-    public void setExpiryDate(final long expiryDate_ms) {
+    public SubscriptionQos setExpiryDateMs(final long expiryDateMs) {
         long now = System.currentTimeMillis();
-        if (expiryDate_ms <= now && expiryDate_ms != NO_EXPIRY_DATE) {
-            throw new IllegalArgumentException("Subscription ExpiryDate " + expiryDate_ms + " in the past. Now: " + now);
+        if (expiryDateMs <= now && expiryDateMs != NO_EXPIRY_DATE) {
+            throw new IllegalArgumentException("Subscription ExpiryDate " + expiryDateMs + " in the past. Now: " + now);
         }
-        this.expiryDate = expiryDate_ms;
+        this.expiryDateMs = expiryDateMs;
+        return this;
+    }
+
+    /**
+     * Set how long the subscription should run for, in milliseconds.
+     * This is a helper method that allows setting the expiryDate using
+     * a relative time.
+     *
+     * @param validityMs
+     *            is the number of milliseconds until the subscription will expire
+     * @return the subscriptionQos (fluent interface)
+     */
+    public SubscriptionQos setValidityMs(final long validityMs) {
+        if (validityMs == -1) {
+            setExpiryDateMs(NO_EXPIRY_DATE);
+        } else {
+            long now = System.currentTimeMillis();
+            this.expiryDateMs = now + validityMs;
+        }
+        return this;
+    }
+
+    /**
+     * @deprecated Use getPublicationTtlMs() instead
+     *
+     * Get the time-to-live for notification messages.
+     * <br>
+     * Notification messages will be sent with this time-to-live.<br>
+     * <br>
+     * If a notification message can not be delivered within its time to live,
+     * it will be deleted from the system. This value is provided in milliseconds.
+     *
+     * @return the publication time-to-live in milliseconds.
+     */
+    @Deprecated
+    public long getPublicationTtl() {
+        return getPublicationTtlMs();
     }
 
     /**
@@ -149,8 +233,34 @@ public abstract class SubscriptionQos implements JoynrType {
      *
      * @return the publication time-to-live in milliseconds.
      */
-    public long getPublicationTtl() {
-        return publicationTtl;
+    public long getPublicationTtlMs() {
+        return publicationTtlMs;
+    }
+
+    /**
+     * @deprecated Use setPublicationTtlMs instead
+     *
+     * Set the time-to-live for notification messages.
+     * <br>
+     * Notification messages will be sent with this time-to-live. If a notification message can not be delivered within
+     * its time to live, it will be deleted from the system. This value is provided in milliseconds.
+     *
+     * @param publicationTtlMs
+     *            publicationTtlMs time-to-live in milliseconds.<br>
+     *            <br>
+     *            <b>Minimum, Maximum and Default Values:</b>
+     *            <ul>
+     *            <li><b>Minimum</b> publicationTtlMs = {@value #MIN_PUBLICATION_TTL_MS}.
+     *            Smaller values will be rounded up.
+     *            <li><b>Maximum</b> publicationTtlMs = {@value #MAX_PUBLICATION_TTL_MS}.
+     *            Larger values will be rounded down.
+     *            <li><b>Default</b> publicationTtlMs = {@value #DEFAULT_PUBLICATION_TTL_MS}.
+     *            </ul>
+     * @return the subscriptionQos (fluent interface)
+     */
+    @Deprecated
+    public SubscriptionQos setPublicationTtl(final long publicationTtlMs) {
+        return setPublicationTtlMs(publicationTtlMs);
     }
 
     /**
@@ -159,30 +269,31 @@ public abstract class SubscriptionQos implements JoynrType {
      * Notification messages will be sent with this time-to-live. If a notification message can not be delivered within
      * its time to live, it will be deleted from the system. This value is provided in milliseconds.
      *
-     * @param publicationTtl_ms
-     *            publicationTtl_ms time-to-live in milliseconds.<br>
+     * @param publicationTtlMs
+     *            publicationTtlMs time-to-live in milliseconds.<br>
      *            <br>
-     *            <b>Minimum and Default Values:</b>
+     *            <b>Minimum, Maximum and Default Values:</b>
      *            <ul>
-     *            <li><b>Minimum</b> publicationTtl_ms = 100.
+     *            <li><b>Minimum</b> publicationTtlMs = {@value #MIN_PUBLICATION_TTL_MS}.
      *            Smaller values will be rounded up.
-     *            <li><b>Maximum</b> publicationTtl_ms = 2.592.000.000 (30 days)
+     *            <li><b>Maximum</b> publicationTtlMs = {@value #MAX_PUBLICATION_TTL_MS}.
      *            Larger values will be rounded down.
-     *            <li><b>Default</b> publicationTtl_ms = 10 000 (10 secs)
+     *            <li><b>Default</b> publicationTtlMs = {@value #DEFAULT_PUBLICATION_TTL_MS}.
      *            </ul>
+     * @return the subscriptionQos (fluent interface)
      */
-    public void setPublicationTtl(final long publicationTtl_ms) {
-        if (publicationTtl_ms < MIN_PUBLICATION_TTL) {
-            this.publicationTtl = MIN_PUBLICATION_TTL;
-            logger.warn("publicationTtl_ms < MIN_PUBLICATION_TTL. Using MIN_PUBLICATION_TTL: {}", MIN_PUBLICATION_TTL);
-            return;
+    public SubscriptionQos setPublicationTtlMs(final long publicationTtlMs) {
+        if (publicationTtlMs < MIN_PUBLICATION_TTL_MS) {
+            this.publicationTtlMs = MIN_PUBLICATION_TTL_MS;
+            logger.warn("publicationTtlMs < MIN_PUBLICATION_TTL. Using MIN_PUBLICATION_TTL: {}", MIN_PUBLICATION_TTL_MS);
+        } else if (publicationTtlMs > MAX_PUBLICATION_TTL_MS) {
+            this.publicationTtlMs = MAX_PUBLICATION_TTL_MS;
+            logger.warn("publicationTtlMs > MAX_PUBLICATION_TTL. Using MAX_PUBLICATION_TTL: {}", MAX_PUBLICATION_TTL_MS);
+        } else {
+            this.publicationTtlMs = publicationTtlMs;
         }
-        if (publicationTtl_ms > MAX_PUBLICATION_TTL) {
-            this.publicationTtl = MAX_PUBLICATION_TTL;
-            logger.warn("publicationTtl_ms > MAX_PUBLICATION_TTL. Using MAX_PUBLICATION_TTL: {}", MAX_PUBLICATION_TTL);
-            return;
-        }
-        this.publicationTtl = publicationTtl_ms;
+
+        return this;
     }
 
     /**
@@ -190,7 +301,7 @@ public abstract class SubscriptionQos implements JoynrType {
      * (NO_EXPIRY_DATE).
      */
     public void clearExpiryDate() {
-        this.expiryDate = NO_EXPIRY_DATE;
+        this.expiryDateMs = NO_EXPIRY_DATE;
     }
 
     /**
@@ -202,8 +313,8 @@ public abstract class SubscriptionQos implements JoynrType {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (expiryDate ^ (expiryDate >>> 32));
-        result = prime * result + (int) (publicationTtl ^ (publicationTtl >>> 32));
+        result = prime * result + (int) (expiryDateMs ^ (expiryDateMs >>> 32));
+        result = prime * result + (int) (publicationTtlMs ^ (publicationTtlMs >>> 32));
         return result;
     }
 
@@ -225,10 +336,10 @@ public abstract class SubscriptionQos implements JoynrType {
             return false;
         }
         SubscriptionQos other = (SubscriptionQos) obj;
-        if (expiryDate != other.expiryDate) {
+        if (expiryDateMs != other.expiryDateMs) {
             return false;
         }
-        if (publicationTtl != other.publicationTtl) {
+        if (publicationTtlMs != other.publicationTtlMs) {
             return false;
         }
         return true;

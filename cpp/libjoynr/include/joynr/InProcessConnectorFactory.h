@@ -35,28 +35,10 @@ class InProcessPublicationSender;
 class ISubscriptionManager;
 class PublicationManager;
 
-// Default implementation for the InProcessConnectorFactoryHelper
-// Template specializations are provided in *InProcessConnector.h
-template <class T>
-class InProcessConnectorFactoryHelper
-{
-public:
-    T* create(ISubscriptionManager* subscriptionManager,
-              PublicationManager* publicationManager,
-              const std::string& proxyParticipantId,
-              const std::string& providerParticipantId,
-              std::shared_ptr<InProcessAddress> address)
-    {
-        std::ignore = subscriptionManager;
-        std::ignore = publicationManager;
-        std::ignore = proxyParticipantId;
-        std::ignore = providerParticipantId;
-        std::ignore = address;
-        notImplemented();
-        return 0;
-    }
-    void notImplemented();
-};
+// traits class which is specialized for every Interface
+// this links Interface with the respective Connector
+template <typename Interface>
+struct InProcessTraits;
 
 // A factory that creates an InProcessConnector for a generated interface
 class JOYNR_EXPORT InProcessConnectorFactory
@@ -71,19 +53,20 @@ public:
     virtual ~InProcessConnectorFactory() = default;
 
     template <class T>
-    T* create(const std::string& proxyParticipantId, const std::string& providerParticipantId)
+    std::unique_ptr<T> create(const std::string& proxyParticipantId,
+                              const std::string& providerParticipantId)
     {
         std::shared_ptr<RequestCaller> requestCaller =
                 requestCallerDirectory->lookupRequestCaller(providerParticipantId);
-        std::shared_ptr<InProcessAddress> inProcessEndpointAddress(
-                new InProcessAddress(requestCaller));
+        auto inProcessEndpointAddress = std::make_shared<InProcessAddress>(requestCaller);
 
-        return InProcessConnectorFactoryHelper<T>().create(subscriptionManager,
-                                                           publicationManager,
-                                                           inProcessPublicationSender,
-                                                           proxyParticipantId,
-                                                           providerParticipantId,
-                                                           inProcessEndpointAddress);
+        using Connector = typename InProcessTraits<T>::Connector;
+        return std::make_unique<Connector>(subscriptionManager,
+                                           publicationManager,
+                                           inProcessPublicationSender,
+                                           proxyParticipantId,
+                                           providerParticipantId,
+                                           inProcessEndpointAddress);
     }
 
 private:

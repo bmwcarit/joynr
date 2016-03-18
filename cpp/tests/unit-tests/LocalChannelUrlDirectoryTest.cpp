@@ -46,7 +46,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> localChannelUrlDire
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(new Future<types::ChannelUrlInformation>());
+    auto future = std::make_shared<Future<joynr::types::ChannelUrlInformation>>();
     future->onSuccess(urlInformation);
     onSuccess(urlInformation);
     return future;
@@ -109,7 +109,7 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
 }
 
 TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
-    std::shared_ptr<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
+    auto mockChannelUrlDirectoryProxy = std::make_shared<MockChannelUrlDirectoryProxy>();
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, registerChannelUrlsAsync(
                     A<const std::string&>(),
@@ -127,14 +127,14 @@ TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
 }
 
 TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
-    std::shared_ptr<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
+    auto mockChannelUrlDirectoryProxy = std::make_shared<MockChannelUrlDirectoryProxy>();
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, unregisterChannelUrlsAsync(
                     A<const std::string&>(),
                     A<std::function<void()>>(),
                     A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
-            .WillOnce(Return(std::shared_ptr<Future<void>>(new Future<void>())));
+            .WillOnce(Return(std::make_shared<Future<void>>()));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 

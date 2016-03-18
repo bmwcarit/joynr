@@ -16,11 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <cstdint>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
@@ -32,6 +34,7 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -298,7 +301,7 @@ protected:
                                           const std::string& broadcastName,
                                           std::shared_ptr<IBroadcastFilter> filter,
                                           T... expectedValues) {
-        std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+        auto testProvider = std::make_shared<MyTestProvider>();
         runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
         if (filter) {
             testProvider->addBroadcastFilter(filter);
@@ -401,7 +404,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithFiltering) {
                     mockListener);
 
 
-    std::shared_ptr<MockTestBroadcastWithFilteringBroadcastFilter> filter(new MockTestBroadcastWithFilteringBroadcastFilter());
+    auto filter = std::make_shared<MockTestBroadcastWithFilteringBroadcastFilter>();
     ON_CALL(*filter, filter(Eq(stringOut),
                             Eq(stringArrayOut),
                             Eq(enumerationArrayOut),
@@ -453,7 +456,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener2(
                     mockListener2);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -467,7 +470,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -503,7 +506,7 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // update subscription, much longer minInterval_ms
-    subscriptionQos.setMinInterval(5000);
+    subscriptionQos.setMinIntervalMs(5000);
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
@@ -540,7 +543,7 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -554,7 +557,7 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -608,7 +611,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -622,7 +625,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -681,7 +684,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation, float> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -695,7 +698,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -758,7 +761,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     testProvider->addBroadcastFilter(filter);
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -773,7 +776,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -835,7 +838,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(false));
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     testProvider->addBroadcastFilter(filter);
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -850,7 +853,7 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -922,7 +925,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListenerBroadcast(
                     mockListenerBroadcast);
 
-    std::shared_ptr<MyTestProvider> testProvider(new MyTestProvider());
+    auto testProvider = std::make_shared<MyTestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -936,7 +939,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     discoveryQos.setDiscoveryTimeout(1000);
     discoveryQos.setRetryInterval(250);
 
-    qlonglong qosRoundTripTTL = 500;
+    std::int64_t qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder

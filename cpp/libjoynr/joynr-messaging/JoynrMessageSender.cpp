@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@
 #include "joynr/IMessaging.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/Request.h"
+#include "joynr/Reply.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
 #include "joynr/MessageRouter.h"
 
 #include <cassert>
@@ -54,7 +57,7 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
                 senderParticipantId, receiverParticipantId, qos, request);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
 }
@@ -69,8 +72,14 @@ void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
                 messageFactory.createReply(senderParticipantId, receiverParticipantId, qos, reply);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "Reply with RequestReplyId {} could not be sent to {}. Error: {}",
+                        reply.getRequestReplyId(),
+                        receiverParticipantId,
+                        e.getMessage());
     }
 }
 
@@ -84,7 +93,7 @@ void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderPartic
                 senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
 }
@@ -100,7 +109,7 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
                 senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
 }
@@ -115,8 +124,15 @@ void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticip
                 senderParticipantId, receiverParticipantId, qos, subscriptionReply);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(
+                logger,
+                "SubscriptionReply with SubscriptionId {} could not be sent to {}. Error: {}",
+                subscriptionReply.getSubscriptionId(),
+                receiverParticipantId,
+                e.getMessage());
     }
 }
 
@@ -130,7 +146,7 @@ void JoynrMessageSender::sendSubscriptionStop(const std::string& senderParticipa
                 senderParticipantId, receiverParticipantId, qos, subscriptionStop);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
 }
@@ -146,8 +162,15 @@ void JoynrMessageSender::sendSubscriptionPublication(
                 senderParticipantId, receiverParticipantId, qos, subscriptionPublication);
         assert(messageRouter);
         messageRouter->route(message);
-    } catch (std::invalid_argument exception) {
+    } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(
+                logger,
+                "SubscriptionPublication with SubscriptionId {} could not be sent to {}. Error: {}",
+                subscriptionPublication.getSubscriptionId(),
+                receiverParticipantId,
+                e.getMessage());
     }
 }
 

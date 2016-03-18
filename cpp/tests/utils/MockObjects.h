@@ -46,7 +46,6 @@
 #include "joynr/IClientCache.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/ISubscriptionListener.h"
-#include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MessageRouter.h"
@@ -97,7 +96,7 @@
 #include "joynr/Settings.h"
 #include "joynr/Logger.h"
 
-#include "libjoynr/websocket/WebSocketClient.h"
+#include "libjoynr/websocket/WebSocketPpClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
 
 using ::testing::A;
@@ -141,7 +140,7 @@ public:
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
-    MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
+    MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 
 class MockDelayedScheduler : public joynr::DelayedScheduler
@@ -267,7 +266,7 @@ public:
 
 class MockMessaging : public joynr::IMessaging {
 public:
-  MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
+  MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
   MOCK_METHOD2(test1, void(int a0, int a1));
 };
 
@@ -289,7 +288,8 @@ public:
     }
 
     MockMessageRouter():
-        MessageRouter(nullptr, nullptr, 0) {
+        MessageRouter(std::unique_ptr<joynr::IMessagingStubFactory>(), std::unique_ptr<joynr::IPlatformSecurityManager>(), 0)
+    {
         EXPECT_CALL(
                 *this,
                 addNextHop(_,_,_)
@@ -301,7 +301,7 @@ public:
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
     }
-    MOCK_METHOD1(route, void(const joynr::JoynrMessage& message));
+    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, std::uint32_t tryCount));
     MOCK_METHOD3(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
@@ -512,16 +512,15 @@ public:
     std::string getInterfaceName() const override;
 };
 
-namespace joynr {
-
-template<>
-class RequestCallerFactoryHelper<MockProvider> {
-public:
-    std::shared_ptr<RequestCaller> create(std::shared_ptr<MockProvider> provider) {
-        return std::shared_ptr<RequestCaller>(nullptr);
-    }
-};
-} // namespace joynr
+namespace joynr
+{
+template <>
+inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockProvider>(std::shared_ptr<MockProvider> provider)
+{
+    std::ignore = provider;
+    return std::shared_ptr<RequestCaller>(nullptr);
+}
+} // namespace joynr;
 
 class MockMessageReceiver : public joynr::IMessageReceiver
 {
@@ -540,7 +539,7 @@ public:
 class MockMessageSender : public joynr::IMessageSender
 {
 public:
-    MOCK_METHOD2(sendMessage,void(const std::string&, const joynr::JoynrMessage&));
+    MOCK_METHOD3(sendMessage,void(const std::string&, const joynr::JoynrMessage&, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
     MOCK_METHOD2(init,void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
     MOCK_METHOD1(registerReceiveQueueStartedCallback, void(std::function<void(void)> waitForReceiveQueueStarted));
 };
@@ -598,6 +597,11 @@ public:
     MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const joynr::system::RoutingTypes::Address& destEndpointAddress));
     MOCK_METHOD1(remove, void(const joynr::system::RoutingTypes::Address& destEndpointAddress));
     MOCK_METHOD1(contains, bool(const joynr::system::RoutingTypes::Address& destEndpointAddress));
+};
+
+class MockMessagingStub : public joynr::IMessaging {
+public:
+    MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 
 class GlobalCapabilitiesMock {
@@ -867,7 +871,7 @@ class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructu
 public:
     MockGlobalDomainAccessControllerProxy() :
         GlobalDomainAccessControllerProxy(
-                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
+                std::make_shared<joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
@@ -880,21 +884,21 @@ public:
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerProxyBase(
-                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
+                std::make_shared<joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerSyncProxy(
-                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
+                std::make_shared<joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerAsyncProxy(
-                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
+                std::make_shared<joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
@@ -1035,37 +1039,30 @@ public:
     MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
 };
 
-class MockWebSocketClient : public joynr::WebSocketClient
+class MockWebSocketClient : public joynr::WebSocketPpClient
 {
 public:
-    MockWebSocketClient()
-        : WebSocketClient([](const std::string& message){},
-                                 [](WebSocket* webSocket){})
-    {
-    }
 
+    MockWebSocketClient(joynr::WebSocketSettings wsSettings)
+        : WebSocketPpClient(wsSettings) {}
     MOCK_METHOD0(dtorCalled, void());
     ~MockWebSocketClient() override
     {
         dtorCalled();
     }
 
-    MOCK_METHOD1(connect, void (const joynr::system::RoutingTypes::WebSocketAddress&));
-
-    MOCK_METHOD1(send , void (const std::string& message));
-
-    MOCK_CONST_METHOD0(isConnected, bool ());
-
-    MOCK_METHOD2(onWebSocketWriteable, void (joynr::WebSocketContext::WebSocketConnectionHandle,
-                              std::function<int(const std::string&)>));
-
-    MOCK_METHOD3(onNewConnection, void (joynr::WebSocketContext::WebSocketConnectionHandle handle,
-                         const std::string& host,
-                         const std::string& name));
+    void registerDisconnectCallback(std::function<void()> callback) override
+    {
+        onConnectionClosedCallback = callback;
+        WebSocketPpClient::registerConnectCallback(callback);
+    }
 
     void signalDisconnect() {
-        onWebSocketDisconnected();
+        onConnectionClosedCallback();
     }
+
+private:
+    std::function<void()> onConnectionClosedCallback;
 };
 
 class MockQWebSocketSendWrapper : public joynr::QWebSocketSendWrapper {

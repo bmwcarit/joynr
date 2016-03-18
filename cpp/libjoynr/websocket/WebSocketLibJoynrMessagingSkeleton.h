@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,17 @@
 #ifndef WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 #define WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 
+#include <string>
+#include <functional>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-
 #include "joynr/IMessaging.h"
-#include "joynr/MessageRouter.h"
-
-#include "IWebSocketEventHandler.h"
-
-#include <string>
 
 namespace joynr
 {
+
+class MessageRouter;
 
 class WebSocketLibJoynrMessagingSkeleton : public IMessaging
 {
@@ -39,7 +38,9 @@ public:
 
     ~WebSocketLibJoynrMessagingSkeleton() override = default;
 
-    void transmit(JoynrMessage& message) override;
+    void transmit(JoynrMessage& message,
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+            override;
 
     void onTextMessageReceived(const std::string& message);
 

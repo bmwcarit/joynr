@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,9 @@ public:
             std::shared_ptr<MessageRouter> messageRouter);
 
     template <class T>
-    std::string add(const std::string& domain, std::shared_ptr<T> provider)
+    std::string add(const std::string& domain,
+                    std::shared_ptr<T> provider,
+                    const types::ProviderQos& providerQos)
     {
 
         std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
@@ -76,10 +78,10 @@ public:
         std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {
                 joynr::types::CommunicationMiddleware::JOYNR};
         joynr::types::DiscoveryEntry entry(
-                domain, interfaceName, participantId, provider->getProviderQos(), connections);
+                domain, interfaceName, participantId, providerQos, connections);
         try {
             discoveryProxy.add(entry);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Unable to add provider (participant ID: {}, domain: {}, interface: "
                             "{}) to discovery. Error: {}",
@@ -90,7 +92,7 @@ public:
         }
 
         // add next hop to dispatcher
-        std::shared_ptr<Future<void>> future(new Future<void>());
+        auto future = std::make_shared<joynr::Future<void>>();
         auto onSuccess = [future]() { future->onSuccess(); };
         messageRouter->addNextHop(participantId, dispatcherAddress, onSuccess);
         future->wait();
@@ -102,46 +104,12 @@ public:
 
     template <class T>
     std::string remove(const std::string& domain, std::shared_ptr<T> provider)
-
     {
-        std::ignore = provider;
-
         std::string interfaceName = provider->getInterfaceName();
-
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
-
-        for (IDispatcher* currentDispatcher : dispatcherList) {
-            // TODO will the provider be registered at all dispatchers or
-            //     should it be configurable which ones are used to contact it.
-            assert(currentDispatcher != nullptr);
-            currentDispatcher->removeRequestCaller(participantId);
-        }
-
-        try {
-            discoveryProxy.remove(participantId);
-        } catch (exceptions::JoynrException& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Unable to remove provider (participant ID: {}, domain: {}, interface: "
-                            "{} to discovery. Error: {}",
-                            participantId,
-                            domain,
-                            interfaceName,
-                            e.getMessage());
-        }
-
-        std::shared_ptr<Future<void>> future(new Future<void>());
-        auto callbackFct = [future]() { future->onSuccess(); };
-        messageRouter->removeNextHop(participantId, callbackFct);
-        future->wait();
-
-        if (!future->isOk()) {
-            JOYNR_LOG_ERROR(logger,
-                            "Unable to remove next hop (participant ID: {}) from message router.",
-                            participantId);
-        }
-
+        remove(participantId);
         return participantId;
     }
 

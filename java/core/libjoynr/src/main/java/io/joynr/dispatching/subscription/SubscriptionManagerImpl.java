@@ -127,7 +127,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subState.updateTimeOfLastPublication();
         subscriptionStates.put(subscriptionId, subState);
 
-        long expiryDate = qos.getExpiryDate();
+        long expiryDate = qos.getExpiryDateMs();
         logger.info("subscription: {} expiryDate: "
                             + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate
                                     - System.currentTimeMillis()),
@@ -163,14 +163,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             HeartbeatSubscriptionInformation heartbeat = (HeartbeatSubscriptionInformation) qos;
 
             // alerts only if alert after interval > 0
-            if (heartbeat.getAlertAfterInterval() > 0) {
+            if (heartbeat.getAlertAfterIntervalMs() > 0) {
 
                 logger.info("Will notify if updates are missed.");
 
                 missedPublicationTimers.put(request.getSubscriptionId(),
-                                            new MissedPublicationTimer(qos.getExpiryDate(),
-                                                                       heartbeat.getHeartbeat(),
-                                                                       heartbeat.getAlertAfterInterval(),
+                                            new MissedPublicationTimer(qos.getExpiryDateMs(),
+                                                                       heartbeat.getPeriodMs(),
+                                                                       heartbeat.getAlertAfterIntervalMs(),
                                                                        request.getAttributeSubscriptionListener(),
                                                                        subscriptionStates.get(request.getSubscriptionId()),
                                                                        request.getSubscriptionId()));
@@ -182,10 +182,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                     request.getQos());
 
         MessagingQos messagingQos = new MessagingQos();
-        if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE) {
+        if (qos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
             messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
         } else {
-            messagingQos.setTtl_ms(qos.getExpiryDate() - System.currentTimeMillis());
+            messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
         // TODO pass the future to the messageSender and set the error state when exceptions are thrown
@@ -218,10 +218,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                              subscriptionRequest.getQos());
         MessagingQos messagingQos = new MessagingQos();
         SubscriptionQos qos = requestObject.getQos();
-        if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE) {
+        if (qos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
             messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
         } else {
-            messagingQos.setTtl_ms(qos.getExpiryDate() - System.currentTimeMillis());
+            messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
         dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, true);

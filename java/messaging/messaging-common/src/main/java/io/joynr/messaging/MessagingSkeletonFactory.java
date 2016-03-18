@@ -71,7 +71,9 @@ public class MessagingSkeletonFactory {
                     try {
                         messagingSkeleton.init();
                     } catch (Exception e) {
-                        logger.error("unable to start skeleton: " + messagingSkeleton.getClass().getSimpleName());
+                        logger.error("unable to start skeleton: {}. Reason: {}",
+                                     messagingSkeleton.getClass().getSimpleName(),
+                                     e.getMessage());
                     }
                 }
             }, 0, TimeUnit.MILLISECONDS);

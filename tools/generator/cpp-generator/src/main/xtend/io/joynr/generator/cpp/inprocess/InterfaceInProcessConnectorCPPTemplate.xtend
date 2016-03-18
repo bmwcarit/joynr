@@ -32,7 +32,7 @@ import org.franca.core.franca.FInterface
 class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil cppStdTypeUtil
+	@Inject private extension CppStdTypeUtil
 	@Inject private extension CppInterfaceUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
@@ -93,7 +93,7 @@ bool «className»::usesClusterController() const{
 }
 
 «FOR attribute : getAttributes(serviceInterface)»
-	«val returnType = cppStdTypeUtil.getTypeName(attribute)»
+	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
 	«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
 	«IF attribute.readable»
@@ -106,7 +106,7 @@ bool «className»::usesClusterController() const{
 			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 			assert(«serviceInterface.interfaceCaller»);
 
-			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccess =
 					[future] (const «returnType»& «attributeName») {
@@ -131,7 +131,7 @@ bool «className»::usesClusterController() const{
 			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 			assert(«serviceInterface.interfaceCaller»);
 
-			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
 					[future, onSuccess] (const «returnType»& «attributeName») {
@@ -164,7 +164,7 @@ bool «className»::usesClusterController() const{
 			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 			assert(«serviceInterface.interfaceCaller»);
 
-			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
+			auto future = std::make_shared<joynr::Future<void>>();
 			std::function<void()> onSuccessWrapper =
 					[future, onSuccess] () {
 						future->onSuccess();
@@ -195,7 +195,7 @@ bool «className»::usesClusterController() const{
 			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 			assert(«serviceInterface.interfaceCaller»);
 
-			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
+			auto future = std::make_shared<joynr::Future<void>>();
 			std::function<void()> onSuccess =
 					[future] () {
 						future->onSuccess();
@@ -303,10 +303,10 @@ bool «className»::usesClusterController() const{
 
 «FOR method: getMethods(serviceInterface)»
 «var methodname = method.joynrName»
-«var outputParameters = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
-«var inputParamList = cppStdTypeUtil.getCommaSeperatedUntypedInputParameterList(method)»
-«var outputTypedConstParamList = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method)»
-«var outputUntypedParamList = cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»
+«var outputParameters = method.commaSeparatedOutputParameterTypes»
+«var inputParamList = method.commaSeperatedUntypedInputParameterList»
+«var outputTypedConstParamList = method.commaSeperatedTypedConstOutputParameterList»
+«var outputUntypedParamList = method.commaSeperatedUntypedOutputParameterList»
 
 «produceSyncMethodSignature(method, className)»
 {
@@ -315,8 +315,7 @@ bool «className»::usesClusterController() const{
 	assert(caller);
 	std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 	assert(«serviceInterface.interfaceCaller»);
-	std::shared_ptr<joynr::Future<«outputParameters»> > future(
-			new joynr::Future<«outputParameters»>());
+	auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 	std::function<void(«outputTypedConstParamList»)> onSuccess =
 			[future] («outputTypedConstParamList») {
@@ -331,7 +330,7 @@ bool «className»::usesClusterController() const{
 			};
 
 	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
-	future->get(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
+	future->get(«method.commaSeperatedUntypedOutputParameterList»);
 }
 
 «produceAsyncMethodSignature(serviceInterface, method, className)»
@@ -341,8 +340,7 @@ bool «className»::usesClusterController() const{
 	assert(caller);
 	std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 	assert(«serviceInterface.interfaceCaller»);
-	std::shared_ptr<joynr::Future<«outputParameters»> > future(
-			new joynr::Future<«outputParameters»>());
+	auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 	std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
 			[future, onSuccess] («outputTypedConstParamList») {
@@ -366,7 +364,7 @@ bool «className»::usesClusterController() const{
 «ENDFOR»
 
 «FOR broadcast: serviceInterface.broadcasts»
-	«val returnTypes = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
+	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 	«val broadcastName = broadcast.joynrName»
 
 	«IF isSelective(broadcast)»

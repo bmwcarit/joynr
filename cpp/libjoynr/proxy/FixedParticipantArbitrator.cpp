@@ -52,7 +52,7 @@ void FixedParticipantArbitrator::attemptArbitration()
                 selectPreferredCommunicationMiddleware(result.getConnections()));
         updateArbitrationStatusParticipantIdAndAddress(
                 ArbitrationStatus::ArbitrationSuccessful, participantId, preferredConnection);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "
                         "from discovery. Error: {}",

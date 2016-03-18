@@ -19,9 +19,10 @@
 #ifndef OBJECTWITHDECAYTIME_H
 #define OBJECTWITHDECAYTIME_H
 
+#include <chrono>
+
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/DispatcherUtils.h"
-#include <cstdint>
 
 namespace joynr
 {
@@ -32,7 +33,7 @@ class JOYNRCOMMON_EXPORT ObjectWithDecayTime
 public:
     explicit ObjectWithDecayTime(const JoynrTimePoint& decayTime);
     virtual ~ObjectWithDecayTime() = default;
-    std::int64_t getRemainingTtl_ms() const;
+    std::chrono::milliseconds getRemainingTtl() const;
     JoynrTimePoint getDecayTime() const;
     bool isExpired() const;
 

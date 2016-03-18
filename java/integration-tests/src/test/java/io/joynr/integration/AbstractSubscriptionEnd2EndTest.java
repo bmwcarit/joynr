@@ -134,8 +134,9 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
 
-        provider = new SubscriptionTestsProviderImpl(providerQos);
-        providerRuntime.registerProvider(domain, provider).get(CONST_DEFAULT_TEST_TIMEOUT);
+        provider = new SubscriptionTestsProviderImpl();
+        providerQos.setPriority(System.currentTimeMillis());
+        providerRuntime.registerProvider(domain, provider, providerQos).get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
     private void setupConsumerRuntime(String methodName) throws DiscoveryException, JoynrIllegalStateException,

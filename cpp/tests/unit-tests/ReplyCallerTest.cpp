@@ -66,7 +66,7 @@ TEST_F(ReplyCallerTest, getType) {
 }
 
 TEST_F(ReplyCallerTest, getTypeInt64_t) {
-    std::shared_ptr<MockCallbackWithJoynrException<std::int64_t>> callback(new MockCallbackWithJoynrException<std::int64_t>());
+    auto callback = std::make_shared<MockCallbackWithJoynrException<std::int64_t>>();
     ReplyCaller<std::int64_t> int64_tReplyCaller(
                 [callback](const std::int64_t& value) {
                     callback->onSuccess(value);
@@ -77,7 +77,7 @@ TEST_F(ReplyCallerTest, getTypeInt64_t) {
 }
 
 TEST_F(ReplyCallerTest, getTypeInt8_t) {
-    std::shared_ptr<MockCallbackWithJoynrException<std::int8_t>> callback(new MockCallbackWithJoynrException<std::int8_t>());
+    auto callback = std::make_shared<MockCallbackWithJoynrException<std::int8_t>>();
     ReplyCaller<std::int8_t> int8_tReplyCaller(
                 [callback](const std::int8_t& value) {
                     callback->onSuccess(value);

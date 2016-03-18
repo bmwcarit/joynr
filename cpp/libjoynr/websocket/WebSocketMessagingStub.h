@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,26 +24,21 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-
 #include "joynr/IMessaging.h"
-#include "joynr/IWebSocketSendInterface.h"
 
 namespace joynr
 {
 
-namespace system
-{
+class IWebSocketSendInterface;
 
-namespace RoutingTypes
+namespace exceptions
 {
-class Address;
-} // namespace RoutingTypes
-} // namespace system
-
-/**
- * @class WebSocketMessagingStub
- * @brief Represents an outgoing WebSocket connection
- */
+class JoynrRuntimeException;
+} // namespace exceptions
+  /**
+   * @class WebSocketMessagingStub
+   * @brief Represents an outgoing WebSocket connection
+   */
 class WebSocketMessagingStub : public IMessaging
 {
 public:
@@ -58,7 +53,9 @@ public:
      * @brief Destructor
      */
     ~WebSocketMessagingStub() = default;
-    void transmit(JoynrMessage& message) override;
+    void transmit(JoynrMessage& message,
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+            override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketMessagingStub);

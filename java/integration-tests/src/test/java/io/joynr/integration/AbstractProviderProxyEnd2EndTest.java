@@ -82,6 +82,7 @@ import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.Trip;
+import joynr.types.ProviderQos;
 
 import org.junit.After;
 import org.junit.Before;
@@ -202,17 +203,19 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         consumerRuntime = getRuntime(joynrConfigConsumer);
 
-        provider = new TestProvider(testProviderQos);
+        provider = new TestProvider();
+        ProviderQos testProviderQos = new ProviderQos();
+        testProviderQos.setPriority(System.currentTimeMillis());
 
-        providerAsync = new TestAsyncProviderImpl(testProviderQos);
+        providerAsync = new TestAsyncProviderImpl();
 
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
-        providerRuntime.registerProvider(domain, provider).get(CONST_DEFAULT_TEST_TIMEOUT);
+        providerRuntime.registerProvider(domain, provider, testProviderQos).get(CONST_DEFAULT_TEST_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
 
-        providerRuntime.registerProvider(domainAsync, providerAsync).get(CONST_DEFAULT_TEST_TIMEOUT);
+        providerRuntime.registerProvider(domainAsync, providerAsync, testProviderQos).get(CONST_DEFAULT_TEST_TIMEOUT);
 
         // this sleep greatly speeds up the tests (400 ms vs 2500 / test) by
         // making sure the channel is created before first messages sent.
@@ -235,12 +238,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     protected static class TestProvider extends DefaulttestProvider {
-
-        public TestProvider(ProviderQos providerQos) {
-            providerQos.setPriority(System.currentTimeMillis());
-            this.providerQos = providerQos;
-        }
-
         @Override
         public Promise<Deferred<Integer>> getAttributeWithProviderRuntimeException() {
             Deferred<Integer> deferred = new Deferred<Integer>();
@@ -431,20 +428,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                 }
             }
         }
-
-        @Override
-        public ProviderQos getProviderQos() {
-            return providerQos;
-        }
     }
 
     protected static class TestAsyncProviderImpl extends DefaulttestProvider {
-
-        public TestAsyncProviderImpl(ProviderQos providerQos) {
-            providerQos.setPriority(System.currentTimeMillis());
-            this.providerQos = providerQos;
-        }
-
         @Override
         public Promise<MethodWithEnumReturnValueDeferred> methodWithEnumReturnValue() {
             MethodWithEnumReturnValueDeferred deferred = new MethodWithEnumReturnValueDeferred();

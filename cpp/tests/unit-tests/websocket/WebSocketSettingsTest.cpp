@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  * #L%
  */
 #include <gtest/gtest.h>
+#include <chrono>
 #include <cstdio>
 #include "PrettyPrint.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
@@ -29,7 +30,7 @@ using namespace joynr;
 class WebSocketSettingsTest : public testing::Test {
 public:
     WebSocketSettingsTest() :
-        testSettingsFileName("WebSocketSettingsTest-testSettings.settings")
+        testSettingsFileName("WebSocketSettingsTest-nonexistent.settings")
     {
     }
 
@@ -49,16 +50,21 @@ TEST_F(WebSocketSettingsTest, intializedWithDefaultSettings) {
     WebSocketSettings wsSettings(testSettings);
 
     EXPECT_TRUE(wsSettings.contains(WebSocketSettings::SETTING_CC_MESSAGING_URL()));
+    EXPECT_TRUE(wsSettings.contains(WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS()));
 }
 
 TEST_F(WebSocketSettingsTest, overrideDefaultSettings) {
     std::string expectedMessagingUrl("ws://test-host:42/test-path");
+    std::chrono::milliseconds expectedReconnectSleepTimeMs(1024);
     Settings testSettings(testSettingsFileName);
     testSettings.set(WebSocketSettings::SETTING_CC_MESSAGING_URL(), expectedMessagingUrl);
     WebSocketSettings wsSettings(testSettings);
+    wsSettings.setReconnectSleepTimeMs(expectedReconnectSleepTimeMs);
 
     std::string messagingUrl = wsSettings.getClusterControllerMessagingUrl();
     EXPECT_EQ(expectedMessagingUrl, messagingUrl);
+    std::chrono::milliseconds reconnectSleepTimeMs = wsSettings.getReconnectSleepTimeMs();
+    EXPECT_EQ(expectedReconnectSleepTimeMs, reconnectSleepTimeMs);
 }
 
 TEST_F(WebSocketSettingsTest, createsWebSocketAddress) {

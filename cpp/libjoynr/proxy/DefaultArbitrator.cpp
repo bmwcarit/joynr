@@ -43,7 +43,7 @@ void DefaultArbitrator::attemptArbitration()
     std::vector<joynr::types::DiscoveryEntry> result;
     try {
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "
                         "from discovery. Error: {}",

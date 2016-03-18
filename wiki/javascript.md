@@ -215,6 +215,10 @@ then the subsequent dependent call should be made in the following then() call.
 	// call successful, handle response value
 }).catch(function(error) {
     // call failed, execute error handling
+    // The following objects are used to receive error details from provider side:
+    // - joynr.exceptions.ApplicationException (its member 'error' holds the error enumeration value,
+    //   wrt. error enumeration value range please refer to the Franca specification of the method)
+    // - joynr.exceptions.ProviderRuntimeException (with embedded 'detailMessage')
 });
 ```
 
@@ -227,14 +231,14 @@ changes. The following sections cover the 4 quality of service objects available
 
 ```SubscriptionQos``` has the following members:
 
-* **expiry date** Absolute Time until notifications will be send (in milliseconds)
-* **publicationTtl** Lifespan of a notification (in milliseconds), the notification will be deleted
+* **expiry dateMs** Absolute Time until notifications will be send (in milliseconds)
+* **publicationTtlMs** Lifespan of a notification (in milliseconds), the notification will be deleted
 afterwards
 
 ```javascript
 var subscriptionQos = new joynr.proxy.SubscriptionQos({
-    expiryDate : 1000,
-    publicationTtl : 1000
+    expiryDateMs : 1000,
+    publicationTtlMs : 1000
 });
 ```
 
@@ -242,8 +246,8 @@ The default values are as follows:
 
 ```
 {
-    expiryDate: SubscriptionQos.NO\_EXPIRY\_DATE,  // 0
-    publicationTtl : SubscriptionQos.DEFAULT\_PUBLICATION\_TTL // 10000
+    expiryDateMs: SubscriptionQos.NO\_EXPIRY\_DATE,  // 0
+    publicationTtlMs : SubscriptionQos.DEFAULT\_PUBLICATION\_TTL // 10000
 }
 ```
 
@@ -251,8 +255,8 @@ The default values are as follows:
 
 ```PeriodicSubscriptionQos``` has the following additional members:
 
-* **period** defines how long to wait before sending an update even if the value did not change
-* **alertAfterInterval** Timeout for notifications, afterwards a missed publication notification
+* **periodMs** defines how long to wait before sending an update even if the value did not change
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification
 will be sent (milliseconds)
 
 This object can be used for subscriptions to attributes. Note that updates will be sent only based
@@ -260,15 +264,15 @@ on the specified interval, and not as a result of an attribute change.
 
 ```javascript
 var subscriptionQosPeriodic = new joynr.proxy.PeriodicSubscriptionQos({
-    period : 1000,
-    alertAfterInterval : 1000
+    periodMs : 1000,
+    alertAfterIntervalMs : 1000
 });
 ```
 The default values are as follows:
 ```
 {
-    period: PeriodicSubscriptionQos.MIN\_PERIOD // 50
-    alertAfterInterval: PeriodicSubscriptionQos.NEVER\_ALERT // 0
+    periodMs: PeriodicSubscriptionQos.MIN\_PERIOD // 50
+    alertAfterIntervalMs: PeriodicSubscriptionQos.NEVER\_ALERT // 0
 }
 ```
 
@@ -277,7 +281,7 @@ The default values are as follows:
 The object ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following
 additional members:
 
-* **minInterval** Minimum time to wait between successive notifications (milliseconds)
+* **minIntervalMs** Minimum time to wait between successive notifications (milliseconds)
 
 This object should be used for subscriptions to broadcasts. It can also be used for subscriptions
 to attributes if no periodic update is required.
@@ -285,13 +289,13 @@ to attributes if no periodic update is required.
 Example:
 ```javascript
 var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-    minInterval : 50
+    minIntervalMs : 50
 });
 ```
 The default is as follows:
 ```
 {
-    minInterval: OnChangeSubscriptionQos.MIN\_INTERVAL // 50
+    minIntervalMs: OnChangeSubscriptionQos.MIN\_INTERVAL // 50
 }
 ```
 
@@ -300,8 +304,8 @@ The default is as follows:
 The object ```OnChangeWithKeepAliveSubscriptionQos``` inherits from ```OnChangeSubscriptionQos```
 and has the following additional members:
 
-* **maxInterval** Maximum time to wait between notifications, if value has not changed
-* **alertAfterInterval** Timeout for notifications, afterwards a missed publication notification
+* **maxIntervalMs** Maximum time to wait between notifications, if value has not changed
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification
 will be sent (milliseconds)
 
 This object can be used for subscriptions to attributes. Updates will then be sent both
@@ -314,14 +318,14 @@ makes no sense (in this case the additional members will be ignored).
 Example:
 ```javascript
 var subscriptionQosOnChangeWithKeepAlive = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
-    maxInterval : 2000
+    maxIntervalMs : 2000
 });
 ```
 The default is as follows:
 ```
 {
-    maxInterval : 0
-    alertAfterInterval: OnChangeWithKeepAliveSubscriptionQos.NEVER\_ALERT // 0
+    maxIntervalMs : 0
+    alertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.NEVER\_ALERT // 0
 }
 ```
 
@@ -340,6 +344,7 @@ update the subscription or to unsubscribe from it.
     },
     onError: function(error) {
         // handle subscription error
+        // (e.g. JoynrRuntimeException, PublicationMissedException)
     }
 }).then(function(subscriptionId) {
     // subscription successful, store subscriptionId for later use
@@ -363,6 +368,7 @@ The ```subscribe()``` method can also be used to update an existing subscription
     },
     onError: function(error) {
         // handle subscription error
+        // (e.g. JoynrRuntimeException, PublicationMissedException)
     }
 }).then(function(subscriptionId) {
     // subscription update successful, the subscriptionId should be the same as before
@@ -401,6 +407,7 @@ unsubscribe.
     },
     onError: function(error) {
         // handle subscription error
+        // (e.g. JoynrRuntimeException)
     }
 }).then(function(subscriptionId) {
     // subscription successful, store subscriptionId for later use
@@ -422,6 +429,7 @@ The ```subscribe()``` method can also be used to update an existing subscription
     },
     onError: function(error) {
         // handle subscription error
+        // (e.g. JoynrRuntimeException)
     }
 }).then(function(subscriptionId) {
     // subscription update successful, the subscriptionId should be the same as before
@@ -451,6 +459,7 @@ fParam.set<Parameter>(parameterValue);
     },
     onError: function(error) {
         // handle subscription error
+        // (e.g. JoynrRuntimeException)
     }
 }).then(function(subscriptionId) {
     // subscription successful, store subscriptionId for later use
@@ -478,6 +487,7 @@ fParam.set<Parameter>(parameterValue);
     },
     onError: function(error) {
         // handle subscription error
+        // (e.g. JoynrRuntimeException)
     }
 }).then(function(subscriptionId) {
     // subscription update successful, the subscriptionId should be the same as before
@@ -533,7 +543,6 @@ The following Javascript modules must be made "required" or otherwise loaded:
 The ```ProviderQos``` has the following members:
 
 * **customParameters** e.g. the key-value for the arbitration strategy Keyword during discovery
-* **providerVersion** the version of the provider
 * **priority** the priority used for arbitration strategy HighestPriority during discovery
 * **scope** the scope (see below), used in discovery
 * **onChangeSubscriptions** whether the provider supports subscriptions on changes
@@ -546,7 +555,6 @@ Example:
 ```javascript
 var providerQos = new joynr.types.ProviderQos({
     customParameters: [],
-    providerVersion: 1,
     priority : 100,
     scope: joynr.types.ProviderScope.GLOBAL,
     onChangeSubscription : true
@@ -594,15 +602,14 @@ the interface, the provider's domain and the provider's quality of service setti
 parameters.
 
 ```javascript
-var <interface>providerQos;
+var <interface>ProviderQos;
 <interface>Provider = joynr.providerBuilder.build(<Interface>Provider, <interface>ProviderImpl);
 
 // for any filter of a broadcast with filter
 <interface>Provider.<broadcast>.addBroadcastFilter(new <Filter>BroadcastFilter());
 
 // setup <interface>ProviderQos
-joynr.capabilities.registerCapability(
-    "Provider.authToken",
+joynr.registration.registerProvider(
     domain,
     <interface>Provider,
     <interface>ProviderQos
@@ -619,8 +626,7 @@ represents the provider implementation.
 
 ```javascript
 // provider should have been set and registered previously
-joynr.capabilities.unregisterCapability(
-    "<Interface>Provider.authToken",
+joynr.registration.unregisterProvider(
     domain,
     <Interface>provider
 ).then(function() {
@@ -654,8 +660,13 @@ either asynchronously or synchronously.
 ### Synchronous implementation
 ```javascript
 this.<method> = function(parameters) {
-    // handle method, return returnValue of type <returnType>
-    return returnValue;
+    // handle method, return returnValue of type <returnType> with
+    // return returnValue;
+    // - or -
+    // throw errorEnumerationValue;
+    // (wrt. error enumeration value range please refer to the Franca specification of the method)
+    // - or -
+    // throw new joynr.exceptions.ProviderRuntimeException({ detailMessage: "reason" });
 };
 ```
 
@@ -668,6 +679,7 @@ this.<method> = function(parameters) {
         // resolve(returnValue);
         // - or -
         // reject(errorEnumerationValue);
+        // (wrt. error enumeration value range please refer to the Franca specification of the method)
         // - or -
         // reject(new ProviderRuntimeException({ detailMessage: "reason" }));
     });

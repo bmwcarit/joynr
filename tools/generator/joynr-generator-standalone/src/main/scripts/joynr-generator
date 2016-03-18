@@ -1,0 +1,23 @@
+#!/bin/sh
+
+JOYNR_GENERATOR_JAR=${joynr.generator.standalone.jar}
+
+# check dependencies
+if [ ! -f ${JOYNR_GENERATOR_JAR} ]; then
+    echo "ERROR: joynr generator standalone jar not available"
+    echo "expected location: ${JOYNR_GENERATOR_JAR}"
+    exit 1
+fi
+echo "using joynr generator standalone jar: ${JOYNR_GENERATOR_JAR}"
+if ! type "java" &> /dev/null; then
+    echo "ERROR: java is not available on PATH"
+    exit 2
+fi
+
+# print usage message
+if [ "$1" == "" ] || [ "$1" == "-?" ] || [ "$1" == "-help" ]; then
+    java -jar ${JOYNR_GENERATOR_JAR} -help
+    exit 0
+fi
+
+java -jar ${JOYNR_GENERATOR_JAR} "$@"

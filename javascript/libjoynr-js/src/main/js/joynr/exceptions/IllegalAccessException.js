@@ -55,7 +55,6 @@ define("joynr/exceptions/IllegalAccessException", [
          * Used for serialization.
          * @name IllegalAccessException#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
 
@@ -63,7 +62,6 @@ define("joynr/exceptions/IllegalAccessException", [
          * See [constructor description]{@link IllegalAccessException}.
          * @name IllegalAccessException#detailMessage
          * @type String
-         * @field
          */
         this.detailMessage = undefined;
     }

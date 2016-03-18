@@ -1,0 +1,5 @@
+generated-java/
+generated-javascript/
+generated-cpp/
+/joynr_participantIds.properties
+/joynr.properties

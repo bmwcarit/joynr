@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,158 +17,263 @@
  * #L%
  */
 
-define("joynr/proxy/PeriodicSubscriptionQos", [
-    "joynr/util/UtilInternal",
-    "joynr/proxy/SubscriptionQos"
-], function(Util, SubscriptionQos) {
+define(
+        "joynr/proxy/PeriodicSubscriptionQos",
+        [
+            "joynr/util/UtilInternal",
+            "joynr/proxy/SubscriptionQos",
+            "joynr/system/LoggerFactory"
+        ],
+        function(Util, SubscriptionQos, LoggerFactory) {
 
-    var defaultSettings;
+            var defaultSettings;
 
-    /**
-     * @classdesc
-     * Class representing the quality of service settings for subscriptions based
-     * on time periods.<br/>
-     * This class stores quality of service settings used for subscriptions to
-     * <b>attributes</b> in generated proxy objects. Notifications will only be
-     * sent if the period has expired. The subscription will automatically expire
-     * after the expiry date is reached. If no publications were received for
-     * alertAfter interval, publicationMissed will be called.
-     *
-     * @summary
-     * Constructor of PeriodicSubscriptionQos object used for subscriptions
-     * to <b>attributes</b> in generated proxy objects.
-     *
-     * @constructor
-     * @name PeriodicSubscriptionQos
-     *
-     * @param {Object}
-     *            [settings] the settings object for the constructor call
-     * @param {Number}
-     *            [settings.period=50] defines how often an update may be sent
-     *            even if the value did not change (independently from value
-     *            changes).<br/>
-     *            <br/>
-     *            <b>Minimum and Default Values:</b>
-     *            <ul>
-     *              <li>minimum value: {@link PeriodicSubscriptionQos.MIN_PERIOD}</li>
-     *              <li>default value: {@link PeriodicSubscriptionQos.MIN_PERIOD}</li>
-     *            </ul>
-     * @param {Number}
-     *            [settings.expiryDate] how long is the subscription valid
-     * @param {Number}
-     *            [settings.alertAfterInterval=0] defines how long to wait for an
-     *            update before publicationMissed is called.<br/>
-     *            <br/>
-     *            <b>Minimum and Default Values:</b>
-     *            <ul>
-     *              <li>minimum value: {@link PeriodicSubscriptionQos#period}</li>
-     *              <li>default value: {@link PeriodicSubscriptionQos.NEVER_ALERT}</li>
-     *            </ul>
-     * @param {Number}
-     *            [settings.publicationTtl] Time to live for publication messages
-     *
-     * @returns {PeriodicSubscriptionQos} a subscription Qos Object for subscriptions
-     *            on <b>attributes</b>
-     *
-     * @see {@link SubscriptionQos} for more information on <b>expiryDate</b>
-     * and <b>publicationTtl</b>
-     */
-    function PeriodicSubscriptionQos(settings) {
-        if (!(this instanceof PeriodicSubscriptionQos)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new PeriodicSubscriptionQos(settings);
-        }
+            /**
+             * @classdesc
+             * Class representing the quality of service settings for subscriptions based
+             * on time periods.<br/>
+             * This class stores quality of service settings used for subscriptions to
+             * <b>attributes</b> in generated proxy objects. Notifications will only be
+             * sent if the period has expired. The subscription will automatically expire
+             * after the expiry date is reached. If no publications were received for
+             * alertAfterIntervalMs, publicationMissed will be called.
+             *
+             * @summary
+             * Constructor of PeriodicSubscriptionQos object used for subscriptions
+             * to <b>attributes</b> in generated proxy objects.
+             *
+             * @constructor
+             * @name PeriodicSubscriptionQos
+             *
+             * @param {Object}
+             *            [settings] the settings object for the constructor call
+             * @param {Number}
+             *            [settings.period] Deprecated parameter. Use settings.periodMs instead
+             * @param {Number}
+             *            [settings.periodMs=PeriodicSubscriptionQos.DEFAULT_PERIOD_MS] defines
+             *            how often an update may be sent even if the value did not change
+             *            (independently from value changes).<br/>
+             *            <br/>
+             *            <b>Minimum, Maximum and Default Values:</b>
+             *            <ul>
+             *              <li>minimum value: {@link PeriodicSubscriptionQos.MIN_PERIOD_MS}</li>
+             *              <li>maximum value: {@link PeriodicSubscriptionQos.MAX_PERIOD_MS}</li>
+             *              <li>default value: {@link PeriodicSubscriptionQos.DEFAULT_PERIOD_MS}</li>
+             *            </ul>
+             * @param {Number}
+             *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
+             * @param {Number}
+             *            [settings.expiryDateMs] how long is the subscription valid
+             * @param {Number}
+             *            [settings.validityMs] The validity of the subscription relative to the current time.
+             * @param {Number}
+             *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
+             * @param {Number}
+             *            [settings.alertAfterIntervalMs=PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS] defines how long to wait for an
+             *            update before publicationMissed is called.<br/>
+             *            <br/>
+             *            <b>Minimum, Maximum and Default Values:</b>
+             *            <ul>
+             *              <li>minimum value: {@link PeriodicSubscriptionQos#period}</li>
+             *              <li>maximum value: {@link PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS}</li>
+             *              <li>default value: {@link PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS}</li>
+             *            </ul>
+             * @param {Number}
+             *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
+             * @param {Number}
+             *            [settings.publicationTtlMs] Time to live for publication messages
+             *
+             * @returns {PeriodicSubscriptionQos} a subscription Qos Object for subscriptions
+             *            on <b>attributes</b>
+             *
+             * @see {@link SubscriptionQos} for more information on <b>expiryDateMs</b>
+             * and <b>publicationTtlMs</b>
+             */
+            function PeriodicSubscriptionQos(settings) {
+                if (!(this instanceof PeriodicSubscriptionQos)) {
+                    // in case someone calls constructor without new keyword (e.g. var c
+                    // = Constructor({..}))
+                    return new PeriodicSubscriptionQos(settings);
+                }
 
-        var subscriptionQos = new SubscriptionQos(settings);
+                var subscriptionQos = new SubscriptionQos(settings);
+                var log = LoggerFactory.getLogger("joynr.proxy.PeriodicSubscriptionQos");
 
-        /**
-         * Used for serialization.
-         * @name PeriodicSubscriptionQos#_typeName
-         * @type String
-         * @field
-         */
-        Util.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
-        Util.checkPropertyIfDefined(settings, "Object", "settings");
-        if (settings) {
-            Util.checkPropertyIfDefined(settings.period, "Number", "settings.period");
-            Util.checkPropertyIfDefined(
-                    settings.alertAfterInterval,
-                    "Number",
-                    "settings.alertAfterInterval");
-        }
+                /**
+                 * Used for serialization.
+                 * @name PeriodicSubscriptionQos#_typeName
+                 * @type String
+                 */
+                Util.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
+                Util.checkPropertyIfDefined(settings, "Object", "settings");
+                if (settings) {
+                    if (settings.period !== undefined) {
+                        log
+                                .warn("PeriodicSubscriptionQos has been invoked with deprecated settings member \"period\". "
+                                    + "By 2017-01-01, the min interval can only be specified with member \"periodMs\".");
+                        settings.periodMs = settings.period;
+                        settings.period = undefined;
+                    }
+                    Util.checkPropertyIfDefined(settings.periodMs, "Number", "settings.periodMs");
+                    if (settings.alertAfterInterval !== undefined) {
+                        log
+                                .warn("PeriodicSubscriptionQos has been invoked with deprecated settings member \"alertAfterInterval\". "
+                                    + "By 2017-01-01, the min interval can only be specified with member \"alertAfterIntervalMs\".");
+                        settings.alertAfterIntervalMs = settings.alertAfterInterval;
+                        settings.alertAfterInterval = undefined;
+                    }
+                    Util.checkPropertyIfDefined(
+                            settings.alertAfterIntervalMs,
+                            "Number",
+                            "settings.alertAfterIntervalMs");
+                }
 
-        /**
-         * See [constructor description]{@link PeriodicSubscriptionQos}.
-         * @name PeriodicSubscriptionQos#period
-         * @type Number
-         * @field
-         */
-        /**
-         * See [constructor description]{@link PeriodicSubscriptionQos}.
-         * @name PeriodicSubscriptionQos#expiryDate
-         * @type Number
-         * @field
-         */
-        /**
-         * See [constructor description]{@link PeriodicSubscriptionQos}.
-         * @name PeriodicSubscriptionQos#alertAfterInterval
-         * @type Number
-         * @field
-         */
-        /**
-         * See [constructor description]{@link PeriodicSubscriptionQos}.
-         * @name PeriodicSubscriptionQos#publicationTtl
-         * @type Number
-         * @field
-         */
-        Util.extend(this, defaultSettings, settings, subscriptionQos);
+                /**
+                 * See [constructor description]{@link PeriodicSubscriptionQos}.
+                 * @name PeriodicSubscriptionQos#periodMs
+                 * @type Number
+                 */
+                /**
+                 * See [constructor description]{@link PeriodicSubscriptionQos}.
+                 * @name PeriodicSubscriptionQos#expiryDateMs
+                 * @type Number
+                 */
+                /**
+                 * See [constructor description]{@link PeriodicSubscriptionQos}.
+                 * @name PeriodicSubscriptionQos#alertAfterIntervalMs
+                 * @type Number
+                 */
+                /**
+                 * See [constructor description]{@link PeriodicSubscriptionQos}.
+                 * @name PeriodicSubscriptionQos#publicationTtlMs
+                 * @type Number
+                 */
+                Util.extend(this, defaultSettings, settings, subscriptionQos);
 
-        if (this.period < PeriodicSubscriptionQos.MIN_PERIOD) {
-            throw new Error("Wrong period with value "
-                + this.period
-                + ": it shall be higher than "
-                + PeriodicSubscriptionQos.MIN_PERIOD);
-        }
+                if (this.periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS) {
+                    throw new Error("Wrong periodMs with value "
+                        + this.periodMs
+                        + ": it shall be higher than "
+                        + PeriodicSubscriptionQos.MIN_PERIOD_MS);
+                }
 
-        if (this.alertAfterInterval !== PeriodicSubscriptionQos.NEVER_ALERT
-            && this.alertAfterInterval < this.period) {
-            throw new Error("Wrong alertAfterInterval with value "
-                + this.alertAfterInterval
-                + ": it shall be higher than the specified period of "
-                + this.period);
-        }
+                if (this.periodMs > PeriodicSubscriptionQos.MAX_PERIOD_MS) {
+                    throw new Error("Wrong periodMs with value "
+                        + this.periodMs
+                        + ": it shall be lower than "
+                        + PeriodicSubscriptionQos.MAX_PERIOD_MS);
+                }
 
-    }
+                if (this.alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+                    && this.alertAfterIntervalMs < this.periodMs) {
+                    log.warn("alertAfterIntervalMs < periodMs. Using periodMs: " + this.periodMs);
+                    this.alertAfterIntervalMs = this.periodMs;
+                }
 
-    /**
-     * Minimal and default value for [period]{@link PeriodicSubscriptionQos#period}.
-     * See [constructor description]{@link PeriodicSubscriptionQos}.
-     *
-     * @name PeriodicSubscriptionQos.MIN_PERIOD
-     * @type Number
-     * @default 50
-     * @static
-     * @readonly
-     */
-    PeriodicSubscriptionQos.MIN_PERIOD = 50;
-    /**
-     * Default value for [alertAfterInterval]{@link PeriodicSubscriptionQos#alertAfterInterval}.
-     * See [constructor description]{@link PeriodicSubscriptionQos}.
-     *
-     * @name PeriodicSubscriptionQos.NEVER_ALERT
-     * @type Number
-     * @default 0
-     * @static
-     * @readonly
-     */
-    PeriodicSubscriptionQos.NEVER_ALERT = 0;
+                if (this.alertAfterIntervalMs > PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
+                    log
+                            .warn("alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: "
+                                + PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
+                    this.alertAfterIntervalMs = PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
+                }
 
-    defaultSettings = {
-        period : PeriodicSubscriptionQos.MIN_PERIOD,
-        alertAfterInterval : PeriodicSubscriptionQos.NEVER_ALERT
-    };
+                /**
+                 * The function clearAlertAfterInterval resets the alter after interval to
+                 * the value PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+                 *
+                 *
+                 * @name PeriodicSubscriptionQos#clearAlertAfterInterval
+                 * @function
+                 */
+                this.clearAlertAfterInterval = function clearAlertAfterInterval() {
+                    this.alertAfterIntervalMs = PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+                };
 
-    return PeriodicSubscriptionQos;
+            }
 
-});
+            /**
+             * Minimal value for [periodMs]{@link PeriodicSubscriptionQos#periodMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.MIN_PERIOD_MS
+             * @type Number
+             * @default 50
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.MIN_PERIOD_MS = 50;
+            PeriodicSubscriptionQos.MIN_PERIOD = PeriodicSubscriptionQos.MIN_PERIOD_MS;
+
+            /**
+             * Maximum value for [periodMs]{@link PeriodicSubscriptionQos#periodMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.MAX_PERIOD_MS
+             * @type Number
+             * @default 2 592 000 000 (30 days)
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.MAX_PERIOD_MS = 2592000000;
+
+            /**
+             * Default value for [periodMs]{@link PeriodicSubscriptionQos#periodMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.DEFAULT_PERIOD_MS
+             * @type Number
+             * @default 60000
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.DEFAULT_PERIOD_MS = 60000;
+
+            /**
+             * Default value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+             * @type Number
+             * @default 0
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL = 0;
+            /**
+             * @deprecated Use PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL instead. Will be removed by 01/01/2017
+             */
+            PeriodicSubscriptionQos.NEVER_ALERT = PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+
+            /**
+             * Maximum value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+             * @type Number
+             * @default 2 592 000 000 (30 days)
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS = 2592000000;
+
+            /**
+             * Default value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.
+             * See [constructor description]{@link PeriodicSubscriptionQos}.
+             *
+             * @name PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
+             * @type Number
+             * @default PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+             * @static
+             * @readonly
+             */
+            PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS =
+                    PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+
+            defaultSettings = {
+                periodMs : PeriodicSubscriptionQos.DEFAULT_PERIOD_MS,
+                alertAfterIntervalMs : PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
+            };
+
+            return PeriodicSubscriptionQos;
+
+        });

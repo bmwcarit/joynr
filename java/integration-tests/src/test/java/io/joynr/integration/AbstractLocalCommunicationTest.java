@@ -31,6 +31,7 @@ import io.joynr.runtime.JoynrRuntime;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.tests.testProxy;
+import joynr.types.ProviderQos;
 
 import org.junit.After;
 import org.junit.Before;
@@ -87,7 +88,8 @@ public abstract class AbstractLocalCommunicationTest {
         provider = new SubscriptionTestsProviderImpl();
         domain = "TestDomain" + System.currentTimeMillis();
 
-        runtimeA.registerProvider(domain, provider);
+        ProviderQos providerQos = new ProviderQos();
+        runtimeA.registerProvider(domain, provider, providerQos);
 
         ProxyBuilder<testProxy> proxyBuilder;
 

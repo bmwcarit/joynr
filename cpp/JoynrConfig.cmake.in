@@ -30,7 +30,7 @@
 #                                        (without cluster controller)
 
 # This file is derived from a CMake tutorial (http://www.cmake.org/Wiki/CMake/)
-# that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/). 
+# that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/).
 # There are no attributions specified by the author.
 
 # Compute paths
@@ -55,10 +55,25 @@ set(
     USE_PLATFORM_MOSQUITTO
     @USE_PLATFORM_MOSQUITTO@
 )
+if(CMAKE_CXX_VERSION LESS 14)
+    if("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
+        if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+            if(NOT (CMAKE_CXX_FLAGS MATCHES "-std=c\\+\\+14") )
+                message(FATAL_ERROR "joynr requires C++14; add '-std=c++14' to CMAKE_CXX_FLAGS")
+            endif(NOT (CMAKE_CXX_FLAGS MATCHES "-std=c\\+\\+14") )
+        endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+    else("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
+        message(FATAL_ERROR "joynr requires C++14; set CMAKE_CXX_VERSION to (at least) 14")
+    endif("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
+endif(CMAKE_CXX_VERSION LESS 14)
 
 # CURL
 find_package(CURL REQUIRED)
 include(${JOYNR_CMAKE_DIR}/CheckCurlImportTargets.cmake)
+
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+include(${JOYNR_CMAKE_DIR}/CheckOpenSSLImportTargets.cmake)
 
 # QT5
 find_package(Qt5Core REQUIRED)

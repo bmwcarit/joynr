@@ -33,36 +33,10 @@ class ISubscriptionManager;
 class MessagingQos;
 class IClientCache;
 
-// Default implementation of a JoynrMessagingConnectorFactoryHelper
-// Template specializations are found in the generated *JoynrMessagingConnector.h files
-template <class T>
-class JoynrMessagingConnectorFactoryHelper
-{
-public:
-    T* create(IJoynrMessageSender* messageSender,
-              ISubscriptionManager* subscriptionManager,
-              const std::string& domain,
-              const std::string& interfaceName,
-              const std::string proxyParticipantId,
-              const std::string& providerParticipantId,
-              const MessagingQos& qosSettings,
-              IClientCache* cache,
-              bool cached)
-    {
-        std::ignore = messageSender;
-        std::ignore = subscriptionManager;
-        std::ignore = domain;
-        std::ignore = interfaceName;
-        std::ignore = proxyParticipantId;
-        std::ignore = providerParticipantId;
-        std::ignore = qosSettings;
-        std::ignore = cache;
-        std::ignore = cached;
-        notImplemented();
-        return 0;
-    }
-    void notImplemented();
-};
+// traits class which is specialized for every Interface
+// this links Interface with the respective Connector
+template <typename Interface>
+struct JoynrMessagingTraits;
 
 // Create a JoynrMessagingConnector for a generated interface
 class JOYNR_EXPORT JoynrMessagingConnectorFactory
@@ -74,21 +48,22 @@ public:
     bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
 
     template <class T>
-    T* create(const std::string& domain,
-              const std::string proxyParticipantId,
-              const std::string& providerParticipantId,
-              const MessagingQos& qosSettings,
-              IClientCache* cache,
-              bool cached)
+    std::unique_ptr<T> create(const std::string& domain,
+                              const std::string proxyParticipantId,
+                              const std::string& providerParticipantId,
+                              const MessagingQos& qosSettings,
+                              IClientCache* cache,
+                              bool cached)
     {
-        return JoynrMessagingConnectorFactoryHelper<T>().create(messageSender,
-                                                                subscriptionManager,
-                                                                domain,
-                                                                proxyParticipantId,
-                                                                providerParticipantId,
-                                                                qosSettings,
-                                                                cache,
-                                                                cached);
+        using Connector = typename JoynrMessagingTraits<T>::Connector;
+        return std::make_unique<Connector>(messageSender,
+                                           subscriptionManager,
+                                           domain,
+                                           proxyParticipantId,
+                                           providerParticipantId,
+                                           qosSettings,
+                                           cache,
+                                           cached);
     }
 
 private:

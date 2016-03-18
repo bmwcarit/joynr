@@ -76,23 +76,24 @@ void ClassDeserializerImpl<«joynrName»>::deserialize(«joynrName» &«joynrNam
 		while (object.hasNextField()) {
 			IField& field = object.nextField();
 			«FOR member: type.membersRecursive SEPARATOR " else "»
+				«val memberType = member.type.resolveTypeDef»
 				if (field.name() == "«member.name»") {
 				«IF member.array»
-					«IF member.type.isPrimitive»
-						«deserializePrimitiveArrayValue(member.type.getPrimitive,member.name, joynrName.toFirstLower+"Var", "field")»
+					«IF memberType.isPrimitive»
+						«deserializePrimitiveArrayValue(memberType.getPrimitive,member.name, joynrName.toFirstLower+"Var", "field")»
 					«ELSE»
-						«val deserializerType = member.type.deserializer»
+						«val deserializerType = memberType.deserializer»
 						IArray& array = field.value();
-						auto&& converted«member.name.toFirstUpper» = convertArray<«member.type.typeName»>(array, «deserializerType»<«member.type.typeName»>::deserialize);
-						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(std::forward<std::vector<«member.type.typeName»>>(converted«member.name.toFirstUpper»));
+						auto&& converted«member.name.toFirstUpper» = convertArray<«memberType.typeName»>(array, «deserializerType»<«memberType.typeName»>::deserialize);
+						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(std::forward<std::vector<«memberType.typeName»>>(converted«member.name.toFirstUpper»));
 					«ENDIF»
 				«ELSE»
-					«IF member.type.isPrimitive»
-						«deserializePrimitiveValue(member.type.getPrimitive,member.name, joynrName.toFirstLower+"Var", "field")»
+					«IF memberType.isPrimitive»
+						«deserializePrimitiveValue(memberType.getPrimitive,member.name, joynrName.toFirstLower+"Var", "field")»
 					«ELSE»
-						«val deserializerType = member.type.deserializer»
-						«member.type.typeName» «member.name»Container;
-						«deserializerType»<«member.type.typeName»>::deserialize(«member.name»Container, field.value());
+						«val deserializerType = memberType.deserializer»
+						«memberType.typeName» «member.name»Container;
+						«deserializerType»<«memberType.typeName»>::deserialize(«member.name»Container, field.value());
 						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(«member.name»Container);
 					«ENDIF»
 				«ENDIF»
@@ -112,16 +113,17 @@ void ClassSerializerImpl<«joynrName»>::serialize(const «joynrName» &«joynrN
 	stream << "{";
 	stream << "\"_typeName\":\"" << JoynrTypeId<«joynrName»>::getTypeName() << "\"«IF !members.empty»,«ENDIF»";
 	«FOR member: members SEPARATOR "\nstream << \",\";"»
+		«val memberType = member.type.resolveTypeDef»
 		«IF member.array»
-			«IF member.type.isPrimitive»
-				«serializePrimitiveArrayValue(member.type.predefined, member.name, joynrName.toFirstLower + "Var")»
+			«IF memberType.isPrimitive»
+				«serializePrimitiveArrayValue(memberType.getPrimitive, member.name, joynrName.toFirstLower + "Var")»
 			«ELSE»
 				stream << "\"«member.name»\": ";
-				ArraySerializer::serialize<«member.type.typeName»>(«joynrName.toFirstLower»Var.get«member.name.toFirstUpper»(), stream);
+				ArraySerializer::serialize<«memberType.typeName»>(«joynrName.toFirstLower»Var.get«member.name.toFirstUpper»(), stream);
 			«ENDIF»
 		«ELSE»
-			«IF member.type.isPrimitive»
-				«serializePrimitiveValue(member.type.predefined, member.name, joynrName.toFirstLower + "Var")»
+			«IF memberType.isPrimitive»
+				«serializePrimitiveValue(memberType.getPrimitive, member.name, joynrName.toFirstLower + "Var")»
 			«ELSE»
 				stream << "\"«member.name»\": ";
 				ClassSerializerImpl<«member.typeName»> «member.name»Serializer;

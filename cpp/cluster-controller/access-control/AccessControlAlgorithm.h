@@ -20,10 +20,11 @@
 #ifndef ACCESSCONTROLALGORITHM_H
 #define ACCESSCONTROLALGORITHM_H
 
+#include <boost/optional.hpp>
+
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 #include "joynr/infrastructure/DacTypes/Permission.h"
-#include "joynr/Optional.h"
 
 namespace joynr
 {
@@ -57,9 +58,11 @@ public:
      * @return The permission
      */
     virtual infrastructure::DacTypes::Permission::Enum getConsumerPermission(
-            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& masterOptional,
-            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& mediatorOptional,
-            const Optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerOptional,
+            const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+                    masterOptional,
+            const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+                    mediatorOptional,
+            const boost::optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerOptional,
             infrastructure::DacTypes::TrustLevel::Enum trustLevel);
 
     /**
@@ -72,9 +75,11 @@ public:
      * @return Always Permission::YES
      */
     virtual infrastructure::DacTypes::Permission::Enum getProviderPermission(
-            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& masterOptional,
-            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& mediatorOptional,
-            const Optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerOptional,
+            const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+                    masterOptional,
+            const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+                    mediatorOptional,
+            const boost::optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerOptional,
             infrastructure::DacTypes::TrustLevel::Enum trustLevel);
 
 private:
@@ -82,9 +87,11 @@ private:
 
     infrastructure::DacTypes::Permission::Enum getPermission(
             PermissionType permissionType,
-            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& masterOptional,
-            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& mediatorOptional,
-            const Optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerOptional,
+            const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+                    masterOptional,
+            const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+                    mediatorOptional,
+            const boost::optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerOptional,
             infrastructure::DacTypes::TrustLevel::Enum trustLevel);
 };
 

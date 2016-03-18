@@ -38,7 +38,7 @@ std::shared_ptr<IMessaging> InProcessMessagingStubFactory::create(
 {
     const InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const InProcessMessagingAddress*>(&destAddress);
-    return std::shared_ptr<IMessaging>(new InProcessMessagingStub(inprocessAddress->getSkeleton()));
+    return std::make_shared<InProcessMessagingStub>(inprocessAddress->getSkeleton());
 }
 
 } // namespace joynr

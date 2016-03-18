@@ -31,34 +31,34 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
 } // namespace joynr
 
 #ifdef JOYNR_MAX_LOG_LEVEL_FATAL
-#define JOYR_LOG_LEVEL joynr::LogLevel::Fatal
+#define JOYNR_LOG_LEVEL joynr::LogLevel::Fatal
 #endif // JOYNR_MAX_LOG_LEVEL_FATAL
 
 #ifdef JOYNR_MAX_LOG_LEVEL_ERROR
-#define JOYR_LOG_LEVEL joynr::LogLevel::Error
+#define JOYNR_LOG_LEVEL joynr::LogLevel::Error
 #endif // JOYNR_MAX_LOG_LEVEL_ERROR
 
 #ifdef JOYNR_MAX_LOG_LEVEL_WARN
-#define JOYR_LOG_LEVEL joynr::LogLevel::Warn
+#define JOYNR_LOG_LEVEL joynr::LogLevel::Warn
 #endif // JOYNR_MAX_LOG_LEVEL_WARN
 
 #ifdef JOYNR_MAX_LOG_LEVEL_INFO
-#define JOYR_LOG_LEVEL joynr::LogLevel::Info
+#define JOYNR_LOG_LEVEL joynr::LogLevel::Info
 #endif // JOYNR_MAX_LOG_LEVEL_INFO
 
 #ifdef JOYNR_MAX_LOG_LEVEL_DEBUG
-#define JOYR_LOG_LEVEL joynr::LogLevel::Debug
+#define JOYNR_LOG_LEVEL joynr::LogLevel::Debug
 #endif // JOYNR_MAX_LOG_LEVEL_DEBUG
 
 // default to Trace if no log level is set
-#ifndef JOYR_LOG_LEVEL
-#define JOYR_LOG_LEVEL joynr::LogLevel::Trace
+#ifndef JOYNR_LOG_LEVEL
+#define JOYNR_LOG_LEVEL joynr::LogLevel::Trace
 #endif
 
 #define JOYNR_CONDITIONAL_SPDLOG(level, method, logger, ...)                                       \
     do {                                                                                           \
         joynr::LogLevel logLevel = level;                                                          \
-        if (JOYR_LOG_LEVEL <= logLevel) {                                                          \
+        if (JOYNR_LOG_LEVEL <= logLevel) {                                                         \
             logger.spdlog->method(__VA_ARGS__);                                                    \
         }                                                                                          \
     } while (0)

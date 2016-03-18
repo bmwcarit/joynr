@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>0.15.1</version>
+		<version>0.16.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -40,7 +40,23 @@
 		</profile>
 	</profiles>
 
+	<properties>
+		<joynr.generator.standalone.jar>${project.build.directory}/joynr-generator-standalone-${project.version}.jar</joynr.generator.standalone.jar>
+		<joynr.generator.config.cmake.path>${project.build.directory}/scripts</joynr.generator.config.cmake.path>
+	</properties>
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/scripts</directory>
+				<includes>
+					<include>joynr-generator</include>
+					<include>JoynrGeneratorConfig.cmake</include>
+					<include>JoynrGeneratorConfigVersion.cmake</include>
+				</includes>
+				<filtering>true</filtering>
+				<targetPath>${project.build.directory}/scripts</targetPath>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -193,7 +209,31 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>install-cmake-user-package-registry</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${user.home}/.cmake/packages/JoynrGenerator</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/scripts</directory>
+									<includes>
+										<include>cmake-registry-path-to-JoynrGeneratorConfig.cmake</include>
+									</includes>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+							<overwrite>true</overwrite>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 

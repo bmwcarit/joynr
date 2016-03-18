@@ -100,10 +100,10 @@ TEST_F(LocalDomainAccessStoreTest, getDomainRoles) {
     std::vector<DomainRoleEntry> domainRoles = localDomainAccessStore->getDomainRoles(expectedDomainRoleEntry.getUid());
     EXPECT_EQ(expectedDomainRoleEntry, *domainRoles.begin());
 
-    Optional<DomainRoleEntry> domainRole = localDomainAccessStore->getDomainRole(expectedDomainRoleEntry.getUid(),
+    boost::optional<DomainRoleEntry> domainRole = localDomainAccessStore->getDomainRole(expectedDomainRoleEntry.getUid(),
                                                                                  expectedDomainRoleEntry.getRole());
     EXPECT_TRUE(bool(domainRole));
-    EXPECT_EQ(expectedDomainRoleEntry, domainRole.getValue());
+    EXPECT_EQ(expectedDomainRoleEntry, *domainRole);
 }
 
 TEST_F(LocalDomainAccessStoreTest, updateDomainRole) {
@@ -112,17 +112,17 @@ TEST_F(LocalDomainAccessStoreTest, updateDomainRole) {
     // Check that an entry was added
     std::vector<DomainRoleEntry> dres = localDomainAccessStore->getDomainRoles(expectedDomainRoleEntry.getUid());
     EXPECT_FALSE(dres.empty());
-    Optional<DomainRoleEntry> dreFromDb = localDomainAccessStore->getDomainRole(expectedDomainRoleEntry.getUid(),
+    boost::optional<DomainRoleEntry> dreFromDb = localDomainAccessStore->getDomainRole(expectedDomainRoleEntry.getUid(),
                                                                                 expectedDomainRoleEntry.getRole());
 
-    EXPECT_EQ(expectedDomainRoleEntry, dreFromDb.getValue());
+    EXPECT_EQ(expectedDomainRoleEntry, *dreFromDb);
 }
 
 TEST_F(LocalDomainAccessStoreTest, removeDomainRole) {
     localDomainAccessStore->updateDomainRole(expectedDomainRoleEntry);
 
     EXPECT_TRUE(localDomainAccessStore->removeDomainRole(expectedDomainRoleEntry.getUid(), expectedDomainRoleEntry.getRole()));
-    Optional<DomainRoleEntry> dreFromDb = localDomainAccessStore->getDomainRole(expectedDomainRoleEntry.getUid(),
+    boost::optional<DomainRoleEntry> dreFromDb = localDomainAccessStore->getDomainRole(expectedDomainRoleEntry.getUid(),
                                                                                 expectedDomainRoleEntry.getRole());
     EXPECT_FALSE(bool(dreFromDb));
 }
@@ -138,7 +138,7 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces) {
     EXPECT_EQ(expectedMasterAccessControlEntry, localDomainAccessStore->getMasterAccessControlEntry(expectedMasterAccessControlEntry.getUid(),
                                                                                                     expectedMasterAccessControlEntry.getDomain(),
                                                                                                     expectedMasterAccessControlEntry.getInterfaceName(),
-                                                                                                    expectedMasterAccessControlEntry.getOperation()).getValue());
+                                                                                                    expectedMasterAccessControlEntry.getOperation()).get());
     MasterAccessControlEntry masterAceWildcardUser(expectedMasterAccessControlEntry);
     masterAceWildcardUser.setUid(LocalDomainAccessStore::WILDCARD);
     localDomainAccessStore->updateMasterAccessControlEntry(masterAceWildcardUser);
@@ -151,7 +151,7 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces) {
     EXPECT_EQ(masterAceWildcardUser, localDomainAccessStore->getMasterAccessControlEntry(TEST_USER2,
                                                                                          masterAceWildcardUser.getDomain(),
                                                                                          masterAceWildcardUser.getInterfaceName(),
-                                                                                         masterAceWildcardUser.getOperation()).getValue());
+                                                                                         masterAceWildcardUser.getOperation()).get());
     EXPECT_EQ(masterAceWildcardUser, *(localDomainAccessStore->getMasterAccessControlEntries(TEST_USER2)).begin());
     EXPECT_EQ(masterAceWildcardUser, *(localDomainAccessStore->getMasterAccessControlEntries(TEST_USER2,
                                                                                             masterAceWildcardUser.getDomain(),
@@ -165,7 +165,7 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAceWithWildcardOperation) {
     EXPECT_EQ(expectedMasterAccessControlEntry, localDomainAccessStore->getMasterAccessControlEntry(expectedMasterAccessControlEntry.getUid(),
                                                                                                     expectedMasterAccessControlEntry.getDomain(),
                                                                                                     expectedMasterAccessControlEntry.getInterfaceName(),
-                                                                                                    TEST_OPERATION1).getValue());
+                                                                                                    TEST_OPERATION1).get());
 }
 
 TEST_F(LocalDomainAccessStoreTest, editableMasterAces) {
@@ -194,7 +194,7 @@ TEST_F(LocalDomainAccessStoreTest, updateMasterAce) {
             localDomainAccessStore->getMasterAccessControlEntry(expectedMasterAccessControlEntry.getUid(),
                                                  expectedMasterAccessControlEntry.getDomain(),
                                                  expectedMasterAccessControlEntry.getInterfaceName(),
-                                                 expectedMasterAccessControlEntry.getOperation()).getValue();
+                                                 expectedMasterAccessControlEntry.getOperation()).get();
     EXPECT_EQ(expectedMasterAccessControlEntry, masterAceFromDb);
 }
 
@@ -227,7 +227,7 @@ TEST_F(LocalDomainAccessStoreTest, getOwnerAccessControlEntry) {
     EXPECT_EQ(expectedOwnerAccessControlEntry, localDomainAccessStore->getOwnerAccessControlEntry(expectedOwnerAccessControlEntry.getUid(),
                                                                                                     expectedOwnerAccessControlEntry.getDomain(),
                                                                                                     expectedOwnerAccessControlEntry.getInterfaceName(),
-                                                                                                    expectedOwnerAccessControlEntry.getOperation()).getValue());
+                                                                                                    expectedOwnerAccessControlEntry.getOperation()).get());
     OwnerAccessControlEntry ownerAceWildcardUser(expectedOwnerAccessControlEntry);
     ownerAceWildcardUser.setUid(LocalDomainAccessStore::WILDCARD);
     EXPECT_TRUE(localDomainAccessStore->updateOwnerAccessControlEntry(ownerAceWildcardUser));
@@ -240,7 +240,7 @@ TEST_F(LocalDomainAccessStoreTest, getOwnerAccessControlEntry) {
     EXPECT_EQ(ownerAceWildcardUser, localDomainAccessStore->getOwnerAccessControlEntry(TEST_USER2,
                                                                                          ownerAceWildcardUser.getDomain(),
                                                                                          ownerAceWildcardUser.getInterfaceName(),
-                                                                                         ownerAceWildcardUser.getOperation()).getValue());
+                                                                                         ownerAceWildcardUser.getOperation()).get());
     EXPECT_EQ(ownerAceWildcardUser, *(localDomainAccessStore->getOwnerAccessControlEntries(TEST_USER2)).begin());
     EXPECT_EQ(ownerAceWildcardUser, *(localDomainAccessStore->getOwnerAccessControlEntries(TEST_USER2,
                                                                                             ownerAceWildcardUser.getDomain(),
@@ -284,7 +284,7 @@ TEST_F(LocalDomainAccessStoreTest, updateOwnerAce) {
             localDomainAccessStore->getOwnerAccessControlEntry(expectedOwnerAccessControlEntry.getUid(),
                                                 expectedOwnerAccessControlEntry.getDomain(),
                                                 expectedOwnerAccessControlEntry.getInterfaceName(),
-                                                expectedOwnerAccessControlEntry.getOperation()).getValue();
+                                                expectedOwnerAccessControlEntry.getOperation()).get();
     EXPECT_EQ(expectedOwnerAccessControlEntry, ownerAceFromDb);
 }
 

@@ -130,6 +130,14 @@ RUN yum update -y \
 	lcov \
 	&& yum clean all
 
+###################################################
+# install rpm-build required by CMake / CPack
+###################################################
+RUN yum update -y \
+	&& yum install -y \
+	rpm-build \
+	&& yum clean all
+
 RUN pip install gcovr
 
 ###################################################
@@ -190,6 +198,21 @@ RUN cd /opt \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf googletest
+
+###################################################
+# install websocket++
+###################################################
+
+RUN cd /opt \
+    && git clone https://github.com/zaphoyd/websocketpp.git \
+    && cd websocketpp \
+    && git checkout 378437aecdcb1dfe62096ffd5d944bf1f640ccc3 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make install -j"$(nproc)" \
+    && cd /opt/ \
+    && rm -rf websocketpp
 
 ###################################################
 # Copy build scripts

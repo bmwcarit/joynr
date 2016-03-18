@@ -112,7 +112,6 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
                             .registerBroadcastSubscription({
                                 proxyId : parent.proxyParticipantId,
                                 providerId : parent.providerParticipantId,
-                                messagingQos : settings.messagingQos,
                                 broadcastName : settings.broadcastName,
                                 broadcastParameter : settings.broadcastParameter,
                                 subscriptionQos : subscribeParameters.subscriptionQos,

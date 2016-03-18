@@ -76,10 +76,10 @@ public:
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
         messagingStubFactory(new MessagingStubFactory()),
-        messageRouter(new MessageRouter(messagingStubFactory, nullptr))
+        messageRouter(nullptr)
     {
-        messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
-
+        messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
+        messageRouter = std::make_unique<MessageRouter>(std::unique_ptr<MessagingStubFactory>(messagingStubFactory), std::unique_ptr<IPlatformSecurityManager>());
         qos.setTtl(10000);
     }
 
@@ -110,11 +110,11 @@ public:
 
         MockDispatcher mockDispatcher;
         // InProcessMessagingSkeleton should receive the message
-        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_))
+        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_,_))
                 .Times(0);
 
         // MessageSender should receive the message
-        EXPECT_CALL(*mockMessageSender, sendMessage(_,_))
+        EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
@@ -154,11 +154,11 @@ public:
                     request);
 
         // InProcessMessagingSkeleton should receive the message
-        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
+        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         // MessageSender should not receive the message
-        EXPECT_CALL(*mockMessageSender, sendMessage(_,_))
+        EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
                 .Times(0);
 
         EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
@@ -186,11 +186,11 @@ public:
         message.setHeaderReplyChannelId(senderChannelId);
 
         // InProcessMessagingSkeleton should not receive the message
-        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
+        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),_))
                 .Times(0);
 
         // *CommunicationManager should receive the message
-        EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),Eq(message)))
+        EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),Eq(message),_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -218,11 +218,11 @@ public:
         message2.setHeaderReplyChannelId(senderChannelId);
 
         // InProcessMessagingSkeleton should receive the message2 and message3
-        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2)))
+        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2),_))
                 .Times(2).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         // MessageSender should receive the message
-        EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), Eq(message)))
+        EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), Eq(message),_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())

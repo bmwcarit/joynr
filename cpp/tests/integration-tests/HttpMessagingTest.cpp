@@ -40,7 +40,7 @@ public:
                         messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
-        messagingStubFactory->registerStubFactory(new HttpMessagingStubFactory(mockMessageSender, senderChannelId));
+        messagingStubFactory->registerStubFactory(std::make_unique<HttpMessagingStubFactory>(mockMessageSender, senderChannelId));
     }
 
     ~HttpMessagingTest(){
@@ -62,8 +62,7 @@ TEST_F(HttpMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessag
     // - MessageRunnable.run
     // - HttpMessagingStub.transmit (IMessaging)
     // - MessageSender.send
-    std::shared_ptr<system::RoutingTypes::ChannelAddress> joynrMessagingEndpointAddr =
-            std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress());
+    auto joynrMessagingEndpointAddr = std::make_shared<system::RoutingTypes::ChannelAddress>();
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager(joynrMessagingEndpointAddr);
@@ -98,11 +97,11 @@ TEST_F(HttpMessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 //            .Times(1);
 
     // InProcessMessagingSkeleton should not receive the message
-    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
+    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),_))
             .Times(0);
 
     // MessageSender should not receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(_,_))
+    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
             .Times(0);
 
 // NOTE: LipciMessaging doesn't exists (2012-05-08)
@@ -116,8 +115,7 @@ TEST_F(HttpMessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 
 TEST_F(HttpMessagingTest, routeMsgToHttpCommunicationMgr)
 {
-    std::shared_ptr<system::RoutingTypes::ChannelAddress> joynrMessagingEndpointAddr =
-            std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress());
+    auto joynrMessagingEndpointAddr = std::make_shared<system::RoutingTypes::ChannelAddress>();
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     routeMsgToCommunicationManager(joynrMessagingEndpointAddr);
@@ -126,8 +124,7 @@ TEST_F(HttpMessagingTest, routeMsgToHttpCommunicationMgr)
 
 TEST_F(HttpMessagingTest, routeMultipleMessages)
 {
-    std::shared_ptr<system::RoutingTypes::ChannelAddress> joynrMessagingEndpointAddr =
-            std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress());
+    auto joynrMessagingEndpointAddr = std::make_shared<system::RoutingTypes::ChannelAddress>();
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     routeMultipleMessages(joynrMessagingEndpointAddr);

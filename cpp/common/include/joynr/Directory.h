@@ -60,10 +60,8 @@ public:
     virtual std::shared_ptr<T> lookup(const Key& keyId) = 0;
     virtual bool contains(const Key& keyId) = 0;
 
-    virtual void add(const Key& keyId, T* value) = 0;
     virtual void add(const Key& keyId, std::shared_ptr<T> value) = 0;
 
-    virtual void add(const Key& keyId, T* value, std::int64_t ttl_ms) = 0;
     virtual void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms) = 0;
     virtual void remove(const Key& keyId) = 0;
 };
@@ -80,12 +78,10 @@ public:
     /*
      * Adds an element and keeps it until actively removed (using the 'remove' method)
      */
-    void add(const Key& keyId, T* value) override;
     void add(const Key& keyId, std::shared_ptr<T> value) override;
     /*
      * Adds an element and removes it automatically after ttl_ms milliseconds have past.
      */
-    void add(const Key& keyId, T* value, std::int64_t ttl_ms) override;
     void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms) override;
     void remove(const Key& keyId) override;
 
@@ -143,26 +139,10 @@ bool Directory<Key, T>::contains(const Key& keyId)
 }
 
 template <typename Key, typename T>
-// ownership passed off to the directory, which passes off to SharedPointer
-void Directory<Key, T>::add(const Key& keyId, T* value)
-{
-    std::shared_ptr<T> valuePtr = std::shared_ptr<T>(value);
-    add(keyId, valuePtr);
-}
-
-template <typename Key, typename T>
 void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value)
 {
     std::lock_guard<std::mutex> lock(mutex);
-    callbackMap[keyId] = value;
-}
-
-// ownership passed off to the directory, which passes off to SharedPointer
-template <typename Key, typename T>
-void Directory<Key, T>::add(const Key& keyId, T* value, std::int64_t ttl_ms)
-{
-    std::shared_ptr<T> valuePtr = std::shared_ptr<T>(value);
-    add(keyId, valuePtr, ttl_ms);
+    callbackMap[keyId] = std::move(value);
 }
 
 template <typename Key, typename T>
@@ -171,7 +151,7 @@ void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, std::int
     // Insert the value
     {
         std::lock_guard<std::mutex> lock(mutex);
-        callbackMap[keyId] = value;
+        callbackMap[keyId] = std::move(value);
     }
 
     // make a removerRunnable and shedule it to remove the entry after ttl!

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#include <chrono>
+
 #include "exceptions/JoynrExceptionSerializer.h"
 
 #include <ostream>
@@ -30,25 +32,31 @@ namespace joynr
 
 // Register the JoynrRuntimeException type id and serializer/deserializer
 static const bool isJoynrRuntimeExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::JoynrRuntimeException>("joynr.exceptions.JoynrRuntimeException");
+        SerializerRegistry::registerType<exceptions::JoynrRuntimeException>(exceptions::JoynrRuntimeException::TYPE_NAME);
 // Register the ProviderRuntimeException type id and serializer/deserializer
 static const bool isProviderRuntimeExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::ProviderRuntimeException>("joynr.exceptions.ProviderRuntimeException");
+        SerializerRegistry::registerType<exceptions::ProviderRuntimeException>(exceptions::ProviderRuntimeException::TYPE_NAME);
 // Register the DiscoveryException type id and serializer/deserializer
 static const bool isDiscoveryExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::DiscoveryException>("joynr.exceptions.DiscoveryException");
+        SerializerRegistry::registerType<exceptions::DiscoveryException>(exceptions::DiscoveryException::TYPE_NAME);
 // Register the ApplicationException type id and serializer/deserializer
 static const bool isApplicationExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::ApplicationException>("joynr.exceptions.ApplicationException");
+        SerializerRegistry::registerType<exceptions::ApplicationException>(exceptions::ApplicationException::TYPE_NAME);
 // Register the JoynrTimeOutException type id and serializer/deserializer
 static const bool isJoynrTimeOutExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::JoynrTimeOutException>("joynr.exceptions.JoynrTimeOutException");
+        SerializerRegistry::registerType<exceptions::JoynrTimeOutException>(exceptions::JoynrTimeOutException::TYPE_NAME);
 // Register the PublicationMissedException type id and serializer/deserializer
 static const bool isPublicationMissedExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::PublicationMissedException>("joynr.exceptions.PublicationMissedException");
+        SerializerRegistry::registerType<exceptions::PublicationMissedException>(exceptions::PublicationMissedException::TYPE_NAME);
 // Register the MethodInvocationException type id and serializer/deserializer
 static const bool isMethodInvocationExceptionRegistered =
-        SerializerRegistry::registerType<exceptions::MethodInvocationException>("joynr.exceptions.MethodInvocationException");
+        SerializerRegistry::registerType<exceptions::MethodInvocationException>(exceptions::MethodInvocationException::TYPE_NAME);
+static const bool isJoynrMessageNotSentExceptionRegistered =
+        SerializerRegistry::registerType<joynr::exceptions::JoynrMessageNotSentException>(
+                exceptions::JoynrMessageNotSentException::TYPE_NAME);
+static const bool isJoynrJoynrDelayMessageExceptionRegistered =
+        SerializerRegistry::registerType<joynr::exceptions::JoynrDelayMessageException>(
+                exceptions::JoynrDelayMessageException::TYPE_NAME);
 
 template <>
 void ClassDeserializerImpl<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o)
@@ -119,6 +127,23 @@ void ClassDeserializerImpl<exceptions::PublicationMissedException>::deserialize(
         }
     }
 }
+template <>
+void ClassDeserializerImpl<exceptions::JoynrMessageNotSentException>::deserialize(exceptions::JoynrMessageNotSentException& t, IObject& o)
+{
+    ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(t, o);
+}
+template <>
+void ClassDeserializerImpl<exceptions::JoynrDelayMessageException>::deserialize(exceptions::JoynrDelayMessageException& t, IObject& o)
+{
+    while (o.hasNextField()) {
+        IField& field = o.nextField();
+        if (field.name() == "detailMessage") {
+            t.setMessage(field.value());
+        } else if (field.name() == "delayMs") {
+            t.setDelayMs(std::chrono::milliseconds(field.value().getIntType<int64_t>()));
+        }
+    }
+}
 
 void initSerialization (const std::string& typeName, std::ostream& stream) {
     stream << R"({)";
@@ -175,6 +200,22 @@ void ClassSerializerImpl<exceptions::PublicationMissedException>::serialize(cons
 {
     initSerialization(JoynrTypeId<exceptions::PublicationMissedException>::getTypeName(), stream);
     stream << R"("subscriptionId": ")" << exception.getSubscriptionId() << R"(")";
+    stream << "}";
+}
+
+template <>
+void ClassSerializerImpl<exceptions::JoynrMessageNotSentException>::serialize(const exceptions::JoynrMessageNotSentException& exception, std::ostream& stream)
+{
+    serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::JoynrMessageNotSentException>::getTypeName(), exception, stream);
+}
+template <>
+void ClassSerializerImpl<exceptions::JoynrDelayMessageException>::serialize(const exceptions::JoynrDelayMessageException& exception, std::ostream& stream)
+{
+    initSerialization(JoynrTypeId<exceptions::JoynrDelayMessageException>::getTypeName(), stream);
+    if (!exception.getMessage().empty()) {
+        stream << R"("detailMessage": ")" << exception.getMessage() << R"(",)";
+    }
+    stream << R"("delayMs": ")" << exception.getDelayMs().count() << R"(")";
     stream << "}";
 }
 

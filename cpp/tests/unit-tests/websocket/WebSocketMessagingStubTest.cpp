@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,129 +17,144 @@
  * #L%
  */
 #include <gtest/gtest.h>
-
-#include "utils/MockObjects.h"
-
-#include <QtTest/QtTest>
-#include <QtCore/QObject>
-#include <QtCore/QTimer>
-#include <QtWebSockets/qwebsocketserver.h>
-#include <QtWebSockets/qwebsocket.h>
+#include <gmock/gmock.h>
 
 #include <functional>
 #include <thread>
 #include <vector>
 
-#include "joynr/Logger.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "libjoynr/websocket/WebSocketClient.h"
-#include "libjoynr/websocket/WebSocketMessagingStub.h"
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include <websocketpp/config/asio_no_tls.hpp>
+#include <websocketpp/server.hpp>
 
-#include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
+#include "joynr/Logger.h"
+#include "joynr/Semaphore.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/Settings.h"
+
+#include "libjoynr/websocket/WebSocketMessagingStub.h"
+#include "libjoynr/websocket/WebSocketPpClient.h"
+#include "libjoynr/websocket/WebSocketSettings.h"
 
 using namespace ::testing;
 
-class WebSocketMessagingStubTest : public QObject, public testing::Test
+class WebSocketServer
 {
-    Q_OBJECT
+    using Server = websocketpp::server<websocketpp::config::asio>;
+    using MessagePtr = Server::message_ptr;
+    using ConnectionHandle = websocketpp::connection_hdl;
+
 public:
-    explicit WebSocketMessagingStubTest(QObject* parent = nullptr) :
-        QObject(parent),
-        server(
-            QStringLiteral("WebSocketMessagingStubTest Server"),
-            QWebSocketServer::NonSecureMode,
-            this
-        ),
-        serverAddress(nullptr),
+    WebSocketServer() : port(), thread(), textMessageReceivedCallback()
+    {
+        endpoint.clear_access_channels(websocketpp::log::alevel::all);
+        endpoint.clear_error_channels(websocketpp::log::alevel::all);
+    }
+
+    ~WebSocketServer()
+    {
+        endpoint.stop_listening();
+        thread.join();
+    }
+
+    std::uint16_t getPort() const
+    {
+        return port;
+    }
+
+    void registerTextMessageReceivedCallback(std::function<void(const std::string&)> callback)
+    {
+        textMessageReceivedCallback = std::move(callback);
+    }
+
+    void start()
+    {
+        try {
+            using std::placeholders::_1;
+            using std::placeholders::_2;
+            endpoint.set_message_handler(std::bind(&WebSocketServer::onMessageReceived, this, _1, _2));
+            endpoint.init_asio();
+            // listen on random free port
+            endpoint.listen(0);
+            boost::system::error_code ec;
+            port = endpoint.get_local_endpoint(ec).port();
+            endpoint.start_accept();
+            thread = std::thread(&Server::run, &endpoint);
+        } catch (const std::exception& e) {
+            JOYNR_LOG_ERROR(logger, "caught exception: {}", e.what());
+        }
+    }
+
+private:
+
+    void onMessageReceived(ConnectionHandle hdl, MessagePtr msg)
+    {
+        std::ignore = hdl;
+        JOYNR_LOG_DEBUG(logger, "received message of size {}", msg->get_payload().size());
+        if(textMessageReceivedCallback)
+        {
+            textMessageReceivedCallback(msg->get_payload());
+        }
+    }
+    Server endpoint;
+    std::uint32_t port;
+    std::thread thread;
+    std::function<void(const std::string&)> textMessageReceivedCallback;
+    ADD_LOGGER(WebSocketServer);
+};
+
+INIT_LOGGER(WebSocketServer);
+
+class WebSocketMessagingStubTest : public testing::TestWithParam<std::size_t>
+{
+
+public:
+    WebSocketMessagingStubTest() :
+        settings(),
+        wsSettings(settings),
+        server(),
+        serverAddress(),
         webSocket(nullptr)
     {
-        if(server.listen(QHostAddress::Any)) {
-            JOYNR_LOG_DEBUG(logger, "server listening on {}:{}",server.serverAddress().toString().toStdString(),server.serverPort());
-            connect(
-                    &server, &QWebSocketServer::newConnection,
-                    this, &WebSocketMessagingStubTest::onNewConnection
-            );
-        } else {
-            JOYNR_LOG_ERROR(logger, "unable to start WebSocket server");
-        }
+        server.start();
     }
 
-    ~WebSocketMessagingStubTest() {
-        QSignalSpy serverClosedSpy(&server, SIGNAL(closed()));
-        server.close();
-        serverClosedSpy.wait();
-    }
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-    MOCK_METHOD1(onWebSocketError, void (const std::string&));
-    MOCK_METHOD1(onWebSocketConnected, void (joynr::WebSocket*));
     MOCK_METHOD1(onWebSocketConnectionClosed, void (const joynr::system::RoutingTypes::Address&));
-#pragma GCC diagnostic pop
 
-    static void SetUpTestCase() {}
-    static void TearDownTestCase() {}
-    virtual void SetUp() {
-        // create and open client web socket
-        // ownership of web socket is passed over to messaging stub
-        webSocket = new joynr::WebSocketClient(
-            std::bind(&WebSocketMessagingStubTest::onWebSocketError, this, std::placeholders::_1),
-            std::bind(&WebSocketMessagingStubTest::onWebSocketConnected, this, std::placeholders::_1));
-        // ownership of server address is passed over to messaging stub
-        serverAddress = new joynr::system::RoutingTypes::WebSocketAddress(
+    virtual void SetUp()
+    {
+        serverAddress = joynr::system::RoutingTypes::WebSocketAddress(
                     joynr::system::RoutingTypes::WebSocketProtocol::WS,
                     "localhost",
-                    server.serverPort(),
+                    server.getPort(),
                     ""
         );
-        JOYNR_LOG_DEBUG(logger, "server URL: {}",serverAddress->toString());
-        webSocket->connect(*serverAddress);
+        JOYNR_LOG_DEBUG(logger, "server URL: {}",serverAddress.toString());
+        joynr::Semaphore connected(0);
+        webSocket = new joynr::WebSocketPpClient(wsSettings);
+        webSocket->registerConnectCallback([&connected](){connected.notify();});
+        webSocket->connect(serverAddress);
 
-        // waiting until the web socket is connected
-        JOYNR_LOG_DEBUG(logger, "WebSocket is connected: {}",webSocket->isConnected());
-    }
-    virtual void TearDown() {}
-
-Q_SIGNALS:
-    void textMessageReceived(const QString& message);
-
-public Q_SLOTS:
-    void onNewConnection() {
-        JOYNR_LOG_TRACE(logger, "on new connection");
-        QWebSocket* client = server.nextPendingConnection();
-
-        connect(
-                client, &QWebSocket::textMessageReceived,
-                this, &WebSocketMessagingStubTest::textMessageReceived
-        );
-        connect(
-                client, &QWebSocket::disconnected,
-                this, &WebSocketMessagingStubTest::onDisconnected
-        );
-    }
-
-    void onDisconnected() {
-        JOYNR_LOG_TRACE(logger, "on disconnected");
-        QWebSocket* client = qobject_cast<QWebSocket*>(sender());
-        if(client) {
-            client->deleteLater();
-        }
+        // wait until connected
+        connected.wait();
+        JOYNR_LOG_DEBUG(logger, "WebSocket is connected: {}", webSocket->isConnected());
     }
 
 protected:
     ADD_LOGGER(WebSocketMessagingStubTest);
-    QWebSocketServer server;
-    joynr::system::RoutingTypes::WebSocketAddress* serverAddress;
-    joynr::WebSocketClient* webSocket;
+    joynr::Settings settings;
+    joynr::WebSocketSettings wsSettings;
+    WebSocketServer server;
+    joynr::system::RoutingTypes::WebSocketAddress serverAddress;
+    joynr::WebSocketPpClient* webSocket;
 };
 
 INIT_LOGGER(WebSocketMessagingStubTest);
 
-ACTION_P(ReleaseSemaphore,semaphore)
+ACTION_P(ReleaseSemaphore, semaphore)
 {
     semaphore->notify();
 }
@@ -150,38 +165,55 @@ TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
     // create messaging stub
     joynr::WebSocketMessagingStub messagingStub(
         webSocket,
-        [this](){ this->onWebSocketConnectionClosed(*(this->serverAddress)); });
+        [this](){ this->onWebSocketConnectionClosed(this->serverAddress); });
 
     // close websocket
     joynr::Semaphore sem(0);
-    ON_CALL(*this, onWebSocketConnectionClosed(Ref(*serverAddress))).WillByDefault(ReleaseSemaphore(&sem));
-    EXPECT_CALL(*this, onWebSocketConnectionClosed(Ref(*serverAddress))).Times(1);
-    webSocket->terminate();
+    ON_CALL(*this, onWebSocketConnectionClosed(Ref(serverAddress))).WillByDefault(ReleaseSemaphore(&sem));
+    EXPECT_CALL(*this, onWebSocketConnectionClosed(Ref(serverAddress))).Times(1);
+    webSocket->close();
 
     sem.wait();
 }
 
-TEST_F(WebSocketMessagingStubTest, transmitMessage) {
+TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
     JOYNR_LOG_TRACE(logger, "transmit message");
-    QSignalSpy textMessageReceivedSignalSpy(this, SIGNAL(textMessageReceived(QString)));
+
+    joynr::Semaphore sem(0);
+    std::string receivedMessage;
+
+    auto callback = [&sem, &receivedMessage](const std::string& msg){
+        receivedMessage = msg;
+        sem.notify();
+    };
+    server.registerTextMessageReceivedCallback(callback);
 
     // send message using messaging stub
     joynr::WebSocketMessagingStub messagingStub(
         webSocket,
         [](){});
     joynr::JoynrMessage joynrMsg;
+
+    const std::size_t payloadSize = GetParam();
+    std::string payload(payloadSize, 'x');
+    joynrMsg.setPayload(payload);
     std::string expectedMessage = joynr::JsonSerializer::serialize(joynrMsg);
-    messagingStub.transmit(joynrMsg);
+
+    auto onFailure = [](const joynr::exceptions::JoynrRuntimeException& e) {
+            FAIL() << "Unexpected call of onFailure function, exception: " + e.getMessage();
+    };
+    messagingStub.transmit(joynrMsg, onFailure);
 
     // wait until message is received
-    EXPECT_TRUE(textMessageReceivedSignalSpy.wait());
-    ASSERT_EQ(1, textMessageReceivedSignalSpy.count());
+    sem.wait();
+    ASSERT_EQ(0, sem.getStatus());
 
     // verify received message
-    std::vector<QVariant> args = textMessageReceivedSignalSpy.takeFirst().toVector().toStdVector();
-    ASSERT_EQ(1, args.size());
-    EXPECT_EQ(QVariant::String, args.begin()->type());
-    EXPECT_EQ(expectedMessage, args.begin()->toString().toStdString());
+    ASSERT_EQ(expectedMessage.size(), receivedMessage.size());
+    EXPECT_EQ(expectedMessage, receivedMessage);
 }
 
-#include "WebSocketMessagingStubTest.moc"
+INSTANTIATE_TEST_CASE_P(WebsocketTransmitMessagesWithIncreasingSize,
+                        WebSocketMessagingStubTest,
+                        ::testing::Values<std::size_t>(256*1024, 512*1024, 1024*1024)
+);

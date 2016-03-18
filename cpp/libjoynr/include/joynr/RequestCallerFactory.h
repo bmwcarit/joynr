@@ -26,20 +26,10 @@ namespace joynr
 
 class RequestCaller;
 
-// Default definition of a RequestCallerFactoryHelper
-// Specializations of this template appear in provider header files
-template <class T>
-class RequestCallerFactoryHelper
-{
-public:
-    std::shared_ptr<RequestCaller> create(std::shared_ptr<T> provider)
-    {
-        notImplemented();
-        return std::shared_ptr<RequestCaller>();
-    }
-
-    void notImplemented();
-};
+// traits class which is specialized for every Interface
+// this links Interface with the respective RequestCaller
+template <typename Interface>
+struct RequestCallerTraits;
 
 // Create a request caller for the given provider
 class RequestCallerFactory
@@ -48,7 +38,8 @@ public:
     template <class T>
     static std::shared_ptr<RequestCaller> create(std::shared_ptr<T> provider)
     {
-        return RequestCallerFactoryHelper<T>().create(provider);
+        using RequestCaller = typename RequestCallerTraits<T>::RequestCaller;
+        return std::make_shared<RequestCaller>(provider);
     }
 };
 

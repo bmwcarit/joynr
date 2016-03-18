@@ -12,8 +12,9 @@ import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
-import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
+import org.franca.core.franca.FTypedElement
 
 class JavaTypeUtil extends AbstractTypeUtil {
 
@@ -137,6 +138,34 @@ class JavaTypeUtil extends AbstractTypeUtil {
 		}
 	}
 
+	override isCompound(FType type) {
+		if (type instanceof FTypeDef){
+			return isCompound(type.actualType)
+		}
+		return super.isCompound(type)
+	}
+
+	override getCompoundType(FType type) {
+		if (type instanceof FTypeDef){
+			return getCompoundType(type.actualType)
+		}
+		return super.getCompoundType(type)
+	}
+
+	override isPrimitive(FType type) {
+		if (type instanceof FTypeDef){
+			return isPrimitive(type.actualType)
+		}
+		return super.isPrimitive(type)
+	}
+
+	override getPrimitive(FType type) {
+		if (type instanceof FTypeDef){
+			return getPrimitive(type.actualType)
+		}
+		return super.getPrimitive(type)
+	}
+
 	override getTypeName(FBasicTypeId datatype) {
 		switch datatype {
 			case FBasicTypeId::BOOLEAN: "Boolean"
@@ -152,16 +181,25 @@ class JavaTypeUtil extends AbstractTypeUtil {
 			case FBasicTypeId::DOUBLE: "Double"
 			case FBasicTypeId::STRING: "String"
 			case FBasicTypeId::BYTE_BUFFER: "Byte[]"
-			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.joynrName)
+			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.getName)
 		}
 	}
 
 	override getTypeName(FType datatype) {
-		if (datatype.isTypeDef) {
-			datatype.typeDefType.actualType.joynrName
-		} else {
-			datatype.joynrName
+		if (isEnum(datatype)){
+			return datatype.enumType.joynrName;
 		}
+		if (isPrimitive(datatype)){
+			return datatype.getPrimitive.typeName
+		}
+		if (isCompound(datatype)){
+			return datatype.compoundType.joynrName
+		}
+		if (isMap(datatype)){
+			return datatype.mapType.joynrName
+		}
+		throw new IllegalStateException("JavaTypeUtil.getTypeName: unsupported state, datatype " +
+			datatype.joynrName + " could not be mapped to an implementation datatype")
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {

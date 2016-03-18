@@ -24,10 +24,10 @@
 #include "joynr/Logger.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
-#include "libjoynr/websocket/WebSocketClient.h"
 
 namespace joynr
 {
+class WebSocketPpClient;
 class WebSocketLibJoynrMessagingSkeleton;
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime
@@ -48,7 +48,7 @@ private:
 
     void onWebSocketError(const std::string& errorMessage);
 
-    std::shared_ptr<WebSocketClient> websocket;
+    WebSocketPpClient* websocket;
     ADD_LOGGER(LibJoynrWebSocketRuntime);
 };
 

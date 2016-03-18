@@ -188,7 +188,6 @@ target_include_directories(
     JoynrWsRuntime
     PRIVATE
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
-    ${libwebsockets_INCLUDE_DIRS}
 )
 
 AddClangFormat(JoynrWsRuntime)

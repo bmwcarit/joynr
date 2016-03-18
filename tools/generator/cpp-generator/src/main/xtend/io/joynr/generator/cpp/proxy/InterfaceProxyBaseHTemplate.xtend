@@ -81,9 +81,6 @@ public:
 			bool cached
 	);
 
-	/** @brief Destructor */
-	~«className»() override;
-
 	/**
 	 * @brief Called when arbitration is finished
 	 * @param participantId The id of the participant
@@ -192,7 +189,7 @@ protected:
 	/** @brief The joynr messaging address */
 	std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress;
 	/** @brief The kind of connector */
-	I«interfaceName»Connector* connector;
+	std::unique_ptr<I«interfaceName»Connector> connector;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);

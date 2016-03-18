@@ -42,22 +42,20 @@ public:
     bool operator==(const Request& other) const;
 
     const std::string& getRequestReplyId() const;
-    void setRequestReplyId(const std::string& requestReplyId);
+    void setRequestReplyId(std::string requestReplyId);
 
     const std::string& getMethodName() const;
     void setMethodName(const std::string& methodName);
 
     std::vector<Variant> getParams() const;
-    void setParams(const std::vector<Variant>& params);
+    void setParams(std::vector<Variant> params);
 
     void addParam(Variant value, std::string datatype);
 
     std::vector<std::string> getParamDatatypes() const;
-    void setParamDatatypes(const std::vector<std::string>& paramDatatypes);
+    void setParamDatatypes(std::vector<std::string> paramDatatypes);
 
 private:
-    static Variant parameterType(const Variant& param);
-
     std::string requestReplyId;
     std::string methodName;
     std::vector<Variant> params;

@@ -112,7 +112,7 @@ joynr.load(provisioning).then(function(loadedJoynr) {
         MyRadioProvider.implementation);
     MyRadioProvider.setProvider(radioProvider);
 
-    joynr.capabilities.registerCapability("", domain, radioProvider, providerQos).then(function() {
+    joynr.registration.registerProvider(domain, radioProvider, providerQos).then(function() {
         log("provider registered successfully");
         runInteractiveConsole(radioProvider);
         return null;

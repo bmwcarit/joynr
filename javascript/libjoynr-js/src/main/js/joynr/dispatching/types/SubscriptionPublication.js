@@ -58,12 +58,10 @@ define("joynr/dispatching/types/SubscriptionPublication", [
         /**
          * @name SubscriptionPublication#subscriptionId
          * @type String
-         * @field
          */
         /**
          * @name SubscriptionPublication#response
          * @type Object
-         * @field
          */
         Util.extend(this, settings);
 
@@ -72,7 +70,6 @@ define("joynr/dispatching/types/SubscriptionPublication", [
          *
          * @name SubscriptionPublication#_typeName
          * @type String
-         * @field
          */
         Typing.augmentTypeName(this, "joynr");
 

@@ -16,17 +16,19 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
+#include <cstdint>
+#include <chrono>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include <chrono>
-#include <cstdint>
 
 using ::testing::AllOf;
 using ::testing::Property;
@@ -39,11 +41,18 @@ public:
     MessageRouterTest() :
         settings(),
         messagingSettings(settings),
-        messagingStubFactory(new MockMessagingStubFactory()),
-        messageQueue(new MessageQueue()),
-        messageRouter(new MessageRouter(messagingStubFactory, nullptr, 6, messageQueue)),
+        messageQueue(nullptr),
+        messagingStubFactory(nullptr),
+        messageRouter(nullptr),
         joynrMessage()
     {
+        auto messageQueue = std::make_unique<MessageQueue>();
+        this->messageQueue = messageQueue.get();
+
+        auto messagingStubFactory = std::make_unique<MockMessagingStubFactory>();
+        this->messagingStubFactory = messagingStubFactory.get();
+
+        messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory), std::unique_ptr<IPlatformSecurityManager>(), 6, std::move(messageQueue));
         // provision global capabilities directory
         std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(
             new system::RoutingTypes::ChannelAddress(
@@ -62,7 +71,6 @@ public:
 
     ~MessageRouterTest() {
         std::remove(settingsFileName.c_str());
-        delete messagingStubFactory;
     }
 
     void SetUp(){
@@ -74,9 +82,9 @@ protected:
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
-    MockMessagingStubFactory* messagingStubFactory;
     MessageQueue* messageQueue;
-    MessageRouter* messageRouter;
+    MockMessagingStubFactory* messagingStubFactory;
+    std::unique_ptr<MessageRouter> messageRouter;
     JoynrMessage joynrMessage;
     void routeMessageToAddress(
             const std::string& destinationParticipantId,
@@ -103,6 +111,26 @@ TEST_F(MessageRouterTest, addMessageToQueue){
     EXPECT_EQ(messageQueue->getQueueLength(), 2);
 }
 
+MATCHER_P2(addressWithChannelId, addressType, channelId, "") {
+    if (addressType == std::string("mqtt")) {
+        try {
+            system::RoutingTypes::MqttAddress mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress&>(arg);
+            return mqttAddress.getTopic() == channelId;
+        } catch (const std::bad_cast& e) {
+            return false;
+        }
+    } else if (addressType == std::string("http")) {
+        try {
+            system::RoutingTypes::ChannelAddress httpAddress = dynamic_cast<const system::RoutingTypes::ChannelAddress&>(arg);
+            return httpAddress.getChannelId() == channelId;
+        } catch (const std::bad_cast& e) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
 TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     const std::string testHttp = "TEST_HTTP";
     const std::string testMqtt = "TEST_MQTT";
@@ -111,11 +139,15 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+
     // add destination address -> message should be routed
     auto httpAddress = std::make_shared<system::RoutingTypes::ChannelAddress>(testHttp);
     messageRouter->addNextHop(testHttp, httpAddress);
     // the message now has a known destination and should be directly routed
     joynrMessage.setHeaderTo(testHttp);
+    EXPECT_CALL(*messagingStubFactory, create(addressWithChannelId("http", testHttp))).Times(1).WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
@@ -124,6 +156,8 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     messageRouter->addNextHop(testMqtt, mqttAddress);
     // the message now has a known destination and should be directly routed
     joynrMessage.setHeaderTo(testMqtt);
+    EXPECT_CALL(*messagingStubFactory, create(addressWithChannelId("mqtt", testMqtt))).Times(1).WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 }
@@ -165,7 +199,9 @@ void MessageRouterTest::routeMessageToAddress(
         std::shared_ptr<system::RoutingTypes::Address> address) {
     messageRouter->addNextHop(destinationParticipantId, address);
     joynrMessage.setHeaderTo(destinationParticipantId);
-    ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(nullptr));
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
     messageRouter->route(joynrMessage);
 }
 

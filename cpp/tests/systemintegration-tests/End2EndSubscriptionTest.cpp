@@ -138,7 +138,7 @@ protected:
         std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(
                         mockListener);
 
-        std::shared_ptr<tests::DefaulttestProvider> testProvider(new tests::DefaulttestProvider());
+        auto testProvider = std::make_shared<tests::DefaulttestProvider>();
         runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
         //This wait is necessary, because registerProvider is async, and a lookup could occur

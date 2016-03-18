@@ -26,13 +26,20 @@
 #include "joynr/Url.h"
 #include "joynr/Logger.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 namespace joynr
 {
 class IWebSocketSendInterface;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+} // namespace RoutingTypes
+} // namespace system
 
 class WebSocketMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {
@@ -55,9 +62,10 @@ public:
 private:
     std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress, std::shared_ptr<IMessaging>>
             serverStubMap;
+    std::mutex serverStubMapMutex;
     std::unordered_map<joynr::system::RoutingTypes::WebSocketClientAddress,
                        std::shared_ptr<IMessaging>> clientStubMap;
-    std::mutex mutex;
+    std::mutex clientStubMapMutex;
 
     ADD_LOGGER(WebSocketMessagingStubFactory);
 };

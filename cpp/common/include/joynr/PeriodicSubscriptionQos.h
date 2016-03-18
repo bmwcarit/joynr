@@ -22,6 +22,8 @@
 #include "joynr/SubscriptionQos.h"
 #include <cstdint>
 
+#include "joynr/Logger.h"
+
 namespace joynr
 {
 
@@ -51,21 +53,21 @@ public:
     /**
      * @brief Constructor with full parameter set
      *
-     * @param validity Time span in milliseconds during which publications will be sent
+     * @param validityMs Time span in milliseconds during which publications will be sent
      * @param period interval in milliseconds.
      * The provider will send notifications every period in milliseconds
      * independently of value changes.
      * @param alertAfterInterval Time span in milliseconds after which publicationMissed
      * will be called if no publications were received.
      *
-     * @see SubscriptionQos#setValidity
-     * @see PeriodicSubscriptionQos#setPeriod
-     * @see PeriodicSubscriptionQos#setAlertAfterInterval
-     * @see SubscriptionQos#setPublicationTtl
+     * @see SubscriptionQos#setValidityMs
+     * @see PeriodicSubscriptionQos#setPeriodMs
+     * @see PeriodicSubscriptionQos#setAlertAfterIntervalMs
+     * @see SubscriptionQos#setPublicationTtlMs
      */
-    PeriodicSubscriptionQos(const std::int64_t& validity,
-                            const std::int64_t& period,
-                            const std::int64_t& alertAfterInterval);
+    PeriodicSubscriptionQos(const std::int64_t& validityMs,
+                            const std::int64_t& periodMs,
+                            const std::int64_t& alertAfterIntervalMs);
 
     /**
      * @brief Gets the period in milliseconds
@@ -75,7 +77,16 @@ public:
      * @return The period in milliseconds. The publisher will send a
      *            notification every period ms.
      */
-    virtual std::int64_t getPeriod() const;
+    virtual std::int64_t getPeriodMs() const;
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#getPeriodMs
+     */
+    [[deprecated(
+            "Will be removed by end of the year 2016. Use getPeriodMs instead.")]] virtual std::
+            int64_t
+            getPeriod() const;
 
     /**
      * @brief Sets the period in milliseconds
@@ -95,7 +106,14 @@ public:
      * @param period
      *            The publisher will send a notification every period ms.
      */
-    virtual void setPeriod(const std::int64_t& period);
+    virtual void setPeriodMs(const std::int64_t& periodMs);
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#setPeriodMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use setPeriodMs instead.")]] virtual void
+    setPeriod(const std::int64_t& periodMs);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds
@@ -106,7 +124,15 @@ public:
      * @return alertAfterInterval (time span in milliseconds after which publicationMissed
      * will be called if no publications were received).
      */
-    virtual std::int64_t getAlertAfterInterval() const;
+    virtual std::int64_t getAlertAfterIntervalMs() const;
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#getAlertAfterIntervalMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use getAlertAfterIntervalMs "
+                 "instead.")]] virtual std::int64_t
+    getAlertAfterInterval() const;
 
     /**
      * @brief Sets the alertAfter interval in milliseconds
@@ -127,7 +153,15 @@ public:
      * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
      */
-    virtual void setAlertAfterInterval(const std::int64_t& alertAfterInterval);
+    virtual void setAlertAfterIntervalMs(const std::int64_t& alertAfterIntervalMs);
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#setAlertAfterIntervalMs
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use setAlertAfterIntervalMs "
+                 "instead.")]] virtual void
+    setAlertAfterInterval(const std::int64_t& alertAfterIntervalMs);
 
     /**
      * @brief Resets alert after interval
@@ -147,25 +181,63 @@ public:
     bool operator==(const PeriodicSubscriptionQos& other) const;
 
     /** @brief Returns the minimum value for the period in milliseconds: 50 */
-    static const std::int64_t& MIN_PERIOD();
+    static const std::int64_t& MIN_PERIOD_MS();
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#MIN_PERIOD_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MIN_PERIOD_MS "
+                 "instead.")]] static const std::int64_t&
+    MIN_PERIOD();
 
     /**
      * @brief Returns the maximum value for the period in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_PERIOD();
+    static const std::int64_t& MAX_PERIOD_MS();
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#MAX_PERIOD_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MAX_PERIOD_MS "
+                 "instead.")]] static const std::int64_t&
+    MAX_PERIOD();
+
+    /**
+     * @brief Returns the default value for the period in milliseconds:
+     * 60 000 (1 min)
+     */
+    static const std::int64_t& DEFAULT_PERIOD_MS();
 
     /**
      * @brief Returns the maximum value for the alertAfter interval in
      * milliseconds: 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& MAX_ALERT_AFTER_INTERVAL_MS();
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#MAX_ALERT_AFTER_INTERVAL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use MAX_ALERT_AFTER_INTERVAL_MS "
+                 "instead.")]] static const std::int64_t&
+    MAX_ALERT_AFTER_INTERVAL();
 
     /**
      * @brief Returns the default value for the alertAfter interval in
      * milliseconds: 0 (NO_ALERT_AFTER_INTERVAL)
      */
-    static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL();
+    static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL_MS();
+
+    /**
+     * @deprecated
+     * @see PeriodicSubscriptionQos#DEFAULT_ALERT_AFTER_INTERVAL_MS
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_ALERT_AFTER_INTERVAL_MS "
+                 "instead.")]] static const std::int64_t&
+    DEFAULT_ALERT_AFTER_INTERVAL();
 
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
     static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
@@ -176,13 +248,16 @@ protected:
      *
      * The provider will send notifications every period milliseconds,
      */
-    std::int64_t period;
+    std::int64_t periodMs;
 
     /**
      * @brief Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
      */
-    std::int64_t alertAfterInterval;
+    std::int64_t alertAfterIntervalMs;
+
+private:
+    ADD_LOGGER(PeriodicSubscriptionQos);
 };
 
 } // namespace joynr

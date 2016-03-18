@@ -1,0 +1,19 @@
+{
+  "name": "performance-test",
+  "version": "0.16.0",
+  "description": "Performance tests",
+  "main": "src/main/js/consumer.js",
+  "private": true,
+  "dependencies": {
+  },
+  "config": {
+    "domain": "performance_test_domain",
+    "runs": 10000,
+    "stringlength": 10,
+    "bytearraylength": 100
+  },
+  "scripts": {
+    "preinstall": "npm install ../../javascript/libjoynr-js/target/classes",
+    "jsconsumertest" : "jasmine-node --verbose --forceexit --junitreport --config domain $npm_package_config_domain --config runs $npm_package_config_runs --config stringlength $npm_package_config_stringlength --config bytearraylength $npm_package_config_bytearraylength src/main/js/consumer.spec.js"
+  }
+}

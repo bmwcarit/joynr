@@ -71,14 +71,14 @@ TEST_P(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
         channelUrlDirectoryProxy->registerChannelUrls(
                 channelId,
                 channelUrlInformation);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE() << "Registering Url was not successful";
     }
 
     types::ChannelUrlInformation result;
     try {
         channelUrlDirectoryProxy->getUrlsForChannel(result, channelId);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "Requesting Url was not successful";
     }
     EXPECT_EQ(channelUrlInformation,result) << "Returned Url did not match Expected Url";
@@ -108,21 +108,21 @@ TEST_P(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     channelUrlInformation.setUrls(urls);
     try {
         channelUrlDirectoryProxy->registerChannelUrls(channelId, channelUrlInformation);
-    }  catch (exceptions::JoynrException& e) {
+    }  catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "registerChannelUrls was not successful";
     }
 
     types::ChannelUrlInformation result;
     try {
         channelUrlDirectoryProxy->getUrlsForChannel(result, channelId);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "getUrlsForChannel was not successful";
     }
     EXPECT_EQ(channelUrlInformation,result);
 
     try {
         channelUrlDirectoryProxy->unregisterChannelUrls(channelId);
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "unregisterChannelUrls was not successful";
     }
 
@@ -130,7 +130,7 @@ TEST_P(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     try {
         channelUrlDirectoryProxy->getUrlsForChannel(result2, channelId);
         ADD_FAILURE()<< "getUrlsForChannel was successful";
-    } catch (exceptions::JoynrException& e) {
+    } catch (const exceptions::JoynrException& e) {
     }
     EXPECT_EQ(0,result2.getUrls().size());
 }

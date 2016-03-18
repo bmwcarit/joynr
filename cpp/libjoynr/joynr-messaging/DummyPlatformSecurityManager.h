@@ -32,7 +32,7 @@ public:
 
     ~DummyPlatformSecurityManager() override = default;
 
-    std::string getCurrentProcessUserId() override;
+    std::string getCurrentProcessUserId() const override;
     JoynrMessage sign(JoynrMessage message) override;
     bool validate(const JoynrMessage& message) const override;
     std::string encrypt(const std::string& unencryptedBytes) override;

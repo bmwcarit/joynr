@@ -67,6 +67,8 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_MAX_MESSAGE_SIZE = "joynr.messaging.maxmessagesize";
 
+    public static final String PROPERTY_MESSAGING_MAXIMUM_TTL_MS = "joynr.messaging.maxttlms";
+
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
     private final long deleteChannelRetryIntervalMs;

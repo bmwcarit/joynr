@@ -17,11 +17,12 @@
  * #L%
  */
 #include "WebSocketSettings.h"
-#include "joynr/Settings.h"
-#include "joynr/Url.h"
-#include "joynr/TypeUtil.h"
 
 #include <cassert>
+
+#include "joynr/Settings.h"
+#include "joynr/Url.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 namespace joynr
 {
@@ -37,11 +38,18 @@ WebSocketSettings::WebSocketSettings(Settings& settings) : settings(settings)
 void WebSocketSettings::checkSettings() const
 {
     assert(settings.contains(SETTING_CC_MESSAGING_URL()));
+    assert(settings.contains(SETTING_RECONNECT_SLEEP_TIME_MS()));
 }
 
 const std::string& WebSocketSettings::SETTING_CC_MESSAGING_URL()
 {
     static const std::string value("websocket/cluster-controller-messaging-url");
+    return value;
+}
+
+const std::string& WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS()
+{
+    static const std::string value("websocket/reconnect-sleep-time-ms");
     return value;
 }
 
@@ -79,6 +87,19 @@ joynr::system::RoutingTypes::WebSocketAddress WebSocketSettings::
 
     return system::RoutingTypes::WebSocketAddress(
             protocol, url.getHost(), url.getPort(), url.getPath());
+}
+
+std::chrono::milliseconds WebSocketSettings::getReconnectSleepTimeMs() const
+{
+    return std::chrono::milliseconds(
+            settings.get<std::int64_t>(WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS()));
+}
+
+void WebSocketSettings::setReconnectSleepTimeMs(
+        const std::chrono::milliseconds reconnectSleepTimeMs)
+{
+    settings.set(
+            WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS(), reconnectSleepTimeMs.count());
 }
 
 bool WebSocketSettings::contains(const std::string& key) const

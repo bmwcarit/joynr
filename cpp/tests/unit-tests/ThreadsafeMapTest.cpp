@@ -44,8 +44,8 @@ class ThreadsafeMapTest : public ::testing::Test
 
     void SetUp(){
         map = new ThreadSafeMap<std::string, std::shared_ptr<std::string> >();
-        testValue = std::shared_ptr<std::string>(new std::string("testValue"));
-        secondTestValue = std::shared_ptr<std::string>(new std::string("secondTestValue"));
+        testValue = std::make_shared<std::string>("testValue");
+        secondTestValue = std::make_shared<std::string>("secondTestValue");
         firstKey = std::string("firstKey");
         secondKey = std::string("secondKey");
     }

@@ -133,7 +133,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDire
                     channelIdQT.toStdString(),
                     StatusCode::toString(future->getStatus()));
         }
-    } catch (joynr::exceptions::JoynrException& e) {
+    } catch (const joynr::exceptions::JoynrException& e) {
         // catches exceptions from both wait() and / or get() calls
         JOYNR_LOG_INFO(logger,
                        "FAILED to receive remote url information for channelId = {}. Error: {}",

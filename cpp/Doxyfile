@@ -825,9 +825,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          cluster-controller/capabilities-client/FakeCapabilitiesClient.cpp \
                          cluster-controller/capabilities-client/FakeCapabilitiesClient.h \
                          cluster-controller/capabilities-client/ICapabilitiesClient.h \
-                         cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h \
-                         cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.cpp \
-                         cluster-controller/capabilities-client/LocalCapabilitiesCallbackWrapper.h \
                          cluster-controller/capabilities-client/LocalCapabilitiesDirectory.cpp \
                          cluster-controller/http-communication-manager/ChannelUrlSelector.cpp \
                          cluster-controller/http-communication-manager/ChannelUrlSelector.h \
@@ -934,7 +931,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          common/logging/joynrlogging_dlt.cpp \
                          common/logging/SpdlogLogging.cpp \
                          common/ObjectWithDecayTime.cpp \
-                         common/rpc/JsonCallback.h \
                          common/rpc/Reply.cpp \
                          common/rpc/Request.cpp \
                          common/rpc/RpcMetaTypes.cpp \

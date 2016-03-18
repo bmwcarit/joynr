@@ -59,21 +59,18 @@ define("joynr/proxy/DiscoveryQos", [
         /**
          * @name DiscoveryQos#discoveryTimeout
          * @type Number
-         * @field
          */
         this.discoveryTimeout = settings.discoveryTimeout;
 
         /**
          * @name DiscoveryQos#discoveryRetryDelay
          * @type Number
-         * @field
          */
         this.discoveryRetryDelay = settings.discoveryRetryDelay;
 
         /**
          * @name DiscoveryQos#arbitrationStrategy
          * @type Function
-         * @field
          * @see ArbitrationStrategyCollection
          */
         this.arbitrationStrategy = settings.arbitrationStrategy;
@@ -81,7 +78,6 @@ define("joynr/proxy/DiscoveryQos", [
         /**
          * @name DiscoveryQos#cacheMaxAge
          * @type Number
-         * @field
          */
         this.cacheMaxAge = settings.cacheMaxAge;
 
@@ -93,7 +89,6 @@ define("joynr/proxy/DiscoveryQos", [
         /**
          * @name DiscoveryQos#additionalParameters
          * @type Object
-         * @field
          */
         this.additionalParameters = settings.additionalParameters;
     }

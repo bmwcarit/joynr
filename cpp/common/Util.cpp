@@ -80,8 +80,13 @@ std::string attributeGetterFromName(const std::string& attributeName)
 
 std::string createUuid()
 {
-    boost::uuids::uuid uuid = boost::uuids::random_generator()();
-    return boost::uuids::to_string(uuid);
+    // instantiation of random generator is expensive,
+    // therefore we use a static one:
+    static boost::uuids::random_generator uuidGenerator;
+    // uuid generator is not threadsafe
+    static std::mutex uuidMutex;
+    std::unique_lock<std::mutex> uuidLock(uuidMutex);
+    return boost::uuids::to_string(uuidGenerator());
 }
 
 void throwJoynrException(const exceptions::JoynrException& error)
@@ -107,6 +112,12 @@ void throwJoynrException(const exceptions::JoynrException& error)
                 const_cast<exceptions::JoynrException&>(error));
     } else if (typeName == exceptions::ApplicationException::TYPE_NAME) {
         throw dynamic_cast<exceptions::ApplicationException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::JoynrMessageNotSentException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::JoynrMessageNotSentException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::JoynrDelayMessageException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::JoynrDelayMessageException&>(
                 const_cast<exceptions::JoynrException&>(error));
     } else {
         std::string message = error.getMessage();

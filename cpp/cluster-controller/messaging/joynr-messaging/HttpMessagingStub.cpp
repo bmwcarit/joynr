@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,14 +34,16 @@ HttpMessagingStub::HttpMessagingStub(std::shared_ptr<IMessageSender> messageSend
 {
 }
 
-void HttpMessagingStub::transmit(JoynrMessage& message)
+void HttpMessagingStub::transmit(
+        JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         message.setHeaderReplyChannelId(receiveChannelId);
     }
-    messageSender->sendMessage(destinationChannelId, message);
+    messageSender->sendMessage(destinationChannelId, message, onFailure);
 }
 
 } // namespace joynr

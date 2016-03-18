@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.15.1)
+project(joynr-0.16.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 15)
-set(JOYNR_PATCH_VERSION 1)
+set(JOYNR_MINOR_VERSION 16)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -42,6 +42,12 @@ message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
 message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
 message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
 
+message(STATUS "variable BUILD_PACKAGE_SHLIB=" ${BUILD_PACKAGE_SHLIB})
+message(STATUS "variable BUILD_PACKAGE_BIN=" ${BUILD_PACKAGE_BIN})
+message(STATUS "variable BUILD_PACKAGE_DEV=" ${BUILD_PACKAGE_DEV})
+message(STATUS "variable BUILD_PACKAGE_LIBRARY=" ${BUILD_PACKAGE_LIBRARY})
+message(STATUS "variable BUILD_PACKAGE_TESTS=" ${BUILD_PACKAGE_TESTS})
+
 # defines GNU standard installation directories
 include(GNUInstallDirs)
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/joynr CACHE PATH "Installation sub directory for CMake files")
@@ -64,6 +70,18 @@ message(STATUS "JOYNR_INSTALL_FULL_SYSCONFDIR = ${JOYNR_INSTALL_FULL_SYSCONFDIR}
 message(STATUS "-----------------------------------------------------")
 
 option(
+    GENERATE_SOURCES
+    "Generate source files from Franca model?"
+    OFF
+)
+message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
+if(${GENERATE_SOURCES})
+    find_package(JoynrGenerator ${JOYNR_VERSION} EXACT REQUIRED)
+    message(STATUS "variable JoynrGenerator_FOUND=${JoynrGenerator_FOUND}")
+    message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
+endif(${GENERATE_SOURCES})
+
+option(
     USE_PLATFORM_DEPENDENCIES
     "Resolve all dependencies (link libraries) from the system?"
     OFF
@@ -71,19 +89,12 @@ option(
 message(STATUS "option USE_PLATFORM_DEPENDENCIES=" ${USE_PLATFORM_DEPENDENCIES})
 
 if(USE_PLATFORM_DEPENDENCIES)
-    set(USE_PLATFORM_LIBWEBSOCKETS ON)
     set(USE_PLATFORM_SPDLOG ON)
     set(USE_PLATFORM_JSMN ON)
     set(USE_PLATFORM_MOSQUITTO ON)
     set(USE_PLATFORM_GTEST_GMOCK ON)
+    set(USE_PLATFORM_WEBSOCKETPP ON)
 endif(USE_PLATFORM_DEPENDENCIES)
-
-option(
-    USE_PLATFORM_LIBWEBSOCKETS
-    "Resolve dependency to libwebsocket from the system?"
-    OFF
-)
-message(STATUS "option USE_PLATFORM_LIBWEBSOCKETS=" ${USE_PLATFORM_LIBWEBSOCKETS})
 
 option(
     USE_PLATFORM_SPDLOG
@@ -112,6 +123,13 @@ option(
     OFF
 )
 message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
+
+option(
+    USE_PLATFORM_WEBSOCKETPP
+    "Resolve dependency to WebSocket++ from the system?"
+    OFF
+)
+message(STATUS "option USE_PLATFORM_WEBSOCKETPP=" ${USE_PLATFORM_WEBSOCKETPP})
 
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(
@@ -142,7 +160,29 @@ option(
 )
 message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
 
+
+option(
+    BUILD_CLUSTER_CONTROLLER
+    "Build ClusterController?"
+    ON
+)
+message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
+
 include(LocateProgram)
+
+#### BEGIN: Prevent install-target execution if platform dependencies are not used ####
+
+# Following dependencies must be installed by the user beforehand because they either
+# use a shared object or are included through joynr header files into the user's code.
+# Mosquitto is only required when the cluster controller build is enabled.
+if(NOT (USE_PLATFORM_SPDLOG AND USE_PLATFORM_JSMN AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
+    set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
+    set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
+    set(codeMsg "${codeMsg} USE_PLATFORM_JSMN and USE_PLATFORM_MOSQUITTO.\")")
+    install(CODE "${codeMsg}")
+endif()
+
+#### END: Prevent install-target execution if platform dependencies are not used #####
 
 #### BEGIN clang-format ####
 
@@ -242,13 +282,6 @@ endif(${ENABLE_CLANG_TIDY})
 include(AddClangTidy)
 
 #### END clang-tidy ####
-
-
-option(
-    BUILD_CLUSTER_CONTROLLER
-    "Build ClusterController?"
-    ON
-)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
@@ -442,49 +475,6 @@ endif()
 
 include(AddExternalProject)
 
-### Add libwebsockets ###########################################################
-if (USE_PLATFORM_LIBWEBSOCKETS)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(libwebsockets REQUIRED libwebsockets)
-    message(STATUS "linking against ${libwebsockets_LIBRARIES}")
-else(USE_PLATFORM_LIBWEBSOCKETS)
-    AddExternalProject(
-        libwebsockets
-        GIT_REPOSITORY https://github.com/warmcat/libwebsockets
-        GIT_TAG v1.5-chrome47-firefox41
-        TIMEOUT 10
-        # Disable svn update
-        UPDATE_COMMAND ""
-        # Configure libwebsockets library features
-        CMAKE_ARGS  -DLWS_WITH_SSL=0
-                    -DLWS_WITHOUT_CLIENT=0
-                    -DLWS_WITHOUT_SERVER=0
-                    -DLWS_WITHOUT_EXTENSIONS=0
-                    -DLWS_WITH_ZLIB=ON
-                    -DLWS_WITHOUT_TESTAPPS=1
-                    -DLWS_WITHOUT_TEST_SERVER=1
-                    -DLWS_WITHOUT_TEST_SERVER_EXTPOLL=1
-                    -DLWS_WITHOUT_TEST_PING=1
-                    -DLWS_WITHOUT_TEST_CLIENT=1
-                    -DLWS_WITHOUT_TEST_FRAGGLE=1
-                    -DCMAKE_POSITION_INDEPENDENT_CODE=1
-        BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets${CMAKE_SHARED_LIBRARY_SUFFIX}
-    )
-
-    ExternalProject_Get_Property(libwebsockets SOURCE_DIR)
-    ExternalProject_Get_Property(libwebsockets BINARY_DIR)
-
-    set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(libwebsockets_INCLUDE_DIRS
-        ${SOURCE_DIR}/lib
-        ${BINARY_DIR}
-    )
-endif(USE_PLATFORM_LIBWEBSOCKETS)
-
-
-message(STATUS "variable libwebsockets_LIBRARIES=${libwebsockets_LIBRARIES}")
-message(STATUS "variable libwebsockets_INCLUDE_DIRS=${libwebsockets_INCLUDE_DIRS}")
-
 # ---------------------------------------------- Build library --------------------------------------------------
 
 include(GenerateExportHeader)
@@ -530,6 +520,19 @@ add_definitions("-DJOYNR_MAX_LOG_LEVEL_${JOYNR_MAX_LOG_LEVEL}")
 
 ######## DEFAULT COMPILER FLAGS #############
 
+# The c++14 flag will be set automatically by CMake based on "CMAKE_CXX_STANDARD 14" starting with version 3.1.0.
+# However, as CMake 3.1.x does not recognize compiler flags correctly for OS X, we use CMAKE_CXX_STANDARD
+# from 3.2.0 upwards. For older versions, this flag is set manually for gcc and clang:
+if("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
+    if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+else()
+    # set required C++ standard
+    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
+
 #Other Warnings that could be turned on:
 #-Wpedantic
 #-Wpadded
@@ -570,16 +573,14 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif(${WIN32})
     # check GNU CXX compiler version
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
-        message(STATUS "C++14 activated.")
         add_definitions(-D_GLIBCXX_USE_NANOSLEEP)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
     else()
-        message(FATAL_ERROR "C++14 and a gcc compiler with a version higher than 4.9 is needed.")
+        message(FATAL_ERROR "a gcc compiler with a version higher than 4.9 is needed.")
     endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++14 -Wno-unknown-pragmas")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         option(
             USE_STDLIB_LIBCPP
@@ -804,6 +805,7 @@ file(
     COPY
         "CMake/CheckBoostImportTargets.cmake"
         "CMake/CheckCurlImportTargets.cmake"
+        "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
@@ -852,9 +854,96 @@ install(
         "${CMAKE_CURRENT_BINARY_DIR}/JoynrConfigVersion.cmake"
         "CMake/CheckBoostImportTargets.cmake"
         "CMake/CheckCurlImportTargets.cmake"
+        "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev
 )
 
+# install the NOTICE-CPP
+install(
+    FILES "${CMAKE_CURRENT_SOURCE_DIR}/NOTICE-CPP"
+    DESTINATION "${CMAKE_INSTALL_DOCDIR}"
+)
+
 ######### Documentation settings ########
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+# cpack settings
+include(InstallRequiredSystemLibraries)
+
+
+# generic
+
+#
+# RPM specific settings
+#
+set(CPACK_GENERATOR "RPM")
+set(CPACK_STRIP_FILES "ON")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Joynr base package")
+set(CPACK_PACKAGE_NAME "joynr")
+set(CPACK_PACKAGE_VERSION_MAJOR "${JOYNR_MAJOR_VERSION}")
+set(CPACK_PACKAGE_VERSION_MINOR "${JOYNR_MINOR_VERSION}")
+set(CPACK_PACKAGE_VERSION_PATCH "${JOYNR_PATCH_VERSION}")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_PACKAGE_VENDOR "BMW Car IT GmbH (http://www.bmw-carit.de)")
+set(CPACK_PACKAGE_CONTACT "joynr@bmw-carit.de")
+set(CPACK_RPM_PACKAGE_URL "https://github.com/bmwcarit/joynr")
+set(CPACK_RPM_PACKAGE_LICENSE "Apache License, Version 2.0")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README-CPP.txt")
+
+
+if(DEFINED ${BUILD_PACKAGE})
+    message(STATUS "variable BUILD_PACKAGE=" ${BUILD_PACKAGE})
+    if(${BUILD_PACKAGE} STREQUAL "shlib")
+        message(STATUS "Building package for shlib")
+        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+        set(CPACK_RPM_COMPONENT_INSTALL 1)
+        set(CPACK_COMPONENTS_ALL shlib)
+    endif(${BUILD_PACKAGE} STREQUAL "shlib")
+
+    if(${BUILD_PACKAGE} STREQUAL "shlib-debug")
+        message(STATUS "Building package for shlib-debug")
+        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+        set(CPACK_RPM_COMPONENT_INSTALL 1)
+        set(CPACK_COMPONENTS_ALL shlib)
+        set (CPACK_RPM_SPEC_MORE_DEFINE "%debug_package")
+    endif(${BUILD_PACKAGE} STREQUAL "shlib-debug")
+
+    if(${BUILD_PACKAGE} STREQUAL "bin")
+        message(STATUS "Building package for bin")
+        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+        set(CPACK_RPM_COMPONENT_INSTALL 1)
+        set(CPACK_COMPONENTS_ALL bin)
+    endif(${BUILD_PACKAGE} STREQUAL "bin")
+
+    if(${BUILD_PACKAGE} STREQUAL "bin-debug")
+        message(STATUS "Building package for bin-debug")
+        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+        set(CPACK_RPM_COMPONENT_INSTALL 1)
+        set(CPACK_COMPONENTS_ALL bin)
+        set (CPACK_RPM_SPEC_MORE_DEFINE "%debug_package")
+    endif(${BUILD_PACKAGE} STREQUAL "bin-debug")
+
+    if(${BUILD_PACKAGE} STREQUAL "dev")
+        message(STATUS "Building package for dev")
+        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+        set(CPACK_RPM_COMPONENT_INSTALL 1)
+        set(CPACK_COMPONENTS_ALL dev)
+    endif(${BUILD_PACKAGE} STREQUAL "dev")
+
+    if(${BUILD_PACKAGE} STREQUAL "tests")
+        message(STATUS "Building package for tests")
+        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+        set(CPACK_RPM_COMPONENT_INSTALL 1)
+        set(CPACK_COMPONENTS_ALL tests)
+    endif(${BUILD_PACKAGE} STREQUAL "tests")
+
+    if(${BUILD_PACKAGE} STREQUAL "library")
+        message(STATUS "Building package for library")
+        set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+        set(CPACK_RPM_COMPONENT_INSTALL 1)
+        set(CPACK_COMPONENTS_ALL library)
+    endif(${BUILD_PACKAGE} STREQUAL "library")
+endif(DEFINED ${BUILD_PACKAGE})
+
+include(CPack)

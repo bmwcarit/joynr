@@ -39,8 +39,8 @@ class DirectoryTest : public ::testing::Test
 
     void SetUp(){
         directory = new Directory<std::string, std::string>("Directory");
-        testValue = std::shared_ptr<std::string>(new std::string("testValue"));
-        secondTestValue = std::shared_ptr<std::string>(new std::string("secondTestValue"));
+        testValue = std::make_shared<std::string>("testValue");
+        secondTestValue = std::make_shared<std::string>("secondTestValue");
         firstKey = std::string("firstKey");
         secondKey = std::string("secondKey");
     }
@@ -94,41 +94,17 @@ TEST_F(DirectoryTest, remove)
 
 TEST_F(DirectoryTest, scheduledRemove)
 {
-    directory->add(firstKey, std::shared_ptr<std::string>(new std::string("scheduledRemove_testValue")),100);
+    directory->add(firstKey, std::make_shared<std::string>("scheduledRemove_testValue"), 100);
     ASSERT_TRUE(directory->contains(firstKey));
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     ASSERT_FALSE(directory->contains(firstKey));
 }
 
-
 TEST(UnfixturedDirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 {
     Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
-    TrackableObject *t1 = new TrackableObject();
-    ASSERT_EQ(TrackableObject::getInstances(), 1);
-    directory->add("key", t1, 100);
-    ASSERT_EQ(TrackableObject::getInstances(), 1) << "Directory copied / deleted object";
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object";
-    delete directory;
-}
-
-TEST(UnfixturedDirectoryTest, ObjectsAreDeletedWhenDirectoryIsDeleted)
-{
-    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
-    TrackableObject *t1 = new TrackableObject();
-    ASSERT_EQ(TrackableObject::getInstances(), 1);
-    directory->add("key", t1, 100);
-    ASSERT_EQ(TrackableObject::getInstances(), 1) << "Directory copied / deleted object";
-    delete directory;
-    ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object when it was deleted";
-}
-
-TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedByDirectoryAfterTtl)
-{
-    Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
     {
-        std::shared_ptr<TrackableObject> tp = std::shared_ptr<TrackableObject>(new TrackableObject());
+        auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
         directory->add("key", tp, 100);
     }
@@ -138,11 +114,11 @@ TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedByDirectoryAfterTtl)
     delete directory;
 }
 
-TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedIfDirectoryIsDeleted)
+TEST(UnfixturedDirectoryTest, ObjectsAreDeletedIfDirectoryIsDeleted)
 {
     Directory<std::string, TrackableObject> *directory = new Directory<std::string, TrackableObject>("Directory");
     {
-        std::shared_ptr<TrackableObject> tp = std::shared_ptr<TrackableObject>(new TrackableObject());
+        auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
         directory->add("key", tp, 100);
     }
@@ -153,7 +129,7 @@ TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedIfDirectoryIsDeleted)
 TEST(UnfixturedDirectoryTest, useStdStringKeys)
 {
     std::string key = "key";
-    std::shared_ptr<std::string> value(new std::string("value"));
+    auto value = std::make_shared<std::string>("value");
     Directory<std::string, std::string> directory("Directory");
     ASSERT_FALSE(directory.contains(key)) << "Empty directory contains entry.";
     directory.add(key, value);

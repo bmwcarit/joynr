@@ -12,6 +12,7 @@
 * [Java Developer Guide](wiki/java.md) -- Developing Java applications with joynr
 * [C++ Developer Guide](wiki/cplusplus.md) -- Developing C++ applications with joynr
 * [JavaScript Developer Guide](wiki/javascript.md) -- Developing JavaScript applications with joynr
+* [JavaScript Tutorial](wiki/JavaScriptTutorial.md) -- Make your first joynr JavaScript application
 * [Radio App Tutorial](wiki/Tutorial.md) -- Make your first joynr app: define a communication
 	interface, implement a provider, and create a consumer.
 * [Broadcast Tutorial](wiki/Broadcast-Tutorial.md) -- Learn about (selective) broadcasts and

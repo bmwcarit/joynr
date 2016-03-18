@@ -60,7 +60,6 @@ define("joynr/exceptions/ApplicationException", [
          * Used for serialization.
          * @name ApplicationException#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.ApplicationException");
         Util.checkPropertyIfDefined(settings, "Object", "settings");

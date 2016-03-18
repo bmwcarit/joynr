@@ -82,7 +82,7 @@ private:
 INIT_LOGGER(CapabilitiesClientTest);
 
 TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
-    CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
+    auto capabilitiesClient = std::make_unique<CapabilitiesClient>(channelId);
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                 messagingSettings.getDiscoveryDirectoriesDomain()
@@ -112,7 +112,7 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     //sync methods are not yet implemented
 //    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
-    std::shared_ptr<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
+    auto callback = std::make_shared<GlobalCapabilitiesMock>();
 
     // use a semaphore to wait for capabilities to be received
     Semaphore semaphore(0);

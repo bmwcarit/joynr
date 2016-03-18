@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,7 +171,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
                 "broadcastWithSingleArrayParameter",
                 subscriptionBroadcastListener);
 
-    std::shared_ptr<MockMessageRouter> mockMessageRouter(std::shared_ptr<MockMessageRouter>(new MockMessageRouter()));
+    auto mockMessageRouter = std::make_shared<MockMessageRouter>();
     JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
     publicationManager->add(
                 proxyParticipantId,
@@ -189,7 +189,8 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
                      AllOf(
                          A<JoynrMessage>(),
                          Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
-                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId)))
+                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId))),
+                     _
                      ));
 
     provider->fireBroadcastWithSingleArrayParameter(singleParam);

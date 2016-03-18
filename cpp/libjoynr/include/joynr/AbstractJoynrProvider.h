@@ -53,10 +53,15 @@ public:
     // --- Interface to be implemented by Providers ---
 
     /**
+     * @deprecated
+     * @see JoynrRuntime#registerProvider
+     *
      * @brief Get the provider quality of service settings
      * @return the provider quality of service settings
      */
-    types::ProviderQos getProviderQos() const override;
+    [[deprecated("Will be removed by end of the year 2016. Use JoynrRuntime::registerProvider "
+                 "instead.")]] types::ProviderQos
+    getProviderQos() const override;
 
     // --- Support for listening to onChange events ---
 
@@ -116,8 +121,14 @@ protected:
      */
     void fireBroadcast(const std::string& broadcastName, const std::vector<Variant>& values);
 
-    /** @brief The provider quality settings */
-    types::ProviderQos providerQos;
+    /**
+     * @deprecated
+     * @see JoynrRuntime#registerProvider
+     *
+     * @brief The provider quality settings
+     */
+    [[deprecated("Will be removed by end of the year 2016. Use JoynrRuntime::registerProvider "
+                 "instead.")]] types::ProviderQos providerQos;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);

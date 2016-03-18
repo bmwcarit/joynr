@@ -95,7 +95,7 @@ public class PushingPublicationTest {
     @Before
     public void setUp() throws JoynrSendBufferFullException, JoynrMessageNotSentException, JsonGenerationException,
                        JsonMappingException, IOException {
-        provider = new SubscriptionTestsProviderImpl(new ProviderQos());
+        provider = new SubscriptionTestsProviderImpl();
 
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,

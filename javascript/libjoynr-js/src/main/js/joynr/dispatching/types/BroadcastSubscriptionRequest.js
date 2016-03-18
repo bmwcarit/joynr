@@ -54,22 +54,18 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
         /**
          * @name BroadcastSubscriptionRequest#subscriptionId
          * @type String
-         * @field
          */
         /**
          * @name BroadcastSubscriptionRequest#qos
          * @type Object|OnChangeSubscriptionQos
-         * @field
          */
         /**
          * @name BroadcastSubscriptionRequest#subscribedToName
          * @type String
-         * @field
          */
         /**
          * @name BroadcastSubscriptionRequest#filterParameters
          * @type Object|BroadcastFilterParameters
-         * @field
          */
         Util.extend(this, defaultSettings, settings);
         /**
@@ -77,7 +73,6 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
          *
          * @name BroadcastSubscriptionRequest#_typeName
          * @type String
-         * @field
          */
         Typing.augmentTypeName(this, "joynr");
 

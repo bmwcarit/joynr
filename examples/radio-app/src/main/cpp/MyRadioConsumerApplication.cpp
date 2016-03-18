@@ -189,22 +189,22 @@ int main(int argc, char* argv[])
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    subscriptionQos.setMinInterval(5 * 1000);
+    subscriptionQos.setMinIntervalMs(5 * 1000);
     // The provider will send notifications every maximum interval in milliseconds, even if the
     // value didn't change. It will send notifications more often if on-change notifications are
     // enabled, the value changes more often, and the minimum interval QoS does not prevent it. The
     // maximum interval can thus be seen as a sort of heart beat.
-    subscriptionQos.setMaxInterval(8 * 1000);
+    subscriptionQos.setMaxIntervalMs(8 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
-    // setValidity_ms will set the end date to current time millis + validity_ms
-    subscriptionQos.setValidity(60 * 1000);
+    // setValidityMs will set the end date to current time millis + validity
+    subscriptionQos.setValidityMs(60 * 1000);
     // Notification messages will be sent with this time-to-live. If a notification message can not
     // be delivered within its TTL, it will be deleted from the system.
     // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
     //       missed publication notification (depending on the value of the alert interval QoS).
-    subscriptionQos.setAlertAfterInterval(10 * 1000);
+    subscriptionQos.setAlertAfterIntervalMs(10 * 1000);
 
     // Subscriptions go to a listener object
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> listener(
@@ -226,12 +226,12 @@ int main(int argc, char* argv[])
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    weakSignalBroadcastSubscriptionQos.setMinInterval(1 * 1000);
+    weakSignalBroadcastSubscriptionQos.setMinIntervalMs(1 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
-    // setValidity_ms will set the end date to current time millis + validity_ms
-    weakSignalBroadcastSubscriptionQos.setValidity(60 * 1000);
+    // setValidityMs will set the end date to current time millis + validity
+    weakSignalBroadcastSubscriptionQos.setValidityMs(60 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
     std::string weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
@@ -240,8 +240,8 @@ int main(int argc, char* argv[])
     // selective broadcast subscription
 
     OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
-    newStationDiscoveredBroadcastSubscriptionQos.setMinInterval(2 * 1000);
-    newStationDiscoveredBroadcastSubscriptionQos.setValidity(180 * 1000);
+    newStationDiscoveredBroadcastSubscriptionQos.setMinIntervalMs(2 * 1000);
+    newStationDiscoveredBroadcastSubscriptionQos.setValidityMs(180 * 1000);
     std::shared_ptr<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>
             newStationDiscoveredBroadcastListener(new NewStationDiscoveredBroadcastListener());
     vehicle::RadioNewStationDiscoveredBroadcastFilterParameters

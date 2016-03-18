@@ -89,7 +89,6 @@ class CompoundTypeGenerator {
 				 * Used for serialization.
 				 * @name «type.joynrName»#_typeName
 				 * @type String
-				 * @field
 				 * @readonly
 				 */
 				Object.defineProperty(this, "_typeName", {
@@ -104,7 +103,6 @@ class CompoundTypeGenerator {
 				 * Parent class.
 				 * @name «type.joynrName»#_extends
 				 * @type String
-				 * @field
 				 * @readonly
 				 */
 				Object.defineProperty(this, "_extends", {
@@ -121,7 +119,6 @@ class CompoundTypeGenerator {
 						comment.replaceAll("\n", "\n" + "* ")»«ENDFOR»«ENDIF»
 					 * @name «type.joynrName»#«member.joynrName»
 					 * @type «member.jsdocTypeName»
-					 * @field
 					 */
 				«ENDFOR»
 				Object.defineProperty(this, 'checkMembers', {

@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,7 +202,7 @@ define(
                     dispatcher.sendPublication({
                         from : subscriptionInfo.providerParticipantId,
                         to : subscriptionInfo.proxyParticipantId,
-                        expiryDate : (Date.now() + subscriptionInfo.qos.publicationTtl).toString()
+                        expiryDate : (Date.now() + subscriptionInfo.qos.publicationTtlMs).toString()
                     }, subscriptionPublication
                     );
                 }
@@ -212,7 +212,7 @@ define(
                  * @private
                  */
                 function getPeriod(subscriptionInfo) {
-                    return subscriptionInfo.qos.maxInterval || subscriptionInfo.qos.period;
+                    return subscriptionInfo.qos.maxIntervalMs || subscriptionInfo.qos.periodMs;
                 }
 
                 /**
@@ -221,8 +221,8 @@ define(
                  */
                 function prepareAttributePublication(subscriptionInfo, value, timer) {
                     var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
-                    if (subscriptionInfo.qos.minInterval === undefined
-                        || timeSinceLastPublication >= subscriptionInfo.qos.minInterval) {
+                    if (subscriptionInfo.qos.minIntervalMs === undefined
+                        || timeSinceLastPublication >= subscriptionInfo.qos.minIntervalMs) {
                         sendPublication(subscriptionInfo, value);
                         // if registered interval exists => reschedule it
 
@@ -240,7 +240,7 @@ define(
                     } else {
                         if (subscriptionInfo.onChangeDebounce === undefined) {
                             subscriptionInfo.onChangeDebounce =
-                                    timer(subscriptionInfo, subscriptionInfo.qos.minInterval
+                                    timer(subscriptionInfo, subscriptionInfo.qos.minIntervalMs
                                         - timeSinceLastPublication, function() {
                                         delete subscriptionInfo.onChangeDebounce;
                                     });
@@ -254,13 +254,13 @@ define(
                  */
                 function prepareBroadcastPublication(subscriptionInfo, value) {
                     var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
-                    if (subscriptionInfo.qos.minInterval === undefined
-                        || timeSinceLastPublication >= subscriptionInfo.qos.minInterval) {
+                    if (subscriptionInfo.qos.minIntervalMs === undefined
+                        || timeSinceLastPublication >= subscriptionInfo.qos.minIntervalMs) {
                         sendPublication(subscriptionInfo, value);
                     } else {
                         log.info("Two subsequent broadcasts of event "
                                 + subscriptionInfo.subscribedToName
-                                + " occured within minInterval of subscription with id "
+                                + " occured within minIntervalMs of subscription with id "
                                 + subscriptionInfo.subscriptionId
                                 + ". Event will not be sent to the subscribing client.");
                     }
@@ -401,8 +401,8 @@ define(
                     for (subscriptionId in subscriptions) {
                         if (subscriptions.hasOwnProperty(subscriptionId)) {
                             var subscriptionInfo = subscriptions[subscriptionId];
-                            if (subscriptionInfo.qos.minInterval !== undefined
-                                && subscriptionInfo.qos.minInterval > 0) {
+                            if (subscriptionInfo.qos.minIntervalMs !== undefined
+                                && subscriptionInfo.qos.minIntervalMs > 0) {
                                 prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
                             }
                         }
@@ -877,10 +877,10 @@ define(
                             }
 
                             // if endDate is defined (also exclude default value 0 for
-                            // the expiryDate qos-property)
-                            if (subscriptionInfo.qos.expiryDate !== undefined
-                                && subscriptionInfo.qos.expiryDate !== SubscriptionQos.NO_EXPIRY_DATE) {
-                                var timeToEndDate = subscriptionRequest.qos.expiryDate - Date.now();
+                            // the expiryDateMs qos-property)
+                            if (subscriptionInfo.qos.expiryDateMs !== undefined
+                                && subscriptionInfo.qos.expiryDateMs !== SubscriptionQos.NO_EXPIRY_DATE) {
+                                var timeToEndDate = subscriptionRequest.qos.expiryDateMs - Date.now();
 
                                 // if endDate lies in the past => don't add the subscription
                                 if (timeToEndDate <= 0) {
@@ -897,22 +897,22 @@ define(
                                         }, timeToEndDate);
                             }
 
-                            // Set up publication interval if maxInterval is a number
+                            // Set up publication interval if maxIntervalMs is a number
                             //(not (is not a number)) ...
-                            var period = getPeriod(subscriptionInfo);
+                            var periodMs = getPeriod(subscriptionInfo);
 
-                            if (!isNaN(period)) {
-                                if (period < MIN_PUBLICATION_INTERVAL) {
-                                    log.error("SubscriptionRequest error: period: "
-                                        + period
+                            if (!isNaN(periodMs)) {
+                                if (periodMs < MIN_PUBLICATION_INTERVAL) {
+                                    log.error("SubscriptionRequest error: periodMs: "
+                                        + periodMs
                                         + "is smaller than MIN_PUBLICATION_INTERVAL: "
                                         + MIN_PUBLICATION_INTERVAL);
-                                    // TODO: proper error handling when maxInterval is smaller than
+                                    // TODO: proper error handling when maxIntervalMs is smaller than
                                     // MIN_PUBLICATION_INTERVAL
                                 } else {
                                     // call the get method on the provider at the set interval
                                     subscriptionInfo.subscriptionInterval =
-                                            triggerPublicationTimer(subscriptionInfo, period);
+                                            triggerPublicationTimer(subscriptionInfo, periodMs);
                                 }
                             }
 
@@ -1017,10 +1017,10 @@ define(
                             }
 
                             // if endDate is defined (also exclude default value 0 for
-                            // the expiryDate qos-property)
-                            if (subscriptionInfo.qos.expiryDate !== undefined
-                                && subscriptionInfo.qos.expiryDate !== SubscriptionQos.NO_EXPIRY_DATE) {
-                                var timeToEndDate = subscriptionRequest.qos.expiryDate - Date.now();
+                            // the expiryDateMs qos-property)
+                            if (subscriptionInfo.qos.expiryDateMs !== undefined
+                                && subscriptionInfo.qos.expiryDateMs !== SubscriptionQos.NO_EXPIRY_DATE) {
+                                var timeToEndDate = subscriptionRequest.qos.expiryDateMs - Date.now();
 
                                 // if endDate lies in the past => don't add the subscription
                                 if (timeToEndDate <= 0) {
@@ -1036,10 +1036,6 @@ define(
                                             removeSubscription(subscriptionId);
                                         }, timeToEndDate);
                             }
-
-                            // Set up publication interval if maxInterval is a number
-                            //(not (is not a number)) ...
-                            var period = getPeriod(subscriptionInfo);
 
                             // save subscriptionInfo to subscriptionId => subscription and
                             // ProviderEvent => subscription map

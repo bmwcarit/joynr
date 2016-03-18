@@ -65,7 +65,6 @@ define(
                  * Used for serialization.
                  * @name PublicationMissedException#_typeName
                  * @type String
-                 * @field
                  */
                 Util.objectDefineProperty(
                         this,

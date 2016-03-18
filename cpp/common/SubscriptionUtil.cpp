@@ -38,11 +38,11 @@ std::int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
         const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
                 &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-        return subscriptionQosPtr->getAlertAfterInterval();
+        return subscriptionQosPtr->getAlertAfterIntervalMs();
     }
     if (qos.is<PeriodicSubscriptionQos>()) {
         const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
-        return subscriptionQosPtr->getAlertAfterInterval();
+        return subscriptionQosPtr->getAlertAfterIntervalMs();
     }
     return -1;
 }
@@ -52,11 +52,11 @@ std::int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
         const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
                 &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-        return subscriptionQosPtr->getMinInterval();
+        return subscriptionQosPtr->getMinIntervalMs();
     }
     if (qos.is<OnChangeSubscriptionQos>()) {
         const OnChangeSubscriptionQos* subscriptionQosPtr = &qos.get<OnChangeSubscriptionQos>();
-        return subscriptionQosPtr->getMinInterval();
+        return subscriptionQosPtr->getMinIntervalMs();
     }
     return -1;
 }
@@ -66,11 +66,11 @@ std::int64_t SubscriptionUtil::getPeriodicPublicationInterval(const Variant& qos
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
         const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
                 &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
-        return subscriptionQosPtr->getMaxInterval();
+        return subscriptionQosPtr->getMaxIntervalMs();
     }
     if (qos.is<PeriodicSubscriptionQos>()) {
         const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
-        return subscriptionQosPtr->getPeriod();
+        return subscriptionQosPtr->getPeriodMs();
     }
     return -1;
 }

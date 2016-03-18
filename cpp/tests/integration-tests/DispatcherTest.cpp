@@ -158,7 +158,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                     AllOf(
                         Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
                         Property(&JoynrMessage::getPayload, Eq(expectedReply.getPayload()))
-                    )
+                    ),
+                    _
                 )
     );
 

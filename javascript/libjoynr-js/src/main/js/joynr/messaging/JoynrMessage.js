@@ -37,7 +37,6 @@ define("joynr/messaging/JoynrMessage", [
          *
          * @name JoynrMessage#_typeName
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.JoynrMessage");
 
@@ -46,7 +45,6 @@ define("joynr/messaging/JoynrMessage", [
          *
          * @name JoynrMessage#type
          * @type String
-         * @field
          */
         Util.objectDefineProperty(this, "type", messageType);
 
@@ -55,7 +53,6 @@ define("joynr/messaging/JoynrMessage", [
          *
          * @name JoynrMessage#header
          * @type Object
-         * @field
          */
         Util.objectDefineProperty(this, "header", {});
 
@@ -64,7 +61,6 @@ define("joynr/messaging/JoynrMessage", [
          *
          * @name JoynrMessage#payload
          * @type String
-         * @field
          */
         this.payload = "";
 
@@ -114,35 +110,30 @@ define("joynr/messaging/JoynrMessage", [
          *
          * @name JoynrMessage#creator
          * @type String
-         * @field
          */
         /**
          * The participant id the message is from
          *
          * @name JoynrMessage#from
          * @type String
-         * @field
          */
         /**
          * The participant id the message is to
          *
          * @name JoynrMessage#to
          * @type String
-         * @field
          */
         /**
          * The reply channel Id to return response messages to
          *
          * @name JoynrMessage#replyChannelId
          * @type String
-         * @field
          */
         /**
          * The expiry date of the message
          *
          * @name JoynrMessage#expiryDate
          * @type String
-         * @field
          */
         for (i = 0; i < headerProperties.length; ++i) {
             headerProperty = headerProperties[i];

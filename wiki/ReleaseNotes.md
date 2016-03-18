@@ -1,3 +1,57 @@
+#joynr 0.16.0
+
+##API relevant changes
+* **[JS, C++, Java]** Unified subscription QoS API among all programming languages.
+ * Add suffix "Ms" to timing related subscription QoS parameters such as
+   _expiryDateMs_, _publicationTtlMs_, _periodMs_, _alertAfterIntervalMs_, _minIntervalMs_ and
+   _maxIntervalMs_. Getters, setters and constants are renamed accordingly.
+ * Subscription QoS allows to specify the validity (relative from current time) instead of
+   an absolute expiry date. The clearExpiryDate() function removes a previously set expiry date.
+ * The clearAlertAfterInterval function removes a previously set alert after interval.
+ * Add suffix "_MS" to timing related subscription QoS constants (default, min and max values).
+ * Add missing default values and min/max limits for the QoS parameters.
+ * The old interface is deprecated but still available for backward compatibility reasons and might
+   be removed by end of 2016.
+* **[C++, Java]** Provider QoS are passed in at provider registration on the joynr runtime. Storing
+  the provider QoS in the provider object itself is deprecated and will be removed by the end of
+  2016.
+* **[JS]** "joynr.capabilities.registerCapabilitiy" is deprecated. Use
+  "joynr.registration.registerProvider" instead. "registerCapability" is deprecated and will be
+  removed by the end of 2016.
+* **[JS]** registerProvider does not take an auth token. When renaming registerCapability to
+  registerProvider, make sure also to delete the authToken parameter.
+* **[C++, Java, JS]** The maximum messaging TTL is now configurable via messaging settings and
+  enforced. The default value is set to 30 days.
+ * C++: default-messaging.settings
+
+   ```
+   [messaging]
+   # The maximum allowed TTL value for joynr messages.
+   # 2592000000 = 30 days in milliseconds
+   max-ttl-ms=2592000000
+   ```
+ * Java: defaultMessaging.properties
+
+   ```
+   joynr.messaging.maxTtlMs=2592000000
+   ```
+ * JS: defaultMessagingSettings.js
+
+   ```
+   // 30 days
+   MAX_MESSAGING_TTL_MS : 2592000000
+   ```
+* **[C++]** libjoynr uses websocketpp (https://github.com/zaphoyd/websocketpp) to communicate with
+  the cluster-controller.
+* **[C++]** Use `CMAKE_CXX_STANDARD` to specify the C++ standard. This feature was introduced by
+  CMake 3.1. See [\<RADIO_HOME\>/CMakeLists.txt](/examples/radio-app/CMakeLists.txt) on how to use
+  it.
+
+##Other changes
+* **[C++, Java]** Fix bug in code generation for typedef.
+* **[C++]** CMake integration of the joynr genearator now available. See
+  [\<RADIO_HOME\>/CMakeLists.txt](/examples/radio-app/CMakeLists.txt) on how to use it.
+
 #joynr 0.15.1
 
 This is a minor bug fix release.

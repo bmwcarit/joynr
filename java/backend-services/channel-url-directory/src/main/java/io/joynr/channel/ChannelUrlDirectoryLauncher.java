@@ -28,6 +28,7 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
+import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,8 @@ public class ChannelUrlDirectoryLauncher extends AbstractJoynrApplication {
 
     @Override
     public void run() {
-        runtime.registerProvider(discoveryDirectoriesDomain, channelUrlDirectoryProvider);
+        ProviderQos providerQos = new ProviderQos();
+        runtime.registerProvider(discoveryDirectoriesDomain, channelUrlDirectoryProvider, providerQos);
     }
 
     @Override

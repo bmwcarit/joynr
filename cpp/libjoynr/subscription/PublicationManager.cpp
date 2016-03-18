@@ -198,8 +198,8 @@ bool isSubscriptionExpired(const SubscriptionQos* qos, int offset = 0)
 {
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::system_clock::now().time_since_epoch()).count();
-    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
-           qos->getExpiryDate() < (now + offset);
+    return qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE() &&
+           qos->getExpiryDateMs() < (now + offset);
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,
@@ -209,8 +209,8 @@ void PublicationManager::add(const std::string& proxyParticipantId,
                              IPublicationSender* publicationSender)
 {
     assert(requestCaller);
-    std::shared_ptr<SubscriptionRequestInformation> requestInfo(new SubscriptionRequestInformation(
-            proxyParticipantId, providerParticipantId, subscriptionRequest));
+    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(
+            proxyParticipantId, providerParticipantId, subscriptionRequest);
     handleAttributeSubscriptionRequest(requestInfo, requestCaller, publicationSender);
 }
 
@@ -220,7 +220,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         IPublicationSender* publicationSender)
 {
     std::string subscriptionId = requestInfo->getSubscriptionId();
-    std::shared_ptr<Publication> publication(new Publication(publicationSender, requestCaller));
+    auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
 
     if (publicationExists(subscriptionId)) {
         JOYNR_LOG_DEBUG(logger,
@@ -247,11 +247,11 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationEndDelay = qos->getExpiryDate() - now;
+        std::int64_t publicationEndDelay = qos->getExpiryDateMs() - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId),
                         std::chrono::milliseconds(publicationEndDelay));
@@ -321,8 +321,8 @@ void PublicationManager::add(const std::string& proxyParticipantId,
     JOYNR_LOG_DEBUG(logger,
                     "Added subscription for non existing provider (adding subscriptionRequest "
                     "to queue).");
-    std::shared_ptr<SubscriptionRequestInformation> requestInfo(new SubscriptionRequestInformation(
-            proxyParticipantId, providerParticipantId, subscriptionRequest));
+    auto requestInfo = std::make_shared<SubscriptionRequestInformation>(
+            proxyParticipantId, providerParticipantId, subscriptionRequest);
     {
         std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
         queuedSubscriptionRequests.insert(
@@ -358,7 +358,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
     std::string subscriptionId = requestInfo->getSubscriptionId();
 
-    std::shared_ptr<Publication> publication(new Publication(publicationSender, requestCaller));
+    auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
 
     if (publicationExists(subscriptionId)) {
         JOYNR_LOG_DEBUG(logger,
@@ -385,11 +385,11 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationEndDelay = qos->getExpiryDate() - now;
+        std::int64_t publicationEndDelay = qos->getExpiryDateMs() - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId),
                         std::chrono::milliseconds(publicationEndDelay));
@@ -794,11 +794,11 @@ bool PublicationManager::isShuttingDown()
     return shuttingDown;
 }
 
-std::int64_t PublicationManager::getPublicationTtl(
+std::int64_t PublicationManager::getPublicationTtlMs(
         std::shared_ptr<SubscriptionRequest> subscriptionRequest) const
 {
     const SubscriptionQos* qosPtr = subscriptionRequest->getSubscriptionQosPtr();
-    return qosPtr->getPublicationTtl();
+    return qosPtr->getPublicationTtlMs();
 }
 
 void PublicationManager::sendPublicationError(
@@ -827,7 +827,7 @@ void PublicationManager::sendSubscriptionPublication(
 
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     // Set the TTL
-    mQos.setTtl(getPublicationTtl(request));
+    mQos.setTtl(getPublicationTtlMs(request));
 
     IPublicationSender* publicationSender = publication->sender;
 
@@ -950,13 +950,13 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                                         onSuccess,
                                         onError);
             // ApplicationException is not possible for attributes in Franca
-        } catch (exceptions::ProviderRuntimeException& e) {
+        } catch (const exceptions::ProviderRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Could not perform pollSubscription, caught exception: {} : {}",
                             e.getTypeName(),
                             e.getMessage());
             onError(e);
-        } catch (exceptions::JoynrRuntimeException& e) {
+        } catch (const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Could not perform an pollSubscription, caught exception: {} : {}",
                             e.getTypeName(),

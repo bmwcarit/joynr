@@ -132,7 +132,7 @@ function initializeTest(provisioningSuffix) {
             });
 
             // register provider at the given domain
-            joynr.capabilities.registerCapability("", domain, datatypesProvider, providerQos).then(
+            joynr.registration.registerProvider(domain, datatypesProvider, providerQos).then(
                     function() {
                         // signal test driver that we are ready
                         resolve(joynr);
@@ -154,6 +154,6 @@ function startTest() {
 }
 
 function terminateTest() {
-    return joynr.capabilities.unregisterCapability("", domain, datatypesProvider);
+    return joynr.registration.unregisterProvider(domain, datatypesProvider);
 
 }

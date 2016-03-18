@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,9 +74,15 @@ WebSocketCcMessagingSkeleton::~WebSocketCcMessagingSkeleton()
     qDeleteAll(clients.begin(), clients.end());
 }
 
-void WebSocketCcMessagingSkeleton::transmit(JoynrMessage& message)
+void WebSocketCcMessagingSkeleton::transmit(
+        JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    messageRouter.route(message);
+    try {
+        messageRouter.route(message);
+    } catch (exceptions::JoynrRuntimeException& e) {
+        onFailure(e);
+    }
 }
 
 void WebSocketCcMessagingSkeleton::onNewConnection()
@@ -131,15 +137,30 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
     // deserialize message and transmit
     try {
         JoynrMessage joynrMsg = JsonSerializer::deserialize<JoynrMessage>(message.toStdString());
+        if (joynrMsg.getType().empty()) {
+            JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message.toStdString());
+            return;
+        }
         if (joynrMsg.getPayload().empty()) {
             JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message.toStdString());
             return;
         }
+        if (!joynrMsg.containsHeaderExpiryDate()) {
+            JOYNR_LOG_ERROR(logger,
+                            "received message [msgId=[{}] without decay time - dropping message",
+                            joynrMsg.getHeaderMessageId());
+            return;
+        }
 
         JOYNR_LOG_TRACE(logger, "<<<< INCOMING <<<< {}", message.toStdString());
-        // message router copies joynr message when scheduling thread that handles
-        // message delivery
-        transmit(joynrMsg);
+
+        auto onFailure = [joynrMsg](const exceptions::JoynrRuntimeException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Incoming Message with ID {} could not be sent! reason: {}",
+                            joynrMsg.getHeaderMessageId(),
+                            e.getMessage());
+        };
+        transmit(joynrMsg, onFailure);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize joynr message object from: {} - error: {}",

@@ -29,7 +29,6 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
-#include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
@@ -69,8 +68,8 @@ public:
         dummyParticipantId1 = util::createUuid();
         dummyParticipantId2 = util::createUuid();
         dummyParticipantId3 = util::createUuid();
-        localJoynrMessagingAddress1 = std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress("LOCAL_CHANNEL_ID"));
-        callback = std::shared_ptr<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
+        localJoynrMessagingAddress1 = std::make_shared<system::RoutingTypes::ChannelAddress>("LOCAL_CHANNEL_ID");
+        callback = std::make_shared<MockLocalCapabilitiesDirectoryCallback>();
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
         EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).WillRepeatedly(Return(LOCAL_CHANNEL_ID));
@@ -541,7 +540,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
                 connections
             );
             localCapabilitiesDirectory->add(entry);
-        } catch (exceptions::JoynrException& e){
+        } catch (const exceptions::JoynrException& e){
             exceptionCounter++;
         }
     }

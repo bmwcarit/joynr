@@ -87,7 +87,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 				if (onError) {
 					onError(error);
 				}
-				std::shared_ptr<joynr::Future<«attributeType»>> future(new joynr::Future<«attributeType»>());
+				auto future = std::make_shared<joynr::Future<«attributeType»>>();
 				future->onError(error);
 				return future;
 			}
@@ -111,7 +111,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 				if (onError) {
 					onError(error);
 				}
-				std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
+				auto future = std::make_shared<joynr::Future<void>>();
 				future->onError(error);
 				return future;
 			}
@@ -138,7 +138,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			if (onRuntimeError) {
 				onRuntimeError(error);
 			}
-			std::shared_ptr<joynr::Future<«outputParameters»>> future(new joynr::Future<«outputParameters»>());
+			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 			future->onError(error);
 			return future;
 		}

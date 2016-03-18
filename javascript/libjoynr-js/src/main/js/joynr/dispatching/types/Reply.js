@@ -70,12 +70,10 @@ define("joynr/dispatching/types/Reply", [
         /**
          * @name Reply#requestReplyId
          * @type String
-         * @field
          */
         /**
          * @name Reply#response
          * @type Array
-         * @field
          */
         Util.extend(this, settings);
 
@@ -84,7 +82,6 @@ define("joynr/dispatching/types/Reply", [
          *
          * @name Reply#_typeName
          * @type String
-         * @field
          */
         Typing.augmentTypeName(this, "joynr");
 

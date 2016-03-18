@@ -36,6 +36,7 @@ MessageQueue::~MessageQueue()
 
 std::size_t MessageQueue::getQueueLength()
 {
+    std::lock_guard<std::mutex> lock(queueMutex);
     return queue->size();
 }
 
@@ -43,10 +44,10 @@ std::size_t MessageQueue::queueMessage(const JoynrMessage& message)
 {
     JoynrTimePoint absTtl = message.getHeaderExpiryDate();
     MessageQueueItem* item = new MessageQueueItem(message, absTtl);
-    {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        queue->insert(std::make_pair(message.getHeaderTo(), item));
-    }
+
+    std::lock_guard<std::mutex> lock(queueMutex);
+    queue->insert(std::make_pair(message.getHeaderTo(), item));
+
     return queue->size();
 }
 
@@ -64,6 +65,8 @@ MessageQueueItem* MessageQueue::getNextMessageForParticipant(const std::string d
 
 std::int64_t MessageQueue::removeOutdatedMessages()
 {
+    std::lock_guard<std::mutex> lock(queueMutex);
+
     std::int64_t counter = 0;
     if (queue->empty()) {
         return counter;
@@ -71,19 +74,18 @@ std::int64_t MessageQueue::removeOutdatedMessages()
 
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
-    {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        for (auto queueIterator = queue->begin(); queueIterator != queue->end();) {
-            MessageQueueItem* value = queueIterator->second;
-            if (value->getDecayTime() < now) {
-                queueIterator = queue->erase(queueIterator);
-                delete value;
-                counter++;
-            } else {
-                ++queueIterator;
-            }
+
+    for (auto queueIterator = queue->begin(); queueIterator != queue->end();) {
+        MessageQueueItem* value = queueIterator->second;
+        if (value->getDecayTime() < now) {
+            queueIterator = queue->erase(queueIterator);
+            delete value;
+            counter++;
+        } else {
+            ++queueIterator;
         }
     }
+
     return counter;
 }
 } // namespace joynr

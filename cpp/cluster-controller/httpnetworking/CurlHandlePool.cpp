@@ -143,7 +143,7 @@ std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
         }
         return idleHandleMap.take(threadId);
     } else {
-        return std::shared_ptr<PooledCurlHandle>(new PooledCurlHandle());
+        return std::make_shared<PooledCurlHandle>();
     }
 }
 
@@ -266,7 +266,7 @@ std::shared_ptr<PooledCurlHandle> SingleThreadCurlHandlePool::takeOrCreateHandle
         return handleList.takeLast();
     }
 
-    return std::shared_ptr<PooledCurlHandle>(new PooledCurlHandle());
+    return std::make_shared<PooledCurlHandle>();
 }
 
 } // namespace joynr

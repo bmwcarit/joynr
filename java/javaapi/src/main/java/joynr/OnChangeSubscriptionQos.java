@@ -3,7 +3,7 @@ package joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package joynr;
  * #L%
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 
 /**
@@ -34,45 +36,72 @@ import io.joynr.pubsub.SubscriptionQos;
  * minInterval can be used to prevent too many messages being sent.
  */
 public class OnChangeSubscriptionQos extends SubscriptionQos {
-    private static final long serialVersionUID = 1L;
-    private static final long MIN_MIN_INTERVAL = 0L;
-    private static final long MAX_MIN_INTERVAL = 2592000000L; // 30 days;
+    private static final Logger logger = LoggerFactory.getLogger(OnChangeSubscriptionQos.class);
 
-    private long minInterval = MIN_MIN_INTERVAL;
+    private static final long serialVersionUID = 1L;
+    private static final long DEFAULT_MIN_INTERVAL_MS = 1000;
+    private static final long MIN_MIN_INTERVAL_MS = 0L;
+    private static final long MAX_MIN_INTERVAL_MS = 2592000000L; // 30 days;
+
+    private long minIntervalMs = DEFAULT_MIN_INTERVAL_MS;
 
     /**
      * Default Constructor
      */
-    protected OnChangeSubscriptionQos() {
+    public OnChangeSubscriptionQos() {
     }
 
     /**
+     * @deprecated This constructor will be deleted by 2017-01-01.
+     * Use the fluent interface instead.
+     *
      * Constructor of OnChangeSubscriptionQos object used for subscriptions on
      * broadcasts in generated proxy objects
      *
-     * @param minInterval_ms
+     * @param minIntervalMs
      *            is used to prevent flooding. Publications will be sent
      *            maintaining this minimum interval provided, even if the value
      *            changes more often. This prevents the consumer from being
      *            flooded by updated values. The filtering happens on the
      *            provider's side, thus also preventing excessive network
      *            traffic. This value is provided in milliseconds.
-     * @param expiryDate
+     * @param expiryDateMs
      *            The expiryDate is the end date of the subscription. This value
      *            is provided in milliseconds (since 1970-01-01T00:00:00.000).
-     * @param publicationTtl_ms
+     * @param publicationTtlMs
      *            is the time-to-live for publication messages.
      *            NOTE minimum and maximum values apply.
      *
-     * @see #setMinInterval(long)
+     * @see #setMinIntervalMs(long)
      * @see SubscriptionQos#SubscriptionQos(long, long)
      *           SubscriptionQos.SubscriptionQos(long, long)
      *           for more information on expiryDate and publicationTtl
      */
-    public OnChangeSubscriptionQos(long minInterval_ms, long expiryDate, long publicationTtl_ms) {
-        super(expiryDate, publicationTtl_ms);
-        setMinInterval(minInterval_ms);
+    @Deprecated
+    public OnChangeSubscriptionQos(long minIntervalMs, long expiryDateMs, long publicationTtlMs) {
+        super(expiryDateMs, publicationTtlMs);
+        setMinIntervalMsInternal(minIntervalMs);
 
+    }
+
+    /**
+     * @deprecated Use getMinIntervalMs instead
+     *
+     * Get the minimum interval in milliseconds.
+     * <br>
+     * Publications will be sent maintaining this minimum interval provided,
+     * even if the value changes more often. This prevents the consumer from
+     * being flooded by updated values. The filtering happens on the provider's
+     * side, thus also preventing excessive network traffic. This value is
+     * provided in milliseconds.
+     *
+     * @return The minInterval in milliseconds. The publisher will keep a minimum
+     *         idle time of minInterval milliseconds between two successive
+     *         notifications.
+     */
+    @Deprecated
+    public long getMinInterval() {
+        return getMinIntervalMs();
     }
 
     /**
@@ -88,8 +117,36 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      *         idle time of minInterval milliseconds between two successive
      *         notifications.
      */
-    public long getMinInterval() {
-        return minInterval;
+    public long getMinIntervalMs() {
+        return minIntervalMs;
+    }
+
+    /**
+     * @deprecated Use setMinIntervalMs instead
+     *
+     * Set the minimum interval in milliseconds.
+     * <br>
+     * Publications will be sent maintaining this minimum interval provided,
+     * even if the value changes more often. This prevents the consumer from
+     * being flooded by updated values. The filtering happens on the provider's
+     * side, thus also preventing excessive network traffic. This value is
+     * provided in milliseconds.<br>
+     * <br>
+     * <b>Minimum and Maximum Values</b>
+     * <ul>
+     * <li><b>Minimum</b> minInterval: {@value #MIN_MIN_INTERVAL_MS}. Smaller values will be rounded up.
+     * <li><b>Maximum</b> minInterval: {@value #MAX_MIN_INTERVAL_MS}. Larger values
+     * will be rounded down.
+     * </ul>
+     *
+     * @param minIntervalMs
+     *            The publisher will keep a minimum idle time of minIntervalMs
+     *            between two successive notifications.
+     * @return this (fluent interface).
+     */
+    @Deprecated
+    public OnChangeSubscriptionQos setMinInterval(final long minIntervalMs) {
+        return setMinIntervalMs(minIntervalMs);
     }
 
     /**
@@ -103,28 +160,33 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * <br>
      * <b>Minimum and Maximum Values</b>
      * <ul>
-     * <li><b>Minimum</b> minInterval: 50. Smaller values will be rounded up.
-     * <li><b>Maximum</b> minInterval: 2.592.000.000 (30 days). Larger values
+     * <li><b>Minimum</b> minInterval: {@value #MIN_MIN_INTERVAL_MS}. Smaller values will be rounded up.
+     * <li><b>Maximum</b> minInterval: {@value #MAX_MIN_INTERVAL_MS}. Larger values
      * will be rounded down.
      * </ul>
      *
-     * @param minInterval_ms
-     *            The publisher will keep a minimum idle time of minInterval_ms
+     * @param minIntervalMs
+     *            The publisher will keep a minimum idle time of minIntervalMs
      *            between two successive notifications.
+     * @return this (fluent interface).
      */
-    public void setMinInterval(final long minInterval_ms) {
-        if (minInterval_ms < MIN_MIN_INTERVAL) {
-            this.minInterval = MIN_MIN_INTERVAL;
-            return;
-        }
+    public OnChangeSubscriptionQos setMinIntervalMs(final long minIntervalMs) {
+        return setMinIntervalMsInternal(minIntervalMs);
+    }
 
-        if (minInterval_ms > MAX_MIN_INTERVAL) {
-            this.minInterval = MAX_MIN_INTERVAL;
-            return;
-        }
+    @Override
+    public OnChangeSubscriptionQos setExpiryDateMs(long expiryDateMs) {
+        return (OnChangeSubscriptionQos) super.setExpiryDateMs(expiryDateMs);
+    }
 
-        this.minInterval = minInterval_ms;
+    @Override
+    public OnChangeSubscriptionQos setPublicationTtlMs(long publicationTtlMs) {
+        return (OnChangeSubscriptionQos) super.setPublicationTtlMs(publicationTtlMs);
+    }
 
+    @Override
+    public OnChangeSubscriptionQos setValidityMs(long validityMs) {
+        return (OnChangeSubscriptionQos) super.setValidityMs(validityMs);
     }
 
     /**
@@ -136,7 +198,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (minInterval ^ (minInterval >>> 32));
+        result = prime * result + (int) (minIntervalMs ^ (minIntervalMs >>> 32));
         return result;
     }
 
@@ -158,10 +220,25 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
             return false;
         }
         OnChangeSubscriptionQos other = (OnChangeSubscriptionQos) obj;
-        if (minInterval != other.minInterval) {
+        if (minIntervalMs != other.minIntervalMs) {
             return false;
         }
         return true;
+    }
+
+    // internal method required to prevent findbugs warning
+    private OnChangeSubscriptionQos setMinIntervalMsInternal(final long minIntervalMs) {
+        if (minIntervalMs < MIN_MIN_INTERVAL_MS) {
+            this.minIntervalMs = MIN_MIN_INTERVAL_MS;
+            logger.warn("minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: {}", MIN_MIN_INTERVAL_MS);
+        } else if (minIntervalMs > MAX_MIN_INTERVAL_MS) {
+            this.minIntervalMs = MAX_MIN_INTERVAL_MS;
+            logger.warn("minIntervalMs > MAX_MIN_INTERVAL_MS. Using MAX_MIN_INTERVAL_MS: {}", MAX_MIN_INTERVAL_MS);
+        } else {
+            this.minIntervalMs = minIntervalMs;
+        }
+
+        return this;
     }
 
 }

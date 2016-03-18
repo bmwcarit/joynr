@@ -4,27 +4,35 @@ source /data/src/docker/joynr-base/scripts/global.sh
 
 DBUS='OFF'
 GCOV='OFF'
-JOBS=8
+JOBS=$(nproc)
+ENABLE_CLANG_FORMATTER='ON'
+BUILD_TESTS='ON'
 
 function usage
 {
-    echo "usage: cpp-clean-build.sh [--dbus ON|OFF --gcov ON|OFF --jobs X]"
+    echo "usage: cpp-clean-build.sh [--dbus ON|OFF --gcov ON|OFF --jobs X --enableclangformatter ON|OFF --buildtests ON|OFF]"
     echo "default dbus is $DBUS, gcov is $GCOV, jobs is $JOBS"
 }
 
 while [ "$1" != "" ]; do
     case $1 in
-        --dbus )                shift
-                                DBUS=$1
-                                ;;
-        --gcov )                shift
-                                GCOV=$1
-                                ;;
-        --jobs )                shift
-                                JOBS=$1
-                                ;;
-        * )                     usage
-                                exit 1
+        --dbus )                 shift
+                                 DBUS=$1
+                                 ;;
+        --gcov )                 shift
+                                 GCOV=$1
+                                 ;;
+        --jobs )                 shift
+                                 JOBS=$1
+                                 ;;
+        --enableclangformatter ) shift
+                                 ENABLE_CLANG_FORMATTER=$1
+                                 ;;
+        --buildtests )           shift
+                                 BUILD_TESTS=$1
+                                 ;;
+        * )                      usage
+                                 exit 1
     esac
     shift
 done
@@ -56,12 +64,15 @@ cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
       -DPYTHON_EXECUTABLE=/usr/bin/python \
       -DJOYNR_SERVER=localhost:8080 \
       -DCMAKE_BUILD_TYPE=Debug /data/src/cpp \
-      -DUSE_PLATFORM_LIBWEBSOCKETS=ON \
+      -DUSE_PLATFORM_WEBSOCKETPP=ON \
       -DUSE_PLATFORM_SPDLOG=ON \
       -DUSE_PLATFORM_JSMN=ON \
       -DUSE_PLATFORM_GTEST_GMOCK=ON \
-      -DUSE_PLATFORM_MOSQUITTO=ON
-
+      -DUSE_PLATFORM_MOSQUITTO=ON \
+      -DENABLE_CLANG_FORMATTER=$ENABLE_CLANG_FORMATTER \
+      -DBUILD_TESTS=$BUILD_TESTS \
+      -DCMAKE_INSTALL_SYSCONFDIR=/etc \
+      -DCMAKE_INSTALL_PREFIX=/usr
 
 if [ "$GCOV" == "ON" ] ; then
     echo "run coverage build"

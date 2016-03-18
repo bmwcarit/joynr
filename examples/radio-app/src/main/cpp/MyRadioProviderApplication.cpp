@@ -23,9 +23,11 @@
 #include "GeocastBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
+#include "joynr/types/ProviderQos.h"
 
 #include <memory>
 #include <string>
+#include <chrono>
 
 using namespace joynr;
 
@@ -57,6 +59,15 @@ int main(int argc, char* argv[])
 
     // create provider instance
     std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
+    // default uses a priority that is the current time,
+    // causing arbitration to the last started instance if highest priority arbitrator is used
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    types::ProviderQos providerQos;
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
     // add broadcast filters
     std::shared_ptr<TrafficServiceBroadcastFilter> trafficServiceBroadcastFilter(
             new TrafficServiceBroadcastFilter());
@@ -65,7 +76,7 @@ int main(int argc, char* argv[])
     provider->addBroadcastFilter(geocastBroadcastFilter);
 
     // Register the provider
-    runtime->registerProvider<vehicle::RadioProvider>(providerDomain, provider);
+    runtime->registerProvider<vehicle::RadioProvider>(providerDomain, provider, providerQos);
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
             [&](const joynr::exceptions::ProviderRuntimeException& exception) {

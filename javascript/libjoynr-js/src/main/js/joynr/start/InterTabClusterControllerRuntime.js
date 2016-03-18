@@ -201,7 +201,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#typeRegistry
                  * @type TypeRegistry
-                 * @field
                  */
                 Object.defineProperty(this, "typeRegistry", {
                     get : function() {
@@ -211,9 +210,20 @@ define(
                 });
 
                 /**
+                 * @name InterTabClusterControllerRuntime#registration
+                 * @type CapabilitiesRegistrar
+                 */
+                Object.defineProperty(this, "registration", {
+                    get : function() {
+                        return capabilitiesRegistrar;
+                    },
+                    enumerable : true
+                });
+
+                /**
                  * @name InterTabClusterControllerRuntime#capabilities
                  * @type CapabilitiesRegistrar
-                 * @field
+                 * @deprecated capabilities will be removed by 01.01.2017. please use registration instead
                  */
                 Object.defineProperty(this, "capabilities", {
                     get : function() {
@@ -225,7 +235,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#participantIdStorage
                  * @type ParticipantIdStorage
-                 * @field
                  */
                 Object.defineProperty(this, "participantIdStorage", {
                     get : function() {
@@ -237,7 +246,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#providerBuilder
                  * @type ProviderBuilder
-                 * @field
                  */
                 Object.defineProperty(this, "providerBuilder", {
                     get : function() {
@@ -249,7 +257,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#proxyBuilder
                  * @type ProxyBuilder
-                 * @field
                  */
                 Object.defineProperty(this, "proxyBuilder", {
                     get : function() {
@@ -261,7 +268,6 @@ define(
                 /**
                  * @name InterTabClusterControllerRuntime#logging
                  * @type LoggingManager
-                 * @field
                  */
                 Object.defineProperty(this, "logging", {
                     get : function() {
@@ -654,8 +660,7 @@ define(
                                                 }
                                             });
                             registerDiscoveryProviderPromise =
-                                    capabilitiesRegistrar.registerCapability(
-                                            "",
+                                    capabilitiesRegistrar.registerProvider(
                                             "io.joynr",
                                             discoveryProvider,
                                             providerQos);
@@ -697,8 +702,7 @@ define(
                                         }
                                     });
                             registerRoutingProviderPromise =
-                                    capabilitiesRegistrar.registerCapability(
-                                            "",
+                                    capabilitiesRegistrar.registerProvider(
                                             "io.joynr",
                                             routingProvider,
                                             providerQos);

@@ -34,6 +34,7 @@ cpp/CMakeLists.txt \
 inter-language-test/CMakeLists.txt \
 inter-language-test/package.json \
 examples/radio-app/CMakeLists.txt \
+examples/joynr-system-integration-test/CMakeLists.txt \
 android/robolectric-integration-tests/src/test/AndroidManifest.xml \
 android/robolectric-unittests/src/main/AndroidManifest.xml \
 examples/android-location-provider/AndroidManifest.xml \

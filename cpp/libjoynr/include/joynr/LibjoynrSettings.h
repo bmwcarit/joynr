@@ -38,7 +38,8 @@ public:
     static const std::string& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME();
 
     explicit LibjoynrSettings(Settings& settings);
-    LibjoynrSettings(const LibjoynrSettings& other) = default;
+    LibjoynrSettings(const LibjoynrSettings&) = default;
+    LibjoynrSettings(LibjoynrSettings&&) = default;
 
     ~LibjoynrSettings() = default;
 

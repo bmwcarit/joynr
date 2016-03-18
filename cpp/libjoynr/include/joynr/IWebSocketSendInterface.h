@@ -19,10 +19,11 @@
 #ifndef IWEBSOCKETSENDINTERFACE_H
 #define IWEBSOCKETSENDINTERFACE_H
 
-#include "joynr/JoynrExport.h"
-
-#include <string>
 #include <functional>
+#include <string>
+
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {
@@ -43,7 +44,9 @@ public:
      * @brief Send a message asynchronously via WebSocket
      * @param message Message to be sent
      */
-    virtual void send(const std::string& message) = 0;
+    virtual void send(
+            const std::string& message,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 
     /**
      * @brief Register method called on disconnect

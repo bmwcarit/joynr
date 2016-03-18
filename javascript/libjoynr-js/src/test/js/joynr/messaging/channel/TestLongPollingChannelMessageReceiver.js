@@ -53,7 +53,7 @@ joynrTestRequire(
                         var atmosphereSpy, communicationModuleSpy, longPollingChannelMessageReceiver;
                         var channelId, channelUrl, joynrMessage;
                         var channelCreationTimeout_ms, channelCreationRetryDelay_ms;
-
+                        
                         function outputPromiseError(error) {
                             expect(error.toString()).toBeFalsy();
                         }
@@ -82,6 +82,7 @@ joynrTestRequire(
                         }
 
                         beforeEach(function() {
+                            localStorage.clear();
                             channelId = "myChannel" + Date.now();
                             channelUrl = provisioning.bounceProxyUrl + "/channels/" + channelId;
                             channelCreationTimeout_ms = 1000;

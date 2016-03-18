@@ -66,6 +66,7 @@ public class LocalDomainAccessControllerTest {
     private static final String DOMAIN1 = "domain1";
     private static final String INTERFACE1 = "interface1";
     private static final String OPEARATION1 = "operation1";
+    private static final long MAX_TTL = 2592000000L;
 
     private CacheManager cacheManager;
     private DomainAccessControlStore domainAccessControlStore;
@@ -103,6 +104,7 @@ public class LocalDomainAccessControllerTest {
                                                                           new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                                                                       proxyInvocationHandlerFactoryMock,
                                                                                                       messageRouter,
+                                                                                                      MAX_TTL,
                                                                                                       libjoynrMessagingAddress),
                                                                           "systemServiceDomain");
 

@@ -20,8 +20,6 @@
 #define CONTENTWITHDECAYTIME_H
 
 #include "joynr/ObjectWithDecayTime.h"
-#include "joynr/DispatcherUtils.h"
-#include <cstdint>
 
 namespace joynr
 {
@@ -43,9 +41,6 @@ public:
 private:
     T content;
 };
-
-class SendMsgRequest;
-typedef ContentWithDecayTime<SendMsgRequest> SendMsgRequestWithDecayTime;
 
 } // namespace joynr
 #endif // CONTENTWITHDECAYTIME_H

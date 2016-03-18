@@ -118,11 +118,11 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
     // Provider: (runtime1)
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    auto testProvider = std::make_shared<MockTestProvider>();
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -187,7 +187,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         try {
             testProxy->returnPrimeNumbers(result, 6);
             EXPECT_EQ(primesBelow6, result);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "returnPrimeNumbers was not successful";
         }
 
@@ -247,7 +247,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         int primeResult(0);
         try {
             testProxy->getFirstPrime(primeResult);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getFirstPrime was not successful";
         }
         EXPECT_EQ(primeResult, 15);
@@ -263,7 +263,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
         try {
             testProxy->getListOfStrings(remoteStrList);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getListOfStrings was not successful";
         }
         EXPECT_EQ(localStrList, remoteStrList);
@@ -275,12 +275,12 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
         try {
             testProxy->setFirstPrime(19);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "setFirstPrime was not successful";
         }
         try {
             testProxy->getFirstPrime(primeResult);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getFirstPrime was not successful";
         }
         EXPECT_EQ(primeResult, 19);
@@ -298,7 +298,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         std::vector<int> outputIntLIst;
         try {
             testProxy->getListOfInts(outputIntLIst);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getListOfInts was not successful";
         }
         EXPECT_EQ(outputIntLIst, inputIntList);
@@ -310,12 +310,12 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputIntList.push_back(13);
         try {
             testProxy->setListOfInts(inputIntList);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "setListOfInts was not successful";
         }
         try {
             testProxy->getListOfInts(outputIntLIst);
-        } catch (exceptions::JoynrException& e) {
+        } catch (const exceptions::JoynrException& e) {
             FAIL()<< "getListOfInts was not successful";
         }
         EXPECT_EQ(outputIntLIst, inputIntList);
@@ -537,7 +537,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
                     mockListener);
     // Provider: (runtime1)
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -590,7 +590,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
                     mockListener);
     // Provider: (runtime1)
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -661,11 +661,12 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    auto testProvider = std::make_shared<MockTestProvider>();
     testProvider->setListOfInts(expectedValues, [](){}, [](const joynr::exceptions::JoynrRuntimeException&){});
     std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
-            testProvider
+            testProvider,
+            providerQos
     );
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
@@ -743,7 +744,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
         std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
-	} catch (exceptions::DiscoveryException& e) {
+	} catch (const exceptions::DiscoveryException& e) {
         haveDiscoveryException = true;
         auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
@@ -771,7 +772,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
                     mockListener);
     // Provider: (runtime1)
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     types::Localisation::GpsLocation gpsLocation1;
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
@@ -819,7 +820,7 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver) {
 
     // Provider: (runtime1)
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
@@ -903,7 +904,7 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     mockListener);
 
-    std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
+    auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
             testProvider
@@ -929,11 +930,11 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 TEST_P(CombinedEnd2EndTest, call_async_void_operation) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    auto testProvider = std::make_shared<MockTestProvider>();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -973,13 +974,14 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation) {
 TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    auto testProvider = std::make_shared<MockTestProvider>();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2550));
 
     std::string testProviderParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
-            testProvider
+            testProvider,
+            providerQos
     );
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2550));
@@ -1018,7 +1020,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure) {
     try {
         future->get();
         ADD_FAILURE();
-    } catch (exceptions::JoynrTimeOutException& e) {
+    } catch (const exceptions::JoynrTimeOutException& e) {
     }
 
     runtime1->unregisterProvider(testProviderParticipantId);

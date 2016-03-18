@@ -55,44 +55,101 @@ void MosquittoPublisher::run()
     while (!isInterrupted()) {
         int rc = loop();
 
-        if (rc) {
+        if (rc != MOSQ_ERR_SUCCESS) {
+            if (rc == MOSQ_ERR_CONN_LOST) {
+                JOYNR_LOG_DEBUG(logger,
+                                "error: connection to broker lost ({}), trying to reconnect...",
+                                mosqpp::strerror(rc));
+            } else if (rc == MOSQ_ERR_NO_CONN) {
+                JOYNR_LOG_DEBUG(logger,
+                                "error: not connected to a broker ({}), trying to reconnect...",
+                                mosqpp::strerror(rc));
+            } else {
+                // MOSQ_ERR_INVAL || MOSQ_ERR_NOMEM || MOSQ_ERR_PROTOCOL || MOSQ_ERR_ERRNO
+                JOYNR_LOG_ERROR(logger,
+                                "connection to broker lost, unexpected error: {} ({}), trying to "
+                                "reconnect...",
+                                std::to_string(rc),
+                                mosqpp::strerror(rc));
+            }
             std::this_thread::sleep_for(mqttSettings.reconnectSleepTimeMs);
             reconnect();
         }
     }
 
     JOYNR_LOG_DEBUG(logger, "Try to disconnect Mosquitto Connection");
-    disconnect();
-    JOYNR_LOG_DEBUG(logger, "Mosquitto Connection disconnected");
+    int rc = disconnect();
+    if (rc == MOSQ_ERR_SUCCESS) {
+        JOYNR_LOG_DEBUG(logger, "Mosquitto Connection disconnected");
+    } else {
+        JOYNR_LOG_ERROR(logger,
+                        "Mosquitto disconnect failed: error: {} ({})",
+                        std::to_string(rc),
+                        mosqpp::strerror(rc));
+    }
 
     mosqpp::lib_cleanup();
 }
 
-int MosquittoPublisher::publishMessage(const std::string& channelId,
-                                       const std::string& participantId,
-                                       uint32_t payloadlen = 0,
-                                       const void* payload = nullptr)
+void MosquittoPublisher::publishMessage(
+        const std::string& channelId,
+        const std::string& participantId,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
+        uint32_t payloadlen = 0,
+        const void* payload = nullptr)
 {
     std::string topic = channelId + "/" + getMqttPrio() + "/" + participantId;
 
     JOYNR_LOG_DEBUG(logger, "Publish to {}", topic);
 
-    return publish(nullptr, topic.c_str(), payloadlen, payload, getMqttQos(), isMqttRetain());
+    int mid;
+    int rc = publish(&mid, topic.c_str(), payloadlen, payload, getMqttQos(), isMqttRetain());
+    if (!(rc == MOSQ_ERR_SUCCESS)) {
+        if (rc == MOSQ_ERR_INVAL || rc == MOSQ_ERR_PAYLOAD_SIZE) {
+            onFailure(exceptions::JoynrMessageNotSentException(
+                    "message could not be sent: mid (mqtt message id): " + std::to_string(mid) +
+                    ", error: " + std::to_string(rc) + " (" + mosqpp::strerror(rc) + ")"));
+        }
+        // MOSQ_ERR_NOMEM || MOSQ_ERR_NO_CONN || MOSQ_ERR_PROTOCOL ||| unexpected errors
+        onFailure(exceptions::JoynrDelayMessageException(
+                "error sending message: mid (mqtt message id): " + std::to_string(mid) +
+                ", error: " + std::to_string(rc) + " (" + mosqpp::strerror(rc) + ")"));
+    }
+    JOYNR_LOG_TRACE(logger, "published message with mqtt message id {}", std::to_string(mid));
 }
 
 void MosquittoPublisher::on_connect(int rc)
 {
     if (rc > 0) {
-        JOYNR_LOG_DEBUG(logger, "Mosquitto Connection Error {}", rc);
+        if (rc == 1) {
+            JOYNR_LOG_ERROR(logger,
+                            "Mosquitto Connection Error {} ({})",
+                            rc,
+                            "connection refused (unacceptable protocol version)");
+        } else if (rc == 2) {
+            JOYNR_LOG_ERROR(logger,
+                            "Mosquitto Connection Error {} ({})",
+                            rc,
+                            "connection refused (identifier rejected)");
+        } else if (rc == 3) {
+            JOYNR_LOG_DEBUG(logger,
+                            "Mosquitto Connection Error {} ({})",
+                            rc,
+                            "connection refused (broker unavailable)");
+        } else {
+            JOYNR_LOG_ERROR(logger,
+                            "Mosquitto Connection Error {} ({})",
+                            rc,
+                            "unknown error code (reserved for future use)");
+        }
     } else {
         JOYNR_LOG_DEBUG(logger, "Mosquitto Connection established");
     }
 }
 
-void MosquittoPublisher::on_publish(int rc)
+void MosquittoPublisher::on_publish(int mid)
 {
-    // TODO: check rc
-    std::ignore = rc;
+    JOYNR_LOG_TRACE(logger, "published message with mid {}", std::to_string(mid));
 }
 
 } // namespace joynr

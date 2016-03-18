@@ -204,7 +204,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 {
     createRuntimeMqttWithHttpBackend();
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
 
     EXPECT_CALL(
             *mockTestProvider,
@@ -252,7 +252,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArguments)
 {
     createRuntimeMqttWithHttpBackend();
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
 
     std::vector<int> ints;
@@ -298,7 +298,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     createRuntimeMqttWithHttpBackend();
     std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
 
     EXPECT_CALL(
             *mockTestProvider,
@@ -356,7 +356,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     createRuntimeMqttWithHttpBackend();
     std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
 
     EXPECT_CALL(
             *mockTestProvider,

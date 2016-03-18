@@ -143,18 +143,18 @@ std::string «typeName»::toString() const {
 	«ENDIF»
 	«FOR member: getMembers(type) SEPARATOR "\ntypeAsString << \", \";"»
 		«val memberName = member.joynrName»
-		«val memberType = if (member.type.isTypeDef) member.type.typeDefType.actualType else member.type»
-		«IF isArray(member)»
+		«val memberType = member.type.resolveTypeDef»
+		«IF member.isArray»
 			typeAsString << " unprinted List «memberName»  ";
-		«ELSEIF isByteBuffer(memberType)»
+		«ELSEIF memberType.isByteBuffer»
 			typeAsString << " unprinted ByteBuffer «memberName»  ";
-		«ELSEIF isString(getPrimitive(memberType))»
+		«ELSEIF memberType.isString»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»();
-		«ELSEIF isEnum(memberType)»
+		«ELSEIF memberType.isEnum»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»Internal();
-		«ELSEIF isCompound(memberType)»
+		«ELSEIF memberType.isCompound»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»().toString();
-		«ELSEIF isMap(memberType)»
+		«ELSEIF memberType.isMap»
 			typeAsString << " unprinted Map «memberName»  ";
 		«ELSE»
 			typeAsString << "«memberName»:" + std::to_string(get«memberName.toFirstUpper»());

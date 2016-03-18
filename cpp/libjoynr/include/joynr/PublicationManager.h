@@ -198,7 +198,7 @@ private:
     // Logging
     ADD_LOGGER(PublicationManager);
 
-    // List of subscriptionId's of runnables scheduled with delay <= qos.getMinInterval_ms()
+    // List of subscriptionId's of runnables scheduled with delay <= qos.getMinIntervalMs_ms()
     std::vector<std::string> currentScheduledPublications;
     std::mutex currentScheduledPublicationsMutex;
 
@@ -258,7 +258,8 @@ private:
             const ThreadSafeMap<std::string, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();
-    std::int64_t getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
+    std::int64_t getPublicationTtlMs(
+            std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
     void sendPublication(std::shared_ptr<Publication> publication,
                          std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                          std::shared_ptr<SubscriptionRequest> subscriptionRequest,

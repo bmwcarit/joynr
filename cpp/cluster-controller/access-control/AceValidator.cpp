@@ -27,9 +27,9 @@ namespace joynr
 
 using namespace infrastructure::DacTypes;
 
-AceValidator::AceValidator(const Optional<MasterAccessControlEntry>& masterAceOptional,
-                           const Optional<MasterAccessControlEntry>& mediatorAceOptional,
-                           const Optional<OwnerAccessControlEntry>& ownerAceOptional)
+AceValidator::AceValidator(const boost::optional<MasterAccessControlEntry>& masterAceOptional,
+                           const boost::optional<MasterAccessControlEntry>& mediatorAceOptional,
+                           const boost::optional<OwnerAccessControlEntry>& ownerAceOptional)
         : masterAceOptional(masterAceOptional),
           mediatorAceOptional(mediatorAceOptional),
           ownerAceOptional(ownerAceOptional)
@@ -45,9 +45,9 @@ bool AceValidator::isOwnerValid()
 {
     bool isOwnerValid = true;
     if (mediatorAceOptional) {
-        isOwnerValid = isMediatorValid() && validateOwner(mediatorAceOptional.getValue());
+        isOwnerValid = isMediatorValid() && validateOwner(*mediatorAceOptional);
     } else if (masterAceOptional) {
-        isOwnerValid = validateOwner(masterAceOptional.getValue());
+        isOwnerValid = validateOwner(*masterAceOptional);
     }
 
     return isOwnerValid;
@@ -64,30 +64,29 @@ bool AceValidator::isMediatorValid()
         return true;
     }
 
-    MasterAccessControlEntry masterAce = masterAceOptional.getValue();
-    MasterAccessControlEntry mediatorAce = mediatorAceOptional.getValue();
-
     bool isMediatorValid = true;
 
-    auto masterPossiblePermissions = util::vectorToSet(masterAce.getPossibleConsumerPermissions());
-    if (!masterPossiblePermissions.count(mediatorAce.getDefaultConsumerPermission())) {
+    auto masterPossiblePermissions =
+            util::vectorToSet(masterAceOptional->getPossibleConsumerPermissions());
+    if (!masterPossiblePermissions.count(mediatorAceOptional->getDefaultConsumerPermission())) {
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
         auto mediatorPossiblePermissions =
-                util::vectorToSet(mediatorAce.getPossibleConsumerPermissions());
+                util::vectorToSet(mediatorAceOptional->getPossibleConsumerPermissions());
         if (!util::setContainsSet(masterPossiblePermissions, mediatorPossiblePermissions)) {
             isMediatorValid = false;
         }
     }
 
-    auto masterPossibleTrustLevels = util::vectorToSet(masterAce.getPossibleRequiredTrustLevels());
-    if (!masterPossibleTrustLevels.count(mediatorAce.getDefaultRequiredTrustLevel())) {
+    auto masterPossibleTrustLevels =
+            util::vectorToSet(masterAceOptional->getPossibleRequiredTrustLevels());
+    if (!masterPossibleTrustLevels.count(mediatorAceOptional->getDefaultRequiredTrustLevel())) {
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
         auto mediatorPossibleTrustLevels =
-                util::vectorToSet(mediatorAce.getPossibleRequiredTrustLevels());
+                util::vectorToSet(mediatorAceOptional->getPossibleRequiredTrustLevels());
         if (!util::setContainsSet(masterPossibleTrustLevels, mediatorPossibleTrustLevels)) {
             isMediatorValid = false;
         }
@@ -96,20 +95,20 @@ bool AceValidator::isMediatorValid()
     return isMediatorValid;
 }
 
-bool AceValidator::validateOwner(MasterAccessControlEntry targetMasterAce)
+bool AceValidator::validateOwner(const MasterAccessControlEntry& targetMasterAce)
 {
     if (!ownerAceOptional) {
         return true;
     }
 
-    OwnerAccessControlEntry ownerAce = ownerAceOptional.getValue();
     bool isValid = true;
     auto&& possibleConsumerPermissions = targetMasterAce.getPossibleConsumerPermissions();
     auto&& possibleRequiredTrustLevels = targetMasterAce.getPossibleRequiredTrustLevels();
-    if (!util::vectorContains(possibleConsumerPermissions, ownerAce.getConsumerPermission())) {
+    if (!util::vectorContains(
+                possibleConsumerPermissions, ownerAceOptional->getConsumerPermission())) {
         isValid = false;
     } else if (!util::vectorContains(
-                       possibleRequiredTrustLevels, ownerAce.getRequiredTrustLevel())) {
+                       possibleRequiredTrustLevels, ownerAceOptional->getRequiredTrustLevel())) {
         isValid = false;
     }
 

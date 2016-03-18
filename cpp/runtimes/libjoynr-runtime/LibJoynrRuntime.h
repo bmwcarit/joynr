@@ -58,7 +58,6 @@ public:
     void unregisterProvider(const std::string& participantId) override;
 
 protected:
-    ConnectorFactory* connectorFactory;
     SubscriptionManager* subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     InProcessConnectorFactory* inProcessConnectorFactory;
@@ -77,7 +76,7 @@ protected:
 
     virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter) = 0;
 
-    void init(IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
+    void init(std::unique_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<system::RoutingTypes::Address> libjoynrMessagingAddress,
               std::shared_ptr<system::RoutingTypes::Address> ccMessagingAddress);
 

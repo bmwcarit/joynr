@@ -278,9 +278,8 @@ void AccessController::hasConsumerPermission(
         }
 
         // Create a callback object
-        std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> ldacCallback(
-                new LdacConsumerPermissionCallback(
-                        *this, message, domain, interfaceName, TrustLevel::HIGH, callback));
+        auto ldacCallback = std::make_shared<LdacConsumerPermissionCallback>(
+                *this, message, domain, interfaceName, TrustLevel::HIGH, callback);
 
         // Try to determine permission without expensive message deserialization
         // For now TrustLevel::HIGH is assumed.

@@ -284,15 +284,15 @@ try {
 
 The abstract class ```SubscriptionQos``` has the following members:
 
-* **expiry date** Absolute Time until notifications will be send (milliseconds)
-* **publicationTtl** Lifespan of a notification (milliseconds), it will be deleted afterwards
+* **expiryDateMs** Absolute Time until notifications will be send (milliseconds)
+* **publicationTtlMs** Lifespan of a notification (milliseconds), it will be deleted afterwards
 
 ### PeriodicSubscriptionQos
 
 The class ```PeriodicSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following additional members:
 
-* **period** defines how long to wait before sending an update even if the value did not change
-* **alertAfterInterval** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
+* **periodMs** defines how long to wait before sending an update even if the value did not change
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
 
 This class can be used for subscriptions to attributes.
 
@@ -302,7 +302,7 @@ Note that updates will be send only based on the specified interval and not base
 
 The class ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following additional members:
 
-* **minimum Interval** Minimum time to wait between successive notifications (milliseconds)
+* **minIntervalMs** Minimum time to wait between successive notifications (milliseconds)
 
 This class should be used for subscriptions to broadcasts. It can also be used for subscriptions
 to attributes if no periodic update is required.
@@ -311,8 +311,8 @@ to attributes if no periodic update is required.
 
 The class ```OnChangeWithKeepAliveSubscriptionQos``` inherits from ```OnChangeSubscriptionQos``` and has the following additional members:
 
-* **maximum Interval** Maximum time to wait between notifications, if value has not changed
-* **alertAfterInterval** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
+* **maxIntervalMs** Maximum time to wait between notifications, if value has not changed
+* **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification will be raised (milliseconds)
 
 This class can be used for subscriptions to attributes. Updates will then be sent based both periodically and after a change (i.e. this acts like a combination of ```PeriodicSubscriptionQos``` and ```OnChangeSubscriptionQos```).
 
@@ -536,7 +536,7 @@ int
 main(int argc, char** argv)
 {
     // creating the runtime
-    // register any provider as capability
+    // register any provider
     // main application logic
     // shutting down
 }
@@ -550,8 +550,8 @@ main(int argc, char** argv)
         JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
 ```
 
-### Registering capabilities
-For each interface a specific provider class instance must be registered as capability. From that time on, the provider will be reachable from outside and react on incoming requests (e.g. method RPC etc.). It can be found by consumers through Discovery.
+### Registering provider
+For each interface a specific provider class instance must be registered. From that time on, the provider will be reachable from outside and react on incoming requests (e.g. method RPC etc.). It can be found by consumers through Discovery.
 Any specific broadcast filters must be added prior to registry.
 
 ```cpp
@@ -568,7 +568,7 @@ Any specific broadcast filters must be added prior to registry.
 ```
 
 ### Shutting down
-On exit of the application it should cleanly unregister any capabilities the application had registered earlier and free resources.
+On exit of the application it should cleanly unregister any providers the application had registered earlier and free resources.
 
 ```cpp
     // for each provider class

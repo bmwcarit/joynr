@@ -111,12 +111,12 @@ public:
         typename T::Enum value =
                 util::convertVariantToEnum<T>(subscriptionPublication.getResponse().front());
 
-        std::shared_ptr<SubscriptionCallback<typename T::Enum>> typedCallbackQsp =
+        std::shared_ptr<SubscriptionCallback<typename T::Enum>> typedCallback =
                 std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
 
         // value is copied in onSuccess
         // JOYNR_LOG_TRACE(logger, "Publication received: notifying attribute changed");
-        typedCallbackQsp->onSuccess(value);
+        typedCallback->onSuccess(value);
     }
 
 private:
@@ -153,13 +153,13 @@ public:
             return;
         }
 
-        std::shared_ptr<SubscriptionCallback<std::vector<typename T::Enum>>> typedCallbackQsp =
+        std::shared_ptr<SubscriptionCallback<std::vector<typename T::Enum>>> typedCallback =
                 std::dynamic_pointer_cast<SubscriptionCallback<std::vector<typename T::Enum>>>(
                         callback);
         std::vector<typename T::Enum> valueList = util::convertVariantVectorToEnumVector<T>(qvList);
 
         // value is copied in onSuccess
-        typedCallbackQsp->onSuccess(valueList);
+        typedCallback->onSuccess(valueList);
     }
 
 private:

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
-#include "libjoynr/websocket/WebSocketClient.h"
 #include "joynr/Util.h"
-#include "joynr/TypeUtil.h"
 #include "joynr/JsonSerializer.h"
+#include "joynr/Semaphore.h"
+#include "libjoynr/websocket/WebSocketPpClient.h"
 
 namespace joynr
 {
@@ -35,9 +35,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
           wsSettings(*settings),
           wsLibJoynrMessagingSkeleton(nullptr),
-          websocket(new WebSocketClient(
-                  [this](const std::string& err) { this->onWebSocketError(err); },
-                  [](WebSocket*) {}))
+          websocket(new WebSocketPpClient(wsSettings))
 {
     std::string uuid = util::createUuid();
     // remove dashes
@@ -46,6 +44,29 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     std::shared_ptr<joynr::system::RoutingTypes::WebSocketClientAddress> libjoynrMessagingAddress(
             new system::RoutingTypes::WebSocketClientAddress(libjoynrMessagingId));
 
+    // send initialization message containing libjoynr messaging address
+    std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
+    JOYNR_LOG_TRACE(logger,
+                    "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
+                    initializationMsg,
+                    libjoynrMessagingAddress->toString());
+    auto connectionEstablishedSemaphore = std::make_shared<Semaphore>(0);
+    auto connectCallback = [this, initializationMsg, connectionEstablishedSemaphore]() mutable {
+        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
+            // initialization message will be sent after reconnect
+            JOYNR_LOG_ERROR(logger,
+                            "Sending websocket initialization message failed. Error: {}",
+                            e.getMessage());
+        };
+        websocket->sendTextMessage(initializationMsg, onFailure);
+        if (connectionEstablishedSemaphore) {
+            connectionEstablishedSemaphore->notify();
+            connectionEstablishedSemaphore = nullptr;
+        }
+
+    };
+    websocket->registerConnectCallback(connectCallback);
+
     // create connection to parent routing service
     std::shared_ptr<joynr::system::RoutingTypes::WebSocketAddress> ccMessagingAddress(
             new joynr::system::RoutingTypes::WebSocketAddress(
@@ -53,18 +74,11 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
 
     websocket->connect(*ccMessagingAddress);
 
-    // send intialization message containing libjoynr messaging address
-    std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
-    JOYNR_LOG_TRACE(logger,
-                    "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
-                    initializationMsg,
-                    libjoynrMessagingAddress->toString());
-    websocket->send(initializationMsg);
+    auto factory = std::make_unique<WebSocketMessagingStubFactory>();
+    factory->addServer(*ccMessagingAddress, websocket);
 
-    WebSocketMessagingStubFactory* factory = new WebSocketMessagingStubFactory();
-    factory->addServer(*ccMessagingAddress, websocket.get());
-
-    LibJoynrRuntime::init(factory, libjoynrMessagingAddress, ccMessagingAddress);
+    connectionEstablishedSemaphore->wait();
+    LibJoynrRuntime::init(std::move(factory), libjoynrMessagingAddress, ccMessagingAddress);
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
@@ -75,7 +89,6 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(MessageRouter& messageRouter)
 {
-    // create messaging skeleton using uuid
     wsLibJoynrMessagingSkeleton = new WebSocketLibJoynrMessagingSkeleton(messageRouter);
     websocket->registerReceiveCallback([&](const std::string& msg) {
         wsLibJoynrMessagingSkeleton->onTextMessageReceived(msg);

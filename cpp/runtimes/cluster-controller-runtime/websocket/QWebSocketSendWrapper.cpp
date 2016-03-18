@@ -44,8 +44,13 @@ QWebSocketSendWrapper::~QWebSocketSendWrapper()
     websocket->deleteLater();
 }
 
-void QWebSocketSendWrapper::send(const std::string& message)
+void QWebSocketSendWrapper::send(
+        const std::string& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
+    // TODO handle message errors after QWebSockets is replaced by WebSocket++
+    // to retrigger a message if it failed to send via websockets
+    std::ignore = onFailure;
     emit queueTextMessage(QString::fromStdString(message));
 }
 
@@ -77,6 +82,8 @@ void QWebSocketSendWrapper::sendTextMessage(const QString& message)
 
 void QWebSocketSendWrapper::onSocketDisconnected()
 {
-    onConnectionClosed();
+    if (onConnectionClosed) {
+        onConnectionClosed();
+    }
 }
 }

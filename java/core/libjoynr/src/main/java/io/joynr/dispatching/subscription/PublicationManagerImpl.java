@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -258,8 +258,8 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
         try {
             // Check that this is a valid subscription
             SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-            long subscriptionEndDelay = subscriptionQos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE ? SubscriptionQos.NO_EXPIRY_DATE
-                    : subscriptionQos.getExpiryDate() - System.currentTimeMillis();
+            long subscriptionEndDelay = subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE ? SubscriptionQos.NO_EXPIRY_DATE
+                    : subscriptionQos.getExpiryDateMs() - System.currentTimeMillis();
 
             if (subscriptionEndDelay < 0) {
                 logger.error("Not adding subscription which ends in {} ms", subscriptionEndDelay);
@@ -286,7 +286,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                 handleSubscriptionRequest(publicationInformation, subscriptionRequest, requestCaller);
             }
 
-            if (subscriptionQos.getExpiryDate() != SubscriptionQos.NO_EXPIRY_DATE) {
+            if (subscriptionQos.getExpiryDateMs() != SubscriptionQos.NO_EXPIRY_DATE) {
                 // Create a runnable to remove the publication when the subscription expires
                 ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
 
@@ -439,7 +439,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
     }
 
     private boolean isExpired(PublicationInformation publicationInformation) {
-        long expiryDate = publicationInformation.subscriptionRequest.getQos().getExpiryDate();
+        long expiryDate = publicationInformation.subscriptionRequest.getQos().getExpiryDateMs();
         logger.debug("ExpiryDate - System.currentTimeMillis: " + (expiryDate - System.currentTimeMillis()));
         return (expiryDate != SubscriptionQos.NO_EXPIRY_DATE && expiryDate <= System.currentTimeMillis());
     }
@@ -501,7 +501,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
             PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
 
             if (processFilterChain(publicationInformation, filters, values)) {
-                long minInterval = ((OnChangeSubscriptionQos) publicationInformation.getQos()).getMinInterval();
+                long minInterval = ((OnChangeSubscriptionQos) publicationInformation.getQos()).getMinIntervalMs();
                 if (minInterval <= System.currentTimeMillis()
                         - publicationInformation.getState().getTimeOfLastPublication()) {
                     sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
@@ -643,7 +643,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                                                                                           JsonMappingException,
                                                                                           IOException {
         MessagingQos messagingQos = new MessagingQos();
-        messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtl());
+        messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtlMs());
         dispatcher.sendSubscriptionPublication(publicationInformation.providerParticipantId,
                                                publicationInformation.proxyParticipantId,
                                                publication,

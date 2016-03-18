@@ -127,6 +127,7 @@ joynrTestRequire("integration/TestLibJoynr", [
             testMutability(joynr.typeRegistry, "getConstructor");
             testMutability(joynr, "capabilities");
             testMutability(joynr.capabilities, "registerCapability");
+            testMutability(joynr.registration, "registerProvider");
             // testMutability(joynr, "proxyBuilder");
             testMutability(joynr.proxyBuilder, "build");
         });

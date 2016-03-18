@@ -37,7 +37,6 @@ define("joynr/dispatching/types/SubscriptionStop", [
         /**
          * @name SubscriptionStop#subscriptionId
          * @type String
-         * @field
          */
         Util.extend(this, settings);
 
@@ -46,7 +45,6 @@ define("joynr/dispatching/types/SubscriptionStop", [
          *
          * @name SubscriptionStop#_typeName
          * @type String
-         * @field
          */
         Typing.augmentTypeName(this, "joynr");
 

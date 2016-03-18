@@ -90,14 +90,14 @@ void SubscriptionManager::registerSubscription(
                                std::chrono::system_clock::now().time_since_epoch()).count();
     subscriptionRequest.setQos(qosVariant);
     const SubscriptionQos* qos = subscriptionRequest.getSubscriptionQosPtr();
-    if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
-        qos->getExpiryDate() < now) {
+    if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE() &&
+        qos->getExpiryDateMs() < now) {
         throw std::invalid_argument("Subscription ExpiryDate " +
-                                    std::to_string(qos->getExpiryDate()) + " in the past. Now: " +
+                                    std::to_string(qos->getExpiryDateMs()) + " in the past. Now: " +
                                     std::to_string(now));
     }
 
-    std::shared_ptr<Subscription> subscription(new Subscription(subscriptionCaller));
+    auto subscription = std::make_shared<Subscription>(subscriptionCaller);
 
     subscriptions.insert(subscriptionId, subscription);
 
@@ -107,14 +107,13 @@ void SubscriptionManager::registerSubscription(
             SubscriptionUtil::getPeriodicPublicationInterval(qosVariant) > 0) {
             JOYNR_LOG_DEBUG(logger, "Will notify if updates are missed.");
             std::int64_t alertAfterInterval = SubscriptionUtil::getAlertInterval(qosVariant);
-            JoynrTimePoint expiryDate(std::chrono::milliseconds(qos->getExpiryDate()));
+            JoynrTimePoint expiryDate(std::chrono::milliseconds(qos->getExpiryDateMs()));
+            if (qos->getExpiryDateMs() == SubscriptionQos::NO_EXPIRY_DATE()) {
+                expiryDate = JoynrTimePoint(
+                        std::chrono::milliseconds(std::numeric_limits<std::int64_t>::max()));
+            }
             std::int64_t periodicPublicationInterval =
                     SubscriptionUtil::getPeriodicPublicationInterval(qosVariant);
-
-            if (expiryDate.time_since_epoch().count() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-                expiryDate = JoynrTimePoint(
-                        std::chrono::milliseconds(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL()));
-            }
 
             subscription->missedPublicationRunnableHandle = missedPublicationScheduler->schedule(
                     new MissedPublicationRunnable(expiryDate,
@@ -124,12 +123,12 @@ void SubscriptionManager::registerSubscription(
                                                   *this,
                                                   alertAfterInterval),
                     std::chrono::milliseconds(alertAfterInterval));
-        } else if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+        } else if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
             std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                        std::chrono::system_clock::now().time_since_epoch()).count();
             subscription->subscriptionEndRunnableHandle = missedPublicationScheduler->schedule(
                     new SubscriptionEndRunnable(subscriptionId, *this),
-                    std::chrono::milliseconds(qos->getExpiryDate() - now));
+                    std::chrono::milliseconds(qos->getExpiryDateMs() - now));
         }
     }
     subscriptionRequest.setSubscriptionId(subscriptionId);

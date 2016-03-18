@@ -32,28 +32,36 @@ HttpMessagingSkeleton::HttpMessagingSkeleton(MessageRouter& messageRouter)
 {
 }
 
-void HttpMessagingSkeleton::transmit(JoynrMessage& message)
+void HttpMessagingSkeleton::transmit(
+        JoynrMessage& message,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
         std::string replyChannelId = message.getHeaderReplyChannelId();
-        std::shared_ptr<system::RoutingTypes::ChannelAddress> address(
-                new system::RoutingTypes::ChannelAddress(replyChannelId));
+        auto address = std::make_shared<system::RoutingTypes::ChannelAddress>(replyChannelId);
         messageRouter.addNextHop(message.getHeaderFrom(), address);
     }
 
-    messageRouter.route(message);
+    try {
+        messageRouter.route(message);
+    } catch (exceptions::JoynrRuntimeException& e) {
+        onFailure(e);
+    }
 }
 
 void HttpMessagingSkeleton::onTextMessageReceived(const std::string& message)
 {
     try {
         JoynrMessage msg = JsonSerializer::deserialize<JoynrMessage>(message);
-
         if (msg.getType().empty()) {
             JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
+            return;
+        }
+        if (msg.getPayload().empty()) {
+            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
             return;
         }
         if (!msg.containsHeaderExpiryDate()) {
@@ -63,10 +71,17 @@ void HttpMessagingSkeleton::onTextMessageReceived(const std::string& message)
             return;
         }
         JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
-        transmit(msg);
+
+        auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Incoming Message with ID {} could not be sent! reason: {}",
+                            msg.getHeaderMessageId(),
+                            e.getMessage());
+        };
+        transmit(msg, onFailure);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
-                        "Unable to deserialize message. Raw message: {} - error:",
+                        "Unable to deserialize message. Raw message: {} - error: {}",
                         message,
                         e.what());
     }

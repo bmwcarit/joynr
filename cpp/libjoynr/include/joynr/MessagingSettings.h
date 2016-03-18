@@ -66,6 +66,13 @@ public:
     static const std::string& SETTING_HTTP_CONNECT_TIMEOUT_MS();
     static const std::string& SETTING_BROKER_TIMEOUT_MS();
     /**
+     * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
+     * of the time-to-live joynr message header.
+     *
+     * @return the key used in settings for the maximum TTL message value.
+     */
+    static const std::string& SETTING_MAXIMUM_TTL_MS();
+    /**
      * @brief SETTING_DISCOVERY_MESSAGES_TTL_MS Time-to-live of messages used
      * in communication between the local discovery service and the discovery
      * backend service.
@@ -83,6 +90,12 @@ public:
     static std::int64_t DEFAULT_BROKER_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
     static std::int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
+    /**
+     * @brief DEFAULT_MAXIMUM_TTL_MS
+     * @return the default value for maximum message TTL in milliseconds.
+     * @see SETTING_MAXIMUM_TTL_MS
+     */
+    static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
@@ -132,6 +145,20 @@ public:
     void setHttpConnectTimeout(std::int64_t timeout_ms);
     std::int64_t getBrokerTimeout() const;
     void setBrokerTimeout(std::int64_t timeout_ms);
+    /**
+     * @brief getMaximumTtlMs Get the maximum allowed time-to-live value in milliseconds for joynr
+     * messages.
+     *
+     * @return the maximum TTL for joynr messages.
+     */
+    std::uint64_t getMaximumTtlMs() const;
+    /**
+     * @brief setMaximumTtlMs Set the maximum allowed time-to-live value in milliseconds for joynr
+     * messages.
+     *
+     * @param maximumTtlMs the new maximum TTL for joynr messages.
+     */
+    void setMaximumTtlMs(std::uint64_t maximumTtlMs);
     std::int64_t getDiscoveryMessagesTtl() const;
     void setDiscoveryMessagesTtl(std::int64_t ttl_ms);
     std::int64_t getSendMsgMaxTtl() const;
@@ -146,7 +173,7 @@ private:
 
     Settings& settings;
     ADD_LOGGER(MessagingSettings);
-    void checkSettings() const;
+    void checkSettings();
 };
 
 } // namespace joynr

@@ -243,6 +243,12 @@ std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_MAXIMUM_TTL_MS()
+{
+    static const std::string value("messaging/max-ttl-ms");
+    return value;
+}
+
 const std::string& MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()
 {
     static const std::string value("messaging/discovery-messages-ttl");
@@ -264,6 +270,12 @@ const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
 std::int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
 {
     static const std::int64_t value(10 * 60 * 1000); // 10 minutes
+    return value;
+}
+
+std::uint64_t MessagingSettings::DEFAULT_MAXIMUM_TTL_MS()
+{
+    static const std::uint64_t value(30UL * 24UL * 60UL * 60UL * 1000UL); // 30 days
     return value;
 }
 
@@ -454,6 +466,16 @@ void MessagingSettings::setBrokerTimeout(std::int64_t timeout_ms)
     settings.set(SETTING_BROKER_TIMEOUT_MS(), timeout_ms);
 }
 
+std::uint64_t MessagingSettings::getMaximumTtlMs() const
+{
+    return settings.get<std::uint64_t>(SETTING_MAXIMUM_TTL_MS());
+}
+
+void MessagingSettings::setMaximumTtlMs(std::uint64_t maximumTtlMs)
+{
+    settings.set(SETTING_MAXIMUM_TTL_MS(), maximumTtlMs);
+}
+
 std::int64_t MessagingSettings::getDiscoveryMessagesTtl() const
 {
     return settings.get<std::int64_t>(SETTING_DISCOVERY_MESSAGES_TTL_MS());
@@ -480,7 +502,7 @@ bool MessagingSettings::contains(const std::string& key) const
 }
 
 // Checks messaging settings and sets defaults
-void MessagingSettings::checkSettings() const
+void MessagingSettings::checkSettings()
 {
     assert(settings.contains(SETTING_BROKER_URL()));
     std::string brokerUrl = settings.get<std::string>(SETTING_BROKER_URL());
@@ -541,6 +563,9 @@ void MessagingSettings::checkSettings() const
     }
     if (!settings.contains(SETTING_DISCOVERY_MESSAGES_TTL_MS())) {
         settings.set(SETTING_DISCOVERY_MESSAGES_TTL_MS(), DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS());
+    }
+    if (!settings.contains(SETTING_MAXIMUM_TTL_MS())) {
+        setMaximumTtlMs(DEFAULT_MAXIMUM_TTL_MS());
     }
 }
 
@@ -618,6 +643,7 @@ void MessagingSettings::printSettings() const
                     "SETTING: {}  = {})",
                     SETTING_DISCOVERY_MESSAGES_TTL_MS(),
                     settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
+    JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
 }
 
 } // namespace joynr

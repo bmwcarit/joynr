@@ -30,6 +30,8 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
+import joynr.types.ProviderQos;
+
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Messenger;
@@ -78,6 +80,18 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
         return runtime;
     }
 
+    /**
+      * Registers an Android provider in the joynr framework
+      *
+      * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.joynrandroidruntime.JoynrAndroidRuntime#registerProvider(String, JoynrProvider, ProviderQos)} instead.
+      * @param domain
+      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
+      *            the provider.
+      * @param provider
+      *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+      * @return Returns a Future which can be used to check the registration status.
+      */
+    @Deprecated
     @Override
     public Future<Void> registerProvider(String domain, JoynrProvider provider) {
         // this will block until the runtime is created successfully
@@ -86,7 +100,18 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
         JoynrRuntime runtime = getJoynrRuntime();
 
         // registration of providers is asynchronously
-        return runtime.registerProvider(domain, provider);
+        return runtime.registerProvider(domain, provider, provider.getProviderQos());
+    }
+
+    @Override
+    public Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos) {
+        // this will block until the runtime is created successfully
+        // TODO since the caller expects the register call to be async, we need to check if
+        // this will not block to long
+        JoynrRuntime runtime = getJoynrRuntime();
+
+        // registration of providers is asynchronously
+        return runtime.registerProvider(domain, provider, providerQos);
     }
 
     @Override

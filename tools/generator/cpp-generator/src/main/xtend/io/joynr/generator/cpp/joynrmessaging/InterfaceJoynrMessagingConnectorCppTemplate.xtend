@@ -47,20 +47,21 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 joynr::Request internalRequestObject;
 internalRequestObject.setMethodName("«method.joynrName»");
 «FOR param : getInputParameters(method)»
-	«IF isEnum(param.type) && isArray(param)»
-		internalRequestObject.addParam(joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.name»)), "«getJoynrTypeName(param)»");
-	«ELSEIF isEnum(param.type)»
-		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
-	«ELSEIF isArray(param)»
-		internalRequestObject.addParam(joynr::TypeUtil::toVariant<«getTypeName(param.type)»>(«param.name»), "«getJoynrTypeName(param)»");
-	«ELSEIF isCompound(param.type)»
-		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
-	«ELSEIF isMap(param.type)»
-		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
-	«ELSEIF isByteBuffer(param.type)»
-		internalRequestObject.addParam(joynr::TypeUtil::toVariant(«param.name»), "«getJoynrTypeName(param)»");
+	«val paramType = param.type.resolveTypeDef»
+	«IF paramType.isEnum && param.isArray»
+		internalRequestObject.addParam(joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(paramType.derived)»>(«param.name»)), "«param.joynrTypeName»");
+	«ELSEIF paramType.isEnum»
+		internalRequestObject.addParam(Variant::make<«param.typeName»>(«param.name»), "«param.joynrTypeName»");
+	«ELSEIF param.isArray»
+		internalRequestObject.addParam(joynr::TypeUtil::toVariant<«paramType.typeName»>(«param.name»), "«param.joynrTypeName»");
+	«ELSEIF paramType.isCompound»
+		internalRequestObject.addParam(Variant::make<«param.typeName»>(«param.name»), "«param.joynrTypeName»");
+	«ELSEIF paramType.isMap»
+		internalRequestObject.addParam(Variant::make<«param.typeName»>(«param.name»), "«param.joynrTypeName»");
+	«ELSEIF paramType.isByteBuffer»
+		internalRequestObject.addParam(joynr::TypeUtil::toVariant(«param.name»), "«param.joynrTypeName»");
 	«ELSE»
-		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(Variant::make<«param.typeName»>(«param.name»), "«param.joynrTypeName»");
 	«ENDIF»
 «ENDFOR»
 '''
@@ -81,7 +82,6 @@ internalRequestObject.setMethodName("«method.joynrName»");
 #include "joynr/TypeUtil.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Future.h"
-#include <chrono>
 #include <cstdint>
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -126,10 +126,11 @@ bool «className»::usesClusterController() const{
 «FOR attribute: getAttributes(serviceInterface)»
 	«val returnType = getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»
+	«val attributeType = attribute.type.resolveTypeDef»
 	«IF attribute.readable»
 		«produceSyncGetterSignature(attribute, className)»
 		{
-			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccess =
 					[future] (const «returnType»& «attributeName») {
@@ -141,16 +142,14 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(
-					onSuccess,
-					onError));
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(onSuccess, onError);
 			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 			future->get(«attributeName»);
 		}
 
 		«produceAsyncGetterSignature(attribute, className)»
 		{
-			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
 					[future, onSuccess] (const «returnType»& «attributeName») {
@@ -168,9 +167,7 @@ bool «className»::usesClusterController() const{
 						}
 					};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(
-					onSuccessWrapper,
-					onErrorWrapper));
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(onSuccessWrapper, onErrorWrapper);
 			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 
 			return future;
@@ -182,23 +179,23 @@ bool «className»::usesClusterController() const{
 		{
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
-			«IF isEnum(attribute.type) && isArray(attribute)»
-				internalRequestObject.addParam(joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»)), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isEnum(attribute.type)»
-				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isArray(attribute)»
-				internalRequestObject.addParam(joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isCompound(attribute.type)»
-				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isMap(attribute.type)»
-				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isByteBuffer(attribute.type)»
-				internalRequestObject.addParam(joynr::TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«IF attributeType.isEnum && attribute.isArray»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attributeType.derived)»>(«attributeName»)), "«attribute.joynrTypeName»");
+			«ELSEIF attributeType.isEnum»
+				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
+			«ELSEIF attribute.isArray»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant<«attributeType.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
+			«ELSEIF attributeType.isCompound»
+				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
+			«ELSEIF attributeType.isMap»
+				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
+			«ELSEIF attributeType.isByteBuffer»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(«attributeName»), "«attribute.joynrTypeName»");
 			«ELSE»
-				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
 			«ENDIF»
 
-			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
+			auto future = std::make_shared<joynr::Future<void>>();
 
 			std::function<void()> onSuccessWrapper =
 					[future, onSuccess] () {
@@ -216,9 +213,7 @@ bool «className»::usesClusterController() const{
 					}
 				};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
-					onSuccessWrapper,
-					onErrorWrapper));
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(onSuccessWrapper, onErrorWrapper);
 			operationRequest(replyCaller, internalRequestObject);
 			return future;
 		}
@@ -227,23 +222,24 @@ bool «className»::usesClusterController() const{
 		{
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
-			«IF isEnum(attribute.type) && isArray(attribute)»
-				internalRequestObject.addParam(joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»)), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isEnum(attribute.type)»
-				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isArray(attribute)»
-				internalRequestObject.addParam(joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isCompound(attribute.type)»
-				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isMap(attribute.type)»
-				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
-			«ELSEIF isByteBuffer(attribute.type)»
-				internalRequestObject.addParam(joynr::TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
+			«IF attributeType.isEnum && isArray(attribute)»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attributeType.derived)»>(«attributeName»)), "«attribute.joynrTypeName»");
+			«ELSEIF attributeType.isEnum»
+				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
+			«ELSEIF attribute.isArray»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant<«attributeType.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
+			«ELSEIF attributeType.isCompound»
+				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
+			«ELSEIF attributeType.isMap»
+				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
+			«ELSEIF attributeType.isByteBuffer»
+				internalRequestObject.addParam(joynr::TypeUtil::toVariant(«attributeName»), "«attribute.joynrTypeName»");
 			«ELSE»
-				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(Variant::make<«attribute.typeName»>(«attributeName»), "«attribute.joynrTypeName»");
 			«ENDIF»
 
-			std::shared_ptr<joynr::Future<void> > future( new joynr::Future<void>());
+			auto future = std::make_shared<joynr::Future<void>>();
+
 
 			std::function<void()> onSuccess =
 					[future] () {
@@ -255,9 +251,7 @@ bool «className»::usesClusterController() const{
 						future->onError(error);
 					};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
-					onSuccess,
-					onError));
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(onSuccess, onError);
 			operationRequest(replyCaller, internalRequestObject);
 			future->get();
 		}
@@ -291,15 +285,9 @@ bool «className»::usesClusterController() const{
 			JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
 			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
-			if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-				clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
-			}
-			else{
-				std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-				clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
-			}
+			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(subscriptionQos));
 
-			std::shared_ptr<joynr::SubscriptionCallback<«returnType»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnType»>(subscriptionListener));
+			auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnType»>>(subscriptionListener);
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -341,8 +329,7 @@ bool «className»::usesClusterController() const{
 	«produceSyncMethodSignature(method, className)»
 	{
 		«produceParameterSetters(method)»
-		std::shared_ptr<joynr::Future<«outputParameters»> > future(
-				new joynr::Future<«outputParameters»>());
+		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 		std::function<void(«outputTypedConstParamList»)> onSuccess =
 				[future] («outputTypedConstParamList») {
@@ -354,9 +341,7 @@ bool «className»::usesClusterController() const{
 				future->onError(error);
 			};
 
-		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
-				onSuccess,
-				onError));
+		auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccess, onError);
 		operationRequest(replyCaller, internalRequestObject);
 		future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
 	}
@@ -365,8 +350,7 @@ bool «className»::usesClusterController() const{
 	{
 		«produceParameterSetters(method)»
 
-		std::shared_ptr<joynr::Future<«outputParameters»> > future(
-				new joynr::Future<«outputParameters»>());
+		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 		std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
 				[future, onSuccess] («outputTypedConstParamList») {
@@ -382,9 +366,7 @@ bool «className»::usesClusterController() const{
 				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(serviceInterface, method)»
 			};
 
-		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
-				onSuccessWrapper,
-				onErrorWrapper));
+		auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccessWrapper, onErrorWrapper);
 		operationRequest(replyCaller, internalRequestObject);
 		return future;
 	}
@@ -441,13 +423,7 @@ bool «className»::usesClusterController() const{
 		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
-		if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-			clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
-		}
-		else{
-			std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-			clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
-		}
+		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(subscriptionQos));
 
 		std::shared_ptr<joynr::SubscriptionCallback<«returnTypes»>> subscriptionCallback(
 					new joynr::SubscriptionCallback<«returnTypes»>(subscriptionListener));

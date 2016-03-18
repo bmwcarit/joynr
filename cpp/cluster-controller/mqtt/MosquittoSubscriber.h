@@ -63,6 +63,7 @@ private:
     MqttSettings mqttSettings;
     const BrokerUrl brokerUrl;
     std::string channelId;
+    std::string topic;
     Semaphore* channelCreatedSemaphore;
 
     std::atomic<bool> isRunning;
@@ -74,6 +75,11 @@ private:
     ADD_LOGGER(MqttSubscriber);
 
     void checkServerTime();
+
+    /* subscribe to channelId / topic */
+    void subscribeToTopic();
+    /* unsubscribe from channelId / topic */
+    void unsubscribeFromTopic();
 
     void on_connect(int rc) override;
     void on_subscribe(int mid, int qos_count, const int* granted_qos) override;

@@ -23,6 +23,7 @@ This project has dependencies to:
   Antlr 3 Runtime under BSD License
   AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
+  Apache Commons CLI under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
@@ -108,6 +109,7 @@ This project has dependencies to:
   io.joynr.cpp:tests under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-consumer under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
+  io.joynr.examples:joynr-system-integration-test under The Apache Software License, Version 2.0
   io.joynr.examples:location-tester under The Apache Software License, Version 2.0
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.examples:radio-js under The Apache Software License, Version 2.0
@@ -160,6 +162,8 @@ This project has dependencies to:
   io.joynr.javascript:inter-tab under The Apache Software License, Version 2.0
   io.joynr.javascript:js-dependencies under The Apache Software License, Version 2.0
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
+  io.joynr.tests:inter-language-test under The Apache Software License, Version 2.0
+  io.joynr.tests:robustness under The Apache Software License, Version 2.0
   io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
@@ -174,10 +178,11 @@ This project has dependencies to:
   io.joynr:basemodel under The Apache Software License, Version 2.0
   io.joynr:cpp under The Apache Software License, Version 2.0
   io.joynr:examples under The Apache Software License, Version 2.0
-  io.joynr:inter-language-test under The Apache Software License, Version 2.0
   io.joynr:java under The Apache Software License, Version 2.0
   io.joynr:javascript under The Apache Software License, Version 2.0
   io.joynr:joynr under The Apache Software License, Version 2.0
+  io.joynr:performance under The Apache Software License, Version 2.0
+  io.joynr:tests under The Apache Software License, Version 2.0
   io.joynr:tools under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson under The Apache Software License, Version 2.0

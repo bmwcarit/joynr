@@ -16,10 +16,11 @@
  * limitations under the License.
  * #L%
  */
+#include <cassert>
+
 #include "joynr/MessageRouter.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/MessagingStubFactory.h"
-#include "joynr/Directory.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -28,13 +29,8 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/JsonSerializer.h"
 #include "cluster-controller/access-control/IAccessController.h"
 #include "joynr/IPlatformSecurityManager.h"
-
-#include <chrono>
-
-#include <cassert>
 
 namespace joynr
 {
@@ -55,6 +51,9 @@ public:
     MessageRouter& owningMessageRouter;
     JoynrMessage message;
     std::shared_ptr<system::RoutingTypes::Address> destination;
+
+private:
+    ADD_LOGGER(ConsumerPermissionCallback);
 };
 
 //------ MessageRouter ---------------------------------------------------------
@@ -62,33 +61,26 @@ public:
 MessageRouter::~MessageRouter()
 {
     messageQueueCleanerTimer.shutdown();
-    threadPool.shutdown();
-    if (parentRouter != nullptr) {
-        delete parentRouter;
-    }
-    delete messagingStubFactory;
-    delete messageQueue;
-    delete runningParentResolves;
-    delete securityManager;
+    messageScheduler.shutdown();
 }
 
-MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
-                             IPlatformSecurityManager* securityManager,
+MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+                             std::unique_ptr<IPlatformSecurityManager> securityManager,
                              int maxThreads,
-                             MessageQueue* messageQueue)
+                             std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
-          messagingStubFactory(messagingStubFactory),
+          messagingStubFactory(std::move(messagingStubFactory)),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
-          threadPool("MessageRouter", maxThreads),
+          messageScheduler(maxThreads, "MessageRouter"),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(),
-          messageQueue(messageQueue),
+          messageQueue(std::move(messageQueue)),
           messageQueueCleanerTimer(),
-          runningParentResolves(new std::unordered_set<std::string>()),
+          runningParentResolves(),
           accessController(nullptr),
-          securityManager(securityManager),
+          securityManager(std::move(securityManager)),
           parentResolveMutex()
 {
     messageQueueCleanerTimer.addTimer(
@@ -96,29 +88,23 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
             [](Timer::TimerId) {},
             1000,
             true);
-
-    providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
-    providerQos.setProviderVersion(1);
-    providerQos.setPriority(1);
-    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    providerQos.setSupportsOnChangeSubscriptions(false);
 }
 
-MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
+MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                              std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress,
                              int maxThreads,
-                             MessageQueue* messageQueue)
+                             std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
-          messagingStubFactory(messagingStubFactory),
+          messagingStubFactory(std::move(messagingStubFactory)),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
-          threadPool("MessageRouter", maxThreads),
+          messageScheduler(maxThreads, "MessageRouter"),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(incomingAddress),
-          messageQueue(messageQueue),
+          messageQueue(std::move(messageQueue)),
           messageQueueCleanerTimer(),
-          runningParentResolves(new std::unordered_set<std::string>()),
+          runningParentResolves(),
           accessController(nullptr),
           securityManager(nullptr),
           parentResolveMutex()
@@ -128,12 +114,6 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
             [](Timer::TimerId) {},
             1000,
             true);
-
-    providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
-    providerQos.setProviderVersion(1);
-    providerQos.setPriority(1);
-    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    providerQos.setSupportsOnChangeSubscriptions(false);
 }
 
 void MessageRouter::addProvisionedNextHop(
@@ -150,17 +130,17 @@ void MessageRouter::setAccessController(std::shared_ptr<IAccessController> acces
 }
 
 void MessageRouter::setParentRouter(
-        joynr::system::RoutingProxy* parentRouter,
+        std::unique_ptr<system::RoutingProxy> parentRouter,
         std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress,
         std::string parentParticipantId)
 {
-    this->parentRouter = parentRouter;
-    this->parentAddress = parentAddress;
+    this->parentRouter = std::move(parentRouter);
+    this->parentAddress = std::move(parentAddress);
 
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
-    addProvisionedNextHop(parentParticipantId, parentAddress);
-    addNextHopToParent(parentRouter->getProxyParticipantId());
+    addProvisionedNextHop(parentParticipantId, this->parentAddress);
+    addNextHopToParent(this->parentRouter->getProxyParticipantId());
 }
 
 bool MessageRouter::isChildMessageRouter()
@@ -169,29 +149,31 @@ bool MessageRouter::isChildMessageRouter()
         return false;
     }
     // if an incoming address is set, a parent message router is needed for correct configuration
-    return parentRouter != nullptr && parentAddress;
+    return parentRouter && parentAddress;
 }
 
 /**
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void MessageRouter::route(const JoynrMessage& message)
+void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
     if (now > message.getHeaderExpiryDate()) {
-        JOYNR_LOG_WARN(logger,
-                       "Received expired message. Dropping the message (ID: {}).",
-                       message.getHeaderMessageId());
-        return;
+        std::string errorMessage("Received expired message. Dropping the message (ID: " +
+                                 message.getHeaderMessageId() + ").");
+        JOYNR_LOG_WARN(logger, errorMessage);
+        throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
     // Validate the message if possible
     if (securityManager != nullptr && !securityManager->validate(message)) {
-        JOYNR_LOG_ERROR(logger, "messageId {} failed validation", message.getHeaderMessageId());
-        return;
+        std::string errorMessage("messageId " + message.getHeaderMessageId() +
+                                 " failed validation");
+        JOYNR_LOG_ERROR(logger, errorMessage);
+        throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
     JOYNR_LOG_DEBUG(logger,
@@ -215,8 +197,8 @@ void MessageRouter::route(const JoynrMessage& message)
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
             std::lock_guard<std::mutex> lock(parentResolveMutex);
-            if (runningParentResolves->find(destinationPartId) == runningParentResolves->end()) {
-                runningParentResolves->insert(destinationPartId);
+            if (runningParentResolves.find(destinationPartId) == runningParentResolves.end()) {
+                runningParentResolves.insert(destinationPartId);
                 std::function<void(const bool&)> onSuccess =
                         [this, destinationPartId](const bool& resolved) {
                     if (resolved) {
@@ -260,14 +242,14 @@ void MessageRouter::route(const JoynrMessage& message)
     }
 
     // If this point is reached, the message can be sent without delay
-    sendMessage(message, destAddress);
+    sendMessage(message, destAddress, tryCount);
 }
 
 void MessageRouter::removeRunningParentResolvers(const std::string& destinationPartId)
 {
     std::lock_guard<std::mutex> lock(parentResolveMutex);
-    if (runningParentResolves->find(destinationPartId) != runningParentResolves->end()) {
-        runningParentResolves->erase(destinationPartId);
+    if (runningParentResolves.find(destinationPartId) != runningParentResolves.end()) {
+        runningParentResolves.erase(destinationPartId);
     }
 }
 
@@ -279,22 +261,41 @@ void MessageRouter::sendMessages(const std::string& destinationPartId,
         if (!item) {
             break;
         }
-        sendMessage(item->getContent(), address);
+        try {
+            sendMessage(item->getContent(), address);
+        } catch (const exceptions::JoynrMessageNotSentException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Message with Id {} could not be sent. Error: {}",
+                            item->getContent().getHeaderMessageId(),
+                            e.getMessage());
+        }
         delete item;
     }
 }
 
 void MessageRouter::sendMessage(const JoynrMessage& message,
-                                std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress)
+                                std::shared_ptr<system::RoutingTypes::Address> destAddress,
+                                std::uint32_t tryCount)
+{
+    scheduleMessage(message, destAddress, tryCount);
+}
+
+void MessageRouter::scheduleMessage(
+        const JoynrMessage& message,
+        std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+        std::uint32_t tryCount,
+        std::chrono::milliseconds delay)
 {
     auto stub = messagingStubFactory->create(*destAddress);
     if (stub) {
-        threadPool.execute(new MessageRunnable(message, stub));
+        messageScheduler.schedule(
+                new MessageRunnable(message, stub, destAddress, *this, tryCount), delay);
     } else {
-        JOYNR_LOG_WARN(logger,
-                       "Messag with payload {}  could not be send to {}. Stub creation failed",
-                       message.getPayload(),
-                       (*destAddress).toString());
+        std::string errorMessage("Message with payload " + message.getPayload() +
+                                 "  could not be send to " + (*destAddress).toString() +
+                                 ". Stub creation failed");
+        JOYNR_LOG_WARN(logger, errorMessage);
+        throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 }
 
@@ -482,7 +483,15 @@ void MessageRouter::removeNextHop(
 
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
             [onError](const exceptions::JoynrException& error) {
-        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        } else {
+            JOYNR_LOG_ERROR(logger,
+                            "Unable to report error (received by calling "
+                            "parentRouter->removeNextHopAsync), since onError function is "
+                            "empty. Error message: {}",
+                            error.getMessage());
+        }
     };
 
     // remove from parent router
@@ -514,11 +523,17 @@ void MessageRouter::resolveNextHop(
 INIT_LOGGER(MessageRunnable);
 
 MessageRunnable::MessageRunnable(const JoynrMessage& message,
-                                 std::shared_ptr<IMessaging> messagingStub)
+                                 std::shared_ptr<IMessaging> messagingStub,
+                                 std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+                                 MessageRouter& messageRouter,
+                                 std::uint32_t tryCount)
         : Runnable(true),
           ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
-          messagingStub(messagingStub)
+          messagingStub(messagingStub),
+          destAddress(destAddress),
+          messageRouter(messageRouter),
+          tryCount(tryCount)
 {
 }
 
@@ -529,7 +544,28 @@ void MessageRunnable::shutdown()
 void MessageRunnable::run()
 {
     if (!isExpired()) {
-        messagingStub->transmit(message);
+        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
+            try {
+                exceptions::JoynrDelayMessageException& delayException =
+                        dynamic_cast<exceptions::JoynrDelayMessageException&>(
+                                const_cast<exceptions::JoynrRuntimeException&>(e));
+                std::chrono::milliseconds delay = delayException.getDelayMs();
+
+                JOYNR_LOG_ERROR(logger,
+                                "Rescheduling message after error: messageId: {}, new delay {}ms, "
+                                "error: {}",
+                                message.getHeaderMessageId(),
+                                delay.count(),
+                                e.getMessage());
+                messageRouter.scheduleMessage(message, destAddress, tryCount + 1, delay);
+            } catch (std::bad_cast& castError) {
+                JOYNR_LOG_ERROR(logger,
+                                "Message with ID {} could not be sent! reason: {}",
+                                message.getHeaderMessageId(),
+                                e.getMessage());
+            }
+        };
+        messagingStub->transmit(message, onFailure);
     } else {
         JOYNR_LOG_ERROR(
                 logger, "Message with ID {}  expired: dropping!", message.getHeaderMessageId());
@@ -539,6 +575,7 @@ void MessageRunnable::run()
 /**
  * IMPLEMENTATION of ConsumerPermissionCallback class
  */
+INIT_LOGGER(ConsumerPermissionCallback);
 
 ConsumerPermissionCallback::ConsumerPermissionCallback(
         MessageRouter& owningMessageRouter,
@@ -551,7 +588,14 @@ ConsumerPermissionCallback::ConsumerPermissionCallback(
 void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
 {
     if (hasPermission) {
-        owningMessageRouter.sendMessage(message, destination);
+        try {
+            owningMessageRouter.sendMessage(message, destination);
+        } catch (const exceptions::JoynrMessageNotSentException& e) {
+            JOYNR_LOG_ERROR(logger,
+                            "Message with Id {} could not be sent. Error: {}",
+                            message.getHeaderMessageId(),
+                            e.getMessage());
+        }
     }
 }
 

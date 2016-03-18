@@ -1,11 +1,23 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(radio-app-0.15.1)
+project(radio-app-0.16.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
-add_definitions("-std=c++14")
+
+# The c++14 flag will be set automatically by CMake based on "CMAKE_CXX_STANDARD 14" starting with version 3.1.0.
+# However, as CMake 3.1.x does not recognize compiler flags correctly for OS X, we use CMAKE_CXX_STANDARD
+# from 3.2.0 upwards. For older versions, this flag is set manually for gcc and clang:
+if("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
+    if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+else()
+    # set required C++ standard
+    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
 
 set(
     JOYNR_SERVER
@@ -22,11 +34,18 @@ option(
 )
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
+option(
+    GENERATE_SOURCES
+    "Generate source files from Franca model?"
+    OFF
+)
+message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.15.1 REQUIRED)
+find_package(Joynr 0.16.0 REQUIRED)
+message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_DBUS_INCLUDE_DIRS=${Joynr_LIB_DBUS_INCLUDE_DIRS}")
@@ -38,6 +57,25 @@ message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}"
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
+
+if(${GENERATE_SOURCES})
+    find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
+    message(STATUS "variable JoynrGenerator_FOUND=${JoynrGenerator_FOUND}")
+    message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
+    JoynrGenerator(
+        OUTPUTPATH ${CMAKE_SOURCE_DIR}/src/main/generated-cpp
+        MODELPATH ${CMAKE_SOURCE_DIR}/src/main/model/radio.fidl
+        GENERATION_LANGUAGE "cpp"
+    )
+endif(${GENERATE_SOURCES})
+
+if(ENABLE_CLANG_FORMATTER)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cpp/CMake")
+    include(LocateProgram)
+    LocateProgram(clang-format CLANG_FORMAT_PATH)
+    include(AddClangFormat)
+    add_custom_target(format)
+endif(ENABLE_CLANG_FORMATTER)
 
 ######## Add Boost ########
 
@@ -213,6 +251,13 @@ install(TARGETS
         RUNTIME DESTINATION bin COMPONENT bin
 )
 
+if(ENABLE_CLANG_FORMATTER)
+    AddClangFormat(radio-app-provider-ws)
+    AddClangFormat(radio-app-consumer-ws)
+    AddClangFormat(radio-app-provider-cc)
+    AddClangFormat(radio-app-consumer-cc)
+endif(ENABLE_CLANG_FORMATTER)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Compile the provider application (requires: Dbus and running cluster controller)
     # Communicates via Dbus with cluster controller
@@ -248,41 +293,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
             RUNTIME DESTINATION bin COMPONENT bin
     )
 
+    if(ENABLE_CLANG_FORMATTER)
+        AddClangFormat(radio-app-provider-dbus)
+        AddClangFormat(radio-app-provider-dbus)
+    endif(ENABLE_CLANG_FORMATTER)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-provider_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-provider_SOURCES}")
-
-    add_custom_command(
-        TARGET radio-app-provider-cc
-        PRE_BUILD
-        COMMAND clang-format -i
-            ${radio-app-provider_HEADERS}
-            ${radio-app-provider_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${radio-app-consumer_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${radio-app-consumer_SOURCES}")
-
-    add_custom_command(
-        TARGET radio-app-consumer-cc
-        PRE_BUILD
-        COMMAND clang-format -i
-            ${radio-app-consumer_HEADERS}
-            ${radio-app-consumer_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-endif(${ENABLE_CLANG_FORMATTER})
 
 # Set Visual Studio to do parallel builds
 IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")

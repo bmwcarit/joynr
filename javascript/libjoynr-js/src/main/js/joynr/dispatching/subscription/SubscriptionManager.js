@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 define("joynr/dispatching/subscription/SubscriptionManager", [
     "global/Promise",
     "joynr/messaging/MessagingQos",
+    "joynr/start/settings/defaultMessagingSettings",
     "joynr/proxy/SubscriptionQos",
     "joynr/dispatching/types/SubscriptionStop",
     "joynr/dispatching/types/SubscriptionRequest",
@@ -38,6 +39,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 ], function(
         Promise,
         MessagingQos,
+        defaultMessagingSettings,
         SubscriptionQos,
         SubscriptionStop,
         SubscriptionRequest,
@@ -101,11 +103,11 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                     + "\"");
                 return true;
             }
-            var expiryDate = subscriptionInfos[subscriptionId].qos.expiryDate;
+            var expiryDateMs = subscriptionInfos[subscriptionId].qos.expiryDateMs;
             // log.debug("Checking subscription end for subscriptionId: " + subscriptionId + "
-            // expiryDate: " + expiryDate + "
+            // expiryDateMs: " + expiryDateMs + "
             // current time: " + Date.now());
-            var ends = expiryDate <= Date.now() + delay_ms;
+            var ends = expiryDateMs <= Date.now() + delay_ms;
             // if (ends === true) {
             // log.info("Subscription end date reached for id: " + subscriptionId);
             // }
@@ -116,18 +118,18 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param {String}
          *            subscriptionId Id of the subscription to check
          * @param {Number}
-         *            alertAfterInterval maximum delay between two incoming publications
+         *            alertAfterIntervalMs maximum delay between two incoming publications
          */
-        function checkPublication(subscriptionId, alertAfterInterval) {
+        function checkPublication(subscriptionId, alertAfterIntervalMs) {
             var subscriptionListener = subscriptionListeners[subscriptionId];
             var timeSinceLastPublication = Date.now() - getLastPublicationTime(subscriptionId);
             // log.debug("timeSinceLastPublication : " + timeSinceLastPublication + "
-            // alertAfterInterval: " + alertAfterInterval);
-            if (alertAfterInterval > 0 && timeSinceLastPublication >= alertAfterInterval) {
+            // alertAfterIntervalMs: " + alertAfterIntervalMs);
+            if (alertAfterIntervalMs > 0 && timeSinceLastPublication >= alertAfterIntervalMs) {
                 // log.warn("publication missed for subscription id: " + subscriptionId);
                 if (subscriptionListener.onError) {
                     var publicationMissedException = new PublicationMissedException({
-                        detailMessage : "alertAfterInterval period exceeded without receiving publication",
+                        detailMessage : "alertAfterIntervalMs period exceeded without receiving publication",
                         subscriptionId : subscriptionId
                     });
                     subscriptionListener.onError(publicationMissedException);
@@ -135,29 +137,30 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             }
 
             var delay_ms;
-            if (timeSinceLastPublication > alertAfterInterval) {
-                delay_ms = alertAfterInterval;
+            if (timeSinceLastPublication > alertAfterIntervalMs) {
+                delay_ms = alertAfterIntervalMs;
             } else {
-                delay_ms = alertAfterInterval - timeSinceLastPublication;
+                delay_ms = alertAfterIntervalMs - timeSinceLastPublication;
             }
             if (!subscriptionEnds(subscriptionId, delay_ms)) {
 
                 // log.debug("Rescheduling checkPublication with delay: " + delay_ms);
                 publicationCheckTimerIds[subscriptionId] =
                         LongTimer.setTimeout(function checkPublicationDelay() {
-                            checkPublication(subscriptionId, alertAfterInterval);
+                            checkPublication(subscriptionId, alertAfterIntervalMs);
                         }, delay_ms);
             }
         }
 
-        function calculateTtl(messagingQos, subscriptionQos) {
+        function calculateTtl(subscriptionQos) {
             var ttl;
-            if (subscriptionQos.expiryDate === SubscriptionQos.NO_EXPIRY_DATE) {
-                ttl = SubscriptionQos.NO_EXPIRY_DATE_TTL - Date.now();
-            } else {
-                ttl = subscriptionQos.expiryDate - Date.now();
+            if (subscriptionQos.expiryDateMs === SubscriptionQos.NO_EXPIRY_DATE) {
+                return defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
             }
-
+            ttl = subscriptionQos.expiryDateMs - Date.now();
+            if (ttl > defaultMessagingSettings.MAX_MESSAGING_TTL_MS) {
+                return defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
+            }
             return ttl;
         }
 
@@ -184,16 +187,16 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 onError : parameters.onError
             });
 
-            var alertAfterInterval = subscriptionRequest.qos.alertAfterInterval;
-            if (alertAfterInterval !== undefined && alertAfterInterval > 0) {
+            var alertAfterIntervalMs = subscriptionRequest.qos.alertAfterIntervalMs;
+            if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
                 publicationCheckTimerIds[subscriptionRequest.subscriptionId] =
                         LongTimer.setTimeout(
                                 function checkPublicationAlertAfterInterval() {
                                     checkPublication(
                                             subscriptionRequest.subscriptionId,
-                                            alertAfterInterval);
+                                            alertAfterIntervalMs);
                                 },
-                                alertAfterInterval);
+                                alertAfterIntervalMs);
             }
 
         }
@@ -218,8 +221,6 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            settings.proxyId participantId of the sender
          * @param {String}
          *            settings.providerId participantId of the receiver
-         * @param {MessagingQos}
-         *            settings.messagingQos quality-of-service parameters such as time-to-live
          * @param {String}
          *            settings.attributeType the type of the subscribing attribute
          * @param {String}
@@ -263,7 +264,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         });
 
                         var messagingQos = new MessagingQos({
-                            ttl : calculateTtl(settings.messagingQos, subscriptionRequest.qos)
+                            ttl : calculateTtl(subscriptionRequest.qos)
                         });
 
                         subscriptionResolvedMap[subscriptionId] = resolve;
@@ -294,17 +295,17 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                                         },
                             onError : settings.onError
                         });
-                        var alertAfterInterval = settings.qos.alertAfterInterval;
-                        if (alertAfterInterval !== undefined && alertAfterInterval > 0) {
+                        var alertAfterIntervalMs = settings.qos.alertAfterIntervalMs;
+                        if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
                             publicationCheckTimerIds[subscriptionId] =
                                     LongTimer
                                             .setTimeout(
                                                     function checkPublicationAlertAfterInterval() {
                                                         checkPublication(
                                                                 subscriptionId,
-                                                                alertAfterInterval);
+                                                                alertAfterIntervalMs);
                                                     },
-                                                    alertAfterInterval);
+                                                    alertAfterIntervalMs);
                         }
                     });
                 };
@@ -318,8 +319,6 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            parameters.proxyId participantId of the sender
          * @param {String}
          *            parameters.providerId participantId of the receiver
-         * @param {MessagingQos}
-         *            parameters.messagingQos quality-of-service parameters such as time-to-live
          * @param {String}
          *            parameters.broadcastName the name of the broadcast being subscribed to
          * @param {String[]}
@@ -354,7 +353,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 subscriptionResolvedMap[subscriptionRequest.subscriptionId] = resolve;
 
                 messagingQos = new MessagingQos({
-                    ttl : calculateTtl(parameters.messagingQos, subscriptionRequest.qos)
+                    ttl : calculateTtl(subscriptionRequest.qos)
                 });
 
                 dispatcher.sendBroadcastSubscriptionRequest({

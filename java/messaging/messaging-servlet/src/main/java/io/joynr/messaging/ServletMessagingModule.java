@@ -3,6 +3,7 @@ package io.joynr.messaging;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 /*
@@ -27,6 +28,8 @@ import com.google.inject.name.Names;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.dispatcher.ServletMessageReceiverImpl;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
+import io.joynr.messaging.http.HttpGlobalAddressFactory;
+import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -47,5 +50,9 @@ public class ServletMessagingModule extends AbstractModule {
         }, new TypeLiteral<IMessagingSkeleton>() {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
         messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeleton.class);
+
+        Multibinder<GlobalAddressFactory> globalAddresses;
+        globalAddresses = Multibinder.newSetBinder(binder(), GlobalAddressFactory.class);
+        globalAddresses.addBinding().to(HttpGlobalAddressFactory.class);
     }
 }

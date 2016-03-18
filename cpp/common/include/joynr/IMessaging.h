@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,19 @@
 #ifndef IMESSAGING_H
 #define IMESSAGING_H
 
+#include <functional>
+
 #include "joynr/JoynrCommonExport.h"
 
 namespace joynr
 {
 
 class JoynrMessage;
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+}
 
 /**
   * Interface for sending joynr messages in both directions between clustercontroller and libjoynr.
@@ -37,7 +44,9 @@ public:
     virtual ~IMessaging() = default;
     // MessagingSkeleton on libjoynr calls Dispatcher.receive
     // MessagingSkeleton on CC calls MessageRouter.route
-    virtual void transmit(JoynrMessage& message) = 0;
+    virtual void transmit(
+            JoynrMessage& message,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
     // const MessagingQos& QoS, const QVariant& payload) = 0;
 };
 
