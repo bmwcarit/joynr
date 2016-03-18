@@ -78,8 +78,11 @@ public class «className» extends «abstractProviderName» {
 
 	«FOR attribute: getAttributes(serviceInterface)»
 		«val attributeName = attribute.joynrName»
-		«val attributeType = attribute.typeName»
-		protected «attributeType» «attributeName»;
+		«IF attribute.type.isTypeDef»
+			«val typeDefType = attribute.type.typeDefType.actualType.typeName»
+			// type resolved from modeled Franca typedef «attribute.type.joynrName» as «typeDefType»
+		«ENDIF»
+		protected «attribute.typeName» «attributeName»;
 	«ENDFOR»
 
 	public «className»() {

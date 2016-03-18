@@ -210,8 +210,20 @@ define(
                 });
 
                 /**
+                 * @name InterTabClusterControllerRuntime#registration
+                 * @type CapabilitiesRegistrar
+                 */
+                Object.defineProperty(this, "registration", {
+                    get : function() {
+                        return capabilitiesRegistrar;
+                    },
+                    enumerable : true
+                });
+
+                /**
                  * @name InterTabClusterControllerRuntime#capabilities
                  * @type CapabilitiesRegistrar
+                 * @deprecated capabilities will be removed by 01.01.2017. please use registration instead
                  */
                 Object.defineProperty(this, "capabilities", {
                     get : function() {
@@ -647,8 +659,7 @@ define(
                                                 }
                                             });
                             registerDiscoveryProviderPromise =
-                                    capabilitiesRegistrar.registerCapability(
-                                            "",
+                                    capabilitiesRegistrar.registerProvider(
                                             "io.joynr",
                                             discoveryProvider,
                                             providerQos);
@@ -690,8 +701,7 @@ define(
                                         }
                                     });
                             registerRoutingProviderPromise =
-                                    capabilitiesRegistrar.registerCapability(
-                                            "",
+                                    capabilitiesRegistrar.registerProvider(
                                             "io.joynr",
                                             routingProvider,
                                             providerQos);

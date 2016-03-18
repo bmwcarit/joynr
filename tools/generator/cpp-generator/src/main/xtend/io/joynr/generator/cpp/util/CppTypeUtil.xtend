@@ -272,6 +272,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		val includeSet = new HashSet<String>();
 		val selector = TypeSelector::defaultTypeSelector
 		selector.errorTypes(true)
+		selector.typeDefs(true)
 		for(datatype: getAllComplexTypes(serviceInterface,selector)){
 			includeSet.add(datatype.includeOf);
 		}

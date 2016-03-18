@@ -193,8 +193,8 @@ TEST_F(SubscriptionQosTest, createPeriodicSubscriptionQosWithValidity)
         PeriodicSubscriptionQos periodicSubscriptionQos(validityMs, periodMs, alertAfterIntervalMs);
         std::int64_t expiryDateUpperBound = nowPlusTimeSpan(validityMs);
 
-        EXPECT_GE(expiryDateLowerBound, periodicSubscriptionQos.getExpiryDateMs());
-        EXPECT_LE(expiryDateUpperBound, periodicSubscriptionQos.getExpiryDateMs());
+        EXPECT_LE(expiryDateLowerBound, periodicSubscriptionQos.getExpiryDateMs());
+        EXPECT_GE(expiryDateUpperBound, periodicSubscriptionQos.getExpiryDateMs());
         EXPECT_EQ(periodMs, periodicSubscriptionQos.getPeriodMs());
         EXPECT_EQ(alertAfterIntervalMs, periodicSubscriptionQos.getAlertAfterIntervalMs());
     }
@@ -206,8 +206,8 @@ TEST_F(SubscriptionQosTest, createPeriodicSubscriptionQosWithValidity)
         periodicSubscriptionQos.setPeriodMs(periodMs);
         periodicSubscriptionQos.setAlertAfterIntervalMs(alertAfterIntervalMs);
 
-        EXPECT_GE(expiryDateLowerBound, periodicSubscriptionQos.getExpiryDateMs());
-        EXPECT_LE(expiryDateUpperBound, periodicSubscriptionQos.getExpiryDateMs());
+        EXPECT_LE(expiryDateLowerBound, periodicSubscriptionQos.getExpiryDateMs());
+        EXPECT_GE(expiryDateUpperBound, periodicSubscriptionQos.getExpiryDateMs());
         EXPECT_EQ(periodMs, periodicSubscriptionQos.getPeriodMs());
         EXPECT_EQ(alertAfterIntervalMs, periodicSubscriptionQos.getAlertAfterIntervalMs());
     }

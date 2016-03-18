@@ -3,7 +3,7 @@ package joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,8 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
     }
 
     /**
+     * @deprecated Use getMinIntervalMs instead
+     *
      * Get the minimum interval in milliseconds.
      * <br>
      * Publications will be sent maintaining this minimum interval provided,
@@ -97,7 +99,25 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      *         idle time of minInterval milliseconds between two successive
      *         notifications.
      */
+    @Deprecated
     public long getMinInterval() {
+        return getMinIntervalMs();
+    }
+
+    /**
+     * Get the minimum interval in milliseconds.
+     * <br>
+     * Publications will be sent maintaining this minimum interval provided,
+     * even if the value changes more often. This prevents the consumer from
+     * being flooded by updated values. The filtering happens on the provider's
+     * side, thus also preventing excessive network traffic. This value is
+     * provided in milliseconds.
+     *
+     * @return The minInterval in milliseconds. The publisher will keep a minimum
+     *         idle time of minInterval milliseconds between two successive
+     *         notifications.
+     */
+    public long getMinIntervalMs() {
         return minIntervalMs;
     }
 
@@ -122,7 +142,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * @param minIntervalMs
      *            The publisher will keep a minimum idle time of minIntervalMs
      *            between two successive notifications.
-     * @return the subscriptionQos (fluent interface)
+     * @return this (fluent interface).
      */
     @Deprecated
     public OnChangeSubscriptionQos setMinInterval(final long minIntervalMs) {
@@ -148,6 +168,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * @param minIntervalMs
      *            The publisher will keep a minimum idle time of minIntervalMs
      *            between two successive notifications.
+     * @return this (fluent interface).
      */
     public OnChangeSubscriptionQos setMinIntervalMs(final long minIntervalMs) {
         return setMinIntervalMsInternal(minIntervalMs);

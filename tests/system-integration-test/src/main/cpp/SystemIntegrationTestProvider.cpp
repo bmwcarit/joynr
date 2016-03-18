@@ -27,7 +27,6 @@
 SystemIntegrationTestProvider::SystemIntegrationTestProvider(std::function<void()> successCallback)
         : successCallback(successCallback)
 {
-    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
 }
 
 void SystemIntegrationTestProvider::add(

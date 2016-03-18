@@ -51,7 +51,7 @@ joynr.load(provisioning).then(function(loadedJoynr) {
     var RobustnessStringBroadcastFilter = require("./RobustnessStringBroadcastFilter.js");
     //testInterfaceProvider.broadcastWithFiltering.addBroadcastFilter(new RobustnessStringBroadcastFilter());
 
-    joynr.capabilities.registerCapability("", domain, testInterfaceProvider, providerQos)
+    joynr.registration.registerProvider(domain, testInterfaceProvider, providerQos)
     .then(function() {
         log("provider registered successfully");
         return null;

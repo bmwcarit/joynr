@@ -37,6 +37,8 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.system.RoutingTypes.Address;
+import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 
 public class ClusterControllerRuntime extends JoynrRuntimeImpl {
 
@@ -77,8 +79,10 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               discoveryProviderAddress);
         // CHECKSTYLE:ON
 
-        capabilitiesRegistrar.registerProvider(systemServicesDomain, localCapabilitiesDirectory);
-        capabilitiesRegistrar.registerProvider(systemServicesDomain, messageRouter);
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.LOCAL);
+        capabilitiesRegistrar.registerProvider(systemServicesDomain, localCapabilitiesDirectory, providerQos);
+        capabilitiesRegistrar.registerProvider(systemServicesDomain, messageRouter, providerQos);
     }
 
     @Override

@@ -89,10 +89,21 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *
          * @function
          * @name CapabilitiesRegistrar#registerCapability
+         * @deprecated registerCapability will be removed by 01.01.2017. Please use registerProvider instead.
+         * NOTE: authToken is now ignored.
+         */
+        this.registerCapability = function registerCapability() {
+            // remove first argument (authToken) before passing on to registerProvider
+            Array.prototype.shift.apply(arguments);
+            return this.registerProvider.apply(this, arguments);
+        };
+
+        /**
+         * Registers a provider so that it is publicly available
          *
-         * @param {String}
-         *            authToken - currently used to differentiate between multiple providers for the same domain/interface. Use an empty
-         *            string if only registering one provider per domain/interface
+         * @function
+         * @name CapabilitiesRegistrar#registerProvider
+         *
          * @param {String}
          *            domain
          * @param {Object}
@@ -106,13 +117,8 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *
          * @returns {Object} an A+ promise
          */
-        this.registerCapability =
-                function registerCapability(
-                        authToken,
-                        domain,
-                        provider,
-                        providerQos,
-                        loggingContext) {
+        this.registerProvider =
+                function registerProvider(domain, provider, providerQos, loggingContext) {
 
                     var missingImplementations = provider.checkImplementation();
 
@@ -126,8 +132,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     }
 
                     // retrieve participantId
-                    var participantId =
-                            participantIdStorage.getParticipantId(authToken, domain, provider);
+                    var participantId = participantIdStorage.getParticipantId(domain, provider);
 
                     if (loggingContext !== undefined) {
                         loggingManager.setLoggingContext(participantId, loggingContext);
@@ -163,10 +168,20 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *
          * @function
          * @name CapabilitiesRegistrar#unregisterCapability
-         * @param {String}
-         *            authToken - currently used to differentiate between multiple providers
-         *            for the same domain/interface. Use an empty string if only registering
-         *            one provider per domain/interface
+         * @deprecated unregisterCapability will be removed by 01.01.2017. Please use unregisterProvider instead.
+         * NOTE: authToken is now ignored.
+         */
+        this.unregisterCapability = function unregisterCapability() {
+            // remove first argument (authToken) before passing on to unregisterProvider
+            Array.prototype.shift.apply(arguments);
+            return this.unregisterProvider.apply(this, arguments);
+        };
+
+        /**
+         * Unregisters a provider so that it is not publicly available anymore
+         *
+         * @function
+         * @name CapabilitiesRegistrar#unregisterProvider
          * @param {String}
          *            domain
          * @param {Object}
@@ -175,9 +190,9 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *            provider.interfaceName
          * @returns {Object} an A+ promise
          */
-        this.unregisterCapability = function unregisterCapability(authToken, domain, provider) {
+        this.unregisterProvider = function unregisterProvider(domain, provider) {
             // retrieve participantId
-            var participantId = participantIdStorage.getParticipantId(authToken, domain, provider);
+            var participantId = participantIdStorage.getParticipantId(domain, provider);
 
             var discoveryStubPromise = discoveryStub.remove(participantId);
 

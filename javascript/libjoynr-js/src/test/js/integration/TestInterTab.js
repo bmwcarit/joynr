@@ -559,9 +559,8 @@ joynrTestRequire(
                                                                     .then(
                                                                             function() {
                                                                                 // register radio provider
-                                                                                joynr.capabilities
-                                                                                        .registerCapability(
-                                                                                                "",
+                                                                                joynr.registration
+                                                                                        .registerProvider(
                                                                                                 domain,
                                                                                                 radioProvider,
                                                                                                 providerQos)
@@ -616,7 +615,6 @@ joynrTestRequire(
                                                                     .toEqual(
                                                                             joynr.participantIdStorage
                                                                                     .getParticipantId(
-                                                                                            "",
                                                                                             domain,
                                                                                             radioProvider));
                                                             radioProxy = newRadioProxy;
@@ -641,8 +639,7 @@ joynrTestRequire(
                                                 function(opArgs) {
                                                     var result = opArgs.returnValue;
                                                     expect(result).toEqual(true);
-                                                    joynr.capabilities.unregisterCapability(
-                                                            "",
+                                                    joynr.registration.unregisterProvider(
                                                             domain,
                                                             radioProvider).then(function() {
                                                         providerUnRegistered = true;

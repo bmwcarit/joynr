@@ -39,9 +39,9 @@ public class SubscriptionQosTest {
         OnChangeSubscriptionQos onChangeSubscriptionQos = new OnChangeSubscriptionQos().setExpiryDateMs(expiryDateMs)
                                                                                        .setPublicationTtlMs(publicationTtlMs)
                                                                                        .setMinIntervalMs(minIntervalMs);
-        assertEquals(expiryDateMs, onChangeSubscriptionQos.getExpiryDate());
-        assertEquals(publicationTtlMs, onChangeSubscriptionQos.getPublicationTtl());
-        assertEquals(minIntervalMs, onChangeSubscriptionQos.getMinInterval());
+        assertEquals(expiryDateMs, onChangeSubscriptionQos.getExpiryDateMs());
+        assertEquals(publicationTtlMs, onChangeSubscriptionQos.getPublicationTtlMs());
+        assertEquals(minIntervalMs, onChangeSubscriptionQos.getMinIntervalMs());
     }
 
     @Test
@@ -52,8 +52,8 @@ public class SubscriptionQosTest {
         SubscriptionQos onChangeSubscriptionQos = new OnChangeSubscriptionQos().setValidityMs(validityMs);
         long upperBound = System.currentTimeMillis() + validityMs;
 
-        assertTrue(onChangeSubscriptionQos.getExpiryDate() >= lowerBound);
-        assertTrue(onChangeSubscriptionQos.getExpiryDate() <= upperBound);
+        assertTrue(onChangeSubscriptionQos.getExpiryDateMs() >= lowerBound);
+        assertTrue(onChangeSubscriptionQos.getExpiryDateMs() <= upperBound);
     }
 
     @Test
@@ -66,10 +66,10 @@ public class SubscriptionQosTest {
                                                                                        .setPublicationTtlMs(publicationTtlMs)
                                                                                        .setPeriodMs(periodMs)
                                                                                        .setAlertAfterIntervalMs(alertAfterIntervalMs);
-        assertEquals(expiryDateMs, periodicSubscriptionQos.getExpiryDate());
-        assertEquals(publicationTtlMs, periodicSubscriptionQos.getPublicationTtl());
-        assertEquals(periodMs, periodicSubscriptionQos.getPeriod());
-        assertEquals(alertAfterIntervalMs, periodicSubscriptionQos.getAlertAfterInterval());
+        assertEquals(expiryDateMs, periodicSubscriptionQos.getExpiryDateMs());
+        assertEquals(publicationTtlMs, periodicSubscriptionQos.getPublicationTtlMs());
+        assertEquals(periodMs, periodicSubscriptionQos.getPeriodMs());
+        assertEquals(alertAfterIntervalMs, periodicSubscriptionQos.getAlertAfterIntervalMs());
     }
 
     @Test
@@ -80,8 +80,8 @@ public class SubscriptionQosTest {
         SubscriptionQos periodicSubscriptionQos = new PeriodicSubscriptionQos().setValidityMs(validityMs);
         long upperBound = System.currentTimeMillis() + validityMs;
 
-        assertTrue(periodicSubscriptionQos.getExpiryDate() >= lowerBound);
-        assertTrue(periodicSubscriptionQos.getExpiryDate() <= upperBound);
+        assertTrue(periodicSubscriptionQos.getExpiryDateMs() >= lowerBound);
+        assertTrue(periodicSubscriptionQos.getExpiryDateMs() <= upperBound);
     }
 
     @Test
@@ -95,12 +95,12 @@ public class SubscriptionQosTest {
                                                                                                                               .setPublicationTtlMs(publicationTtlMs)
                                                                                                                               .setMaxIntervalMs(maxIntervalMs)
                                                                                                                               .setMinIntervalMs(minIntervalMs)
-                                                                                                                              .setAlertAfterInterval(alertAfterIntervalMs);
-        assertEquals(expiryDateMs, onChangeWithKeepAliveSubscriptionQos.getExpiryDate());
-        assertEquals(publicationTtlMs, onChangeWithKeepAliveSubscriptionQos.getPublicationTtl());
+                                                                                                                              .setAlertAfterIntervalMs(alertAfterIntervalMs);
+        assertEquals(expiryDateMs, onChangeWithKeepAliveSubscriptionQos.getExpiryDateMs());
+        assertEquals(publicationTtlMs, onChangeWithKeepAliveSubscriptionQos.getPublicationTtlMs());
         assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxInterval());
-        assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMinInterval());
-        assertEquals(alertAfterIntervalMs, onChangeWithKeepAliveSubscriptionQos.getAlertAfterInterval());
+        assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMinIntervalMs());
+        assertEquals(alertAfterIntervalMs, onChangeWithKeepAliveSubscriptionQos.getAlertAfterIntervalMs());
 
     }
 
@@ -110,8 +110,8 @@ public class SubscriptionQosTest {
         long alertAfterIntervalMs = 1000;
         PeriodicSubscriptionQos periodicSubscriptionQos = new PeriodicSubscriptionQos().setPeriodMs(periodMs)
                                                                                        .setAlertAfterIntervalMs(alertAfterIntervalMs);
-        assertEquals(periodMs, periodicSubscriptionQos.getPeriod());
-        assertEquals(periodMs, periodicSubscriptionQos.getAlertAfterInterval());
+        assertEquals(periodMs, periodicSubscriptionQos.getPeriodMs());
+        assertEquals(periodMs, periodicSubscriptionQos.getAlertAfterIntervalMs());
     }
 
     @Test
@@ -119,9 +119,9 @@ public class SubscriptionQosTest {
         long alertAfterIntervalMs = 4000;
         long maxIntervalMs = 5000;
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMaxIntervalMs(maxIntervalMs)
-                                                                                                                              .setAlertAfterInterval(alertAfterIntervalMs);
+                                                                                                                              .setAlertAfterIntervalMs(alertAfterIntervalMs);
         assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxInterval());
-        assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getAlertAfterInterval());
+        assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getAlertAfterIntervalMs());
     }
 
     @Test
@@ -130,7 +130,7 @@ public class SubscriptionQosTest {
         long maxIntervalMs = 1000;
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMaxIntervalMs(maxIntervalMs)
                                                                                                                               .setMinIntervalMs(minIntervalMs);
-        assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMinInterval());
+        assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMinIntervalMs());
         assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxInterval());
     }
 }

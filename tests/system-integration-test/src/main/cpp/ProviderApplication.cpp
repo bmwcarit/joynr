@@ -54,10 +54,16 @@ int main(int argc, char* argv[])
     std::shared_ptr<SystemIntegrationTestProvider> provider(
             new SystemIntegrationTestProvider([&]() { semaphore.notify(); }));
 
-    assert(provider->getProviderQos().getScope() == joynr::types::ProviderScope::LOCAL);
+
+    joynr::types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch()
+    );
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
 
     // Register the provider
-    runtime->registerProvider<test::SystemIntegrationTestProvider>(providerDomain, provider);
+    runtime->registerProvider<test::SystemIntegrationTestProvider>(providerDomain, provider, providerQos);
 
     bool successful = semaphore.waitFor(std::chrono::milliseconds(30000));
 

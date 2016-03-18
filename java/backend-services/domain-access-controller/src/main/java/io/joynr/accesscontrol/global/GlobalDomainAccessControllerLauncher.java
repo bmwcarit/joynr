@@ -27,6 +27,7 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
+import joynr.types.ProviderQos;
 
 import com.google.inject.Inject;
 
@@ -59,7 +60,8 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
     @Override
     public void run() {
 
-        runtime.registerProvider(localDomain, globalDomainAccessSyncProvider);
+        ProviderQos providerQos = new ProviderQos();
+        runtime.registerProvider(localDomain, globalDomainAccessSyncProvider, providerQos);
     }
 
     @Override

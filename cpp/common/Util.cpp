@@ -80,8 +80,13 @@ std::string attributeGetterFromName(const std::string& attributeName)
 
 std::string createUuid()
 {
-    boost::uuids::uuid uuid = boost::uuids::random_generator()();
-    return boost::uuids::to_string(uuid);
+    // instantiation of random generator is expensive,
+    // therefore we use a static one:
+    static boost::uuids::random_generator uuidGenerator;
+    // uuid generator is not threadsafe
+    static std::mutex uuidMutex;
+    std::unique_lock<std::mutex> uuidLock(uuidMutex);
+    return boost::uuids::to_string(uuidGenerator());
 }
 
 void throwJoynrException(const exceptions::JoynrException& error)

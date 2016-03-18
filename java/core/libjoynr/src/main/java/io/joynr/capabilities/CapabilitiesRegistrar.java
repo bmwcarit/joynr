@@ -21,27 +21,29 @@ package io.joynr.capabilities;
 
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
+import joynr.types.ProviderQos;
 
 public interface CapabilitiesRegistrar {
-
     /**
      * Registers a provider at the capabilities directory to make it available at other cluster controllers and the
      * messaging endpoint directory to dispatch incoming requests.
-     * 
+     *
      * @param domain
      *            Domain of the provided service.
      * @param provider
      *            Provider instance.
+     * @param providerQos
+     *            Provider quality of service.
      * @return registration future
      */
-    Future<Void> registerProvider(String domain, JoynrProvider provider);
+    Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos);
 
     void unregisterProvider(String domain, JoynrProvider provider);
 
     /**
      * Shuts down the local capabilities directory and all used thread pools.
      * @param unregisterAllRegisteredCapabilities if set to true, all added capabilities that are not removed up to
-     * this point, will be removed automatically 
+     * this point, will be removed automatically
      */
     void shutdown(boolean unregisterAllRegisteredCapabilities);
 }

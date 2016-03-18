@@ -3,7 +3,7 @@ package io.joynr.pubsub;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,8 @@ public abstract class SubscriptionQos implements JoynrType {
     }
 
     /**
+     * @deprecated Use getExpiryDateMs() instead
+     *
      * Get the end date of the subscription.
      * <br>
      * The provider will send notifications until the expiry date is reached.
@@ -123,7 +125,22 @@ public abstract class SubscriptionQos implements JoynrType {
      * @return the end date of the subscription. <br>This value is provided in
      *            milliseconds (since 1970-01-01T00:00:00.000).
      */
+    @Deprecated
     public long getExpiryDate() {
+        return getExpiryDateMs();
+    }
+
+    /**
+     * Get the end date of the subscription.
+     * <br>
+     * The provider will send notifications until the expiry date is reached.
+     * You will not receive any notifications (neither value notifications
+     * nor missed publication notifications) after this date.
+     *
+     * @return the end date of the subscription. <br>This value is provided in
+     *            milliseconds (since 1970-01-01T00:00:00.000).
+     */
+    public long getExpiryDateMs() {
         return expiryDateMs;
     }
 
@@ -175,7 +192,6 @@ public abstract class SubscriptionQos implements JoynrType {
      * This is a helper method that allows setting the expiryDate using
      * a relative time.
      *
-     *
      * @param validityMs
      *            is the number of milliseconds until the subscription will expire
      * @return the subscriptionQos (fluent interface)
@@ -191,6 +207,8 @@ public abstract class SubscriptionQos implements JoynrType {
     }
 
     /**
+     * @deprecated Use getPublicationTtlMs() instead
+     *
      * Get the time-to-live for notification messages.
      * <br>
      * Notification messages will be sent with this time-to-live.<br>
@@ -200,7 +218,22 @@ public abstract class SubscriptionQos implements JoynrType {
      *
      * @return the publication time-to-live in milliseconds.
      */
+    @Deprecated
     public long getPublicationTtl() {
+        return getPublicationTtlMs();
+    }
+
+    /**
+     * Get the time-to-live for notification messages.
+     * <br>
+     * Notification messages will be sent with this time-to-live.<br>
+     * <br>
+     * If a notification message can not be delivered within its time to live,
+     * it will be deleted from the system. This value is provided in milliseconds.
+     *
+     * @return the publication time-to-live in milliseconds.
+     */
+    public long getPublicationTtlMs() {
         return publicationTtlMs;
     }
 

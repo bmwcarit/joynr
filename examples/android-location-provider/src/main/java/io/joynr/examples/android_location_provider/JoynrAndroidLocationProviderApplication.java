@@ -22,6 +22,7 @@ package io.joynr.examples.android_location_provider;
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
 
 import java.util.Properties;
+import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,9 @@ public class JoynrAndroidLocationProviderApplication extends Application {
         if (runtime != null) {
             logToOutput("Registering provider on domain \"" + domain + "\".");
             // registers the provider at the global capabilities directory
-            runtime.registerProvider(domain, androidLocationProvider);
+            ProviderQos providerQos = new ProviderQos();
+            providerQos.setPriority(System.currentTimeMillis());
+            runtime.registerProvider(domain, androidLocationProvider, providerQos);
         } else {
             logToOutput("Failed to bind service. Can not register provider\n");
         }

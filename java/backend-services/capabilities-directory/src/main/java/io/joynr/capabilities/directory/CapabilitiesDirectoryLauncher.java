@@ -28,6 +28,7 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
+import joynr.types.ProviderQos;
 
 import com.google.inject.Inject;
 import com.google.inject.persist.PersistService;
@@ -75,7 +76,8 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
     @Override
     public void run() {
         // LongPollingMessagingModule is only added in main(), since the servletMessagingModule will be used otherwise
-        runtime.registerProvider(localDomain, capabilitiesDirectoryProvider);
+        ProviderQos providerQos = new ProviderQos();
+        runtime.registerProvider(localDomain, capabilitiesDirectoryProvider, providerQos);
     }
 
     @Override

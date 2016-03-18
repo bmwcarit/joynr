@@ -32,7 +32,7 @@ import org.franca.core.franca.FInterface
 class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil cppStdTypeUtil
+	@Inject private extension CppStdTypeUtil
 	@Inject private extension CppInterfaceUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
@@ -93,7 +93,7 @@ bool «className»::usesClusterController() const{
 }
 
 «FOR attribute : getAttributes(serviceInterface)»
-	«val returnType = cppStdTypeUtil.getTypeName(attribute)»
+	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
 	«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
 	«IF attribute.readable»
@@ -303,10 +303,10 @@ bool «className»::usesClusterController() const{
 
 «FOR method: getMethods(serviceInterface)»
 «var methodname = method.joynrName»
-«var outputParameters = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
-«var inputParamList = cppStdTypeUtil.getCommaSeperatedUntypedInputParameterList(method)»
-«var outputTypedConstParamList = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method)»
-«var outputUntypedParamList = cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»
+«var outputParameters = method.commaSeparatedOutputParameterTypes»
+«var inputParamList = method.commaSeperatedUntypedInputParameterList»
+«var outputTypedConstParamList = method.commaSeperatedTypedConstOutputParameterList»
+«var outputUntypedParamList = method.commaSeperatedUntypedOutputParameterList»
 
 «produceSyncMethodSignature(method, className)»
 {
@@ -330,7 +330,7 @@ bool «className»::usesClusterController() const{
 			};
 
 	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
-	future->get(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
+	future->get(«method.commaSeperatedUntypedOutputParameterList»);
 }
 
 «produceAsyncMethodSignature(serviceInterface, method, className)»
@@ -364,7 +364,7 @@ bool «className»::usesClusterController() const{
 «ENDFOR»
 
 «FOR broadcast: serviceInterface.broadcasts»
-	«val returnTypes = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
+	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 	«val broadcastName = broadcast.joynrName»
 
 	«IF isSelective(broadcast)»

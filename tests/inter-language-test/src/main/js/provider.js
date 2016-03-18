@@ -53,7 +53,7 @@ joynr.load(provisioning).then(function(loadedJoynr) {
     var IltStringBroadcastFilter = require("./IltStringBroadcastFilter.js");
     testInterfaceProvider.broadcastWithFiltering.addBroadcastFilter(new IltStringBroadcastFilter());
 
-    joynr.capabilities.registerCapability("", domain, testInterfaceProvider, providerQos)
+    joynr.registration.registerProvider(domain, testInterfaceProvider, providerQos)
     .then(function() {
         log("provider registered successfully");
     }).catch(function(error) {

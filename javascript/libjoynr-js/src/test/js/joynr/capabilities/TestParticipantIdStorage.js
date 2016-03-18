@@ -27,7 +27,7 @@ joynrTestRequire(
         function(ParticipantIdStorage) {
 
             describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", function() {
-                var participantIdStorage, localStorageSpy, uuidSpy, authToken;
+                var participantIdStorage, localStorageSpy, uuidSpy;
                 var domain, provider, interfaceName, key, uuid, storedParticipantId;
                 var generatedParticipantId;
 
@@ -44,13 +44,7 @@ joynrTestRequire(
                     uuidSpy = jasmine.createSpy("uuid");
                     uuidSpy.andReturn(uuid);
                     participantIdStorage = new ParticipantIdStorage(localStorageSpy, uuidSpy);
-                    key =
-                            "joynr.participant."
-                                + domain
-                                + "."
-                                + provider.interfaceName
-                                + "."
-                                + authToken;
+                    key = "joynr.participant." + domain + "." + provider.interfaceName;
                     generatedParticipantId = domain + "." + interfaceName + "." + uuid;
                     storedParticipantId = "storedParticipantId";
                 });
@@ -66,40 +60,28 @@ joynrTestRequire(
                             .toBeTruthy();
                 });
 
-                it(
-                        "uses the stored participantId if available",
-                        function() {
-                            localStorageSpy.getItem.andReturn(storedParticipantId);
-                            var result =
-                                    participantIdStorage.getParticipantId(
-                                            authToken,
-                                            domain,
-                                            provider);
-                            expect(localStorageSpy.getItem).toHaveBeenCalled();
-                            expect(localStorageSpy.getItem).toHaveBeenCalledWith(key);
-                            expect(uuidSpy).not.toHaveBeenCalled();
-                            expect(localStorageSpy.setItem).not.toHaveBeenCalled();
-                            expect(result).toEqual(storedParticipantId);
-                        });
+                it("uses the stored participantId if available", function() {
+                    localStorageSpy.getItem.andReturn(storedParticipantId);
+                    var result = participantIdStorage.getParticipantId(domain, provider);
+                    expect(localStorageSpy.getItem).toHaveBeenCalled();
+                    expect(localStorageSpy.getItem).toHaveBeenCalledWith(key);
+                    expect(uuidSpy).not.toHaveBeenCalled();
+                    expect(localStorageSpy.setItem).not.toHaveBeenCalled();
+                    expect(result).toEqual(storedParticipantId);
+                });
 
-                it(
-                        "generates a new uuid if no participantId is stored",
-                        function() {
-                            var result =
-                                    participantIdStorage.getParticipantId(
-                                            authToken,
-                                            domain,
-                                            provider);
-                            expect(localStorageSpy.getItem).toHaveBeenCalled();
-                            expect(localStorageSpy.getItem).toHaveBeenCalledWith(key);
-                            expect(uuidSpy).toHaveBeenCalled();
-                            expect(uuidSpy).toHaveBeenCalledWith();
-                            expect(localStorageSpy.setItem).toHaveBeenCalled();
-                            expect(localStorageSpy.setItem).toHaveBeenCalledWith(
-                                    key,
-                                    generatedParticipantId);
-                            expect(result).toEqual(generatedParticipantId);
-                        });
+                it("generates a new uuid if no participantId is stored", function() {
+                    var result = participantIdStorage.getParticipantId(domain, provider);
+                    expect(localStorageSpy.getItem).toHaveBeenCalled();
+                    expect(localStorageSpy.getItem).toHaveBeenCalledWith(key);
+                    expect(uuidSpy).toHaveBeenCalled();
+                    expect(uuidSpy).toHaveBeenCalledWith();
+                    expect(localStorageSpy.setItem).toHaveBeenCalled();
+                    expect(localStorageSpy.setItem).toHaveBeenCalledWith(
+                            key,
+                            generatedParticipantId);
+                    expect(result).toEqual(generatedParticipantId);
+                });
 
             });
 

@@ -68,27 +68,27 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 
 «FOR attribute : serviceInterface.attributes»
 	«IF attribute.notifiable»
-		«var attributeType = attribute.typeName»
+		«var attributeType = attribute.type.resolveTypeDef»
 		«var attributeName = attribute.joynrName»
 		void «interfaceName»AbstractProvider::«attributeName»Changed(
-				const «attributeType»& «attributeName»
+				const «attribute.typeName»& «attributeName»
 		) {
 			onAttributeValueChanged(
 					"«attributeName»",
-					«IF isEnum(attribute.type) && isArray(attribute)»
-						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
-					«ELSEIF isEnum(attribute.type)»
-						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
-					«ELSEIF isArray(attribute)»
-						joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attribute.joynrName»)
-					«ELSEIF isCompound(attribute.type)»
-						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
-					«ELSEIF isMap(attribute.type)»
-						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
-					«ELSEIF isByteBuffer(attribute.type)»
-						joynr::TypeUtil::toVariant(«attribute.joynrName»)
+					«IF attributeType.isEnum && attribute.isArray»
+						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attributeType.derived)»>(«attributeName»))
+					«ELSEIF attributeType.isEnum»
+						Variant::make<«attribute.typeName»>(«attributeName»)
+					«ELSEIF attribute.isArray»
+						joynr::TypeUtil::toVariant<«attributeType.typeName»>(«attributeName»)
+					«ELSEIF attributeType.isCompound»
+						Variant::make<«attribute.typeName»>(«attributeName»)
+					«ELSEIF attributeType.isMap»
+						Variant::make<«attribute.typeName»>(«attributeName»)
+					«ELSEIF attributeType.isByteBuffer»
+						joynr::TypeUtil::toVariant(«attributeName»)
 					«ELSE»
-						Variant::make<«getTypeName(attribute)»>(«attribute.joynrName»)
+						Variant::make<«attribute.typeName»>(«attributeName»)
 					«ENDIF»
 			);
 		}
@@ -102,21 +102,23 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	) {
 		std::vector<Variant> broadcastValues;
 		«FOR param: getOutputParameters(broadcast)»
+			«var paramType = param.type.resolveTypeDef»
+			«var paramName = param.joynrName»
 			broadcastValues.push_back(
-					«IF isEnum(param.type) && isArray(param)»
-						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.joynrName»))
-					«ELSEIF isEnum(param.type)»
-						Variant::make<«getTypeName(param)»>(«param.joynrName»)
-					«ELSEIF isArray(param)»
-						joynr::TypeUtil::toVariant<«getTypeName(param.type)»>(«param.joynrName»)
-					«ELSEIF isCompound(param.type)»
-						Variant::make<«getTypeName(param)»>(«param.joynrName»)
-					«ELSEIF isMap(param.type)»
-						Variant::make<«getTypeName(param)»>(«param.joynrName»)
-					«ELSEIF isByteBuffer(param.type)»
-						joynr::TypeUtil::toVariant(«param.joynrName»)
+					«IF paramType.isEnum && param.isArray»
+						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(paramType.derived)»>(«paramName»))
+					«ELSEIF paramType.isEnum»
+						Variant::make<«param.typeName»>(«paramName»)
+					«ELSEIF param.isArray»
+						joynr::TypeUtil::toVariant<«paramType.typeName»>(«paramName»)
+					«ELSEIF paramType.isCompound»
+						Variant::make<«param.typeName»>(«paramName»)
+					«ELSEIF paramType.isMap»
+						Variant::make<«param.typeName»>(«paramName»)
+					«ELSEIF paramType.isByteBuffer»
+						joynr::TypeUtil::toVariant(«paramName»)
 					«ELSE»
-						Variant::make<«getTypeName(param)»>(«param.joynrName»)
+						Variant::make<«param.typeName»>(«paramName»)
 					«ENDIF»
 			);
 		«ENDFOR»

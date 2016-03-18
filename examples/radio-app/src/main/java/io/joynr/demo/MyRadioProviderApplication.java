@@ -42,6 +42,7 @@ import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.ProviderScope;
+import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -211,10 +212,13 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
     @Override
     public void run() {
-        provider = new MyRadioProvider(providerScope);
+        provider = new MyRadioProvider();
         provider.addBroadcastFilter(new TrafficServiceBroadcastFilter());
         provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
-        runtime.registerProvider(localDomain, provider);
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setPriority(System.currentTimeMillis());
+        providerQos.setScope(providerScope);
+        runtime.registerProvider(localDomain, provider, providerQos);
 
         ConsoleReader console;
         try {
