@@ -57,6 +57,7 @@ class EnumHTemplate extends EnumTemplate {
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <cstdint>
 #include "joynr/Util.h"
 #include "joynr/Variant.h"
 
@@ -66,13 +67,18 @@ class EnumHTemplate extends EnumTemplate {
 «ENDIF»
 «getNamespaceStarter(type, true)»
 
-/** @brief Enumeration wrapper class «typeName» */
+/**
+ * @brief Enumeration wrapper class «typeName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 struct «getDllExportMacro()»«typeName» {
 	«IF type.hasExtendsDeclaration»
 		// This enum inherits enumeration values from «type.extendedType.typeName».
 	«ENDIF»
 	/**
 	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
+	 * @version «majorVersion».«minorVersion»
 	 */
 	enum «getNestedEnumName()» : std::uint32_t {
 		«var ordinal = -1»
@@ -90,6 +96,17 @@ struct «getDllExportMacro()»«typeName» {
 			«enumtype.joynrName» = «ordinal»
 		«ENDFOR»
 	};
+
+	/**
+	 * @brief MAJOR_VERSION The major version of this struct as specified in the
+	 * type collection or interface in the Franca model.
+	 */
+	static const std::uint32_t MAJOR_VERSION;
+	/**
+	 * @brief MINOR_VERSION The minor version of this struct as specified in the
+	 * type collection or interface in the Franca model.
+	 */
+	static const std::uint32_t MINOR_VERSION;
 
 	/** @brief Constructor */
 	«typeName»() = delete;

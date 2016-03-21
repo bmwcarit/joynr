@@ -22,6 +22,9 @@
 
 #include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/tests/testTypes/TestEnumExtended.h"
+#include "joynr/tests/EnumInsideInterface.h"
+#include "joynr/tests/EnumInsideInterfaceWithoutVersion.h"
+#include "joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion.h"
 
 using namespace joynr::tests::testTypes;
 
@@ -126,4 +129,36 @@ TEST_F(StdEnumTypeTest, hash) {
     EXPECT_NE(hashFunctionObj(testEnumZero), hashFunctionObj(testEnumTwo));
     EXPECT_EQ(hashFunctionObj(testEnumOne), hashFunctionObj(testEnumOneOther));
     EXPECT_NE(hashFunctionObj(testEnumOne), hashFunctionObj(testEnumTwo));
+}
+
+TEST_F(StdEnumTypeTest, versionIsSetInEnumInsideInterface) {
+    std::uint32_t expectedMajorVersion = 47;
+    std::uint32_t expectedMinorVersion = 11;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::tests::EnumInsideInterface::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::tests::EnumInsideInterface::MINOR_VERSION);
+}
+
+TEST_F(StdEnumTypeTest, defaultVersionIsSetInEnumInsideInterfaceWithoutVersion) {
+    std::uint32_t expectedMajorVersion = 0;
+    std::uint32_t expectedMinorVersion = 0;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::tests::EnumInsideInterfaceWithoutVersion::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::tests::EnumInsideInterfaceWithoutVersion::MINOR_VERSION);
+}
+
+TEST_F(StdEnumTypeTest, versionIsSetInEnumInsideTypeCollection) {
+    std::uint32_t expectedMajorVersion = 48;
+    std::uint32_t expectedMinorVersion = 12;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::tests::testTypes::TestEnum::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::tests::testTypes::TestEnum::MINOR_VERSION);
+}
+
+TEST_F(StdEnumTypeTest, defaultVersionIsSetInEnumInsideTypeCollectionWithoutVersion) {
+    std::uint32_t expectedMajorVersion = 0;
+    std::uint32_t expectedMinorVersion = 0;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::types::TestTypesWithoutVersion::EnumInsideTypeCollectionWithoutVersion::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::types::TestTypesWithoutVersion::EnumInsideTypeCollectionWithoutVersion::MINOR_VERSION);
 }

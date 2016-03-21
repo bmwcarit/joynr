@@ -24,12 +24,11 @@ import org.franca.core.franca.FEnumerationType;
 /*
  * This class shall be used by all generation templates which process a Franca enumeration type
  */
-abstract class EnumTemplate {
+abstract class EnumTemplate extends TypeTemplate {
 	protected FEnumerationType type
 	
 	new(FEnumerationType type) {
+		super(type)
 		this.type = type
 	}
-
-	def CharSequence generate()
 }
