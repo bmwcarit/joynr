@@ -81,8 +81,26 @@ class MapHTemplate extends MapTemplate {
 private def getTypeDefinition(FMapType type)
 '''
 «val mapType = "std::map<"  + type.keyType.typeName + ", " + type.valueType.typeName + ">"»
+/**
+ * @brief Enumeration wrapper class «type.joynrName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «type.joynrName» : public «mapType»
 {
+public:
+	/**
+	 * @brief MAJOR_VERSION The major version of this struct as specified in the
+	 * type collection or interface in the Franca model.
+	 */
+	static const std::uint32_t MAJOR_VERSION;
+	/**
+	 * @brief MINOR_VERSION The minor version of this struct as specified in the
+	 * type collection or interface in the Franca model.
+	 */
+	static const std::uint32_t MINOR_VERSION;
+
+private:
 	using «mapType»::map;
 };
 '''
