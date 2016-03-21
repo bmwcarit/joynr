@@ -8,7 +8,9 @@
         "excludePattern": "src/main/generated/joynr/types/DiscoveryQos.js"
     },
     "opts": {
-        "recurse": true
+        "recurse": true,
+        "pedantic": true,
+        "verbose": true
     },
     "templates": {
         "cleverLinks": false,

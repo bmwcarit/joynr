@@ -672,16 +672,11 @@
  					</execution>
 				</executions>
 				<configuration>
-					<!--verbose argument is not supported in outdated JSDoc 3.2.3 shipped with
-						jsdoc3-maven-plugin 1.1.0 -> plugin verboseOutput in conf.json-->
 					<directoryRoots>
 						<directoryRoot>src/main/js</directoryRoot>
 						<directoryRoot>src/main/generated</directoryRoot>
 					</directoryRoots>
 					<recursive>true</recursive>
-					<!--the lenient=false (default) argument is replaced by pedantic=true in newer
-						JSDoc versions-->
-					<lenient>false</lenient>
 					<outputDirectory>${project.build.directory}/jsdoc</outputDirectory>
 					<includePrivate>false</includePrivate>
 					<configFile>jsdoc3.conf.json</configFile>
