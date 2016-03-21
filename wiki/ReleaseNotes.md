@@ -1,3 +1,10 @@
+#joynr 0.17.0
+
+##API relevant changes
+* **[C++]** Provider and proxy interfaces as well as generated types (structs, enums and maps)
+  provide version constants (`MAJOR_VERSION` and `MINOR_VERSION`) to reflect the version set in the
+  Franca interface or type collection.
+
 #joynr 0.16.0
 
 ##API relevant changes
