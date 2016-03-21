@@ -8,6 +8,7 @@ source /data/src/docker/joynr-base/scripts/global.sh
 START=$(date +%s)
 JOBS=4
 CLANGFORMATTER='ON'
+BUILDTYPE='Debug'
 
 TESTS=(inter-language-test performance-test robustness-test system-integration-test)
 
@@ -21,8 +22,8 @@ function join_strings
 function usage
 {
     local joined_tests=$(join_strings " | " "${TESTS[@]}")
-    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF]"
-    echo "default jobs is $JOBS"
+    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF --buildtype Debug|Release]"
+    echo "default: jobs is $JOBS, clangformatter is $CLANGFORMATTER and buildtype is $BUILDTYPE"
 }
 
 SELECTED_TEST=$1
@@ -35,6 +36,9 @@ while [ "$1" != "" ]; do
                                 ;;
         --clangformatter )      shift
                                 CLANGFORMATTER=$1
+                                ;;
+        --buildtype )           shift
+                                BUILDTYPE=$1
                                 ;;
         * )                     usage
                                 exit 1
@@ -82,6 +86,7 @@ cd /data/build/tests
 cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
       -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
       -DJOYNR_SERVER=localhost:8080 \
+      -DCMAKE_BUILD_TYPE=$BUILDTYPE \
       ${SRC_FOLDER}
 
 time make -j $JOBS
