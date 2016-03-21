@@ -9,6 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
 include(SetCppStandard)
 include(AddClangFormat)
+include(Sanitizers)
 
 set(
     JOYNR_SERVER
