@@ -598,25 +598,11 @@ void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>&
         return;
     }
 
-    {
-        std::lock_guard<std::mutex> fileWritelocker(fileWriteLock);
-        std::fstream file;
-        file.open(storageFilename, std::ios::out);
-        if (!file.is_open()) {
-            std::string error;
-            if (file.rdstate() == std::ios_base::badbit) {
-                error = "irrecoverable stream error";
-            } else if (file.rdstate() == std::ios_base::failbit) {
-                error = "input/output operation failed";
-            } else if (file.rdstate() == std::ios_base::eofbit) {
-                error = "associated input sequence has reached end-of-file";
-            }
-            JOYNR_LOG_ERROR(logger, "Could not open subscription request storage file: {}", error);
-            return;
-        }
-
-        std::string json = JsonSerializer::serializeVector(subscriptionVector);
-        file << json;
+    try {
+        joynr::util::saveStringToFile(
+                storageFilename, JsonSerializer::serializeVector(subscriptionVector));
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
     }
 }
 
@@ -631,29 +617,20 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
                   "loadSavedSubscriptionRequestsMap can only be used for subclasses of "
                   "SubscriptionRequest");
 
-    std::fstream file;
-    file.open(storageFilename, std::ios::in);
-    if (!file.is_open()) {
-        std::string error;
-        if (file.rdstate() == std::ios_base::badbit) {
-            error = "irrecoverable stream error";
-        } else if (file.rdstate() == std::ios_base::failbit) {
-            error = "input/output operation failed";
-        } else if (file.rdstate() == std::ios_base::eofbit) {
-            error = "associated input sequence has reached end-of-file";
-        }
-        JOYNR_LOG_ERROR(logger, "Unable to read file: {}, reson: {}", storageFilename, error);
+    std::string jsonString;
+    try {
+        jsonString = joynr::util::loadStringFromFile(storageFilename);
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+    }
+
+    if (jsonString.empty()) {
         return;
     }
 
-    // Read the Json into memory
-    std::stringstream jsonBytes;
-    jsonBytes << file.rdbuf();
-    JOYNR_LOG_DEBUG(logger, "jsonBytes: {}", jsonBytes.str());
-
     // Deserialize the JSON into a list of subscription requests
     std::vector<RequestInformationType*> subscriptionVector =
-            JsonSerializer::deserializeVector<RequestInformationType>(jsonBytes.str());
+            JsonSerializer::deserializeVector<RequestInformationType>(jsonString);
 
     // Loop through the saved subscriptions
     std::lock_guard<std::mutex> queueLocker(queueMutex);
