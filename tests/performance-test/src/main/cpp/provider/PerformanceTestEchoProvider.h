@@ -28,7 +28,7 @@ namespace joynr
 class PerformanceTestEchoProvider : public joynr::tests::performance::DefaultEchoProvider
 {
 public:
-    PerformanceTestEchoProvider();
+    PerformanceTestEchoProvider() = default;
     virtual ~PerformanceTestEchoProvider() override = default;
 
     void echoString(const std::string& data,

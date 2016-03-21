@@ -48,7 +48,14 @@ int main(int argc, char* argv[])
     std::shared_ptr<PerformanceTestEchoProvider> provider =
             std::make_shared<PerformanceTestEchoProvider>();
 
-    runtime->registerProvider<tests::performance::EchoProvider>(domainName, provider);
+    // Set the provider's priority in such a way that a consumer uses the most recent provider.
+    auto millisecondsSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch());
+
+    types::ProviderQos providerQos;
+    providerQos.setPriority(millisecondsSinceEpoch.count());
+
+    runtime->registerProvider<tests::performance::EchoProvider>(domainName, provider, providerQos);
 
     JOYNR_LOG_INFO(logger, "********************************************************************");
     JOYNR_LOG_INFO(logger, "Provider is registered");

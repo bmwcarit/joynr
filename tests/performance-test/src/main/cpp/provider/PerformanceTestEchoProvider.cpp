@@ -21,15 +21,6 @@
 
 using namespace joynr;
 
-PerformanceTestEchoProvider::PerformanceTestEchoProvider()
-{
-    // Set the provider's priority in such a way that a consumer uses the most recent provider.
-    auto millisecondsSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch());
-
-    providerQos.setPriority(millisecondsSinceEpoch.count());
-}
-
 void PerformanceTestEchoProvider::echoString(
         const std::string& data,
         std::function<void(const std::string&)> onSuccess,
