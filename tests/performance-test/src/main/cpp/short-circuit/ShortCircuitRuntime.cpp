@@ -19,6 +19,8 @@
 
 #include "ShortCircuitRuntime.h"
 
+#include <chrono>
+
 #include "joynr/Util.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingStubFactory.h"
@@ -94,9 +96,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                                     participantIdStorage,
                                                                     dispatcherAddress,
                                                                     messageRouter);
-    Settings emptySettings;
-    MessagingSettings messagingSettings(emptySettings);
-    maximumTtlMs = messagingSettings.getMaximumTtlMs();
+
+    maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
 }
 
 } // namespace joynr
