@@ -187,7 +187,7 @@ function startPerformanceTest {
     REPORTFILE=$PERFORMANCETESTS_RESULTS_DIR/performancetest_result.txt
     STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer_stdout.txt
 
-    cd $JOYNR_SOURCE_DIR/tests/performance
+    cd $JOYNR_SOURCE_DIR/tests/performance-test
     rm -f $STDOUT
     rm -f $REPORTFILE
 

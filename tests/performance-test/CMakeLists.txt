@@ -9,6 +9,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
 include(SetCppStandard)
+include(Sanitizers)
 include(AddClangFormat)
 
 ##### Start of build ####################
@@ -84,3 +85,9 @@ add_subdirectory(src/main/cpp/consumer-app)
 add_subdirectory(src/main/cpp/short-circuit)
 
 add_subdirectory(src/main/cpp/serializer)
+
+# copy joynr resources and settings
+file(
+    COPY ${Joynr_RESOURCES_DIR}
+    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    )
