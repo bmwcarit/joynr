@@ -42,6 +42,8 @@ import io.joynr.runtime.JoynrRuntime;
 import joynr.tests.performance.EchoProvider;
 import joynr.tests.performance.EchoProxy;
 import joynr.tests.performance.Types.ComplexStruct;
+import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 
 public class ShortCircuitTest {
 
@@ -69,7 +71,13 @@ public class ShortCircuitTest {
         echoProxy = proxyBuilder.build();
 
         EchoProvider echoProvider = new EchoProviderImpl();
-        runtime.registerProvider(DOMAIN, echoProvider);
+
+        ProviderQos providerQos = new ProviderQos();
+
+        providerQos.setPriority(System.currentTimeMillis());
+        providerQos.setScope(ProviderScope.LOCAL);
+
+        runtime.registerProvider(DOMAIN, echoProvider, providerQos);
 
         // warmup
         for (int i = 0; i < 100; i++) {
