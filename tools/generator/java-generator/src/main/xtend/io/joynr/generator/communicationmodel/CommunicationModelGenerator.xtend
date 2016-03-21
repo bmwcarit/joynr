@@ -39,9 +39,6 @@ class CommunicationModelGenerator {
 
 	@Inject JavaTemplateFactory templateFactory
 
-	@Inject
-	MapTypeTemplate mapTemplate
-
 	def doGenerate(FModel fModel, IFileSystemAccess fsa){
 		for( type: getCompoundDataTypes(fModel)){
 			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
@@ -74,11 +71,11 @@ class CommunicationModelGenerator {
 			if (type.isPartOfTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
+			var mapTypeTemplate = templateFactory.createMapTypeTemplate(type)
 			generateFile(
 				fsa,
 				path + type.joynrName + ".java",
-				mapTemplate,
-				type
+				mapTypeTemplate
 			)
 		}
 	}

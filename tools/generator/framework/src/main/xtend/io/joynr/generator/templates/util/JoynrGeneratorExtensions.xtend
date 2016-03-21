@@ -35,7 +35,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FMapType
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModel
 import org.franca.core.franca.FModelElement
@@ -230,14 +229,13 @@ abstract class JoynrGeneratorExtensions {
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		MapTemplate generator,
-		FMapType mapType
+		MapTemplate generator
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate(mapType).toString);
+			fsa.generateFile(path, generator.generate.toString);
 		}
 	}
 

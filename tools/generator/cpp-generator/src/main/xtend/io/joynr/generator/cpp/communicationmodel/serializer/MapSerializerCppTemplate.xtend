@@ -17,6 +17,7 @@ package io.joynr.generator.cpp.communicationmodel.serializer
  * limitations under the License.
  */
 
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -25,7 +26,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FMapType
 
-class MapSerializerCppTemplate implements MapTemplate{
+class MapSerializerCppTemplate extends MapTemplate {
 
 	@Inject private extension JoynrCppGeneratorExtensions
 
@@ -35,7 +36,12 @@ class MapSerializerCppTemplate implements MapTemplate{
 
 	@Inject private extension TemplateBase
 
-	override generate(FMapType type)
+	@Inject
+	new(@Assisted FMapType type) {
+		super(type)
+	}
+
+	override generate()
 '''
 «val joynrName = type.joynrName»
 «val typeName = type.typeName»

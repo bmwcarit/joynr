@@ -17,6 +17,7 @@ package io.joynr.generator.cpp.communicationmodel
  * limitations under the License.
  */
 
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -25,7 +26,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FMapType
 
-class MapCppTemplate implements MapTemplate{
+class MapCppTemplate extends MapTemplate {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -39,7 +40,12 @@ class MapCppTemplate implements MapTemplate{
 	@Inject
 	private extension TemplateBase
 
-	override generate(FMapType type)
+	@Inject
+	new(@Assisted FMapType type) {
+		super(type)
+	}
+
+	override generate()
 '''
 «val typeName = type.joynrName»
 «warning()»

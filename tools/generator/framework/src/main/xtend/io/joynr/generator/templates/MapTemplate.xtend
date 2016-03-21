@@ -19,12 +19,16 @@ package io.joynr.generator.templates;
  * #L%
  */
 
-import org.franca.core.franca.FMapType;
+import org.franca.core.franca.FMapType
 
 /*
- * This interface shall be used by all generation templates which process a Franca map type
+ * This class shall be used by all generation templates which process a Franca map type
  */
-public interface MapTemplate {
-
-    public CharSequence generate(FMapType mapType);
+abstract class MapTemplate extends TypeTemplate {
+    protected FMapType type
+    
+    new(FMapType type) {
+        super(type)
+        this.type = type
+    }
 }

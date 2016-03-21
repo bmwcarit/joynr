@@ -26,8 +26,9 @@ import javax.inject.Inject
 import org.franca.core.franca.FMapType
 import org.franca.core.franca.FType
 import org.franca.core.franca.FBasicTypeId
+import com.google.inject.assistedinject.Assisted
 
-class MapHTemplate implements MapTemplate{
+class MapHTemplate extends MapTemplate {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -41,7 +42,12 @@ class MapHTemplate implements MapTemplate{
 	@Inject
 	private extension TemplateBase
 
-	override generate(FMapType type)
+	@Inject
+	new(@Assisted FMapType type) {
+		super(type)
+	}
+
+	override generate()
 '''
 «val typeName = type.joynrName»
 «val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_H").toUpperCase»

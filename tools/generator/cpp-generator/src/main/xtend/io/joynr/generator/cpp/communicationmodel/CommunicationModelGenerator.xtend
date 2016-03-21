@@ -18,9 +18,8 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerCppTemplate
-import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerHTemplate
 import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.cpp.util.CppTemplateFactory
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
@@ -29,7 +28,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModel
-import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class CommunicationModelGenerator {
 
@@ -38,13 +36,7 @@ class CommunicationModelGenerator {
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
 
-	@Inject MapHTemplate mapH;
-	@Inject MapCppTemplate mapCpp;
-
 	@Inject TypeDefHTemplate typeDefH;
-
-	@Inject MapSerializerHTemplate mapSerializerH;
-	@Inject MapSerializerCppTemplate mapSerializerCpp;
 
 	@Inject CppTemplateFactory templateFactory;
 
@@ -126,31 +118,31 @@ class CommunicationModelGenerator {
 			val headerFilename = headerpath + getGenerationTypeName(type)
 			val sourceFilename = sourcepath + getGenerationTypeName(type)
 
+			var mapHTemplate = templateFactory.createMapHTemplate(type)
 			generateFile(
 				headerFileSystem,
 				headerFilename + ".h",
-				mapH,
-				type
+				mapHTemplate
 			)
 
+			var mapCppTemplate = templateFactory.createMapCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourceFilename + ".cpp",
-				mapCpp,
-				type
+				mapCppTemplate
 			)
 
+			var mapSerializerHTemplate = templateFactory.createMapSerializerHTemplate(type)
 			generateFile(
 				headerFileSystem,
 				headerFilename + "Serializer.h",
-				mapSerializerH,
-				type
+				mapSerializerHTemplate
 			)
+			var mapSerializerCppTemplate = templateFactory.createMapSerializerCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourceFilename + "Serializer.cpp",
-				mapSerializerCpp,
-				type
+				mapSerializerCppTemplate
 			)
 		}
 
