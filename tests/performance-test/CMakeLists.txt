@@ -7,16 +7,8 @@ project(performance-test-0.17.0-SNAPSHOT)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# This flag will be set automatically by CMake based on "CMAKE_CXX_STANDARD" starting with version 3.1.0.
-# For older versions, this flag is set manually for gcc and clang:
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if("${CMAKE_VERSION}" VERSION_LESS 3.1.0)
-    if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-endif("${CMAKE_VERSION}" VERSION_LESS 3.1.0)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
+include(SetCppStandard)
 
 option(
     ENABLE_CLANG_FORMATTER
@@ -25,7 +17,6 @@ option(
 )
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cpp/CMake")
 include(AddClangFormat)
 
 if(ENABLE_CLANG_FORMATTER)

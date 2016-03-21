@@ -8,15 +8,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lib/)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-# set required C++ standard
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if("${CMAKE_VERSION}" VERSION_LESS 3.1.0)
-    if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-endif("${CMAKE_VERSION}" VERSION_LESS 3.1.0)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
+include(SetCppStandard)
 
 ##### cmake options #####################
 
@@ -44,7 +37,7 @@ message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
 ##### Start of build ####################
 
 include(../../cpp/tests/AddTest.cmake)
-include(../../cpp/CMake/AddExternalProject.cmake)
+include(AddExternalProject)
 
 # Pull in the Joynr configuration
 find_package(Joynr 0.17.0 REQUIRED)
@@ -61,7 +54,6 @@ if(${GENERATE_SOURCES})
 endif(${GENERATE_SOURCES})
 
 if(ENABLE_CLANG_FORMATTER)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cpp/CMake")
     include(LocateProgram)
     LocateProgram(clang-format CLANG_FORMAT_PATH)
     include(AddClangFormat)
