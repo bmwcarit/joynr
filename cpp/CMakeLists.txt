@@ -169,6 +169,7 @@ option(
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
 
 include(LocateProgram)
+include(AddClangFormat)
 
 #### BEGIN: Prevent install-target execution if platform dependencies are not used ####
 
@@ -183,25 +184,6 @@ if(NOT (USE_PLATFORM_SPDLOG AND USE_PLATFORM_JSMN AND (USE_PLATFORM_MOSQUITTO OR
 endif()
 
 #### END: Prevent install-target execution if platform dependencies are not used #####
-
-#### BEGIN clang-format ####
-
-option(
-    ENABLE_CLANG_FORMATTER
-    "Use clang-formatter to format source code?"
-    ON
-)
-
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
-
-if(${ENABLE_CLANG_FORMATTER})
-    LocateProgram(clang-format CLANG_FORMAT_PATH)
-    add_custom_target(format)
-endif(${ENABLE_CLANG_FORMATTER})
-
-include(AddClangFormat)
-#### END clang-format ####
-
 
 #### BEGIN include-what-you-use ####
 
@@ -221,7 +203,7 @@ if("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
     endif(${ENABLE_INCLUDE_WHAT_YOU_USE})
 
     set(INCLUDE_WHAT_YOU_USE_OPTIONS "" CACHE STRING "additional options for include-what-you-use")
-    
+
     set(INCLUDE_WHAT_YOU_USE_PATH_AND_OPTIONS
         ${INCLUDE_WHAT_YOU_USE_PATH}
         ${INCLUDE_WHAT_YOU_USE_OPTIONS}
@@ -369,7 +351,7 @@ IF(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
     message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
     message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
     message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
-    
+
 ELSE(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
 
     SET(BUILD_CLUSTER_CONTROLLER OFF)

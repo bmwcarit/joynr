@@ -9,21 +9,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
 include(SetCppStandard)
-
-option(
-    ENABLE_CLANG_FORMATTER
-    "Use clang-formatter to format source code?"
-    ON
-)
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
-
 include(AddClangFormat)
-
-if(ENABLE_CLANG_FORMATTER)
-    include(LocateProgram)
-    LocateProgram(clang-format CLANG_FORMAT_PATH)
-    add_custom_target(format)
-endif(ENABLE_CLANG_FORMATTER)
 
 ##### Start of build ####################
 

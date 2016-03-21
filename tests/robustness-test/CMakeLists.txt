@@ -14,13 +14,6 @@ include(SetCppStandard)
 ##### cmake options #####################
 
 option(
-    ENABLE_CLANG_FORMATTER
-    "Use clang-formatter to format source code?"
-    ON
-)
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
-
-option(
     GENERATE_SOURCES
     "Generate source files from Franca model?"
     OFF
@@ -53,12 +46,7 @@ if(${GENERATE_SOURCES})
     )
 endif(${GENERATE_SOURCES})
 
-if(ENABLE_CLANG_FORMATTER)
-    include(LocateProgram)
-    LocateProgram(clang-format CLANG_FORMAT_PATH)
-    include(AddClangFormat)
-    add_custom_target(format)
-endif(ENABLE_CLANG_FORMATTER)
+include(AddClangFormat)
 
 ######## Add Boost ########
 

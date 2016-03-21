@@ -8,6 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
 include(SetCppStandard)
+include(AddClangFormat)
 
 set(
     JOYNR_SERVER
@@ -16,21 +17,6 @@ set(
 )
 
 message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
-
-option(
-    ENABLE_CLANG_FORMATTER
-    "Use clang-formatter to format source code?"
-    ON
-)
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
-
-if(ENABLE_CLANG_FORMATTER)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cpp/CMake")
-    include(LocateProgram)
-    LocateProgram(clang-format CLANG_FORMAT_PATH)
-    include(AddClangFormat)
-    add_custom_target(format)
-endif(ENABLE_CLANG_FORMATTER)
 
 ##### Start of build ####################
 
@@ -180,8 +166,6 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
-
-
 # copy joynr executables
 file(
     COPY ${Joynr_EXECUTABLES}
@@ -259,19 +243,15 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
             RUNTIME DESTINATION bin COMPONENT bin
     )
 
-    if(ENABLE_CLANG_FORMATTER)
-        AddClangFormat(ilt-provider-dbus)
-        AddClangFormat(ilt-consumer-dbus)
-    endif(ENABLE_CLANG_FORMATTER)
+    AddClangFormat(ilt-provider-dbus)
+    AddClangFormat(ilt-consumer-dbus)
 
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-if(ENABLE_CLANG_FORMATTER)
-    AddClangFormat(ilt-provider-cc)
-    AddClangFormat(ilt-consumer-cc)
-    AddClangFormat(ilt-provider-ws)
-    AddClangFormat(ilt-consumer-ws)
-endif(ENABLE_CLANG_FORMATTER)
+AddClangFormat(ilt-provider-cc)
+AddClangFormat(ilt-consumer-cc)
+AddClangFormat(ilt-provider-ws)
+AddClangFormat(ilt-consumer-ws)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.dbus.settings)

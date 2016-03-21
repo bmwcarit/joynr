@@ -8,6 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
 include(SetCppStandard)
+include(AddClangFormat)
 
 set(
     JOYNR_SERVER
@@ -16,13 +17,6 @@ set(
 )
 
 message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
-
-option(
-    ENABLE_CLANG_FORMATTER
-    "Use clang-formatter to format source code?"
-    ON
-)
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
 option(
     GENERATE_SOURCES
@@ -58,13 +52,6 @@ if(${GENERATE_SOURCES})
         GENERATION_LANGUAGE "cpp"
     )
 endif(${GENERATE_SOURCES})
-
-if(ENABLE_CLANG_FORMATTER)
-    include(LocateProgram)
-    LocateProgram(clang-format CLANG_FORMAT_PATH)
-    include(AddClangFormat)
-    add_custom_target(format)
-endif(ENABLE_CLANG_FORMATTER)
 
 ######## Add Boost ########
 
@@ -196,8 +183,6 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
-
-
 # copy joynr executables
 file(
     COPY ${Joynr_EXECUTABLES}
@@ -240,12 +225,10 @@ install(TARGETS
         RUNTIME DESTINATION bin COMPONENT bin
 )
 
-if(ENABLE_CLANG_FORMATTER)
-    AddClangFormat(radio-app-provider-ws)
-    AddClangFormat(radio-app-consumer-ws)
-    AddClangFormat(radio-app-provider-cc)
-    AddClangFormat(radio-app-consumer-cc)
-endif(ENABLE_CLANG_FORMATTER)
+AddClangFormat(radio-app-provider-ws)
+AddClangFormat(radio-app-consumer-ws)
+AddClangFormat(radio-app-provider-cc)
+AddClangFormat(radio-app-consumer-cc)
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     # Compile the provider application (requires: Dbus and running cluster controller)
@@ -282,10 +265,8 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
             RUNTIME DESTINATION bin COMPONENT bin
     )
 
-    if(ENABLE_CLANG_FORMATTER)
-        AddClangFormat(radio-app-provider-dbus)
-        AddClangFormat(radio-app-provider-dbus)
-    endif(ENABLE_CLANG_FORMATTER)
+    AddClangFormat(radio-app-provider-dbus)
+    AddClangFormat(radio-app-provider-dbus)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 # Set Visual Studio to do parallel builds

@@ -8,6 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
 include(SetCppStandard)
+include(AddClangFormat)
 
 option(
     GENERATE_SOURCES
@@ -38,19 +39,6 @@ if(${GENERATE_SOURCES})
         GENERATION_LANGUAGE "cpp"
     )
 endif(${GENERATE_SOURCES})
-option(
-    ENABLE_CLANG_FORMATTER
-    "Use clang-formatter to format source code?"
-    ON
-)
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
-
-if(ENABLE_CLANG_FORMATTER)
-    include(LocateProgram)
-    LocateProgram(clang-format CLANG_FORMAT_PATH)
-    include(AddClangFormat)
-    add_custom_target(format)
-endif(ENABLE_CLANG_FORMATTER)
 
 ##### Helper variables for using generated code ###########
 file(
@@ -156,7 +144,5 @@ install(
     RUNTIME DESTINATION bin
 )
 
-if(ENABLE_CLANG_FORMATTER)
-    AddClangFormat(jsit-consumer-ws)
-    AddClangFormat(jsit-provider-ws)
-endif(ENABLE_CLANG_FORMATTER)
+AddClangFormat(jsit-consumer-ws)
+AddClangFormat(jsit-provider-ws)
