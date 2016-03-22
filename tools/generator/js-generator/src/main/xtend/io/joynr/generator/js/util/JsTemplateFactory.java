@@ -21,8 +21,11 @@ package io.joynr.generator.js.util;
 
 import org.franca.core.franca.FInterface;
 
+import io.joynr.generator.js.provider.ProviderGenerator;
 import io.joynr.generator.js.proxy.ProxyGenerator;
 
 public interface JsTemplateFactory {
     ProxyGenerator createProxyGenerator(FInterface francaIntf);
+
+    ProviderGenerator createProviderGenerator(FInterface francaIntf);
 }

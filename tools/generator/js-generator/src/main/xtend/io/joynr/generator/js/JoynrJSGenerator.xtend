@@ -23,7 +23,6 @@ import com.google.inject.assistedinject.FactoryModuleBuilder
 import io.joynr.generator.AbstractJoynrGenerator
 import io.joynr.generator.js.communicationmodel.ErrorEnumTypesGenerator
 import io.joynr.generator.js.communicationmodel.TypesGenerator
-import io.joynr.generator.js.provider.ProviderGenerator
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JsTemplateFactory
 import java.util.HashSet
@@ -43,7 +42,6 @@ class JoynrJSGenerator extends AbstractJoynrGenerator {
 	@Inject private FrancaPersistenceManager francaPersistenceManager
 	@Inject private GeneratorParameter parameters
 	@Inject JsTemplateFactory templateFactory
-	@Inject private extension ProviderGenerator
 	@Inject private extension TypesGenerator
 	@Inject private extension ErrorEnumTypesGenerator
 
@@ -68,9 +66,10 @@ class JoynrJSGenerator extends AbstractJoynrGenerator {
 		for (francaIntf : fModel.interfaces) {
 			var proxyGenerator = templateFactory.createProxyGenerator(francaIntf)
 			proxyGenerator.generateProxy(fsa)
+			var providerGenerator = templateFactory.createProviderGenerator(francaIntf)
+			providerGenerator.generateProvider(fsa)
 		}
 		fModel.interfaces.forEach[
-			generateProvider(fsa)
 			generateErrorEnumTypes(types, fsa)
 		]
 
