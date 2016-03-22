@@ -122,6 +122,8 @@ import io.joynr.provider.JoynrProvider;
 
 public interface «className» extends JoynrProvider {
 	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
+	public static final int MAJOR_VERSION = «majorVersion»;
+	public static final int MINOR_VERSION = «minorVersion»;
 	«FOR attribute : getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
