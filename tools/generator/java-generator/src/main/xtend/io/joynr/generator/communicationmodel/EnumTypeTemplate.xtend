@@ -66,6 +66,8 @@ public enum «typeName» {
 	«enumValue.joynrName»
 	«ENDFOR»;
 
+	public static final int MAJOR_VERSION = «majorVersion»;
+	public static final int MINOR_VERSION = «minorVersion»;
 	static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
 
 	static{
