@@ -31,18 +31,6 @@ using namespace joynr;
 
 class SystemServicesRoutingTest : public ::testing::Test {
 public:
-    std::string settingsFilename;
-    Settings* settings;
-    std::string routingDomain;
-    std::string routingProviderParticipantId;
-    JoynrClusterControllerRuntime* runtime;
-    IMessageReceiver* mockMessageReceiverHttp;
-    IMessageReceiver* mockMessageReceiverMqtt;
-    MockMessageSender* mockMessageSender;
-    DiscoveryQos discoveryQos;
-    ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
-    joynr::system::RoutingProxy* routingProxy;
-
     SystemServicesRoutingTest() :
             settingsFilename("test-resources/SystemServicesRoutingTest.settings"),
             settings(new Settings(settingsFilename)),
@@ -94,6 +82,7 @@ public:
     }
 
     void SetUp(){
+        participantId = util::createUuid();
         routingProxyBuilder = runtime
                 ->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
     }
@@ -104,7 +93,21 @@ public:
         delete routingProxy;
         delete routingProxyBuilder;
     }
-
+    
+protected:
+    std::string settingsFilename;
+    Settings* settings;
+    std::string routingDomain;
+    std::string routingProviderParticipantId;
+    JoynrClusterControllerRuntime* runtime;
+    IMessageReceiver* mockMessageReceiverHttp;
+    IMessageReceiver* mockMessageReceiverMqtt;
+    MockMessageSender* mockMessageSender;
+    DiscoveryQos discoveryQos;
+    ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
+    joynr::system::RoutingProxy* routingProxy;
+    std::string participantId;
+    
 private:
     DISALLOW_COPY_AND_ASSIGN(SystemServicesRoutingTest);
 };
@@ -129,7 +132,6 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     bool isResolvable = false;
     try {
         routingProxy->resolveNextHop(isResolvable, participantId);
@@ -148,7 +150,6 @@ TEST_F(SystemServicesRoutingTest, addNextHopHttp)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
@@ -180,7 +181,6 @@ TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
@@ -225,7 +225,6 @@ TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     joynr::system::RoutingTypes::MqttAddress address("brokerUri", "SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
@@ -257,7 +256,6 @@ TEST_F(SystemServicesRoutingTest, removeNextHopMqtt)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     joynr::system::RoutingTypes::MqttAddress address("brokerUri", "SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
