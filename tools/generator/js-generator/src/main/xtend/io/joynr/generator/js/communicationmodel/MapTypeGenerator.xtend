@@ -19,14 +19,16 @@ package io.joynr.generator.js.communicationmodel
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
+import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import org.franca.core.franca.FMapType
-import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 
-class MapTypeGenerator {
+class MapTypeGenerator extends MapTemplate {
 
 	@Inject extension JSTypeUtil
 	@Inject private extension NamingUtil
@@ -35,7 +37,12 @@ class MapTypeGenerator {
 	@Inject
 	extension GeneratorParameter
 
-	def generate(FMapType type) '''
+	@Inject
+	new(@Assisted FMapType type) {
+		super(type)
+	}
+
+	override generate() '''
 	«val generationDate = (new Date()).toString»
 	/**
 	 * This is the generated map type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION

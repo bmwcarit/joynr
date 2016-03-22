@@ -29,15 +29,16 @@ import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FType
 import org.franca.core.franca.FMapType
 import io.joynr.generator.templates.util.TypeUtil
+import io.joynr.generator.js.util.JsTemplateFactory
 
 class TypesGenerator {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension EnumTypeGenerator
 	@Inject extension CompoundTypeGenerator
-	@Inject extension MapTypeGenerator
 	@Inject extension TypeUtil
 	@Inject private extension NamingUtil
+	@Inject JsTemplateFactory templateFactory
 
 	def generateTypes(Iterable<FType> types, IFileSystemAccess fsa) {
 		var generatedTypes = new HashSet<Object>;
@@ -64,7 +65,8 @@ class TypesGenerator {
 		} else if (type instanceof FCompoundType) {
 			generateCompoundType(type, generatedTypes)
 		} else if (type instanceof FMapType) {
-			generate(type)
+			var mapTypeGenerator = templateFactory.createMapTypeGenerator(type)
+			mapTypeGenerator.generate()
 		}
 	}
 }
