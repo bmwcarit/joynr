@@ -49,7 +49,9 @@ class InterfaceProxyTemplate extends InterfaceTemplate {
 		package «packagePath»;
 
 		public interface «className» extends «asyncClassName», «syncClassName»«IF francaIntf.attributes.size>0», «subscriptionClassName»«ENDIF»«IF francaIntf.broadcasts.size>0», «broadcastClassName»«ENDIF» {
-		    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
+			public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
+			public static final int MAJOR_VERSION = «majorVersion»;
+			public static final int MINOR_VERSION = «minorVersion»;
 		}
 		'''
 	}
