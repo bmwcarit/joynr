@@ -1,5 +1,7 @@
 package io.joynr.generator.js.communicationmodel;
 
+import io.joynr.generator.js.util.JsTemplateFactory;
+
 /*
  * #%L
  * %%
@@ -31,6 +33,7 @@ import org.junit.Test;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 
 public class CompoundTypeGeneratorTest {
@@ -51,17 +54,19 @@ public class CompoundTypeGeneratorTest {
         field.setType(typeRef);
         structType.getElements().add(field);
 
-        CompoundTypeGenerator generator = Guice.createInjector(new AbstractModule() {
+        JsTemplateFactory templateFactory = Guice.createInjector(new AbstractModule() {
 
             @Override
             protected void configure() {
+                install(new FactoryModuleBuilder().build(JsTemplateFactory.class));
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
                                    .toInstance(true);
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
                                    .toInstance(false);
             }
-        }).getInstance(CompoundTypeGenerator.class);
-        generator.generate(structType);
+        }).getInstance(JsTemplateFactory.class);
+        CompoundTypeGenerator generator = templateFactory.createCompoundTypeGenerator(structType);
+        generator.generate();
     }
 
 }

@@ -34,7 +34,6 @@ class TypesGenerator {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension EnumTypeGenerator
-	@Inject extension CompoundTypeGenerator
 	@Inject extension TypeUtil
 	@Inject private extension NamingUtil
 	@Inject JsTemplateFactory templateFactory
@@ -60,7 +59,8 @@ class TypesGenerator {
 		if (type instanceof FEnumerationType) {
 			generateEnumType(type)
 		} else if (type instanceof FCompoundType) {
-			generate(type)
+			var compoundTypeGenerator = templateFactory.createCompoundTypeGenerator(type)
+			compoundTypeGenerator.generate()
 		} else if (type instanceof FMapType) {
 			var mapTypeGenerator = templateFactory.createMapTypeGenerator(type)
 			mapTypeGenerator.generate()

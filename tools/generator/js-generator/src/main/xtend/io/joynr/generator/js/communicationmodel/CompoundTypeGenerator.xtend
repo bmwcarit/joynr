@@ -20,16 +20,18 @@ package io.joynr.generator.js.communicationmodel
 
 import com.google.common.collect.Sets
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FStructType
 import org.franca.core.franca.FUnionType
 
-class CompoundTypeGenerator {
+class CompoundTypeGenerator extends CompoundTypeTemplate {
 
 	@Inject extension JSTypeUtil
 	@Inject extension GeneratorParameter
@@ -38,14 +40,19 @@ class CompoundTypeGenerator {
 
 	static var generatedTypes = Sets.newHashSet()
 
-	def generate(FCompoundType compoundType) '''
-		«IF !generatedTypes.contains(compoundType)»
-			«IF compoundType instanceof FStructType»
-				«generateStructType(compoundType)»
-			«ELSEIF compoundType instanceof FUnionType»
-				«generateUnionType(compoundType as FUnionType)»
+	@Inject
+	new(@Assisted FCompoundType type) {
+		super(type)
+	}
+
+	override generate() '''
+		«IF !generatedTypes.contains(type)»
+			«IF type instanceof FStructType»
+				«generateStructType(type)»
+			«ELSEIF type instanceof FUnionType»
+				«generateUnionType(type as FUnionType)»
 			«ENDIF»
-			«generatedTypes.add(compoundType)»
+			«generatedTypes.add(type)»
 		«ENDIF»
 	'''
 
