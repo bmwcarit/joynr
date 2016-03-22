@@ -70,7 +70,7 @@ class JoynrJSGenerator extends AbstractJoynrGenerator {
 			proxyGenerator.generateProxy(fsa)
 		}
 		fModel.interfaces.forEach[
-			generateProvider(types, fsa)
+			generateProvider(fsa)
 			generateErrorEnumTypes(types, fsa)
 		]
 

@@ -31,7 +31,6 @@ import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
-import org.franca.core.franca.FType
 
 class ProviderGenerator {
 
@@ -53,7 +52,7 @@ class ProviderGenerator {
 		return relativePath
 	}
 
-	def generateProvider(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
+	def generateProvider(FInterface fInterface, IFileSystemAccess fsa){
 		var containerpath = File::separator
 		val packagePath = getPackagePathWithJoynrPrefix(fInterface, File::separator)
 		val path = containerpath + packagePath + File::separator
@@ -67,7 +66,7 @@ class ProviderGenerator {
 		if (generate) {
 			fsa.generateFile(
 				fileName,
-				generate(fInterface, types).toString
+				generate(fInterface).toString
 			)
 		}
 	}
@@ -76,7 +75,7 @@ class ProviderGenerator {
 		fInterface.joynrName + "Provider"
 	}
 
-	def generate(FInterface fInterface, Iterable<FType> types)'''
+	def generate(FInterface fInterface)'''
 	«val generationDate = (new Date()).toString»
 	/*
 	 * PLEASE NOTE. THIS IS A GENERATED FILE!
