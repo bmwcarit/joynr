@@ -60,7 +60,7 @@ class TypesGenerator {
 		if (type instanceof FEnumerationType) {
 			generateEnumType(type)
 		} else if (type instanceof FCompoundType) {
-			generateCompoundType(type)
+			generate(type)
 		} else if (type instanceof FMapType) {
 			var mapTypeGenerator = templateFactory.createMapTypeGenerator(type)
 			mapTypeGenerator.generate()

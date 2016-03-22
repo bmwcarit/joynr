@@ -38,7 +38,7 @@ class CompoundTypeGenerator {
 
 	static var generatedTypes = Sets.newHashSet()
 
-	def generateCompoundType(FCompoundType compoundType) '''
+	def generate(FCompoundType compoundType) '''
 		«IF !generatedTypes.contains(compoundType)»
 			«IF compoundType instanceof FStructType»
 				«generateStructType(compoundType)»

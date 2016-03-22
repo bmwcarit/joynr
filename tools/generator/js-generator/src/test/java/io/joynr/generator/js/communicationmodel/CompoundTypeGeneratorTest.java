@@ -61,7 +61,7 @@ public class CompoundTypeGeneratorTest {
                                    .toInstance(false);
             }
         }).getInstance(CompoundTypeGenerator.class);
-        generator.generateCompoundType(structType);
+        generator.generate(structType);
     }
 
 }
