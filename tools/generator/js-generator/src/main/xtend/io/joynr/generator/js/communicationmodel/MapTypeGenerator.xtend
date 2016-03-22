@@ -35,7 +35,7 @@ class MapTypeGenerator {
 	@Inject
 	extension GeneratorParameter
 
-	def generateMapType(FMapType type) '''
+	def generate(FMapType type) '''
 	«val generationDate = (new Date()).toString»
 	/**
 	 * This is the generated map type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION

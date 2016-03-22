@@ -64,7 +64,7 @@ class TypesGenerator {
 		} else if (type instanceof FCompoundType) {
 			generateCompoundType(type, generatedTypes)
 		} else if (type instanceof FMapType) {
-			generateMapType(type)
+			generate(type)
 		}
 	}
 }
