@@ -68,6 +68,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @SuppressWarnings("serial")
 public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.extendedType.typeName»«ENDIF» implements Serializable, JoynrType {
+	public static final int MAJOR_VERSION = «majorVersion»;
+	public static final int MINOR_VERSION = «minorVersion»;
 	«FOR member : getMembers(type)»
 	«val memberType = member.typeName.replace("::","__")»
 	@JsonProperty("«member.joynrName»")
