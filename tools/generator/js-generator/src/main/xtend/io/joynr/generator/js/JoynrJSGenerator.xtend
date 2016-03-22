@@ -56,7 +56,7 @@ class JoynrJSGenerator extends AbstractJoynrGenerator {
 		val fModel = input.contents.get(0) as FModel //francaPersistenceManager.loadModel(input.URI, input.URI)
 		val types = findAllFTypes(input)
 		fModel.interfaces.forEach[
-			generateProxy(types, fsa)
+			generateProxy(fsa)
 			generateProvider(types, fsa)
 			generateErrorEnumTypes(types, fsa)
 		]

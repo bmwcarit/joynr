@@ -52,7 +52,7 @@ class ProxyGenerator {
 		return relativePath
 	}
 
-	def generateProxy(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
+	def generateProxy(FInterface fInterface, IFileSystemAccess fsa){
 		var containerpath = File::separator //+ "generated" + File::separator
 
 		val packagePath = getPackagePathWithJoynrPrefix(fInterface, File::separator)
@@ -66,7 +66,7 @@ class ProxyGenerator {
 		if (generate) {
 			fsa.generateFile(
 				fileName,
-				generate(fInterface, types).toString
+				generate(fInterface).toString
 			)
 		}
 	}
@@ -75,7 +75,7 @@ class ProxyGenerator {
 		fInterface.joynrName + "Proxy"
 	}
 
-	def generate(FInterface fInterface, Iterable<FType> types)'''
+	def generate(FInterface fInterface)'''
 	«val generationDate = (new Date()).toString»
 	/**
 	 * PLEASE NOTE: THIS IS A GENERATED FILE!
