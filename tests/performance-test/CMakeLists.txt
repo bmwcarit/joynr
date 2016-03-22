@@ -86,6 +86,8 @@ add_subdirectory(src/main/cpp/short-circuit)
 
 add_subdirectory(src/main/cpp/serializer)
 
+add_subdirectory(src/main/cpp/memory-usage)
+
 # copy joynr resources and settings
 file(
     COPY ${Joynr_RESOURCES_DIR}
