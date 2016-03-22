@@ -20,10 +20,12 @@ package io.joynr.generator.js.util;
  */
 
 import org.franca.core.franca.FCompoundType;
+import org.franca.core.franca.FEnumerationType;
 import org.franca.core.franca.FInterface;
 import org.franca.core.franca.FMapType;
 
 import io.joynr.generator.js.communicationmodel.CompoundTypeGenerator;
+import io.joynr.generator.js.communicationmodel.EnumTypeGenerator;
 import io.joynr.generator.js.communicationmodel.MapTypeGenerator;
 import io.joynr.generator.js.provider.ProviderGenerator;
 import io.joynr.generator.js.proxy.ProxyGenerator;
@@ -36,4 +38,6 @@ public interface JsTemplateFactory {
     MapTypeGenerator createMapTypeGenerator(FMapType type);
 
     CompoundTypeGenerator createCompoundTypeGenerator(FCompoundType type);
+
+    EnumTypeGenerator createEnumTypeGenerator(FEnumerationType type);
 }

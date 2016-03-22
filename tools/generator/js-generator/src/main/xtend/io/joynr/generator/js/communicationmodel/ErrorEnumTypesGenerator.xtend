@@ -26,6 +26,7 @@ import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
+import io.joynr.generator.js.util.JsTemplateFactory
 
 class ErrorEnumTypesGenerator {
 
@@ -33,8 +34,7 @@ class ErrorEnumTypesGenerator {
 	@Inject extension NamingUtil
 	@Inject extension InterfaceUtil
 
-	@Inject
-	extension EnumTypeGenerator
+	@Inject JsTemplateFactory templateFactory
 
 	def generateErrorEnumTypes(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
 		var methodToErrorEnumName = fInterface.methodToErrorEnumName
@@ -49,9 +49,10 @@ class ErrorEnumTypesGenerator {
 					fsa.deleteFile(fileName)
 				}
 				if (generate) {
+					var enumTypeGenerator = templateFactory.createEnumTypeGenerator(enumType)
 					fsa.generateFile(
 						fileName,
-						generate(enumType)
+						enumTypeGenerator.generate()
 					)
 				}
 			}

@@ -25,8 +25,10 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import org.franca.core.franca.FEnumerationType
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.EnumTemplate
+import com.google.inject.assistedinject.Assisted
 
-class EnumTypeGenerator {
+class EnumTypeGenerator extends EnumTemplate {
 
 	@Inject extension JSTypeUtil
 	@Inject private extension NamingUtil
@@ -35,7 +37,12 @@ class EnumTypeGenerator {
 	@Inject
 	extension GeneratorParameter
 
-	def generate(FEnumerationType type) '''
+	@Inject
+	new(@Assisted FEnumerationType type) {
+		super(type)
+	}
+
+	override generate() '''
 	«val generationDate = (new Date()).toString»
 	/**
 	 * This is the generated enum type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
@@ -77,7 +84,7 @@ class EnumTypeGenerator {
 		};
 
 		var createLiterals = function() {
-			«getEnumerators(type)»
+			«getEnumerators()»
 		};
 
 		«IF requireJSSupport»
@@ -122,7 +129,7 @@ class EnumTypeGenerator {
 	})();
 	'''
 
-	def getEnumerators(FEnumerationType type)'''
+	def getEnumerators()'''
 	«FOR enumValue: getEnumElementsAndBaseEnumElements(type)»
 		/**
 		 * @name «type.joynrName».«enumValue.joynrName»

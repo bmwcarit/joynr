@@ -33,7 +33,6 @@ import org.franca.core.franca.FType
 class TypesGenerator {
 
 	@Inject extension JoynrJSGeneratorExtensions
-	@Inject extension EnumTypeGenerator
 	@Inject extension TypeUtil
 	@Inject private extension NamingUtil
 	@Inject JsTemplateFactory templateFactory
@@ -57,7 +56,8 @@ class TypesGenerator {
 
 	def generateType(FType type) {
 		if (type instanceof FEnumerationType) {
-			generate(type)
+			var enumTypeGenerator = templateFactory.createEnumTypeGenerator(type)
+			enumTypeGenerator.generate()
 		} else if (type instanceof FCompoundType) {
 			var compoundTypeGenerator = templateFactory.createCompoundTypeGenerator(type)
 			compoundTypeGenerator.generate()
