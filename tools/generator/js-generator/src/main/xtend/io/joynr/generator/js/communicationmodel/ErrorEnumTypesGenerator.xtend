@@ -51,7 +51,7 @@ class ErrorEnumTypesGenerator {
 				if (generate) {
 					fsa.generateFile(
 						fileName,
-						generateEnumType(enumType)
+						generate(enumType)
 					)
 				}
 			}

@@ -35,7 +35,7 @@ class EnumTypeGenerator {
 	@Inject
 	extension GeneratorParameter
 
-	def generateEnumType(FEnumerationType type) '''
+	def generate(FEnumerationType type) '''
 	«val generationDate = (new Date()).toString»
 	/**
 	 * This is the generated enum type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION

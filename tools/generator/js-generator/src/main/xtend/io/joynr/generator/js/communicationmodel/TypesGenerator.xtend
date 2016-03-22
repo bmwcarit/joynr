@@ -57,7 +57,7 @@ class TypesGenerator {
 
 	def generateType(FType type) {
 		if (type instanceof FEnumerationType) {
-			generateEnumType(type)
+			generate(type)
 		} else if (type instanceof FCompoundType) {
 			var compoundTypeGenerator = templateFactory.createCompoundTypeGenerator(type)
 			compoundTypeGenerator.generate()
