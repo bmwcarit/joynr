@@ -1,7 +1,7 @@
 #joynr 0.17.0
 
 ##API relevant changes
-* **[C++, Java]** Provider and proxy interfaces as well as generated types (structs, enums and maps)
+* **[C++, Java, JS]** Provider and proxy interfaces as well as generated types (structs, enums and maps)
   provide version constants (`MAJOR_VERSION` and `MINOR_VERSION`) to reflect the version set in the
   Franca interface or type collection. Thus, setters for provider version have been removed from
   the API of the provider qos.
