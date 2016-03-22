@@ -18,12 +18,14 @@ package io.joynr.generator.js
  * limitations under the License.
  */
 
+import com.google.inject.AbstractModule
+import com.google.inject.assistedinject.FactoryModuleBuilder
 import io.joynr.generator.AbstractJoynrGenerator
 import io.joynr.generator.js.communicationmodel.ErrorEnumTypesGenerator
 import io.joynr.generator.js.communicationmodel.TypesGenerator
 import io.joynr.generator.js.provider.ProviderGenerator
-import io.joynr.generator.js.proxy.ProxyGenerator
 import io.joynr.generator.js.util.GeneratorParameter
+import io.joynr.generator.js.util.JsTemplateFactory
 import java.util.HashSet
 import java.util.Map
 import javax.inject.Inject
@@ -40,7 +42,7 @@ class JoynrJSGenerator extends AbstractJoynrGenerator {
 
 	@Inject private FrancaPersistenceManager francaPersistenceManager
 	@Inject private GeneratorParameter parameters
-	@Inject private extension ProxyGenerator
+	@Inject JsTemplateFactory templateFactory
 	@Inject private extension ProviderGenerator
 	@Inject private extension TypesGenerator
 	@Inject private extension ErrorEnumTypesGenerator
@@ -49,14 +51,25 @@ class JoynrJSGenerator extends AbstractJoynrGenerator {
 		"javascript"
 	}
 
+	override getGeneratorModule() {
+		new AbstractModule() {
+			override protected configure() {
+				install(new FactoryModuleBuilder().build(JsTemplateFactory))
+			}
+		}
+	}
+
 	override doGenerate(Resource input, IFileSystemAccess fsa) {
 		val isFrancaIDLResource = input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)
 		checkArgument(isFrancaIDLResource, "Unknown input: " + input)
 
 		val fModel = input.contents.get(0) as FModel //francaPersistenceManager.loadModel(input.URI, input.URI)
 		val types = findAllFTypes(input)
+		for (francaIntf : fModel.interfaces) {
+			var proxyGenerator = templateFactory.createProxyGenerator(francaIntf)
+			proxyGenerator.generateProxy(fsa)
+		}
 		fModel.interfaces.forEach[
-			generateProxy(fsa)
 			generateProvider(types, fsa)
 			generateErrorEnumTypes(types, fsa)
 		]
