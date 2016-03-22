@@ -70,6 +70,8 @@ import «getIncludeOf(valueType)»;
  */
 @SuppressWarnings("serial")
 public class «typeName» extends HashMap<«type.keyType.typeName», «type.valueType.typeName»> implements JoynrType {
+    public static final int MAJOR_VERSION = «majorVersion»;
+    public static final int MINOR_VERSION = «minorVersion»;
     public «typeName»() {
         super();
     }
