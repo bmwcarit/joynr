@@ -18,13 +18,13 @@ package io.joynr.generator.js.communicationmodel
  * limitations under the License.
  */
 
+import com.google.common.collect.Sets
 import com.google.inject.Inject
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
-import java.util.Set
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FStructType
 import org.franca.core.franca.FUnionType
@@ -36,20 +36,18 @@ class CompoundTypeGenerator {
 	@Inject private extension NamingUtil
 	@Inject private extension JoynrJSGeneratorExtensions
 
-	def generateCompoundType(FCompoundType compoundType, Set<Object> generatedTypes) '''
+	static var generatedTypes = Sets.newHashSet()
+
+	def generateCompoundType(FCompoundType compoundType) '''
 		«IF !generatedTypes.contains(compoundType)»
 			«IF compoundType instanceof FStructType»
 				«generateStructType(compoundType)»
 			«ELSEIF compoundType instanceof FUnionType»
 				«generateUnionType(compoundType as FUnionType)»
 			«ENDIF»
-			«generatedTypes.updateGeneratedTypesSet(compoundType)»
+			«generatedTypes.add(compoundType)»
 		«ENDIF»
 	'''
-
-	def private void updateGeneratedTypesSet(Set<Object> generatedTypes, Object newType) {
-		generatedTypes.add(newType)
-	}
 
 	def generateUnionType(FUnionType type) '''
 		//TODO generate union type «type.joynrName»

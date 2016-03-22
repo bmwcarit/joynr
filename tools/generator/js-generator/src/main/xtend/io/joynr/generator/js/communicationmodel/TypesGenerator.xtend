@@ -20,16 +20,15 @@ package io.joynr.generator.js.communicationmodel
 
 import com.google.inject.Inject
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.js.util.JsTemplateFactory
 import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.templates.util.TypeUtil
 import java.io.File
-import java.util.HashSet
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
-import org.franca.core.franca.FType
 import org.franca.core.franca.FMapType
-import io.joynr.generator.templates.util.TypeUtil
-import io.joynr.generator.js.util.JsTemplateFactory
+import org.franca.core.franca.FType
 
 class TypesGenerator {
 
@@ -41,8 +40,6 @@ class TypesGenerator {
 	@Inject JsTemplateFactory templateFactory
 
 	def generateTypes(Iterable<FType> types, IFileSystemAccess fsa) {
-		var generatedTypes = new HashSet<Object>;
-
 		for (type : filterComplex(types)) {
 			val path = type.buildPackagePath(File::separator, true)
 
@@ -53,17 +50,17 @@ class TypesGenerator {
 			if (generate) {
 				fsa.generateFile(
 					fileName,
-					generateType(type, generatedTypes)
+					generateType(type)
 				)
 			}
 		}
 	}
 
-	def generateType(FType type, HashSet<Object> generatedTypes) {
+	def generateType(FType type) {
 		if (type instanceof FEnumerationType) {
 			generateEnumType(type)
 		} else if (type instanceof FCompoundType) {
-			generateCompoundType(type, generatedTypes)
+			generateCompoundType(type)
 		} else if (type instanceof FMapType) {
 			var mapTypeGenerator = templateFactory.createMapTypeGenerator(type)
 			mapTypeGenerator.generate()

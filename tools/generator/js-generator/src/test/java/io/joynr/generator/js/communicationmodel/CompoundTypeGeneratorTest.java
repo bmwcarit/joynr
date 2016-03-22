@@ -29,7 +29,6 @@ import org.franca.core.franca.FTypeRef;
 import org.franca.core.franca.FrancaFactory;
 import org.junit.Test;
 
-import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.name.Names;
@@ -62,7 +61,7 @@ public class CompoundTypeGeneratorTest {
                                    .toInstance(false);
             }
         }).getInstance(CompoundTypeGenerator.class);
-        generator.generateCompoundType(structType, Sets.newHashSet());
+        generator.generateCompoundType(structType);
     }
 
 }
