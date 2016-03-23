@@ -113,7 +113,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         Lookup2Deferred deferred = new Lookup2Deferred();
         logger.debug("Searching discovery entries for participantId: {}", forParticipantId);
         DiscoveryEntry discoveryEntry = discoveryEntryStore.lookup(forParticipantId,
-                                                                   DiscoveryQos.NO_FILTER.getCacheMaxAge());
+                                                                   DiscoveryQos.NO_FILTER.getCacheMaxAgeMs());
         if (discoveryEntry == null) {
             deferred.resolve(null);
         } else {

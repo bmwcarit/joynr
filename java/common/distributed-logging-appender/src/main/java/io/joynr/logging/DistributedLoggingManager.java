@@ -55,8 +55,8 @@ public class DistributedLoggingManager extends AbstractManager {
         this.flushPeriodSeconds = flushPeriodSeconds;
 
         DiscoveryQos discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryTimeout(discoveryTtlMs);
-        discoveryQos.setCacheMaxAge(Long.MAX_VALUE);
+        discoveryQos.setDiscoveryTimeoutMs(discoveryTtlMs);
+        discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
 
         ProxyBuilder<LoggingProxy> proxyBuilder = runtime.getProxyBuilder(domain, LoggingProxy.class);

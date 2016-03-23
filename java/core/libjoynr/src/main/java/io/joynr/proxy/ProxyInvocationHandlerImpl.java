@@ -142,7 +142,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 return true;
             }
 
-            return connectorSuccessfullyFinished.await(discoveryQos.getDiscoveryTimeout(), TimeUnit.MILLISECONDS);
+            return connectorSuccessfullyFinished.await(discoveryQos.getDiscoveryTimeoutMs(), TimeUnit.MILLISECONDS);
 
         } finally {
             connectorStatusLock.unlock();

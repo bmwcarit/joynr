@@ -138,7 +138,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (localCapabilitiesStore.hasCapability(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry, globalAddress))) {
             DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.LOCAL_AND_GLOBAL, DiscoveryQos.NO_MAX_AGE);
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
-                    || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(), discoveryQos.getCacheMaxAge()) != null) {
+                    || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(), discoveryQos.getCacheMaxAgeMs()) != null) {
                 // in this case, no further need for global registration is required. Registration completed.
                 deferred.resolve();
                 return new Promise<>(deferred);
@@ -228,14 +228,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             } else {
                 globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domain,
                                                                           interfaceName,
-                                                                          discoveryQos.getCacheMaxAge());
+                                                                          discoveryQos.getCacheMaxAgeMs());
                 if (globalDiscoveryEntries.size() > 0) {
                     capabilitiesCallback.processCapabilitiesReceived(globalDiscoveryEntries);
                 } else {
                     asyncGetGlobalCapabilitities(domain,
                                                  interfaceName,
                                                  null,
-                                                 discoveryQos.getDiscoveryTimeout(),
+                                                 discoveryQos.getDiscoveryTimeoutMs(),
                                                  capabilitiesCallback);
                 }
             }
@@ -243,7 +243,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         case GLOBAL_ONLY:
             globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domain,
                                                                       interfaceName,
-                                                                      discoveryQos.getCacheMaxAge());
+                                                                      discoveryQos.getCacheMaxAgeMs());
             if (globalDiscoveryEntries.size() > 0) {
                 capabilitiesCallback.processCapabilitiesReceived(globalDiscoveryEntries);
             } else {
@@ -251,14 +251,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 asyncGetGlobalCapabilitities(domain,
                                              interfaceName,
                                              null,
-                                             discoveryQos.getDiscoveryTimeout(),
+                                             discoveryQos.getDiscoveryTimeoutMs(),
                                              capabilitiesCallback);
             }
             break;
         case LOCAL_AND_GLOBAL:
             globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domain,
                                                                       interfaceName,
-                                                                      discoveryQos.getCacheMaxAge());
+                                                                      discoveryQos.getCacheMaxAgeMs());
             if (globalDiscoveryEntries.size() > 0) {
                 for (CapabilityEntry capabilityEntry : localCapabilities) {
                     GlobalDiscoveryEntry discoveryEntry = CapabilityUtils.capabilityEntry2GlobalDiscoveryEntry(capabilityEntry);
@@ -272,7 +272,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 asyncGetGlobalCapabilitities(domain,
                                              interfaceName,
                                              localCapabilities,
-                                             discoveryQos.getDiscoveryTimeout(),
+                                             discoveryQos.getDiscoveryTimeoutMs(),
                                              capabilitiesCallback);
             }
             break;
@@ -289,7 +289,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                        final CapabilityCallback capabilityCallback) {
 
         final CapabilityEntry localCapability = localCapabilitiesStore.lookup(participantId,
-                                                                              discoveryQos.getCacheMaxAge());
+                                                                              discoveryQos.getCacheMaxAgeMs());
 
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         switch (discoveryScope) {
@@ -363,7 +363,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                             final CapabilityCallback capabilitiesCallback) {
 
         DiscoveryEntry cachedGlobalCapability = globalDiscoveryEntryCache.lookup(participantId,
-                                                                                 discoveryQos.getCacheMaxAge());
+                                                                                 discoveryQos.getCacheMaxAgeMs());
 
         if (cachedGlobalCapability != null) {
             capabilitiesCallback.processCapabilityReceived(cachedGlobalCapability);
@@ -386,7 +386,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     capabilitiesCallback.onError((Exception) exception);
 
                 }
-            }, participantId, discoveryQos.getDiscoveryTimeout());
+            }, participantId, discoveryQos.getDiscoveryTimeoutMs());
         }
 
     }

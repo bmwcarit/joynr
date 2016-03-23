@@ -32,21 +32,21 @@ import com.google.common.collect.Maps;
 public class DiscoveryQos {
     public static final DiscoveryQos NO_FILTER;
 
-    private long discoveryTimeout;
+    private long discoveryTimeoutMs;
     private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
     private ArbitrationStrategy arbitrationStrategy;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
     private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.HighestPriority;
 
-    long cacheMaxAge;
+    long cacheMaxAgeMs;
     private static final long DEFAULT_CACHEMAXAGE = 0L;
     public static final long NO_MAX_AGE = Long.MAX_VALUE;
 
     private boolean providerMustSupportOnChange;
     private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
 
-    private long retryInterval;
+    private long retryIntervalMs;
     private static final long DEFAULT_RETRYINTERVAL = 1000L;
 
     private DiscoveryScope discoveryScope;
@@ -63,11 +63,11 @@ public class DiscoveryQos {
     }
 
     public DiscoveryQos() {
-        this.discoveryTimeout = DEFAULT_DISCOVERYTIMEOUT;
+        this.discoveryTimeoutMs = DEFAULT_DISCOVERYTIMEOUT;
         this.arbitrationStrategy = DEFAULT_ARBITRATIONSTRATEGY;
-        this.cacheMaxAge = DEFAULT_CACHEMAXAGE;
+        this.cacheMaxAgeMs = DEFAULT_CACHEMAXAGE;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
-        this.retryInterval = DEFAULT_RETRYINTERVAL;
+        this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
         this.discoveryScope = DEFAULT_DISCOVERYSCOPE;
     }
 
@@ -124,18 +124,18 @@ public class DiscoveryQos {
             throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
         }
 
-        this.cacheMaxAge = cacheMaxAge;
+        this.cacheMaxAgeMs = cacheMaxAge;
         this.discoveryScope = discoveryScope;
-        this.discoveryTimeout = discoveryTimeout;
+        this.discoveryTimeoutMs = discoveryTimeout;
         this.arbitrationStrategy = arbitrationStrategy;
-        this.retryInterval = DEFAULT_RETRYINTERVAL;
+        this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
     @Deprecated
     public DiscoveryQos(DiscoveryScope discoveryScope, long cacheMaxAge) {
         this();
-        setCacheMaxAge(cacheMaxAge);
+        setCacheMaxAgeMs(cacheMaxAge);
         this.discoveryScope = discoveryScope;
     }
 
@@ -145,11 +145,11 @@ public class DiscoveryQos {
                         DiscoveryScope discoveryScope) {
 
         this.arbitrationStrategy = ArbitrationStrategy.Custom;
-        this.discoveryTimeout = discoveryTimeout;
+        this.discoveryTimeoutMs = discoveryTimeout;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
-        this.cacheMaxAge = cacheMaxAge;
+        this.cacheMaxAgeMs = cacheMaxAge;
         this.discoveryScope = discoveryScope;
-        this.retryInterval = DEFAULT_RETRYINTERVAL;
+        this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
@@ -182,12 +182,12 @@ public class DiscoveryQos {
      * discovery process does not find matching providers within the arbitration timeout duration it will be terminated
      * and you will get an arbitration exception.
      *
-     * @param discoveryTimeout
+     * @param discoveryTimeoutMs
      *            Sets the amount of time the arbitrator keeps trying to find a suitable provider. The arbitration
      *            lookup might happen multiple times during this time span.
      */
-    public void setDiscoveryTimeout(long discoveryTimeout) {
-        this.discoveryTimeout = discoveryTimeout;
+    public void setDiscoveryTimeoutMs(long discoveryTimeoutMs) {
+        this.discoveryTimeoutMs = discoveryTimeoutMs;
     }
 
     /**
@@ -197,8 +197,8 @@ public class DiscoveryQos {
      *
      * @return the duration used to discover matching providers
      */
-    public long getDiscoveryTimeout() {
-        return discoveryTimeout;
+    public long getDiscoveryTimeoutMs() {
+        return discoveryTimeoutMs;
     }
 
     /**
@@ -237,8 +237,8 @@ public class DiscoveryQos {
      * @return the maximum age of locally cached provider entries to be used during discovery and arbitration before
      *         refreshing from the global directory
      */
-    public long getCacheMaxAge() {
-        return cacheMaxAge;
+    public long getCacheMaxAgeMs() {
+        return cacheMaxAgeMs;
     }
 
     /**
@@ -250,12 +250,12 @@ public class DiscoveryQos {
      * providers registered with the global capabilities after the last lookup and before the cacheMaxAge expires will
      * not be discovered.
      *
-     * @param cacheMaxAge
+     * @param cacheMaxAgeMs
      *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
      *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
      */
-    public void setCacheMaxAge(long cacheMaxAge) {
-        this.cacheMaxAge = cacheMaxAge < 0L ? 0L : cacheMaxAge;
+    public void setCacheMaxAgeMs(long cacheMaxAgeMs) {
+        this.cacheMaxAgeMs = cacheMaxAgeMs < 0L ? 0L : cacheMaxAgeMs;
     }
 
     public boolean isLocalOnly() {
@@ -266,17 +266,17 @@ public class DiscoveryQos {
      *
      * @return the interval used for retrying discovery if the previous attempt was unsuccessful
      */
-    public long getRetryInterval() {
-        return retryInterval;
+    public long getRetryIntervalMs() {
+        return retryIntervalMs;
     }
 
     /**
-     * @param retryInterval
+     * @param retryIntervalMs
      *            The time to wait between discovery retries after encountering a discovery error. The actual delay may
      *            be longer, as there is a system-wide minimum delay.
      */
-    public void setRetryInterval(long retryInterval) {
-        this.retryInterval = retryInterval;
+    public void setRetryIntervalMs(long retryIntervalMs) {
+        this.retryIntervalMs = retryIntervalMs;
     }
 
     /**
@@ -319,4 +319,59 @@ public class DiscoveryQos {
     public Map<String, String> getCustomParameters() {
         return customParameters;
     }
+
+    /**
+     * @deprecated use getCacheMaxAgeMs() instead
+     * @return getCacheMaxAgeMs()
+     */
+    @Deprecated
+    public long getCacheMaxAge() {
+        return getCacheMaxAgeMs();
+    }
+
+    /**
+     * @deprecated use setCacheMaxAgeMs() instead
+     * @param cacheMaxAgeMs
+     */
+    @Deprecated
+    public void setCacheMaxAge(long cacheMaxAgeMs) {
+        setCacheMaxAgeMs(cacheMaxAgeMs);
+    }
+
+    /**
+     * @deprecated use getDiscoveryTimeoutMs() instead
+     * @return getDiscoveryTimeoutMs()
+     */
+    @Deprecated
+    public long getDiscoveryTimeout() {
+        return getDiscoveryTimeoutMs();
+    }
+
+    /**
+     * @deprecated use setDiscoveryTimeoutMs() instead
+     * @param discoveryTimeoutMs
+     */
+    @Deprecated
+    public void setDiscoveryTimeout(long discoveryTimeoutMs) {
+        setDiscoveryTimeoutMs(discoveryTimeoutMs);
+    }
+
+    /**
+     * @deprecated use getRetryIntervalMs() instead
+     * @return getRetryIntervalMs()
+     */
+    @Deprecated
+    public long getRetryInterval() {
+        return getRetryIntervalMs();
+    }
+
+    /**
+     * @deprecated use setRetryIntervalMs() instead
+     * @param retryIntervalMs
+     */
+    @Deprecated
+    public void setRetryInterval(long retryIntervalMs) {
+        setRetryIntervalMs(retryIntervalMs);
+    }
+
 }

@@ -74,7 +74,7 @@ public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Obj
     }
 
     protected T buildProxy() throws InterruptedException, ExecutionException, TimeoutException {
-        this.runtime = runtimeInitTask.get(discoveryQos.getDiscoveryTimeout(), TimeUnit.MILLISECONDS);
+        this.runtime = runtimeInitTask.get(discoveryQos.getDiscoveryTimeoutMs(), TimeUnit.MILLISECONDS);
         builder = runtime.getProxyBuilder(providerDomain, proxyInterface);
         if (participantId != null) {
             builder.setParticipantId(participantId);

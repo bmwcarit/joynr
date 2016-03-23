@@ -110,7 +110,7 @@ public class CapabilitiesStorePersistedTest {
         DiscoveryQos discoveryQos = new DiscoveryQos(1000, ArbitrationStrategy.NotSet, 1000);
         try {
             store.add(capabilityEntry);
-            store.lookup("hello", GpsAsync.INTERFACE_NAME, discoveryQos.getCacheMaxAge());
+            store.lookup("hello", GpsAsync.INTERFACE_NAME, discoveryQos.getCacheMaxAgeMs());
         } catch (Exception e) {
             thrown = true;
         }
@@ -263,7 +263,7 @@ public class CapabilitiesStorePersistedTest {
 
         Collection<CapabilityEntry> newlyEnteredCaps = store.lookup(domain,
                                                                     GpsAsync.INTERFACE_NAME,
-                                                                    discoveryQos.getCacheMaxAge());
+                                                                    discoveryQos.getCacheMaxAgeMs());
 
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
@@ -281,7 +281,7 @@ public class CapabilitiesStorePersistedTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(2, capabilities.size());
 
-        newlyEnteredCaps = store.lookup(domain, GpsAsync.INTERFACE_NAME, discoveryQos.getCacheMaxAge());
+        newlyEnteredCaps = store.lookup(domain, GpsAsync.INTERFACE_NAME, discoveryQos.getCacheMaxAgeMs());
 
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
@@ -305,7 +305,7 @@ public class CapabilitiesStorePersistedTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(2, capabilities.size());
 
-        newlyEnteredCaps = store.lookup(domain, GpsAsync.INTERFACE_NAME, discoveryQos.getCacheMaxAge());
+        newlyEnteredCaps = store.lookup(domain, GpsAsync.INTERFACE_NAME, discoveryQos.getCacheMaxAgeMs());
         Assert.assertEquals(2, newlyEnteredCaps.size());
         Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry1));
         Assert.assertTrue(newlyEnteredCaps.contains(capabilityEntry2));
@@ -348,11 +348,11 @@ public class CapabilitiesStorePersistedTest {
 
         Collection<CapabilityEntry> newlyEnteredCaps = store.lookup(domain,
                                                                     Gps.INTERFACE_NAME,
-                                                                    discoveryQos.getCacheMaxAge());
+                                                                    discoveryQos.getCacheMaxAgeMs());
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
 
-        CapabilityEntry newEnteredCapability = store.lookup(participantId, discoveryQos.getCacheMaxAge());
+        CapabilityEntry newEnteredCapability = store.lookup(participantId, discoveryQos.getCacheMaxAgeMs());
         Assert.assertEquals(capabilityEntry1, newEnteredCapability);
 
         CapabilityEntry capEntryFake = new CapabilityEntryPersisted(new Version(47, 11),
@@ -386,11 +386,11 @@ public class CapabilitiesStorePersistedTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        newlyEnteredCaps = store.lookup(domain, Gps.INTERFACE_NAME, discoveryQos.getCacheMaxAge());
+        newlyEnteredCaps = store.lookup(domain, Gps.INTERFACE_NAME, discoveryQos.getCacheMaxAgeMs());
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry2, newlyEnteredCaps.iterator().next());
 
-        CapabilityEntry newlyEnteredCapability = store.lookup(participantId, discoveryQos.getCacheMaxAge());
+        CapabilityEntry newlyEnteredCapability = store.lookup(participantId, discoveryQos.getCacheMaxAgeMs());
         Assert.assertEquals(capabilityEntry2, newlyEnteredCapability);
     }
 }
