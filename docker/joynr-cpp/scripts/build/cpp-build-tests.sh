@@ -9,6 +9,7 @@ START=$(date +%s)
 JOBS=4
 CLANGFORMATTER='ON'
 BUILDTYPE='Debug'
+ARCHIVEBINARIES='OFF'
 
 TESTS=(inter-language-test performance-test robustness-test system-integration-test)
 
@@ -22,8 +23,8 @@ function join_strings
 function usage
 {
     local joined_tests=$(join_strings " | " "${TESTS[@]}")
-    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF --buildtype Debug|Release]"
-    echo "default: jobs is $JOBS, clangformatter is $CLANGFORMATTER and buildtype is $BUILDTYPE"
+    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF --buildtype Debug|Release --archivebinaries ON|OFF]"
+    echo "default: jobs is $JOBS, clangformatter is $CLANGFORMATTER, buildtype is $BUILDTYPE and archivebinaries is $ARCHIVEBINARIES"
 }
 
 SELECTED_TEST=$1
@@ -39,6 +40,9 @@ while [ "$1" != "" ]; do
                                 ;;
         --buildtype )           shift
                                 BUILDTYPE=$1
+                                ;;
+        --archivebinaries )     shift
+                                ARCHIVEBINARIES=$1
                                 ;;
         * )                     usage
                                 exit 1
@@ -90,6 +94,16 @@ cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
       ${SRC_FOLDER}
 
 time make -j $JOBS
+
+if [ "ON" == "${ARCHIVEBINARIES}" ]
+then
+	if [ "all" == "${SELECTED_TEST}" ]
+	then
+ 	   tar czf joynr-all-tests.tar.gz bin
+	else
+	    tar czf joynr-$SELECTED_TEST.tar.gz bin
+	fi
+fi
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
