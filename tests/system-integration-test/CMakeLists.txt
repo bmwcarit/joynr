@@ -6,9 +6,8 @@ project(jsit-0.17.0-SNAPSHOT)
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetCppStandard.cmake)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
-include(SetCppStandard)
-include(AddClangFormat)
 
 option(
     GENERATE_SOURCES
@@ -144,5 +143,8 @@ install(
     RUNTIME DESTINATION bin
 )
 
-AddClangFormat(jsit-consumer-ws)
-AddClangFormat(jsit-provider-ws)
+if(ENABLE_CLANG_FORMATTER)
+    include(AddClangFormat)
+    AddClangFormat(jsit-consumer-ws)
+    AddClangFormat(jsit-provider-ws)
+endif(ENABLE_CLANG_FORMATTER)
