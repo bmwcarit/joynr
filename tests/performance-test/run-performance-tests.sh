@@ -267,11 +267,11 @@ function stopAnyProvider {
 }
 
 function echoUsage {
-    echo "Usage: run-performance-tests.sh -y <joynr-build-dir> -p <performance-build-dir> \
--s <joynr-source-dir> -r <performance-results-dir> \
+    echo "Usage: run-performance-tests.sh -p <performance-build-dir> \
+-r <performance-results-dir> -s <joynr-source-dir> \
 -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|JS_ASYNC_MOSQUITTO|OAP_TO_BACKEND_MOSQ|\
-CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> \
--x <number-of-runs>"
+CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-build-dir>\
+[-c <number-of-consumers> -x <number-of-runs>]"
 }
 
 function checkDirExists {
@@ -283,14 +283,14 @@ function checkDirExists {
     fi
 }
 
-while getopts "y:p:s:r:t:x:" OPTIONS;
+while getopts "c:p:r:s:t:x:y:" OPTIONS;
 do
     case $OPTIONS in
+        c)
+            MULTICONSUMER_NUMINSTANCES=$OPTARG
+            ;;
         p)
             PERFORMANCETESTS_BUILD_DIR=${OPTARG%/}
-            ;;
-        y)
-            JOYNR_BUILD_DIR=${OPTARG%/}
             ;;
         r)
             PERFORMANCETESTS_RESULTS_DIR=${OPTARG%/}
@@ -304,6 +304,9 @@ do
         x)
             SINGLECONSUMER_RUNS=$OPTARG
             MULTICONSUMER_RUNS=$OPTARG
+            ;;
+        y)
+            JOYNR_BUILD_DIR=${OPTARG%/}
             ;;
         \?)
             echoUsage
