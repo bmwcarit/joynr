@@ -24,6 +24,7 @@
 #include <mutex>
 #include <chrono>
 #include <limits>
+#include <numeric>
 #include <exception>
 
 #include "joynr/JoynrRuntime.h"
