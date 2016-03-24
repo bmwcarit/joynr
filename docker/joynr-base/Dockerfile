@@ -93,6 +93,7 @@ RUN yum update -y \
     && git checkout v1.4.7 \
     && make DOCDIRS= install -j"$(nproc)" \
     && mv /etc/mosquitto/mosquitto.conf.example /etc/mosquitto/mosquitto.conf \
+    && sed -i "s/#max_queued_messages 100/max_queued_messages 0/" /etc/mosquitto/mosquitto.conf \
     && echo "user joynr" >> /etc/mosquitto/mosquitto.conf \
     && yum clean all
 
