@@ -74,12 +74,12 @@ class ClassMetaObjectType : public IMetaObject
 public:
     std::unique_ptr<IClassDeserializer> createClassDeserializer() override
     {
-        return std::unique_ptr<IClassDeserializer>(new ClassDeserializer<T>());
+        return std::make_unique<ClassDeserializer<T>>();
     }
 
     std::unique_ptr<IClassSerializer> createSerializer() override
     {
-        return std::unique_ptr<IClassSerializer>(new ClassSerializer<T>());
+        return std::make_unique<ClassSerializer<T>>();
     }
 };
 
@@ -92,12 +92,12 @@ class EnumMetaObjectType : public IMetaObject
 public:
     std::unique_ptr<IPrimitiveDeserializer> createPrimitiveDeserializer() override
     {
-        return std::unique_ptr<IPrimitiveDeserializer>(new PrimitiveDeserializer<T>());
+        return std::make_unique<PrimitiveDeserializer<T>>();
     }
 
     std::unique_ptr<IClassSerializer> createSerializer() override
     {
-        return std::unique_ptr<IClassSerializer>(new ClassSerializer<T>());
+        return std::make_unique<ClassSerializer<T>>();
     }
 };
 
@@ -110,7 +110,7 @@ class NativeMetaObjectType : public IMetaObject
 public:
     std::unique_ptr<IClassSerializer> createSerializer() override
     {
-        return std::unique_ptr<IClassSerializer>(new ClassSerializer<T>());
+        return std::make_unique<ClassSerializer<T>>();
     }
 };
 
@@ -180,7 +180,7 @@ bool SerializerRegistry::registerType(const std::string& typeName)
         SerializerRegistry& registry = getInstance();
         std::unique_lock<std::mutex> lock(registry.registryMutex);
 
-        registry.metaObjects[typeName] = std::unique_ptr<IMetaObject>(new ClassMetaObjectType<T>());
+        registry.metaObjects[typeName] = std::make_unique<ClassMetaObjectType<T>>();
     }
     return true;
 }
@@ -193,7 +193,7 @@ bool SerializerRegistry::registerNativeType(const std::string& typeName)
         SerializerRegistry& registry = getInstance();
         std::unique_lock<std::mutex> lock(registry.registryMutex);
 
-        registry.metaObjects[typeName] = std::unique_ptr<IMetaObject>(new NativeMetaObjectType<T>());
+        registry.metaObjects[typeName] = std::make_unique<NativeMetaObjectType<T>>();
     }
     return true;
 }
@@ -206,7 +206,7 @@ bool SerializerRegistry::registerEnum(const std::string& typeName)
         SerializerRegistry& registry = getInstance();
         std::unique_lock<std::mutex> lock(registry.registryMutex);
 
-        registry.metaObjects[typeName] = std::unique_ptr<IMetaObject>(new EnumMetaObjectType<T>());
+        registry.metaObjects[typeName] = std::make_unique<EnumMetaObjectType<T>>();
     }
     return true;
 }
