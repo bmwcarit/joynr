@@ -155,7 +155,7 @@ function startJavaPerformanceTestProvider {
     CONSUMERCLASS="io.joynr.performance.EchoProviderApplication"
     CONSUMERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URI"
 
-    cd $JOYNR_SOURCE_DIR/tests/performance
+    cd $JOYNR_SOURCE_DIR/tests/performance-test
 
     mvn exec:java -o \
         -Dexec.mainClass="$CONSUMERCLASS" \
@@ -166,40 +166,23 @@ function startJavaPerformanceTestProvider {
     echo "Performance test provider started"
 }
 
-function performSingleJavaConsumerTest {
+function performJavaConsumerTest {
     MODE_PARAM=$1
     TESTCASE_PARAM=$2
     STDOUT_PARAM=$3
     REPORTFILE_PARAM=$4
+    NUM_INSTANCES=$5
+    NUM_RUNS=$6
 
     CONSUMERCLASS="io.joynr.performance.ConsumerApplication"
-    CONSUMERARGS="-d $DOMAINNAME -w $JAVA_WARMUPS -r $SINGLECONSUMER_RUNS \
+    CONSUMERARGS="-d $DOMAINNAME -w $JAVA_WARMUPS -r $NUM_RUNS \
                   -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
                   -sl $INPUTDATA_STRINGLENGTH"
 
-    cd $JOYNR_SOURCE_DIR/tests/performance
-
-    mvn exec:java -o \
-        -Dexec.mainClass="$CONSUMERCLASS" \
-        -Dexec.args="$CONSUMERARGS" 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
-    sleep 3
-}
-
-function performMultiJavaConsumerTest {
-    MODE_PARAM=$1
-    TESTCASE_PARAM=$2
-    STDOUT_PARAM=$3
-    REPORTFILE_PARAM=$4
-
-    CONSUMERCLASS="io.joynr.performance.ConsumerApplication"
-    CONSUMERARGS="-d $DOMAINNAME -w $JAVA_WARMUPS -r $MULTICONSUMER_RUNS \
-                  -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
-                  -sl $INPUTDATA_STRINGLENGTH"
-
-    cd $JOYNR_SOURCE_DIR/tests/performance
+    cd $JOYNR_SOURCE_DIR/tests/performance-test
 
     TEST_PIDS=()
-    for (( i=0; i < $MULTICONSUMER_NUMINSTANCES; ++i ))
+    for (( i=0; i < $NUM_INSTANCES; ++i ))
     do
         echo "Launching consumer $i ..."
         mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
@@ -212,11 +195,36 @@ function performMultiJavaConsumerTest {
     wait $TEST_PIDS
 }
 
+function performCppConsumerTest {
+    MODE_PARAM=$1
+    TESTCASE_PARAM=$2
+    STDOUT_PARAM=$3
+    REPORTFILE_PARAM=$4
+    NUM_INSTANCES=$5
+    NUM_RUNS=$6
+
+    cd $PERFORMANCETESTS_BUILD_DIR/bin
+    CONSUMERARGS="-d $DOMAINNAME -r $NUM_RUNS -t $TESTCASE_PARAM\
+                  -s $MODE_PARAM -l $INPUTDATA_STRINGLENGTH -b $INPUTDATA_BYTEARRAYSIZE"
+
+    TEST_PIDS=()
+    for (( i=0; i < $NUM_INSTANCES; ++i ))
+    do
+        echo "Launching consumer $i ..."
+        ./performance-consumer-app $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+        TEST_PIDS+=$CUR_PID
+        TEST_PIDS+=" "
+    done
+
+    echo "Waiting until consumers finished ..."
+    wait $TEST_PIDS
+}
+
 function performJsConsumerTest {
     STDOUT_PARAM=$1
     REPORTFILE_PARAM=$2
 
-    cd $JOYNR_SOURCE_DIR/tests/performance
+    cd $JOYNR_SOURCE_DIR/tests/performance-test
 
     npm run-script --performance-test:runs=$SINGLECONSUMER_RUNS \
                    --performance-test:domain=$DOMAINNAME \
@@ -261,7 +269,8 @@ function stopAnyProvider {
 function echoUsage {
     echo "Usage: run-performance-tests.sh -y <joynr-build-dir> -p <performance-build-dir> \
 -s <joynr-source-dir> -r <performance-results-dir> \
--t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|JS_ASYNC_MOSQUITTO|OAP_TO_BACKEND_MOSQ|ALL> \
+-t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|JS_ASYNC_MOSQUITTO|OAP_TO_BACKEND_MOSQ|\
+CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> \
 -x <number-of-runs>"
 }
 
@@ -305,10 +314,13 @@ done
 
 if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && [ "$TESTCASE" != "ALL" ] && \
-   [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
+   [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
+   [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
+   [ "$TESTCASE" != "CPP_MULTICONSUMER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
-    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, OAP_TO_BACKEND_MOSQ OR ALL"
+    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
+OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER OR ALL"
     echoUsage
     exit 1
 fi
@@ -331,40 +343,40 @@ then
 
     echo "### Starting performance tests ###"
 
-    if [ "$TESTCASE" == "JAVA_ASYNC" ] || [ "$TESTCASE" == "ALL" ]
-    then
-        echo "Testcase: JAVA ASYNC STRING" | tee -a $REPORTFILE
-        performSingleJavaConsumerTest "ASYNC" "SEND_STRING" $STDOUT $REPORTFILE
-
-        echo "Testcase: JAVA ASYNC STRUCT" | tee -a $REPORTFILE
-        performSingleJavaConsumerTest "ASYNC" "SEND_STRUCT" $STDOUT $REPORTFILE
-
-        echo "Testcase: JAVA ASYNC BYTEARRAY" | tee -a $REPORTFILE
-        performSingleJavaConsumerTest "ASYNC" "SEND_BYTEARRAY" $STDOUT $REPORTFILE
-    fi
-
-    if [ "$TESTCASE" == "JAVA_SYNC" ] || [ "$TESTCASE" == "ALL" ]
-    then
-        echo "Testcase: JAVA SYNC STRING" | tee -a $REPORTFILE
-        performSingleJavaConsumerTest "SYNC" "SEND_STRING" $STDOUT $REPORTFILE
-
-        echo "Testcase: JAVA SYNC STRUCT" | tee -a $REPORTFILE
-        performSingleJavaConsumerTest "SYNC" "SEND_STRUCT" $STDOUT $REPORTFILE
-
-        echo "Testcase: JAVA SYNC BYTEARRAY" | tee -a $REPORTFILE
-        performSingleJavaConsumerTest "SYNC" "SEND_BYTEARRAY" $STDOUT $REPORTFILE
-    fi
+    for mode in 'ASYNC' 'SYNC'; do
+        if [ "$TESTCASE" == "JAVA_$mode" ] || [ "$TESTCASE" == "ALL" ]
+        then
+            for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
+                echo "Testcase: JAVA $testcase" | tee -a $REPORTFILE
+                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
+            done
+        fi
+    done
 
     if [ "$TESTCASE" == "JAVA_MULTICONSUMER" ] || [ "$TESTCASE" == "ALL" ]
     then
-        echo "Testcase: JAVA ASYNC STRING / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
-        performMultiJavaConsumerTest "ASYNC" "SEND_STRING" $STDOUT $REPORTFILE
+        for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
+            echo "Testcase: JAVA $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
+            performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS
+        done
+    fi
 
-        echo "Testcase: JAVA ASYNC STRUCT / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
-        performMultiJavaConsumerTest "ASYNC" "SEND_STRUCT" $STDOUT $REPORTFILE
+    for mode in 'ASYNC' 'SYNC'; do
+        if [ "$TESTCASE" == "CPP_$mode" ] || [ "$TESTCASE" == "ALL" ]
+        then
+            for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
+                echo "Testcase: CPP $testcase" | tee -a $REPORTFILE
+                performCppConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
+            done
+        fi
+    done
 
-        echo "Testcase: JAVA ASYNC BYTEARRAY / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
-        performMultiJavaConsumerTest "ASYNC" "SEND_BYTEARRAY" $STDOUT $REPORTFILE
+    if [ "$TESTCASE" == "CPP_MULTICONSUMER" ] || [ "$TESTCASE" == "ALL" ]
+    then
+        for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
+            echo "Testcase: CPP $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
+            performCppConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS
+        done
     fi
 
     if [ "$TESTCASE" == "JS_ASYNC" ] || [ "$TESTCASE" == "ALL" ]
