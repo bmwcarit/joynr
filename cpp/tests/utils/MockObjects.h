@@ -594,9 +594,9 @@ public:
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
 public:
-    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const joynr::system::RoutingTypes::Address& destEndpointAddress));
-    MOCK_METHOD1(remove, void(const joynr::system::RoutingTypes::Address& destEndpointAddress));
-    MOCK_METHOD1(contains, bool(const joynr::system::RoutingTypes::Address& destEndpointAddress));
+    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
+    MOCK_METHOD1(remove, void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
+    MOCK_METHOD1(contains, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
 };
 
 class MockMessagingStub : public joynr::IMessaging {

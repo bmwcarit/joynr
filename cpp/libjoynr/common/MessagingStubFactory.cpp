@@ -23,28 +23,25 @@
 namespace joynr
 {
 
-MessagingStubFactory::MessagingStubFactory()
-        : address2MessagingStubDirectory("MessagingStubFactory-MessagingStubDirectory"),
-          factoryList(),
-          mutex()
+MessagingStubFactory::MessagingStubFactory() : address2MessagingStubMap(), factoryList(), mutex()
 {
 }
 
 std::shared_ptr<IMessaging> MessagingStubFactory::create(
-        const joynr::system::RoutingTypes::Address& destinationAddress)
+        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
 {
     {
         std::lock_guard<std::mutex> lock(this->mutex);
 
-        if (!address2MessagingStubDirectory.contains(destinationAddress)) {
+        if (!address2MessagingStubMap.contains(destinationAddress)) {
             // search for the corresponding factory
             for (std::vector<std::unique_ptr<IMiddlewareMessagingStubFactory>>::iterator it =
                          this->factoryList.begin();
                  it != factoryList.end();
                  ++it) {
-                if ((*it)->canCreate(destinationAddress)) {
-                    std::shared_ptr<IMessaging> stub = (*it)->create(destinationAddress);
-                    address2MessagingStubDirectory.add(destinationAddress, stub);
+                if ((*it)->canCreate(*destinationAddress)) {
+                    std::shared_ptr<IMessaging> stub = (*it)->create(*destinationAddress);
+                    address2MessagingStubMap.insert(destinationAddress, stub);
 
                     return stub;
                 }
@@ -52,17 +49,19 @@ std::shared_ptr<IMessaging> MessagingStubFactory::create(
         }
     }
 
-    return address2MessagingStubDirectory.lookup(destinationAddress);
+    return address2MessagingStubMap.value(destinationAddress);
 }
 
-void MessagingStubFactory::remove(const joynr::system::RoutingTypes::Address& destinationAddress)
+void MessagingStubFactory::remove(
+        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
 {
-    address2MessagingStubDirectory.remove(destinationAddress);
+    address2MessagingStubMap.remove(destinationAddress);
 }
 
-bool MessagingStubFactory::contains(const joynr::system::RoutingTypes::Address& destinationAddress)
+bool MessagingStubFactory::contains(
+        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
 {
-    return address2MessagingStubDirectory.contains(destinationAddress);
+    return address2MessagingStubMap.contains(destinationAddress);
 }
 
 void MessagingStubFactory::registerStubFactory(

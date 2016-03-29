@@ -291,7 +291,7 @@ void MessageRouter::scheduleMessage(
         std::uint32_t tryCount,
         std::chrono::milliseconds delay)
 {
-    auto stub = messagingStubFactory->create(*destAddress);
+    auto stub = messagingStubFactory->create(destAddress);
     if (stub) {
         messageScheduler.schedule(
                 new MessageRunnable(message, stub, destAddress, *this, tryCount), delay);

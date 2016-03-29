@@ -30,10 +30,7 @@
 #include "joynr/MessageQueue.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
-using ::testing::AllOf;
-using ::testing::Property;
 using ::testing::Return;
-using ::testing::WhenDynamicCastTo;
 using namespace joynr;
 
 class MessageRouterTest : public ::testing::Test {
@@ -111,17 +108,19 @@ TEST_F(MessageRouterTest, addMessageToQueue){
 
 MATCHER_P2(addressWithChannelId, addressType, channelId, "") {
     if (addressType == std::string("mqtt")) {
-        try {
-            system::RoutingTypes::MqttAddress mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress&>(arg);
-            return mqttAddress.getTopic() == channelId;
-        } catch (const std::bad_cast& e) {
+        auto mqttAddress = std::dynamic_pointer_cast<const system::RoutingTypes::MqttAddress>(arg);
+        if (mqttAddress) {
+            return mqttAddress->getTopic() == channelId;
+        }
+        else {
             return false;
         }
     } else if (addressType == std::string("http")) {
-        try {
-            system::RoutingTypes::ChannelAddress httpAddress = dynamic_cast<const system::RoutingTypes::ChannelAddress&>(arg);
-            return httpAddress.getChannelId() == channelId;
-        } catch (const std::bad_cast& e) {
+        auto httpAddress = std::dynamic_pointer_cast<const system::RoutingTypes::ChannelAddress>(arg);
+        if (httpAddress) {
+            return httpAddress->getChannelId() == channelId;
+        }
+        else {
             return false;
         }
     } else {
@@ -208,12 +207,7 @@ TEST_F(MessageRouterTest, routeMessageToHttpAddress) {
     const std::string destinationChannelId = "TEST_routeMessageToHttpAddress_channelId";
     auto address = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(destinationChannelId);
     EXPECT_CALL(*messagingStubFactory,
-            create(AllOf(
-                    A<const joynr::system::RoutingTypes::Address&>(),
-                    WhenDynamicCastTo<const system::RoutingTypes::ChannelAddress&>(
-                            Property(&system::RoutingTypes::ChannelAddress::getChannelId, Eq(destinationChannelId))
-                            )
-                    ))
+            create(addressWithChannelId("http", destinationChannelId))
             ).Times(1);
     routeMessageToAddress(destinationParticipantId, address);
 }
@@ -224,12 +218,7 @@ TEST_F(MessageRouterTest, routeMessageToMqttAddress) {
     const std::string brokerUri = "brokerUri";
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, destinationChannelId);
     EXPECT_CALL(*messagingStubFactory,
-            create(AllOf(
-                    A<const joynr::system::RoutingTypes::Address&>(),
-                    WhenDynamicCastTo<const system::RoutingTypes::MqttAddress&>(
-                            Property(&system::RoutingTypes::MqttAddress::getTopic, Eq(destinationChannelId))
-                            )
-                    ))
+            create(addressWithChannelId("mqtt", destinationChannelId))
             ).Times(1);
     routeMessageToAddress(destinationParticipantId, address);
 }

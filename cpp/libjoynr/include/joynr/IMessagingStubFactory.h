@@ -19,7 +19,6 @@
 #ifndef IMESSAGINGSTUBFACTORY_H
 #define IMESSAGINGSTUBFACTORY_H
 
-#include <string>
 #include <memory>
 
 namespace joynr
@@ -39,10 +38,12 @@ class IMessagingStubFactory
 {
 public:
     virtual ~IMessagingStubFactory() = default;
-    virtual std::shared_ptr<IMessaging> create(
-            const joynr::system::RoutingTypes::Address& destEndpointAddress) = 0;
-    virtual void remove(const joynr::system::RoutingTypes::Address& destParticipantId) = 0;
-    virtual bool contains(const joynr::system::RoutingTypes::Address& destParticipantId) = 0;
+    virtual std::shared_ptr<IMessaging> create(const std::shared_ptr<
+            const joynr::system::RoutingTypes::Address>& destinationAddress) = 0;
+    virtual void remove(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                                destinationAddress) = 0;
+    virtual bool contains(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                                  destinationAddress) = 0;
 };
 
 } // namespace joynr
