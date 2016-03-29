@@ -41,8 +41,8 @@ std::shared_ptr<IMessaging> HttpMessagingStubFactory::create(
 {
     const system::RoutingTypes::ChannelAddress* channelAddress =
             dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destAddress);
-    return std::shared_ptr<IMessaging>(
-            new HttpMessagingStub(messageSender, channelAddress->getChannelId(), receiveChannelId));
+    return std::make_shared<HttpMessagingStub>(
+            messageSender, channelAddress->getChannelId(), receiveChannelId);
 }
 
 } // namespace joynr

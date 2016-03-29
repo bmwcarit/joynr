@@ -331,9 +331,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener(
-                new MockGpsSubscriptionListener()
-    );
+    auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
     EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(AtLeast(1));
 
@@ -388,9 +386,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener(
-                new MockGpsSubscriptionListener()
-    );
+    auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
 
     OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                     2000,   // validity

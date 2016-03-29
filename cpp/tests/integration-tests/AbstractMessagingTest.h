@@ -70,7 +70,7 @@ public:
         request(),
         requestId("requestId"),
         qos(),
-        inProcessMessagingSkeleton(new MockInProcessMessagingSkeleton()),
+        inProcessMessagingSkeleton(std::make_shared<MockInProcessMessagingSkeleton>()),
         semaphore(0),
         messageFactory(),
         mockMessageReceiver(new MockMessageReceiver()),
@@ -166,8 +166,7 @@ public:
     //            .WillOnce(ReturnRefOfCopy(senderChannelId));
     //            .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 
-        std::shared_ptr<InProcessMessagingAddress> messagingSkeletonEndpointAddr =
-                std::shared_ptr<InProcessMessagingAddress>(new InProcessMessagingAddress(inProcessMessagingSkeleton));
+        auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
 
         messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr);
 
@@ -229,9 +228,7 @@ public:
     //            .WillOnce(ReturnRefOfCopy(senderChannelId));
                 .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 
-        std::shared_ptr<InProcessMessagingAddress> messagingSkeletonEndpointAddr(
-                    new InProcessMessagingAddress(inProcessMessagingSkeleton)
-        );
+        auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
 
         messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr);
 
@@ -243,7 +240,6 @@ public:
 
         WaitXTimes(3);
     }
-
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessagingTest);

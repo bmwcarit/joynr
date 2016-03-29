@@ -48,7 +48,7 @@ std::shared_ptr<IMessaging> DbusMessagingStubFactory::create(
         auto entry = stubMap.find(address);
         if (entry == stubMap.end()) {
             // create new stub
-            stub = std::shared_ptr<IMessaging>(new DbusMessagingStubAdapter(address));
+            stub = std::make_shared<DbusMessagingStubAdapter>(address);
             stubMap.insert(std::make_pair(address, stub));
         } else {
             stub = entry->second;

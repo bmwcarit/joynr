@@ -235,8 +235,7 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
     if (accessController) {
         // Access control checks are asynchronous, callback will send message
         // if access is granted
-        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback(
-                new ConsumerPermissionCallback(*this, message, destAddress));
+        auto callback = std::make_shared<ConsumerPermissionCallback>(*this, message, destAddress);
         accessController->hasConsumerPermission(message, callback);
         return;
     }

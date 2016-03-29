@@ -54,15 +54,13 @@ public:
 
         messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory), std::unique_ptr<IPlatformSecurityManager>(), 6, std::move(messageQueue));
         // provision global capabilities directory
-        std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(
-            new system::RoutingTypes::ChannelAddress(
-                        messagingSettings.getCapabilitiesDirectoryChannelId())
+        auto addressCapabilitiesDirectory = std::make_shared<system::RoutingTypes::ChannelAddress>(
+                    messagingSettings.getCapabilitiesDirectoryChannelId()
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
-        std::shared_ptr<joynr::system::RoutingTypes::Address> addressChannelUrlDirectory(
-            new system::RoutingTypes::ChannelAddress(
-                        messagingSettings.getChannelUrlDirectoryChannelId())
+        auto addressChannelUrlDirectory = std::make_shared<system::RoutingTypes::ChannelAddress>(
+                    messagingSettings.getChannelUrlDirectoryChannelId()
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
         JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());

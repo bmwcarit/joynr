@@ -81,7 +81,7 @@ protected:
 
 
 TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
-    std::shared_ptr<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy = std::make_shared<MockChannelUrlDirectoryProxy>();
+    auto mockChannelUrlDirectoryProxy = std::make_shared<MockChannelUrlDirectoryProxy>();
 
     EXPECT_CALL(*mockChannelUrlDirectoryProxy, getUrlsForChannelAsync(
                     A<const std::string&>(),
@@ -117,8 +117,7 @@ TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
                     A<std::function<void(void)>>(),
                     A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
-            .WillOnce(Return(std::shared_ptr<Future<void>>(
-                                 new Future<void>())));
+            .WillOnce(Return(std::make_shared<Future<void>>()));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 

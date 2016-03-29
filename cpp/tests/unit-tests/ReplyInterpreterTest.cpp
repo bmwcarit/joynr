@@ -51,8 +51,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
     registrar.registerReplyMetaType<types::TestTypes::TEverythingMap>();
 
     // Create a mock callback
-    std::shared_ptr<MockCallbackWithJoynrException<joynr::types::TestTypes::TEverythingMap>> callback(
-                new MockCallbackWithJoynrException<joynr::types::TestTypes::TEverythingMap>());
+    auto callback = std::make_shared<MockCallbackWithJoynrException<joynr::types::TestTypes::TEverythingMap>>();
     types::TestTypes::TEverythingMap responseValue;
     EXPECT_CALL(*callback, onSuccess(Eq(responseValue))).Times(1);
     EXPECT_CALL(*callback, onError(_)).Times(0);

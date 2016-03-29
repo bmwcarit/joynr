@@ -29,15 +29,13 @@ public:
     HttpMessagingTest()
     {
         // provision global capabilities directory
-        std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(
-            new system::RoutingTypes::ChannelAddress(
-                        messagingSettings.getCapabilitiesDirectoryChannelId())
+        auto addressCapabilitiesDirectory = std::make_shared<system::RoutingTypes::ChannelAddress>(
+                        messagingSettings.getCapabilitiesDirectoryChannelId()
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
-        std::shared_ptr<joynr::system::RoutingTypes::Address> addressChannelUrlDirectory(
-            new system::RoutingTypes::ChannelAddress(
-                        messagingSettings.getChannelUrlDirectoryChannelId())
+        auto addressChannelUrlDirectory = std::make_shared<system::RoutingTypes::ChannelAddress>(
+                        messagingSettings.getChannelUrlDirectoryChannelId()
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
         messagingStubFactory->registerStubFactory(std::make_unique<HttpMessagingStubFactory>(mockMessageSender, senderChannelId));

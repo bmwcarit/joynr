@@ -16,6 +16,14 @@
  * limitations under the License.
  * #L%
  */
+
+#include <fstream>
+#include <sstream>
+#include <cassert>
+#include <chrono>
+#include <cstdint>
+#include <mutex>
+
 #include "joynr/PublicationManager.h"
 #include "joynr/RequestCaller.h"
 #include "joynr/DispatcherUtils.h"
@@ -38,15 +46,7 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
-
 #include "joynr/SubscriptionUtil.h"
-
-#include <fstream>
-#include <sstream>
-#include <cassert>
-#include <chrono>
-#include <cstdint>
-#include <mutex>
 
 namespace joynr
 {
@@ -343,9 +343,8 @@ void PublicationManager::add(const std::string& proxyParticipantId,
                              IPublicationSender* publicationSender)
 {
     assert(requestCaller);
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo(
-            new BroadcastSubscriptionRequestInformation(
-                    proxyParticipantId, providerParticipantId, subscriptionRequest));
+    auto requestInfo = std::make_shared<BroadcastSubscriptionRequestInformation>(
+            proxyParticipantId, providerParticipantId, subscriptionRequest);
 
     handleBroadcastSubscriptionRequest(requestInfo, requestCaller, publicationSender);
 }
@@ -409,9 +408,8 @@ void PublicationManager::add(const std::string& proxyParticipantId,
     JOYNR_LOG_DEBUG(logger,
                     "Added broadcast subscription for non existing provider (adding "
                     "subscriptionRequest to queue).");
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo(
-            new BroadcastSubscriptionRequestInformation(
-                    proxyParticipantId, providerParticipantId, subscriptionRequest));
+    auto requestInfo = std::make_shared<BroadcastSubscriptionRequestInformation>(
+            proxyParticipantId, providerParticipantId, subscriptionRequest);
     {
         std::lock_guard<std::mutex> queueLocker(queuedBroadcastSubscriptionRequestsMutex);
         queuedBroadcastSubscriptionRequests.insert(

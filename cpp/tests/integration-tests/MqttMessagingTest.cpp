@@ -32,16 +32,10 @@ public:
         std::string brokerPort = std::to_string(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
         brokerUri = "tcp://" + brokerHost + ":" + brokerPort;
         // provision global capabilities directory
-        std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(
-            new system::RoutingTypes::MqttAddress(brokerUri,
-                        messagingSettings.getCapabilitiesDirectoryChannelId())
-        );
+        auto addressCapabilitiesDirectory = std::make_shared<system::RoutingTypes::MqttAddress>(brokerUri,messagingSettings.getCapabilitiesDirectoryChannelId());
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
-        std::shared_ptr<joynr::system::RoutingTypes::Address> addressChannelUrlDirectory(
-            new system::RoutingTypes::MqttAddress(brokerUri,
-                        messagingSettings.getChannelUrlDirectoryChannelId())
-        );
+        auto addressChannelUrlDirectory = std::make_shared<system::RoutingTypes::MqttAddress>(brokerUri,messagingSettings.getChannelUrlDirectoryChannelId());
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
         messagingStubFactory->registerStubFactory(std::make_unique<MqttMessagingStubFactory>(mockMessageSender, senderChannelId));
     }
@@ -110,5 +104,3 @@ TEST_F(MqttMessagingTest, routeMultipleMessages)
 {
     routeMultipleMessages(createJoynrMessagingEndpointAddress());
 }
-
-

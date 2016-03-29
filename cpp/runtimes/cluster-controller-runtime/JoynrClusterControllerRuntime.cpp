@@ -230,8 +230,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         }
 
     } else {
-        std::shared_ptr<joynr::system::RoutingTypes::Address> globalCapabilitiesDirectoryAddress(
-                new system::RoutingTypes::ChannelAddress(capabilitiesDirectoryChannelId));
+        auto globalCapabilitiesDirectoryAddress =
+                std::make_shared<system::RoutingTypes::ChannelAddress>(
+                        capabilitiesDirectoryChannelId);
         messageRouter->addProvisionedNextHop(
                 capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
     }
@@ -252,8 +253,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                             e.what());
         }
     } else {
-        std::shared_ptr<joynr::system::RoutingTypes::Address> globalChannelUrlDirectoryAddress(
-                new system::RoutingTypes::ChannelAddress(channelUrlDirectoryChannelId));
+        auto globalChannelUrlDirectoryAddress =
+                std::make_shared<system::RoutingTypes::ChannelAddress>(
+                        channelUrlDirectoryChannelId);
         messageRouter->addProvisionedNextHop(
                 channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);
     }
@@ -404,8 +406,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
-    std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress(
-            new InProcessMessagingAddress(libJoynrMessagingSkeleton));
+    auto libjoynrMessagingAddress =
+            std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);
     // subscriptionManager = new SubscriptionManager(...)
     inProcessConnectorFactory = new InProcessConnectorFactory(
             subscriptionManager,
@@ -432,10 +434,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     std::string discoveryProviderParticipantId(
             systemServicesSettings.getCcDiscoveryProviderParticipantId());
-    std::shared_ptr<RequestCaller> discoveryRequestCaller(
-            new joynr::system::DiscoveryRequestCaller(localCapabilitiesDirectory));
-    std::shared_ptr<InProcessAddress> discoveryProviderAddress(
-            new InProcessAddress(discoveryRequestCaller));
+    auto discoveryRequestCaller =
+            std::make_shared<joynr::system::DiscoveryRequestCaller>(localCapabilitiesDirectory);
+    auto discoveryProviderAddress = std::make_shared<InProcessAddress>(discoveryRequestCaller);
 
     {
         using joynr::system::DiscoveryInProcessConnector;

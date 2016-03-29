@@ -41,8 +41,8 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     // remove dashes
     uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
     std::string libjoynrMessagingId = "libjoynr.messaging.participantid_" + uuid;
-    std::shared_ptr<joynr::system::RoutingTypes::WebSocketClientAddress> libjoynrMessagingAddress(
-            new system::RoutingTypes::WebSocketClientAddress(libjoynrMessagingId));
+    auto libjoynrMessagingAddress =
+            std::make_shared<system::RoutingTypes::WebSocketClientAddress>(libjoynrMessagingId);
 
     // send initialization message containing libjoynr messaging address
     std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
@@ -68,9 +68,8 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     websocket->registerConnectCallback(connectCallback);
 
     // create connection to parent routing service
-    std::shared_ptr<joynr::system::RoutingTypes::WebSocketAddress> ccMessagingAddress(
-            new joynr::system::RoutingTypes::WebSocketAddress(
-                    wsSettings.createClusterControllerMessagingAddress()));
+    auto ccMessagingAddress = std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>(
+            wsSettings.createClusterControllerMessagingAddress());
 
     websocket->connect(*ccMessagingAddress);
 

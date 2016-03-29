@@ -431,8 +431,7 @@ bool «className»::usesClusterController() const{
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(subscriptionQos));
 
-		std::shared_ptr<joynr::SubscriptionCallback<«returnTypes»>> subscriptionCallback(
-					new joynr::SubscriptionCallback<«returnTypes»>(subscriptionListener));
+		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>>(subscriptionListener);
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,

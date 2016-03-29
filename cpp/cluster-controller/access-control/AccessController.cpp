@@ -214,7 +214,7 @@ AccessController::AccessController(LocalCapabilitiesDirectory& localCapabilities
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
           localDomainAccessController(localDomainAccessController),
           providerRegistrationObserver(
-                  new ProviderRegistrationObserver(localDomainAccessController)),
+                  std::make_shared<ProviderRegistrationObserver>(localDomainAccessController)),
           whitelistParticipantIds()
 {
     localCapabilitiesDirectory.addProviderRegistrationObserver(providerRegistrationObserver);
