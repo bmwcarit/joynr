@@ -217,7 +217,7 @@ private:
 	«ENDFOR»
 };
 
-std::size_t hash_value(«typeName» const& «typeName.toFirstLower»Value);
+std::size_t hash_value(const «typeName»& «typeName.toFirstLower»Value);
 
 «getNamespaceEnder(type, true)»
 

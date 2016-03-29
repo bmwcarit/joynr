@@ -178,7 +178,7 @@ void PrintTo(const «typeName»& «typeName.toFirstLower», ::std::ostream* os) 
 	*os << "«typeName»::" << «typeName.toFirstLower».toString();
 }
 
-std::size_t hash_value(«typeName» const& «typeName.toFirstLower»Value)
+std::size_t hash_value(const «typeName»& «typeName.toFirstLower»Value)
 {
 	return «typeName.toFirstLower»Value.hashCode();
 }

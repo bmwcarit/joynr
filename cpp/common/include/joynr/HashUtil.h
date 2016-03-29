@@ -38,7 +38,7 @@ namespace boost
 {
 
 template <class T, class S>
-std::size_t hash_value(std::map<T, S> const& v);
+std::size_t hash_value(const std::map<T, S>& v);
 
 template <class T>
 std::enable_if_t<joynr::util::IsDerivedFromTemplate<std::map, T>::value, std::size_t> hash_value(
@@ -51,7 +51,7 @@ std::enable_if_t<joynr::util::IsDerivedFromTemplate<std::map, T>::value, std::si
 namespace boost
 {
 template <class T, class S>
-std::size_t hash_value(std::map<T, S> const& v)
+std::size_t hash_value(const std::map<T, S>& v)
 {
     return boost::hash_range(v.begin(), v.end());
 }
