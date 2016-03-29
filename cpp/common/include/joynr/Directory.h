@@ -66,10 +66,16 @@ public:
     virtual void remove(const Key& keyId) = 0;
 };
 
-template <typename Key, typename T>
-class Directory : public IDirectory<Key, T>
+template <typename Key_,
+          typename T,
+          typename Hash = std::hash<Key_>,
+          typename EqualTo = std::equal_to<Key_>>
+class Directory : public IDirectory<Key_, T>
 {
 public:
+    using Key = Key_;
+    using Value = T;
+
     Directory() = default;
     ~Directory() override;
     explicit Directory(const std::string& directoryName);
@@ -87,66 +93,104 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
-    std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
+    std::unordered_map<Key, std::shared_ptr<T>, Hash, EqualTo> callbackMap;
     std::mutex mutex;
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
     ADD_LOGGER(Directory);
 };
 
-template <typename Key, typename T>
+template <typename D>
 class RemoverRunnable : public Runnable
 {
+    using Key = typename D::Key;
+
 public:
-    RemoverRunnable(const Key& keyId, Directory<Key, T>* directory);
-    void shutdown() override;
-    void run() override;
+    RemoverRunnable(const Key& keyId, D* directory)
+            : Runnable(true), keyId(keyId), directory(directory)
+    {
+    }
+
+    void shutdown() override
+    {
+    }
+
+    void run() override
+    {
+        runImpl(std::is_same<typename D::Value, IReplyCaller>{});
+    }
 
 private:
+    void runImpl(std::false_type)
+    {
+        std::shared_ptr<typename D::Value> val = directory->lookup(keyId);
+        directory->remove(keyId);
+    }
+
+    /*
+     * some objects that are put into the Directory need to be notified when the object is deleted
+     * (e.g. the IReplyCaller will wait for a timeout from TTL). The RemoverRunnable therefore has a
+     * partial specialisation for IReplyCallers and will call timeOut in this case.
+     * This is also the reason why the IReplyCaller has to be in Common, instead of libjoynr/Proxy
+     */
+    void runImpl(std::true_type)
+    {
+        std::shared_ptr<IReplyCaller> value = directory->lookup(keyId);
+        if (value) {
+            value->timeOut();
+            directory->remove(keyId);
+        }
+    }
+
     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
     Key keyId;
-    Directory<Key, T>* directory;
+    D* directory;
     ADD_LOGGER(RemoverRunnable);
 };
 
-template <typename Key, typename T>
-INIT_LOGGER(SINGLE_MACRO_ARG(Directory<Key, T>));
+template <typename D>
+INIT_LOGGER(RemoverRunnable<D>);
 
-template <typename Key, typename T>
-Directory<Key, T>::~Directory()
+template <typename Key, typename T, typename Hash, typename EqualTo>
+INIT_LOGGER(SINGLE_MACRO_ARG(Directory<Key, T, Hash, EqualTo>));
+
+template <typename Key, typename T, typename Hash, typename EqualTo>
+Directory<Key, T, Hash, EqualTo>::~Directory()
 {
     callBackRemoverScheduler.shutdown();
     JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", callbackMap.size());
 }
 
-template <typename Key, typename T>
-Directory<Key, T>::Directory(const std::string& /*directoryName*/)
+template <typename Key, typename T, typename Hash, typename EqualTo>
+Directory<Key, T, Hash, EqualTo>::Directory(const std::string& /*directoryName*/)
         : callbackMap(), mutex(), callBackRemoverScheduler("DirRemover")
 {
 }
 
-template <typename Key, typename T>
-std::shared_ptr<T> Directory<Key, T>::lookup(const Key& keyId)
+template <typename Key, typename T, typename Hash, typename EqualTo>
+std::shared_ptr<T> Directory<Key, T, Hash, EqualTo>::lookup(const Key& keyId)
 {
     std::lock_guard<std::mutex> lock(mutex);
     return callbackMap[keyId];
 }
 
-template <typename Key, typename T>
-bool Directory<Key, T>::contains(const Key& keyId)
+template <typename Key, typename T, typename Hash, typename EqualTo>
+bool Directory<Key, T, Hash, EqualTo>::contains(const Key& keyId)
 {
     std::lock_guard<std::mutex> lock(mutex);
     return callbackMap.find(keyId) != callbackMap.cend();
 }
 
-template <typename Key, typename T>
-void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value)
+template <typename Key, typename T, typename Hash, typename EqualTo>
+void Directory<Key, T, Hash, EqualTo>::add(const Key& keyId, std::shared_ptr<T> value)
 {
     std::lock_guard<std::mutex> lock(mutex);
     callbackMap[keyId] = std::move(value);
 }
 
-template <typename Key, typename T>
-void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms)
+template <typename Key, typename T, typename Hash, typename EqualTo>
+void Directory<Key, T, Hash, EqualTo>::add(const Key& keyId,
+                                           std::shared_ptr<T> value,
+                                           std::int64_t ttl_ms)
 {
     // Insert the value
     {
@@ -155,86 +199,15 @@ void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, std::int
     }
 
     // make a removerRunnable and shedule it to remove the entry after ttl!
-    RemoverRunnable<Key, T>* removerRunnable = new RemoverRunnable<Key, T>(keyId, this);
+    auto* removerRunnable = new RemoverRunnable<Directory<Key, T, Hash, EqualTo>>(keyId, this);
     callBackRemoverScheduler.schedule(removerRunnable, std::chrono::milliseconds(ttl_ms));
 }
 
-template <typename Key, typename T>
-void Directory<Key, T>::remove(const Key& keyId)
+template <typename Key, typename T, typename Hash, typename EqualTo>
+void Directory<Key, T, Hash, EqualTo>::remove(const Key& keyId)
 {
     std::lock_guard<std::mutex> lock(mutex);
     callbackMap.erase(keyId);
-}
-
-template <typename Key, typename T>
-RemoverRunnable<Key, T>::RemoverRunnable(const Key& keyId, Directory<Key, T>* directory)
-        : Runnable(true), keyId(keyId), directory(directory)
-{
-}
-
-template <typename Key, typename T>
-void RemoverRunnable<Key, T>::shutdown()
-{
-}
-
-template <typename Key, typename T>
-void RemoverRunnable<Key, T>::run()
-{
-    //    JOYNR_LOG_TRACE(logger, "Calling Directory<Key,T>");
-
-    std::shared_ptr<T> val = directory->lookup(keyId);
-    directory->remove(keyId);
-}
-
-/*
- * some objects that are put into the Directory need to be notified when the object is deleted
- * (e.g. the IReplyCaller will wait for a timeout from TTL). The RemoverRunnable therefore as a
- * partial specialisation for IReplyCallers and will call timeOut in this case.
- * This is also the reason why the IReplyCaller has to be in Common, instead of libjoynr/Proxy
- *
- */
-
-template <typename Key>
-class RemoverRunnable<Key, IReplyCaller> : public Runnable
-{
-public:
-    RemoverRunnable(const Key& keyId, Directory<Key, IReplyCaller>* directory);
-    void shutdown() override;
-    void run() override;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
-    std::string keyId;
-    Directory<Key, IReplyCaller>* directory;
-    ADD_LOGGER(RemoverRunnable);
-};
-
-template <typename Key>
-void RemoverRunnable<Key, IReplyCaller>::shutdown()
-{
-}
-
-template <typename Key>
-void RemoverRunnable<Key, IReplyCaller>::run()
-{
-    std::shared_ptr<IReplyCaller> value = directory->lookup(keyId);
-    if (value) {
-        value->timeOut();
-        directory->remove(keyId);
-    }
-}
-
-template <typename Key>
-INIT_LOGGER(SINGLE_MACRO_ARG(RemoverRunnable<Key, IReplyCaller>));
-
-template <typename Key, typename T>
-INIT_LOGGER(SINGLE_MACRO_ARG(RemoverRunnable<Key, T>));
-
-template <typename Key>
-RemoverRunnable<Key, IReplyCaller>::RemoverRunnable(const Key& keyId,
-                                                    Directory<Key, IReplyCaller>* directory)
-        : Runnable(true), keyId(keyId), directory(directory)
-{
 }
 
 } // namespace joynr
