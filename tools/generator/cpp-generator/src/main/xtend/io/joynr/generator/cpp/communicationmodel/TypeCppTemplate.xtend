@@ -51,7 +51,6 @@ class TypeCppTemplate extends CompoundTypeTemplate {
 
 #include <sstream>
 #include <string>
-#include <typeinfo>
 
 «IF type.hasExtendsDeclaration || getMembers(type).size > 0»
 #include <boost/functional/hash.hpp>
@@ -97,26 +96,6 @@ const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
 }
 
 «ENDIF»
-
-bool «typeName»::operator!=(const «typeName»& other) const {
-	return !(*this==other);
-}
-
-bool «typeName»::operator==(const «typeName»& other) const {
-	if (typeid(*this) != typeid(other)) {
-		return false;
-	}
-
-	return
-		«FOR member: getMembers(type)»
-			this->«member.joynrName» == other.«member.joynrName» &&
-		«ENDFOR»
-		«IF hasExtendsDeclaration(type)»
-			«getExtendedType(type).typeName»::operator==(other);
-		«ELSE»
-			true;
-		«ENDIF»
-}
 
 std::size_t «typeName»::hashCode() const {
 	std::size_t seed = 0;

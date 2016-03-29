@@ -55,10 +55,11 @@ class TypeHTemplate extends CompoundTypeTemplate {
 
 «getDllExportIncludeStatement()»
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
-#include <cstddef>
+#include <typeinfo>
 
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
@@ -113,7 +114,7 @@ public:
 	/** @brief Copy constructor */
 	«typeName»(const «typeName»&) = default;
 
-    /** @brief Move constructor */
+	/** @brief Move constructor */
 	«typeName»(«typeName»&&) = default;
 
 	/** @brief Destructor */
@@ -155,19 +156,30 @@ public:
 	 */
 	«typeName»& operator=(«typeName»&&) = default;
 
+	«IF !hasExtendsDeclaration(type)»
 	/**
-	 * @brief equality operator
-	 * @param «typeName.toFirstLower»Obj reference to the object to compare to
+	 * @brief "equal to" operator
+	 * @param other reference to the object to compare to
 	 * @return true if objects are equal, false otherwise
 	 */
-	bool operator==(const «typeName»& «typeName.toFirstLower»Obj) const;
+	bool operator==(const «typeName»& other) const
+	{
+	    if (typeid(*this) != typeid(other)) {
+	        return false;
+	    }
+	    return this->equals(other);
+	}
 
 	/**
-	 * @brief unequality operator
-	 * @param «typeName.toFirstLower»Obj reference to the object to compare to
+	 * @brief "not equal to" operator
+	 * @param other reference to the object to compare to
 	 * @return true if objects are not equal, false otherwise
 	 */
-	bool operator!=(const «typeName»& «typeName.toFirstLower»Obj) const;
+	bool operator!=(const «typeName»& other) const
+	{
+	    return !(*this == other);
+	}
+	«ENDIF»
 
 	/**
 	 * @return a copy of this object
@@ -207,7 +219,44 @@ protected:
 	 */
 	friend void PrintTo(const «typeName»& «typeName.toFirstLower», ::std::ostream* os);
 
+	/**
+	 * @brief equals method
+	 * @param other reference to the object to compare to
+	 * @return true if objects are equal, false otherwise
+	 */
+	«IF hasExtendsDeclaration(type)»
+		bool equals(const «getRootType(type).joynrName»& other) const override
+		{
+			«IF getMembers(type).size > 0»
+				const «typeName»& otherDerived = static_cast<const «typeName»&>(other);
+				return
+				«FOR member: getMembers(type) SEPARATOR '&&'»
+					this->«member.joynrName» == otherDerived.«member.joynrName»
+				«ENDFOR»
+				&& «getExtendedType(type).joynrName»::equals(other);
+			«ELSE»
+				return «getExtendedType(type).joynrName»::equals(other);
+			«ENDIF»
+		}
+	«ELSE»
+		virtual bool equals(const «typeName»& other) const
+		{
+			«IF getMembers(type).size > 0»
+				return
+				«FOR member: getMembers(type) SEPARATOR ' &&'»
+					this->«member.joynrName» == other.«member.joynrName»
+				«ENDFOR»
+				;
+			«ELSE»
+				std::ignore = other;
+				return true;
+			«ENDIF»
+		}
+	«ENDIF»
+
+
 private:
+
 	// members
 	«FOR member: getMembers(type)»
 		«member.typeName» «member.joynrName»;
