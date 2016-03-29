@@ -18,21 +18,18 @@
  */
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
-#include "joynr/PrivateCopyAssign.h"
 
+#include <string>
+#include <mutex>
+#include <unordered_map>
+#include <memory>
+
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/Runnable.h"
 #include "joynr/ITimeoutListener.h"
 #include "joynr/Logger.h"
 #include "joynr/IReplyCaller.h"
-
-#include <string>
-#include <functional>
-
-#include <mutex>
-#include <unordered_map>
-
-#include <memory>
 
 namespace joynr
 {
@@ -64,39 +61,6 @@ public:
 
     virtual void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms) = 0;
     virtual void remove(const Key& keyId) = 0;
-};
-
-template <typename Key_,
-          typename T,
-          typename Hash = std::hash<Key_>,
-          typename EqualTo = std::equal_to<Key_>>
-class Directory : public IDirectory<Key_, T>
-{
-public:
-    using Key = Key_;
-    using Value = T;
-
-    Directory() = default;
-    ~Directory() override;
-    explicit Directory(const std::string& directoryName);
-    std::shared_ptr<T> lookup(const Key& keyId) override;
-    bool contains(const Key& keyId) override;
-    /*
-     * Adds an element and keeps it until actively removed (using the 'remove' method)
-     */
-    void add(const Key& keyId, std::shared_ptr<T> value) override;
-    /*
-     * Adds an element and removes it automatically after ttl_ms milliseconds have past.
-     */
-    void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms) override;
-    void remove(const Key& keyId) override;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(Directory);
-    std::unordered_map<Key, std::shared_ptr<T>, Hash, EqualTo> callbackMap;
-    std::mutex mutex;
-    SingleThreadedDelayedScheduler callBackRemoverScheduler;
-    ADD_LOGGER(Directory);
 };
 
 template <typename D>
@@ -150,65 +114,83 @@ private:
 template <typename D>
 INIT_LOGGER(RemoverRunnable<D>);
 
-template <typename Key, typename T, typename Hash, typename EqualTo>
-INIT_LOGGER(SINGLE_MACRO_ARG(Directory<Key, T, Hash, EqualTo>));
-
-template <typename Key, typename T, typename Hash, typename EqualTo>
-Directory<Key, T, Hash, EqualTo>::~Directory()
+template <typename Key_,
+          typename T,
+          typename Hash = std::hash<Key_>,
+          typename EqualTo = std::equal_to<Key_>>
+class Directory : public IDirectory<Key_, T>
 {
-    callBackRemoverScheduler.shutdown();
-    JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", callbackMap.size());
-}
+public:
+    using Key = Key_;
+    using Value = T;
 
-template <typename Key, typename T, typename Hash, typename EqualTo>
-Directory<Key, T, Hash, EqualTo>::Directory(const std::string& /*directoryName*/)
-        : callbackMap(), mutex(), callBackRemoverScheduler("DirRemover")
-{
-}
+    Directory() = default;
 
-template <typename Key, typename T, typename Hash, typename EqualTo>
-std::shared_ptr<T> Directory<Key, T, Hash, EqualTo>::lookup(const Key& keyId)
-{
-    std::lock_guard<std::mutex> lock(mutex);
-    return callbackMap[keyId];
-}
+    explicit Directory(const std::string& directoryName)
+            : callbackMap(), mutex(), callBackRemoverScheduler("DirRemover")
+    {
+        std::ignore = directoryName;
+    }
 
-template <typename Key, typename T, typename Hash, typename EqualTo>
-bool Directory<Key, T, Hash, EqualTo>::contains(const Key& keyId)
-{
-    std::lock_guard<std::mutex> lock(mutex);
-    return callbackMap.find(keyId) != callbackMap.cend();
-}
+    ~Directory() override
+    {
+        callBackRemoverScheduler.shutdown();
+        JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", callbackMap.size());
+    }
 
-template <typename Key, typename T, typename Hash, typename EqualTo>
-void Directory<Key, T, Hash, EqualTo>::add(const Key& keyId, std::shared_ptr<T> value)
-{
-    std::lock_guard<std::mutex> lock(mutex);
-    callbackMap[keyId] = std::move(value);
-}
+    std::shared_ptr<T> lookup(const Key& keyId) override
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        return callbackMap[keyId];
+    }
 
-template <typename Key, typename T, typename Hash, typename EqualTo>
-void Directory<Key, T, Hash, EqualTo>::add(const Key& keyId,
-                                           std::shared_ptr<T> value,
-                                           std::int64_t ttl_ms)
-{
-    // Insert the value
+    bool contains(const Key& keyId) override
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        return callbackMap.find(keyId) != callbackMap.cend();
+    }
+
+    /*
+     * Adds an element and keeps it until actively removed (using the 'remove' method)
+     */
+    void add(const Key& keyId, std::shared_ptr<T> value) override
     {
         std::lock_guard<std::mutex> lock(mutex);
         callbackMap[keyId] = std::move(value);
     }
 
-    // make a removerRunnable and shedule it to remove the entry after ttl!
-    auto* removerRunnable = new RemoverRunnable<Directory<Key, T, Hash, EqualTo>>(keyId, this);
-    callBackRemoverScheduler.schedule(removerRunnable, std::chrono::milliseconds(ttl_ms));
-}
+    /*
+     * Adds an element and removes it automatically after ttl_ms milliseconds have past.
+     */
+    void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms) override
+    {
+        // Insert the value
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            callbackMap[keyId] = std::move(value);
+        }
+
+        // make a removerRunnable and shedule it to remove the entry after ttl!
+        auto* removerRunnable = new RemoverRunnable<Directory<Key, T, Hash, EqualTo>>(keyId, this);
+        callBackRemoverScheduler.schedule(removerRunnable, std::chrono::milliseconds(ttl_ms));
+    }
+
+    void remove(const Key& keyId) override
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        callbackMap.erase(keyId);
+    }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(Directory);
+    std::unordered_map<Key, std::shared_ptr<T>, Hash, EqualTo> callbackMap;
+    std::mutex mutex;
+    SingleThreadedDelayedScheduler callBackRemoverScheduler;
+    ADD_LOGGER(Directory);
+};
 
 template <typename Key, typename T, typename Hash, typename EqualTo>
-void Directory<Key, T, Hash, EqualTo>::remove(const Key& keyId)
-{
-    std::lock_guard<std::mutex> lock(mutex);
-    callbackMap.erase(keyId);
-}
+INIT_LOGGER(SINGLE_MACRO_ARG(Directory<Key, T, Hash, EqualTo>));
 
 } // namespace joynr
 
