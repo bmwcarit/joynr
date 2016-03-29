@@ -19,16 +19,15 @@
 #ifndef MESSAGEQUEUE_H
 #define MESSAGEQUEUE_H
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
-
-#include "joynr/JoynrMessage.h"
-#include "joynr/ContentWithDecayTime.h"
-
+#include <cstdint>
 #include <mutex>
 #include <string>
 #include <map>
-#include <cstdint>
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/ContentWithDecayTime.h"
 
 namespace joynr
 {
@@ -40,9 +39,7 @@ class JOYNR_EXPORT MessageQueue
 public:
     MessageQueue();
 
-    ~MessageQueue();
-
-    std::size_t getQueueLength();
+    std::size_t getQueueLength() const;
 
     std::size_t queueMessage(const JoynrMessage& message);
 
@@ -53,7 +50,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
-    std::multimap<std::string, MessageQueueItem*>* queue;
+    std::multimap<std::string, MessageQueueItem*> queue;
     mutable std::mutex queueMutex;
 };
 } // namespace joynr
