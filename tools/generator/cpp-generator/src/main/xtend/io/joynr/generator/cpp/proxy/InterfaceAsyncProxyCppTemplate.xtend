@@ -63,7 +63,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «asyncClassName»::«asyncClassName»(
-		std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
+		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
 		const std::string &domain,

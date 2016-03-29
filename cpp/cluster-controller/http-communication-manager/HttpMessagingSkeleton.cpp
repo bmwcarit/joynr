@@ -41,7 +41,8 @@ void HttpMessagingSkeleton::transmit(
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
         std::string replyChannelId = message.getHeaderReplyChannelId();
-        auto address = std::make_shared<system::RoutingTypes::ChannelAddress>(replyChannelId);
+        auto address =
+                std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(replyChannelId);
         messageRouter.addNextHop(message.getHeaderFrom(), address);
     }
 

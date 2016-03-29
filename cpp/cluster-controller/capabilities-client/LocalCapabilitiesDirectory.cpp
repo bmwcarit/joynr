@@ -399,8 +399,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                                 e.what());
             }
         } else {
-            auto joynrAddress =
-                    std::make_shared<system::RoutingTypes::ChannelAddress>(entryIterator.key());
+            auto joynrAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
+                    entryIterator.key());
             messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
         }
         this->insertInCache(currentEntry, false, true);

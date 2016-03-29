@@ -231,7 +231,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     } else {
         auto globalCapabilitiesDirectoryAddress =
-                std::make_shared<system::RoutingTypes::ChannelAddress>(
+                std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                         capabilitiesDirectoryChannelId);
         messageRouter->addProvisionedNextHop(
                 capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
@@ -254,7 +254,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         }
     } else {
         auto globalChannelUrlDirectoryAddress =
-                std::make_shared<system::RoutingTypes::ChannelAddress>(
+                std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                         channelUrlDirectoryChannelId);
         messageRouter->addProvisionedNextHop(
                 channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);

@@ -203,7 +203,7 @@ protected:
     /** @brief System services settings */
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
-    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     /** @brief MessageRouter instance */
     std::shared_ptr<MessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */

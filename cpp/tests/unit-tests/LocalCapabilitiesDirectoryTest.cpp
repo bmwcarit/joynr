@@ -68,7 +68,7 @@ public:
         dummyParticipantId1 = util::createUuid();
         dummyParticipantId2 = util::createUuid();
         dummyParticipantId3 = util::createUuid();
-        localJoynrMessagingAddress1 = std::make_shared<system::RoutingTypes::ChannelAddress>("LOCAL_CHANNEL_ID");
+        localJoynrMessagingAddress1 = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>("LOCAL_CHANNEL_ID");
         callback = std::make_shared<MockLocalCapabilitiesDirectoryCallback>();
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
@@ -200,7 +200,7 @@ protected:
     std::string dummyParticipantId1;
     std::string dummyParticipantId2;
     std::string dummyParticipantId3;
-    std::shared_ptr<system::RoutingTypes::ChannelAddress> localJoynrMessagingAddress1;
+    std::shared_ptr<joynr::system::RoutingTypes::ChannelAddress> localJoynrMessagingAddress1;
     joynr::types::DiscoveryQos discoveryQos;
     QMap<std::string, CapabilityEntry> globalCapEntryMap;
 
@@ -875,13 +875,13 @@ MATCHER_P2(pointerToAddressWithChannelId, addressType, channelId, "") {
         return false;
     }
     if (addressType == "mqtt") {
-        std::shared_ptr<system::RoutingTypes::MqttAddress> mqttAddress = std::dynamic_pointer_cast<system::RoutingTypes::MqttAddress>(arg);
+        auto mqttAddress = std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(arg);
         if (mqttAddress == nullptr) {
             return false;
         }
         return JsonSerializer::serialize(*mqttAddress) == channelId;
     } else if (addressType == "http") {
-        std::shared_ptr<system::RoutingTypes::ChannelAddress> httpAddress = std::dynamic_pointer_cast<system::RoutingTypes::ChannelAddress>(arg);
+        auto httpAddress = std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(arg);
         if (httpAddress == nullptr) {
             return false;
         }
@@ -896,14 +896,14 @@ void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(const std::str
         EXPECT_CALL(mockMessageRouter, addNextHop(
                 participantId,
                 AllOf(
-                        Pointee(A<const joynr::system::RoutingTypes::Address>()),
+                        Pointee(A<joynr::system::RoutingTypes::Address>()),
                         pointerToAddressWithChannelId(addressType, channelId)),
                 _)
             ).Times(1);
         EXPECT_CALL(mockMessageRouter, addNextHop(
                 participantId,
                 AnyOf(
-                        Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
+                        Not(Pointee(A<joynr::system::RoutingTypes::Address>())),
                         Not(pointerToAddressWithChannelId(addressType, channelId))
                         ),
                 _)

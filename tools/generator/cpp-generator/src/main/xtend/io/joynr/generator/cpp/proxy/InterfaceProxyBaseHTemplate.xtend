@@ -83,7 +83,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«className»(
-			std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
+			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,
@@ -197,7 +197,7 @@ public:
 
 protected:
 	/** @brief The joynr messaging address */
-	std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress;
+	std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress;
 	/** @brief The kind of connector */
 	std::unique_ptr<I«interfaceName»Connector> connector;
 

@@ -242,7 +242,7 @@ public:
         : InProcessConnectorFactory(nullptr,nullptr,nullptr,nullptr) {
     }
 
-    MOCK_METHOD1(canBeCreated, bool(const std::shared_ptr<joynr::system::RoutingTypes::Address> address));
+    MOCK_METHOD1(canBeCreated, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address> address));
 };
 
 class MockDispatcher : public joynr::IDispatcher {
@@ -273,7 +273,7 @@ public:
 class MockMessageRouter : public joynr::MessageRouter {
 public:
     void invokeAddNextHopOnSuccessFct(const std::string& participantId,
-            const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             std::function<void()> onSuccess) {
         if (onSuccess) {
             onSuccess();
@@ -304,7 +304,7 @@ public:
     MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, std::uint32_t tryCount));
     MOCK_METHOD3(addNextHop, void(
             const std::string& participantId,
-            const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             std::function<void()> onSuccess));
     MOCK_METHOD3(removeNextHop, void(
             const std::string& participantId,
@@ -789,11 +789,11 @@ public:
 class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::ChannelUrlDirectoryProxy {
 public:
     MockChannelUrlDirectoryProxy() :
-        ChannelUrlDirectoryProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectoryProxy(std::make_shared<const joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
         ProxyBase(nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectoryProxyBase(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectorySyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectoryAsyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false){}
+        ChannelUrlDirectoryProxyBase(std::make_shared<const joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectorySyncProxy(std::make_shared<const joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectoryAsyncProxy(std::make_shared<const joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false){}
 
     MOCK_METHOD3(getUrlsForChannelAsync,
                  std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> (
@@ -871,7 +871,7 @@ class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructu
 public:
     MockGlobalDomainAccessControllerProxy() :
         GlobalDomainAccessControllerProxy(
-                std::make_shared<joynr::system::RoutingTypes::Address>(),
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
@@ -884,21 +884,21 @@ public:
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerProxyBase(
-                std::make_shared<joynr::system::RoutingTypes::Address>(),
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerSyncProxy(
-                std::make_shared<joynr::system::RoutingTypes::Address>(),
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerAsyncProxy(
-                std::make_shared<joynr::system::RoutingTypes::Address>(),
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
                 nullptr,
                 "domain",

@@ -42,15 +42,16 @@ INIT_LOGGER(MessageRouter);
 class ConsumerPermissionCallback : public IAccessController::IHasConsumerPermissionCallback
 {
 public:
-    ConsumerPermissionCallback(MessageRouter& owningMessageRouter,
-                               const JoynrMessage& message,
-                               std::shared_ptr<system::RoutingTypes::Address> destination);
+    ConsumerPermissionCallback(
+            MessageRouter& owningMessageRouter,
+            const JoynrMessage& message,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destination);
 
     void hasConsumerPermission(bool hasPermission) override;
 
     MessageRouter& owningMessageRouter;
     JoynrMessage message;
-    std::shared_ptr<system::RoutingTypes::Address> destination;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> destination;
 
 private:
     ADD_LOGGER(ConsumerPermissionCallback);
@@ -90,10 +91,11 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
             true);
 }
 
-MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
-                             std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress,
-                             int maxThreads,
-                             std::unique_ptr<MessageQueue> messageQueue)
+MessageRouter::MessageRouter(
+        std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
+        int maxThreads,
+        std::unique_ptr<MessageQueue> messageQueue)
         : joynr::system::RoutingAbstractProvider(),
           messagingStubFactory(std::move(messagingStubFactory)),
           routingTable("MessageRouter-RoutingTable"),
@@ -118,7 +120,7 @@ MessageRouter::MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStu
 
 void MessageRouter::addProvisionedNextHop(
         std::string participantId,
-        std::shared_ptr<joynr::system::RoutingTypes::Address> address)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
     addToRoutingTable(participantId, address);
 }
@@ -131,7 +133,7 @@ void MessageRouter::setAccessController(std::shared_ptr<IAccessController> acces
 
 void MessageRouter::setParentRouter(
         std::unique_ptr<system::RoutingProxy> parentRouter,
-        std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress,
         std::string parentParticipantId)
 {
     this->parentRouter = std::move(parentRouter);
@@ -182,7 +184,7 @@ void MessageRouter::route(const JoynrMessage& message, std::uint32_t tryCount)
                     message.getPayload());
     // search for the destination address
     const std::string destinationPartId = message.getHeaderTo();
-    std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress(nullptr);
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress(nullptr);
 
     {
         ReadLocker lock(routingTableLock);
@@ -252,8 +254,9 @@ void MessageRouter::removeRunningParentResolvers(const std::string& destinationP
     }
 }
 
-void MessageRouter::sendMessages(const std::string& destinationPartId,
-                                 std::shared_ptr<joynr::system::RoutingTypes::Address> address)
+void MessageRouter::sendMessages(
+        const std::string& destinationPartId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
     while (true) {
         MessageQueueItem* item = messageQueue->getNextMessageForParticipant(destinationPartId);
@@ -272,16 +275,17 @@ void MessageRouter::sendMessages(const std::string& destinationPartId,
     }
 }
 
-void MessageRouter::sendMessage(const JoynrMessage& message,
-                                std::shared_ptr<system::RoutingTypes::Address> destAddress,
-                                std::uint32_t tryCount)
+void MessageRouter::sendMessage(
+        const JoynrMessage& message,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+        std::uint32_t tryCount)
 {
     scheduleMessage(message, destAddress, tryCount);
 }
 
 void MessageRouter::scheduleMessage(
         const JoynrMessage& message,
-        std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         std::uint32_t tryCount,
         std::chrono::milliseconds delay)
 {
@@ -291,7 +295,7 @@ void MessageRouter::scheduleMessage(
                 new MessageRunnable(message, stub, destAddress, *this, tryCount), delay);
     } else {
         std::string errorMessage("Message with payload " + message.getPayload() +
-                                 "  could not be send to " + (*destAddress).toString() +
+                                 "  could not be send to " + destAddress->toString() +
                                  ". Stub creation failed");
         JOYNR_LOG_WARN(logger, errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
@@ -300,7 +304,7 @@ void MessageRouter::scheduleMessage(
 
 void MessageRouter::addNextHop(
         const std::string& participantId,
-        const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
+        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
         std::function<void()> onSuccess)
 {
     addToRoutingTable(participantId, inprocessAddress);
@@ -317,7 +321,8 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto address = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>(channelAddress);
+    auto address =
+            std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(channelAddress);
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess, onError);
@@ -332,7 +337,7 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto address = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess, onError);
@@ -347,7 +352,7 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto address = std::make_shared<joynr::system::RoutingTypes::CommonApiDbusAddress>(
+    auto address = std::make_shared<const joynr::system::RoutingTypes::CommonApiDbusAddress>(
             commonApiDbusAddress);
     addToRoutingTable(participantId, address);
 
@@ -363,7 +368,8 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto address = std::make_shared<joynr::system::RoutingTypes::BrowserAddress>(browserAddress);
+    auto address =
+            std::make_shared<const joynr::system::RoutingTypes::BrowserAddress>(browserAddress);
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess, onError);
@@ -379,7 +385,7 @@ void MessageRouter::addNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     auto address =
-            std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>(webSocketAddress);
+            std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(webSocketAddress);
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess, onError);
@@ -394,7 +400,7 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto address = std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>(
+    auto address = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
             webSocketClientAddress);
     addToRoutingTable(participantId, address);
 
@@ -424,36 +430,35 @@ void MessageRouter::addNextHopToParent(
     // add to parent router
     if (isChildMessageRouter()) {
         if (auto channelAddress =
-                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::ChannelAddress>(
+                    std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(
                             incomingAddress)) {
             parentRouter->addNextHopAsync(
                     participantId, *channelAddress, onSuccess, onErrorWrapper);
         }
-        if (auto mqttAddress = std::dynamic_pointer_cast<joynr::system::RoutingTypes::MqttAddress>(
-                    incomingAddress)) {
+        if (auto mqttAddress =
+                    std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(
+                            incomingAddress)) {
             parentRouter->addNextHopAsync(participantId, *mqttAddress, onSuccess, onErrorWrapper);
         }
-        if (auto commonApiDbusAddress =
-                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::CommonApiDbusAddress>(
-                            incomingAddress)) {
+        if (auto commonApiDbusAddress = std::dynamic_pointer_cast<
+                    const joynr::system::RoutingTypes::CommonApiDbusAddress>(incomingAddress)) {
             parentRouter->addNextHopAsync(
                     participantId, *commonApiDbusAddress, onSuccess, onErrorWrapper);
         }
         if (auto browserAddress =
-                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::BrowserAddress>(
+                    std::dynamic_pointer_cast<const joynr::system::RoutingTypes::BrowserAddress>(
                             incomingAddress)) {
             parentRouter->addNextHopAsync(
                     participantId, *browserAddress, onSuccess, onErrorWrapper);
         }
         if (auto webSocketAddress =
-                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::WebSocketAddress>(
+                    std::dynamic_pointer_cast<const joynr::system::RoutingTypes::WebSocketAddress>(
                             incomingAddress)) {
             parentRouter->addNextHopAsync(
                     participantId, *webSocketAddress, onSuccess, onErrorWrapper);
         }
-        if (auto webSocketClientAddress =
-                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::WebSocketClientAddress>(
-                            incomingAddress)) {
+        if (auto webSocketClientAddress = std::dynamic_pointer_cast<
+                    const joynr::system::RoutingTypes::WebSocketClientAddress>(incomingAddress)) {
             parentRouter->addNextHopAsync(
                     participantId, *webSocketClientAddress, onSuccess, onErrorWrapper);
         }
@@ -462,8 +467,9 @@ void MessageRouter::addNextHopToParent(
     }
 }
 
-void MessageRouter::addToRoutingTable(std::string participantId,
-                                      std::shared_ptr<joynr::system::RoutingTypes::Address> address)
+void MessageRouter::addToRoutingTable(
+        std::string participantId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
     WriteLocker lock(routingTableLock);
     routingTable.add(participantId, address);
@@ -521,11 +527,12 @@ void MessageRouter::resolveNextHop(
 
 INIT_LOGGER(MessageRunnable);
 
-MessageRunnable::MessageRunnable(const JoynrMessage& message,
-                                 std::shared_ptr<IMessaging> messagingStub,
-                                 std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
-                                 MessageRouter& messageRouter,
-                                 std::uint32_t tryCount)
+MessageRunnable::MessageRunnable(
+        const JoynrMessage& message,
+        std::shared_ptr<IMessaging> messagingStub,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+        MessageRouter& messageRouter,
+        std::uint32_t tryCount)
         : Runnable(true),
           ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
@@ -579,7 +586,7 @@ INIT_LOGGER(ConsumerPermissionCallback);
 ConsumerPermissionCallback::ConsumerPermissionCallback(
         MessageRouter& owningMessageRouter,
         const JoynrMessage& message,
-        std::shared_ptr<system::RoutingTypes::Address> destination)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destination)
         : owningMessageRouter(owningMessageRouter), message(message), destination(destination)
 {
 }

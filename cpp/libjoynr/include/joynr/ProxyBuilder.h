@@ -67,7 +67,7 @@ public:
     ProxyBuilder(ProxyFactory* proxyFactory,
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
-                 std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress,
+                 std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
                  std::shared_ptr<MessageRouter> messageRouter,
                  std::uint64_t messagingMaximumTtlMs);
 
@@ -193,18 +193,19 @@ private:
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     std::int64_t discoveryTimeout;
 
-    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
 };
 
 template <class T>
-ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
-                              joynr::system::IDiscoverySync& discoveryProxy,
-                              const std::string& domain,
-                              std::shared_ptr<system::RoutingTypes::Address> dispatcherAddress,
-                              std::shared_ptr<MessageRouter> messageRouter,
-                              std::uint64_t messagingMaximumTtlMs)
+ProxyBuilder<T>::ProxyBuilder(
+        ProxyFactory* proxyFactory,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const std::string& domain,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
+        std::shared_ptr<MessageRouter> messageRouter,
+        std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
           cached(false),
           hasArbitrationStarted(false),

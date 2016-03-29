@@ -77,7 +77,7 @@ public:
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
     MessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
-                  std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress,
+                  std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
                   int maxThreads = 6,
                   std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
@@ -133,17 +133,17 @@ public:
                                 onError) override;
 
     void addProvisionedNextHop(std::string participantId,
-                               std::shared_ptr<system::RoutingTypes::Address> address);
+                               std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
     void setAccessController(std::shared_ptr<IAccessController> accessController);
 
     void setParentRouter(std::unique_ptr<joynr::system::RoutingProxy> parentRouter,
-                         std::shared_ptr<system::RoutingTypes::Address> parentAddress,
+                         std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress,
                          std::string parentParticipantId);
 
     virtual void addNextHop(
             const std::string& participantId,
-            const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             std::function<void()> onSuccess = nullptr);
 
     friend class MessageRunnable;
@@ -152,12 +152,12 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
-    Directory<std::string, joynr::system::RoutingTypes::Address> routingTable;
+    Directory<std::string, const joynr::system::RoutingTypes::Address> routingTable;
     ReadWriteLock routingTableLock;
     ThreadPoolDelayedScheduler messageScheduler;
     std::unique_ptr<joynr::system::RoutingProxy> parentRouter;
-    std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress;
-    std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress;
     ADD_LOGGER(MessageRouter);
 
     std::unique_ptr<MessageQueue> messageQueue;
@@ -173,21 +173,21 @@ private:
                                     onError = nullptr);
 
     void sendMessage(const JoynrMessage& message,
-                     std::shared_ptr<system::RoutingTypes::Address> destAddress,
+                     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                      std::uint32_t tryCount = 0);
 
     void sendMessages(const std::string& destinationPartId,
-                      std::shared_ptr<system::RoutingTypes::Address> address);
+                      std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
     bool isChildMessageRouter();
 
     void addToRoutingTable(std::string participantId,
-                           std::shared_ptr<joynr::system::RoutingTypes::Address> address);
+                           std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
     void removeRunningParentResolvers(const std::string& destinationPartId);
 
     void scheduleMessage(const JoynrMessage& message,
-                         std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+                         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                          std::uint32_t tryCount,
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 };
@@ -200,7 +200,7 @@ class MessageRunnable : public Runnable, public ObjectWithDecayTime
 public:
     MessageRunnable(const JoynrMessage& message,
                     std::shared_ptr<IMessaging> messagingStub,
-                    std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress,
+                    std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                     MessageRouter& messageRouter,
                     std::uint32_t tryCount);
     void shutdown() override;
@@ -209,7 +209,7 @@ public:
 private:
     JoynrMessage message;
     std::shared_ptr<IMessaging> messagingStub;
-    std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     MessageRouter& messageRouter;
     std::uint32_t tryCount;
     ADD_LOGGER(MessageRunnable);

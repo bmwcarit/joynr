@@ -67,7 +67,7 @@ public:
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
-    std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingStubAddress;
     std::shared_ptr<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;

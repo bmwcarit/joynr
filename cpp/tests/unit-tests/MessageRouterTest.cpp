@@ -54,12 +54,12 @@ public:
 
         messageRouter = std::make_unique<MessageRouter>(std::move(messagingStubFactory), std::unique_ptr<IPlatformSecurityManager>(), 6, std::move(messageQueue));
         // provision global capabilities directory
-        auto addressCapabilitiesDirectory = std::make_shared<system::RoutingTypes::ChannelAddress>(
+        auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                     messagingSettings.getCapabilitiesDirectoryChannelId()
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
-        auto addressChannelUrlDirectory = std::make_shared<system::RoutingTypes::ChannelAddress>(
+        auto addressChannelUrlDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                     messagingSettings.getChannelUrlDirectoryChannelId()
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
@@ -86,7 +86,7 @@ protected:
     JoynrMessage joynrMessage;
     void routeMessageToAddress(
             const std::string& destinationParticipantId,
-            std::shared_ptr<system::RoutingTypes::Address> address);
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouterTest);
 };
@@ -140,7 +140,7 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
 
     // add destination address -> message should be routed
-    auto httpAddress = std::make_shared<system::RoutingTypes::ChannelAddress>(testHttp);
+    auto httpAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(testHttp);
     messageRouter->addNextHop(testHttp, httpAddress);
     // the message now has a known destination and should be directly routed
     joynrMessage.setHeaderTo(testHttp);
@@ -150,7 +150,7 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // add destination address -> message should be routed
-    auto mqttAddress = std::make_shared<system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
+    auto mqttAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
     messageRouter->addNextHop(testMqtt, mqttAddress);
     // the message now has a known destination and should be directly routed
     joynrMessage.setHeaderTo(testMqtt);
@@ -170,7 +170,7 @@ TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // add destination address -> message should be routed
-    auto httpAddress = std::make_shared<system::RoutingTypes::ChannelAddress>(testHttp);
+    auto httpAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(testHttp);
     messageRouter->addNextHop(testHttp, httpAddress);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 
@@ -178,7 +178,7 @@ TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
-    auto mqttAddress = std::make_shared<system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
+    auto mqttAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
     messageRouter->addNextHop(testMqtt, mqttAddress);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }
@@ -194,7 +194,7 @@ TEST_F(MessageRouterTest, outdatedMessagesAreRemoved){
 
 void MessageRouterTest::routeMessageToAddress(
         const std::string& destinationParticipantId,
-        std::shared_ptr<system::RoutingTypes::Address> address) {
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address) {
     messageRouter->addNextHop(destinationParticipantId, address);
     joynrMessage.setHeaderTo(destinationParticipantId);
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
@@ -206,7 +206,7 @@ void MessageRouterTest::routeMessageToAddress(
 TEST_F(MessageRouterTest, routeMessageToHttpAddress) {
     const std::string destinationParticipantId = "TEST_routeMessageToHttpAddress";
     const std::string destinationChannelId = "TEST_routeMessageToHttpAddress_channelId";
-    auto address = std::make_shared<system::RoutingTypes::ChannelAddress>(destinationChannelId);
+    auto address = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(destinationChannelId);
     EXPECT_CALL(*messagingStubFactory,
             create(AllOf(
                     A<const joynr::system::RoutingTypes::Address&>(),
@@ -222,7 +222,7 @@ TEST_F(MessageRouterTest, routeMessageToMqttAddress) {
     const std::string destinationParticipantId = "TEST_routeMessageToMqttAddress";
     const std::string destinationChannelId = "TEST_routeMessageToMqttAddress_channelId";
     const std::string brokerUri = "brokerUri";
-    auto address = std::make_shared<system::RoutingTypes::MqttAddress>(brokerUri, destinationChannelId);
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, destinationChannelId);
     EXPECT_CALL(*messagingStubFactory,
             create(AllOf(
                     A<const joynr::system::RoutingTypes::Address&>(),
