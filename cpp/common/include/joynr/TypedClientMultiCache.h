@@ -195,7 +195,7 @@ void TypedClientMultiCache<Key, T>::removeAll(const Key& key)
 template <class Key, class T>
 void TypedClientMultiCache<Key, T>::cleanup(std::chrono::milliseconds maxAcceptedAge)
 {
-    std::unique_lock<std::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     std::vector<Key> keyset = cache.keys();
     std::vector<CachedValue<T>>* entries;
     std::vector<int> attributesToBeRemoved;

@@ -116,7 +116,7 @@ std::string createUuid()
     static boost::uuids::random_generator uuidGenerator;
     // uuid generator is not threadsafe
     static std::mutex uuidMutex;
-    std::unique_lock<std::mutex> uuidLock(uuidMutex);
+    std::lock_guard<std::mutex> uuidLock(uuidMutex);
     return boost::uuids::to_string(uuidGenerator());
 }
 

@@ -54,7 +54,7 @@ bool Semaphore::waitFor(std::chrono::milliseconds timeoutMs /*= std::chrono::mil
 
 std::size_t Semaphore::getStatus() const
 {
-    std::unique_lock<std::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return counter;
 }
 } // namespace joynr

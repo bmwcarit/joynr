@@ -178,7 +178,7 @@ bool SerializerRegistry::registerType(const std::string& typeName)
     // Create serializer/deserializer for given type
     {
         SerializerRegistry& registry = getInstance();
-        std::unique_lock<std::mutex> lock(registry.registryMutex);
+        std::lock_guard<std::mutex> lock(registry.registryMutex);
 
         registry.metaObjects[typeName] = std::make_unique<ClassMetaObjectType<T>>();
     }
@@ -191,7 +191,7 @@ bool SerializerRegistry::registerNativeType(const std::string& typeName)
     // Create only serializer for native types
     {
         SerializerRegistry& registry = getInstance();
-        std::unique_lock<std::mutex> lock(registry.registryMutex);
+        std::lock_guard<std::mutex> lock(registry.registryMutex);
 
         registry.metaObjects[typeName] = std::make_unique<NativeMetaObjectType<T>>();
     }
@@ -204,7 +204,7 @@ bool SerializerRegistry::registerEnum(const std::string& typeName)
     // Create special enum serializer/deserializer for given enum
     {
         SerializerRegistry& registry = getInstance();
-        std::unique_lock<std::mutex> lock(registry.registryMutex);
+        std::lock_guard<std::mutex> lock(registry.registryMutex);
 
         registry.metaObjects[typeName] = std::make_unique<EnumMetaObjectType<T>>();
     }

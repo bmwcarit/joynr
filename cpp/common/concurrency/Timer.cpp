@@ -56,7 +56,7 @@ Timer::TimerId Timer::addTimer(std::function<void(Timer::TimerId)> onTimerExpire
     bool newTimerIsNextTimer = false;
 
     {
-        std::unique_lock<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         if (periodic) {
             newTimer = new PeriodicTimerData(
                     ++currentId, onTimerExpired, onActiveTimerRemoved, interval);
@@ -82,7 +82,7 @@ bool Timer::removeTimer(TimerId id)
     bool reorganize = false;
     // Call Dtor and remove from map
     {
-        std::unique_lock<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         auto it = timers.begin();
         while (it != timers.end()) {
             if (it->second->getId() == id) {
