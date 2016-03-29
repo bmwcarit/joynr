@@ -311,6 +311,39 @@ TEST_F(StdComplexDataTypeTest, equalsOperatorExtended) {
     EXPECT_NE(tEverythingExtended2, tEverythingExtended1);
 }
 
+TEST_F(StdComplexDataTypeTest, equalsOperatorCompareSameClass) {
+    TestTypes::TEverythingExtendedStruct rhs = tEverythingExtended1;
+    TestTypes::TEverythingExtendedStruct lhs = rhs;
+    EXPECT_TRUE(lhs == rhs);
+    EXPECT_FALSE(lhs != rhs);
+
+    lhs.setTBoolean(!lhs.getTBoolean());
+    EXPECT_FALSE(lhs == rhs);
+    EXPECT_TRUE(lhs != rhs);
+}
+
+TEST_F(StdComplexDataTypeTest, equalsOperatorCompareWithReferenceToBase) {
+    const TestTypes::TEverythingExtendedStruct& rhs = tEverythingExtended1;
+    const TestTypes::TEverythingStruct& lhs1 = rhs;
+    EXPECT_TRUE(lhs1 == rhs);
+    EXPECT_FALSE(lhs1 != rhs);
+
+    TestTypes::TEverythingExtendedStruct tEverythingExtended2 = tEverythingExtended1;
+    tEverythingExtended2.setTBoolean(!tEverythingExtended2.getTBoolean());
+    const TestTypes::TEverythingStruct& lhs2 = tEverythingExtended2;
+    EXPECT_FALSE(lhs2 == rhs);
+    EXPECT_TRUE(lhs2 != rhs);
+}
+
+TEST_F(StdComplexDataTypeTest, equalsOperatorBaseCompareWithDerived) {
+    // intended object slicing:
+    // only get those parts of TEverythingExtendedStruct which stem from TEverythingStruct
+    TestTypes::TEverythingStruct rhs = tEverythingExtended1;
+    TestTypes::TEverythingExtendedStruct lhs = tEverythingExtended1;
+    EXPECT_FALSE(lhs == rhs);
+    EXPECT_TRUE(lhs != rhs);
+}
+
 TEST_F(StdComplexDataTypeTest, assignExtendedComplexDataType) {
     TestTypes::TEverythingExtendedStruct tEverythingExtended2;
     tEverythingExtended2 = tEverythingExtended1;
