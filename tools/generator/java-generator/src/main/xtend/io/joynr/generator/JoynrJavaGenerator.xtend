@@ -61,8 +61,6 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 
 	@Inject extension JoynrJavaGeneratorExtensions
 
-	@Inject private FrancaPersistenceManager francaPersistenceManager
-
 	override getLanguageId() {
 		"java"
 	}
@@ -79,7 +77,7 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 	 * Triggers the generation. In case the parameter "generate" is set to false, the generator is cleaning the generation folder
 	 */
 	override doGenerate(Resource input, IFileSystemAccess fsa) {
-		val isFrancaIDLResource = input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)
+		val isFrancaIDLResource = input.URI.fileExtension.equals(FrancaPersistenceManager.FRANCA_FILE_EXTENSION)
 		checkArgument(isFrancaIDLResource, "Unknown input: " + input)
 
 		val fModel = input.contents.get(0) as FModel

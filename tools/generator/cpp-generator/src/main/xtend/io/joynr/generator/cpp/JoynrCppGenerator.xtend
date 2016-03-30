@@ -44,9 +44,6 @@ import static com.google.common.base.Preconditions.*
 import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class JoynrCppGenerator extends AbstractJoynrGenerator{
-
-	@Inject private FrancaPersistenceManager francaPersistenceManager
-
 	@Inject CommunicationModelGenerator communicationModelGenerator
 	@Inject ProxyGenerator proxyGenerator
 	@Inject ProviderGenerator providerGenerator
@@ -162,7 +159,7 @@ class JoynrCppGenerator extends AbstractJoynrGenerator{
 	}
 
 	def getModel(Resource input) {
-		val isFrancaIDLResource = input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)
+		val isFrancaIDLResource = input.URI.fileExtension.equals(FrancaPersistenceManager.FRANCA_FILE_EXTENSION)
 		checkArgument(isFrancaIDLResource, "Unknown input: " + input)
 		return input.contents.get(0) as FModel;
 	}

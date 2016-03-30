@@ -39,7 +39,7 @@ import static com.google.common.base.Preconditions.*
 
 class JoynrJSGenerator extends AbstractJoynrGenerator {
 
-	@Inject private FrancaPersistenceManager francaPersistenceManager
+	//@Inject private FrancaPersistenceManager francaPersistenceManager
 	@Inject private GeneratorParameter parameters
 	@Inject JsTemplateFactory templateFactory
 	@Inject private extension TypesGenerator
@@ -58,7 +58,7 @@ class JoynrJSGenerator extends AbstractJoynrGenerator {
 	}
 
 	override doGenerate(Resource input, IFileSystemAccess fsa) {
-		val isFrancaIDLResource = input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)
+		val isFrancaIDLResource = input.URI.fileExtension.equals(FrancaPersistenceManager.FRANCA_FILE_EXTENSION)
 		checkArgument(isFrancaIDLResource, "Unknown input: " + input)
 
 		val fModel = input.contents.get(0) as FModel //francaPersistenceManager.loadModel(input.URI, input.URI)
