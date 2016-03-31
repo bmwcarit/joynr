@@ -67,10 +67,10 @@ public:
         discoveryDomain = systemSettings.getDomain();
         discoveryProviderParticipantId = systemSettings.getCcDiscoveryProviderParticipantId();
 
-        discoveryQos.setCacheMaxAge(1000);
+        discoveryQos.setCacheMaxAgeMs(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
         discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
-        discoveryQos.setDiscoveryTimeout(50);
+        discoveryQos.setDiscoveryTimeoutMs(50);
 
         std::string httpChannelId("http_SystemServicesDiscoveryTest.ChannelId");
         std::string httpEndPointUrl("http_SystemServicesRoutingTest.endPointUrl");

@@ -130,12 +130,12 @@ void LibJoynrRuntime::init(
             systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
-    routingProviderDiscoveryQos.setCacheMaxAge(1000);
+    routingProviderDiscoveryQos.setCacheMaxAgeMs(1000);
     routingProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     routingProviderDiscoveryQos.addCustomParameter(
             "fixedParticipantId", routingProviderParticipantId);
-    routingProviderDiscoveryQos.setDiscoveryTimeout(50);
+    routingProviderDiscoveryQos.setDiscoveryTimeoutMs(50);
 
     auto routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
@@ -152,12 +152,12 @@ void LibJoynrRuntime::init(
     std::string discoveryProviderParticipantId =
             systemServicesSettings.getCcDiscoveryProviderParticipantId();
     DiscoveryQos discoveryProviderDiscoveryQos;
-    discoveryProviderDiscoveryQos.setCacheMaxAge(1000);
+    discoveryProviderDiscoveryQos.setCacheMaxAgeMs(1000);
     discoveryProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryProviderDiscoveryQos.addCustomParameter(
             "fixedParticipantId", discoveryProviderParticipantId);
-    discoveryProviderDiscoveryQos.setDiscoveryTimeout(1000);
+    discoveryProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
 
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);

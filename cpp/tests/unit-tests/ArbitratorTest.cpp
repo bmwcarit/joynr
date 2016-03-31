@@ -203,8 +203,8 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
             );
 
     DiscoveryQos discoveryQos;
-    discoveryQos.setRetryInterval(100);
-    discoveryQos.setDiscoveryTimeout(450);
+    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.setDiscoveryTimeoutMs(450);
     DefaultArbitrator arbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     arbitrator.startArbitration();

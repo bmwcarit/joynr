@@ -39,7 +39,7 @@ FixedParticipantArbitrator::FixedParticipantArbitrator(
         const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
           participantId(discoveryQos.getCustomParameter("fixedParticipantId").getValue()),
-          reqCacheDataFreshness(discoveryQos.getCacheMaxAge())
+          reqCacheDataFreshness(discoveryQos.getCacheMaxAgeMs())
 {
 }
 

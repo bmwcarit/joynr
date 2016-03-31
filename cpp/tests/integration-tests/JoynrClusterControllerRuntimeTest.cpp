@@ -237,7 +237,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeout(50);
+    discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
@@ -282,7 +282,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeout(50);
+    discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
@@ -332,7 +332,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeout(50);
+    discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     tests::testProxy* testProxy = testProxyBuilder
@@ -387,7 +387,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeout(50);
+    discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     tests::testProxy* testProxy = testProxyBuilder

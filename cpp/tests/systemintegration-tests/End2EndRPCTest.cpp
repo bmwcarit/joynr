@@ -91,7 +91,7 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
     std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
@@ -121,7 +121,7 @@ TEST_P(End2EndRPCTest, call_void_operation)
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
     tests::testProxy* testProxy = testProxyBuilder
@@ -150,7 +150,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
             runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder

@@ -63,7 +63,7 @@ protected:
 
         // Find the provider with the highest priority set in ProviderQos
         DiscoveryQos discoveryQos;
-        discoveryQos.setDiscoveryTimeout(60000);
+        discoveryQos.setDiscoveryTimeoutMs(60000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
         // Build a proxy

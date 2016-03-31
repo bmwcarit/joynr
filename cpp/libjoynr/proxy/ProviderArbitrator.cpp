@@ -40,7 +40,7 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
                                        const DiscoveryQos& discoveryQos)
         : discoveryProxy(discoveryProxy),
           discoveryQos(discoveryQos),
-          systemDiscoveryQos(discoveryQos.getCacheMaxAge(),
+          systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                              discoveryQos.getDiscoveryScope(),
                              discoveryQos.getProviderMustSupportOnChange()),
           domain(domain),
@@ -72,21 +72,21 @@ void ProviderArbitrator::startArbitration()
         auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
 
-        if (discoveryQos.getDiscoveryTimeout() <= duration.count()) {
+        if (discoveryQos.getDiscoveryTimeoutMs() <= duration.count()) {
             // discovery timeout reached
             break;
-        } else if (discoveryQos.getDiscoveryTimeout() - duration.count() <=
-                   discoveryQos.getRetryInterval()) {
+        } else if (discoveryQos.getDiscoveryTimeoutMs() - duration.count() <=
+                   discoveryQos.getRetryIntervalMs()) {
             /*
              * no retry possible -> wait until discoveryTimeout is reached and inform caller about
              * cancelled arbitration
              */
-            semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeout() -
+            semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() -
                                                         duration.count()));
             break;
         } else {
             // wait for retry interval and attempt a new arbitration
-            semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryInterval()));
+            semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryIntervalMs()));
         }
     }
 

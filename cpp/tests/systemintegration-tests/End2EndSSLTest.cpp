@@ -92,7 +92,7 @@ TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
     std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder

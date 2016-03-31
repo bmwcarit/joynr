@@ -77,7 +77,7 @@ public:
         }
 
         DiscoveryQos discoveryQos;
-        discoveryQos.setCacheMaxAge(std::numeric_limits<std::int64_t>::max());
+        discoveryQos.setCacheMaxAgeMs(std::numeric_limits<std::int64_t>::max());
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
         try {

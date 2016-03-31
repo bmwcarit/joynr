@@ -49,10 +49,10 @@ public:
         routingDomain = systemSettings.getDomain();
         routingProviderParticipantId = systemSettings.getCcRoutingProviderParticipantId();
 
-        discoveryQos.setCacheMaxAge(1000);
+        discoveryQos.setCacheMaxAgeMs(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
         discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
-        discoveryQos.setDiscoveryTimeout(50);
+        discoveryQos.setDiscoveryTimeoutMs(50);
 
         std::string httpChannelId("http_SystemServicesRoutingTest.ChannelId");
         std::string httpEndPointUrl("http_SystemServicesRoutingTest.endPointUrl");

@@ -79,8 +79,8 @@ public:
         mockArbitrationListener(new MockArbitrationListener()),
         semaphore(0)
     {
-        discoveryQos.setDiscoveryTimeout(discoveryTimeout);
-        discoveryQos.setRetryInterval(retryInterval);
+        discoveryQos.setDiscoveryTimeoutMs(discoveryTimeout);
+        discoveryQos.setRetryIntervalMs(retryInterval);
         mockProviderArbitrator = new MockProviderArbitrator("domain", "interfaceName", mockDiscovery, discoveryQos);
     }
     void SetUp() {

@@ -292,7 +292,7 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     // if DiscoveryQos is set, arbitration will be started. It shall be avoided that the
     // setDiscoveryQos method can be called twice
     assert(!hasArbitrationStarted);
-    discoveryTimeout = discoveryQos.getDiscoveryTimeout();
+    discoveryTimeout = discoveryQos.getDiscoveryTimeoutMs();
     arbitrator = ProviderArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), discoveryProxy, discoveryQos);
     arbitrationSemaphore.wait();
