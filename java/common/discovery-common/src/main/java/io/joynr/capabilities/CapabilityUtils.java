@@ -35,7 +35,8 @@ import joynr.types.DiscoveryEntry;
 public class CapabilityUtils {
 
     public static DiscoveryEntry capabilityEntry2DiscoveryEntry(CapabilityEntry capabilityEntry) {
-        return new DiscoveryEntry(capabilityEntry.getDomain(),
+        return new DiscoveryEntry(capabilityEntry.getProviderVersion(),
+                                  capabilityEntry.getDomain(),
                                   capabilityEntry.getInterfaceName(),
                                   capabilityEntry.getParticipantId(),
                                   capabilityEntry.getProviderQos(),
@@ -48,7 +49,8 @@ public class CapabilityUtils {
     }
 
     public static DiscoveryEntry capabilitiesInfo2DiscoveryEntry(CapabilityInformation capabilityInformation) {
-        return new DiscoveryEntry(capabilityInformation.getDomain(),
+        return new DiscoveryEntry(capabilityInformation.getProviderVersion(),
+                                  capabilityInformation.getDomain(),
                                   capabilityInformation.getInterfaceName(),
                                   capabilityInformation.getParticipantId(),
                                   capabilityInformation.getProviderQos(),
@@ -56,7 +58,8 @@ public class CapabilityUtils {
     }
 
     public static CapabilityEntry capabilitiesInfo2CapabilityEntry(CapabilityInformation capabilityInformation) {
-        return new CapabilityEntryImpl(capabilityInformation.getDomain(),
+        return new CapabilityEntryImpl(capabilityInformation.getProviderVersion(),
+                                       capabilityInformation.getDomain(),
                                        capabilityInformation.getInterfaceName(),
                                        capabilityInformation.getProviderQos(),
                                        capabilityInformation.getParticipantId(),
@@ -73,7 +76,8 @@ public class CapabilityUtils {
     }
 
     public static CapabilityInformation discoveryEntry2Information(DiscoveryEntry discoveryEntry, Address globalAddress) {
-        return new CapabilityInformation(discoveryEntry.getDomain(),
+        return new CapabilityInformation(discoveryEntry.getProviderVersion(),
+                                         discoveryEntry.getDomain(),
                                          discoveryEntry.getInterfaceName(),
                                          discoveryEntry.getQos(),
                                          RoutingTypesUtil.toAddressString(globalAddress),
@@ -85,7 +89,8 @@ public class CapabilityUtils {
     }
 
     public static CapabilityEntry discoveryEntry2CapEntry(DiscoveryEntry discoveryEntry, Address globalAddress) {
-        return new CapabilityEntryImpl(discoveryEntry.getDomain(),
+        return new CapabilityEntryImpl(discoveryEntry.getProviderVersion(),
+                                       discoveryEntry.getDomain(),
                                        discoveryEntry.getInterfaceName(),
                                        discoveryEntry.getQos(),
                                        discoveryEntry.getParticipantId(),

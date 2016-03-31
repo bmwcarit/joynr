@@ -29,6 +29,7 @@ import joynr.types.CapabilityInformation;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -66,9 +67,24 @@ public class CapabilitiesDirectoryTest {
         String participantId2 = "testParticipantId2_" + UUID.randomUUID().toString();
         String participantId3 = "testParticipantId3_" + UUID.randomUUID().toString();
 
-        capInfo1 = new CapabilityInformation(domain, interface1, providerQos, channelId, participantId1);
-        capInfo2 = new CapabilityInformation(domain, interface2, providerQos, channelId, participantId2);
-        capInfo3 = new CapabilityInformation(domain, interface3, providerQos, channelId, participantId3);
+        capInfo1 = new CapabilityInformation(new Version(47, 11),
+                                             domain,
+                                             interface1,
+                                             providerQos,
+                                             channelId,
+                                             participantId1);
+        capInfo2 = new CapabilityInformation(new Version(47, 11),
+                                             domain,
+                                             interface2,
+                                             providerQos,
+                                             channelId,
+                                             participantId2);
+        capInfo3 = new CapabilityInformation(new Version(47, 11),
+                                             domain,
+                                             interface3,
+                                             providerQos,
+                                             channelId,
+                                             participantId3);
 
     }
 

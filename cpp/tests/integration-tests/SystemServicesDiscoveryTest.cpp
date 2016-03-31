@@ -26,6 +26,7 @@
 
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/Settings.h"
+#include "joynr/types/Version.h"
 
 using namespace joynr;
 
@@ -172,8 +173,10 @@ TEST_F(SystemServicesDiscoveryTest, add)
     std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
             joynr::types::CommunicationMiddleware::JOYNR
     };
+    joynr::types::Version providerVersion(47, 11);
     std::vector<joynr::types::DiscoveryEntry> expectedResult;
     joynr::types::DiscoveryEntry discoveryEntry(
+                providerVersion,
                 domain,
                 interfaceName,
                 participantId,
@@ -229,8 +232,10 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
             joynr::types::CommunicationMiddleware::JOYNR
     };
+    joynr::types::Version providerVersion(47, 11);
     std::vector<joynr::types::DiscoveryEntry> expectedResult;
     joynr::types::DiscoveryEntry discoveryEntry(
+                providerVersion,
                 domain,
                 interfaceName,
                 participantId,

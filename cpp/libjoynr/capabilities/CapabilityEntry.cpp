@@ -17,23 +17,32 @@
  * #L%
  */
 #include "joynr/CapabilityEntry.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {
 
 CapabilityEntry::CapabilityEntry()
-        : domain(), interfaceName(), qos(), participantId(), middlewareConnections(), global(true)
+        : providerVersion(),
+          domain(),
+          interfaceName(),
+          qos(),
+          participantId(),
+          middlewareConnections(),
+          global(true)
 {
 }
 
 CapabilityEntry::CapabilityEntry(
+        joynr::types::Version providerVersion,
         const std::string& domain,
         const std::string& interfaceName,
         joynr::types::ProviderQos qos,
         const std::string& participantId,
         std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
         bool isGlobal)
-        : domain(domain),
+        : providerVersion(providerVersion),
+          domain(domain),
           interfaceName(interfaceName),
           qos(qos),
           participantId(participantId),
@@ -44,6 +53,7 @@ CapabilityEntry::CapabilityEntry(
 
 CapabilityEntry& CapabilityEntry::operator=(const CapabilityEntry& other)
 {
+    this->providerVersion = other.providerVersion;
     this->interfaceName = other.interfaceName;
     this->domain = other.domain;
     this->qos = other.qos;
@@ -55,7 +65,8 @@ CapabilityEntry& CapabilityEntry::operator=(const CapabilityEntry& other)
 
 bool CapabilityEntry::operator==(const CapabilityEntry& other) const
 {
-    return this->interfaceName == other.interfaceName && this->domain == other.domain &&
+    return this->providerVersion == other.providerVersion &&
+           this->interfaceName == other.interfaceName && this->domain == other.domain &&
            this->participantId == other.participantId &&
            this->middlewareConnections == other.middlewareConnections &&
            this->global == other.global;
@@ -89,6 +100,16 @@ joynr::types::ProviderQos CapabilityEntry::getQos() const
 void CapabilityEntry::setQos(joynr::types::ProviderQos qos)
 {
     this->qos = qos;
+}
+
+joynr::types::Version CapabilityEntry::getProviderVersion() const
+{
+    return providerVersion;
+}
+
+void CapabilityEntry::setProviderVersion(joynr::types::Version providerVersion)
+{
+    this->providerVersion = providerVersion;
 }
 
 void CapabilityEntry::setParticipantId(std::string participantId)

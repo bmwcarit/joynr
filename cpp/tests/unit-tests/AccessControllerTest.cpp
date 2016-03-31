@@ -23,6 +23,7 @@
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/Version.h"
 #include <tuple>
 #include <string>
 
@@ -121,7 +122,9 @@ public:
         )
                 .WillByDefault(Return("fooParticipantId"));
 
+        joynr::types::Version providerVersion(47, 11);
         discoveryEntry = DiscoveryEntry(
+                providerVersion,
                 TEST_DOMAIN,
                 TEST_INTERFACE,
                 toParticipantId,

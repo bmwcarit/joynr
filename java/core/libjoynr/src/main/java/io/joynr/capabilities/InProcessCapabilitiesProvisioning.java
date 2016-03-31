@@ -27,6 +27,7 @@ import joynr.system.Discovery;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 import java.util.Collection;
 import java.util.List;
@@ -52,7 +53,8 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
         List<CapabilityEntry> provisionedList = Lists.newArrayList();
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        provisionedList.add(new CapabilityEntryImpl(systemServicesDomain,
+        provisionedList.add(new CapabilityEntryImpl(new Version(),
+                                                    systemServicesDomain,
                                                     Discovery.INTERFACE_NAME,
                                                     providerQos,
                                                     discoveryProviderParticipantId,

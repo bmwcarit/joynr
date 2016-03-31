@@ -32,6 +32,7 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 import joynr.vehicle.Gps;
 import joynr.vehicle.GpsAsync;
 import joynr.vehicle.NavigationAsync;
@@ -75,7 +76,8 @@ public class CapabilitiesStoreTest {
     public void testInvalidEntry() throws Exception {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(null,
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(new Version(47, 11),
+                                                                  null,
                                                                   GpsAsync.INTERFACE_NAME,
                                                                   providerQos,
                                                                   "",
@@ -99,14 +101,16 @@ public class CapabilitiesStoreTest {
 
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.GLOBAL, true);
         Address endpointAddress = new ChannelAddress("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(new Version(47, 11),
+                                                                   domain,
                                                                    GpsAsync.INTERFACE_NAME,
                                                                    providerQos,
                                                                    participantId,
                                                                    System.currentTimeMillis(),
                                                                    endpointAddress);
 
-        CapabilityEntry capabilityEntry2 = new CapabilityEntryImpl(domain,
+        CapabilityEntry capabilityEntry2 = new CapabilityEntryImpl(new Version(47, 11),
+                                                                   domain,
                                                                    NavigationAsync.INTERFACE_NAME,
                                                                    providerQos,
                                                                    participantId,
@@ -132,7 +136,8 @@ public class CapabilitiesStoreTest {
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.LOCAL, true);
         Address endpointAddress = new ChannelAddress("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(new Version(47, 11),
+                                                                   domain,
                                                                    GpsAsync.INTERFACE_NAME,
                                                                    providerQos,
                                                                    participantId,
@@ -166,7 +171,8 @@ public class CapabilitiesStoreTest {
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
         Address endpointAddress = new ChannelAddress("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(new Version(47, 11),
+                                                                   domain,
                                                                    GpsAsync.INTERFACE_NAME,
                                                                    providerQos,
                                                                    participantId + "1",
@@ -186,7 +192,8 @@ public class CapabilitiesStoreTest {
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
 
-        CapabilityEntry capEntryFake = new CapabilityEntryImpl(domain,
+        CapabilityEntry capEntryFake = new CapabilityEntryImpl(new Version(47, 11),
+                                                               domain,
                                                                NavigationAsync.INTERFACE_NAME,
                                                                providerQos,
                                                                participantId,
@@ -208,7 +215,8 @@ public class CapabilitiesStoreTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        CapabilityEntry capabilityEntry2 = new CapabilityEntryImpl(domain,
+        CapabilityEntry capabilityEntry2 = new CapabilityEntryImpl(new Version(47, 11),
+                                                                   domain,
                                                                    GpsAsync.INTERFACE_NAME,
                                                                    providerQos,
                                                                    participantId + "2",
@@ -248,7 +256,8 @@ public class CapabilitiesStoreTest {
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
         Address endpointAddress = new ChannelAddress("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(domain,
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryImpl(new Version(47, 11),
+                                                                   domain,
                                                                    GpsAsync.INTERFACE_NAME,
                                                                    providerQos,
                                                                    participantId,
@@ -270,7 +279,8 @@ public class CapabilitiesStoreTest {
         CapabilityEntry newEnteredCapability = store.lookup(participantId, discoveryQos.getCacheMaxAge());
         Assert.assertEquals(capabilityEntry1, newEnteredCapability);
 
-        CapabilityEntry capEntryFake = new CapabilityEntryImpl(domain,
+        CapabilityEntry capEntryFake = new CapabilityEntryImpl(new Version(47, 11),
+                                                               domain,
                                                                GpsAsync.INTERFACE_NAME,
                                                                providerQos,
                                                                participantId + "Fake",
@@ -287,7 +297,8 @@ public class CapabilitiesStoreTest {
         Assert.assertEquals(1, capabilities.size());
 
         Address endpointAddress2 = new ChannelAddress("testChannelOverride");
-        CapabilityEntry capabilityEntry2 = new CapabilityEntryImpl(domain,
+        CapabilityEntry capabilityEntry2 = new CapabilityEntryImpl(new Version(47, 11),
+                                                                   domain,
                                                                    GpsAsync.INTERFACE_NAME,
                                                                    providerQos,
                                                                    participantId,

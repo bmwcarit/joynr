@@ -26,6 +26,7 @@ joynrTestRequire(
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
             "joynr/types/CustomParameter",
+            "joynr/types/Version",
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/util/InProcessStub",
             "joynr/util/InProcessSkeleton"
@@ -35,6 +36,7 @@ joynrTestRequire(
                 ProviderQos,
                 ProviderScope,
                 CustomParameter,
+                Version,
                 InProcessAddress,
                 InProcessStub,
                 InProcessSkeleton) {
@@ -56,6 +58,10 @@ joynrTestRequire(
 
             var capability = {
                 discoveryEntry : new CapabilityInformation({
+                    providerVersion : new Version({
+                        majorVersion : 47,
+                        minorVersion : 11
+                    }),
                     domain : "KeywordmyDomain",
                     interfaceName : "myInterfaceName",
                     providerQos : new ProviderQos({
@@ -76,6 +82,10 @@ joynrTestRequire(
             var arrayOfCapabilities = {
                 discoveryEntries : [
                     new CapabilityInformation({
+                        providerVersion : new Version({
+                            majorVersion : 47,
+                            minorVersion : 11
+                        }),
                         domain : "KeywordmyDomain",
                         interfaceName : "myInterfaceName",
                         providerQos : new ProviderQos({
@@ -92,6 +102,10 @@ joynrTestRequire(
                         participantId : "1"
                     }),
                     new CapabilityInformation({
+                        providerVersion : new Version({
+                            majorVersion : 47,
+                            minorVersion : 11
+                        }),
                         domain : "myDomain",
                         interfaceName : "myInterfaceName",
                         providerQos : new ProviderQos({
@@ -108,6 +122,10 @@ joynrTestRequire(
                         participantId : "1"
                     }),
                     new CapabilityInformation({
+                        providerVersion : new Version({
+                            majorVersion : 47,
+                            minorVersion : 11
+                        }),
                         domain : "myWithKeywordDomain",
                         interfaceName : "myInterfaceName",
                         providerQos : new ProviderQos({
@@ -124,6 +142,10 @@ joynrTestRequire(
                         participantId : "1"
                     }),
                     new CapabilityInformation({
+                        providerVersion : new Version({
+                            majorVersion : 47,
+                            minorVersion : 11
+                        }),
                         domain : "myDomain",
                         interfaceName : "myInterfaceNameKeyword",
                         providerQos : new ProviderQos({
@@ -140,6 +162,10 @@ joynrTestRequire(
                         participantId : "1"
                     }),
                     new CapabilityInformation({
+                        providerVersion : new Version({
+                            majorVersion : 47,
+                            minorVersion : 11
+                        }),
                         domain : "myDomain",
                         interfaceName : "myInterfaceName",
                         providerQos : new ProviderQos({

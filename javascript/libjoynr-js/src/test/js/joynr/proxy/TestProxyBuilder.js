@@ -34,6 +34,7 @@ joynrTestRequire(
             "joynr/types/CapabilityInformation",
             "joynr/types/ArbitrationStrategyCollection",
             "joynr/types/DiscoveryScope",
+            "joynr/types/Version",
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/radiotypes/RadioStation",
@@ -51,6 +52,7 @@ joynrTestRequire(
                 CapabilityInformation,
                 ArbitrationStrategyCollection,
                 DiscoveryScope,
+                Version,
                 InProcessAddress,
                 RadioProxy,
                 RadioStation,
@@ -95,6 +97,7 @@ joynrTestRequire(
                             };
 
                             capInfo = new CapabilityInformation({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                                 domain : domain,
                                 interfaceName : interfaceName,
                                 providerQos : new ProviderQos({

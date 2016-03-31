@@ -40,6 +40,7 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryQos;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 
 public class LocalDiscoveryAggregator implements DiscoveryAsync {
@@ -55,7 +56,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
         provisionedDiscoveryEntries.put(systemServicesDomain + DiscoveryProvider.INTERFACE_NAME,
-                                        new DiscoveryEntry(systemServicesDomain,
+                                        new DiscoveryEntry(new Version(),
+                                                           systemServicesDomain,
                                                            DiscoveryProvider.INTERFACE_NAME,
                                                            discoveryProviderParticipantId,
                                                            providerQos,
@@ -63,7 +65,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                                    clusterControllerConnection }));
         //provision routing provider to prevent lookup via discovery proxy during startup.
         provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
-                                        new DiscoveryEntry(systemServicesDomain,
+                                        new DiscoveryEntry(new Version(),
+                                                           systemServicesDomain,
                                                            Routing.INTERFACE_NAME,
                                                            routingProviderParticipantId,
                                                            providerQos,

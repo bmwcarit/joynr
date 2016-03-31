@@ -30,6 +30,7 @@
 #include "joynr/Logger.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
+#include "joynr/types/Version.h"
 
 #include <string>
 #include <vector>
@@ -77,8 +78,9 @@ public:
 
         std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {
                 joynr::types::CommunicationMiddleware::JOYNR};
+        joynr::types::Version providerVersion;
         joynr::types::DiscoveryEntry entry(
-                domain, interfaceName, participantId, providerQos, connections);
+                providerVersion, domain, interfaceName, participantId, providerQos, connections);
         try {
             discoveryProxy.add(entry);
         } catch (const exceptions::JoynrException& e) {

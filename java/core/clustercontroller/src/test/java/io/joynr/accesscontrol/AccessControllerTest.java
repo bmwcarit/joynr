@@ -36,6 +36,7 @@ import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -101,7 +102,8 @@ public class AccessControllerTest {
         message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, expiryDate);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(testDomain,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           testDomain,
                                                            testInterface,
                                                            toParticipantId,
                                                            new ProviderQos(),

@@ -35,6 +35,7 @@ import joynr.types.CapabilityInformation;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 import joynr.vehicle.Gps;
 import joynr.vehicle.GpsAsync;
 import joynr.vehicle.NavigationAsync;
@@ -94,7 +95,8 @@ public class CapabilitiesStorePersistedTest {
     public void testInvalidEntry() throws Exception {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        CapabilityEntry capabilityEntry = new CapabilityEntryPersisted(null,
+        CapabilityEntry capabilityEntry = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                       testDomain,
                                                                        GpsAsync.INTERFACE_NAME,
                                                                        providerQos,
                                                                        "",
@@ -129,7 +131,8 @@ public class CapabilitiesStorePersistedTest {
         testProviderQos.setScope(ProviderScope.LOCAL);
 
         testProviderQos.setCustomParameters(new CustomParameter[]{ new CustomParameter("key", "value") });
-        CapabilityInformation capabilityInformation = new CapabilityInformation(testDomain,
+        CapabilityInformation capabilityInformation = new CapabilityInformation(new Version(47, 11),
+                                                                                testDomain,
                                                                                 GpsAsync.INTERFACE_NAME,
                                                                                 testProviderQos,
                                                                                 testChannelId,
@@ -146,7 +149,8 @@ public class CapabilitiesStorePersistedTest {
                                                                         new CustomParameter("myKeyword", "keyword"));
 
         providerQos.setCustomParameters(new CustomParameter[]{ keywordParameter });
-        CapabilityEntry capabilityEntry = new CapabilityEntryPersisted(testDomain,
+        CapabilityEntry capabilityEntry = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                       testDomain,
                                                                        GpsAsync.INTERFACE_NAME,
                                                                        providerQos,
                                                                        testParticipantId,
@@ -162,7 +166,8 @@ public class CapabilitiesStorePersistedTest {
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.GLOBAL, true);
         AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
         String participantId1 = UUID.randomUUID().toString();
-        CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                        domain,
                                                                         GpsAsync.INTERFACE_NAME,
                                                                         providerQos,
                                                                         participantId1,
@@ -170,7 +175,8 @@ public class CapabilitiesStorePersistedTest {
                                                                         endpointAddress);
 
         String participantId2 = UUID.randomUUID().toString();
-        CapabilityEntry capabilityEntry2 = new CapabilityEntryPersisted(domain,
+        CapabilityEntry capabilityEntry2 = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                        domain,
                                                                         NavigationAsync.INTERFACE_NAME,
                                                                         providerQos,
                                                                         participantId2,
@@ -201,7 +207,8 @@ public class CapabilitiesStorePersistedTest {
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, ProviderScope.LOCAL, true);
         AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                        domain,
                                                                         GpsAsync.INTERFACE_NAME,
                                                                         providerQos,
                                                                         participantId,
@@ -235,7 +242,8 @@ public class CapabilitiesStorePersistedTest {
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
         AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                        domain,
                                                                         GpsAsync.class,
                                                                         providerQos,
                                                                         participantId + "1",
@@ -255,7 +263,8 @@ public class CapabilitiesStorePersistedTest {
         Assert.assertEquals(1, newlyEnteredCaps.size());
         Assert.assertEquals(capabilityEntry1, newlyEnteredCaps.iterator().next());
 
-        CapabilityEntry capEntryFake = new CapabilityEntryPersisted(domain,
+        CapabilityEntry capEntryFake = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                    domain,
                                                                     NavigationAsync.class,
                                                                     providerQos,
                                                                     participantId,
@@ -277,7 +286,8 @@ public class CapabilitiesStorePersistedTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        CapabilityEntry capabilityEntry2 = new CapabilityEntryPersisted(domain,
+        CapabilityEntry capabilityEntry2 = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                        domain,
                                                                         GpsAsync.INTERFACE_NAME,
                                                                         providerQos,
                                                                         participantId + "2",
@@ -317,7 +327,8 @@ public class CapabilitiesStorePersistedTest {
         String participantId = UUID.randomUUID().toString();
         ProviderQos providerQos = new ProviderQos(new CustomParameter[0], 0L, scope, true);
         AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
-        CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
+        CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                        domain,
                                                                         GpsAsync.INTERFACE_NAME,
                                                                         providerQos,
                                                                         participantId,
@@ -339,8 +350,13 @@ public class CapabilitiesStorePersistedTest {
         CapabilityEntry newEnteredCapability = store.lookup(participantId, discoveryQos.getCacheMaxAge());
         Assert.assertEquals(capabilityEntry1, newEnteredCapability);
 
-        CapabilityEntry capEntryFake = new CapabilityEntryPersisted(domain, GpsAsync.class, providerQos, participantId
-                + "Fake", System.currentTimeMillis(), new JoynrMessagingEndpointAddressPersisted("testChannelFake"));
+        CapabilityEntry capEntryFake = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                    domain,
+                                                                    GpsAsync.class,
+                                                                    providerQos,
+                                                                    participantId + "Fake",
+                                                                    System.currentTimeMillis(),
+                                                                    new JoynrMessagingEndpointAddressPersisted("testChannelFake"));
         store.add(capEntryFake);
 
         capabilities = store.getAllCapabilities();
@@ -352,7 +368,8 @@ public class CapabilitiesStorePersistedTest {
         Assert.assertEquals(1, capabilities.size());
 
         AddressPersisted endpointAddress2 = new JoynrMessagingEndpointAddressPersisted("testChannelOverride");
-        CapabilityEntry capabilityEntry2 = new CapabilityEntryPersisted(domain,
+        CapabilityEntry capabilityEntry2 = new CapabilityEntryPersisted(new Version(47, 11),
+                                                                        domain,
                                                                         GpsAsync.class,
                                                                         providerQos,
                                                                         participantId,

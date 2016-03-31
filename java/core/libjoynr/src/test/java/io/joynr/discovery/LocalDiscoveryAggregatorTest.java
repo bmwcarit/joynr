@@ -36,6 +36,7 @@ import joynr.types.DiscoveryQos;
 import joynr.types.DiscoveryScope;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalDiscoveryAggregatorTest {
@@ -69,7 +70,8 @@ public class LocalDiscoveryAggregatorTest {
         localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyMock);
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        discoveryProviderEntry = new DiscoveryEntry(systemServicesDomain,
+        discoveryProviderEntry = new DiscoveryEntry(new Version(0, 0),
+                                                    systemServicesDomain,
                                                     Discovery.INTERFACE_NAME,
                                                     discoveryProviderParticipantId,
                                                     providerQos,
@@ -79,7 +81,8 @@ public class LocalDiscoveryAggregatorTest {
 
     @Test
     public void passesUnknownEntry() {
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry("anyDomain",
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(0, 0),
+                                                           "anyDomain",
                                                            "anyInterface",
                                                            "anyParticipant",
                                                            new ProviderQos(),
@@ -113,7 +116,8 @@ public class LocalDiscoveryAggregatorTest {
     public void addThrowsIfProxyNotSet() {
         localDiscoveryAggregator.setDiscoveryProxy(null);
 
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry("anyDomain",
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(0, 0),
+                                                           "anyDomain",
                                                            "anyInterface",
                                                            "anyParticipant",
                                                            new ProviderQos(),

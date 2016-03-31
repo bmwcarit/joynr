@@ -31,6 +31,7 @@ joynrTestRequire(
             "joynr/provider/ProviderAttributeNotifyReadWrite",
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderScope",
+            "joynr/types/Version",
             "uuid",
             "joynr/types/CommunicationMiddleware"
         ],
@@ -42,6 +43,7 @@ joynrTestRequire(
                 ProviderAttributeNotifyReadWrite,
                 DiscoveryEntry,
                 ProviderScope,
+                Version,
                 uuid,
                 CommunicationMiddleware) {
             describe(
@@ -137,6 +139,7 @@ joynrTestRequire(
                             });
 
                             capability = new CapabilityInformation({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                                 domain : domain,
                                 interfaceName : provider.interfaceName,
                                 providerQos : providerQos,
@@ -241,6 +244,7 @@ joynrTestRequire(
                                     providerQos);
                             expect(discoveryStubSpy.add).toHaveBeenCalled();
                             expect(discoveryStubSpy.add).toHaveBeenCalledWith(new DiscoveryEntry({
+                                providerVersion : new Version(),
                                 domain : domain,
                                 interfaceName : provider.interfaceName,
                                 participantId : participantId,

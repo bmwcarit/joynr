@@ -29,9 +29,11 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 public class CapabilityEntryImpl implements CapabilityEntry {
 
+    protected Version providerVersion;
     protected String participantId;
     protected String domain;
     protected String interfaceName;
@@ -47,13 +49,15 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         origin = Origin.LOCAL;
     }
 
-    public CapabilityEntryImpl(String domain,
+    public CapabilityEntryImpl(Version providerVersion,
+                               String domain,
                                String interfaceName,
                                ProviderQos providerQos,
                                String participantId,
                                long dateWhenRegistered,
                                Address... addresses) {
 
+        this.providerVersion = providerVersion;
         this.domain = domain;
         this.interfaceName = interfaceName;
         this.providerQos = providerQos;
@@ -65,7 +69,8 @@ public class CapabilityEntryImpl implements CapabilityEntry {
     }
 
     public CapabilityEntryImpl(CapabilityInformation capInfo) {
-        this(capInfo.getDomain(),
+        this(capInfo.getProviderVersion(),
+             capInfo.getDomain(),
              capInfo.getInterfaceName(),
              capInfo.getProviderQos(),
              capInfo.getParticipantId(),
@@ -75,7 +80,8 @@ public class CapabilityEntryImpl implements CapabilityEntry {
     }
 
     public static CapabilityEntryImpl fromCapabilityInformation(CapabilityInformation capInfo) {
-        return new CapabilityEntryImpl(capInfo.getDomain(),
+        return new CapabilityEntryImpl(capInfo.getProviderVersion(),
+                                       capInfo.getDomain(),
                                        capInfo.getInterfaceName(),
                                        capInfo.getProviderQos(),
                                        capInfo.getParticipantId(),
@@ -100,11 +106,20 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         if (channelId == null) {
             return null;
         }
-        return new CapabilityInformation(getDomain(),
+        return new CapabilityInformation(getProviderVersion(),
+                                         getDomain(),
                                          getInterfaceName(),
                                          new ProviderQos(getProviderQos()),
                                          channelId,
                                          getParticipantId());
+    }
+
+    /* (non-Javadoc)
+     * @see io.joynr.capabilities.CapabilityEntry#getProviderQos()
+     */
+    @Override
+    public Version getProviderVersion() {
+        return providerVersion;
     }
 
     /* (non-Javadoc)
@@ -172,6 +187,10 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         this.origin = origin;
     }
 
+    protected void setVersion(Version providerVersion) {
+        this.providerVersion = providerVersion;
+    }
+
     protected void setProviderQos(ProviderQos providerQos) {
         this.providerQos = providerQos;
     }
@@ -207,6 +226,8 @@ public class CapabilityEntryImpl implements CapabilityEntry {
                .append(interfaceName)
                .append(", dateWhenRegistered=")
                .append(getDateWhenRegistered())
+               .append(", providerVersion=")
+               .append(getProviderVersion())
                .append("]");
         return builder.toString();
     }
@@ -221,6 +242,7 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         result = prime * result + ((interfaceName == null) ? 0 : interfaceName.hashCode());
         result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
         result = prime * result + ((providerQos == null) ? 0 : providerQos.hashCode());
+        result = prime * result + ((providerVersion == null) ? 0 : providerVersion.hashCode());
         return result;
     }
 
@@ -269,6 +291,13 @@ public class CapabilityEntryImpl implements CapabilityEntry {
                 return false;
             }
         } else if (!providerQos.equals(other.providerQos)) {
+            return false;
+        }
+        if (providerVersion == null) {
+            if (other.providerVersion != null) {
+                return false;
+            }
+        } else if (!providerVersion.equals(other.providerVersion)) {
             return false;
         }
         return true;

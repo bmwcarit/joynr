@@ -39,6 +39,7 @@ import joynr.system.RoutingTypes.Address;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 @Singleton
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
@@ -77,7 +78,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     @Override
     public Future<Void> registerProvider(final String domain, JoynrProvider provider, ProviderQos providerQos) {
         String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(),
+                                                           domain,
                                                            provider.getInterfaceName(),
                                                            participantId,
                                                            providerQos,

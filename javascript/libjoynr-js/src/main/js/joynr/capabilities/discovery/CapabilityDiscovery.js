@@ -33,6 +33,7 @@ define(
             "joynr/types/DiscoveryQos",
             "joynr/types/DiscoveryScope",
             "joynr/types/ProviderScope",
+            "joynr/types/Version",
             "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy",
             "joynr/system/LoggerFactory",
             "joynr/util/CapabilitiesUtil",
@@ -46,6 +47,7 @@ define(
                 DiscoveryQos,
                 DiscoveryScope,
                 ProviderScope,
+                Version,
                 GlobalCapabilitiesDirectoryProxy,
                 LoggerFactory,
                 CapabilitiesUtil,
@@ -132,6 +134,7 @@ define(
                  */
                 function toCapabilityInformation(discoveryEntry) {
                     return new CapabilityInformation({
+                        providerVersion : discoveryEntry.providerVersion,
                         domain : discoveryEntry.domain,
                         interfaceName : discoveryEntry.interfaceName,
                         providerQos : discoveryEntry.qos,

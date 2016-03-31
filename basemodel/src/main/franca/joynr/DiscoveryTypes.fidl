@@ -20,6 +20,14 @@ package types
 
 typeCollection {
 
+	<** @description: a version information **>
+	struct Version {
+		<** @description: the major version id **>
+		Int32 majorVersion
+		<** @description: the minor version id **>
+		Int32 minorVersion
+	}
+
 	<** @description: a custom parameter consisting of a name and a value **>
 	struct CustomParameter {
 		<** @description: the name of the custom parameter **>
@@ -108,6 +116,8 @@ typeCollection {
 	}
 
 	struct DiscoveryEntry {
+		<** @description: semantic version information **>
+		Version providerVersion
 		<** @description: the domain to register the provider with **>
 		String domain
 		<** @description: the name of the provider interface **>
@@ -125,6 +135,9 @@ typeCollection {
 
 	<** @description: the capability information holding the information for a provider **>
 	struct CapabilityInformation {
+		<** @description: semantic version information **>
+		Version providerVersion
+
 		<** @description: the domain name of the provider **>
 		String domain
 

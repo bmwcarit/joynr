@@ -45,6 +45,7 @@ import io.joynr.proxy.Callback;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CapabilitiesRegistrarTests {
@@ -110,7 +111,8 @@ public class CapabilitiesRegistrarTests {
 
         registrar.registerProvider(domain, provider, providerQos);
         verify(localDiscoveryAggregator).add(any(Callback.class),
-                                             eq(new DiscoveryEntry(domain,
+                                             eq(new DiscoveryEntry(new Version(47, 11),
+                                                                   domain,
                                                                    TestInterface.INTERFACE_NAME,
                                                                    participantId,
                                                                    providerQos,

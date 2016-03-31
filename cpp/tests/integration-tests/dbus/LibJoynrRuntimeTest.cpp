@@ -35,6 +35,8 @@
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/types/CommunicationMiddleware.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/types/Version.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/Future.h"
@@ -228,7 +230,9 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
     std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
             joynr::types::CommunicationMiddleware::JOYNR
     };
+    joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry expectedDiscoveryEntry(
+                providerVersion,
                 domain,
                 tests::testProvider::INTERFACE_NAME(),
                 participantId,

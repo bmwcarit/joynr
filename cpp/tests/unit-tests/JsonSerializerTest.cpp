@@ -32,6 +32,7 @@
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/types/ProviderQos.h"
+#include "joynr/types/Version.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/JoynrMessage.h"
@@ -784,9 +785,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     std::vector<types::CapabilityInformation> capabilityInformations;
-    types::CapabilityInformation cap1(types::CapabilityInformation("domain1", "interface1", types::ProviderQos(), "channel1", "participant1"));
+    joynr::types::Version providerVersion(47, 11);
+    types::CapabilityInformation cap1(types::CapabilityInformation(providerVersion,
+        "domain1", "interface1", types::ProviderQos(), "channel1", "participant1"));
     capabilityInformations.push_back(cap1);
-    capabilityInformations.push_back(types::CapabilityInformation("domain2", "interface2", types::ProviderQos(), "channel2", "participant2"));
+    capabilityInformations.push_back(types::CapabilityInformation(providerVersion,
+        "domain2", "interface2", types::ProviderQos(), "channel2", "participant2"));
 
     Reply reply;
 
@@ -997,6 +1001,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
 
     std::string expected(
                 R"({"_typeName":"joynr.types.CapabilityInformation",)"
+                R"("providerVersion": {"_typeName":"joynr.types.Version","majorVersion": -1,"minorVersion": -1},)"
                 R"("domain": "domain",)"
                 R"("interfaceName": "",)"
                 R"("providerQos": {)"

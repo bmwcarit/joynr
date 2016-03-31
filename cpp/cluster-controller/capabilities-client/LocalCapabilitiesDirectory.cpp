@@ -29,6 +29,7 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/MessageRouter.h"
 #include "common/InterfaceAddress.h"
+#include "joynr/types/Version.h"
 
 #include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
@@ -62,7 +63,9 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
             joynr::types::CommunicationMiddleware::JOYNR};
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
+    types::Version providerVersion;
     this->insertInCache(joynr::types::DiscoveryEntry(
+                                providerVersion,
                                 messagingSettings.getDiscoveryDirectoriesDomain(),
                                 infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
                                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
@@ -78,7 +81,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
     types::ProviderQos channelUrlDirProviderQos;
     channelUrlDirProviderQos.setPriority(1);
     this->insertInCache(
-            joynr::types::DiscoveryEntry(messagingSettings.getDiscoveryDirectoriesDomain(),
+            joynr::types::DiscoveryEntry(providerVersion,
+                                         messagingSettings.getDiscoveryDirectoriesDomain(),
                                          infrastructure::IChannelUrlDirectory::INTERFACE_NAME(),
                                          messagingSettings.getChannelUrlDirectoryParticipantId(),
                                          channelUrlDirProviderQos,
@@ -115,7 +119,8 @@ void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discove
 
     // register globally
     if (isGlobal) {
-        types::CapabilityInformation capInfo(discoveryEntry.getDomain(),
+        types::CapabilityInformation capInfo(discoveryEntry.getProviderVersion(),
+                                             discoveryEntry.getDomain(),
                                              discoveryEntry.getInterfaceName(),
                                              discoveryEntry.getQos(),
                                              capabilitiesClient->getLocalChannelId(),
@@ -145,7 +150,8 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
     for (std::size_t i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
-            types::CapabilityInformation capInfo(domain,
+            types::CapabilityInformation capInfo(entry.getProviderVersion(),
+                                                 domain,
                                                  interfaceName,
                                                  qos,
                                                  capabilitiesClient->getLocalChannelId(),
@@ -288,7 +294,8 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
     for (types::CapabilityInformation capInfo : results) {
         std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
         connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
-        CapabilityEntry capEntry(capInfo.getDomain(),
+        CapabilityEntry capEntry(capInfo.getProviderVersion(),
+                                 capInfo.getDomain(),
                                  capInfo.getInterfaceName(),
                                  capInfo.getProviderQos(),
                                  capInfo.getParticipantId(),
@@ -647,6 +654,7 @@ void LocalCapabilitiesDirectory::convertCapabilityEntryIntoDiscoveryEntry(
         const CapabilityEntry& capabilityEntry,
         joynr::types::DiscoveryEntry& discoveryEntry)
 {
+    discoveryEntry.setProviderVersion(capabilityEntry.getProviderVersion());
     discoveryEntry.setDomain(capabilityEntry.getDomain());
     discoveryEntry.setInterfaceName(capabilityEntry.getInterfaceName());
     discoveryEntry.setParticipantId(capabilityEntry.getParticipantId());
@@ -658,6 +666,7 @@ void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
         const joynr::types::DiscoveryEntry& discoveryEntry,
         CapabilityEntry& capabilityEntry)
 {
+    capabilityEntry.setProviderVersion(discoveryEntry.getProviderVersion());
     capabilityEntry.setDomain(discoveryEntry.getDomain());
     capabilityEntry.setInterfaceName(discoveryEntry.getInterfaceName());
     capabilityEntry.setParticipantId(discoveryEntry.getParticipantId());

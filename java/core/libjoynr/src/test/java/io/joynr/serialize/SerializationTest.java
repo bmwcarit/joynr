@@ -80,6 +80,7 @@ import joynr.types.TestTypes.TStringKeyMap;
 import joynr.types.TestTypes.TStruct;
 import joynr.types.TestTypes.Vowel;
 import joynr.types.TestTypes.Word;
+import joynr.types.Version;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -364,7 +365,8 @@ public class SerializationTest {
     @Test
     public void serializeAndDeserializeCapabilityInformationTest() throws Exception {
         ProviderQos qos = new ProviderQos();
-        final CapabilityInformation[] capInfos = { new CapabilityInformation("domain",
+        final CapabilityInformation[] capInfos = { new CapabilityInformation(new Version(47, 11),
+                                                                             "domain",
                                                                              "interface",
                                                                              qos,
                                                                              "channelId",
@@ -379,7 +381,8 @@ public class SerializationTest {
         CapabilityInformation[] readValue = objectMapper.readValue(writeValueAsString, CapabilityInformation[].class);
         assertArrayEquals(capInfos, readValue);
 
-        CapabilityInformation capabilityInformation = new CapabilityInformation("domain",
+        CapabilityInformation capabilityInformation = new CapabilityInformation(new Version(47, 11),
+                                                                                "domain",
                                                                                 "interface",
                                                                                 qos,
                                                                                 "channelId",
@@ -626,7 +629,8 @@ public class SerializationTest {
     public void serializeReplyWithCapabilityInfoArray() throws JsonGenerationException, JsonMappingException,
                                                        IOException {
 
-        Object response = new CapabilityInformation[]{ new CapabilityInformation("domain",
+        Object response = new CapabilityInformation[]{ new CapabilityInformation(new Version(47, 11),
+                                                                                 "domain",
                                                                                  "interface",
                                                                                  new ProviderQos(),
                                                                                  "channelId",

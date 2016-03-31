@@ -22,6 +22,7 @@
 #include "joynr/QosArbitrator.h"
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DefaultArbitrator.h"
+#include "joynr/types/Version.h"
 
 #include "tests/utils/MockObjects.h"
 
@@ -48,6 +49,7 @@ protected:
 TEST_F(ArbitratorTest, getHighestPriority) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    joynr::types::Version providerVersion(47, 11);
     QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
@@ -72,6 +74,7 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     for (std::size_t i = 0; i < qosEntries.size(); i++) {
         discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+                                 providerVersion,
                                  domain,
                                  interfaceName,
                                  participantId[i],
@@ -91,6 +94,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setProviderMustSupportOnChange(true);
+    joynr::types::Version providerVersion(47, 11);
     QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
@@ -114,6 +118,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     for (std::size_t i = 0; i < qosEntries.size(); i++) {
         discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+                                 providerVersion,
                                  domain,
                                  interfaceName,
                                  participantId[i],
@@ -136,6 +141,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     KeywordArbitrator keywordArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
+    joynr::types::Version providerVersion(47, 11);
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
@@ -171,6 +177,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     for (std::size_t i = 0; i < qosEntries.size(); i++) {
         discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+                                 providerVersion,
                                  domain,
                                  interfaceName,
                                  participantId[i],

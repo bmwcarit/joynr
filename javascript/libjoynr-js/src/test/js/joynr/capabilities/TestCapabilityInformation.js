@@ -22,12 +22,17 @@
 joynrTestRequire("joynr/capabilities/TestCapabilityInformation", [
     "joynr/types/CapabilityInformation",
     "joynr/types/ProviderQos",
-    "joynr/types/ProviderScope"
-], function(CapabilityInformation, ProviderQos, ProviderScope) {
+    "joynr/types/ProviderScope",
+    "joynr/types/Version"
+], function(CapabilityInformation, ProviderQos, ProviderScope, Version) {
 
     var capInfo;
     beforeEach(function() {
         capInfo = new CapabilityInformation({
+            providerVersion : new Version({
+                majorVersion : 47,
+                minorVersion : 11
+            }),
             domain : "vehicleADomain",
             interfaceName : "vehicle/cdsnavigation",
             providerQos : new ProviderQos({
@@ -45,6 +50,10 @@ joynrTestRequire("joynr/capabilities/TestCapabilityInformation", [
         it("is instantiable", function() {
             expect(capInfo).toBeDefined();
             expect(capInfo instanceof CapabilityInformation).toBeTruthy();
+        });
+        it("providerVersion is set", function() {
+            expect(capInfo.providerVersion).toBeDefined();
+            expect(capInfo.providerVersion instanceof Version).toBeTruthy();
         });
     });
 

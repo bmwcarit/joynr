@@ -24,6 +24,7 @@ import java.util.List;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 public interface CapabilityEntry {
 
@@ -32,6 +33,8 @@ public interface CapabilityEntry {
     };
 
     public CapabilityInformation toCapabilityInformation();
+
+    public Version getProviderVersion();
 
     public ProviderQos getProviderQos();
 

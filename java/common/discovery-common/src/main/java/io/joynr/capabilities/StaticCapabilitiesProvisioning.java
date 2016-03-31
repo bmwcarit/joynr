@@ -57,7 +57,8 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
             });
             List<CapabilityInformation> castedEntries = (List<CapabilityInformation>) newEntries;
             for (CapabilityInformation capabilityInformation : castedEntries) {
-                capabilityEntries.add(new CapabilityEntryImpl(capabilityInformation.getDomain(),
+                capabilityEntries.add(new CapabilityEntryImpl(capabilityInformation.getProviderVersion(),
+                                                              capabilityInformation.getDomain(),
                                                               capabilityInformation.getInterfaceName(),
                                                               capabilityInformation.getProviderQos(),
                                                               capabilityInformation.getParticipantId(),

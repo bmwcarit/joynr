@@ -27,6 +27,7 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/types/Version.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -104,8 +105,10 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     types::ProviderQos capProviderQos;
     std::string capChannelId("testChannelId");
     std::string capParticipantId("testParticipantId");
+    joynr::types::Version providerVersion(47, 11);
 
-    capabilitiesInformationList.push_back(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
+    capabilitiesInformationList.push_back(types::CapabilityInformation(providerVersion,
+        capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
     JOYNR_LOG_DEBUG(logger, "Registering capabilities");
     capabilitiesClient->add(capabilitiesInformationList);
     JOYNR_LOG_DEBUG(logger, "Registered capabilities");

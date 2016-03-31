@@ -32,6 +32,7 @@ joynrTestRequire(
             "joynr/types/DiscoveryScope",
             "joynr/types/DiscoveryEntry",
             "joynr/types/CapabilityInformation",
+            "joynr/types/Version",
             "global/Promise"
         ],
         function(
@@ -44,6 +45,7 @@ joynrTestRequire(
                 DiscoveryScope,
                 DiscoveryEntry,
                 CapabilityInformation,
+                Version,
                 Promise) {
 
             var domain, interfaceName, discoveryQos, discoveryEntries, globalCapInfos;
@@ -73,6 +75,7 @@ joynrTestRequire(
 
             function getCapInfo(domain, interfaceName, newChannelId) {
                 return new CapabilityInformation({
+                    providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                     domain : domain,
                     interfaceName : interfaceName,
                     providerQos : new ProviderQos({
@@ -94,6 +97,7 @@ joynrTestRequire(
 
             function getDiscoverEntry(domain, interfaceName) {
                 return new DiscoveryEntry({
+                    providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                     domain : domain,
                     interfaceName : interfaceName,
                     qos : new ProviderQos({
@@ -724,6 +728,7 @@ joynrTestRequire(
 
                         function getDiscoveryEntryWithScope(scope) {
                             return new DiscoveryEntry({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                                 domain : "domain",
                                 interfaceName : "interfaceName",
                                 qos : new ProviderQos({
@@ -742,6 +747,7 @@ joynrTestRequire(
 
                         function getCapInfoWithScope(scope) {
                             return new CapabilityInformation({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                                 domain : "domain",
                                 interfaceName : "interfaceName",
                                 providerQos : new ProviderQos({

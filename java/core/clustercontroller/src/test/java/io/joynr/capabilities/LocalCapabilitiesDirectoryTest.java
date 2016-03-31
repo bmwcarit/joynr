@@ -47,6 +47,7 @@ import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -136,12 +137,14 @@ public class LocalCapabilitiesDirectoryTest {
 
         String participantId = "testParticipantId";
         String domain = "domain";
-        discoveryEntry = new DiscoveryEntry(domain,
+        discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                            domain,
                                             TestInterface.INTERFACE_NAME,
                                             participantId,
                                             providerQos,
                                             new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
-        capabilityInformation = new CapabilityInformation(domain,
+        capabilityInformation = new CapabilityInformation(new Version(47, 11),
+                                                          domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
                                                           channelId,
@@ -165,7 +168,8 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        capabilityInformation = new CapabilityInformation("test",
+        capabilityInformation = new CapabilityInformation(new Version(47, 11),
+                                                          "test",
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
                                                           "chan",
@@ -186,17 +190,20 @@ public class LocalCapabilitiesDirectoryTest {
         String participantId = LocalCapabilitiesDirectoryTest.class.getName()
                 + ".addGlobalCapSucceeds_NextAddShallNotAddGlobalAgain";
         String domain = "testDomain";
-        final DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
+        final DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                                 domain,
                                                                  TestInterface.INTERFACE_NAME,
                                                                  participantId,
                                                                  providerQos,
                                                                  new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
-        final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
+        final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(new Version(47, 11),
+                                                                        domain,
                                                                         TestInterface.INTERFACE_NAME,
                                                                         providerQos,
                                                                         participantId,
                                                                         System.currentTimeMillis());
-        capabilityInformation = new CapabilityInformation(domain,
+        capabilityInformation = new CapabilityInformation(new Version(47, 11),
+                                                          domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
                                                           channelId,
@@ -236,17 +243,20 @@ public class LocalCapabilitiesDirectoryTest {
 
         String participantId = LocalCapabilitiesDirectoryTest.class.getName() + ".addLocalAndThanGlobalShallWork";
         String domain = "testDomain";
-        final DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
+        final DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                                 domain,
                                                                  TestInterface.INTERFACE_NAME,
                                                                  participantId,
                                                                  providerQos,
                                                                  new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
-        final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
+        final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(new Version(47, 11),
+                                                                        domain,
                                                                         TestInterface.INTERFACE_NAME,
                                                                         providerQos,
                                                                         participantId,
                                                                         System.currentTimeMillis());
-        capabilityInformation = new CapabilityInformation(domain,
+        capabilityInformation = new CapabilityInformation(new Version(47, 11),
+                                                          domain,
                                                           TestInterface.INTERFACE_NAME,
                                                           providerQos,
                                                           channelId,
@@ -352,7 +362,8 @@ public class LocalCapabilitiesDirectoryTest {
         // add local entry
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain1,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           domain1,
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
@@ -383,7 +394,8 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.reset(capabilitiesCallback);
 
         // add global entry
-        CapabilityInformation capInfo = new CapabilityInformation(domain1,
+        CapabilityInformation capInfo = new CapabilityInformation(new Version(47, 11),
+                                                                  domain1,
                                                                   interfaceName1,
                                                                   new ProviderQos(),
                                                                   "channelId",
@@ -466,7 +478,8 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain1,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           domain1,
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
@@ -483,7 +496,8 @@ public class LocalCapabilitiesDirectoryTest {
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(1)));
 
         // add global entry
-        CapabilityInformation capInfo = new CapabilityInformation(domain1,
+        CapabilityInformation capInfo = new CapabilityInformation(new Version(47, 11),
+                                                                  domain1,
                                                                   interfaceName1,
                                                                   new ProviderQos(),
                                                                   "channelId",
@@ -544,7 +558,8 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        DiscoveryEntry expectedDiscoveryEntry = new DiscoveryEntry(domain1,
+        DiscoveryEntry expectedDiscoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                                   domain1,
                                                                    interfaceName1,
                                                                    participantId1,
                                                                    providerQos,
@@ -582,7 +597,8 @@ public class LocalCapabilitiesDirectoryTest {
         // add local entry
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain1,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           domain1,
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
@@ -599,7 +615,8 @@ public class LocalCapabilitiesDirectoryTest {
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(1)));
 
         // add global entry
-        CapabilityInformation capInfo = new CapabilityInformation(domain1,
+        CapabilityInformation capInfo = new CapabilityInformation(new Version(47, 11),
+                                                                  domain1,
                                                                   interfaceName1,
                                                                   new ProviderQos(),
                                                                   "channelId",

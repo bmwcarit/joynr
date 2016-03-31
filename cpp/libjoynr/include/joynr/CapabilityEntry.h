@@ -30,6 +30,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/types/ProviderQos.h"
+#include "joynr/types/Version.h"
 #include "joynr/types/CommunicationMiddleware.h"
 
 namespace joynr
@@ -42,7 +43,8 @@ public:
 
     CapabilityEntry(const CapabilityEntry& other) = default;
 
-    CapabilityEntry(const std::string& domain,
+    CapabilityEntry(joynr::types::Version providerVersion,
+                    const std::string& domain,
                     const std::string& interfaceName,
                     joynr::types::ProviderQos qos,
                     const std::string& participantId,
@@ -61,6 +63,9 @@ public:
     types::ProviderQos getQos() const;
     void setQos(joynr::types::ProviderQos qos);
 
+    types::Version getProviderVersion() const;
+    void setProviderVersion(joynr::types::Version providerVersion);
+
     std::string getParticipantId() const;
     void setParticipantId(std::string participantId);
 
@@ -77,6 +82,7 @@ public:
     std::string toString() const;
 
 private:
+    types::Version providerVersion;
     std::string domain;
     std::string interfaceName;
     types::ProviderQos qos;

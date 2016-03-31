@@ -87,6 +87,7 @@ import joynr.system.RoutingTypes.Address;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastListener;
@@ -183,7 +184,8 @@ public class ProxyTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
+                DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                                   domain,
                                                                    TestInterface.INTERFACE_NAME,
                                                                    toParticipantId,
                                                                    new ProviderQos(),

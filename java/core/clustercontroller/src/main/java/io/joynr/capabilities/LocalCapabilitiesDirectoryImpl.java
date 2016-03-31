@@ -60,6 +60,7 @@ import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 @Singleton
 public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory {
@@ -94,19 +95,22 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.messageRouter = messageRouter;
         this.localCapabilitiesStore = localCapabilitiesStore;
         this.globalCapabilitiesCache = globalCapabilitiesCache;
-        this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(discoveryDirectoriesDomain,
+        this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(new Version(),
+                                                                                                    discoveryDirectoriesDomain,
                                                                                                     GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                                                                                     capabilitiesDirectoryParticipantId,
                                                                                                     new ProviderQos(),
                                                                                                     new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
                                                                                  new ChannelAddress(capabiltitiesDirectoryChannelId)));
-        this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(discoveryDirectoriesDomain,
+        this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(new Version(),
+                                                                                                    discoveryDirectoriesDomain,
                                                                                                     ChannelUrlDirectory.INTERFACE_NAME,
                                                                                                     channelUrlDirectoryParticipantId,
                                                                                                     new ProviderQos(),
                                                                                                     new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
                                                                                  new ChannelAddress(channelUrlDirectoryChannelId)));
-        this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(discoveryDirectoriesDomain,
+        this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(new Version(),
+                                                                                                    discoveryDirectoriesDomain,
                                                                                                     GlobalDomainAccessController.INTERFACE_NAME,
                                                                                                     domainAccessControllerParticipantId,
                                                                                                     new ProviderQos(),

@@ -45,6 +45,7 @@ import javax.persistence.Table;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
     @Id
     protected String participantId;
 
+    protected Version providerVersion;
     protected String domain;
     protected String interfaceName;
 
@@ -80,13 +82,15 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
         origin = Origin.LOCAL;
     }
 
-    public CapabilityEntryPersisted(String domain,
+    public CapabilityEntryPersisted(Version providerVersion,
+                                    String domain,
                                     String interfaceName,
                                     ProviderQos providerQos,
                                     String participantId,
                                     long dateWhenRegistered,
                                     AddressPersisted... endpointAddresses) {
 
+        this.providerVersion = providerVersion;
         this.domain = domain;
         this.interfaceName = interfaceName;
         this.providerQos = new ProviderQosPersisted(participantId, providerQos);
@@ -96,13 +100,14 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
         this.endpointAddresses = new ArrayList<AddressPersisted>(Arrays.asList(endpointAddresses));
     }
 
-    public <T extends JoynrInterface> CapabilityEntryPersisted(String domain,
+    public <T extends JoynrInterface> CapabilityEntryPersisted(Version providerVersion,
+                                                               String domain,
                                                                Class<T> providedInterface,
                                                                ProviderQos providerQos,
                                                                String participantId,
                                                                long dateWhenRegistered,
                                                                AddressPersisted... endpointAddresses) {
-        this(domain, "", providerQos, participantId, dateWhenRegistered, endpointAddresses);
+        this(providerVersion, domain, "", providerQos, participantId, dateWhenRegistered, endpointAddresses);
         String name = null;
         String reason = "shadow field INTERFACE_NAME in your interface";
         try {
@@ -119,7 +124,8 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
     }
 
     public CapabilityEntryPersisted(CapabilityInformation capabilityInformation) {
-        this(capabilityInformation.getDomain(),
+        this(capabilityInformation.getProviderVersion(),
+             capabilityInformation.getDomain(),
              capabilityInformation.getInterfaceName(),
              capabilityInformation.getProviderQos(),
              capabilityInformation.getParticipantId(),
@@ -128,7 +134,8 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
     }
 
     public static CapabilityEntryPersisted fromCapabilityInformation(CapabilityInformation capInfo) {
-        return new CapabilityEntryPersisted(capInfo.getDomain(),
+        return new CapabilityEntryPersisted(capInfo.getProviderVersion(),
+                                            capInfo.getDomain(),
                                             capInfo.getInterfaceName(),
                                             capInfo.getProviderQos(),
                                             capInfo.getParticipantId(),
@@ -150,11 +157,17 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
         if (channelId == null) {
             return null;
         }
-        return new CapabilityInformation(getDomain(),
+        return new CapabilityInformation(getProviderVersion(),
+                                         getDomain(),
                                          getInterfaceName(),
                                          new ProviderQos(getProviderQos()),
                                          channelId,
                                          getParticipantId());
+    }
+
+    @Override
+    public Version getProviderVersion() {
+        return providerVersion;
     }
 
     @Override
@@ -203,6 +216,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
         result = prime * result + ((origin == null) ? 0 : origin.hashCode());
         result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
         result = prime * result + ((providerQos == null) ? 0 : providerQos.hashCode());
+        result = prime * result + ((providerVersion == null) ? 0 : providerVersion.hashCode());
         return result;
     }
 
@@ -257,6 +271,13 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
                 return false;
             }
         } else if (!providerQos.equals(other.providerQos)) {
+            return false;
+        }
+        if (providerVersion == null) {
+            if (other.providerVersion != null) {
+                return false;
+            }
+        } else if (!providerVersion.equals(other.providerVersion)) {
             return false;
         }
         return true;

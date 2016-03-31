@@ -27,6 +27,7 @@ joynrTestRequire(
             "joynr/types/ProviderScope",
             "joynr/types/ProviderQos",
             "joynr/types/CustomParameter",
+            "joynr/types/Version",
             "joynr/messaging/inprocess/InProcessAddress"
         ],
         function(
@@ -35,6 +36,7 @@ joynrTestRequire(
                 ProviderScope,
                 ProviderQos,
                 CustomParameter,
+                Version,
                 InProcessAddress) {
             describe(
                     "libjoynr-js.joynr.types.ArbitrationStrategyCollection",
@@ -59,6 +61,10 @@ joynrTestRequire(
                         function getDiscoveryEntryList() {
                             return [
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "KeywordmyDomain",
                                     interfaceName : "myInterfaceName",
                                     qos : new ProviderQos({
@@ -70,6 +76,10 @@ joynrTestRequire(
                                     participantId : "1"
                                 }),
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceName",
                                     qos : new ProviderQos({
@@ -81,6 +91,10 @@ joynrTestRequire(
                                     participantId : "1"
                                 }),
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "myWithKeywordDomain",
                                     interfaceName : "myInterfaceName",
                                     qos : new ProviderQos({
@@ -101,6 +115,10 @@ joynrTestRequire(
                                     participantId : "1"
                                 }),
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceNameKeyword",
                                     qos : new ProviderQos({
@@ -121,6 +139,10 @@ joynrTestRequire(
                                     participantId : "1"
                                 }),
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceName",
                                     qos : new ProviderQos({

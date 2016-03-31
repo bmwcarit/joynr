@@ -27,6 +27,7 @@
 
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/Version.h"
 #include "joynr/system/IRouting.h"
 #include "joynr/system/IDiscovery.h"
 
@@ -43,7 +44,9 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
 {
     std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
     connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
+    joynr::types::Version providerVersion;
     joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
+            providerVersion,
             systemServicesSettings.getDomain(),
             joynr::system::IRouting::INTERFACE_NAME(),
             systemServicesSettings.getCcRoutingProviderParticipantId(),
@@ -52,6 +55,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
     provisionedDiscoveryEntries.insert(std::make_pair(
             routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
     joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
+            providerVersion,
             systemServicesSettings.getDomain(),
             joynr::system::IDiscovery::INTERFACE_NAME(),
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),
