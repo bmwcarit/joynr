@@ -56,8 +56,9 @@ RUN dnf update -y \
 ###################################################
 # build and install mosquitto 1.4.7 mqtt broker
 # do not build documentation
-# use default settings
 # run mosquitto as user "joynr"
+# do not limit message queue
+# use settings in /etc/mosquitto/mosquitto.conf
 ###################################################
 RUN dnf update -y \
     && dnf install -y c-ares-devel libuuid-devel\
@@ -68,7 +69,7 @@ RUN dnf update -y \
     && make DOCDIRS= install -j"$(nproc)" \
     && mv /etc/mosquitto/mosquitto.conf.example /etc/mosquitto/mosquitto.conf \
     && sed -i "s/#max_queued_messages 100/max_queued_messages 0/" /etc/mosquitto/mosquitto.conf \
-    && echo "user joynr" >> /etc/mosquitto/mosquitto.conf \
+    && sed -i "s/#user mosquitto/user joynr/" /etc/mosquitto/mosquitto.conf \
     && dnf clean all
 
 ###################################################
