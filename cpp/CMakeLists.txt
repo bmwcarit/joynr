@@ -768,6 +768,9 @@ set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
 set(JoynrConfig_INSTALL_BIN_DIR "${JOYNR_BINARY_DIR}")
 set(JoynrConfig_RESOURCES_DIR "${JoynrConfig_INSTALL_BIN_DIR}/resources")
 
+get_target_property(JoynrConfig_MOSQUITTO_INCLUDE_DIRS mosquitto::mosquitto INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(JoynrConfig_MOSQUITTO_LIBRARIES mosquitto::mosquitto IMPORTED_LOCATION)
+
 set(JoynrConfig_RESOLVE_DEPENDENCIES)
 
 macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
@@ -782,6 +785,8 @@ endif(USE_PLATFORM_JSMN)
 
 if(USE_PLATFORM_MOSQUITTO)
     FillJoynrConfigDependencies("PlatformMosquitto")
+else(USE_PLATFORM_MOSQUITTO)
+    FillJoynrConfigDependencies("ExternalProjectMosquitto")
 endif(USE_PLATFORM_MOSQUITTO)
 
 if(USE_PLATFORM_SPDLOG)
