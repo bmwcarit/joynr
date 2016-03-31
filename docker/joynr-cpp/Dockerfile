@@ -5,33 +5,33 @@ ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 ###################################################
 # install qt
 ###################################################
-RUN dnf update -y && \
-    dnf install -y \
-    qt5-qtbase \
-    qt5-qtbase-devel \
-    qt5-qtwebsockets \
-    qt5-qtwebsockets-devel \
-    dnf clean all
+RUN dnf update -y \
+	&& dnf install -y \
+	qt5-qtbase \
+	qt5-qtbase-devel \
+	qt5-qtwebsockets \
+	qt5-qtwebsockets-devel \
+	&& dnf clean all
 
 ###################################################
 # install boost
 ###################################################
-RUN dnf update -y && \
-    dnf install -y \
-    boost \
-    boost-devel && \
-    dnf clean all
+RUN dnf update -y \
+	&& dnf install -y \
+	boost \
+	boost-devel \
+	&& dnf clean all
 
 ###################################################
 # install clang 3.5 for formatting
 ###################################################
-RUN cd /tmp/ && \
-    wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-fedora20.tar.xz && \
-    tar -xf clang+llvm-3.5.0-x86_64-fedora20.tar.xz \
+RUN cd /tmp/ \
+    && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-fedora20.tar.xz \
+    && tar -xf clang+llvm-3.5.0-x86_64-fedora20.tar.xz \
     clang+llvm-3.5.0-x86_64-fedora20/bin/clang-format \
-    --strip-components=2 && \
-    mv clang-format /usr/bin/ && \
-    rm -f clang+llvm-3.5.0-x86_64-fedora20.tar.xz
+    --strip-components=2 \
+    && mv clang-format /usr/bin/ \
+    && rm -f clang+llvm-3.5.0-x86_64-fedora20.tar.xz
 
 ###################################################
 # install gcovr for code coverage reports
