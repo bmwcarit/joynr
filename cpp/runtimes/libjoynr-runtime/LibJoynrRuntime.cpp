@@ -139,8 +139,8 @@ void LibJoynrRuntime::init(
             "fixedParticipantId", routingProviderParticipantId);
     routingProviderDiscoveryQos.setDiscoveryTimeoutMs(50);
 
-    auto routingProxyBuilder =
-            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
+    std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder(
+            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain));
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
                                 ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
@@ -148,7 +148,6 @@ void LibJoynrRuntime::init(
     messageRouter->setParentRouter(std::unique_ptr<system::RoutingProxy>(routingProxy),
                                    ccMessagingAddress,
                                    routingProviderParticipantId);
-    delete routingProxyBuilder;
 
     // setup discovery
     std::string discoveryProviderParticipantId =
@@ -161,8 +160,8 @@ void LibJoynrRuntime::init(
             "fixedParticipantId", discoveryProviderParticipantId);
     discoveryProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
 
-    ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
-            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
+    std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder(
+            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain));
     joynr::system::IDiscoverySync* proxy =
             discoveryProxyBuilder->setMessagingQos(MessagingQos(10000))
                     ->setCached(false)
