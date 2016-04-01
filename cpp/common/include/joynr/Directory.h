@@ -63,13 +63,14 @@ public:
     virtual void remove(const Key& keyId) = 0;
 };
 
-template <typename D>
+template <typename Key, typename T>
+class Directory;
+
+template <typename Key, typename T>
 class RemoverRunnable : public Runnable
 {
-    using Key = typename D::Key;
-
 public:
-    RemoverRunnable(const Key& keyId, D* directory)
+    RemoverRunnable(const Key& keyId, Directory<Key, T>* directory)
             : Runnable(true), keyId(keyId), directory(directory)
     {
     }
@@ -80,13 +81,13 @@ public:
 
     void run() override
     {
-        runImpl(std::is_same<typename D::Value, IReplyCaller>{});
+        runImpl(std::is_same<T, IReplyCaller>{});
     }
 
 private:
     void runImpl(std::false_type)
     {
-        std::shared_ptr<typename D::Value> val = directory->lookup(keyId);
+        std::shared_ptr<T> val = directory->lookup(keyId);
         if (val) {
             directory->remove(keyId);
         }
@@ -109,23 +110,13 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
     Key keyId;
-    D* directory;
-    ADD_LOGGER(RemoverRunnable);
+    Directory<Key, T>* directory;
 };
 
-template <typename D>
-INIT_LOGGER(RemoverRunnable<D>);
-
-template <typename Key_,
-          typename T,
-          typename Hash = std::hash<Key_>,
-          typename EqualTo = std::equal_to<Key_>>
-class Directory : public IDirectory<Key_, T>
+template <typename Key, typename T>
+class Directory : public IDirectory<Key, T>
 {
 public:
-    using Key = Key_;
-    using Value = T;
-
     Directory() = default;
 
     explicit Directory(const std::string& directoryName)
@@ -184,7 +175,7 @@ public:
         }
 
         // make a removerRunnable and shedule it to remove the entry after ttl!
-        auto* removerRunnable = new RemoverRunnable<Directory<Key, T, Hash, EqualTo>>(keyId, this);
+        auto* removerRunnable = new RemoverRunnable<Key, T>(keyId, this);
         callBackRemoverScheduler.schedule(removerRunnable, std::chrono::milliseconds(ttl_ms));
     }
 
@@ -198,7 +189,7 @@ public:
     }
 
 protected:
-    std::unordered_map<Key, std::shared_ptr<T>, Hash, EqualTo> callbackMap;
+    std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
     ADD_LOGGER(Directory);
 
 private:
@@ -207,9 +198,8 @@ private:
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
 };
 
-template <typename Key, typename T, typename Hash, typename EqualTo>
-INIT_LOGGER(SINGLE_MACRO_ARG(Directory<Key, T, Hash, EqualTo>));
-
+template <typename Key, typename T>
+INIT_LOGGER(SINGLE_MACRO_ARG(Directory<Key, T>));
 } // namespace joynr
 
 #endif // DIRECTORY_H
