@@ -18,60 +18,111 @@
  */
 #ifndef THREADSAFEMAP_H
 #define THREADSAFEMAP_H
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/ReadWriteLock.h"
 
 #include <map>
 #include <type_traits>
 
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
+
 namespace joynr
 {
-
-template <class Key, class T>
-using mapIterator = typename std::map<Key, T>::const_iterator;
 
 /**
  * Thread safe map
  */
-template <class Key, class T>
+template <typename Key,
+          typename T,
+          template <typename K, typename V, typename...> class Map = std::map>
 class ThreadSafeMap
 {
 public:
+    using MapIterator = typename Map<Key, T>::const_iterator;
+
     /**
      * @brief ThreadSafeMap
      */
-    ThreadSafeMap();
+    ThreadSafeMap() : map(), lock()
+    {
+    }
+
     ~ThreadSafeMap() = default;
+
     /**
      * @brief insert key-value pair
      * @param key
      * @param value
      */
-    void insert(const Key& key, const T& value);
+    void insert(const Key& key, const T& value)
+    {
+        WriteLocker locker(lock);
+        map.insert(std::make_pair(key, value));
+    }
+
+    /**
+     * @brief insert key-value pair
+     * @param key
+     * @param value
+     */
+    void insert(Key&& key, T&& value)
+    {
+        WriteLocker locker(lock);
+        map.insert(std::make_pair(std::move(key), std::move(value)));
+    }
+
     /**
      * @brief remove element stored under given key
      * @param key
      */
-    void remove(const Key& key);
+    void remove(const Key& key)
+    {
+        WriteLocker locker(lock);
+        map.erase(map.find(key));
+    }
+
     /**
      * @brief value retrieves copy of value stored under given key
      * @param key
      * @return copy of value
      */
-    T value(const Key& key);
+    T value(const Key& key) const
+    {
+        T aValue;
+        ReadLocker locker(lock);
+        aValue = map.find(key)->second;
+        return aValue;
+    }
+
     /**
      * @brief take retrieves copy of value stored under given key.
      * After this function returns, given element has been removed from the map
      * @param key
      * @return copy of value
      */
-    T take(const Key& key);
+    T take(const Key& key)
+    {
+        T aValue;
+        WriteLocker locker(lock);
+        auto mapElement = map.find(key);
+        if (mapElement != map.end()) {
+            aValue = mapElement->second;
+            map.erase(mapElement);
+        }
+        return aValue;
+    }
+
     /**
      * @brief contains check if map contains element with given key
      * @param key
      * @return
      */
-    bool contains(const Key& key) const;
+    bool contains(const Key& key) const
+    {
+        bool aValue;
+        ReadLocker locker(lock);
+        aValue = map.find(key) != map.end();
+        return aValue;
+    }
 
     /**
      * @brief deleteAll removes all elements from the map.
@@ -82,25 +133,37 @@ public:
     {
         deleteAllImpl(std::is_pointer<T>{});
     }
+
     /**
      * @brief size
      * @return number of elements in the map
      */
-    int size();
+    std::size_t size() const
+    {
+        return map.size();
+    }
+
     /**
      * @brief begin
      * @return iterator pointing to the beginning of the map
      */
-    mapIterator<Key, T> begin() const;
+    MapIterator begin() const
+    {
+        return map.begin();
+    }
+
     /**
      * @brief end
      * @return iterator pointing to the end of the map
      */
-    mapIterator<Key, T> end() const;
+    MapIterator end() const
+    {
+        return map.end();
+    }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeMap);
-    std::map<Key, T> map;
+    Map<Key, T> map;
     mutable ReadWriteLock lock;
 
     void deleteAllImpl(std::false_type)
@@ -118,75 +181,6 @@ private:
         }
     }
 };
-
-template <class Key, class T>
-ThreadSafeMap<Key, T>::ThreadSafeMap()
-        : map(), lock()
-{
-}
-
-template <class Key, class T>
-void ThreadSafeMap<Key, T>::insert(const Key& key, const T& value)
-{
-    WriteLocker locker(lock);
-    map.insert(std::make_pair(key, value));
-}
-
-template <class Key, class T>
-void ThreadSafeMap<Key, T>::remove(const Key& key)
-{
-    WriteLocker locker(lock);
-    map.erase(map.find(key));
-}
-
-template <class Key, class T>
-T ThreadSafeMap<Key, T>::value(const Key& key)
-{
-    T aValue;
-    ReadLocker locker(lock);
-    aValue = map.find(key)->second;
-    return aValue;
-}
-
-template <class Key, class T>
-T ThreadSafeMap<Key, T>::take(const Key& key)
-{
-    T aValue;
-    WriteLocker locker(lock);
-    auto mapElement = map.find(key);
-    if (mapElement != map.end()) {
-        aValue = mapElement->second;
-        map.erase(mapElement);
-    }
-    return aValue;
-}
-
-template <class Key, class T>
-bool ThreadSafeMap<Key, T>::contains(const Key& key) const
-{
-    bool aValue;
-    ReadLocker locker(lock);
-    aValue = map.find(key) != map.end();
-    return aValue;
-}
-
-template <class Key, class T>
-int ThreadSafeMap<Key, T>::size()
-{
-    return map.size();
-}
-
-template <class Key, class T>
-mapIterator<Key, T> ThreadSafeMap<Key, T>::begin() const
-{
-    return map.begin();
-}
-
-template <class Key, class T>
-mapIterator<Key, T> ThreadSafeMap<Key, T>::end() const
-{
-    return map.end();
-}
 
 } // namespace joynr
 

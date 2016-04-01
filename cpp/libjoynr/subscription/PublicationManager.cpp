@@ -575,7 +575,8 @@ std::vector<Variant> PublicationManager::subscriptionMapToVectorCopy(
 {
     std::vector<Variant> subscriptionVector;
     {
-        for (mapIterator<std::string, std::shared_ptr<RequestInformationType>> iterator =
+        for (typename ThreadSafeMap<std::string,
+                                    std::shared_ptr<RequestInformationType>>::MapIterator iterator =
                      map.begin();
              iterator != map.end();
              ++iterator) {
