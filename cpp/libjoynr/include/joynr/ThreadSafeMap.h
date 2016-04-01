@@ -88,14 +88,13 @@ public:
      */
     T value(const Key& key) const
     {
+        T aValue;
         ReadLocker locker(lock);
-
-        auto mapEntry = map.find(key);
-        if (mapEntry != map.end()) {
-            return mapEntry->second;
-        } else {
-            return T();
+        auto found = map.find(key);
+        if (found != map.cend()) {
+            aValue = found->second;
         }
+        return aValue;
     }
 
     /**
