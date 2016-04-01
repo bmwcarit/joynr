@@ -50,6 +50,7 @@ TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeReturnsValidDateTime) {
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     std::int64_t ttl60sMillis = ttl60s.time_since_epoch().count();
     EXPECT_LT(now + 59000, ttl60sMillis);
+    EXPECT_GT(now + 61000, ttl60sMillis);
 }
 
 TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeDetectsPositiveOverflow) {
