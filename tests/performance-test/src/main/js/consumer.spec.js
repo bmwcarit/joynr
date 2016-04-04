@@ -43,7 +43,6 @@ console.log = function() {};
 var registerProvider = function(joynr) {
     var providerQos = new joynr.types.ProviderQos({
         customParameters : [],
-        providerVersion : 1,
         priority : Date.now(),
         scope : joynr.types.ProviderScope.LOCAL,
         onChangeSubscriptions : true
