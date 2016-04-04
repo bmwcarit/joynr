@@ -153,7 +153,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::ignore = stopTime;
     std::ignore = logger;
 }
-INSTANTIATE_TEST_CASE_P(Http,
+INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndPerformanceTest,
         testing::Values(
             std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings","test-resources/HttpSystemIntegrationTest2.settings")
