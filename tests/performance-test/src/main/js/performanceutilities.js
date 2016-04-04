@@ -45,7 +45,7 @@ PerformanceUtilities.createRandomNumber = function createRandomNumber(max) {
  * available, a default value will be used.
  */
 PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
-    var domain, stringLength, byteArrayLength, numRuns, timeout, viacc, cchost, ccport;
+    var domain, stringLength, byteArrayLength, numRuns, timeout, viacc, cchost, ccport, host;
 
     if(environment.domain != undefined) {
         domain = environment.domain;
@@ -83,6 +83,12 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         viacc = 'true';
     }
 
+    if(environment.bounceProxyBaseUrl != undefined) {
+        bounceProxyBaseUrl = environment.bounceProxyBaseUrl;
+    } else {
+        bounceProxyBaseUrl = 'http://localhost:8080';
+    }
+
     if(environment.cchost != undefined) {
     	cchost = environment.cchost;
     } else {
@@ -103,7 +109,8 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         'domain' : domain,
         'viacc' : viacc,
         'cchost': cchost,
-        'ccport': ccport
+        'ccport': ccport,
+        'bounceProxyBaseUrl': bounceProxyBaseUrl
     };
 };
 

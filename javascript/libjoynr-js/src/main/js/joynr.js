@@ -82,6 +82,7 @@ var Promise;
  * @class
  */
 var joynr = {
+    loaded : false,
     /**
      * @name joynr#load
      * @function
@@ -91,6 +92,7 @@ var joynr = {
      */
     load : function load(provisioning, capabilitiesWritable) {
         return new Promise(function(resolve, reject) {
+            joynr.loaded = true;
             requirejs([ 'libjoynr-deps' ], function(joynrapi) {
                 var runtime;
                 runtime = new joynrapi.Runtime(provisioning);
@@ -166,10 +168,19 @@ if (typeof requireJsDefine === 'function' && requireJsDefine.amd) {
 
     // using joynr with native nodejs require
 } else if (exports !== undefined) {
-    // configuring requirejs
-    var requirejsConfig = require("./require.config.node.js");
     requirejs = require("requirejs");
-    requirejs.config(requirejsConfig);
+    joynr.selectRuntime = function selectRuntime(runtime) {
+        if (joynr.loaded) {
+            throw new Error("joynr.selectRuntime: this method must " +
+                            "be invoked before calling joynr.load()");
+        } else {
+            // configuring requirejs
+            var requirejsConfig = require("./require.config.node.js");
+            requirejsConfig.paths["joynr/Runtime"] = "joynr/Runtime." + runtime;
+            requirejs.config(requirejsConfig);
+        }
+    };
+    joynr.selectRuntime("websocket.libjoynr");
     Promise = requirejs("global/Promise");
     if ((module !== undefined) && module.exports) {
         exports.joynr = module.exports = joynr;
