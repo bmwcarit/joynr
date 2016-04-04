@@ -768,6 +768,26 @@ set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
 set(JoynrConfig_INSTALL_BIN_DIR "${JOYNR_BINARY_DIR}")
 set(JoynrConfig_RESOURCES_DIR "${JoynrConfig_INSTALL_BIN_DIR}/resources")
 
+set(JoynrConfig_RESOLVE_DEPENDENCIES)
+
+macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
+    file(READ "${CMAKE_CURRENT_LIST_DIR}/CMake/JoynrConfig/${DEPENDENCY_FILE}.cmake.in" FILE_CONTENTS)
+    string(CONCAT JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES} ${FILE_CONTENTS})
+    string(CONFIGURE ${FILE_CONTENTS} FILE_CONTENTS @ONLY)
+endmacro(FillJoynrConfigDependencies)
+
+if(USE_PLATFORM_JSMN)
+    FillJoynrConfigDependencies("PlatformJsmn")
+endif(USE_PLATFORM_JSMN)
+
+if(USE_PLATFORM_MOSQUITTO)
+    FillJoynrConfigDependencies("PlatformMosquitto")
+endif(USE_PLATFORM_MOSQUITTO)
+
+if(USE_PLATFORM_SPDLOG)
+    FillJoynrConfigDependencies("PlatformSpdlog")
+endif(USE_PLATFORM_SPDLOG)
+
 configure_file(
     JoynrConfig.cmake.in
     "JoynrConfig.cmake" @ONLY
