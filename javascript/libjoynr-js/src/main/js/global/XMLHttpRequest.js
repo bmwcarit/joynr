@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,9 @@
  */
 
 /**
- * Setups a dummy DOM environment for node.
  *
- * @returns object with properties window and document.
+ * @returns browser supported XMLHttpRequest.
  */
-define([ "xmlhttprequest"
-], function(xmlhttprequest) {
-    var XMLHttpRequest = xmlhttprequest.XMLHttpRequest;
-
-    global.XMLHttpRequest = XMLHttpRequest;
+define([], function() {
     return XMLHttpRequest;
 });

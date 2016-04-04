@@ -19,9 +19,10 @@
 
 define("joynr/messaging/CommunicationModule", [
     "global/Promise",
+    "global/XMLHttpRequest",
     "atmosphere",
     "joynr/util/LongTimer"
-], function(Promise, atmosphereDependency, LongTimer) {
+], function(Promise, XMLHttpRequestDependency, atmosphereDependency, LongTimer) {
 
     /**
      * Constructor of CommunicationModule object that is used to stsub communication with the outer world
@@ -60,7 +61,7 @@ define("joynr/messaging/CommunicationModule", [
          */
         this.createXMLHTTPRequest = function(parameters) {
             return new Promise(function(fulfill, reject) {
-                var xhr = new XMLHttpRequest();
+                var xhr = new XMLHttpRequestDependency();
                 var async = true;
 
                 xhr.open(parameters.type, parameters.url, async);
