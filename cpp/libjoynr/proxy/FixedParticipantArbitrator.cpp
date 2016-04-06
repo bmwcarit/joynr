@@ -48,10 +48,9 @@ void FixedParticipantArbitrator::attemptArbitration()
     joynr::types::DiscoveryEntry result;
     try {
         discoveryProxy.lookup(result, participantId);
-        joynr::types::CommunicationMiddleware::Enum preferredConnection(
-                selectPreferredCommunicationMiddleware(result.getConnections()));
+
         updateArbitrationStatusParticipantIdAndAddress(
-                ArbitrationStatus::ArbitrationSuccessful, participantId, preferredConnection);
+                ArbitrationStatus::ArbitrationSuccessful, participantId);
     } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "

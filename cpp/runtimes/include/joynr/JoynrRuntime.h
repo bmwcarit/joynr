@@ -149,6 +149,7 @@ public:
         }
         ProxyBuilder<TIntfProxy>* builder =
                 new ProxyBuilder<TIntfProxy>(proxyFactory,
+                                             requestCallerDirectory,
                                              *discoveryProxy,
                                              domain,
                                              dispatcherAddress,
@@ -177,6 +178,7 @@ protected:
      */
     explicit JoynrRuntime(Settings& settings)
             : proxyFactory(nullptr),
+              requestCallerDirectory(nullptr),
               participantIdStorage(nullptr),
               capabilitiesRegistrar(nullptr),
               messagingSettings(settings),
@@ -192,6 +194,8 @@ protected:
 
     /** @brief Factory for creating proxy instances */
     ProxyFactory* proxyFactory;
+    /** Is forwarded to proxy builder objects. They use it to identify in-process providers **/
+    IRequestCallerDirectory* requestCallerDirectory;
     /** @brief Creates and persists participant id */
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */

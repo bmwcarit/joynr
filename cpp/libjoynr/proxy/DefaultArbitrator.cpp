@@ -63,11 +63,8 @@ void DefaultArbitrator::receiveCapabilitiesLookupResults(
 
     // default arbitrator picks first entry
     joynr::types::DiscoveryEntry discoveredProvider = discoveryEntries.front();
-    joynr::types::CommunicationMiddleware::Enum preferredConnection(
-            selectPreferredCommunicationMiddleware(discoveredProvider.getConnections()));
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful,
-                                                   discoveredProvider.getParticipantId(),
-                                                   preferredConnection);
+    updateArbitrationStatusParticipantIdAndAddress(
+            ArbitrationStatus::ArbitrationSuccessful, discoveredProvider.getParticipantId());
 }
 
 } // namespace joynr

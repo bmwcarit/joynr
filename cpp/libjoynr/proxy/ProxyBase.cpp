@@ -17,6 +17,7 @@
  * #L%
  */
 #include "joynr/ProxyBase.h"
+#include <tuple>
 
 namespace joynr
 {
@@ -34,23 +35,20 @@ ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
           qosSettings(qosSettings),
           cached(cached),
           providerParticipantId(""),
-          proxyParticipantId(""),
-          connection(nullptr)
+          proxyParticipantId("")
 {
     proxyParticipantId = util::createUuid();
 }
 
 ProxyBase::~ProxyBase()
 {
-    delete connection;
 }
 
-void ProxyBase::handleArbitrationFinished(
-        const std::string& participantId,
-        const joynr::types::CommunicationMiddleware::Enum& connection)
+void ProxyBase::handleArbitrationFinished(const std::string& participantId,
+                                          bool useInProcessConnector)
 {
+    std::ignore = useInProcessConnector;
     providerParticipantId = participantId;
-    this->connection = new joynr::types::CommunicationMiddleware::Enum(connection);
 }
 
 std::string ProxyBase::getProxyParticipantId()

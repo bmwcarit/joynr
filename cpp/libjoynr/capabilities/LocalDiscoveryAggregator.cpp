@@ -35,12 +35,8 @@ namespace joynr
 {
 
 LocalDiscoveryAggregator::LocalDiscoveryAggregator(
-        IRequestCallerDirectory& requestCallerDirectory,
         const SystemServicesSettings& systemServicesSettings)
-        : discoveryProxy(),
-          requestCallerDirectory(requestCallerDirectory),
-          provisionedDiscoveryEntries(),
-          systemServicesSettings(systemServicesSettings)
+        : discoveryProxy(), provisionedDiscoveryEntries()
 {
     std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
     connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
@@ -83,18 +79,6 @@ void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discovery
     discoveryProxy->add(discoveryEntry);
 }
 
-void LocalDiscoveryAggregator::checkForLocalAvailabilityAndAddInProcessConnection(
-        joynr::types::DiscoveryEntry& discoveryEntry)
-{
-    std::string participantId(discoveryEntry.getParticipantId());
-    if (requestCallerDirectory.containsRequestCaller(participantId)) {
-        std::vector<joynr::types::CommunicationMiddleware::Enum> connections(
-                discoveryEntry.getConnections());
-        connections.insert(connections.begin(), joynr::types::CommunicationMiddleware::IN_PROCESS);
-        discoveryEntry.setConnections(connections);
-    }
-}
-
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>& result,
                                       const std::string& domain,
@@ -107,10 +91,6 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
                 "local capabilitites directory.");
     }
     discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-
-    for (joynr::types::DiscoveryEntry& discoveryEntry : result) {
-        checkForLocalAvailabilityAndAddInProcessConnection(discoveryEntry);
-    }
 }
 
 // inherited from joynr::system::IDiscoverySync
@@ -128,7 +108,6 @@ void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
         }
         discoveryProxy->lookup(result, participantId);
     }
-    checkForLocalAvailabilityAndAddInProcessConnection(result);
 }
 
 // inherited from joynr::system::IDiscoverySync

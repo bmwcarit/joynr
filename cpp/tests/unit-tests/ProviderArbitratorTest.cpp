@@ -59,7 +59,6 @@ class MockArbitrationListener : public IArbitrationListener {
 public:
     MOCK_METHOD1(setArbitrationStatus, void(ArbitrationStatus::ArbitrationStatusType arbitrationStatus));
     MOCK_METHOD1(setParticipantId, void(const std::string& participantId));
-    MOCK_METHOD1(setConnection, void(const joynr::types::CommunicationMiddleware::Enum& connection));
 };
 
 /**

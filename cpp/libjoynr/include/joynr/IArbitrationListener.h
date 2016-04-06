@@ -52,12 +52,6 @@ public:
      * @param participantId The id of the participant
      */
     virtual void setParticipantId(const std::string& participantId) = 0;
-
-    /**
-     * @brief Set the connection middleware used
-     * @param connection The connection middleware used
-     */
-    virtual void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection) = 0;
 };
 
 } // namespace joynr

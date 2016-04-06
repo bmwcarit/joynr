@@ -46,7 +46,6 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
           domain(domain),
           interfaceName(interfaceName),
           participantId(""),
-          connection(joynr::types::CommunicationMiddleware::NONE),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           listener(nullptr),
           listenerSemaphore(0)
@@ -92,41 +91,8 @@ void ProviderArbitrator::startArbitration()
     }
 
     // If this point is reached the arbitration timed out
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationCanceledForever,
-                                                   "",
-                                                   joynr::types::CommunicationMiddleware::NONE);
-}
-
-joynr::types::CommunicationMiddleware::Enum ProviderArbitrator::
-        selectPreferredCommunicationMiddleware(
-                const std::vector<joynr::types::CommunicationMiddleware::Enum>& connections)
-{
-    if (std::find(connections.begin(),
-                  connections.end(),
-                  joynr::types::CommunicationMiddleware::IN_PROCESS) != connections.end()) {
-        return joynr::types::CommunicationMiddleware::IN_PROCESS;
-    }
-    if (std::find(connections.begin(),
-                  connections.end(),
-                  joynr::types::CommunicationMiddleware::COMMONAPI_DBUS) != connections.end()) {
-        return joynr::types::CommunicationMiddleware::COMMONAPI_DBUS;
-    }
-    if (std::find(connections.begin(),
-                  connections.end(),
-                  joynr::types::CommunicationMiddleware::WEBSOCKET) != connections.end()) {
-        return joynr::types::CommunicationMiddleware::WEBSOCKET;
-    }
-    if (std::find(connections.begin(),
-                  connections.end(),
-                  joynr::types::CommunicationMiddleware::SOME_IP) != connections.end()) {
-        return joynr::types::CommunicationMiddleware::SOME_IP;
-    }
-    if (std::find(connections.begin(),
-                  connections.end(),
-                  joynr::types::CommunicationMiddleware::JOYNR) != connections.end()) {
-        return joynr::types::CommunicationMiddleware::JOYNR;
-    }
-    return joynr::types::CommunicationMiddleware::NONE;
+    updateArbitrationStatusParticipantIdAndAddress(
+            ArbitrationStatus::ArbitrationCanceledForever, "");
 }
 
 std::string ProviderArbitrator::getParticipantId()
@@ -150,34 +116,11 @@ void ProviderArbitrator::setParticipantId(std::string participantId)
     }
 }
 
-joynr::types::CommunicationMiddleware::Enum ProviderArbitrator::getConnection()
-{
-    if (connection == joynr::types::CommunicationMiddleware::NONE) {
-        throw exceptions::DiscoveryException("Connection is NULL: Called getConnection() before "
-                                             "arbitration has finished / Arbitrator did not set "
-                                             "connection.");
-    }
-    return connection;
-}
-
-void ProviderArbitrator::setConnection(
-        const joynr::types::CommunicationMiddleware::Enum& connection)
-{
-    this->connection = connection;
-    if (listenerSemaphore.waitFor()) {
-        assert(listener != nullptr);
-        listener->setConnection(connection);
-        listenerSemaphore.notify();
-    }
-}
-
 void ProviderArbitrator::updateArbitrationStatusParticipantIdAndAddress(
         ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
-        std::string participantId,
-        const joynr::types::CommunicationMiddleware::Enum& connection)
+        std::string participantId)
 {
     setParticipantId(participantId);
-    setConnection(connection);
     setArbitrationStatus(arbitrationStatus);
 }
 
@@ -213,7 +156,6 @@ void ProviderArbitrator::setArbitrationListener(IArbitrationListener* listener)
     listenerSemaphore.notify();
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
         listener->setParticipantId(participantId);
-        listener->setConnection(connection);
         listener->setArbitrationStatus(arbitrationStatus);
     }
 }

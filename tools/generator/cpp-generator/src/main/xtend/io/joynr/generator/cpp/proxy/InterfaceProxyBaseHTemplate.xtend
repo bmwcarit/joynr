@@ -98,7 +98,7 @@ public:
 	 */
 	void handleArbitrationFinished(
 			const std::string &participantId,
-			const joynr::types::CommunicationMiddleware::Enum& connection
+			bool useInProcessConnector
 	) override;
 
 	«FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
