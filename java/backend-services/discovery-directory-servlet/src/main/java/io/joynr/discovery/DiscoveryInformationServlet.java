@@ -34,42 +34,40 @@ import com.google.inject.Inject;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilitiesStore;
-import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.CapabilityUtils;
+import io.joynr.capabilities.DiscoveryEntryStore;
+import io.joynr.capabilities.directory.Persisted;
 import io.joynr.servlet.JoynrWebServlet;
-import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderScope;
 
 @Singleton
 @JoynrWebServlet(value = "/capabilities/")
 public class DiscoveryInformationServlet extends HttpServlet {
     private static final long serialVersionUID = 8839103126167589803L;
-    private transient CapabilitiesStore capabilitiesStore;
+    private transient DiscoveryEntryStore discoveryEntryStore;
     transient private Gson gson = new GsonBuilder().create();
 
     @Inject
-    public DiscoveryInformationServlet(CapabilitiesStore capabilitiesStore) {
-        this.capabilitiesStore = capabilitiesStore;
+    public DiscoveryInformationServlet(@Persisted DiscoveryEntryStore discoveryEntryStore) {
+        this.discoveryEntryStore = discoveryEntryStore;
     }
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        Set<GlobalDiscoveryEntry> globalCapabilities = new HashSet<GlobalDiscoveryEntry>();
-        Set<CapabilityEntry> allCapabilities = capabilitiesStore.getAllCapabilities();
-        for (CapabilityEntry capabilityEntry : allCapabilities) {
-            if (capabilityEntry.getProviderQos().getScope() == ProviderScope.GLOBAL) {
+        Set<DiscoveryEntry> globalDiscoveryEntries = new HashSet<DiscoveryEntry>();
+        Set<DiscoveryEntry> allDiscoveryEntries = discoveryEntryStore.getAllDiscoveryEntries();
+        for (DiscoveryEntry discoveryEntry : allDiscoveryEntries) {
+            if (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL) {
                 try {
-                    GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.capabilityEntry2GlobalDiscoveryEntry(capabilityEntry);
-                    globalCapabilities.add(globalDiscoveryEntry);
+                    globalDiscoveryEntries.add(discoveryEntry);
                 } catch (Exception e) {
                     log("error adding channel information", e);
                 }
             }
         }
-        out.println(gson.toJson(globalCapabilities));
+        out.println(gson.toJson(globalDiscoveryEntries));
     }
 
     @Override
@@ -78,7 +76,7 @@ public class DiscoveryInformationServlet extends HttpServlet {
         String[] query = queryString.split("=");
         boolean removed = false;
         if (query.length > 1) {
-            removed = capabilitiesStore.remove(query[1]);
+            removed = discoveryEntryStore.remove(query[1]);
         }
         response.setStatus(200);
         PrintWriter out = response.getWriter();

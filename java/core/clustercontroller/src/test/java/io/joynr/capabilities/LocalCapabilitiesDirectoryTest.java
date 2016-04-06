@@ -80,7 +80,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     protected CapabilitiesStore localCapabilitiesStoreMock;
     @Mock
-    protected CapabilitiesCache globalCapabilitiesCacheMock;
+    protected DiscoveryEntryStore globalDiscoveryEntryCacheMock;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private ChannelAddress channelAddress;
@@ -130,7 +130,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         domainAccessControllerChannelId,
                                                                         new ChannelAddress(channelAddressSerialized),
                                                                         localCapabilitiesStoreMock,
-                                                                        globalCapabilitiesCacheMock,
+                                                                        globalDiscoveryEntryCacheMock,
                                                                         messageRouter,
                                                                         proxyBuilderFactoryMock,
                                                                         new ObjectMapper());
@@ -203,12 +203,6 @@ public class LocalCapabilitiesDirectoryTest {
                                                                  participantId,
                                                                  providerQos,
                                                                  System.currentTimeMillis());
-        final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(new Version(47, 11),
-                                                                        domain,
-                                                                        TestInterface.INTERFACE_NAME,
-                                                                        providerQos,
-                                                                        participantId,
-                                                                        System.currentTimeMillis());
         globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
                                                         domain,
                                                         TestInterface.INTERFACE_NAME,
@@ -225,7 +219,7 @@ public class LocalCapabilitiesDirectoryTest {
                        .when(globalCapabilitiesClient)
                        .add(Mockito.any(Callback.class), Mockito.eq(globalDiscoveryEntry));
 
-                Mockito.verify(globalCapabilitiesCacheMock).add(Mockito.eq(capabilityEntry));
+                Mockito.verify(globalDiscoveryEntryCacheMock).add(Mockito.eq(globalDiscoveryEntry));
                 Mockito.verify(globalCapabilitiesClient).add(Mockito.any(Callback.class),
                                                              Mockito.eq(globalDiscoveryEntry));
                 Mockito.reset(globalCapabilitiesClient);
@@ -257,12 +251,6 @@ public class LocalCapabilitiesDirectoryTest {
                                                                  participantId,
                                                                  providerQos,
                                                                  System.currentTimeMillis());
-        final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(new Version(47, 11),
-                                                                        domain,
-                                                                        TestInterface.INTERFACE_NAME,
-                                                                        providerQos,
-                                                                        participantId,
-                                                                        System.currentTimeMillis());
         globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
                                                         domain,
                                                         TestInterface.INTERFACE_NAME,
@@ -279,7 +267,7 @@ public class LocalCapabilitiesDirectoryTest {
         promise.then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
-                Mockito.verify(globalCapabilitiesCacheMock, Mockito.never()).add(Mockito.eq(capabilityEntry));
+                Mockito.verify(globalDiscoveryEntryCacheMock, Mockito.never()).add(Mockito.eq(globalDiscoveryEntry));
                 Mockito.verify(globalCapabilitiesClient).add(Mockito.any(Callback.class),
                                                              Mockito.eq(globalDiscoveryEntry));
                 Mockito.reset(globalCapabilitiesClient);
