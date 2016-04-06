@@ -460,6 +460,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                     case 'm':
                         GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
                         LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country + ", location: " + locationOfCurrentStation.location);
+                        break;
                     default:
                         LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
                         break;
