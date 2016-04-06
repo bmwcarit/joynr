@@ -151,14 +151,18 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         routeInternal(message, 0, 0);
     }
 
-    private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
+    protected void schedule(Runnable runnable, String messageId, long delay, TimeUnit timeUnit) {
         if (scheduler.isShutdown()) {
             JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("MessageScheduler is shutting down already. Unable to send message [messageId: "
-                    + message.getId() + "].");
+                    + messageId + "].");
             throw joynrShutdownEx;
         }
+        scheduler.schedule(runnable, delay, timeUnit);
+    }
+
+    private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
         try {
-            scheduler.schedule(new Runnable() {
+            schedule(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -190,8 +194,9 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                     }
                 }
             },
-                               delayMs,
-                               TimeUnit.MILLISECONDS);
+                     message.getId(),
+                     delayMs,
+                     TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException e) {
             logger.error("Execution rejected while scheduling SendSerializedMessageRequest ", e);
             throw new JoynrSendBufferFullException(e);
