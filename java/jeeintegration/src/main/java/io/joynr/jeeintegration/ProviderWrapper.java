@@ -20,7 +20,6 @@ package io.joynr.jeeintegration;
  */
 
 import static java.lang.String.format;
-import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Deferred;
@@ -42,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class wraps an EJB which is decorated with {@link ServiceProvider} and has a valid service interface specified
+ * This class wraps an EJB which is decorated with {@link io.joynr.jeeintegration.api.ServiceProvider} and has a valid service interface specified
  * (that is it extends {@link JoynrProvider}). When the bean is discovered in
  * {@link JoynrIntegrationBean#initialise()} an instance of this class is registered as the provider with the
  * joynr runtime. When joynr wants to call a method of the specified service interface, then this instance will obtain a

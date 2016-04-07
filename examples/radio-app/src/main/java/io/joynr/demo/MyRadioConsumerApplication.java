@@ -259,7 +259,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // The provider will send notifications until the end date is reached. The consumer will not receive any
         // notifications (neither value notifications nor missed publication notifications) after
         // this date.
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
+        long validityMs = 60000;
         // If no notification was received within the last alert interval, a missed publication
         // notification will be raised.
         int alertAfterInterval_ms = 20000;
@@ -269,11 +269,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // missed publication notification (depending on the value of the alert interval QoS).
         int publicationTtl_ms = 5000;
 
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms).setMaxIntervalMs(maxInterval_ms).setValidityMs(validityMs);
+        subscriptionQos.setAlertAfterIntervalMs(alertAfterInterval_ms).setPublicationTtlMs(publicationTtl_ms);
 
         ProxyBuilder<RadioProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain, RadioProxy.class);
 
@@ -314,19 +312,18 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             // successive notifications, even if on-change notifications are enabled and the value changes
             // more often. This prevents the consumer from being flooded by updated values. The filtering
             // happens on the provider's side, thus also preventing excessive network traffic.
-            int wsbMinInterval = 1 * 1000;
+            int wsbMinIntervalMs = 1 * 1000;
             // The provider will send notifications until the end date is reached. The consumer will not receive any
             // notifications (neither value notifications nor missed publication notifications) after
             // this date.
-            long wsbExpiryDate = System.currentTimeMillis() + 60 * 1000;
+            long wsbValidityMs = 60 * 1000;
             // Notification messages will be sent with this time-to-live. If a notification message can not be
             // delivered within its TTL, it will be deleted from the system.
             // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
             // missed publication notification (depending on the value of the alert interval QoS).
-            int wsbPublicationTtl = 5 * 1000;
-            weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos(wsbMinInterval,
-                                                                             wsbExpiryDate,
-                                                                             wsbPublicationTtl);
+            int wsbPublicationTtlMs = 5 * 1000;
+            weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos();
+            weakSignalBroadcastSubscriptionQos.setMinIntervalMs(wsbMinIntervalMs).setValidityMs(wsbValidityMs).setPublicationTtlMs(wsbPublicationTtlMs);
             radioProxy.subscribeToWeakSignalBroadcast(new WeakSignalBroadcastAdapter() {
                 @Override
                 public void onReceive(RadioStation weakSignalStation) {
@@ -338,12 +335,11 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             // selective broadcast subscription
 
             OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
-            int nsdbMinInterval = 2 * 1000;
-            long nsdbExpiryDate = System.currentTimeMillis() + 180 * 1000;
-            int nsdbPublicationTtl = 5 * 1000;
-            newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos(nsdbMinInterval,
-                                                                                       nsdbExpiryDate,
-                                                                                       nsdbPublicationTtl);
+            int nsdbMinIntervalMs = 2 * 1000;
+            long nsdbValidityMs = 180 * 1000;
+            int nsdbPublicationTtlMs = 5 * 1000;
+            newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos();
+            newStationDiscoveredBroadcastSubscriptionQos.setMinIntervalMs(nsdbMinIntervalMs).setValidityMs(nsdbValidityMs).setPublicationTtlMs(nsdbPublicationTtlMs);
             NewStationDiscoveredBroadcastFilterParameters newStationDiscoveredBroadcastFilterParams = new NewStationDiscoveredBroadcastFilterParameters();
             newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
             GeoPosition positionOfInterest = new GeoPosition(48.1351250, 11.5819810); // Munich
@@ -442,7 +438,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 Boolean reply = future.get(timeoutInMilliseconds);
                 LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation + ": " + reply
                         + PRINT_BORDER);
-            } catch (InterruptedException|JoynrRuntimeException|ApplicationException e) {
+            } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
                 LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation
                         + ": " + e.getClass().getSimpleName() + "!");
             }

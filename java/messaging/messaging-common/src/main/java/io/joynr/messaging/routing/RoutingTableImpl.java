@@ -1,16 +1,5 @@
 package io.joynr.messaging.routing;
 
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
 /*
  * #%L
  * %%
@@ -30,6 +19,16 @@ import com.google.inject.name.Named;
  * #L%
  */
 
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.RoutingTypes.Address;

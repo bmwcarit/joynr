@@ -57,7 +57,7 @@ public interface JoynrRuntimeFactory {
 
     /**
      * Provides the guice injector to be used by the joynr runtime factory
-     * @return
+     * @return the guice intector to be used by the joynr runtime factory
      */
     Injector getInjector();
 

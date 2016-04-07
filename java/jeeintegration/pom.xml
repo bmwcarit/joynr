@@ -41,22 +41,13 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>javadoc-jar</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<includeDependencySources>true</includeDependencySources>
-							<dependencySourceExcludes>
-								<dependencySourceExclude>integrationTest:*</dependencySourceExclude>
-							</dependencySourceExcludes>
-							<additionalparam>-Xdoclint:none</additionalparam>
-						</configuration>
-					</execution>
-				</executions>
+				<configuration>
+					<includeDependencySources>true</includeDependencySources>
+					<dependencySourceExcludes>
+						<dependencySourceExclude>integrationTest:*</dependencySourceExclude>
+					</dependencySourceExcludes>
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
@@ -159,21 +150,12 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>javadoc-jar</id>
-								<phase>package</phase>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-								<configuration>
-									<includeDependencySources>true</includeDependencySources>
-									<dependencySourceIncludes>
-									</dependencySourceIncludes>
-									<additionalparam>-Xdoclint:none</additionalparam>
-								</configuration>
-							</execution>
-						</executions>
+						<configuration>
+							<includeDependencySources>true</includeDependencySources>
+							<dependencySourceIncludes>
+							</dependencySourceIncludes>
+							<additionalparam>-Xdoclint:none</additionalparam>
+						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>

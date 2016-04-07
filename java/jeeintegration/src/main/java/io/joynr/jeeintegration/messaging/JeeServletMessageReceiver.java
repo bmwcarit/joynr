@@ -22,10 +22,19 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient;
@@ -35,10 +44,9 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
 import joynr.JoynrMessage;
 import joynr.types.ChannelUrlInformation;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.*;
 
 import static java.lang.String.format;
 

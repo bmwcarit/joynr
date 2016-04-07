@@ -43,7 +43,7 @@ import io.joynr.provider.JoynrProvider;
  * This class is reponsible for finding all beans registered in the {@link BeanManager} which are annotated with
  * {@link ServiceProvider}.
  *
- * @author Clive Jevons <clive@jevons-it.net> commissioned by MaibornWolff
+ * @author clive.jevons commissioned by MaibornWolff
  */
 public class ServiceProviderDiscovery {
 
