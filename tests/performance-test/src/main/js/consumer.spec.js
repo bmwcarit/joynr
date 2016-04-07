@@ -74,7 +74,10 @@ describe("js consumer performance test", function() {
 
             runs(function() {
                 console.log("Environment not yet setup");
-                joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
+                var provisioning = testbase.provisioning_common;
+                provisioning.ccAddress.host = options.cchost;
+                provisioning.ccAddress.port = options.ccport;
+                joynr.load(provisioning).then(function(loadedJoynr) {
                     log("joynr started");
                     joynr = loadedJoynr;
                     if (options.viacc !== 'true') {
