@@ -137,7 +137,7 @@ describe("js consumer performance test", function() {
         spy.onFulfilled.reset();
         spy.onError.reset();
         runs(function() {
-            log("call echoComplexStruct " + options.numRuns + " times");
+            log("call " + benchmarkName +" " + options.numRuns + " times");
             startTime = Date.now();
             for (var i = 1; i <= options.numRuns; i++) {
                 benchmark(i).then(spy.onFulfilled).catch(spy.onError);
@@ -146,7 +146,7 @@ describe("js consumer performance test", function() {
 
         waitsFor(function() {
             return spy.onFulfilled.callCount + spy.onError.callCount >= options.numRuns;
-        }, "callEchoComplexStruct", timeout);
+        }, benchmarkName, timeout);
 
         runs(function() {
             expect(spy.onFulfilled.callCount+ '').toEqual(options.numRuns);
