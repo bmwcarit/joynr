@@ -6,7 +6,6 @@ set -e
 source /data/src/docker/joynr-base/scripts/global.sh
 
 START=$(date +%s)
-JOBS=4
 CLANGFORMATTER='ON'
 BUILDTYPE='Debug'
 ARCHIVEBINARIES='OFF'

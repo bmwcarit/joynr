@@ -4,7 +4,6 @@ source /data/src/docker/joynr-base/scripts/global.sh
 
 DBUS='OFF'
 GCOV='OFF'
-JOBS=$(nproc)
 ENABLE_CLANG_FORMATTER='ON'
 BUILD_TESTS='ON'
 
