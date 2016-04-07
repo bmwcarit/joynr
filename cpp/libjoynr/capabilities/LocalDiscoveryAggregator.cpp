@@ -19,8 +19,8 @@
 #include "joynr/LocalDiscoveryAggregator.h"
 
 #include <utility>
+#include <chrono>
 
-#include "joynr/types/CommunicationMiddleware.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/SystemServicesSettings.h"
@@ -38,8 +38,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
         const SystemServicesSettings& systemServicesSettings)
         : discoveryProxy(), provisionedDiscoveryEntries()
 {
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
-    connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
+    std::int64_t lastSeenDateMs = 0;
     joynr::types::Version providerVersion;
     joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
             providerVersion,
@@ -47,7 +46,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             joynr::system::IRouting::INTERFACE_NAME(),
             systemServicesSettings.getCcRoutingProviderParticipantId(),
             joynr::types::ProviderQos(),
-            connections);
+            lastSeenDateMs);
     provisionedDiscoveryEntries.insert(std::make_pair(
             routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
     joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
@@ -56,7 +55,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             joynr::system::IDiscovery::INTERFACE_NAME(),
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),
             joynr::types::ProviderQos(),
-            connections);
+            lastSeenDateMs);
     provisionedDiscoveryEntries.insert(std::make_pair(
             discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
 }

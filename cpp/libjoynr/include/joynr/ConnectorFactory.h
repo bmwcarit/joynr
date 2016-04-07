@@ -26,7 +26,6 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/types/CommunicationMiddleware.h"
 
 #include <string>
 

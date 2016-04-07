@@ -23,30 +23,21 @@ namespace joynr
 {
 
 CapabilityEntry::CapabilityEntry()
-        : providerVersion(),
-          domain(),
-          interfaceName(),
-          qos(),
-          participantId(),
-          middlewareConnections(),
-          global(true)
+        : providerVersion(), domain(), interfaceName(), qos(), participantId(), global(true)
 {
 }
 
-CapabilityEntry::CapabilityEntry(
-        joynr::types::Version providerVersion,
-        const std::string& domain,
-        const std::string& interfaceName,
-        joynr::types::ProviderQos qos,
-        const std::string& participantId,
-        std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
-        bool isGlobal)
+CapabilityEntry::CapabilityEntry(joynr::types::Version providerVersion,
+                                 const std::string& domain,
+                                 const std::string& interfaceName,
+                                 joynr::types::ProviderQos qos,
+                                 const std::string& participantId,
+                                 bool isGlobal)
         : providerVersion(providerVersion),
           domain(domain),
           interfaceName(interfaceName),
           qos(qos),
           participantId(participantId),
-          middlewareConnections(middlewareConnections),
           global(isGlobal)
 {
 }
@@ -58,7 +49,6 @@ CapabilityEntry& CapabilityEntry::operator=(const CapabilityEntry& other)
     this->domain = other.domain;
     this->qos = other.qos;
     this->participantId = other.participantId;
-    this->middlewareConnections = middlewareConnections;
     this->global = other.global;
     return *this;
 }
@@ -67,9 +57,7 @@ bool CapabilityEntry::operator==(const CapabilityEntry& other) const
 {
     return this->providerVersion == other.providerVersion &&
            this->interfaceName == other.interfaceName && this->domain == other.domain &&
-           this->participantId == other.participantId &&
-           this->middlewareConnections == other.middlewareConnections &&
-           this->global == other.global;
+           this->participantId == other.participantId && this->global == other.global;
 }
 
 std::string CapabilityEntry::getInterfaceName() const
@@ -120,24 +108,6 @@ void CapabilityEntry::setParticipantId(std::string participantId)
 std::string CapabilityEntry::getParticipantId() const
 {
     return participantId;
-}
-
-void CapabilityEntry::setMiddlewareConnections(
-        std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections)
-{
-    this->middlewareConnections = middlewareConnections;
-}
-
-std::vector<joynr::types::CommunicationMiddleware::Enum> CapabilityEntry::getMiddlewareConnections()
-        const
-{
-    return middlewareConnections;
-}
-
-void CapabilityEntry::prependMiddlewareConnection(
-        joynr::types::CommunicationMiddleware::Enum middlewareConnection)
-{
-    middlewareConnections.insert(middlewareConnections.begin(), middlewareConnection);
 }
 
 bool CapabilityEntry::isGlobal() const

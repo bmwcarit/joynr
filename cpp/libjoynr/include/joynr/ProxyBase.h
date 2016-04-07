@@ -23,7 +23,6 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/types/CommunicationMiddleware.h"
 #include <string>
 
 namespace joynr

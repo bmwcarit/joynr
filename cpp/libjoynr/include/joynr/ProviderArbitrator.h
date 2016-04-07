@@ -100,7 +100,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
     void setParticipantId(std::string participantId);
-    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection);
     std::string participantId;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;

@@ -42,6 +42,7 @@ public:
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
     joynr::system::DiscoveryProxy* discoveryProxy;
+    std::int64_t lastSeenDateMs;
 
     SystemServicesDiscoveryTest() :
         settingsFilename("test-resources/SystemServicesDiscoveryTest.settings"),
@@ -53,7 +54,8 @@ public:
         mockMessageReceiverMqtt(new MockMessageReceiver()),
         discoveryQos(),
         discoveryProxyBuilder(nullptr),
-        discoveryProxy(nullptr)
+        discoveryProxy(nullptr),
+        lastSeenDateMs(-1)
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
@@ -170,9 +172,6 @@ TEST_F(SystemServicesDiscoveryTest, add)
                 joynr::types::ProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions
     );
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
-            joynr::types::CommunicationMiddleware::JOYNR
-    };
     joynr::types::Version providerVersion(47, 11);
     std::vector<joynr::types::DiscoveryEntry> expectedResult;
     joynr::types::DiscoveryEntry discoveryEntry(
@@ -181,10 +180,9 @@ TEST_F(SystemServicesDiscoveryTest, add)
                 interfaceName,
                 participantId,
                 providerQos,
-                connections
+                lastSeenDateMs
     );
     expectedResult.push_back(discoveryEntry);
-
 
     try {
         discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
@@ -229,9 +227,6 @@ TEST_F(SystemServicesDiscoveryTest, remove)
                 joynr::types::ProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions
     );
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
-            joynr::types::CommunicationMiddleware::JOYNR
-    };
     joynr::types::Version providerVersion(47, 11);
     std::vector<joynr::types::DiscoveryEntry> expectedResult;
     joynr::types::DiscoveryEntry discoveryEntry(
@@ -240,7 +235,7 @@ TEST_F(SystemServicesDiscoveryTest, remove)
                 interfaceName,
                 participantId,
                 providerQos,
-                connections
+                lastSeenDateMs
     );
     expectedResult.push_back(discoveryEntry);
 

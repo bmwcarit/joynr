@@ -17,6 +17,7 @@
  * #L%
  */
 #include <boost/algorithm/string/predicate.hpp>
+#include <chrono>
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
@@ -57,12 +58,9 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
           mqttSettings(),
           localCapabilitiesDirectoryFileName()
 {
-    // setting up the provisioned values for GlobalCapabilitiesClient
-    // The GlobalCapabilitiesServer is also provisioned in MessageRouter
-    std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections = {
-            joynr::types::CommunicationMiddleware::JOYNR};
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
+    std::int64_t lastSeenDateMs = 0;
     types::Version providerVersion;
     this->insertInCache(joynr::types::DiscoveryEntry(
                                 providerVersion,
@@ -70,7 +68,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
                                 infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
                                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
                                 providerQos,
-                                middlewareConnections),
+                                lastSeenDateMs),
                         false,
                         true,
                         false);
@@ -81,12 +79,11 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
     types::ProviderQos channelUrlDirProviderQos;
     channelUrlDirProviderQos.setPriority(1);
     this->insertInCache(
-            joynr::types::DiscoveryEntry(providerVersion,
-                                         messagingSettings.getDiscoveryDirectoriesDomain(),
+            joynr::types::DiscoveryEntry(messagingSettings.getDiscoveryDirectoriesDomain(),
                                          infrastructure::IChannelUrlDirectory::INTERFACE_NAME(),
                                          messagingSettings.getChannelUrlDirectoryParticipantId(),
                                          channelUrlDirProviderQos,
-                                         middlewareConnections),
+                                         lastSeenDateMs),
             false,
             true,
             false);
@@ -292,14 +289,11 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
     std::vector<CapabilityEntry> mergedEntries;
 
     for (types::CapabilityInformation capInfo : results) {
-        std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
-        connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
         CapabilityEntry capEntry(capInfo.getProviderVersion(),
                                  capInfo.getDomain(),
                                  capInfo.getInterfaceName(),
                                  capInfo.getProviderQos(),
                                  capInfo.getParticipantId(),
-                                 connections,
                                  true);
         capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);
         mergedEntries.push_back(capEntry);
@@ -659,7 +653,6 @@ void LocalCapabilitiesDirectory::convertCapabilityEntryIntoDiscoveryEntry(
     discoveryEntry.setInterfaceName(capabilityEntry.getInterfaceName());
     discoveryEntry.setParticipantId(capabilityEntry.getParticipantId());
     discoveryEntry.setQos(capabilityEntry.getQos());
-    discoveryEntry.setConnections(capabilityEntry.getMiddlewareConnections());
 }
 
 void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
@@ -671,7 +664,6 @@ void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
     capabilityEntry.setInterfaceName(discoveryEntry.getInterfaceName());
     capabilityEntry.setParticipantId(discoveryEntry.getParticipantId());
     capabilityEntry.setQos(discoveryEntry.getQos());
-    capabilityEntry.setMiddlewareConnections(discoveryEntry.getConnections());
 }
 
 void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(

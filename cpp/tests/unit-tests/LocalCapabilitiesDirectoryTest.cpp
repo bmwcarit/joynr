@@ -50,13 +50,12 @@ public:
         capabilitiesClient(new MockCapabilitiesClient()),
         mockMessageRouter(),
         localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings, capabilitiesClient, mockMessageRouter)),
+        lastSeenDateMs(0),
         dummyParticipantId1(),
         dummyParticipantId2(),
         localJoynrMessagingAddress1(),
-        callback(),
-        connections()
+        callback()
     {
-        connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
     }
 
     ~LocalCapabilitiesDirectoryTest() {
@@ -78,7 +77,6 @@ public:
 
         // init a capentry recieved from the global capabilities directory
         types::ProviderQos qos;
-        std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {joynr::types::CommunicationMiddleware::JOYNR};
         joynr::types::Version providerVersion(47, 11);
         CapabilityEntry globalCapEntry(
                     providerVersion,
@@ -86,7 +84,6 @@ public:
                     INTERFACE_1_NAME,
                     qos,
                     dummyParticipantId3,
-                    connections,
                     true
         );
         globalCapEntryMap.insert(EXTERNAL_CHANNEL_ID, globalCapEntry);
@@ -211,6 +208,7 @@ protected:
     MockCapabilitiesClient* capabilitiesClient;
     MockMessageRouter mockMessageRouter;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
+    std::int64_t lastSeenDateMs;
     std::string dummyParticipantId1;
     std::string dummyParticipantId2;
     std::string dummyParticipantId3;
@@ -228,7 +226,6 @@ protected:
     static const std::string EXTERNAL_CHANNEL_ID;
     static const int TIMEOUT;
     std::shared_ptr<MockLocalCapabilitiesDirectoryCallback> callback;
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
     void registerReceivedCapabilities(const std::string& addressType, const std::string& channelId);
     ADD_LOGGER(LocalCapabilitiesDirectoryTest);
 private:
@@ -258,7 +255,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient)
         INTERFACE_1_NAME,
         dummyParticipantId1,
         types::ProviderQos(),
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
 }
@@ -278,7 +275,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache) {
         INTERFACE_1_NAME,
         dummyParticipantId1,
         types::ProviderQos(),
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
 
@@ -302,7 +299,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient) 
         INTERFACE_1_NAME,
         dummyParticipantId1,
         providerQos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
 
@@ -323,7 +320,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeDelegatesToCapabilitiesClientIfGlob
         INTERFACE_1_NAME,
         dummyParticipantId1,
         types::ProviderQos(),
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos());
@@ -348,7 +345,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeRemovesFromCache) {
         INTERFACE_1_NAME,
         dummyParticipantId1,
         types::ProviderQos(),
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos());
@@ -369,7 +366,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByInterfaceAddressDo
         INTERFACE_1_NAME,
         dummyParticipantId1,
         providerQos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, providerQos);
@@ -536,14 +533,13 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
         EXPECT_CALL(*capabilitiesClient, add(secondCapInfoList)).Times(1);
     }
 
-
     joynr::types::DiscoveryEntry entry(
         providerVersion,
         DOMAIN_1_NAME,
         INTERFACE_1_NAME,
         dummyParticipantId1,
         qos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
     joynr::types::DiscoveryEntry entry2(
@@ -552,7 +548,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
         INTERFACE_1_NAME,
         dummyParticipantId2,
         qos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry2);
 }
@@ -572,7 +568,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
                 INTERFACE_1_NAME,
                 dummyParticipantId1,
                 qos,
-                connections
+                lastSeenDateMs
             );
             localCapabilitiesDirectory->add(entry);
         } catch (const exceptions::JoynrException& e){
@@ -600,7 +596,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
         INTERFACE_1_NAME,
         dummyParticipantId1,
         qos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
@@ -637,7 +633,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal){
         INTERFACE_1_NAME,
         dummyParticipantId1,
         providerQos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
@@ -670,7 +666,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
         INTERFACE_1_NAME,
         dummyParticipantId1,
         providerQos,
-        connections
+        lastSeenDateMs
     );
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
     localCapabilitiesDirectory->add(entry);
@@ -714,7 +710,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
         INTERFACE_1_NAME,
         dummyParticipantId1,
         providerQos,
-        connections
+        lastSeenDateMs
     );
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
     localCapabilitiesDirectory->add(entry);
@@ -770,7 +766,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
         INTERFACE_1_NAME,
         dummyParticipantId1,
         providerQos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
 
@@ -821,7 +817,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal){
         INTERFACE_1_NAME,
         dummyParticipantId1,
         providerQos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
@@ -851,7 +847,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
         INTERFACE_1_NAME,
         dummyParticipantId1,
         providerQos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
@@ -900,7 +896,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupGlobalOnly
         INTERFACE_1_NAME,
         dummyParticipantId1,
         providerQos,
-        connections
+        lastSeenDateMs
     );
     localCapabilitiesDirectory->add(entry);
 
@@ -988,9 +984,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, serializerTest)
 
     std::vector<std::string> participantIds {util::createUuid(),util::createUuid(),util::createUuid()};
     joynr::types::Version providerVersion(47, 11);
-    joynr::types::DiscoveryEntry entry1 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[0],types::ProviderQos(),{joynr::types::CommunicationMiddleware::JOYNR});
-    joynr::types::DiscoveryEntry entry2 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[1],types::ProviderQos(),{joynr::types::CommunicationMiddleware::JOYNR});
-    joynr::types::DiscoveryEntry entry3 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[2],types::ProviderQos(),{joynr::types::CommunicationMiddleware::JOYNR});
+    joynr::types::DiscoveryEntry entry1 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[0],types::ProviderQos(), lastSeenDateMs);
+    joynr::types::DiscoveryEntry entry2 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[1],types::ProviderQos(), lastSeenDateMs);
+    joynr::types::DiscoveryEntry entry3 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[2],types::ProviderQos(), lastSeenDateMs);
 
     localCapabilitiesDirectory->add(entry1);
     localCapabilitiesDirectory->add(entry2);

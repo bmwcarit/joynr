@@ -31,7 +31,6 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/Version.h"
-#include "joynr/types/CommunicationMiddleware.h"
 
 namespace joynr
 {
@@ -48,7 +47,6 @@ public:
                     const std::string& interfaceName,
                     joynr::types::ProviderQos qos,
                     const std::string& participantId,
-                    std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
                     bool isGlobal);
 
     CapabilityEntry& operator=(const CapabilityEntry& other);
@@ -69,13 +67,6 @@ public:
     std::string getParticipantId() const;
     void setParticipantId(std::string participantId);
 
-    void setMiddlewareConnections(
-            std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections);
-    std::vector<joynr::types::CommunicationMiddleware::Enum> getMiddlewareConnections() const;
-
-    void prependMiddlewareConnection(
-            joynr::types::CommunicationMiddleware::Enum middlewareConnection);
-
     bool isGlobal() const;
     void setGlobal(bool global);
 
@@ -87,7 +78,6 @@ private:
     std::string interfaceName;
     types::ProviderQos qos;
     std::string participantId;
-    std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections;
     bool global;
 };
 

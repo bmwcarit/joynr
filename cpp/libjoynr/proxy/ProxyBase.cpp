@@ -17,6 +17,7 @@
  * #L%
  */
 #include "joynr/ProxyBase.h"
+#include "joynr/Util.h"
 #include <tuple>
 
 namespace joynr

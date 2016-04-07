@@ -20,7 +20,6 @@
 #define IARBITRATIONLISTENER_H
 
 #include "joynr/ArbitrationStatus.h"
-#include "joynr/types/CommunicationMiddleware.h"
 
 #include <string>
 

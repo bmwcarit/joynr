@@ -37,6 +37,7 @@
 #include <cassert>
 #include <memory>
 #include <tuple>
+#include <chrono>
 
 namespace joynr
 {
@@ -76,11 +77,12 @@ public:
             currentDispatcher->addRequestCaller(participantId, caller);
         }
 
-        std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {
-                joynr::types::CommunicationMiddleware::JOYNR};
+        std::int64_t lastSeenDateMs =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch()).count();
         joynr::types::Version providerVersion;
         joynr::types::DiscoveryEntry entry(
-                providerVersion, domain, interfaceName, participantId, providerQos, connections);
+                providerVersion, domain, interfaceName, participantId, providerQos, lastSeenDateMs);
         try {
             discoveryProxy.add(entry);
         } catch (const exceptions::JoynrException& e) {
