@@ -37,20 +37,20 @@ import com.google.inject.name.Named;
 
 public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning {
     public static final String STATIC_PROVISIONING_PROPERTIES = "static_capabilities_provisioning.properties";
-    private static final String provisioningEntry = "provisionedCapabilities";
+    public static final String PROPERTY_PROVISIONED_CAPABILITIES = "joynr.capabilities.provisioned";
     private Collection<DiscoveryEntry> discoveryEntries;
     private static Logger logger = LoggerFactory.getLogger(StaticCapabilitiesProvisioning.class);
 
     @Inject
     public StaticCapabilitiesProvisioning(@Named(STATIC_PROVISIONING_PROPERTIES) Properties properties,
                                           ObjectMapper objectMapper) {
-        loadCapabilityEntries(properties, objectMapper);
+        loadDiscoveryEntries(properties, objectMapper);
     }
 
     @SuppressWarnings("unchecked")
-    private void loadCapabilityEntries(Properties properties, ObjectMapper objectMapper) {
+    private void loadDiscoveryEntries(Properties properties, ObjectMapper objectMapper) {
         discoveryEntries = new HashSet<DiscoveryEntry>();
-        Object entries = properties.get(provisioningEntry);
+        Object entries = properties.get(PROPERTY_PROVISIONED_CAPABILITIES);
         List<GlobalDiscoveryEntry> newEntries = null;
         try {
             newEntries = objectMapper.readValue((String) entries, new TypeReference<List<GlobalDiscoveryEntry>>() {
