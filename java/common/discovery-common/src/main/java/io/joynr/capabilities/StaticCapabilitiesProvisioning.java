@@ -19,11 +19,12 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
+import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ import com.google.inject.name.Named;
 public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning {
     public static final String STATIC_PROVISIONING_PROPERTIES = "static_capabilities_provisioning.properties";
     private static final String provisioningEntry = "provisionedCapabilities";
-    private List<CapabilityEntry> capabilityEntries;
+    private Collection<DiscoveryEntry> discoveryEntries;
     private static Logger logger = LoggerFactory.getLogger(StaticCapabilitiesProvisioning.class);
 
     @Inject
@@ -48,16 +49,14 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
 
     @SuppressWarnings("unchecked")
     private void loadCapabilityEntries(Properties properties, ObjectMapper objectMapper) {
-        capabilityEntries = new ArrayList<CapabilityEntry>();
+        discoveryEntries = new HashSet<DiscoveryEntry>();
         Object entries = properties.get(provisioningEntry);
-        Object newEntries = null;
+        List<GlobalDiscoveryEntry> newEntries = null;
         try {
             newEntries = objectMapper.readValue((String) entries, new TypeReference<List<GlobalDiscoveryEntry>>() {
             });
-            List<GlobalDiscoveryEntry> castedEntries = (List<GlobalDiscoveryEntry>) newEntries;
-            for (GlobalDiscoveryEntry globalDiscoveryEntry : castedEntries) {
-                CapabilityEntry capabilityEntry = CapabilityUtils.globalDiscoveryEntry2CapabilityEntry(globalDiscoveryEntry);
-                capabilityEntries.add(capabilityEntry);
+            for (GlobalDiscoveryEntry globalDiscoveryEntry : newEntries) {
+                discoveryEntries.add(globalDiscoveryEntry);
             }
         } catch (Exception e) {
             logger.error("unable to load provisioned capabilities. "
@@ -66,7 +65,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     }
 
     @Override
-    public Collection<? extends CapabilityEntry> getCapabilityEntries() {
-        return capabilityEntries;
+    public Collection<DiscoveryEntry> getDiscoveryEntries() {
+        return discoveryEntries;
     }
 }

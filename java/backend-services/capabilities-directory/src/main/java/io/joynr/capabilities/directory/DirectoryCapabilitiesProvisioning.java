@@ -19,23 +19,22 @@ package io.joynr.capabilities.directory;
  * #L%
  */
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.CapabilityEntryPersisted;
+import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.InProcessCapabilitiesProvisioning;
-import io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.Discovery;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 import joynr.types.Version;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 
 /**
  * Provisioning with CapabilityEntryPersisted to store provisioned entry in global capabilities directory
@@ -58,18 +57,18 @@ public class DirectoryCapabilitiesProvisioning extends InProcessCapabilitiesProv
     }
 
     @Override
-    public Collection<? extends CapabilityEntry> getCapabilityEntries() {
+    public Collection<DiscoveryEntry> getDiscoveryEntries() {
 
-        List<CapabilityEntry> provisionedList = Lists.newArrayList();
+        Collection<DiscoveryEntry> provisionedList = new HashSet<DiscoveryEntry>();
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        provisionedList.add(new CapabilityEntryPersisted(new Version(),
-                                                         systemServicesDomain,
-                                                         Discovery.INTERFACE_NAME,
-                                                         providerQos,
-                                                         discoveryProviderParticipantId,
-                                                         System.currentTimeMillis(),
-                                                         new JoynrMessagingEndpointAddressPersisted(localChannelId)));
+        provisionedList.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
+                                                                    systemServicesDomain,
+                                                                    Discovery.INTERFACE_NAME,
+                                                                    discoveryProviderParticipantId,
+                                                                    providerQos,
+                                                                    System.currentTimeMillis(),
+                                                                    new ChannelAddress(localChannelId)));
 
         return provisionedList;
     }
