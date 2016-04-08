@@ -37,11 +37,12 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 
 /**
- * Base class for provider arbitrators. Concrete arbitrators have to provide implementations for startArbitration() and
- * {@literal selectProvider(ArrayList<CapabilityEntry> capabilities)} which set the ArbitrationStatus and call
- * notifyArbitrationStatusChanged() or set the ArbitrationResult and call updateArbitrationResultAtListener(). The base
- * class offers a CapabilitiesCallback which is used for async requests.
  *
+ * The Arbitrator controls the discovery process:
+ * <ul>
+ * <li> search for matching {@link DiscoveryEntry} elements locally and/or globally depending on the DiscoveryQos
+ * <li> call the {@link ArbitrationStrategyFunction} to select a discoveryEntry to be used for the proxy being created
+ * </ul>
  */
 public class Arbitrator {
     private static final Logger logger = LoggerFactory.getLogger(Arbitrator.class);
