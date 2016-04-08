@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrCommunicationException;
@@ -45,7 +44,6 @@ import joynr.types.GlobalDiscoveryEntry;
  * The DiscoveryEntryStore stores a list of providers and the interfaces
  * they offer.
  */
-@Singleton
 public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
 
     private static final Logger logger = LoggerFactory.getLogger(DiscoveryEntryStoreInMemory.class);

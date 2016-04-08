@@ -25,6 +25,8 @@ import io.joynr.provider.Promise;
 import joynr.system.DiscoveryProvider;
 import joynr.types.DiscoveryEntry;
 
+import java.util.Set;
+
 import javax.annotation.CheckForNull;
 
 public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
@@ -35,6 +37,7 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
      * @param discoveryEntry The capability to be added.
      * @return future to get the async result of the call
      */
+    @Override
     Promise<DeferredVoid> add(DiscoveryEntry discoveryEntry);
 
     /**
@@ -89,6 +92,12 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
      */
     @CheckForNull
     DiscoveryEntry lookup(String participantId, DiscoveryQos discoveryQos);
+
+    /**
+     *
+     * @return a set of all capabilities registered with this local directory
+     */
+    Set<DiscoveryEntry> listLocalCapabilities();
 
     /**
      * Shuts down the local capabilities directory and all used thread pools.

@@ -23,10 +23,7 @@ import io.joynr.arbitration.ArbitrationConstants;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.capabilities.CapabilitiesCache;
 import io.joynr.capabilities.CapabilitiesProvisioning;
-import io.joynr.capabilities.CapabilitiesStore;
-import io.joynr.capabilities.CapabilitiesStoreImpl;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.DiscoveryEntryStoreInMemory;
 import io.joynr.capabilities.InProcessCapabilitiesProvisioning;
@@ -60,9 +57,7 @@ public class DiscoveryClientModule extends AbstractModule {
         bind(LocalCapabilitiesDirectory.class).to(LocalCapabilitiesDirectoryImpl.class).in(Singleton.class);
         bind(CapabilitiesProvisioning.class).to(InProcessCapabilitiesProvisioning.class);
         bind(LocalChannelUrlDirectoryClient.class).to(LocalChannelUrlDirectoryClientImpl.class).in(Singleton.class);
-        bind(CapabilitiesStore.class).to(CapabilitiesStoreImpl.class);
         bind(DiscoveryEntryStore.class).to(DiscoveryEntryStoreInMemory.class);
-        bind(CapabilitiesCache.class);
     }
 
     @CheckForNull

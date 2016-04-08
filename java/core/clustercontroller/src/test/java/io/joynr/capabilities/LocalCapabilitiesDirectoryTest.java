@@ -78,7 +78,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     private ProxyBuilderFactory proxyBuilderFactoryMock;
     @Mock
-    protected CapabilitiesStore localCapabilitiesStoreMock;
+    protected DiscoveryEntryStore localDiscoveryEntryStoreMock;
     @Mock
     protected DiscoveryEntryStore globalDiscoveryEntryCacheMock;
 
@@ -129,7 +129,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         domainAccessControllerParticipantId,
                                                                         domainAccessControllerChannelId,
                                                                         new ChannelAddress(channelAddressSerialized),
-                                                                        localCapabilitiesStoreMock,
+                                                                        localDiscoveryEntryStoreMock,
                                                                         globalDiscoveryEntryCacheMock,
                                                                         messageRouter,
                                                                         proxyBuilderFactoryMock,

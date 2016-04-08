@@ -1,21 +1,9 @@
 package io.joynr.capabilities;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import javax.annotation.CheckForNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +18,20 @@ import com.google.inject.name.Named;
  * limitations under the License.
  * #L%
  */
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.annotation.CheckForNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -151,5 +153,10 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     @Override
     public void shutdown(boolean unregisterAllRegisteredCapabilities) {
         registeredCapabilities.clear();
+    }
+
+    @Override
+    public Set<DiscoveryEntry> listLocalCapabilities() {
+        return new HashSet<DiscoveryEntry>(registeredCapabilities);
     }
 }
