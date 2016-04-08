@@ -342,8 +342,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private void registerIncomingEndpoints(Collection<GlobalDiscoveryEntry> caps) {
         for (GlobalDiscoveryEntry ce : caps) {
-            // TODO can a CapabilityEntry coming from the GlobalCapabilityDirectoy have more than one
-            // EndpointAddress?
             // TODO when are entries purged from the messagingEndpointDirectory?
             if (ce.getParticipantId() != null && ce.getAddress() != null) {
                 Address address;
