@@ -456,7 +456,7 @@ define(
                                         domain,
                                         interfaceName,
                                         discoveryQos) {
-                                    return getDiscoveryProxy(discoveryQos.discoveryTimeout).then(function(newDiscoveryProxy) {
+                                    return getDiscoveryProxy(discoveryQos.discoveryTimeoutMs).then(function(newDiscoveryProxy) {
                                         return newDiscoveryProxy.lookup({
                                             domain : domain,
                                             interfaceName : interfaceName,

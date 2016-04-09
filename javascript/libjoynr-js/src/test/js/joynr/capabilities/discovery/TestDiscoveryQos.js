@@ -29,8 +29,8 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
         it("is instantiable", function() {
             expect(new DiscoveryQos()).toBeDefined();
             expect(new DiscoveryQos({
-                discoveryTimeout : 5000,
-                discoveryRetryDelay : 0,
+                discoveryTimeoutMs : 5000,
+                discoveryRetryDelayMs : 0,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
                 cacheMaxAge : 0,
                 discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL,
@@ -46,8 +46,8 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
             expect(emptyDiscoveryQos instanceof DiscoveryQos).toBeTruthy();
 
             var defaultDiscoveryQos = new DiscoveryQos({
-                discoveryTimeout : 30000,
-                discoveryRetryDelay : 1000,
+                discoveryTimeoutMs : 30000,
+                discoveryRetryDelayMs : 1000,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
                 cacheMaxAge : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
@@ -61,8 +61,8 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
 
         it("constructs correct default object", function() {
             expect(new DiscoveryQos()).toEqual(new DiscoveryQos({
-                discoveryTimeout : 30000,
-                discoveryRetryDelay : 1000,
+                discoveryTimeoutMs : 30000,
+                discoveryRetryDelayMs : 1000,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
                 cacheMaxAge : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
@@ -72,8 +72,8 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
 
         it("constructs with correct member values", function() {
             var discoveryQos = new DiscoveryQos({
-                discoveryTimeout : 12345,
-                discoveryRetryDelay : 123456,
+                discoveryTimeoutMs : 12345,
+                discoveryRetryDelayMs : 123456,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
                 cacheMaxAge : 1234,
                 discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL,
@@ -81,8 +81,8 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
                     testKey : "testValue"
                 }
             });
-            expect(discoveryQos.discoveryTimeout).toEqual(12345);
-            expect(discoveryQos.discoveryRetryDelay).toEqual(123456);
+            expect(discoveryQos.discoveryTimeoutMs).toEqual(12345);
+            expect(discoveryQos.discoveryRetryDelayMs).toEqual(123456);
             expect(discoveryQos.arbitrationStrategy).toEqual(
                     ArbitrationStrategyCollection.HighestPriority);
             expect(discoveryQos.cacheMaxAge).toEqual(1234);

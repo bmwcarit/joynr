@@ -24,8 +24,8 @@ define("joynr/proxy/DiscoveryQos", [
 ], function(ArbitrationStrategyCollection, DiscoveryScope, Util) {
 
     var defaultSettings = {
-        discoveryTimeout : 30000,
-        discoveryRetryDelay : 1000,
+        discoveryTimeoutMs : 30000,
+        discoveryRetryDelayMs : 1000,
         arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
         cacheMaxAge : 0,
         discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
@@ -39,8 +39,8 @@ define("joynr/proxy/DiscoveryQos", [
      * @name DiscoveryQos
      *
      * @param {Object} [settings] the settings object for the constructor call
-     * @param {Number} [settings.discoveryTimeout] for rpc calls to wait for arbitration to finish.
-     * @param {Number} [settings.discoveryRetryDelay] the minimum delay between two arbitration retries
+     * @param {Number} [settings.discoveryTimeoutMs] for rpc calls to wait for arbitration to finish.
+     * @param {Number} [settings.discoveryRetryDelayMs] the minimum delay between two arbitration retries
      * @param {Function} [settings.arbitrationStrategy] Strategy for choosing the appropriate provider from the list returned by the capabilities directory with the function signature "function(CapabilityInfos[])" that returns an array of CapabilityInfos
      * @param {Number} [settings.cacheMaxAge] Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
      * @param {DiscoveryScope} [settings.discoveryScope] default  is LOCAL_AND_GLOBAL
@@ -57,16 +57,16 @@ define("joynr/proxy/DiscoveryQos", [
         settings = Util.extend({}, defaultSettings, settings);
 
         /**
-         * @name DiscoveryQos#discoveryTimeout
+         * @name DiscoveryQos#discoveryTimeoutMs
          * @type Number
          */
-        this.discoveryTimeout = settings.discoveryTimeout;
+        this.discoveryTimeoutMs = settings.discoveryTimeoutMs;
 
         /**
-         * @name DiscoveryQos#discoveryRetryDelay
+         * @name DiscoveryQos#discoveryRetryDelayMs
          * @type Number
          */
-        this.discoveryRetryDelay = settings.discoveryRetryDelay;
+        this.discoveryRetryDelayMs = settings.discoveryRetryDelayMs;
 
         /**
          * @name DiscoveryQos#arbitrationStrategy

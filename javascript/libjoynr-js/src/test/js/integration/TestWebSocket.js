@@ -28,11 +28,11 @@ joynrTestRequire("integration/TestWebSocket", [
     "integration/IntegrationUtils"
 ], function(joynr, RadioProxy, RadioProvider, provisioning, IntegrationUtils) {
     describe("libjoynr-js.integration.websocket", function() {
-        var radioProxy, runtime, discoveryTimeout;
+        var radioProxy, runtime, discoveryTimeoutMs;
 
         beforeEach(function() {
             var provisioningSuffix = "-" + Date.now(), libJoynrStarted = false;
-            discoveryTimeout = 4000;
+            discoveryTimeoutMs = 4000;
 
             provisioning.ccAddress = {
                 protocol : "ws",

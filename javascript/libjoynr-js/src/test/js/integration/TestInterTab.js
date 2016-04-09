@@ -73,7 +73,7 @@ joynrTestRequire(
                         var workerStarted, libjoynrLoaded;
                         var numberOfStations;
                         var provisioningSuffix;
-                        var discoveryTimeout;
+                        var discoveryTimeoutMs;
                         var messagingQos;
 
                         beforeEach(function() {
@@ -83,7 +83,7 @@ joynrTestRequire(
                             libjoynrLoaded = false;
                             var webWorkerAndLibJoynrStarted = false;
                             provisioningSuffix = "-" + Date.now();
-                            discoveryTimeout = 4000;
+                            discoveryTimeoutMs = 4000;
 
                             /*
                              * The parent window is used by libjoynr to postMessages in case of
@@ -662,7 +662,7 @@ joynrTestRequire(
                                                     domain : domain,
                                                     messagingQos : messagingQos,
                                                     discoveryQos : {
-                                                        discoveryTimeout : discoveryTimeout
+                                                        discoveryTimeoutMs : discoveryTimeoutMs
                                                     }
                                                 })
                                                 .then(
@@ -678,7 +678,7 @@ joynrTestRequire(
 
                                     waitsFor(function() {
                                         return proxyResolved === false;
-                                    }, "Proxy not be resolved", discoveryTimeout + 500);
+                                    }, "Proxy not be resolved", discoveryTimeoutMs + 500);
 
                                     runs(function() {
                                         expect(proxyResolved).toBeFalsy();
