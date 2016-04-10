@@ -32,7 +32,7 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
                 discoveryTimeoutMs : 5000,
                 discoveryRetryDelayMs : 0,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-                cacheMaxAge : 0,
+                cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL,
                 additionalParameters : {}
             })).toBeDefined();
@@ -49,7 +49,7 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
                 discoveryTimeoutMs : 30000,
                 discoveryRetryDelayMs : 1000,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-                cacheMaxAge : 0,
+                cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                 additionalParameters : {}
             });
@@ -64,7 +64,7 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
                 discoveryTimeoutMs : 30000,
                 discoveryRetryDelayMs : 1000,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-                cacheMaxAge : 0,
+                cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                 additionalParameters : {}
             }));
@@ -75,7 +75,7 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
                 discoveryTimeoutMs : 12345,
                 discoveryRetryDelayMs : 123456,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-                cacheMaxAge : 1234,
+                cacheMaxAgeMs : 1234,
                 discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL,
                 additionalParameters : {
                     testKey : "testValue"
@@ -85,7 +85,7 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
             expect(discoveryQos.discoveryRetryDelayMs).toEqual(123456);
             expect(discoveryQos.arbitrationStrategy).toEqual(
                     ArbitrationStrategyCollection.HighestPriority);
-            expect(discoveryQos.cacheMaxAge).toEqual(1234);
+            expect(discoveryQos.cacheMaxAgeMs).toEqual(1234);
             expect(discoveryQos.discoveryScope).toEqual(DiscoveryScope.LOCAL_AND_GLOBAL);
             expect(discoveryQos.additionalParameters).toEqual({
                 testKey : "testValue"

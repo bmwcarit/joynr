@@ -57,7 +57,7 @@ define(
             "joynr/messaging/webmessaging/WebMessagingSkeleton",
             "joynr/messaging/channel/LongPollingChannelMessageReceiver",
             "joynr/messaging/MessagingQos",
-            "joynr/types/DiscoveryQos",
+            "joynr/proxy/DiscoveryQos",
             "joynr/infrastructure/ChannelUrlDirectoryProxy",
             "joynr/types/ChannelUrlInformation",
             "joynr/types/ProviderQos",
@@ -558,7 +558,7 @@ define(
                                 discoveryQos : new DiscoveryQos(
                                         {
                                             discoveryScope : DiscoveryScope.GLOBAL_ONLY,
-                                            cacheMaxAge : Util.getMaxLongValue()
+                                            cacheMaxAgeMs : Util.getMaxLongValue()
                                         })
                             };
 

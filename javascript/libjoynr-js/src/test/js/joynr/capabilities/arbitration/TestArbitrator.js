@@ -100,7 +100,7 @@ joynrTestRequire(
                                 discoveryTimeoutMs : 5000,
                                 discoveryRetryDelayMs : 900,
                                 arbitrationStrategy : ArbitrationStrategyCollection.Nothing,
-                                cacheMaxAge : 0,
+                                cacheMaxAgeMs : 0,
                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                                 additionalParameters : {}
                             });
@@ -194,7 +194,7 @@ joynrTestRequire(
                                  */
                                 expect(capDiscoverySpy.lookup.mostRecentCall.args[0]).toBe(domain);
                                 expect(capDiscoverySpy.lookup.mostRecentCall.args[1]).toBe(interfaceName);
-                                expect(capDiscoverySpy.lookup.mostRecentCall.args[2].cacheMaxAge).toBe(discoveryQos.cacheMaxAge);
+                                expect(capDiscoverySpy.lookup.mostRecentCall.args[2].cacheMaxAge).toBe(discoveryQos.cacheMaxAgeMs);
                                 expect(capDiscoverySpy.lookup.mostRecentCall.args[2].discoveryScope.name).toBe(discoveryQos.discoveryScope.name);
                             });
                         });

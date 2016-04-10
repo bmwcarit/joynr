@@ -82,7 +82,7 @@ joynrTestRequire(
                                 discoveryTimeoutMs : 5000,
                                 discoveryRetryDelayMs : 900,
                                 arbitrationStrategy : ArbitrationStrategyCollection.Nothing,
-                                maxAgeOfCachedProviders : 0,
+                                cacheMaxAgeMs : 0,
                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                                 additionalParameters : {}
                             });

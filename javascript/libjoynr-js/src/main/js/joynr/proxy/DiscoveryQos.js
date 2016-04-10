@@ -27,7 +27,7 @@ define("joynr/proxy/DiscoveryQos", [
         discoveryTimeoutMs : 30000,
         discoveryRetryDelayMs : 1000,
         arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-        cacheMaxAge : 0,
+        cacheMaxAgeMs : 0,
         discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
         additionalParameters : {}
     };
@@ -42,7 +42,7 @@ define("joynr/proxy/DiscoveryQos", [
      * @param {Number} [settings.discoveryTimeoutMs] for rpc calls to wait for arbitration to finish.
      * @param {Number} [settings.discoveryRetryDelayMs] the minimum delay between two arbitration retries
      * @param {Function} [settings.arbitrationStrategy] Strategy for choosing the appropriate provider from the list returned by the capabilities directory with the function signature "function(CapabilityInfos[])" that returns an array of CapabilityInfos
-     * @param {Number} [settings.cacheMaxAge] Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+     * @param {Number} [settings.cacheMaxAgeMs] Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
      * @param {DiscoveryScope} [settings.discoveryScope] default  is LOCAL_AND_GLOBAL
      * @param {Object} [settings.additionalParameters] a map holding additional parameters in the form of key value pairs in the javascript object, e.g.: {"myKey": "myValue", "myKey2": 5}
      *
@@ -76,10 +76,10 @@ define("joynr/proxy/DiscoveryQos", [
         this.arbitrationStrategy = settings.arbitrationStrategy;
 
         /**
-         * @name DiscoveryQos#cacheMaxAge
+         * @name DiscoveryQos#cacheMaxAgeMs
          * @type Number
          */
-        this.cacheMaxAge = settings.cacheMaxAge;
+        this.cacheMaxAgeMs = settings.cacheMaxAgeMs;
 
         /**
          * @name DiscoveryQos#discoveryScope
