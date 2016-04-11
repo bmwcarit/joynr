@@ -16,8 +16,8 @@
     "bounceProxyBaseUrl": "http://localhost:8080"
   },
   "scripts": {
-    "preinstall": "npm install ../../javascript/libjoynr-js/target/classes",
-    "startconsumer" : "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl node src/main/js/radioConsumer.js",
-    "startprovider" : "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl node src/main/js/radioProvider.js"
+      "preinstall": "npm install ../../javascript/libjoynr-js/target/node-classes",
+      "startconsumer" : "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl node src/main/js/radioConsumer.js",
+      "startprovider" : "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl node src/main/js/radioProvider.js"
   }
 }

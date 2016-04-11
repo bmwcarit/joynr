@@ -32,7 +32,6 @@ var requirejsConfig = {
         "global/XMLHttpRequest" : "global/XMLHttpRequestNode",
         "atmosphere" : "lib/atmosphereNode",
         "log4javascript" : "lib/log4javascriptNode",
-        "bluebird" : "lib/bluebird",
         "global/WebSocket" : "global/WebSocketNode",
 
         "joynr/Runtime" : "joynr/Runtime.websocket.libjoynr"

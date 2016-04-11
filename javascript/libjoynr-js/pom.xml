@@ -496,6 +496,42 @@
 							</resources>
 						</configuration>
 					</execution>
+					<execution>
+						<id>prepare-node-classes</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/node-classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/classes</directory>
+									<includes>
+										<include>DISCLAIMER</include>
+										<include>joynr.js</include>
+										<include>libjoynr-deps*.js</include>
+										<include>package.json</include>
+										<include>require.config.node.js</include>
+										<include>joynr/**</include>
+										<include>global/LocalStorageNode.js</include>
+										<include>global/Promise.js</include>
+										<include>global/WebSocketNode.js</include>
+										<include>global/XMLHttpRequestNode.js</include>
+										<include>lib/atmosphereNode.js</include>
+										<include>lib/JsonParser.js</include>
+										<include>lib/log4javascriptNode.js</include>
+										<include>lib/uuid-annotated.js</include>
+										<include>META-INF/**</include>
+									</includes>
+									<excludes>
+										<exclude>joynr/security/PlatformSecurityManager.js</exclude>
+										<exclude>joynr/system/LoggingManager.js</exclude>
+									</excludes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<!-- the nodejs plugin is used to temp-install node.js to speed up performance of the
