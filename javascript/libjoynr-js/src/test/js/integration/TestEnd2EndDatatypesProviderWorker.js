@@ -26,7 +26,7 @@ importScripts("WorkerUtils.js");
 importScripts("../joynr/provisioning/provisioning_root.js");
 importScripts("LocalStorageSimulator.js");
 
-importScripts("../../classes/js/joynr.js");
+importScripts("../../jar-classes/joynr.js");
 importScripts("../joynr/provisioning/provisioning_cc.js");
 importScripts("provisioning_end2end_common.js");
 
