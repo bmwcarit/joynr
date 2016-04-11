@@ -1,5 +1,7 @@
 package io.joynr.discovery;
 
+import static org.junit.Assert.assertEquals;
+
 /*
  * #%L
  * %%
@@ -22,6 +24,7 @@ package io.joynr.discovery;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -93,7 +96,14 @@ public class LocalDiscoveryAggregatorTest {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
         localDiscoveryAggregator.lookup(lookupCallback, systemServicesDomain, Discovery.INTERFACE_NAME, discoveryQos);
-        Mockito.verify(lookupCallback).resolve(Mockito.eq(new DiscoveryEntry[]{ discoveryProviderEntry }));
+        ArgumentCaptor<DiscoveryEntry[]> discoveryEntriesCaptor = ArgumentCaptor.forClass(DiscoveryEntry[].class);
+        Mockito.verify(lookupCallback).resolve((Object) discoveryEntriesCaptor.capture());
+        DiscoveryEntry[] discoveryEntriesPassed = discoveryEntriesCaptor.getValue();
+        assertEquals(discoveryProviderEntry.getDomain(), discoveryEntriesPassed[0].getDomain());
+        assertEquals(discoveryProviderEntry.getInterfaceName(), discoveryEntriesPassed[0].getInterfaceName());
+        assertEquals(discoveryProviderEntry.getParticipantId(), discoveryEntriesPassed[0].getParticipantId());
+        assertEquals(discoveryProviderEntry.getQos(), discoveryEntriesPassed[0].getQos());
+        assertEquals(discoveryProviderEntry.getProviderVersion(), discoveryEntriesPassed[0].getProviderVersion());
     }
 
     @Test

@@ -29,6 +29,7 @@ import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.http.HttpMessageSender;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 public class ChannelMessagingStub implements IMessaging {
 
@@ -64,7 +65,7 @@ public class ChannelMessagingStub implements IMessaging {
         if (type != null
                 && message.getReplyTo() == null
                 && (type.equals(MESSAGE_TYPE_REQUEST) || type.equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST) || type.equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST))) {
-            message.setReplyTo(replyToAddress.getChannelId());
+            message.setReplyTo(RoutingTypesUtil.toAddressString(replyToAddress));
         }
     }
 }

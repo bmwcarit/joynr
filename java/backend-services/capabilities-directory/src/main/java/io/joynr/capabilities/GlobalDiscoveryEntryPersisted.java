@@ -19,9 +19,11 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import joynr.types.GlobalDiscoveryEntry;
@@ -40,6 +42,7 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
         super(globalDiscoveryEntryObj);
     }
 
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     GlobalDiscoveryEntryPersisted(Version providerVersion,
                                   String domain,
                                   String interfaceName,
@@ -47,37 +50,45 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
                                   ProviderQos qos,
                                   long lastSeenDateMs,
                                   String address) {
+        // CHECKSTYLE ON
         super(providerVersion, domain, interfaceName, participantId, qos, lastSeenDateMs, address);
     }
 
     @Override
+    @Column
     public String getDomain() {
         return super.getDomain();
     }
 
     @Override
+    @Column
     public String getInterfaceName() {
         return super.getInterfaceName();
     }
 
     @Override
+    @Column
     @Id
     public String getParticipantId() {
         return super.getParticipantId();
     }
 
     @Override
+    @Column
     @Embedded
     public ProviderQos getQos() {
         return super.getQos();
     }
 
     @Override
+    @Column
     public Long getLastSeenDateMs() {
         return super.getLastSeenDateMs();
     }
 
     @Override
+    @Column(length = 4000)
+    @Lob
     public String getAddress() {
         return super.getAddress();
     }
