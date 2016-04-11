@@ -100,6 +100,8 @@ public abstract class AbstractMessagingIntegrationTest {
     private MessageRouter joynrMessageSender1;
     private MessageRouter joynrMessageSender2;
 
+    private String url;
+
     // To be provided by subclasses
     public abstract Injector createInjector(Properties joynrConfig, Module... modules);
 
@@ -112,8 +114,9 @@ public abstract class AbstractMessagingIntegrationTest {
         localCapDir = new DummyCapabilitiesDirectory();
         localChannelUrlDirectoryClient = new DummyLocalChannelUrlDirectoryClient();
 
+        url = "http://testurl";
         String channelId1 = "1_" + UUID.randomUUID().toString().substring(0, 2);
-        address1 = new ChannelAddress(channelId1);
+        address1 = new ChannelAddress(url, channelId1);
         Injector injector1 = setupMessageEndpoint(channelId1, localChannelUrlDirectoryClient, localCapDir);
         joynrMessageSender1 = injector1.getInstance(MessageRouter.class);
         messageReceiver1 = injector1.getInstance(MessageReceiver.class);
@@ -121,7 +124,7 @@ public abstract class AbstractMessagingIntegrationTest {
         // messageReceivers.registerMessageReceiver(messageReceiver1, channelId1);
 
         String channelId2 = "2_" + UUID.randomUUID().toString();
-        address2 = new ChannelAddress(channelId2);
+        address2 = new ChannelAddress(url, channelId2);
         Injector injector2 = setupMessageEndpoint(channelId2, localChannelUrlDirectoryClient, localCapDir);
 
         RoutingTable routingTable1 = injector1.getInstance(RoutingTable.class);
@@ -150,13 +153,13 @@ public abstract class AbstractMessagingIntegrationTest {
                                          LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient,
                                          LocalCapabilitiesDirectory localCapDir) {
         RoutingTable routingTable = new RoutingTableImpl("channelurldirectory_participantid",
-                                                         new ChannelAddress("discoverydirectory_channelid"),
+                                                         new ChannelAddress(url, "discoverydirectory_channelid"),
                                                          "capabilitiesdirectory_participantid",
-                                                         new ChannelAddress("discoverydirectory_channelid"),
+                                                         new ChannelAddress(url, "discoverydirectory_channelid"),
                                                          "domainaccesscontroller_participantid",
-                                                         new ChannelAddress("domainaccesscontroller_channelid"),
+                                                         new ChannelAddress(url, "domainaccesscontroller_channelid"),
                                                          "discovery_participantid",
-                                                         new ChannelAddress("discovery_channelid"));
+                                                         new ChannelAddress(url, "discovery_channelid"));
 
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(new String[]{ getChannelUrl(channelId) });

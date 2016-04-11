@@ -98,7 +98,7 @@ public class ArbitrationTest {
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword) };
         providerQos.setCustomParameters(qosParameters);
-        expectedEndpointAddress = new ChannelAddress("testChannelId");
+        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
                                                 domain,
                                                 TestInterface.INTERFACE_NAME,
@@ -143,7 +143,7 @@ public class ArbitrationTest {
         CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "wrongkeyword") };
         providerQos.setCustomParameters(qosParameters);
 
-        expectedEndpointAddress = new ChannelAddress("testChannelId");
+        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
                                                 domain,
                                                 TestInterface.INTERFACE_NAME,
@@ -208,7 +208,7 @@ public class ArbitrationTest {
         providerQos2.setCustomParameters(qosParameters2);
         providerQos2.setSupportsOnChangeSubscriptions(true);
 
-        expectedEndpointAddress = new ChannelAddress("testChannelId");
+        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
                                                 domain,
                                                 TestInterface.INTERFACE_NAME,
@@ -242,7 +242,7 @@ public class ArbitrationTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(testPriority);
 
-        expectedEndpointAddress = new ChannelAddress("testChannelId");
+        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
                                                 domain,
                                                 TestInterface.INTERFACE_NAME,
@@ -263,7 +263,7 @@ public class ArbitrationTest {
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
 
-        Address thirdEndpointAddress = new ChannelAddress("thirdChannelId");
+        Address thirdEndpointAddress = new ChannelAddress("http://testUrl", "thirdChannelId");
         ArrayList<Address> thirdEndpointAddresses = new ArrayList<Address>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
         capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
@@ -298,7 +298,7 @@ public class ArbitrationTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(Long.MIN_VALUE);
 
-        expectedEndpointAddress = new ChannelAddress("testChannelId");
+        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         ArrayList<Address> expectedEndpointAddresses = new ArrayList<Address>();
         expectedEndpointAddresses.add(expectedEndpointAddress);
         capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
@@ -356,7 +356,7 @@ public class ArbitrationTest {
         providerQos.setPriority(testPriority);
         providerQos.setSupportsOnChangeSubscriptions(true);
 
-        expectedEndpointAddress = new ChannelAddress("testChannelId");
+        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
                                                 domain,
                                                 TestInterface.INTERFACE_NAME,
@@ -369,7 +369,7 @@ public class ArbitrationTest {
         providerQos2.setPriority(testPriority + 1);
         providerQos2.setSupportsOnChangeSubscriptions(false);
 
-        Address otherEndpointAddress = new ChannelAddress("otherChannelId");
+        Address otherEndpointAddress = new ChannelAddress("http://testUrl", "otherChannelId");
         ArrayList<Address> otherEndpointAddresses = new ArrayList<Address>();
         otherEndpointAddresses.add(otherEndpointAddress);
         capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
@@ -384,7 +384,7 @@ public class ArbitrationTest {
         providerQos3.setPriority(testPriority + 2);
         providerQos3.setSupportsOnChangeSubscriptions(false);
 
-        Address thirdEndpointAddress = new ChannelAddress("thirdChannelId");
+        Address thirdEndpointAddress = new ChannelAddress("http://testUrl", "thirdChannelId");
         ArrayList<Address> thirdEndpointAddresses = new ArrayList<Address>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
         capabilitiesList.add(new DiscoveryEntry(new Version(47, 11),
@@ -420,7 +420,7 @@ public class ArbitrationTest {
         // Expected provider supports onChangeSubscriptions
         ProviderQos providerQos = new ProviderQos();
 
-        expectedEndpointAddress = new ChannelAddress("testChannelId");
+        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
                                                            domain,
                                                            TestInterface.INTERFACE_NAME,

@@ -74,7 +74,7 @@ import joynr.system.RoutingTypes.ChannelAddress;
 public class MessageRouterTest {
 
     private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
-    private final ChannelAddress channelAddress = new ChannelAddress(channelId);
+    private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
 
     @Mock
     private JsonSerializer jsonSerializer;

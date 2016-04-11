@@ -47,7 +47,8 @@ public class CapabilitiesDirectoryTest {
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
 
     String channelId = "capabilitiesProvider";
-    Address channelAddres = new ChannelAddress(channelId);
+    String url = "http://testUrl";
+    Address channelAddres = new ChannelAddress(url, channelId);
     String channelAddresSerialized;
     String domain = "com";
     String interface1 = "interface1";

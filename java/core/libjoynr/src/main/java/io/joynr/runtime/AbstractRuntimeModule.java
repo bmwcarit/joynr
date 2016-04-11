@@ -152,25 +152,28 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     @Provides
     @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS)
-    Address getCapabilitiesDirectoryAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
+    Address getCapabilitiesDirectoryAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
+                                            @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId) {
-        return getAddress(channelId, capabilitiesDirectoryChannelId);
+        return getAddress(discoveryDirectoryUrl, channelId, capabilitiesDirectoryChannelId);
     }
 
     @Provides
     @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS)
-    Address getChannelUrlDirectoryAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
+    Address getChannelUrlDirectoryAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
+                                          @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId) {
-        return getAddress(channelId, channelUrlDirectoryChannelId);
+        return getAddress(discoveryDirectoryUrl, channelId, channelUrlDirectoryChannelId);
     }
 
     @Provides
     @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS)
-    Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
+    Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
+                                             @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                              @com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
-        return getAddress(channelId, domainAccessControllerChannelId);
+        return getAddress(discoveryDirectoryUrl, channelId, domainAccessControllerChannelId);
     }
 
     @Provides
@@ -185,11 +188,11 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         return scheduler;
     }
 
-    private Address getAddress(String localChannelId, String targetChannelId) {
+    private Address getAddress(String serverUrl, String localChannelId, String targetChannelId) {
         if (localChannelId.equals(targetChannelId)) {
             return new InProcessAddress();
         } else {
-            return new ChannelAddress(targetChannelId);
+            return new ChannelAddress(serverUrl, targetChannelId);
         }
     }
 }

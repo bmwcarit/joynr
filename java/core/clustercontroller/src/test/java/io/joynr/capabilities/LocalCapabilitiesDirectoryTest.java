@@ -75,6 +75,7 @@ import com.google.inject.name.Names;
 @Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryTest {
+    private static final String TEST_URL = "http://testUrl";
     @Mock
     JoynrRuntime runtime;
     @Mock
@@ -104,7 +105,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Before
     public void setUp() throws Exception {
 
-        channelAddress = new ChannelAddress("testChannelId");
+        channelAddress = new ChannelAddress(TEST_URL, "testChannelId");
         ObjectMapper objectMapper = new ObjectMapper();
         channelAddressSerialized = objectMapper.writeValueAsString(channelAddress);
 
@@ -134,17 +135,20 @@ public class LocalCapabilitiesDirectoryTest {
             protected void configure() {
                 requestStaticInjection(CapabilityUtils.class);
                 bind(Address.class).annotatedWith(Names.named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS))
-                                   .toInstance(new ChannelAddress(channelAddressSerialized));
+                                   .toInstance(channelAddress);
             }
         });
 
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(discoveryDirectoriesDomain,
                                                                         channelUrlDirectoryParticipantId,
-                                                                        new ChannelAddress(channelUrlDirectoryChannelId),
+                                                                        new ChannelAddress(TEST_URL,
+                                                                                           channelUrlDirectoryChannelId),
                                                                         capabilitiesDirectoryParticipantId,
-                                                                        new ChannelAddress(capabiltitiesDirectoryChannelId),
+                                                                        new ChannelAddress(TEST_URL,
+                                                                                           capabiltitiesDirectoryChannelId),
                                                                         domainAccessControllerParticipantId,
-                                                                        new ChannelAddress(domainAccessControllerChannelId),
+                                                                        new ChannelAddress(TEST_URL,
+                                                                                           domainAccessControllerChannelId),
                                                                         injector.getProvider(Key.get(Address.class,
                                                                                                      Names.named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS))),
                                                                         localDiscoveryEntryStoreMock,

@@ -45,7 +45,7 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) String channelUrlDirectoryUrl,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId,
-                                              @Named(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) String capabilitiesDirectoryUrl,
+                                              @Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                                               ChannelUrlStore channelUrlStore,
                                               MessagingSettings settings,
@@ -56,7 +56,7 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                                                                              channelUrlDirectoryParticipantId);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);
-        channelUrlStore.registerChannelUrl(capabilitiesDirectoryChannelId, capabilitiesDirectoryUrl);
+        channelUrlStore.registerChannelUrl(capabilitiesDirectoryChannelId, discoveryDirectoryUrl);
 
     }
 

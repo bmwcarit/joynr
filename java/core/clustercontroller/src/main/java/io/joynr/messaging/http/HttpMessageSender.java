@@ -92,22 +92,15 @@ public class HttpMessageSender implements IMessageSender {
             failureAction.execute(new JoynrDelayMessageException(delay_ms, RECEIVER_NOT_STARTED_REASON));
         }
 
-        String channelId = address.getChannelId();
+        String sendUrl = urlResolver.getSendUrl(address.getMessagingEndpointUrl());
 
-        logger.trace("SENDING: channelId: {} message: {}", channelId, serializedMessage);
+        logger.trace("SENDING: channelId: {} message: {}", sendUrl, serializedMessage);
 
         HttpContext context = new BasicHttpContext();
 
         // execute http command to send
         CloseableHttpResponse response = null;
-        String sendUrl = null;
         try {
-
-            sendUrl = urlResolver.getSendUrl(address.getChannelId());
-            if (sendUrl == null) {
-                failureAction.execute(new JoynrDelayMessageException("ChannelId could not be resolved to ChannelUrl"));
-                return;
-            }
 
             HttpPost httpPost = httpRequestFactory.createHttpPost(URI.create(sendUrl));
             httpPost.addHeader(new BasicHeader(httpConstants.getHEADER_CONTENT_TYPE(),
@@ -128,7 +121,7 @@ public class HttpMessageSender implements IMessageSender {
             switch (statusCode) {
             case HttpURLConnection.HTTP_OK:
             case HttpURLConnection.HTTP_CREATED:
-                logger.trace("SENT: channelId {} message: {}", channelId, serializedMessage);
+                logger.trace("SENT: channelId {} message: {}", sendUrl, serializedMessage);
                 break;
             case HttpURLConnection.HTTP_BAD_REQUEST:
                 HttpEntity entity = response.getEntity();

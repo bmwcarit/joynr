@@ -27,7 +27,7 @@ public abstract class HttpGlobalAddressFactory implements GlobalAddressFactory {
 
     @Override
     public Address create() {
-        return new ChannelAddress(getMyChannelId());
+        return new ChannelAddress(getMessagingEndpointUrl(), getMyChannelId());
     }
 
     protected abstract String getMyChannelId();
