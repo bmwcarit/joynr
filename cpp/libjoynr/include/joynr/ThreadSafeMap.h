@@ -83,14 +83,19 @@ public:
     /**
      * @brief value retrieves copy of value stored under given key
      * @param key
-     * @return copy of value
+     * @return copy of value. If the requested value is not stored in the map, an instance will
+     * be returned, which is created by using the default constructor of T.
      */
     T value(const Key& key) const
     {
-        T aValue;
         ReadLocker locker(lock);
-        aValue = map.find(key)->second;
-        return aValue;
+
+        auto mapEntry = map.find(key);
+        if (mapEntry != map.end()) {
+            return mapEntry->second;
+        } else {
+            return T();
+        }
     }
 
     /**
