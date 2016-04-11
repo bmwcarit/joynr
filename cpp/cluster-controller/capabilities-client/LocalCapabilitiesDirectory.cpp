@@ -391,31 +391,43 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
 
-        std::string channelId = entryIterator.key();
+        std::string serializedAddress = entryIterator.key();
 
         // TODO: check joynrAddress for nullptr instead of string.find after the deserialization
         // works as expected.
         // Currently, JsonDeserializer.deserialize<T> always returns an instance of T
-        std::size_t foundTypeNameKey = channelId.find("\"_typeName\"");
+        std::size_t foundTypeNameKey = serializedAddress.find("\"_typeName\"");
         std::size_t foundTypeNameValue =
-                channelId.find("\"joynr.system.RoutingTypes.MqttAddress\"");
-        if (boost::starts_with(channelId, "{") && foundTypeNameKey != std::string::npos &&
+                serializedAddress.find("\"joynr.system.RoutingTypes.MqttAddress\"");
+        if (boost::starts_with(serializedAddress, "{") && foundTypeNameKey != std::string::npos &&
             foundTypeNameValue != std::string::npos && foundTypeNameKey < foundTypeNameValue) {
             try {
                 using system::RoutingTypes::MqttAddress;
-                MqttAddress joynrAddress = JsonSerializer::deserialize<MqttAddress>(channelId);
+                MqttAddress joynrAddress =
+                        JsonSerializer::deserialize<MqttAddress>(serializedAddress);
                 auto addressPtr = std::make_shared<MqttAddress>(joynrAddress);
                 messageRouter.addNextHop(currentEntry.getParticipantId(), addressPtr);
             } catch (const std::invalid_argument& e) {
                 JOYNR_LOG_FATAL(logger,
                                 "could not deserialize MqttAddress from {} - error: {}",
-                                channelId,
+                                serializedAddress,
                                 e.what());
             }
         } else {
-            auto joynrAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-                    entryIterator.key());
-            messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
+            try {
+                using system::RoutingTypes::ChannelAddress;
+
+                ChannelAddress channelAddress =
+                        JsonSerializer::deserialize<ChannelAddress>(serializedAddress);
+                auto channelAddressPtr = std::make_shared<const ChannelAddress>(channelAddress);
+
+                messageRouter.addNextHop(currentEntry.getParticipantId(), channelAddressPtr);
+            } catch (const std::invalid_argument& e) {
+                JOYNR_LOG_FATAL(logger,
+                                "could not deserialize ChannelAddress from {} - error: {}",
+                                serializedAddress,
+                                e.what());
+            }
         }
         this->insertInCache(currentEntry, false, true);
     }

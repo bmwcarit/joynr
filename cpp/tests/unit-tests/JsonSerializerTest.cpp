@@ -964,7 +964,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
-    joynr::system::RoutingTypes::ChannelAddress joynr("TEST_channelId");
+    joynr::system::RoutingTypes::ChannelAddress joynr("TEST_channelId", "TEST_messagingEndpointUrl");
     joynr::system::RoutingTypes::CommonApiDbusAddress dbus("domain", "interfacename", "id");
     joynr::system::RoutingTypes::WebSocketAddress wsServer(
                 joynr::system::RoutingTypes::WebSocketProtocol::WS,

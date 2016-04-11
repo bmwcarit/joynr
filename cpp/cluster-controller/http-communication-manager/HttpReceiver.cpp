@@ -25,6 +25,8 @@
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {
@@ -35,6 +37,7 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings)
         : channelCreatedSemaphore(new Semaphore(0)),
           channelId(),
           receiverId(),
+          globalClusterControllerAddress(),
           settings(settings),
           messageReceiver(nullptr),
           channelUrlDirectory(),
@@ -44,6 +47,12 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings)
     channelId = persist.getChannelId();
     receiverId = persist.getReceiverId();
     init();
+
+    system::RoutingTypes::ChannelAddress receiverChannelAddress(
+            settings.getBounceProxyUrl().getBrokerChannelsBaseUrl().toString() + channelId + "/",
+            channelId);
+
+    globalClusterControllerAddress = JsonSerializer::serialize(receiverChannelAddress);
 
     // Remove any existing curl handles
     HttpNetworking::getInstance()->getCurlHandlePool()->reset();
@@ -140,9 +149,9 @@ void HttpReceiver::stopReceiveQueue()
     }
 }
 
-const std::string& HttpReceiver::getReceiveChannelId() const
+const std::string& HttpReceiver::getGlobalClusterControllerAddress() const
 {
-    return channelId;
+    return globalClusterControllerAddress;
 }
 
 bool HttpReceiver::tryToDeleteChannel()
@@ -150,8 +159,9 @@ bool HttpReceiver::tryToDeleteChannel()
     // If more than one attempt is needed, create a deleteChannelRunnable and move this to
     // messageSender.
     // TODO channelUrl is known only to the LongPlooMessageReceiver!
-    std::string deleteChannelUrl =
-            settings.getBounceProxyUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
+    std::string deleteChannelUrl = settings.getBounceProxyUrl()
+                                           .getDeleteChannelUrl(getGlobalClusterControllerAddress())
+                                           .toString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(

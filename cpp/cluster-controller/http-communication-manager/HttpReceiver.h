@@ -53,9 +53,9 @@ public:
     ~HttpReceiver() override;
 
     /**
-      * Gets the channel ID of the receive channel for incoming messages.
+      * Returns the serialized (json) receiver address
       */
-    const std::string& getReceiveChannelId() const override;
+    const std::string& getGlobalClusterControllerAddress() const override;
 
     /**
       * Checks the MessageSettings and updates the configuration.
@@ -106,6 +106,8 @@ private:
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
     // Allows for registering multiple receivers for a single channel.
     std::string receiverId;
+
+    std::string globalClusterControllerAddress;
 
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;

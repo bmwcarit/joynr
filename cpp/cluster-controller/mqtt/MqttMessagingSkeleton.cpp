@@ -39,7 +39,7 @@ void MqttMessagingSkeleton::transmit(
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        std::string replyChannelId = message.getHeaderReplyChannelId();
+        std::string replyChannelId = message.getHeaderReplyAddress();
 
         try {
             using system::RoutingTypes::MqttAddress;

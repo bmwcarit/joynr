@@ -27,6 +27,9 @@
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/Settings.h"
 #include "joynr/types/Version.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 using namespace joynr;
 
@@ -69,12 +72,21 @@ public:
         discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
 
-        std::string channelIdHttp("SystemServicesDiscoveryTest.ChannelId");
-        std::string channelIdMqtt("mqtt_SystemServicesRoutingTest.ChannelId");
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdHttp));
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdMqtt));
+        std::string httpChannelId("http_SystemServicesDiscoveryTest.ChannelId");
+        std::string httpEndPointUrl("http_SystemServicesRoutingTest.endPointUrl");
+        std::string mqttTopic("mqtt_SystemServicesRoutingTest.topic");
+        std::string mqttBrokerUrl("mqtt_SystemServicesRoutingTest.brokerUrl");
+
+        using system::RoutingTypes::ChannelAddress;
+        using system::RoutingTypes::MqttAddress;
+
+        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
+
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getGlobalClusterControllerAddress())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.

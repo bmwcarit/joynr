@@ -22,6 +22,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/JoynrMessage.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 #include <string>
 #include <memory>
@@ -37,7 +38,7 @@ public:
     * @brief Sends the message to the given channel.
     */
     virtual void sendMessage(
-            const std::string& channelId,
+            const joynr::system::RoutingTypes::Address& destinationAddress,
             const JoynrMessage& message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
     /**

@@ -22,10 +22,9 @@
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/JsonSerializer.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
-#include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
-#include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/QtTypeUtil.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 #include <algorithm>
 #include <chrono>
@@ -50,57 +49,47 @@ HttpSender::HttpSender(const BrokerUrl& brokerUrl,
                        std::chrono::milliseconds maxAttemptTtl,
                        std::chrono::milliseconds messageSendRetryInterval)
         : brokerUrl(brokerUrl),
-          channelUrlCache(new ChannelUrlSelector(this->brokerUrl,
-                                                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
-                                                 ChannelUrlSelector::PUNISHMENT_FACTOR())),
           maxAttemptTtl(maxAttemptTtl),
           messageSendRetryInterval(messageSendRetryInterval),
-          delayedScheduler(6, "MessageSender"),
-          channelUrlContactorDelayedScheduler(3, "ChannelUrlContator", messageSendRetryInterval)
+          delayedScheduler(6, "MessageSender")
 {
 }
 
-void HttpSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                      const MessagingSettings& settings)
+void HttpSender::init(const MessagingSettings& settings)
 {
-    channelUrlCache->init(channelUrlDirectory, settings);
+    std::ignore = settings;
 }
 
 HttpSender::~HttpSender()
 {
     delayedScheduler.shutdown();
-    channelUrlContactorDelayedScheduler.shutdown();
-
-    delete channelUrlCache;
 }
 
 void HttpSender::sendMessage(
-        const std::string& channelId,
+        const system::RoutingTypes::Address& destinationAddress,
         const JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
+    if (dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destinationAddress) == nullptr) {
+        JOYNR_LOG_DEBUG(logger, "Invalid destination address type provided");
+        onFailure(exceptions::JoynrRuntimeException("Invalid destination address type provided"));
+        return;
+    }
+
+    auto channelAddress =
+            dynamic_cast<const system::RoutingTypes::ChannelAddress&>(destinationAddress);
+
     // TODO pass back http errors to message router / calling MessageRunnable via onFailure
     std::ignore = onFailure;
     JOYNR_LOG_TRACE(logger, "sendMessage: ...");
     std::string&& serializedMessage = JsonSerializer::serialize(message);
-    /** Potential issue: needs second threadpool to call the ChannelUrlDir so a deadlock cannot
-     * occur
-      */
-    DelayedScheduler* scheduler;
-    std::string channelUrlDirChannelId =
-            MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID();
-    if (channelId == channelUrlDirChannelId) {
-        scheduler = &channelUrlContactorDelayedScheduler;
-    } else {
-        scheduler = &delayedScheduler;
-    }
 
-    scheduler->schedule(new SendMessageRunnable(this,
-                                                channelId,
-                                                message.getHeaderExpiryDate(),
-                                                std::move(serializedMessage),
-                                                *scheduler,
-                                                maxAttemptTtl));
+    delayedScheduler.schedule(new SendMessageRunnable(this,
+                                                      channelAddress,
+                                                      message.getHeaderExpiryDate(),
+                                                      std::move(serializedMessage),
+                                                      delayedScheduler,
+                                                      maxAttemptTtl));
 }
 
 /**
@@ -111,15 +100,16 @@ INIT_LOGGER(HttpSender::SendMessageRunnable);
 
 int HttpSender::SendMessageRunnable::messageRunnableCounter = 0;
 
-HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
-                                                     const std::string& channelId,
-                                                     const JoynrTimePoint& decayTime,
-                                                     std::string&& data,
-                                                     DelayedScheduler& delayedScheduler,
-                                                     std::chrono::milliseconds maxAttemptTtl)
+HttpSender::SendMessageRunnable::SendMessageRunnable(
+        HttpSender* messageSender,
+        const system::RoutingTypes::ChannelAddress& channelAddress,
+        const JoynrTimePoint& decayTime,
+        std::string&& data,
+        DelayedScheduler& delayedScheduler,
+        std::chrono::milliseconds maxAttemptTtl)
         : Runnable(true),
           ObjectWithDecayTime(decayTime),
-          channelId(channelId),
+          channelAddress(channelAddress),
           data(std::move(data)),
           delayedScheduler(delayedScheduler),
           messageSender(messageSender),
@@ -151,7 +141,6 @@ void HttpSender::SendMessageRunnable::run()
                     "messageRunnableCounter: + {}  SMR existing.",
                     SendMessageRunnable::messageRunnableCounter);
 
-    assert(messageSender->channelUrlCache != nullptr);
     // A channelId can have several Url's. Hence, we cannot use up all the time we have for
     // testing
     // just one (in case it is not available). So we use just a fraction, yet at least MIN...
@@ -161,9 +150,9 @@ void HttpSender::SendMessageRunnable::run()
             std::max(getRemainingTtl().count() /
                              HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
                      HttpSender::MIN_ATTEMPT_TTL().count());
-    std::string url = resolveUrlForChannelId(std::chrono::milliseconds(curlTimeout));
     JOYNR_LOG_TRACE(logger, "going to buildRequest");
-    HttpResult sendMessageResult = buildRequestAndSend(url, std::chrono::milliseconds(curlTimeout));
+    HttpResult sendMessageResult =
+            buildRequestAndSend(toUrl(channelAddress), std::chrono::milliseconds(curlTimeout));
 
     // Delay the next request if an error occurs
     auto now = std::chrono::system_clock::now();
@@ -178,9 +167,8 @@ void HttpSender::SendMessageRunnable::run()
     JOYNR_LOG_TRACE(
             logger, "sendMessageResult.getStatusCode() = {}", sendMessageResult.getStatusCode());
     if (sendMessageResult.getStatusCode() != 201) {
-        messageSender->channelUrlCache->feedback(false, channelId, url);
         delayedScheduler.schedule(new SendMessageRunnable(messageSender,
-                                                          channelId,
+                                                          channelAddress,
                                                           decayTime,
                                                           std::move(data),
                                                           delayedScheduler,
@@ -198,36 +186,10 @@ void HttpSender::SendMessageRunnable::run()
     } else {
         JOYNR_LOG_DEBUG(logger,
                         "sending message - success; url: {} status code: {} at ",
-                        url,
+                        toUrl(channelAddress),
                         sendMessageResult.getStatusCode(),
                         DispatcherUtils::nowInMilliseconds());
     }
-}
-std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(
-        std::chrono::milliseconds curlTimeout)
-{
-    JOYNR_LOG_TRACE(logger, "obtaining Url with a curlTimeout of : {}", curlTimeout.count());
-    StatusCodeEnum status(StatusCodeEnum::IN_PROGRESS);
-    // we also use the curl timeout here, to prevent long blocking during shutdown.
-    std::string url = messageSender->channelUrlCache->obtainUrl(channelId, status, curlTimeout);
-    if (!(status == StatusCodeEnum::SUCCESS)) {
-        JOYNR_LOG_ERROR(logger,
-                        "Issue while trying to obtained URl from the ChannelUrlDirectory: {}",
-                        StatusCode::toString(status));
-    }
-    if (url.empty()) {
-        JOYNR_LOG_DEBUG(logger,
-                        "Url for channelId could not be obtained from the "
-                        "ChannelUrlDirectory ... EXITING ...");
-        assert(false); // OR: url =
-                       // messageSender->brokerUrl.getSendUrl(channelId).toString();
-    }
-
-    JOYNR_LOG_TRACE(logger,
-                    "Sending message; url: {}, time left: {}",
-                    url,
-                    DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime));
-    return url;
 }
 
 HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(
@@ -249,6 +211,23 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(
     util::logSerializedMessage(logger, "Sending Message: ", data);
 
     return sendMessageRequest->execute();
+}
+
+std::string HttpSender::SendMessageRunnable::toUrl(
+        const system::RoutingTypes::ChannelAddress& channelAddress) const
+{
+    std::string result;
+    result.reserve(256);
+
+    result.append(channelAddress.getMessagingEndpointUrl());
+
+    if (result.length() > 0 && result.back() != '/') {
+        result.append("/");
+    }
+
+    result.append("message/");
+
+    return result;
 }
 
 void HttpSender::registerReceiveQueueStartedCallback(

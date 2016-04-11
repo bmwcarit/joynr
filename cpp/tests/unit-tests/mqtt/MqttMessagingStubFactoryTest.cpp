@@ -41,7 +41,7 @@ public:
         mqttAddress("brokerUri", "clientId"),
         webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS, "localhost", 42, "path"),
         webSocketClientAddress("clientId"),
-        channelAddress("channelId"),
+        channelAddress("endPointUrl", "channelId"),
         commonApiDbusAddress("domain", "serviceName", "participantId"),
         browserAddress("windowId")
     {

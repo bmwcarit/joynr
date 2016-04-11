@@ -54,7 +54,6 @@ public:
         expiryDateMs(0),
         dummyParticipantId1(),
         dummyParticipantId2(),
-        localJoynrMessagingAddress1(),
         callback()
     {
     }
@@ -70,7 +69,6 @@ public:
         dummyParticipantId1 = util::createUuid();
         dummyParticipantId2 = util::createUuid();
         dummyParticipantId3 = util::createUuid();
-        localJoynrMessagingAddress1 = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>("LOCAL_CHANNEL_ID");
         callback = std::make_shared<MockLocalCapabilitiesDirectoryCallback>();
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
@@ -214,7 +212,6 @@ protected:
     std::string dummyParticipantId1;
     std::string dummyParticipantId2;
     std::string dummyParticipantId3;
-    std::shared_ptr<joynr::system::RoutingTypes::ChannelAddress> localJoynrMessagingAddress1;
     joynr::types::DiscoveryQos discoveryQos;
     QMap<std::string, CapabilityEntry> globalCapEntryMap;
 
@@ -228,7 +225,7 @@ protected:
     static const std::string EXTERNAL_CHANNEL_ID;
     static const int TIMEOUT;
     std::shared_ptr<MockLocalCapabilitiesDirectoryCallback> callback;
-    void registerReceivedCapabilities(const std::string& addressType, const std::string& channelId);
+    void registerReceivedCapabilities(const std::string& addressType, const std::string& serializedAddress);
     ADD_LOGGER(LocalCapabilitiesDirectoryTest);
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectoryTest);
@@ -936,7 +933,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupGlobalOnly
 
 //TODO test remove global capability
 
-MATCHER_P2(pointerToAddressWithChannelId, addressType, channelId, "") {
+MATCHER_P2(pointerToAddressWithSerializedAddress, addressType, serializedAddress, "") {
     if (arg == nullptr) {
         return false;
     }
@@ -945,32 +942,32 @@ MATCHER_P2(pointerToAddressWithChannelId, addressType, channelId, "") {
         if (mqttAddress == nullptr) {
             return false;
         }
-        return JsonSerializer::serialize(*mqttAddress) == channelId;
+        return JsonSerializer::serialize(*mqttAddress) == serializedAddress;
     } else if (addressType == "http") {
         auto httpAddress = std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(arg);
         if (httpAddress == nullptr) {
             return false;
         }
-        return httpAddress->getChannelId() == channelId;
+        return JsonSerializer::serialize(*httpAddress) == serializedAddress;
     } else {
         return false;
     }
 }
 
-void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(const std::string& addressType, const std::string& channelId) {
+void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(const std::string& addressType, const std::string& serializedAddress) {
     const std::string participantId = "TEST_participantId";
         EXPECT_CALL(mockMessageRouter, addNextHop(
                 participantId,
                 AllOf(
-                        Pointee(A<joynr::system::RoutingTypes::Address>()),
-                        pointerToAddressWithChannelId(addressType, channelId)),
+                        Pointee(A<const joynr::system::RoutingTypes::Address>()),
+                        pointerToAddressWithSerializedAddress(addressType, serializedAddress)),
                 _)
             ).Times(1);
         EXPECT_CALL(mockMessageRouter, addNextHop(
                 participantId,
                 AnyOf(
-                        Not(Pointee(A<joynr::system::RoutingTypes::Address>())),
-                        Not(pointerToAddressWithChannelId(addressType, channelId))
+                        Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
+                        Not(pointerToAddressWithSerializedAddress(addressType, serializedAddress))
                         ),
                 _)
             ).Times(0);
@@ -978,7 +975,7 @@ void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(const std::str
         QMap<std::string, CapabilityEntry> capabilitiesMap;
         CapabilityEntry capEntry;
         capEntry.setParticipantId(participantId);
-        capabilitiesMap.insertMulti(channelId, capEntry);
+        capabilitiesMap.insertMulti(serializedAddress, capEntry);
         localCapabilitiesDirectory->registerReceivedCapabilities(capabilitiesMap);
 }
 
@@ -986,14 +983,15 @@ TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerMqttAd
     const std::string addressType = "mqtt";
     const std::string topic = "mqtt_TEST_channelId";
     system::RoutingTypes::MqttAddress mqttAddress("brokerUri", topic);
-    const std::string channelId = JsonSerializer::serialize(mqttAddress);
-    registerReceivedCapabilities(addressType, channelId);
+    registerReceivedCapabilities(addressType, JsonSerializer::serialize(mqttAddress));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerHttpAddress) {
     const std::string addressType = "http";
-    const std::string channelId = "http_TEST_channelId";
-    registerReceivedCapabilities(addressType, channelId);
+    const std::string channelID = "TEST_channelId";
+    const std::string endPointUrl = "TEST_endPointUrl";
+    const system::RoutingTypes::ChannelAddress channelAddress(endPointUrl, channelID);
+    registerReceivedCapabilities(addressType, JsonSerializer::serialize(channelAddress));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, serializerTest)

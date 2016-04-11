@@ -245,6 +245,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     } else {
         auto globalCapabilitiesDirectoryAddress =
                 std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
+                        messagingSettings.getCapabilitiesDirectoryUrl() +
+                                capabilitiesDirectoryChannelId + "/",
                         capabilitiesDirectoryChannelId);
         messageRouter->addProvisionedNextHop(
                 capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
@@ -268,6 +270,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     } else {
         auto globalChannelUrlDirectoryAddress =
                 std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
+                        messagingSettings.getChannelUrlDirectoryUrl() + "/" +
+                                channelUrlDirectoryChannelId,
                         channelUrlDirectoryChannelId);
         messageRouter->addProvisionedNextHop(
                 channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);
@@ -295,8 +299,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // EndpointAddress to messagingStub is transmitted when a provider is registered
     // messagingStubFactory->registerInProcessMessagingSkeleton(libJoynrMessagingSkeleton);
 
-    std::string httpChannelId;
-    std::string mqttChannelId;
+    std::string httpSerializedGlobalClusterControllerAddress;
+    std::string mqttSerializedGlobalClusterControllerAddress;
 
     /**
       * ClusterController side HTTP
@@ -320,7 +324,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             });
         }
 
-        httpChannelId = httpMessageReceiver->getReceiveChannelId();
+        httpSerializedGlobalClusterControllerAddress =
+                httpMessageReceiver->getGlobalClusterControllerAddress();
 
         // create http message sender
         if (!httpMessageSender) {
@@ -334,8 +339,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     std::chrono::milliseconds(messagingSettings.getSendMsgRetryInterval()));
         }
 
-        messagingStubFactory->registerStubFactory(
-                std::make_unique<HttpMessagingStubFactory>(httpMessageSender, httpChannelId));
+        messagingStubFactory->registerStubFactory(std::make_unique<HttpMessagingStubFactory>(
+                httpMessageSender, httpSerializedGlobalClusterControllerAddress));
     }
 
     /**
@@ -366,7 +371,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             });
         }
 
-        mqttChannelId = mqttMessageReceiver->getReceiveChannelId();
+        mqttSerializedGlobalClusterControllerAddress =
+                mqttMessageReceiver->getGlobalClusterControllerAddress();
 
         // create message sender
         if (!mqttMessageSender) {
@@ -380,8 +386,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     [&](void) { mqttMessageReceiver->waitForReceiveQueueStarted(); });
         }
 
-        messagingStubFactory->registerStubFactory(
-                std::make_unique<MqttMessagingStubFactory>(mqttMessageSender, mqttChannelId));
+        messagingStubFactory->registerStubFactory(std::make_unique<MqttMessagingStubFactory>(
+                mqttMessageSender, mqttSerializedGlobalClusterControllerAddress));
     }
 
     // joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
@@ -392,11 +398,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     bool usingRealCapabilitiesClient =
             /*when switching this to true, turn on the UUID in systemintegrationtests again*/ true;
     if (doMqttMessaging) {
-        capabilitiesClient =
-                new CapabilitiesClient(mqttChannelId); // ownership of this is not transferred
+        capabilitiesClient = new CapabilitiesClient(
+                mqttSerializedGlobalClusterControllerAddress); // ownership of this is not
+                                                               // transferred
     } else {
-        capabilitiesClient =
-                new CapabilitiesClient(httpChannelId); // ownership of this is not transferred
+        capabilitiesClient = new CapabilitiesClient(
+                httpSerializedGlobalClusterControllerAddress); // ownership of this is not
+                                                               // transferred
     }
     // try using the real capabilitiesClient again:
     // capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not

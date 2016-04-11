@@ -30,6 +30,9 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testProvider.h"
@@ -84,17 +87,24 @@ public:
             mockMqttMessageReceiver(new MockMessageReceiver()),
             mockMqttMessageSender(new MockMessageSender()),
             semaphore(0)
-    {
-        std::string httpChannelId("JoynrClusterControllerRuntimeTest.HttpChannelId");
-        std::string mqttChannelId("JoynrClusterControllerRuntimeTest.MqttChannelId");
+    {;
+        std::string httpChannelId("http_JoynrClusterControllerRuntimeTest.ChannelId");
+        std::string httpEndPointUrl("http_JoynrClusterControllerRuntimeTest.endPointUrl");
+        std::string mqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic");
+        std::string mqttBrokerUrl("mqtt_JoynrClusterControllerRuntimeTest.brokerUrl");
 
+        using system::RoutingTypes::ChannelAddress;
+        using system::RoutingTypes::MqttAddress;
+
+        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
-        ON_CALL(*mockHttpMessageReceiver, getReceiveChannelId())
-                .WillByDefault(::testing::ReturnRefOfCopy(httpChannelId));
-        ON_CALL(*mockMqttMessageReceiver, getReceiveChannelId())
-                .WillByDefault(::testing::ReturnRefOfCopy(mqttChannelId));
+        ON_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
+                .WillByDefault(::testing::ReturnRefOfCopy(serializedChannelAddress));
+        ON_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
+                .WillByDefault(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
 
     }
@@ -108,9 +118,9 @@ public:
     }
 
     void createRuntimeMqttWithHttpBackend() {
-        EXPECT_CALL(*mockHttpMessageReceiver, getReceiveChannelId())
+        EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
-        EXPECT_CALL(*mockMqttMessageReceiver, getReceiveChannelId())
+        EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
 
         runtime = new JoynrClusterControllerRuntime(
@@ -124,7 +134,7 @@ public:
     }
 
     void createRuntimeHttp() {
-        EXPECT_CALL(*mockHttpMessageReceiver, getReceiveChannelId())
+        EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
 
         runtime = new JoynrClusterControllerRuntime(

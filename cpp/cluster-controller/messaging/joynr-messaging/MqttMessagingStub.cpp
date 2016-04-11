@@ -26,10 +26,10 @@ namespace joynr
 {
 
 MqttMessagingStub::MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                                     const std::string& destinationChannelId,
+                                     const system::RoutingTypes::MqttAddress& destinationAddress,
                                      const std::string& receiveChannelId)
         : messageSender(messageSender),
-          destinationChannelId(destinationChannelId),
+          destinationAddress(destinationAddress),
           receiveChannelId(receiveChannelId)
 {
 }
@@ -41,9 +41,9 @@ void MqttMessagingStub::transmit(
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        message.setHeaderReplyChannelId(receiveChannelId);
+        message.setHeaderReplyAddress(receiveChannelId);
     }
-    messageSender->sendMessage(destinationChannelId, message, onFailure);
+    messageSender->sendMessage(destinationAddress, message, onFailure);
 }
 
 } // namespace joynr

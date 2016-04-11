@@ -41,8 +41,7 @@ std::shared_ptr<IMessaging> MqttMessagingStubFactory::create(
 {
     const system::RoutingTypes::MqttAddress* mqttAddress =
             dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destAddress);
-    return std::make_shared<MqttMessagingStub>(
-            messageSender, mqttAddress->getTopic(), receiveChannelId);
+    return std::make_shared<MqttMessagingStub>(messageSender, *mqttAddress, receiveChannelId);
 }
 
 } // namespace joynr

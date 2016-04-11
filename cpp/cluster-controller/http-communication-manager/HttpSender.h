@@ -25,10 +25,10 @@
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Runnable.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 #include <string>
 #include <memory>
@@ -40,7 +40,6 @@ namespace joynr
 class JoynrMessage;
 class MessagingSettings;
 class HttpResult;
-class IChannelUrlSelector;
 
 class HttpSender : public IMessageSender
 {
@@ -55,16 +54,12 @@ public:
     /**
     * @brief Sends the message to the given channel.
     */
-    void sendMessage(const std::string& channelId,
+    void sendMessage(const joynr::system::RoutingTypes::Address& destinationAddress,
                      const JoynrMessage& message,
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
-    /**
-    * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
-    * the channelIds.
-    */
-    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-              const MessagingSettings& settings) override;
+
+    void init(const MessagingSettings& settings) override;
 
     void registerReceiveQueueStartedCallback(
             std::function<void(void)> waitForReceiveQueueStarted) override;
@@ -72,7 +67,6 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
     const BrokerUrl brokerUrl;
-    IChannelUrlSelector* channelUrlCache;
     const std::chrono::milliseconds maxAttemptTtl;
     const std::chrono::milliseconds messageSendRetryInterval;
     ADD_LOGGER(HttpSender);
@@ -83,22 +77,11 @@ private:
      */
     ThreadPoolDelayedScheduler delayedScheduler;
 
-    /**
-     * @brief ThreadPool to obtain an URL
-     * @note Obtaining an URL must be in a different ThreadPool
-     *
-     * Create a different scheduler for the ChannelURL directory. Ideally,
-     * this should not delay messages by default. However, a race condition
-     * exists that causes intermittent errors in the system integration tests
-     * when the default delay is 0.
-     */
-    ThreadPoolDelayedScheduler channelUrlContactorDelayedScheduler;
-
     class SendMessageRunnable : public Runnable, public ObjectWithDecayTime
     {
     public:
         SendMessageRunnable(HttpSender* messageSender,
-                            const std::string& channelId,
+                            const system::RoutingTypes::ChannelAddress& channelAddress,
                             const JoynrTimePoint& decayTime,
                             std::string&& data,
                             DelayedScheduler& delayedScheduler,
@@ -109,13 +92,7 @@ private:
 
         /**
          * @brief run
-         * 1) Obtains the 'best' Url for the channelId from the ChannelUrlSelector.
-         * 2)  Sets the curl timeout to a fraction of the messaging TTL
-         *     (yet always between MIN and MAX_CONNECTION_TTL()).
-         * 3) Tries a HTTP request on this URL. If the result is negative,
-         * feedback is provided to the ChannelUrlSelector (and back to 1). Otherwise: Done.
-         * During this procedure, the ChannelUrlSelector decides if it is appropriate
-         * to try an alternative Url (depending on the history of feedback).
+         * Tries a HTTP request on the URL which is stored in channelAddress.
          */
         void run() override;
 
@@ -123,8 +100,8 @@ private:
         DISALLOW_COPY_AND_ASSIGN(SendMessageRunnable);
         HttpResult buildRequestAndSend(const std::string& url,
                                        std::chrono::milliseconds curlTimeout);
-        std::string resolveUrlForChannelId(std::chrono::milliseconds curlTimeout);
-        std::string channelId;
+        std::string toUrl(const system::RoutingTypes::ChannelAddress& channelAddress) const;
+        system::RoutingTypes::ChannelAddress channelAddress;
         std::string data;
         DelayedScheduler& delayedScheduler;
         HttpSender* messageSender;

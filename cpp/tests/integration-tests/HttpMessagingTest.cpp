@@ -26,23 +26,26 @@ using namespace joynr;
 class HttpMessagingTest : public AbstractMessagingTest {
 public:
     ADD_LOGGER(HttpMessagingTest);
-    HttpMessagingTest()
+    HttpMessagingTest() :
+        receiverChannelId("receiverChannelId")
     {
         // provision global capabilities directory
         auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-                        messagingSettings.getCapabilitiesDirectoryChannelId()
-        );
+                        messagingSettings.getCapabilitiesDirectoryUrl() + messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
+                        messagingSettings.getCapabilitiesDirectoryChannelId());
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
         auto addressChannelUrlDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-                        messagingSettings.getChannelUrlDirectoryChannelId()
+                        messagingSettings.getChannelUrlDirectoryChannelId(), messagingSettings.getChannelUrlDirectoryUrl()
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
-        messagingStubFactory->registerStubFactory(std::make_unique<HttpMessagingStubFactory>(mockMessageSender, senderChannelId));
+        messagingStubFactory->registerStubFactory(std::make_unique<HttpMessagingStubFactory>(mockMessageSender, globalClusterControllerAddress));
     }
 
     ~HttpMessagingTest(){
     }
+protected:
+    const std::string receiverChannelId;
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingTest);
 };

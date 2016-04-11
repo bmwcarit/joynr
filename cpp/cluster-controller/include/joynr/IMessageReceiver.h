@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {
@@ -42,9 +43,9 @@ public:
     virtual ~IMessageReceiver() = default;
 
     /**
-      * Gets the channel ID of the receive channel for incoming messages.
+      * Returns the serialized (json) receive address
       */
-    virtual const std::string& getReceiveChannelId() const = 0;
+    virtual const std::string& getGlobalClusterControllerAddress() const = 0;
 
     /**
       * Starts processing incomming messages. This method must be called

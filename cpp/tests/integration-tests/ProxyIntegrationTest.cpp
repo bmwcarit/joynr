@@ -50,7 +50,7 @@ public:
         mockJoynrMessageSender(new MockJoynrMessageSender()),
         domain("cppProxyIntegrationTestDomain"),
         messagingQos(),
-        endPointAddress(new system::RoutingTypes::ChannelAddress("endPointAddress"))
+        endPointAddress(new system::RoutingTypes::ChannelAddress("http://endpoint:8080/bounceproxy", "endPointAddress"))
     {
     }
 

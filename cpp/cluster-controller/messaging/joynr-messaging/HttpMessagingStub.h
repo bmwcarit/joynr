@@ -20,6 +20,7 @@
 #define HTTPMESSAGINGSTUB_H
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IMessaging.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 #include <string>
 
@@ -30,6 +31,7 @@ namespace joynr
 
 class IMessageSender;
 class JoynrMessage;
+
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
   */
@@ -37,7 +39,7 @@ class HttpMessagingStub : public IMessaging
 {
 public:
     explicit HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                               const std::string& destinationChannelId,
+                               const system::RoutingTypes::ChannelAddress& destinationAddress,
                                const std::string& receiveChannelId);
     ~HttpMessagingStub() override = default;
     void transmit(JoynrMessage& message,
@@ -47,7 +49,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingStub);
     std::shared_ptr<IMessageSender> messageSender;
-    const std::string destinationChannelId;
+    const system::RoutingTypes::ChannelAddress destinationAddress;
     const std::string receiveChannelId;
 };
 

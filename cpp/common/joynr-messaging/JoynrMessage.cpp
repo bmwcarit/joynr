@@ -66,7 +66,7 @@ const std::string& JoynrMessage::HEADER_EXPIRY_DATE()
     static const std::string headerExpiryDate("expiryDate");
     return headerExpiryDate;
 }
-const std::string& JoynrMessage::HEADER_REPLY_CHANNEL_ID()
+const std::string& JoynrMessage::HEADER_REPLY_ADDRESS()
 {
     static const std::string headerReplyChannelId("replyChannelId");
     return headerReplyChannelId;
@@ -291,19 +291,19 @@ void JoynrMessage::setHeaderExpiryDate(const JoynrTimePoint& expiryDate)
     setHeaderForKey(HEADER_EXPIRY_DATE(), std::to_string(expiryDate.time_since_epoch().count()));
 }
 
-bool JoynrMessage::containsHeaderReplyChannelId() const
+bool JoynrMessage::containsHeaderReplyAddress() const
 {
-    return containsHeader(HEADER_REPLY_CHANNEL_ID());
+    return containsHeader(HEADER_REPLY_ADDRESS());
 }
 
-std::string JoynrMessage::getHeaderReplyChannelId() const
+std::string JoynrMessage::getHeaderReplyAddress() const
 {
-    return getHeaderForKey(HEADER_REPLY_CHANNEL_ID());
+    return getHeaderForKey(HEADER_REPLY_ADDRESS());
 }
 
-void JoynrMessage::setHeaderReplyChannelId(const std::string& replyChannelId)
+void JoynrMessage::setHeaderReplyAddress(const std::string& replyAddress)
 {
-    setHeaderForKey(HEADER_REPLY_CHANNEL_ID(), replyChannelId);
+    setHeaderForKey(HEADER_REPLY_ADDRESS(), replyAddress);
 }
 
 } // namespace joynr

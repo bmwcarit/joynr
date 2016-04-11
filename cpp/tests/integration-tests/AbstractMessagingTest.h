@@ -45,9 +45,8 @@ public:
     Settings settings;
     MessagingSettings messagingSettings;
     std::string senderId;
-    std::string senderChannelId;
+    std::string globalClusterControllerAddress;
     std::string receiverId;
-    std::string receiverChannelId;
     Request request;
     std::string requestId;
     MessagingQos qos;
@@ -64,9 +63,8 @@ public:
         settings(settingsFileName),
         messagingSettings(settings),
         senderId("senderParticipantId"),
-        senderChannelId("senderChannelId"),
+        globalClusterControllerAddress("senderChannelId"),
         receiverId("receiverParticipantId"),
-        receiverChannelId("receiverChannelId"),
         request(),
         requestId("requestId"),
         qos(),
@@ -161,10 +159,8 @@ public:
         EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
                 .Times(0);
 
-        EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
+        EXPECT_CALL(*mockMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(0);
-    //            .WillOnce(ReturnRefOfCopy(senderChannelId));
-    //            .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 
         auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
 
@@ -182,14 +178,14 @@ public:
                     receiverId,
                     qos,
                     request);
-        message.setHeaderReplyChannelId(senderChannelId);
+        message.setHeaderReplyAddress(globalClusterControllerAddress);
 
         // InProcessMessagingSkeleton should not receive the message
         EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),_))
                 .Times(0);
 
         // *CommunicationManager should receive the message
-        EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),Eq(message),_))
+        EXPECT_CALL(*mockMessageSender, sendMessage(_,Eq(message),_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -206,7 +202,7 @@ public:
                     receiverId,
                     qos,
                     request);
-        message.setHeaderReplyChannelId(senderChannelId);
+        message.setHeaderReplyAddress(globalClusterControllerAddress);
 
         std::string receiverId2("receiverId2");
         JoynrMessage message2 = messageFactory.createRequest(
@@ -214,19 +210,18 @@ public:
                     receiverId2,
                     qos,
                     request);
-        message2.setHeaderReplyChannelId(senderChannelId);
+        message2.setHeaderReplyAddress(globalClusterControllerAddress);
 
         // InProcessMessagingSkeleton should receive the message2 and message3
         EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2),_))
                 .Times(2).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         // MessageSender should receive the message
-        EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), Eq(message),_))
+        EXPECT_CALL(*mockMessageSender, sendMessage(_, Eq(message),_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-        EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
-    //            .WillOnce(ReturnRefOfCopy(senderChannelId));
-                .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
+        EXPECT_CALL(*mockMessageReceiver, getGlobalClusterControllerAddress())
+                .WillRepeatedly(ReturnRefOfCopy(globalClusterControllerAddress));
 
         auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
 

@@ -45,7 +45,7 @@ public:
     /**
     * @brief Sends the message to the given channel.
     */
-    void sendMessage(const std::string& channelId,
+    void sendMessage(const system::RoutingTypes::Address& destinationAddress,
                      const JoynrMessage& message,
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;

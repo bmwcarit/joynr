@@ -83,13 +83,14 @@ public:
      */
     static const std::string& HEADER_EXPIRY_DATE();
     /**
-     * @brief HEADER_REPLY_CHANNEL_ID The "reply channel ID" header stores the senders channel ID.
-     * It
-     * is set in all messages that expect a response to be send by the receiver. When the receiver
-     * sends the response, the reply channel ID determines the channel to send the response to.
+     * @brief HEADER_REPLY_ADDRESS The "reply address" header stores the serialized (json) sender
+     * address.
+     *
+     * Is set in all messages that expect a response to be send by the receiver. When the receiver
+     * sends the response, the reply address determines the address to send the response to.
      * @return
      */
-    static const std::string& HEADER_REPLY_CHANNEL_ID();
+    static const std::string& HEADER_REPLY_ADDRESS();
 
     static const std::string VALUE_MESSAGE_TYPE_ONE_WAY;
     static const std::string VALUE_MESSAGE_TYPE_REQUEST;
@@ -281,31 +282,31 @@ public:
     void setHeaderExpiryDate(const JoynrTimePoint& expiryDate);
 
     /**
-     * @brief containsHeaderReplyChannelId Tests whether the "reply channel ID" header of the
+     * @brief containsHeaderReplyAddress Tests whether the "reply address" header of the
      * message is set or not.
-     * @return true, if the "reply channel ID" header is set; false, otherwise.
-     * @see JoynrMessage::HEADER_REPLY_CHANNEL_ID()
+     * @return true, if the "reply address" header is set; false, otherwise.
+     * @see JoynrMessage::HEADER_REPLY_ADDRESS()
      */
-    bool containsHeaderReplyChannelId() const;
+    bool containsHeaderReplyAddress() const;
     /**
-     * @brief getHeaderReplyChannelId Gets the reply channel ID of the message. Use
-     * JoynrMessage::containsHeaderReplyChannelId()
+     * @brief getHeaderReplyAddress Gets the reply address of the message. Use
+     * JoynrMessage::containsHeaderReplyAddress()
      * to check whether the header is available or not.
-     * @return the "reply channel ID" header of the message, if the header is set; A
+     * @return the "reply address" header of the message, if the header is set; A
      * default-constructed value, otherwise.
-     * @see JoynrMessage::HEADER_REPLY_CHANNEL_ID()
+     * @see JoynrMessage::HEADER_REPLY_ADDRESS()
      */
-    std::string getHeaderReplyChannelId() const;
+    std::string getHeaderReplyAddress() const;
     /**
-     * @brief setHeaderReplyChannelId Sets the reply channel ID of the message. If the header is
+     * @brief setHeaderReplyAddress Sets the reply address of the message. If the header is
      * already set, its
-     * value is replaced with the new one. Use JoynrMessage::containsHeaderReplyChannelId() to check
+     * value is replaced with the new one. Use JoynrMessage::containsHeaderReplyAddress() to check
      * whether the header is
      * already set or not.
-     * @param replyChannelId the "reply channel ID" header to be set on the message.
-     * @see JoynrMessage::HEADER_REPLY_CHANNEL_ID()
+     * @param replyAddress the "reply address" header to be set on the message.
+     * @see JoynrMessage::HEADER_REPLY_ADDRESS()
      */
-    void setHeaderReplyChannelId(const std::string& replyChannelId);
+    void setHeaderReplyAddress(const std::string& replyAddress);
 
 private:
     /**

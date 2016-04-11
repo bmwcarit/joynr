@@ -20,6 +20,7 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {
@@ -45,11 +46,19 @@ void MqttSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirec
 }
 
 void MqttSender::sendMessage(
-        const std::string& channelId,
+        const system::RoutingTypes::Address& destinationAddress,
         const JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     JOYNR_LOG_DEBUG(logger, "sendMessage: ...");
+
+    if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destinationAddress) == nullptr) {
+        JOYNR_LOG_DEBUG(logger, "Invalid destination address type provided");
+        onFailure(exceptions::JoynrRuntimeException("Invalid destination address type provided"));
+        return;
+    }
+
+    auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress&>(destinationAddress);
 
     waitForReceiveQueueStarted();
 
@@ -61,7 +70,7 @@ void MqttSender::sendMessage(
     util::logSerializedMessage(logger, "Sending Message: ", serializedMessage);
 
     mosquittoPublisher.publishMessage(
-            channelId, message.getHeaderTo(), onFailure, payloadLength, payload);
+            mqttAddress.getTopic(), message.getHeaderTo(), onFailure, payloadLength, payload);
 }
 
 void MqttSender::registerReceiveQueueStartedCallback(

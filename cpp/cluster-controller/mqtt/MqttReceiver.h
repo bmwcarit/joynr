@@ -42,7 +42,7 @@ public:
     /**
       * Gets the channel ID of the receive channel for incoming messages.
       */
-    const std::string& getReceiveChannelId() const override;
+    const std::string& getGlobalClusterControllerAddress() const override;
 
     /**
       * Checks the MessageSettings and updates the configuration.
@@ -90,7 +90,7 @@ private:
     bool isChannelCreated;
 
     std::string channelIdForMqttTopic; // currently channelId is used to subscribe
-    std::string channelIdForCapabilitiesDirectory;
+    std::string globalClusterControllerAddress;
 
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
     // Allows for registering multiple receivers for a single channel.
