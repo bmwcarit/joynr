@@ -19,7 +19,6 @@ package io.joynr.capabilities.directory;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.CustomParameterPersisted;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.DiscoveryEntryStorePersisted;
@@ -46,8 +45,6 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
         bind(CustomParameter.class).to(CustomParameterPersisted.class);
         bind(ProviderQos.class).to(ProviderQosPersisted.class);
         bind(Address.class).to(AddressPersisted.class);
-
-        bind(CapabilitiesProvisioning.class).to(DirectoryCapabilitiesProvisioning.class);
     }
 
     @Provides
