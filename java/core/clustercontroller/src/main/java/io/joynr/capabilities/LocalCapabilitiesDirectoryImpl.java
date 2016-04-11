@@ -34,6 +34,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.joynr.arbitration.ArbitrationStrategy;
@@ -75,7 +76,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private MessageRouter messageRouter;
 
-    private Address globalAddress;
+    private Provider<Address> globalAddressProvider;
 
     private ObjectMapper objectMapper;
 
@@ -88,13 +89,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId,
-                                          @Named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS) Address globalAddress,
+                                          @Named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS) Provider<Address> globalAddressProvider,
                                           DiscoveryEntryStore localDiscoveryEntryStore,
                                           DiscoveryEntryStore globalDiscoveryEntryCache,
                                           MessageRouter messageRouter,
                                           ProxyBuilderFactory proxyBuilderFactory,
                                           ObjectMapper objectMapper) {
-        this.globalAddress = globalAddress;
+        this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.messageRouter = messageRouter;
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
@@ -153,7 +154,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
 
             final GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
-                                                                                                           globalAddress);
+                                                                                                           globalAddressProvider.get());
             if (globalDiscoveryEntry != null) {
 
                 logger.info("starting global registration for " + globalDiscoveryEntry.getDomain() + " : "
@@ -167,7 +168,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                 + globalDiscoveryEntry.getInterfaceName() + " completed");
                         deferred.resolve();
                         globalDiscoveryEntryCache.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
-                                                                                            globalAddress));
+                                                                                            globalAddressProvider.get()));
                     }
 
                     @Override

@@ -43,6 +43,7 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.ExpiryDate;
@@ -51,10 +52,12 @@ import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.LongPollingHttpGlobalAddressFactory;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.channel.ChannelMessageSerializerFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.http.HttpMessageSender;
+import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.MessagingStubFactory;
@@ -80,6 +83,8 @@ public class MessageRouterTest {
 
     @Mock
     private HttpMessageSender httpMessageSenderMock;
+    @Mock
+    private LongPollingMessageReceiver longPollingMessageReceiverMock;
     private MessageRouter messageRouter;
     private JoynrMessage joynrMessage;
     protected String toParticipantId = "toParticipantId";
@@ -101,6 +106,7 @@ public class MessageRouterTest {
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
                                 .toInstance(msgRetryIntervalMs);
                 bind(HttpMessageSender.class).toInstance(httpMessageSenderMock);
+                bind(LongPollingMessageReceiver.class).toInstance(longPollingMessageReceiverMock);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
                 messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
@@ -116,6 +122,10 @@ public class MessageRouterTest {
                                                                   },
                                                                   Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
                 messageSerializerFactory.addBinding(ChannelAddress.class).to(ChannelMessageSerializerFactory.class);
+                Multibinder<GlobalAddressFactory> globalAddresses = Multibinder.newSetBinder(binder(),
+                                                                                             GlobalAddressFactory.class);
+                globalAddresses.addBinding().to(LongPollingHttpGlobalAddressFactory.class);
+
                 routingTable.put(toParticipantId, channelAddress);
                 joynrMessage = new JoynrMessage();
                 joynrMessage.setTo(toParticipantId);

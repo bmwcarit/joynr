@@ -27,6 +27,7 @@ import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -34,12 +35,14 @@ import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.CustomParameter;
@@ -63,6 +66,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 
 @Ignore
 @RunWith(MockitoJUnitRunner.class)
@@ -121,6 +129,15 @@ public class LocalCapabilitiesDirectoryTest {
         String domainAccessControllerParticipantId = "domainAccessControllerParticipantId";
         String domainAccessControllerChannelId = "domainAccessControllerChannelId";
 
+        Injector injector = Guice.createInjector(new JsonMessageSerializerModule(), new AbstractModule() {
+            @Override
+            protected void configure() {
+                requestStaticInjection(CapabilityUtils.class);
+                bind(Address.class).annotatedWith(Names.named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS))
+                                   .toInstance(new ChannelAddress(channelAddressSerialized));
+            }
+        });
+
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(discoveryDirectoriesDomain,
                                                                         channelUrlDirectoryParticipantId,
                                                                         channelUrlDirectoryChannelId,
@@ -128,7 +145,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         capabiltitiesDirectoryChannelId,
                                                                         domainAccessControllerParticipantId,
                                                                         domainAccessControllerChannelId,
-                                                                        new ChannelAddress(channelAddressSerialized),
+                                                                        injector.getProvider(Key.get(Address.class,
+                                                                                                     Names.named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS))),
                                                                         localDiscoveryEntryStoreMock,
                                                                         globalDiscoveryEntryCacheMock,
                                                                         messageRouter,
