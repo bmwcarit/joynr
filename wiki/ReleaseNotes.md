@@ -62,7 +62,7 @@
 
 ##Other changes
 * **[C++, Java]** Fix bug in code generation for typedef.
-* **[C++]** CMake integration of the joynr genearator now available. See
+* **[C++]** CMake integration of the joynr generator now available. See
   [\<RADIO_HOME\>/CMakeLists.txt](/examples/radio-app/CMakeLists.txt) on how to use it.
 
 #joynr 0.15.1
