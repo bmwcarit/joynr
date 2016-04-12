@@ -20,7 +20,6 @@ package io.joynr.messaging.http;
  */
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.http.operation.HttpConstants;
 import io.joynr.messaging.util.Utilities;
 import io.joynr.runtime.PropertyLoader;
@@ -30,8 +29,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-
-import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,15 +41,11 @@ public class UrlResolver {
 
     private final HttpConstants httpConstants;
     private final Properties hosts;
-    private final LocalChannelUrlDirectoryClient channelUrlClient;
 
     @Inject
     public UrlResolver(HttpConstants httpConstants,
-                       @Named(ConfigurableMessagingSettings.PROPERTY_HOSTS_FILENAME) String hostsFileName,
-                       LocalChannelUrlDirectoryClient channelUrlClient) {
+                       @Named(ConfigurableMessagingSettings.PROPERTY_HOSTS_FILENAME) String hostsFileName) {
         this.httpConstants = httpConstants;
-        this.channelUrlClient = channelUrlClient;
-
         hosts = PropertyLoader.loadProperties(hostsFileName);
     }
 
@@ -105,28 +98,13 @@ public class UrlResolver {
     }
 
     @Nullable
-    public String getSendUrl(String channelId) {
-
-        ChannelUrlInformation channelUrlInfo = channelUrlClient.getUrlsForChannel(channelId);
-        String url = null;
-
-        String[] urls = channelUrlInfo.getUrls();
-        if (urls.length > 0) {
-            // in case sessions are used and the session is encoded in the URL,
-            // we need to strip that from the URL and append session ID at the end
-            String encodedChannelUrl = urls[0]; // TODO handle trying multiple channelUrls
-            url = encodeSendUrl(encodedChannelUrl);
-
-            try {
-                url = mapHost(url);
-            } catch (Exception e) {
-                logger.error("error in URL mapping while sending to channnelId: {} reason: {}",
-                             channelId,
-                             e.getMessage());
-            }
-
+    public String getSendUrl(String url) {
+        String sendUrl = encodeSendUrl(url);
+        try {
+            sendUrl = mapHost(sendUrl);
+        } catch (Exception e) {
+            logger.error("error in URL mapping while sending to url: {} reason: {}", url, e.getMessage());
         }
-
-        return url;
+        return sendUrl;
     }
 }

@@ -123,8 +123,6 @@ public class LocalCapabilitiesDirectoryTest {
                                                                     Mockito.any(GlobalDiscoveryEntry.class));
 
         String discoveryDirectoriesDomain = "io.joynr";
-        String channelUrlDirectoryParticipantId = "channelUrlDir_participantId";
-        String channelUrlDirectoryChannelId = "dirchannelId";
         String capabilitiesDirectoryParticipantId = "capDir_participantId";
         String capabiltitiesDirectoryChannelId = "dirchannelId";
         String domainAccessControllerParticipantId = "domainAccessControllerParticipantId";
@@ -140,9 +138,6 @@ public class LocalCapabilitiesDirectoryTest {
         });
 
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(discoveryDirectoriesDomain,
-                                                                        channelUrlDirectoryParticipantId,
-                                                                        new ChannelAddress(TEST_URL,
-                                                                                           channelUrlDirectoryChannelId),
                                                                         capabilitiesDirectoryParticipantId,
                                                                         new ChannelAddress(TEST_URL,
                                                                                            capabiltitiesDirectoryChannelId),

@@ -25,11 +25,9 @@ import static org.hamcrest.Matchers.containsString;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Singleton;
-import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
@@ -128,7 +126,6 @@ public class HttpCommunicationManagerTest {
                                                      protected void configure() {
                                                          bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
                                                                                   .in(Singleton.class);
-                                                         bind(LocalChannelUrlDirectoryClient.class).to(DummyLocalChannelUrlDirectoryClient.class);
                                                          bind(MessageRouter.class).toInstance(mockMessageRouter);
                                                      }
                                                  });

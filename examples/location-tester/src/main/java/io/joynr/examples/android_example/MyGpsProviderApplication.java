@@ -90,9 +90,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         // instance.
         // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
         // "http://localhost:8080/bounceproxy/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL,
-        // "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL,
+        // joynrConfig.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
         // "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
 
         // Each joynr instance has a local domain. It identifies the execution
@@ -103,7 +101,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
 
         // NOTE: When running this application to test the android-location-provider, you must use
         //       the concrete hostname (and _not_ localhost) in the bounceproxy URL, since this URL
-        //       is registered in the channel URL directory and must be resolvable by the Android
+        //       is registered in the global discovery directory and must be resolvable by the Android
         //       device.
         joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://<concrete host>:8080/bounceproxy/");
 
@@ -121,12 +119,10 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         // instance.
         // joynr.messaging.bounceproxyurl=http://localhost:8080/bounceproxy/
         // joynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // joynr.messaging.channelurldirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // 3) Or set them in Java System properties.
         // -Djoynr.messaging.bounceProxyUrl=http://localhost:8080/bounceproxy/
         // -Djoynr.messaging.capabilitiesDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // -Djoynr.messaging.channelUrlDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // NOTE:
         // Programmatically set configuration properties override properties set
@@ -137,11 +133,6 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         // application by setting
         // them on the JoynApplicationModule.
         Properties appConfig = new Properties();
-
-        // the following line is required in case of java<->javascript use case,
-        // as long as javascript is not using channelurldirectory and
-        // globalcapabilitiesdirectory
-
         provisionAccessControl(joynrConfig, localDomain);
 
         Module runtimeModule = null;

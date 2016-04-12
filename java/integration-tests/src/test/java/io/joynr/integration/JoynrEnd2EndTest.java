@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import joynr.infrastructure.ChannelUrlDirectoryProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -65,6 +64,5 @@ public class JoynrEnd2EndTest {
 
     protected static void provisionDiscoveryDirectoryAccessControlEntries() throws Exception {
         provisionPermissiveAccessControlEntry("io.joynr", GlobalCapabilitiesDirectoryProvider.INTERFACE_NAME);
-        provisionPermissiveAccessControlEntry("io.joynr", ChannelUrlDirectoryProvider.INTERFACE_NAME);
     }
 }

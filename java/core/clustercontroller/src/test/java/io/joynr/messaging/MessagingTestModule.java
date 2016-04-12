@@ -19,17 +19,11 @@ package io.joynr.messaging;
  * #L%
  */
 
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.google.inject.AbstractModule;
 
-import joynr.infrastructure.ChannelUrlDirectoryProxy;
-
 public class MessagingTestModule extends AbstractModule {
-
-    @Mock
-    private ChannelUrlDirectoryProxy mockChannelUrlClient;
 
     public MessagingTestModule() {
         MockitoAnnotations.initMocks(this);
@@ -39,6 +33,5 @@ public class MessagingTestModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
-        bind(ChannelUrlDirectoryProxy.class).toInstance(mockChannelUrlClient);
     }
 }

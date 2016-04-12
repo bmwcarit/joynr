@@ -19,8 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.messaging.LocalChannelUrlDirectoryClient;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -31,19 +29,8 @@ public class DummyDiscoveryModule extends AbstractModule {
         super();
     }
 
-    public DummyDiscoveryModule(LocalChannelUrlDirectoryClient dummyChannelUrlClient,
-                                LocalCapabilitiesDirectory dummyCapDir) {
-        DummyLocalChannelUrlDirectoryClient.setInstance(dummyChannelUrlClient);
-    }
-
     @Override
     protected void configure() {
-    }
-
-    @Provides
-    @Singleton
-    LocalChannelUrlDirectoryClient provideLocalChannelUrlDirectoryClient() {
-        return DummyLocalChannelUrlDirectoryClient.getInstance();
     }
 
     @Provides

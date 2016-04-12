@@ -20,7 +20,6 @@ package io.joynr.discovery;
  */
 
 import io.joynr.runtime.AbstractJoynrApplication;
-import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.types.ProviderQos;
 
@@ -28,9 +27,6 @@ import com.google.inject.Inject;
 import com.google.inject.persist.PersistService;
 
 public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
-
-    @Inject
-    private ChannelUrlDirectoryAbstractProvider channelUrlDirectoryProvider;
 
     @Inject
     private GlobalCapabilitiesDirectoryAbstractProvider capabilitiesDirectoryProvider;
@@ -46,7 +42,6 @@ public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
     public void run() {
         ProviderQos providerQos = new ProviderQos();
         runtime.registerProvider(localDomain, capabilitiesDirectoryProvider, providerQos);
-        runtime.registerProvider(localDomain, channelUrlDirectoryProvider, providerQos);
     }
 
     @Override

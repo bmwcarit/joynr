@@ -94,7 +94,6 @@ public class LongPollingMessageReceiver implements MessageReceiver {
                     for (ChannelCreatedListener listener : channelCreatedListeners) {
                         listener.channelCreated(channelMonitor.getChannelUrl());
                     }
-                    channelMonitor.registerChannelUrl();
                     // Signal that the channel is now created for anyone blocking on the future
                     channelCreatedFuture.set(null);
                 }

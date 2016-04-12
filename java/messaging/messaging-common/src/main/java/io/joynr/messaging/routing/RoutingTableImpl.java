@@ -44,9 +44,7 @@ public class RoutingTableImpl implements RoutingTable {
 
     // CHECKSTYLE:OFF
     @Inject
-    public RoutingTableImpl(@Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
+    public RoutingTableImpl(@Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabiltitiesDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                             @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
@@ -54,7 +52,6 @@ public class RoutingTableImpl implements RoutingTable {
                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
         // CHECKSTYLE:ON
         this.put(capabilitiesDirectoryParticipantId, capabiltitiesDirectoryAddress);
-        this.put(channelUrlDirectoryParticipantId, channelUrlDirectoryAddress);
         this.put(domainAccessControllerParticipantId, domainAccessControllerAddress);
         this.put(discoveryProviderParticipantId, discoveryProviderAddress);
     }

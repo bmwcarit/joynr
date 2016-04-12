@@ -160,15 +160,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
     @Provides
     @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS)
-    Address getChannelUrlDirectoryAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
-                                          @Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId) {
-        return getAddress(discoveryDirectoryUrl, channelId, channelUrlDirectoryChannelId);
-    }
-
-    @Provides
-    @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS)
     Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
                                              @Named(MessagingPropertyKeys.CHANNELID) String channelId,

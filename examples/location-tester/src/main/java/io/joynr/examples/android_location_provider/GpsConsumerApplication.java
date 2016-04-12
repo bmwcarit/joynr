@@ -94,13 +94,12 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // JoynInjectorFactory. E.g. uncomment the following lines to set a certain joynr server
         // instance.
         // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8080/bounceproxy/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
+        // joynrConfig.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "test_consumer_local_domain");
 
         // NOTE: When running this application to test the android-location-provider, you must use
         //       the concrete hostname (and _not_ localhost) in the bounceproxy URL, since this URL
-        //       is registered in the channel URL directory and must be resolvable by the Android
+        //       is registered in the global discovery directory and must be resolvable by the Android
         //       device.
         // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://<concrete host>:8080/bounceproxy/");
 
@@ -113,12 +112,10 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // instance.
         // joynr.messaging.bounceproxyurl=http://localhost:8080/bounceproxy/
         // joynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // joynr.messaging.channelurldirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // 3) Or set them in Java System properties.
         // -Djoynr.messaging.bounceProxyUrl=http://localhost:8080/bounceproxy/
         // -Djoynr.messaging.capabilitiesDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // -Djoynr.messaging.channelUrlDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // NOTE:
         // Programmatically set configuration properties override properties set in the static persistence file.

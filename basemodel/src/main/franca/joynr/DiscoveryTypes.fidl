@@ -116,10 +116,4 @@ typeCollection {
 		<** @description: the serialized transport-middleware-specific address where the provider can be reached **>
 		String address
 	}
-
-	<** @description: the channel URL information **>
-	struct ChannelUrlInformation {
-		<** @description: a list of urls **>
-		String[] urls
-	}
 }

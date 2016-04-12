@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 import io.joynr.runtime.SystemServicesSettings;
-import joynr.infrastructure.ChannelUrlDirectoryProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 
@@ -50,7 +49,6 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     Properties persistedParticipantIds;
     private String persistenceFileName;
     private Properties joynrProperties;
-    private String channelUrlDirectoryParticipantId;
     private String capabilitiesDirectoryParticipantId;
     private String domainAccessControllerParticipantId;
     private String discoveryProviderParticipantId;
@@ -59,14 +57,12 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     @Inject
     public PropertiesFileParticipantIdStorage(@Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE) String persistenceFileName,
-                                              @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                                               @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
                                               @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
         this.joynrProperties = joynrProperties;
         this.persistenceFileName = persistenceFileName;
-        this.channelUrlDirectoryParticipantId = channelUrlDirectoryParticipantId;
         this.capabilitiesDirectoryParticipantId = capabilitiesDirectoryParticipantId;
         this.domainAccessControllerParticipantId = domainAccessControllerParticipantId;
         this.discoveryProviderParticipantId = discoveryProviderParticipantId;
@@ -96,8 +92,6 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         } else if (defaultValue != null) {
             participantId = defaultValue;
             // if no default value, generate one and save it to the persistence file
-        } else if (ChannelUrlDirectoryProvider.class.isAssignableFrom(providedInterface)) {
-            participantId = channelUrlDirectoryParticipantId;
         } else if (GlobalCapabilitiesDirectoryProvider.class.isAssignableFrom(providedInterface)) {
             participantId = capabilitiesDirectoryParticipantId;
         } else if (GlobalDomainAccessControllerProvider.class.isAssignableFrom(providedInterface)) {
