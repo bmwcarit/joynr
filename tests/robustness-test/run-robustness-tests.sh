@@ -322,7 +322,7 @@ function start_javascript_consumer {
 	echo '####################################################'
 	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -fr localStorageStorage
-	npm run-script startjasmine --robustness-test:domain=$DOMAIN --robustness-test:cmdPath=$JOYNR_SOURCE_DIR/tests/robustness-test > $ROBUSTNESS_RESULTS_DIR/consumer_javascript_$1.log 2>&1
+	npm run-script startjasmine --robustness-test:domain=$DOMAIN --robustness-test:testcase=$TESTCASE --robustness-test:cmdPath=$JOYNR_SOURCE_DIR/tests/robustness-test > $ROBUSTNESS_RESULTS_DIR/consumer_javascript_$1.log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]
@@ -407,6 +407,18 @@ then
 	echo '####################################################'
 	echo '####################################################'
 	TESTCASE="js_tests"
+	start_services $TESTCASE
+	start_cluster_controller $TESTCASE
+	start_javascript_provider
+	start_javascript_consumer $TESTCASE
+	stop_any_provider
+	stop_any_cluster_controller
+	echo '####################################################'
+	echo '####################################################'
+	echo '# RUN CHECKS WITH JAVASCRIPT and C++ PROVIDER'
+	echo '####################################################'
+	echo '####################################################'
+	TESTCASE="js_cpp_tests"
 	start_services $TESTCASE
 	start_cluster_controller $TESTCASE
 	start_cpp_provider

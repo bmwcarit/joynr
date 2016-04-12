@@ -70,7 +70,7 @@ exports.implementation = {
                         {detailMessage: "methodWithStringParameters: invalid argument stringArg"}));
             } else {
                 resolve({
-                    stringOut: "done"
+                    stringOut: "received stringArg: " + opArgs.stringArg
                 });
             }
         });
