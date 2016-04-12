@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ class CapabilitiesRegistrarTest : public ::testing::Test {
 public:
     CapabilitiesRegistrarTest() :
             mockDispatcher(nullptr),
-            messagingStubAddress(),
+            dispatcherAddress(),
             mockParticipantIdStorage(new MockParticipantIdStorage()),
             mockDiscovery(),
             capabilitiesRegistrar(nullptr),
@@ -53,9 +53,8 @@ public:
         capabilitiesRegistrar = new CapabilitiesRegistrar(
                     dispatcherList,
                     mockDiscovery,
-                    messagingStubAddress,
                     mockParticipantIdStorage,
-                    messagingStubAddress,
+                    dispatcherAddress,
                     mockMessageRouter
         );
     }
@@ -67,7 +66,7 @@ public:
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingStubAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;

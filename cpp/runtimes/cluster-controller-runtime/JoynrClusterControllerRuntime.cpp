@@ -462,7 +462,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     }
     capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
                                                                     *discoveryProxy,
-                                                                    libjoynrMessagingAddress,
                                                                     participantIdStorage,
                                                                     dispatcherAddress,
                                                                     messageRouter);

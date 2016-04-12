@@ -92,7 +92,6 @@ ShortCircuitRuntime::ShortCircuitRuntime()
     discoveryProxy = std::make_unique<DummyDiscovery>();
     capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
                                                                     *discoveryProxy,
-                                                                    libjoynrMessagingAddress,
                                                                     participantIdStorage,
                                                                     dispatcherAddress,
                                                                     messageRouter);

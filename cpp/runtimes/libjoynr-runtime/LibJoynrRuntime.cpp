@@ -170,7 +170,6 @@ void LibJoynrRuntime::init(
     discoveryProxy->setDiscoveryProxy(std::unique_ptr<joynr::system::IDiscoverySync>(proxy));
     capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
                                                                     *discoveryProxy,
-                                                                    libjoynrMessagingAddress,
                                                                     participantIdStorage,
                                                                     dispatcherAddress,
                                                                     messageRouter);
