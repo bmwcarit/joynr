@@ -20,7 +20,7 @@
  */
 
 
-var Promise = require("joynr/lib/bluebird.js").Promise;
+var Promise = require("bluebird").Promise;
 var joynr = require("joynr");
 var testbase = require("test-base");
 

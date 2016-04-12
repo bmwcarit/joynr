@@ -35,7 +35,7 @@ var ExtendedErrorEnumTc = require("../generated-javascript/joynr/interlanguagete
 var MethodWithExtendedErrorEnumErrorEnum = require("../generated-javascript/joynr/interlanguagetest/TestInterface/MethodWithExtendedErrorEnumErrorEnum.js");
 var MapStringString = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/MapStringString.js");
 
-var Promise = require("joynr/lib/bluebird.js").Promise;
+var Promise = require("bluebird").Promise;
 
 jasmine.getEnv().addReporter(new testbase.TestReporter());
 

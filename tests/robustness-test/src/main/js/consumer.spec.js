@@ -23,7 +23,7 @@
 var log = require("./logging.js").log;
 var prettyLog = require("./logging.js").prettyLog;
 
-var Promise = require("joynr/lib/bluebird.js").Promise;
+var Promise = require("bluebird").Promise;
 var spawn = require('child_process').spawn;
 
 // test results
