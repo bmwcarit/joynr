@@ -182,11 +182,11 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                         }
 
                         IMessaging messagingStub = messagingStubFactory.create(address);
-                        FailureAction failureAction = createFailureAction(message, retriesCount);
-                        messagingStub.transmit(message, failureAction);
+                        messagingStub.transmit(message, createFailureAction(message, retriesCount));
                     } catch (Throwable error) {
                         logger.error("error in scheduled message router thread: {}", error.getMessage());
-                        throw error;
+                        FailureAction failureAction = createFailureAction(message, retriesCount);
+                        failureAction.execute(error);
                     }
                 }
             },
