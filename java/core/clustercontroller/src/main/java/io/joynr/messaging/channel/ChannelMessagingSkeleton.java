@@ -19,7 +19,6 @@ package io.joynr.messaging.channel;
  * #L%
  */
 
-import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.FailureAction;
@@ -42,7 +41,7 @@ import com.google.inject.Inject;
 public class ChannelMessagingSkeleton implements IMessagingSkeleton {
     private final MessageRouter messageRouter;
 
-    private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChannelMessagingSkeleton.class);
 
     private MessageReceiver messageReceiver;
 
@@ -59,7 +58,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
         try {
             messageRouter.route(message);
         } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException exception) {
-            logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader());
+            logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader(), exception);
             failureAction.execute(exception);
         }
     }
