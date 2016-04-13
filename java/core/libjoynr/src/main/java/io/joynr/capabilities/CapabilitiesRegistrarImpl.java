@@ -29,6 +29,7 @@ import com.google.inject.Singleton;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
@@ -52,12 +53,15 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     private Address libjoynrMessagingAddress;
     private RequestCallerDirectory requestCallerDirectory;
 
+    private long defaultExpiryTimeMs;
+
     @Inject
     public CapabilitiesRegistrarImpl(DiscoveryAsync localDiscoveryAggregator,
                                      RequestCallerFactory requestCallerFactory,
                                      MessageRouter messageRouter,
                                      RequestCallerDirectory requestCallerDirectory,
                                      ParticipantIdStorage participantIdStorage,
+                                     @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) long defaultExpiryTimeMs,
                                      @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
         super();
         this.localDiscoveryAggregator = localDiscoveryAggregator;
@@ -65,6 +69,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         this.messageRouter = messageRouter;
         this.requestCallerDirectory = requestCallerDirectory;
         this.participantIdStorage = participantIdStorage;
+        this.defaultExpiryTimeMs = defaultExpiryTimeMs;
         this.libjoynrMessagingAddress = dispatcherAddress;
     }
 
@@ -82,7 +87,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                            provider.getInterfaceName(),
                                                            participantId,
                                                            providerQos,
-                                                           System.currentTimeMillis());
+                                                           System.currentTimeMillis(),
+                                                           System.currentTimeMillis() + defaultExpiryTimeMs);
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);

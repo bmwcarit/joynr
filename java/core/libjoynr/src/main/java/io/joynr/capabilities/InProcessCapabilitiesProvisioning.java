@@ -35,6 +35,7 @@ import java.util.List;
 
 public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvisioning {
 
+    private static final long NO_EXPIRY = Long.MAX_VALUE;
     private String discoveryProviderParticipantId;
     private String systemServicesDomain;
     private Address discoveryProviderAddress;
@@ -60,6 +61,7 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
                                                                     discoveryProviderParticipantId,
                                                                     providerQos,
                                                                     System.currentTimeMillis(),
+                                                                    NO_EXPIRY,
                                                                     discoveryProviderAddress));
 
         return provisionedList;

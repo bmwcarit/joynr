@@ -110,6 +110,8 @@ typeCollection {
 		ProviderQos qos
 		<** @description: the date in millis since epoch when the source for this provider last contacted the directory **>
 		Int64 lastSeenDateMs
+		<** @description: the date in millis since epoch when this entry can be purged from the directory and caches **>
+		Int64 expiryDateMs
 	}
 
 	struct GlobalDiscoveryEntry extends DiscoveryEntry {

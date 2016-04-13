@@ -77,6 +77,8 @@ import com.google.inject.name.Names;
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryTest {
     private static final String TEST_URL = "http://testUrl";
+    private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
+    private Long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
     @Mock
     JoynrRuntime runtime;
     @Mock
@@ -164,13 +166,15 @@ public class LocalCapabilitiesDirectoryTest {
                                             TestInterface.INTERFACE_NAME,
                                             participantId,
                                             providerQos,
-                                            System.currentTimeMillis());
+                                            System.currentTimeMillis(),
+                                            expiryDateMs);
         globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
                                                         domain,
                                                         TestInterface.INTERFACE_NAME,
                                                         participantId,
                                                         providerQos,
                                                         System.currentTimeMillis(),
+                                                        expiryDateMs,
                                                         channelAddressSerialized);
     }
 
@@ -197,6 +201,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                         "participantId",
                                                         providerQos,
                                                         System.currentTimeMillis(),
+                                                        expiryDateMs,
                                                         channelAddressSerialized);
 
         localCapabilitiesDirectory.add(discoveryEntry);
@@ -219,13 +224,15 @@ public class LocalCapabilitiesDirectoryTest {
                                                                  TestInterface.INTERFACE_NAME,
                                                                  participantId,
                                                                  providerQos,
-                                                                 System.currentTimeMillis());
+                                                                 System.currentTimeMillis(),
+                                                                 expiryDateMs);
         globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
                                                         domain,
                                                         TestInterface.INTERFACE_NAME,
                                                         participantId,
                                                         providerQos,
                                                         System.currentTimeMillis(),
+                                                        expiryDateMs,
                                                         channelAddressSerialized);
 
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
@@ -267,13 +274,15 @@ public class LocalCapabilitiesDirectoryTest {
                                                                  TestInterface.INTERFACE_NAME,
                                                                  participantId,
                                                                  providerQos,
-                                                                 System.currentTimeMillis());
+                                                                 System.currentTimeMillis(),
+                                                                 expiryDateMs);
         globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
                                                         domain,
                                                         TestInterface.INTERFACE_NAME,
                                                         participantId,
                                                         providerQos,
                                                         System.currentTimeMillis(),
+                                                        expiryDateMs,
                                                         channelAddressSerialized);
 
         Mockito.doAnswer(createAddAnswerWithError())
@@ -381,7 +390,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
-                                                           System.currentTimeMillis());
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs);
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
@@ -414,6 +424,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                 "globalParticipant",
                                                                 new ProviderQos(),
                                                                 System.currentTimeMillis(),
+                                                                expiryDateMs,
                                                                 channelAddressSerialized);
         caps.add(capInfo);
         Mockito.doAnswer(createAnswer(caps))
@@ -498,7 +509,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
-                                                           System.currentTimeMillis());
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs);
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
@@ -517,6 +529,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                 "globalParticipant",
                                                                 new ProviderQos(),
                                                                 System.currentTimeMillis(),
+                                                                expiryDateMs,
                                                                 channelAddressSerialized);
         caps.add(capInfo);
         Mockito.doAnswer(createAnswer(caps))
@@ -579,7 +592,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                    interfaceName1,
                                                                    participantId1,
                                                                    providerQos,
-                                                                   System.currentTimeMillis());
+                                                                   System.currentTimeMillis(),
+                                                                   expiryDateMs);
         localCapabilitiesDirectory.add(expectedDiscoveryEntry);
         DiscoveryEntry retrievedCapabilityEntry = localCapabilitiesDirectory.lookup(participantId1, discoveryQos);
         Assert.assertEquals(expectedDiscoveryEntry, retrievedCapabilityEntry);
@@ -618,7 +632,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
-                                                           System.currentTimeMillis());
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs);
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
@@ -637,6 +652,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                 "globalParticipant",
                                                                 new ProviderQos(),
                                                                 System.currentTimeMillis(),
+                                                                expiryDateMs,
                                                                 channelAddressSerialized);
         caps.add(capInfo);
         Mockito.doAnswer(createAnswer(caps))

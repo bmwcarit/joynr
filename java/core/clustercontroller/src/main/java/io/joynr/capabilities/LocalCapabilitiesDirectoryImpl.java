@@ -70,7 +70,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         TransportReadyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
-
+    private static final long NO_EXPIRY = Long.MAX_VALUE;
     private DiscoveryEntryStore localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
     private DiscoveryEntryStore globalDiscoveryEntryCache;
@@ -124,12 +124,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.objectMapper = objectMapper;
+
         this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
                                                                                    discoveryDirectoriesDomain,
                                                                                    GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                                                                    capabilitiesDirectoryParticipantId,
                                                                                    new ProviderQos(),
                                                                                    System.currentTimeMillis(),
+                                                                                   NO_EXPIRY,
                                                                                    capabiltitiesDirectoryAddress));
         this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
                                                                                    discoveryDirectoriesDomain,
@@ -137,6 +139,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                    domainAccessControllerParticipantId,
                                                                                    new ProviderQos(),
                                                                                    System.currentTimeMillis(),
+                                                                                   NO_EXPIRY,
                                                                                    domainAccessControllerAddress));
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(proxyBuilderFactory,

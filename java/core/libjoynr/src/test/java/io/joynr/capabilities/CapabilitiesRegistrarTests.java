@@ -25,6 +25,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,6 +51,8 @@ import joynr.types.Version;
 @RunWith(MockitoJUnitRunner.class)
 public class CapabilitiesRegistrarTests {
 
+    private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
+    private final long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
     CapabilitiesRegistrar registrar;
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
@@ -96,6 +100,7 @@ public class CapabilitiesRegistrarTests {
                                                   messageRouter,
                                                   requestCallerDirectory,
                                                   participantIdStorage,
+                                                  ONE_DAY_IN_MS,
                                                   new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
     }
 
@@ -115,7 +120,8 @@ public class CapabilitiesRegistrarTests {
                                                                    TestInterface.INTERFACE_NAME,
                                                                    participantId,
                                                                    providerQos,
-                                                                   System.currentTimeMillis())));
+                                                                   System.currentTimeMillis(),
+                                                                   expiryDateMs)));
 
         verify(requestCallerFactory).create(provider);
 

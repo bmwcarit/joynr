@@ -44,6 +44,8 @@ public class CapabilitiesDirectoryTest {
 
     private static final CustomParameter[] CUSTOM_PARAMETERS = {};
 
+    private static final long ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
 
     String channelId = "capabilitiesProvider";
@@ -75,12 +77,14 @@ public class CapabilitiesDirectoryTest {
         String participantId3 = "testParticipantId3_" + UUID.randomUUID().toString();
 
         long lastSeenDateMs = System.currentTimeMillis();
+        long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
         disoveryEntry1 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                   domain,
                                                   interface1,
                                                   participantId1,
                                                   providerQos,
                                                   lastSeenDateMs,
+                                                  expiryDateMs,
                                                   channelAddresSerialized);
         discoveryEntry2 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                    domain,
@@ -88,6 +92,7 @@ public class CapabilitiesDirectoryTest {
                                                    participantId2,
                                                    providerQos,
                                                    lastSeenDateMs,
+                                                   expiryDateMs,
                                                    channelAddresSerialized);
         dicoveryEntry3 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                   domain,
@@ -95,6 +100,7 @@ public class CapabilitiesDirectoryTest {
                                                   participantId3,
                                                   providerQos,
                                                   lastSeenDateMs,
+                                                  expiryDateMs,
                                                   channelAddresSerialized);
 
     }

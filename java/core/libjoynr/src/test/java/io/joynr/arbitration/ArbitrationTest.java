@@ -53,6 +53,7 @@ import joynr.types.Version;
 public class ArbitrationTest {
 
     private static final long ARBITRATION_TIMEOUT = 1000;
+    private static final Long NO_EXPIRY = Long.MAX_VALUE;
     private String domain = "testDomain";
     private static String interfaceName = "testInterface";
     private DiscoveryQos discoveryQos;
@@ -104,7 +105,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
         ProviderQos providerQos2 = new ProviderQos();
         CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
         providerQos2.setCustomParameters(qosParameters2);
@@ -114,7 +116,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -149,7 +152,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
         ProviderQos providerQos2 = new ProviderQos();
         CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
         providerQos2.setCustomParameters(qosParameters2);
@@ -159,7 +163,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
 
         int discoveryTimeout = 0; // use minimal timeout to prevent restarting arbitration
         discoveryQos = new DiscoveryQos(discoveryTimeout, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
@@ -200,7 +205,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
 
         // Create a capability entry for a provider with the correct keyword and that also supports onChange subscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -214,7 +220,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "expectedParticipantId",
                                                 providerQos2,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -248,7 +255,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
         long lessPrior = 1;
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(lessPrior);
@@ -258,7 +266,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
         long negativePriority = -10;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
@@ -271,7 +280,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "thirdParticipantId",
                                                 providerQos3,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -306,7 +316,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(Long.MIN_VALUE);
 
@@ -315,7 +326,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
         long negativePriority = Long.MIN_VALUE;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
@@ -325,7 +337,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "thirdParticipantId",
                                                 providerQos3,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -362,7 +375,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -377,7 +391,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos3 = new ProviderQos();
@@ -392,7 +407,8 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "thirdParticipantId",
                                                 providerQos3,
-                                                System.currentTimeMillis()));
+                                                System.currentTimeMillis(),
+                                                NO_EXPIRY));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         discoveryQos.setProviderMustSupportOnChange(true);
@@ -426,7 +442,8 @@ public class ArbitrationTest {
                                                            TestInterface.INTERFACE_NAME,
                                                            expectedParticipantId,
                                                            providerQos,
-                                                           System.currentTimeMillis());
+                                                           System.currentTimeMillis(),
+                                                           NO_EXPIRY);
         capabilitiesList.add(discoveryEntry);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);

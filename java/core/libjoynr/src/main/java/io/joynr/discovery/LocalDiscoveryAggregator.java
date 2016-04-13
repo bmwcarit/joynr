@@ -43,6 +43,7 @@ import joynr.types.Version;
 
 public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
+    private static final long NO_EXPIRY = Long.MAX_VALUE;
     private HashMap<String, DiscoveryEntry> provisionedDiscoveryEntries = new HashMap<>();
     private DiscoveryProxy discoveryProxy;
 
@@ -58,7 +59,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                            DiscoveryProvider.INTERFACE_NAME,
                                                            discoveryProviderParticipantId,
                                                            providerQos,
-                                                           System.currentTimeMillis()));
+                                                           System.currentTimeMillis(),
+                                                           NO_EXPIRY));
         //provision routing provider to prevent lookup via discovery proxy during startup.
         provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
                                         new DiscoveryEntry(new Version(),
@@ -66,7 +68,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                            Routing.INTERFACE_NAME,
                                                            routingProviderParticipantId,
                                                            providerQos,
-                                                           System.currentTimeMillis()));
+                                                           System.currentTimeMillis(),
+                                                           NO_EXPIRY));
     }
 
     public void setDiscoveryProxy(DiscoveryProxy discoveryProxy) {

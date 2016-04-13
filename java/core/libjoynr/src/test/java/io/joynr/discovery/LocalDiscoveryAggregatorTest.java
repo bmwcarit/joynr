@@ -43,6 +43,8 @@ import joynr.types.Version;
 @RunWith(MockitoJUnitRunner.class)
 public class LocalDiscoveryAggregatorTest {
 
+    private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
+    private Long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
     private String systemServicesDomain;
     private String discoveryProviderParticipantId;
     private LocalDiscoveryAggregator localDiscoveryAggregator;
@@ -74,7 +76,8 @@ public class LocalDiscoveryAggregatorTest {
                                                     Discovery.INTERFACE_NAME,
                                                     discoveryProviderParticipantId,
                                                     providerQos,
-                                                    System.currentTimeMillis());
+                                                    System.currentTimeMillis(),
+                                                    expiryDateMs);
 
     }
 
@@ -85,7 +88,8 @@ public class LocalDiscoveryAggregatorTest {
                                                            "anyInterface",
                                                            "anyParticipant",
                                                            new ProviderQos(),
-                                                           System.currentTimeMillis());
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs);
         localDiscoveryAggregator.add(addCallback, discoveryEntry);
         Mockito.verify(discoveryProxyMock, Mockito.times(1)).add(Mockito.any(Callback.class),
                                                                  Mockito.eq(discoveryEntry));
@@ -127,7 +131,8 @@ public class LocalDiscoveryAggregatorTest {
                                                            "anyInterface",
                                                            "anyParticipant",
                                                            new ProviderQos(),
-                                                           System.currentTimeMillis());
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs);
         localDiscoveryAggregator.add(addCallback, discoveryEntry);
         Mockito.verify(addCallback, Mockito.never()).resolve();
 

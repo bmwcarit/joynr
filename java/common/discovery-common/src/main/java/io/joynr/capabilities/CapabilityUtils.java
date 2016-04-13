@@ -44,7 +44,8 @@ public class CapabilityUtils {
                                   globalDiscoveryEntry.getInterfaceName(),
                                   globalDiscoveryEntry.getParticipantId(),
                                   globalDiscoveryEntry.getQos(),
-                                  System.currentTimeMillis());
+                                  System.currentTimeMillis(),
+                                  globalDiscoveryEntry.getExpiryDateMs());
     }
 
     public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(String domain,
@@ -52,6 +53,7 @@ public class CapabilityUtils {
                                                                String participantId,
                                                                ProviderQos qos,
                                                                Long lastSeenDateMs,
+                                                               Long expiryDateMs,
                                                                Address address) {
         return newGlobalDiscoveryEntry(new Version(),
                                        domain,
@@ -59,22 +61,27 @@ public class CapabilityUtils {
                                        participantId,
                                        qos,
                                        lastSeenDateMs,
+                                       expiryDateMs,
                                        address);
     }
 
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(Version providerVesion,
                                                                String domain,
                                                                String interfaceName,
                                                                String participantId,
                                                                ProviderQos qos,
                                                                Long lastSeenDateMs,
+                                                               Long expiryDateMs,
                                                                Address address) {
+        // CHECKSTYLE ON
         return new GlobalDiscoveryEntry(providerVesion,
                                         domain,
                                         interfaceName,
                                         participantId,
                                         qos,
                                         lastSeenDateMs,
+                                        expiryDateMs,
                                         serializeAddress(address));
     }
 
@@ -87,6 +94,7 @@ public class CapabilityUtils {
                                         discoveryEntry.getParticipantId(),
                                         discoveryEntry.getQos(),
                                         System.currentTimeMillis(),
+                                        discoveryEntry.getExpiryDateMs(),
                                         serializeAddress(globalAddress));
     }
 

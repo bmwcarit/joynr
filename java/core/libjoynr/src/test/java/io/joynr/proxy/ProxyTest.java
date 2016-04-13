@@ -93,6 +93,7 @@ import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadca
 import joynr.vehicle.NavigationProxy;
 
 public class ProxyTest {
+    private static final int ONE_MINUTE_IN_MS = 60 * 1000;
     private static final long MAX_TTL_MS = 2592000000L;
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
@@ -188,7 +189,8 @@ public class ProxyTest {
                                                                    TestInterface.INTERFACE_NAME,
                                                                    toParticipantId,
                                                                    new ProviderQos(),
-                                                                   System.currentTimeMillis());
+                                                                   System.currentTimeMillis(),
+                                                                   System.currentTimeMillis() + ONE_MINUTE_IN_MS);
 
                 DiscoveryEntry[] fakeCapabilitiesResult = { discoveryEntry };
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);

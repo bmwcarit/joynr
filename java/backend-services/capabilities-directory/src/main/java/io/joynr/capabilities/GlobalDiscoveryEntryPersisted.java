@@ -49,9 +49,10 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
                                   String participantId,
                                   ProviderQos qos,
                                   long lastSeenDateMs,
+                                  long expiryDateMs,
                                   String address) {
         // CHECKSTYLE ON
-        super(providerVersion, domain, interfaceName, participantId, qos, lastSeenDateMs, address);
+        super(providerVersion, domain, interfaceName, participantId, qos, lastSeenDateMs, expiryDateMs, address);
     }
 
     @Override
@@ -84,6 +85,12 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
     @Column
     public Long getLastSeenDateMs() {
         return super.getLastSeenDateMs();
+    }
+
+    @Override
+    @Column
+    public Long getExpiryDateMs() {
+        return super.getExpiryDateMs();
     }
 
     @Override

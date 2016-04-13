@@ -43,6 +43,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS = "joynr.messaging.capabilitiesdirectoryaddress";
     public static final String PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN = "joynr.messaging.discoverydirectoriesdomain";
     public static final String PROPERTY_DISCOVERY_REQUEST_TIMEOUT = "joynr.discovery.requesttimeout";
+    public static final String PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS = "joynr.discovery.provider.defaultexpirytimems";
 
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollerparticipantid";
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID = "joynr.messaging.domainaccesscontrollerchannelid";

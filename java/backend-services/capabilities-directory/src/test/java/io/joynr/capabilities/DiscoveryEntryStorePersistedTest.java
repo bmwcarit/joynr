@@ -160,6 +160,7 @@ public class DiscoveryEntryStorePersistedTest {
                                                                                                                          throws Exception {
         ProviderQos qos = new ProviderQos();
         long lastSeenDateMs = 123L;
+        long expiryDateMs = Long.MAX_VALUE;
         Address address = new MqttAddress("brokerUri", "topic");
         String addressSeialized = new ObjectMapper().writeValueAsString(address);
         GlobalDiscoveryEntryPersisted discoveryEntry = new GlobalDiscoveryEntryPersisted(new Version(47, 11),
@@ -168,6 +169,7 @@ public class DiscoveryEntryStorePersistedTest {
                                                                                          participantId,
                                                                                          qos,
                                                                                          lastSeenDateMs,
+                                                                                         expiryDateMs,
                                                                                          addressSeialized);
         return discoveryEntry;
     }

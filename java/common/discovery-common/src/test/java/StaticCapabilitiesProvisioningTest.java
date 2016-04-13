@@ -71,12 +71,14 @@ public class StaticCapabilitiesProvisioningTest {
         String participantId = "particpantId";
         ProviderQos qos = new ProviderQos();
         Long lastSeenDateMs = 0L;
+        Long expiryDateMs = 0L;
         Address address = new MqttAddress("brokerUri", "topic");
         GlobalDiscoveryEntry entry1 = CapabilityUtils.newGlobalDiscoveryEntry("domain1",
                                                                               "interfaceName1",
                                                                               participantId,
                                                                               qos,
                                                                               lastSeenDateMs,
+                                                                              expiryDateMs,
                                                                               address);
 
         GlobalDiscoveryEntry entry2 = CapabilityUtils.newGlobalDiscoveryEntry("domain2",
@@ -84,6 +86,7 @@ public class StaticCapabilitiesProvisioningTest {
                                                                               participantId,
                                                                               qos,
                                                                               lastSeenDateMs,
+                                                                              expiryDateMs,
                                                                               address);
         discoveryEntries.add(entry1);
         discoveryEntries.add(entry2);
@@ -106,5 +109,4 @@ public class StaticCapabilitiesProvisioningTest {
         assertThat(provisionedDiscoveryEntries, hasItem(entry2));
 
     }
-
 }

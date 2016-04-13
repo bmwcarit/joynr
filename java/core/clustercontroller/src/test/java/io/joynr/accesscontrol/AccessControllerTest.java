@@ -55,6 +55,8 @@ import com.google.inject.Injector;
 @RunWith(MockitoJUnitRunner.class)
 public class AccessControllerTest {
 
+    private static final int ONE_MINUTE_IN_MS = 60 * 1000;
+
     @Mock
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
 
@@ -106,7 +108,8 @@ public class AccessControllerTest {
                                                            testInterface,
                                                            toParticipantId,
                                                            new ProviderQos(),
-                                                           System.currentTimeMillis());
+                                                           System.currentTimeMillis(),
+                                                           System.currentTimeMillis() + ONE_MINUTE_IN_MS);
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(discoveryEntry);
     }
 

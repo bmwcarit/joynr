@@ -102,10 +102,14 @@ import com.google.inject.Injector;
  * ensure it is transfered and one with a very low TTL which should be dropped.
  */
 public class SerializationTest {
+    private static final int ONE_MINUTE_IN_MS = 60 * 1000;
+
     private static final Logger LOG = LoggerFactory.getLogger(SerializationTest.class);
 
     private ObjectMapper objectMapper;
     private Injector injector;
+
+    private Long expiryDateMs = System.currentTimeMillis() + ONE_MINUTE_IN_MS;
 
     public static final String interfaceName = "interfaceName";
 
@@ -374,6 +378,7 @@ public class SerializationTest {
                                                                            "participantId",
                                                                            qos,
                                                                            System.currentTimeMillis(),
+                                                                           expiryDateMs,
                                                                            channelAddress) };
 
         String writeValueAsString = null;
@@ -391,6 +396,7 @@ public class SerializationTest {
                                                                              "participantId",
                                                                              qos,
                                                                              System.currentTimeMillis(),
+                                                                             expiryDateMs,
                                                                              channelAddress);
         writeValueAsString = objectMapper.writeValueAsString(globalDiscoveryEntry);
         System.err.println(writeValueAsString);
@@ -403,7 +409,7 @@ public class SerializationTest {
     public void serializeJoynrMessageTest() throws Exception {
 
         ExpiryDate expirationDate = ExpiryDate.fromRelativeTtl(1000);
-        String payload = "/67589ß8zhkbvöäüÜÖLÖLkjöjhljvhl汉字/漢字";
+        String payload = "/67589??8zhkbv??????????L??Lkj??jhljvhl??????/??????";
         JoynrMessage message = new JoynrMessage();
         String type = "TESTTYPE";
         message.setType(type);
@@ -638,7 +644,8 @@ public class SerializationTest {
                                                                                "interface",
                                                                                "participantId",
                                                                                new ProviderQos(),
-                                                                               123L,
+                                                                               System.currentTimeMillis(),
+                                                                               expiryDateMs,
                                                                                "channelId") };
         Reply reply = new Reply(UUID.randomUUID().toString(), response);
 
@@ -1201,6 +1208,7 @@ public class SerializationTest {
                                                                              "participantId",
                                                                              new ProviderQos(),
                                                                              System.currentTimeMillis(),
+                                                                             expiryDateMs,
                                                                              objectMapper.writeValueAsString(mqttAddress));
 
         String serializedGlobalDiscoveryEntry = objectMapper.writeValueAsString(globalDiscoveryEntry);
