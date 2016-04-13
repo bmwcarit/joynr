@@ -1,4 +1,4 @@
-package io.joynr.messaging.http;
+package io.joynr.messaging.routing;
 
 /*
  * #%L
@@ -19,17 +19,10 @@ package io.joynr.messaging.http;
  * #L%
  */
 
-import io.joynr.messaging.routing.GlobalAddressFactory;
-import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.Address;
 
-public abstract class HttpGlobalAddressFactory extends GlobalAddressFactory<ChannelAddress> {
+public interface TransportReadyListener {
 
-    @Override
-    public ChannelAddress create() {
-        return new ChannelAddress(getMessagingEndpointUrl(), getMyChannelId());
-    }
+    void transportReady(Address address);
 
-    protected abstract String getMyChannelId();
-
-    protected abstract String getMessagingEndpointUrl();
 }

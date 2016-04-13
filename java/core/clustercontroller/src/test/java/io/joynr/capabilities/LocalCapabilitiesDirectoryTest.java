@@ -36,6 +36,7 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
+import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrRuntime;
 
 import java.util.ArrayList;
@@ -144,8 +145,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         domainAccessControllerParticipantId,
                                                                         new ChannelAddress(TEST_URL,
                                                                                            domainAccessControllerChannelId),
-                                                                        injector.getProvider(Key.get(Address.class,
-                                                                                                     Names.named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS))),
+                                                                        injector.getInstance(GlobalAddressProvider.class),
                                                                         localDiscoveryEntryStoreMock,
                                                                         globalDiscoveryEntryCacheMock,
                                                                         messageRouter,

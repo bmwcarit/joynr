@@ -27,6 +27,7 @@ import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.Callback;
 import joynr.JoynrMessage;
 import joynr.system.RoutingProxy;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import org.junit.Before;
@@ -81,6 +82,7 @@ public class ChildMessageRouterTest {
 
         Mockito.when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
         Mockito.when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
+        Mockito.when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
         Mockito.when(parentAddress.getChannelId()).thenReturn("MessageRouterImplTestChannel");
 
     }

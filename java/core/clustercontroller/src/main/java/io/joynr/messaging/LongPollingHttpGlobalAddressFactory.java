@@ -19,20 +19,24 @@ package io.joynr.messaging;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.List;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.messaging.http.HttpGlobalAddressFactory;
 import io.joynr.messaging.http.operation.ChannelCreatedListener;
 import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
+import io.joynr.messaging.routing.TransportReadyListener;
 
 @Singleton
 public class LongPollingHttpGlobalAddressFactory extends HttpGlobalAddressFactory implements ChannelCreatedListener {
 
+    private static final String SUPPORTED_TRANSPORT_LONGPOLLING = "longpolling";
     private String myChannelId;
     private String messagingEndpointUrl;
+    private List<TransportReadyListener> addressReadyListeners = new ArrayList<TransportReadyListener>();
 
     @Inject
     public LongPollingHttpGlobalAddressFactory(@Named(MessagingPropertyKeys.CHANNELID) String myChannelId,
@@ -47,16 +51,35 @@ public class LongPollingHttpGlobalAddressFactory extends HttpGlobalAddressFactor
     }
 
     @Override
-    protected String getMessagingEndpointUrl() {
+    protected synchronized String getMessagingEndpointUrl() {
         if (messagingEndpointUrl == null) {
-            throw new JoynrDelayMessageException("bounceproxy channel for long polling not yet created");
+            throw new IllegalStateException("bounceproxy channel for long polling not yet created");
         }
         return messagingEndpointUrl;
     }
 
     @Override
-    public void channelCreated(String channelUrl) {
-        this.messagingEndpointUrl = channelUrl;
+    public boolean supportsTransport(String transport) {
+        return SUPPORTED_TRANSPORT_LONGPOLLING.equalsIgnoreCase(transport);
     }
 
+    @Override
+    public synchronized void registerGlobalAddressReady(final TransportReadyListener listener) {
+        addressReadyListeners.add(listener);
+        if (messagingEndpointUrl != null) {
+            listener.transportReady(create());
+        }
+    }
+
+    protected synchronized void setMessagingEndpointUrl(String messagingEndpointUrl) {
+        this.messagingEndpointUrl = messagingEndpointUrl;
+    }
+
+    @Override
+    public synchronized void channelCreated(String messagingEndpointUrl) {
+        setMessagingEndpointUrl(messagingEndpointUrl);
+        for (TransportReadyListener listener : addressReadyListeners) {
+            listener.transportReady(create());
+        }
+    }
 }

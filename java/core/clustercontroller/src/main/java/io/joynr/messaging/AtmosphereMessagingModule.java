@@ -42,8 +42,10 @@ public class AtmosphereMessagingModule extends AbstractModule {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
         messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeleton.class);
 
-        Multibinder<GlobalAddressFactory> globalAddresses;
-        globalAddresses = Multibinder.newSetBinder(binder(), GlobalAddressFactory.class);
+        Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
+        globalAddresses = Multibinder.newSetBinder(binder(),
+                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+                                                   });
         globalAddresses.addBinding().to(LongPollingHttpGlobalAddressFactory.class);
 
         bind(MessageReceiver.class).to(LongPollingMessageReceiver.class).asEagerSingleton();

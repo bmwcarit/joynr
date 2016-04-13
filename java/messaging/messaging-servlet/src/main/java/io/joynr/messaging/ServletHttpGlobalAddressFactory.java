@@ -27,6 +27,7 @@ import io.joynr.messaging.http.HttpGlobalAddressFactory;
 
 public class ServletHttpGlobalAddressFactory extends HttpGlobalAddressFactory {
 
+    private static final String SUPPORTED_TRANSPORT_SERVLET = "servlet";
     private String hostPath;
     private String contextRoot;
     private String myChannelId;
@@ -53,5 +54,10 @@ public class ServletHttpGlobalAddressFactory extends HttpGlobalAddressFactory {
     @Override
     protected String getMessagingEndpointUrl() {
         return hostPath + contextRoot + "/channels/" + myChannelId + "/";
+    }
+
+    @Override
+    public boolean supportsTransport(String transport) {
+        return SUPPORTED_TRANSPORT_SERVLET.equalsIgnoreCase(transport);
     }
 }

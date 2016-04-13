@@ -38,6 +38,7 @@ import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.CapabilitiesRegistrarImpl;
@@ -110,16 +111,14 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
         messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessLibjoynrMessagingSkeleton.class);
 
-        // default implementation with a dummy address holder: no global communication. other address types must be
-        // added to the multibinder to support global addressing
-        Multibinder<GlobalAddressFactory> globalAddresses;
-        globalAddresses = Multibinder.newSetBinder(binder(), GlobalAddressFactory.class);
-        globalAddresses.addBinding().toInstance(new GlobalAddressFactory() {
-            @Override
-            public Address create() {
-                return new Address();
-            }
-        });
+        // other address types must be added to the multibinder to support global addressing. Created here to make
+        // sure the Set exists, even if empty.
+        @SuppressWarnings("unused")
+        @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE")
+        Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
+        globalAddresses = Multibinder.newSetBinder(binder(),
+                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+                                                   });
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
         bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);

@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.joynr.arbitration.ArbitrationStrategy;
@@ -45,13 +46,14 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
-import io.joynr.runtime.ClusterControllerRuntimeModule;
+import io.joynr.runtime.GlobalAddressProvider;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
@@ -64,7 +66,8 @@ import joynr.types.ProviderScope;
 import joynr.types.Version;
 
 @Singleton
-public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory {
+public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory implements
+        TransportReadyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
@@ -75,9 +78,32 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private MessageRouter messageRouter;
 
-    private Provider<Address> globalAddressProvider;
+    private GlobalAddressProvider globalAddressProvider;
 
     private ObjectMapper objectMapper;
+
+    private Address globalAddress;
+    private Object globalAddressLock = new Object();
+
+    private List<QueuedDiscoveryEntry> queuedDiscoveryEntries = new ArrayList<QueuedDiscoveryEntry>();
+
+    static class QueuedDiscoveryEntry {
+        private DiscoveryEntry discoveryEntry;
+        private DeferredVoid deferred;
+
+        public QueuedDiscoveryEntry(DiscoveryEntry discoveryEntry, DeferredVoid deferred) {
+            this.discoveryEntry = discoveryEntry;
+            this.deferred = deferred;
+        }
+
+        public DiscoveryEntry getDiscoveryEntry() {
+            return discoveryEntry;
+        }
+
+        public DeferredVoid getDeferred() {
+            return deferred;
+        }
+    }
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -86,7 +112,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabiltitiesDirectoryAddress,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                                          @Named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS) Provider<Address> globalAddressProvider,
+                                          GlobalAddressProvider globalAddressProvider,
                                           DiscoveryEntryStore localDiscoveryEntryStore,
                                           DiscoveryEntryStore globalDiscoveryEntryCache,
                                           MessageRouter messageRouter,
@@ -140,37 +166,53 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             notifyCapabilityAdded(discoveryEntry);
         }
 
-        // Register globally
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
-
-            final GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
-                                                                                                           globalAddressProvider.get());
-            if (globalDiscoveryEntry != null) {
-
-                logger.info("starting global registration for " + globalDiscoveryEntry.getDomain() + " : "
-                        + globalDiscoveryEntry.getInterfaceName());
-
-                globalCapabilitiesClient.add(new Callback<Void>() {
-
-                    @Override
-                    public void onSuccess(Void nothing) {
-                        logger.info("global registration for " + globalDiscoveryEntry.getDomain() + " : "
-                                + globalDiscoveryEntry.getInterfaceName() + " completed");
-                        deferred.resolve();
-                        globalDiscoveryEntryCache.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
-                                                                                            globalAddressProvider.get()));
-                    }
-
-                    @Override
-                    public void onFailure(JoynrRuntimeException exception) {
-                        deferred.reject(new ProviderRuntimeException(exception.toString()));
-                    }
-                }, globalDiscoveryEntry);
-            }
+            registerGlobal(discoveryEntry, deferred);
         } else {
             deferred.resolve();
         }
         return new Promise<>(deferred);
+    }
+
+    private void registerGlobal(final DiscoveryEntry discoveryEntry, final DeferredVoid deferred) {
+        synchronized (globalAddressLock) {
+            try {
+                globalAddress = globalAddressProvider.get();
+            } catch (Exception e) {
+                globalAddress = null;
+            }
+
+            if (globalAddress == null) {
+                queuedDiscoveryEntries.add(new QueuedDiscoveryEntry(discoveryEntry, deferred));
+                globalAddressProvider.registerGlobalAddressesReadyListener(this);
+                return;
+            }
+        }
+
+        final GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
+                                                                                                              globalAddress);
+        if (globalDiscoveryEntry != null) {
+
+            logger.info("starting global registration for " + globalDiscoveryEntry.getDomain() + " : "
+                    + globalDiscoveryEntry.getInterfaceName());
+
+            globalCapabilitiesClient.add(new Callback<Void>() {
+
+                @Override
+                public void onSuccess(Void nothing) {
+                    logger.info("global registration for " + globalDiscoveryEntry.getDomain() + " : "
+                            + globalDiscoveryEntry.getInterfaceName() + " completed");
+                    deferred.resolve();
+                    globalDiscoveryEntryCache.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
+                                                                                                      globalAddress));
+                }
+
+                @Override
+                public void onFailure(JoynrRuntimeException exception) {
+                    deferred.reject(new ProviderRuntimeException(exception.toString()));
+                }
+            }, globalDiscoveryEntry);
+        }
     }
 
     @Override
@@ -512,5 +554,15 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     @Override
     public Set<DiscoveryEntry> listLocalCapabilities() {
         return localDiscoveryEntryStore.getAllDiscoveryEntries();
+    }
+
+    @Override
+    public void transportReady(@Nonnull Address address) {
+        synchronized (globalAddressLock) {
+            globalAddress = address;
+        }
+        for (QueuedDiscoveryEntry queuedDiscoveryEntry : queuedDiscoveryEntries) {
+            registerGlobal(queuedDiscoveryEntry.getDiscoveryEntry(), queuedDiscoveryEntry.getDeferred());
+        }
     }
 }

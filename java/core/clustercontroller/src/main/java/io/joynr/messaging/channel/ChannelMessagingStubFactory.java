@@ -26,6 +26,7 @@ import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.http.HttpGlobalAddressFactory;
 import io.joynr.messaging.http.HttpMessageSender;
 import io.joynr.messaging.routing.GlobalAddressFactory;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
 /**
@@ -35,18 +36,18 @@ public class ChannelMessagingStubFactory extends
         AbstractMiddlewareMessagingStubFactory<ChannelMessagingStub, ChannelAddress> {
     private HttpMessageSender httpMessageSender;
     private ChannelMessageSerializerFactory channelMessageSerializerFactory;
-    private GlobalAddressFactory channelAddressFactory;
+    private HttpGlobalAddressFactory channelAddressFactory;
 
     @Inject
     public ChannelMessagingStubFactory(ChannelMessageSerializerFactory channelMessageSerializerFactory,
                                        HttpMessageSender messageSender,
-                                       Set<GlobalAddressFactory> addressFactories) {
+                                       Set<GlobalAddressFactory<? extends Address>> addressFactories) {
         this.channelMessageSerializerFactory = channelMessageSerializerFactory;
         this.httpMessageSender = messageSender;
 
-        for (GlobalAddressFactory addressFactory : addressFactories) {
+        for (GlobalAddressFactory<? extends Address> addressFactory : addressFactories) {
             if (addressFactory instanceof HttpGlobalAddressFactory) {
-                this.channelAddressFactory = addressFactory;
+                this.channelAddressFactory = (HttpGlobalAddressFactory) addressFactory;
             }
         }
         if (channelAddressFactory == null) {
@@ -57,8 +58,11 @@ public class ChannelMessagingStubFactory extends
     @Override
     protected ChannelMessagingStub createInternal(final ChannelAddress address) {
         final JoynrMessageSerializer messageSerializer = channelMessageSerializerFactory.create(address);
+        ChannelAddress replyToAddress;
+        replyToAddress = channelAddressFactory.create();
+
         ChannelMessagingStub messagingStub = new ChannelMessagingStub(address,
-                                                                      (ChannelAddress) channelAddressFactory.create(),
+                                                                      replyToAddress,
                                                                       messageSerializer,
                                                                       httpMessageSender);
         return messagingStub;
