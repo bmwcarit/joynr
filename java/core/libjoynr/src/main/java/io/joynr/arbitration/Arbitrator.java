@@ -2,8 +2,15 @@ package io.joynr.arbitration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.CheckForNull;
 
@@ -37,6 +44,12 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 
 /**
+ * Base class for provider arbitrators. Concrete arbitrators have to provide
+ * implementations for startArbitration() and {@literal selectProvider(ArrayList
+ * <CapabilityEntry> capabilities)} which set the ArbitrationStatus and call
+ * notifyArbitrationStatusChanged() or set the ArbitrationResult and call
+ * updateArbitrationResultAtListener(). The base class offers a
+ * CapabilitiesCallback which is used for async requests.
  *
  * The Arbitrator controls the discovery process:
  * <ul>
@@ -55,17 +68,17 @@ public class Arbitrator {
     // Initialized with 0 to block until the listener is registered
     private Semaphore arbitrationListenerSemaphore = new Semaphore(0);
     private long arbitrationDeadline;
-    private String domain;
+    private Set<String> domains;
     private String interfaceName;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
 
-    public Arbitrator(final String domain,
+    public Arbitrator(final Set<String> domains,
                       final String interfaceName,
                       final DiscoveryQos discoveryQos,
                       DiscoveryAsync localDiscoveryAggregator,
                       long minimumArbitrationRetryDelay,
                       ArbitrationStrategyFunction arbitrationStrategyFunction) {
-        this.domain = domain;
+        this.domains = domains;
         this.interfaceName = interfaceName;
         MINIMUM_ARBITRATION_RETRY_DELAY = minimumArbitrationRetryDelay;
         this.discoveryQos = discoveryQos;
@@ -96,62 +109,107 @@ public class Arbitrator {
      * Called by the proxy builder to start the arbitration process.
      */
     public void startArbitration() {
-        logger.debug("start arbitration for domain: {}, interface: {}", domain, interfaceName);
-        // TODO qos map is not used. Implement qos filter in
-        // capabilitiesDirectory or remove qos argument.
-        arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
-        notifyArbitrationStatusChanged();
+		logger.debug("start arbitration for domain: {}, interface: {}", domains, interfaceName);
+		// TODO qos map is not used. Implement qos filter in
+		// capabilitiesDirectory or remove qos argument.
+		arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
+		notifyArbitrationStatusChanged();
 
-        localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
+		// Note: the implementation of this method as seen below is only
+		// temporary until the discovery has been extended to allow lookup
+		// using multiple domains. Please ignore for now.
+		// See [Java, API] Discovery of capabilities can take more than one domain.
+		logger.debug("Counter starting at {}", domains.size());
+		final AtomicInteger counter = new AtomicInteger(domains.size());
+		final Set<String> participantIds = new HashSet<>();
+		List<Callable<Void>> tasks = new ArrayList<>();
+		for (final String domain : domains) {
+			tasks.add(new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
 
-            @Override
-            public void onFailure(JoynrRuntimeException error) {
-                Arbitrator.this.onError(error);
-            }
+						@Override
+						public void onFailure(JoynrRuntimeException error) {
+							logger.debug("Failed lookup.");
+							counter.decrementAndGet();
+							Arbitrator.this.onError(error);
+						}
 
-            @Override
-            public void onSuccess(@CheckForNull DiscoveryEntry[] discoveryEntries) {
-                assert (discoveryEntries != null);
-                List<DiscoveryEntry> discoveryEntriesList;
-                // If onChange subscriptions are required ignore providers that do not support them
-                if (discoveryQos.getProviderMustSupportOnChange()) {
-                    discoveryEntriesList = new ArrayList<DiscoveryEntry>(discoveryEntries.length);
-                    for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-                        ProviderQos providerQos = discoveryEntry.getQos();
-                        if (providerQos.getSupportsOnChangeSubscriptions()) {
-                            discoveryEntriesList.add(discoveryEntry);
-                        }
-                    }
-                } else {
-                    discoveryEntriesList = Arrays.asList(discoveryEntries);
-                }
+						@Override
+						public void onSuccess(@CheckForNull DiscoveryEntry[] discoveryEntries) {
+							logger.debug("Lookups succeded. Got {}", Arrays.toString(discoveryEntries));
+							assert (discoveryEntries != null);
+							List<DiscoveryEntry> discoveryEntriesList;
+							// If onChange subscriptions are required ignore
+							// providers that do not support them
+							if (discoveryQos.getProviderMustSupportOnChange()) {
+								discoveryEntriesList = new ArrayList<DiscoveryEntry>(discoveryEntries.length);
+								for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+									ProviderQos providerQos = discoveryEntry.getQos();
+									if (providerQos.getSupportsOnChangeSubscriptions()) {
+										discoveryEntriesList.add(discoveryEntry);
+									}
+								}
+							} else {
+								discoveryEntriesList = Arrays.asList(discoveryEntries);
+							}
 
-                DiscoveryEntry selectedCapability = arbitrationStrategyFunction.select(discoveryQos.getCustomParameters(),
-                                                                                       discoveryEntriesList);
+							Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
+									.select(discoveryQos.getCustomParameters(), discoveryEntriesList);
 
-                if (selectedCapability != null) {
-                    arbitrationResult.setParticipantId(selectedCapability.getParticipantId());
-                    arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
-                    updateArbitrationResultAtListener();
-                } else {
-                    restartArbitrationIfNotExpired();
-                }
-            }
-        },
-                                        domain,
-                                        interfaceName,
-                                        new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
-                                                                     joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
-                                                                                                                    .name()),
-                                                                     discoveryQos.getProviderMustSupportOnChange()));
-    }
+							logger.debug("Selected capabilities: {}", selectedCapabilities);
+							if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
+								for (DiscoveryEntry selectedCapability : selectedCapabilities) {
+									participantIds.add(selectedCapability.getParticipantId());
+								}
+								counter.decrementAndGet();
+							} else {
+								//restartArbitrationIfNotExpired();
+								counter.decrementAndGet();
+							}
+						}
+					}, domain, interfaceName,
+							new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAge(),
+									joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name()),
+									discoveryQos.getProviderMustSupportOnChange()));
+					return null;
+				}
+			});
+		}
+
+		tasks.add(new Callable<Void>() {
+			@Override
+			public Void call() throws Exception {
+				int current;
+				int waitCount = 500;
+				while ((current = counter.get()) > 0 && waitCount-- > 0) {
+					logger.debug("Current count: {}. Waiting ...", current);
+					Thread.sleep(10L);
+				}
+				arbitrationResult.setParticipantIds(participantIds);
+				arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
+				updateArbitrationResultAtListener();
+				return null;
+			}
+		});
+
+		ExecutorService executor = Executors.newCachedThreadPool();
+		try {
+			executor.invokeAll(tasks);
+		} catch (InterruptedException e) {
+			logger.error("Interrupted.", e);
+		}
+	}
 
     /**
-     * Called by the proxy builder to register the listener for arbitration results (DiscoveryAgent Instance).
-     * If the arbitration is already running or even finished the current state and in case of a successful arbitration
-     * the result is set at the newly registered listener.
+     * Called by the proxy builder to register the listener for arbitration
+     * results (DiscoveryAgent Instance). If the arbitration is already running
+     * or even finished the current state and in case of a successful
+     * arbitration the result is set at the newly registered listener.
      *
-     * @param arbitrationListener the arbitration listener
+     * @param arbitrationListener
+     *            the arbitration listener
      */
     public void setArbitrationListener(ArbitrationCallback arbitrationListener) {
 
@@ -167,7 +225,8 @@ public class Arbitrator {
     }
 
     /**
-     * Sets the arbitration result at the arbitrationListener if the listener is already registered
+     * Sets the arbitration result at the arbitrationListener if the listener is
+     * already registered
      */
     protected void updateArbitrationResultAtListener() {
         // wait for arbitration listener to be registered
@@ -178,8 +237,8 @@ public class Arbitrator {
     }
 
     /**
-     * Notify the arbitrationListener about a changed status without setting an arbitrationResult (e.g. when arbitration
-     * failed)
+     * Notify the arbitrationListener about a changed status without setting an
+     * arbitrationResult (e.g. when arbitration failed)
      */
     protected void notifyArbitrationStatusChanged() {
         // wait for arbitration listener to be registered
@@ -200,7 +259,10 @@ public class Arbitrator {
     }
 
     protected void restartArbitrationIfNotExpired() {
-        if (isArbitrationInTime()) {
+        // Note: see {@link #startArbitration()} - this is only temporary until
+        // [Java, API] Discovery of capabilities can take more than one domain.
+        // is in.
+        if (isArbitrationInTime() && false) {
             logger.info("Restarting Arbitration");
             long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
             try {

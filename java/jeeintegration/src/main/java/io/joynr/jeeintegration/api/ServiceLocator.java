@@ -3,6 +3,8 @@
  */
 package io.joynr.jeeintegration.api;
 
+import java.util.Set;
+
 /*
  * #%L
  * %%
@@ -85,5 +87,60 @@ public interface ServiceLocator {
      * @return the client proxy, which can be used to call methods on the service service.
      */
     <I> I get(Class<I> serviceInterface, String domain, MessagingQos messagingQos, DiscoveryQos discoveryQos);
+
+    /**
+     * Obtains a client proxy for multiple services of the given service interface in the given domains. Calls
+     * {@link #get(Class, Set<String>, MessagingQos, DiscoveryQos)} with default values for messaging and discovery quality
+     * of service.
+     *
+     * @param <I>
+     *            the service type
+     * @param serviceInterface
+     *            the BCI interface for which to get a client proxy.
+     * @param domains
+     *            the set of domains in which the service implementations must be available.
+     *
+     * @return the client proxy, which can be used to call methods on the BCI service.
+     */
+    <I> I get(Class<I> serviceInterface, Set<String> domains);
+
+    /**
+     * Like {@link #get(Class, Set<String>)}, but allows you to specify the maximum time-to-live for messages sent to the
+     * services. Calls {@link #get(Class, Set<String>, MessagingQos, DiscoveryQos)}, setting the TTL passed in on the
+     * messaging quality of service and providing default values for the discovery quality of service.
+     *
+     * @param <I>
+     *            the service type
+     * @param serviceInterface
+     *            the BCI interface for which to get a client proxy.
+     * @param domains
+     *            the set of domains in which the service implementations must be available.
+     * @param ttl
+     *            the maximum time to live for messages sent via the service. If the time to live expires (the message
+     *            takes longer to deliver), then an exception is thrown.
+     *
+     * @return the client proxy, which can be used to call methods on the BCI service.
+     */
+    <I> I get(Class<I> serviceInterface, Set<String> domains, long ttl);
+
+    /**
+     * Like {@link #get(Class, Set<String>)}, but allows you to specify the messaging and discovery quality of service
+     * information to use.
+     *
+     * @param <I>
+     *            the service type
+     * @param serviceInterface
+     *            the BCI interface for which to get a client proxy.
+     * @param domains
+     *            the set of domains in which the service implementations must be available.
+     * @param messagingQos
+     *            the messaging quality of service information (including the time to live value) to use when
+     *            communicating to the service.
+     * @param discoveryQos
+     *            the discovery quality of service information to use when communicating to the service.
+     *
+     * @return the client proxy, which can be used to call methods on the BCI service.
+     */
+    <I> I get(Class<I> serviceInterface, Set<String> domains, MessagingQos messagingQos, DiscoveryQos discoveryQos);
 
 }

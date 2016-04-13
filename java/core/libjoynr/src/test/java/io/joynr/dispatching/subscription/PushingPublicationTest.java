@@ -1,5 +1,7 @@
 package io.joynr.dispatching.subscription;
 
+import static org.hamcrest.Matchers.contains;
+
 /*
  * #%L
  * %%
@@ -21,6 +23,7 @@ package io.joynr.dispatching.subscription;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
@@ -40,6 +43,7 @@ import io.joynr.pubsub.SubscriptionQos;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -142,6 +146,7 @@ public class PushingPublicationTest {
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
     }
 
+    @SuppressWarnings("unchecked")
     void setupMocks() throws JoynrSendBufferFullException, JoynrMessageNotSentException, JsonGenerationException,
                      JsonMappingException, IOException {
         Deferred<Integer> testAttributeDeferred = new Deferred<Integer>();
@@ -167,7 +172,7 @@ public class PushingPublicationTest {
                 return null;
             }
         }).when(dispatcher).sendSubscriptionPublication(any(String.class),
-                                                        any(String.class),
+                                                        any(Set.class),
                                                         any(SubscriptionPublication.class),
                                                         any(MessagingQos.class));
 
@@ -176,6 +181,7 @@ public class PushingPublicationTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void settingAttributeSendsPublication() throws InterruptedException, JoynrSendBufferFullException,
                                                   JoynrMessageNotSentException, JsonGenerationException,
@@ -188,13 +194,14 @@ public class PushingPublicationTest {
         Thread.sleep(1500);
 
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                 eq(proxyId),
+                                                                 (Set<String>) argThat(contains(proxyId)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
         verify(attributePollInterpreter, times(1)).execute(any(ProviderContainer.class), any(Method.class));
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void settingAttributeSendsPublicationOnPureOnChangedSubscription() throws InterruptedException,
                                                                              JoynrSendBufferFullException,
@@ -208,7 +215,7 @@ public class PushingPublicationTest {
 
         ArgumentCaptor<SubscriptionPublication> sentPublication = ArgumentCaptor.forClass(SubscriptionPublication.class);
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                 eq(proxyId),
+                                                                 (Set<String>) argThat(contains(proxyId)),
                                                                  sentPublication.capture(),
                                                                  any(MessagingQos.class));
         assertEquals(publication.getResponse(), sentPublication.getValue().getResponse());

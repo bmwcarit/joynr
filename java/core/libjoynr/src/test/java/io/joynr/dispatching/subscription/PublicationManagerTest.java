@@ -19,10 +19,13 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
+import static org.hamcrest.Matchers.contains;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -34,6 +37,29 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+
+import com.google.common.collect.Lists;
+
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
@@ -47,15 +73,6 @@ import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.BroadcastFilter;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
@@ -68,18 +85,6 @@ import joynr.tests.testLocationUpdateWithSpeedSelectiveBroadcastFilter;
 import joynr.tests.testProvider;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
-import com.google.common.collect.Lists;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PublicationManagerTest {
@@ -142,6 +147,7 @@ public class PublicationManagerTest {
                                                                                any(Method.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 4000)
     public void doNotDelayBroadcastPublicationBurstsForOnChangeSubscriptionsWithoutMinInterval() throws Exception {
         int subscriptionLength = 500;
@@ -178,7 +184,7 @@ public class PublicationManagerTest {
         Thread.sleep(subscriptionLength);
 
         verify(dispatcher, times(nrBroadcasts)).sendSubscriptionPublication(eq(providerId),
-                                                                            eq(proxyId),
+                                                                            (Set<String>) argThat(contains(proxyId)),
                                                                             any(SubscriptionPublication.class),
                                                                             any(MessagingQos.class));
 
@@ -186,6 +192,7 @@ public class PublicationManagerTest {
         verifyNoMoreInteractions(dispatcher);
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 4000)
     public void delayBroadcastPublicationBurstsForOnChangeSubscriptions() throws Exception {
         int subscriptionLength = 500;
@@ -225,7 +232,7 @@ public class PublicationManagerTest {
 
         publicationManager.broadcastOccurred(subscriptionId, noFilters, nrIterations + 1);
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                 eq(proxyId),
+                                                                 (Set<String>) argThat(contains(proxyId)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
@@ -235,6 +242,7 @@ public class PublicationManagerTest {
         reset(dispatcher);
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 4000)
     public void delayAttributePublicationBurstsForOnChangeSubscriptions() throws Exception {
         int subscriptionLength = 500;
@@ -264,7 +272,7 @@ public class PublicationManagerTest {
                 return (Void) null;
             }
         }).when(dispatcher).sendSubscriptionPublication(eq(providerId),
-                                                        eq(proxyId),
+                                                        (Set<String>) argThat(contains(proxyId)),
                                                         any(SubscriptionPublication.class),
                                                         any(MessagingQos.class));
 
@@ -282,6 +290,7 @@ public class PublicationManagerTest {
                                                   TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void addPublicationWithExpiryDate() throws Exception {
         long pubicationActiveForMs = 300;
@@ -299,7 +308,7 @@ public class PublicationManagerTest {
 
         // sending initial value plus the attributeValueChanged
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 eq(PROXY_PARTICIPANT_ID),
+                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
@@ -309,11 +318,12 @@ public class PublicationManagerTest {
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
         verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              eq(PROXY_PARTICIPANT_ID),
+                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                               any(SubscriptionPublication.class),
                                                                               any(MessagingQos.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void addPublicationWithoutExpiryDate() throws Exception {
         int period = 200;
@@ -326,7 +336,7 @@ public class PublicationManagerTest {
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
         verify(dispatcher, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                     eq(PROXY_PARTICIPANT_ID),
+                                                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                                      any(SubscriptionPublication.class),
                                                                                      any(MessagingQos.class));
 
@@ -334,11 +344,12 @@ public class PublicationManagerTest {
         publicationManager.stopPublication(SUBSCRIPTION_ID);
 
         verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              eq(PROXY_PARTICIPANT_ID),
+                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                               any(SubscriptionPublication.class),
                                                                               any(MessagingQos.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void startAndStopPeriodicPublication() throws Exception {
         int period = 200;
@@ -354,7 +365,7 @@ public class PublicationManagerTest {
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
         verify(dispatcher, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                     eq(PROXY_PARTICIPANT_ID),
+                                                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                                      any(SubscriptionPublication.class),
                                                                                      any(MessagingQos.class));
 
@@ -362,11 +373,12 @@ public class PublicationManagerTest {
         publicationManager.stopPublication(SUBSCRIPTION_ID);
 
         verify(dispatcher, timeout(testLengthMax).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                        eq(PROXY_PARTICIPANT_ID),
+                                                                                        (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                                         any(SubscriptionPublication.class),
                                                                                         any(MessagingQos.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void stopAllPublicationsFromProvider() throws Exception {
         long expiryDate = System.currentTimeMillis() + 3000;
@@ -389,7 +401,7 @@ public class PublicationManagerTest {
 
         // sending initial values for 2 subscriptions, plus the 2 attributeValueChanged
         verify(dispatcher, times(4)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 eq(PROXY_PARTICIPANT_ID),
+                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
@@ -400,11 +412,12 @@ public class PublicationManagerTest {
         publicationManager.attributeValueChanged(subscriptionId2, valueToPublish);
 
         verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              eq(PROXY_PARTICIPANT_ID),
+                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                               any(SubscriptionPublication.class),
                                                                               any(MessagingQos.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void restorePublications() throws Exception {
         int period = 200;
@@ -422,18 +435,19 @@ public class PublicationManagerTest {
 
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 eq(PROXY_PARTICIPANT_ID),
+                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
         publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
 
         verify(dispatcher, timeout(period * 5).times(12)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                      eq(PROXY_PARTICIPANT_ID),
+                                                                                      (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                                       any(SubscriptionPublication.class),
                                                                                       any(MessagingQos.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void removeQueuedSubscriptionsProperly() throws Exception {
         int period = 200;
@@ -448,11 +462,12 @@ public class PublicationManagerTest {
         publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 eq(PROXY_PARTICIPANT_ID),
+                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void broadcastPublicationIsSent() throws Exception {
 
@@ -487,7 +502,7 @@ public class PublicationManagerTest {
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
 
         verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                       eq(PROXY_PARTICIPANT_ID),
+                                                       (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                        publicationCaptured.capture(),
                                                        qosCaptured.capture());
 
@@ -498,6 +513,7 @@ public class PublicationManagerTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void broadcastPublicationCallsAllFiltersWithFilterParametersAndValues() throws Exception {
 
@@ -544,7 +560,7 @@ public class PublicationManagerTest {
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
 
         verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                       eq(PROXY_PARTICIPANT_ID),
+                                                       (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                        publicationCaptured.capture(),
                                                        qosCaptured.capture());
 
@@ -553,6 +569,7 @@ public class PublicationManagerTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void broadcastPublicationIsSentWhenFiltersPass() throws Exception {
 
@@ -591,7 +608,7 @@ public class PublicationManagerTest {
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
 
         verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                       eq(PROXY_PARTICIPANT_ID),
+                                                       (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                        publicationCaptured.capture(),
                                                        qosCaptured.capture());
 
@@ -601,6 +618,7 @@ public class PublicationManagerTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void broadcastPublicationNotSentWhenFiltersFail() throws Exception {
 
@@ -640,12 +658,13 @@ public class PublicationManagerTest {
         publicationManager.broadcastOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValue);
 
         verify(dispatcher, never()).sendSubscriptionPublication(any(String.class),
-                                                                any(String.class),
+                                                                any(Set.class),
                                                                 any(SubscriptionPublication.class),
                                                                 any(MessagingQos.class));
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void modifySubscriptionTypeForExistingSubscription() throws Exception {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
@@ -665,7 +684,7 @@ public class PublicationManagerTest {
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
         verify(dispatcher, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                     eq(PROXY_PARTICIPANT_ID),
+                                                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                                      any(SubscriptionPublication.class),
                                                                                      any(MessagingQos.class));
 
@@ -681,7 +700,7 @@ public class PublicationManagerTest {
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
         verify(dispatcher, timeout(testLengthMax).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                        eq(PROXY_PARTICIPANT_ID),
+                                                                                        (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                                         any(SubscriptionPublication.class),
                                                                                         any(MessagingQos.class));
     }

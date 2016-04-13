@@ -123,6 +123,7 @@
 							<type>test-jar</type>
 						</additionalDependency>
 					</additionalDependencies>
+					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 				<executions>
 					<execution>

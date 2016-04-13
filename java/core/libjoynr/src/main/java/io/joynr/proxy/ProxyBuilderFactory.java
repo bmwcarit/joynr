@@ -19,7 +19,10 @@ package io.joynr.proxy;
  * #L%
  */
 
-public interface ProxyBuilderFactory {
+import java.util.Set;
 
+public interface ProxyBuilderFactory {
     public <T> ProxyBuilder<T> get(String domain, Class<T> interfaceClass);
+
+    public <T> ProxyBuilder<T> get(Set<String> domains, Class<T> interfaceClass);
 }

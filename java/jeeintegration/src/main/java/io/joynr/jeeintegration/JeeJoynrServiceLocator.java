@@ -27,12 +27,15 @@ import static java.lang.String.format;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Set;
 
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Sets;
 
 import io.joynr.UsedBy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -69,14 +72,32 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    public <I> I get(Class<I> serviceInterface, Set<String> domains) {
+        return get(serviceInterface, domains, new MessagingQos(), new DiscoveryQos());
+    }
+
+    @Override
+    public <I> I get(Class<I> serviceInterface, Set<String> domains, long ttl) {
+        return get(serviceInterface, domains, new MessagingQos(ttl), new DiscoveryQos());
+    }
+
+    @Override
     public <I> I get(Class<I> serviceInterface, String domain, MessagingQos messagingQos, DiscoveryQos discoveryQos) {
+        return get(serviceInterface, Sets.newHashSet(domain), messagingQos, discoveryQos);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <I> I get(Class<I> serviceInterface,
+                     Set<String> domains,
+                     MessagingQos messagingQos,
+                     DiscoveryQos discoveryQos) {
         if (joynrIntegrationBean.getRuntime() == null) {
             throw new IllegalStateException("You can't get service proxies until the joynr runtime has been initialised.");
         }
         final Class<?> joynrProxyInterface = findJoynrProxyInterface(serviceInterface);
         final Object joynrProxy = joynrIntegrationBean.getRuntime()
-                                                      .getProxyBuilder(domain, joynrProxyInterface)
+                                                      .getProxyBuilder(domains, joynrProxyInterface)
                                                       .setMessagingQos(messagingQos)
                                                       .setDiscoveryQos(discoveryQos)
                                                       .build();

@@ -11,6 +11,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.collect.Sets;
+
 /*
  * #%L
  * %%
@@ -56,7 +58,7 @@ public class ProxyInvocationHandlerTest {
     public void callProxyInvocationHandlerSyncFromMultipleThreadsTest() throws Throwable {
 
         ConnectorFactory connectorFactory = Mockito.mock(ConnectorFactory.class);
-        final ProxyInvocationHandlerImpl proxyInvocationHandler = new ProxyInvocationHandlerImpl(domain,
+        final ProxyInvocationHandlerImpl proxyInvocationHandler = new ProxyInvocationHandlerImpl(Sets.newHashSet(domain),
                                                                                                  interfaceName,
                                                                                                  proxyParticipantId,
                                                                                                  discoveryQos,

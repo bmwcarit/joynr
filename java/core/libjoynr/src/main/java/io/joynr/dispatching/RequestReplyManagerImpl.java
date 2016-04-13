@@ -44,11 +44,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import joynr.JoynrMessage;
-import joynr.OneWay;
-import joynr.Reply;
-import joynr.Request;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +53,11 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import joynr.JoynrMessage;
+import joynr.OneWay;
+import joynr.Reply;
+import joynr.Request;
 
 @Singleton
 public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryListener<ProviderContainer> {
@@ -119,19 +119,11 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                                                  expiryDate);
 
         messageRouter.route(message);
-
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see io.joynr.dispatcher.MessageSender#sendSyncRequest(java .lang.String, java.lang.String,
-     * java.lang.Object, long, long)
-     */
-
     @Override
-    public Object sendSyncRequest(final String fromParticipantId,
-                                  final String toParticipantId,
+    public Object sendSyncRequest(String fromParticipantId,
+                                  String toParticipantId,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
                                   long ttl_ms) throws JoynrCommunicationException, JoynrSendBufferFullException,

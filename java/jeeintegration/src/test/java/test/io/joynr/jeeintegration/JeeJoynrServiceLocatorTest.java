@@ -24,25 +24,31 @@ package test.io.joynr.jeeintegration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import joynr.jeeintegration.servicelocator.MyServiceProxy;
-import joynr.jeeintegration.servicelocator.MyServiceSync;
 
+import java.util.Set;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
+import com.google.common.collect.Sets;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.jeeintegration.JeeJoynrServiceLocator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
+import joynr.jeeintegration.servicelocator.MyServiceProxy;
+import joynr.jeeintegration.servicelocator.MyServiceSync;
+import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
 
 /**
  * Unit tests for {@link JeeJoynrServiceLocator}.
@@ -50,21 +56,33 @@ import io.joynr.runtime.JoynrRuntime;
 @RunWith(MockitoJUnitRunner.class)
 public class JeeJoynrServiceLocatorTest {
 
+    @Mock
+    private MyServiceProxy myJoynrProxy;
+
+    @Mock
+    private ProxyBuilder<MyServiceProxy> proxyBuilder;
+
+    @Mock
+    private JoynrRuntime joynrRuntime;
+
+    @Mock
+    private JoynrIntegrationBean joynrIntegrationBean;
+
+    private JeeJoynrServiceLocator subject;
+
+    @Before
+    public void setupSubject() {
+        when(myJoynrProxy.callMe("one")).thenReturn("two");
+        when(proxyBuilder.setMessagingQos(Mockito.any())).thenReturn(proxyBuilder);
+        when(proxyBuilder.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilder);
+        when(proxyBuilder.build()).thenReturn(myJoynrProxy);
+        when(joynrRuntime.getProxyBuilder(Sets.newHashSet("local"), MyServiceProxy.class)).thenReturn(proxyBuilder);
+        when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
+        subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
+    }
+
     @Test
     public void testGet() {
-        MyServiceProxy myJoynrProxy = mock(MyServiceProxy.class);
-        when(myJoynrProxy.callMe("one")).thenReturn("two");
-        @SuppressWarnings("unchecked")
-        ProxyBuilder<MyServiceProxy> proxyBuilder = mock(ProxyBuilder.class);
-        when(proxyBuilder.setMessagingQos(any())).thenReturn(proxyBuilder);
-        when(proxyBuilder.setDiscoveryQos(any())).thenReturn(proxyBuilder);
-        when(proxyBuilder.build()).thenReturn(myJoynrProxy);
-        JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
-        when(joynrRuntime.getProxyBuilder("local", MyServiceProxy.class)).thenReturn(proxyBuilder);
-        JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);
-        when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
-
         MyServiceSync result = subject.get(MyServiceSync.class, "local");
 
         assertNotNull(result);
@@ -77,20 +95,22 @@ public class JeeJoynrServiceLocatorTest {
     }
 
     @Test
-    public void testGetWithTtl() {
-        MyServiceProxy myJoynrProxy = mock(MyServiceProxy.class);
-        when(myJoynrProxy.callMe("one")).thenReturn("two");
-        @SuppressWarnings("unchecked")
-        ProxyBuilder<MyServiceProxy> proxyBuilder = mock(ProxyBuilder.class);
-        when(proxyBuilder.setMessagingQos(any())).thenReturn(proxyBuilder);
-        when(proxyBuilder.setDiscoveryQos(any())).thenReturn(proxyBuilder);
-        when(proxyBuilder.build()).thenReturn(myJoynrProxy);
-        JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
-        when(joynrRuntime.getProxyBuilder("local", MyServiceProxy.class)).thenReturn(proxyBuilder);
-        JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);
-        when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
+    public void testGetMultiDomain() {
+        Set<String> domains = Sets.newHashSet("one", "two", "three");
+        when(joynrRuntime.getProxyBuilder(domains, MyServiceProxy.class)).thenReturn(proxyBuilder);
 
+        MyServiceSync result = subject.get(MyServiceSync.class, domains);
+
+        assertNotNull(result);
+
+        String callResult = result.callMe("one");
+
+        assertEquals("two", callResult);
+        verify(joynrRuntime).getProxyBuilder(domains, MyServiceProxy.class);
+    }
+
+    @Test
+    public void testGetWithTtl() {
         MyServiceSync result = subject.get(MyServiceSync.class, "local", 10000L);
 
         assertNotNull(result);
@@ -108,19 +128,6 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testGetWithMessagingAndDiscoveryQos() {
-        MyServiceProxy myJoynrProxy = mock(MyServiceProxy.class);
-        when(myJoynrProxy.callMe("one")).thenReturn("two");
-        @SuppressWarnings("unchecked")
-        ProxyBuilder<MyServiceProxy> proxyBuilder = mock(ProxyBuilder.class);
-        when(proxyBuilder.setMessagingQos(any())).thenReturn(proxyBuilder);
-        when(proxyBuilder.setDiscoveryQos(any())).thenReturn(proxyBuilder);
-        when(proxyBuilder.build()).thenReturn(myJoynrProxy);
-        JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
-        when(joynrRuntime.getProxyBuilder("local", MyServiceProxy.class)).thenReturn(proxyBuilder);
-        JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);
-        when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
-
         MessagingQos messagingQos = new MessagingQos();
         DiscoveryQos discoveryQos = new DiscoveryQos();
         MyServiceSync result = subject.get(MyServiceSync.class, "local", messagingQos, discoveryQos);

@@ -1,16 +1,5 @@
 package io.joynr.proxy;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-
-import javax.annotation.CheckForNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 /*
  * #%L
  * %%
@@ -29,6 +18,18 @@ import com.fasterxml.jackson.databind.JsonMappingException;
  * limitations under the License.
  * #L%
  */
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Set;
+
+import javax.annotation.CheckForNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.DispatcherUtils;
@@ -56,7 +57,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(JoynrMessagingConnectorInvocationHandler.class);
 
-    private final String toParticipantId;
+    private final Set<String> toParticipantIds;
     private final String fromParticipantId;
 
     private final MessagingQos qosSettings;
@@ -66,13 +67,13 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     private final SubscriptionManager subscriptionManager;
 
-    JoynrMessagingConnectorInvocationHandler(String toParticipantId,
+    JoynrMessagingConnectorInvocationHandler(Set<String> toParticipantIds,
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
                                              RequestReplyManager requestReplyManager,
                                              ReplyCallerDirectory replyCallerDirectory,
                                              SubscriptionManager subscriptionManager) {
-        this.toParticipantId = toParticipantId;
+        this.toParticipantIds = toParticipantIds;
         this.fromParticipantId = fromParticipantId;
 
         this.qosSettings = qosSettings;
@@ -94,6 +95,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         if (method == null) {
             throw new IllegalArgumentException("method cannot be null");
+        }
+        if (toParticipantIds.size() > 1) {
+            throw new JoynrIllegalStateException("You can't execute async methods for multiple participants.");
+        }
+        if (toParticipantIds.isEmpty()) {
+            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an async method.");
         }
 
         MethodMetaInformation methodMetaInformation = JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent(method);
@@ -122,7 +129,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
 
         replyCallerDirectory.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, expiryDate);
-        requestReplyManager.sendRequest(fromParticipantId, toParticipantId, request, qosSettings.getRoundTripTtl_ms());
+        requestReplyManager.sendRequest(fromParticipantId,
+                                        toParticipantIds.iterator().next(),
+                                        request,
+                                        qosSettings.getRoundTripTtl_ms());
         return future;
     }
 
@@ -142,6 +152,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         if (method == null) {
             throw new IllegalArgumentException("method cannot be null");
         }
+        if (toParticipantIds.size() > 1) {
+            throw new JoynrIllegalStateException("You can't execute sync methods for multiple participants.");
+        }
+        if (toParticipantIds.isEmpty()) {
+            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an sync method.");
+        }
 
         MethodMetaInformation methodMetaInformation = JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent(method);
 
@@ -149,13 +165,13 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         Reply reply;
         String requestReplyId = request.getRequestReplyId();
         SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
-                                                                                      toParticipantId,
+                                                                                      toParticipantIds,
                                                                                       requestReplyId,
                                                                                       request);
         ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
         replyCallerDirectory.addReplyCaller(requestReplyId, synchronizedReplyCaller, expiryDate);
         reply = (Reply) requestReplyManager.sendSyncRequest(fromParticipantId,
-                                                            toParticipantId,
+                                                            toParticipantIds.iterator().next(),
                                                             request,
                                                             synchronizedReplyCaller,
                                                             qosSettings.getRoundTripTtl_ms());
@@ -180,7 +196,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                       JsonMappingException, IOException {
 
         subscriptionManager.unregisterSubscription(fromParticipantId,
-                                                   toParticipantId,
+                                                   toParticipantIds,
                                                    unsubscribeInvocation.getSubscriptionId(),
                                                    qosSettings);
     }
@@ -193,7 +209,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                              JsonMappingException,
                                                                                              IOException {
 
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, attributeSubscription);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantIds, attributeSubscription);
     }
 
     @Override
@@ -204,7 +220,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                              JsonMappingException,
                                                                                              IOException {
 
-        subscriptionManager.registerBroadcastSubscription(fromParticipantId, toParticipantId, broadcastSubscription);
+        subscriptionManager.registerBroadcastSubscription(fromParticipantId, toParticipantIds, broadcastSubscription);
     }
 
 }

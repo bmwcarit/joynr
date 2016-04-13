@@ -43,6 +43,7 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -151,6 +152,7 @@ public class RpcStubbingTest {
 
     private JoynrMessagingConnectorInvocationHandler connector;
 
+    @SuppressWarnings("unchecked")
     @Before
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF", justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
@@ -231,10 +233,13 @@ public class RpcStubbingTest {
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
                                                                                                            subscriptionManager);
-        connector = joynrMessagingConnectorFactory.create(fromParticipantId, toParticipantId, qosSettings);
+        connector = joynrMessagingConnectorFactory.create(fromParticipantId,
+                                                          Sets.newHashSet(toParticipantId),
+                                                          qosSettings);
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testWithoutArguments() throws IOException, JoynrRuntimeException, SecurityException,
                                       InstantiationException, IllegalAccessException, NoSuchMethodException,
@@ -258,6 +263,7 @@ public class RpcStubbingTest {
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testWithArguments() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
                                    InstantiationException, IllegalAccessException, NoSuchMethodException {
@@ -285,6 +291,7 @@ public class RpcStubbingTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testWithReturn() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
                                 InstantiationException, IllegalAccessException, NoSuchMethodException {
@@ -305,6 +312,7 @@ public class RpcStubbingTest {
         assertEquals(gpsValue, response);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testWithListReturn() throws IOException, JoynrRuntimeException, ApplicationException,
                                     SecurityException, InstantiationException, IllegalAccessException,

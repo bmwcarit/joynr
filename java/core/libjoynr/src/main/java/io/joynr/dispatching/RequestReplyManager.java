@@ -19,21 +19,20 @@ package io.joynr.dispatching;
  * #L%
  */
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.provider.ProviderCallback;
-
-import java.io.IOException;
-
 import joynr.OneWay;
 import joynr.Reply;
 import joynr.Request;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 public interface RequestReplyManager {
 
