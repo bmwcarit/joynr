@@ -48,7 +48,7 @@ joynrTestRequire(
                 joynr,
                 DiscoveryEntry,
                 DiscoveryScope,
-                DiscoveryQos,
+                DiscoveryQosGen,
                 DiscoveryProxy,
                 RoutingProxy,
                 RoutingProvider,
@@ -209,7 +209,7 @@ joynrTestRequire(
                             return joynr.proxyBuilder.build(DiscoveryProxy, {
                                 domain : "io.joynr",
                                 messagingQos : internalMessagingQos,
-                                discoveryQos : new DiscoveryQos({
+                                discoveryQos : new joynr.proxy.DiscoveryQos({
                                     discoveryScope : DiscoveryScope.LOCAL_ONLY
                                 })
                             });
@@ -222,7 +222,7 @@ joynrTestRequire(
                             return joynr.proxyBuilder.build(RoutingProxy, {
                                 domain : "io.joynr",
                                 messagingQos : internalMessagingQos,
-                                discoveryQos : new DiscoveryQos({
+                                discoveryQos : new joynr.proxy.DiscoveryQos({
                                     discoveryScope : DiscoveryScope.LOCAL_ONLY
                                 })
                             });
@@ -245,7 +245,7 @@ joynrTestRequire(
                                                         {
                                                             domain : domain,
                                                             interfaceName : interfaceName,
-                                                            discoveryQos : new DiscoveryQos(
+                                                            discoveryQos : new DiscoveryQosGen(
                                                                     {
                                                                         discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL
                                                                     })
@@ -817,7 +817,7 @@ joynrTestRequire(
                                                         {
                                                             domain : domain,
                                                             interfaceName : "vehicle/Radio",
-                                                            discoveryQos : new DiscoveryQos(
+                                                            discoveryQos : new DiscoveryQosGen(
                                                                     {
                                                                         discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
                                                                     })
@@ -837,7 +837,7 @@ joynrTestRequire(
                                                                                                 {
                                                                                                     domain : domain,
                                                                                                     interfaceName : "vehicle/Radio",
-                                                                                                    discoveryQos : new DiscoveryQos(
+                                                                                                    discoveryQos : new DiscoveryQosGen(
                                                                                                             {
                                                                                                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
                                                                                                             })
@@ -906,7 +906,7 @@ joynrTestRequire(
                                                                             {
                                                                                 domain : domain,
                                                                                 interfaceName : interfaceName,
-                                                                                discoveryQos : new DiscoveryQos(
+                                                                                discoveryQos : new DiscoveryQosGen(
                                                                                         {
                                                                                             discoveryScope : DiscoveryScope.LOCAL_ONLY
                                                                                         })
@@ -941,7 +941,7 @@ joynrTestRequire(
                                                                                                                     {
                                                                                                                         domain : domain,
                                                                                                                         interfaceName : interfaceName,
-                                                                                                                        discoveryQos : new DiscoveryQos(
+                                                                                                                        discoveryQos : new DiscoveryQosGen(
                                                                                                                                 {
                                                                                                                                     discoveryScope : DiscoveryScope.LOCAL_ONLY
                                                                                                                                 })
@@ -981,7 +981,7 @@ joynrTestRequire(
                                                                                                                                                                                 {
                                                                                                                                                                                     domain : domain,
                                                                                                                                                                                     interfaceName : interfaceName,
-                                                                                                                                                                                    discoveryQos : new DiscoveryQos(
+                                                                                                                                                                                    discoveryQos : new DiscoveryQosGen(
                                                                                                                                                                                             {
                                                                                                                                                                                                 discoveryScope : DiscoveryScope.LOCAL_ONLY
                                                                                                                                                                                             })
