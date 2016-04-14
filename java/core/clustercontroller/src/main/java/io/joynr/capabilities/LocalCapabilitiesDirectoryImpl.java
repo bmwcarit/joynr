@@ -244,12 +244,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public void lookup(final String domain,
+    public void lookup(final String[] domains,
                        final String interfaceName,
                        final DiscoveryQos discoveryQos,
                        final CapabilitiesCallback capabilitiesCallback) {
 
-        Collection<DiscoveryEntry> localDiscoveryEntries = localDiscoveryEntryStore.lookup(domain, interfaceName);
+        Collection<DiscoveryEntry> localDiscoveryEntries = localDiscoveryEntryStore.lookup(domains, interfaceName);
         Collection<DiscoveryEntry> globalDiscoveryEntries = null;
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         switch (discoveryScope) {
@@ -260,13 +260,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             if (localDiscoveryEntries.size() > 0) {
                 capabilitiesCallback.processCapabilitiesReceived(localDiscoveryEntries);
             } else {
-                globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domain,
+                globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domains,
                                                                           interfaceName,
                                                                           discoveryQos.getCacheMaxAgeMs());
                 if (globalDiscoveryEntries.size() > 0) {
                     capabilitiesCallback.processCapabilitiesReceived(globalDiscoveryEntries);
                 } else {
-                    asyncGetGlobalCapabilitities(domain,
+                    asyncGetGlobalCapabilitities(domains,
                                                  interfaceName,
                                                  null,
                                                  discoveryQos.getDiscoveryTimeoutMs(),
@@ -275,14 +275,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
             break;
         case GLOBAL_ONLY:
-            globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domain,
+            globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domains,
                                                                       interfaceName,
                                                                       discoveryQos.getCacheMaxAgeMs());
             if (globalDiscoveryEntries.size() > 0) {
                 capabilitiesCallback.processCapabilitiesReceived(globalDiscoveryEntries);
             } else {
                 // in this case, no global only caps are included in the cache --> call glob cap dir
-                asyncGetGlobalCapabilitities(domain,
+                asyncGetGlobalCapabilitities(domains,
                                              interfaceName,
                                              null,
                                              discoveryQos.getDiscoveryTimeoutMs(),
@@ -290,7 +290,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
             break;
         case LOCAL_AND_GLOBAL:
-            globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domain,
+            globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domains,
                                                                       interfaceName,
                                                                       discoveryQos.getCacheMaxAgeMs());
             if (globalDiscoveryEntries.size() > 0) {
@@ -302,7 +302,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 capabilitiesCallback.processCapabilitiesReceived(globalDiscoveryEntries);
             } else {
                 // in this case, no global only caps are included in the cache --> call glob cap dir
-                asyncGetGlobalCapabilitities(domain,
+                asyncGetGlobalCapabilitities(domains,
                                              interfaceName,
                                              localDiscoveryEntries,
                                              discoveryQos.getDiscoveryTimeoutMs(),
@@ -425,7 +425,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     /**
      * mixes in the localDiscoveryEntries to global capabilities found by participantId
      */
-    private void asyncGetGlobalCapabilitities(final String domain,
+    private void asyncGetGlobalCapabilitities(final String[] domains,
                                               final String interfaceName,
                                               Collection<DiscoveryEntry> localDiscoveryEntries2,
                                               long discoveryTimeout,
@@ -456,7 +456,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 capabilitiesCallback.onError((Exception) exception);
             }
         },
-                                        domain,
+                                        domains,
                                         interfaceName,
                                         discoveryTimeout);
     }
@@ -503,7 +503,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String domain,
+    public Promise<Lookup1Deferred> lookup(String[] domains,
                                            String interfaceName,
                                            joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
@@ -513,7 +513,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 if (capabilities == null) {
                     deferred.reject(new ProviderRuntimeException("Received capablities collection was null"));
                 } else {
-                    deferred.resolve(capabilities.toArray(new DiscoveryEntry[0]));
+                    deferred.resolve(capabilities.toArray(new DiscoveryEntry[capabilities.size()]));
                 }
             }
 
@@ -523,7 +523,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
-        lookup(domain, interfaceName, new DiscoveryQos(DEFAULT_DISCOVERYTIMEOUT,
+        lookup(domains, interfaceName, new DiscoveryQos(DEFAULT_DISCOVERYTIMEOUT,
                                                        ArbitrationStrategy.NotSet,
                                                        discoveryQos.getCacheMaxAge(),
                                                        discoveryScope), callback);

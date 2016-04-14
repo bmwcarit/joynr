@@ -91,25 +91,30 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     @Override
     public Future<DiscoveryEntry[]> lookup(Callback<DiscoveryEntry[]> callback,
-                                               String domain,
+                                               String[] domains,
                                                String interfaceName,
                                                DiscoveryQos discoveryQos) {
+    	Future<DiscoveryEntry[]> result = null;
+    	for (String domain : domains) {
         if (provisionedDiscoveryEntries.containsKey(domain + interfaceName)) {
             DiscoveryEntry discoveryEntry = provisionedDiscoveryEntries.get(domain + interfaceName);
-            DiscoveryEntry[] result = new DiscoveryEntry[] {discoveryEntry};
+            DiscoveryEntry[] discoveryEntries = new DiscoveryEntry[] {discoveryEntry};
             // prevent varargs from interpreting the array as mulitple arguments
-            callback.resolve((Object) result);
+            callback.resolve((Object) discoveryEntries);
 
             Future<DiscoveryEntry[]> discoveryEntryFuture = new Future<>();
             discoveryEntryFuture.resolve(Lists.newArrayList(discoveryEntry));
-            return discoveryEntryFuture;
-        } else {
+            result = discoveryEntryFuture;
+        }
+        }
+    	if (result == null) {
             if (discoveryProxy == null) {
                 throw new JoynrRuntimeException("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                         + "local capabilitites directory.");
             }
-            return discoveryProxy.lookup(callback, domain, interfaceName, discoveryQos);
+            result = discoveryProxy.lookup(callback, domains, interfaceName, discoveryQos);
         }
+    	return result;
     }
 
     @Override

@@ -205,7 +205,7 @@ public class ProxyTest {
                 return null;
             }
         }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
-                                                 Mockito.<String> any(),
+                                                 Mockito.<String[]> any(),
                                                  Mockito.<String> any(),
                                                  Mockito.<joynr.types.DiscoveryQos> any());
 

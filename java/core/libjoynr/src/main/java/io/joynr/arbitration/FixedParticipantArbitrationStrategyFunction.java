@@ -44,6 +44,6 @@ public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStra
         }
         logger.trace("capability with participantId: {}: {}" + participantId, capabilityWithParticipantId);
 
-        return Arrays.asList(capabilityWithParticipantId);
+        return capabilityWithParticipantId == null ? null : Arrays.asList(capabilityWithParticipantId);
     }
 }

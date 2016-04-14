@@ -73,7 +73,7 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     public void lookup(final Callback<List<GlobalDiscoveryEntry>> callback,
-                       String domain,
+                       String[] domains,
                        String interfaceName,
                        long timeout) {
         getProxy(timeout).lookup(new Callback<GlobalDiscoveryEntry[]>() {
@@ -94,7 +94,7 @@ public class GlobalCapabilitiesDirectoryClient {
                 callback.onSuccess(globalDiscoveryEntryList);
             }
 
-        }, domain, interfaceName);
+        }, domains, interfaceName);
 
     }
 }

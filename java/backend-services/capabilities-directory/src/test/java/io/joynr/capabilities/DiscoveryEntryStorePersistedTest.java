@@ -128,7 +128,7 @@ public class DiscoveryEntryStorePersistedTest {
         String interfaceName = "interfaceName";
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry(domain, interfaceName, "participantId");
         store.add(discoveryEntry);
-        Collection<DiscoveryEntry> lookup = store.lookup(domain, interfaceName);
+        Collection<DiscoveryEntry> lookup = store.lookup(new String[]{ domain }, interfaceName);
         assertTrue(lookup.contains(discoveryEntry));
     }
 
@@ -176,7 +176,7 @@ public class DiscoveryEntryStorePersistedTest {
 
     private void assertContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
         for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
-            Collection<DiscoveryEntry> returnedEntries = store.lookup(discoveryEntry.getDomain(),
+            Collection<DiscoveryEntry> returnedEntries = store.lookup(new String[]{ discoveryEntry.getDomain() },
                                                                       discoveryEntry.getInterfaceName(),
                                                                       10000);
             assertTrue(returnedEntries.contains(discoveryEntry));
@@ -185,7 +185,7 @@ public class DiscoveryEntryStorePersistedTest {
 
     private void assertNotContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
         for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
-            Collection<DiscoveryEntry> returnedEntries = store.lookup(discoveryEntry.getDomain(),
+            Collection<DiscoveryEntry> returnedEntries = store.lookup(new String[]{ discoveryEntry.getDomain() },
                                                                       discoveryEntry.getInterfaceName(),
                                                                       10000);
             assertFalse(returnedEntries.contains(discoveryEntry));

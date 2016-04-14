@@ -367,12 +367,12 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.doAnswer(createAnswer(caps))
                .when(globalCapabilitiesClient)
                .lookup(Mockito.any(Callback.class),
-                       Mockito.eq(domain1),
+                       Mockito.eq(new String[]{ domain1 }),
                        Mockito.eq(interfaceName1),
                        eq(discoveryQos.getDiscoveryTimeoutMs()));
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.any(String.class),
+                                                                          Mockito.any(String[].class),
                                                                           Mockito.any(String.class),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -392,9 +392,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                            System.currentTimeMillis(),
                                                            expiryDateMs);
         localCapabilitiesDirectory.add(discoveryEntry);
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -405,9 +405,9 @@ public class LocalCapabilitiesDirectoryTest {
 
         // even deleting local cap entries shall have no effect, the global cap dir shall be invoked
         localCapabilitiesDirectory.remove(discoveryEntry);
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(3)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -429,12 +429,12 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.doAnswer(createAnswer(caps))
                .when(globalCapabilitiesClient)
                .lookup(Mockito.any(Callback.class),
-                       Mockito.eq(domain1),
+                       Mockito.eq(new String[]{ domain1 }),
                        Mockito.eq(interfaceName1),
                        eq(discoveryQos.getDiscoveryTimeoutMs()));
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(4)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
@@ -445,9 +445,9 @@ public class LocalCapabilitiesDirectoryTest {
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(4)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
@@ -461,9 +461,9 @@ public class LocalCapabilitiesDirectoryTest {
         Thread.sleep(1);
 
         // now, another lookup call shall call the globalCapabilitiesClient, as the global cap dir is expired
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(5)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
@@ -486,12 +486,12 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.doAnswer(createAnswer(caps))
                .when(globalCapabilitiesClient)
                .lookup(Mockito.any(Callback.class),
-                       Mockito.eq(domain1),
+                       Mockito.eq(new String[]{ domain1 }),
                        Mockito.eq(interfaceName1),
                        eq(discoveryQos.getDiscoveryTimeoutMs()));
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -511,9 +511,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                            System.currentTimeMillis(),
                                                            expiryDateMs);
         localCapabilitiesDirectory.add(discoveryEntry);
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -534,29 +534,29 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.doAnswer(createAnswer(caps))
                .when(globalCapabilitiesClient)
                .lookup(Mockito.any(Callback.class),
-                       Mockito.eq(domain1),
+                       Mockito.eq(new String[]{ domain1 }),
                        Mockito.eq(interfaceName1),
                        eq(discoveryQos.getDiscoveryTimeoutMs()));
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
         localCapabilitiesDirectory.remove(discoveryEntry);
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
 
@@ -566,9 +566,9 @@ public class LocalCapabilitiesDirectoryTest {
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(3)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.reset(globalCapabilitiesClient);
@@ -610,12 +610,12 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.doAnswer(createAnswer(caps))
                .when(globalCapabilitiesClient)
                .lookup(Mockito.any(Callback.class),
-                       Mockito.eq(domain1),
+                       Mockito.eq(new String[]{ domain1 }),
                        Mockito.eq(interfaceName1),
                        eq(discoveryQos.getDiscoveryTimeoutMs()));
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -634,9 +634,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                            System.currentTimeMillis(),
                                                            expiryDateMs);
         localCapabilitiesDirectory.add(discoveryEntry);
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -657,20 +657,20 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.doAnswer(createAnswer(caps))
                .when(globalCapabilitiesClient)
                .lookup(Mockito.any(Callback.class),
-                       Mockito.eq(domain1),
+                       Mockito.eq(new String[]{ domain1 }),
                        Mockito.eq(interfaceName1),
                        eq(discoveryQos.getDiscoveryTimeoutMs()));
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(3)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(3)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
 
@@ -680,9 +680,9 @@ public class LocalCapabilitiesDirectoryTest {
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
-        localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
+        localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(4)).lookup(Mockito.any(Callback.class),
-                                                                          Mockito.eq(domain1),
+                                                                          Mockito.eq(new String[]{ domain1 }),
                                                                           Mockito.eq(interfaceName1),
                                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.reset(globalCapabilitiesClient);

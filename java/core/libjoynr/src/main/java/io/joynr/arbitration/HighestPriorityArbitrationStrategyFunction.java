@@ -54,6 +54,6 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
         }
         logger.trace("capability with highest priority: " + highestPriority + "\r\n" + highestPriorityCapability);
 
-        return Arrays.asList(highestPriorityCapability);
+        return highestPriorityCapability == null ? null : Arrays.asList(highestPriorityCapability);
     }
 }

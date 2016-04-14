@@ -93,7 +93,7 @@ public class ArbitrationTest {
                 return null;
             }
         }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
-                                                 Mockito.eq(domain),
+                                                 Mockito.eq(new String[]{ domain }),
                                                  Mockito.eq(interfaceName),
                                                  Mockito.<joynr.types.DiscoveryQos> any());
 
@@ -144,8 +144,6 @@ public class ArbitrationTest {
         }
     }
 
-    // Note: will be re-activated once we have discovery API with set of domains
-    @Ignore
     @Test
     public void keyWordArbitratorMissingKeywordTest() {
 
@@ -310,8 +308,6 @@ public class ArbitrationTest {
         }
     }
 
-    // Note: will be re-activated once we have discovery API with set of domains.
-    @Ignore
     @Test
     public void testPriorityArbitratorWithOnlyNegativePriorities() {
         ProviderQos providerQos = new ProviderQos();

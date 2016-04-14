@@ -99,7 +99,10 @@ public class LocalDiscoveryAggregatorTest {
     public void findsProvisionedEntry() {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
-        localDiscoveryAggregator.lookup(lookupCallback, systemServicesDomain, Discovery.INTERFACE_NAME, discoveryQos);
+        localDiscoveryAggregator.lookup(lookupCallback,
+                                        new String[]{ systemServicesDomain },
+                                        Discovery.INTERFACE_NAME,
+                                        discoveryQos);
         ArgumentCaptor<DiscoveryEntry[]> discoveryEntriesCaptor = ArgumentCaptor.forClass(DiscoveryEntry[].class);
         Mockito.verify(lookupCallback).resolve((Object) discoveryEntriesCaptor.capture());
         DiscoveryEntry[] discoveryEntriesPassed = discoveryEntriesCaptor.getValue();
@@ -113,11 +116,11 @@ public class LocalDiscoveryAggregatorTest {
     @Test
     public void doesNotQueryProvisionedEntry() {
         localDiscoveryAggregator.lookup(lookupCallback,
-                                        systemServicesDomain,
+                                        new String[]{ systemServicesDomain },
                                         Discovery.INTERFACE_NAME,
                                         new DiscoveryQos());
         Mockito.verify(discoveryProxyMock, Mockito.never()).lookup(Mockito.any(Callback.class),
-                                                                   Mockito.anyString(),
+                                                                   Mockito.any(String[].class),
                                                                    Mockito.anyString(),
                                                                    Mockito.any(DiscoveryQos.class));
     }
@@ -148,7 +151,7 @@ public class LocalDiscoveryAggregatorTest {
     @Test(expected = JoynrRuntimeException.class)
     public void lookupByDomainThrowsIfProxyNotSet() {
         localDiscoveryAggregator.setDiscoveryProxy(null);
-        localDiscoveryAggregator.lookup(lookupCallback, "anyDomain", "anyInterface", new DiscoveryQos());
+        localDiscoveryAggregator.lookup(lookupCallback, new String[]{ "anyDomain" }, "anyInterface", new DiscoveryQos());
         Mockito.verify(lookupCallback, Mockito.never()).resolve(Mockito.any());
     }
 

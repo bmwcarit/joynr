@@ -54,13 +54,13 @@ interface GlobalCapabilitiesDirectory{
 	}
 
 	<**
-		@description: Looks up a list of GlobalDiscoveryEntry for a given domain,
+		@description: Looks up a list of GlobalDiscoveryEntry for the given domains,
 			interface name and provider QoS.
 	**>
 	method lookup {
 		in {
-			<** @description: the name of the domain **>
-			String domain
+			<** @description: the names of the domains **>
+			String[] domains
 			<** @description: the interface name of the capability **>
 			String interfaceName
 		}

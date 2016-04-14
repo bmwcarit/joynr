@@ -48,7 +48,8 @@ public abstract class ArbitrationStrategyFunction {
      * to select the relevant ones.
      * 
      * @return the collection of discovery entries which should be used in the
-     * arbitration result.
+     * arbitration result. A value of <code>null</code> or an empty collection
+     * are used to indicate that there was no match.
      */
     abstract Collection<DiscoveryEntry> select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities);
 
