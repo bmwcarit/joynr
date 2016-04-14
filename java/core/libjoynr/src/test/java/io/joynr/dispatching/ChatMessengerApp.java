@@ -189,7 +189,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         RequestCallerDirectory requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
         // TODO register EndpointAddresses for participantIds
 
-        requestCallerDirectory.addCaller(ownParticipant, new ChatMessengerAppRequestCaller());
+        requestCallerDirectory.add(ownParticipant, new ChatMessengerAppRequestCaller());
 
         try {
             requestReplyManager.sendOneWay(ownParticipant,

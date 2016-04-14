@@ -158,7 +158,7 @@ public class RequestReplyManagerTest {
     @After
     public void tearDown() {
         requestReplyManager.removeListener(testMessageListenerParticipantId);
-        requestCallerDirectory.removeCaller(testMessageResponderParticipantId);
+        requestCallerDirectory.remove(testMessageResponderParticipantId);
     }
 
     @Test
@@ -202,7 +202,7 @@ public class RequestReplyManagerTest {
     public void requestCallerInvokedForIncomingRequest() throws Exception {
         TestRequestCaller testRequestCallerSpy = Mockito.spy(new TestRequestCaller(1));
 
-        requestCallerDirectory.addCaller(testMessageResponderParticipantId, testRequestCallerSpy);
+        requestCallerDirectory.add(testMessageResponderParticipantId, testRequestCallerSpy);
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
         requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request1, TIME_TO_LIVE);
 
@@ -244,7 +244,7 @@ public class RequestReplyManagerTest {
         TestRequestCaller testResponderUnregistered = new TestRequestCaller(1);
 
         testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.05));
-        requestCallerDirectory.addCaller(testResponderUnregisteredParticipantId, testResponderUnregistered);
+        requestCallerDirectory.add(testResponderUnregisteredParticipantId, testResponderUnregistered);
 
         testResponderUnregistered.assertAllPayloadsReceived((int) (TIME_TO_LIVE));
         testResponderUnregistered.assertReceivedPayloadsContainsNot(payload1);

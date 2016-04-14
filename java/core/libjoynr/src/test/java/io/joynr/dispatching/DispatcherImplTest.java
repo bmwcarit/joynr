@@ -126,7 +126,7 @@ public class DispatcherImplTest {
                      *
                      */
                     messageReceiverMock.setBlockOnInitialisation(true);
-                    requestCallerDirectory.addCaller(requestReplyId, requestCaller);
+                    requestCallerDirectory.add(requestReplyId, requestCaller);
                 } finally {
                     messageReceiverMock.setBlockOnInitialisation(false);
                 }

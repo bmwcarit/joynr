@@ -59,7 +59,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirectoryListener<RequestCaller> {
+public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryListener<RequestCaller> {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerImpl.class);
     private boolean running = true;
 
@@ -235,7 +235,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     }
 
     @Override
-    public void callerAdded(String participantId, RequestCaller requestCaller) {
+    public void entryAdded(String participantId, RequestCaller requestCaller) {
         ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> requestList = requestQueue.remove(participantId);
         if (requestList != null) {
             for (ContentWithExpiryDate<Request> requestItem : requestList) {
@@ -248,7 +248,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     }
 
     @Override
-    public void callerRemoved(String participantId) {
+    public void entryRemoved(String participantId) {
         //TODO cleanup requestQueue?
     }
 
@@ -281,8 +281,8 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
                               String providerParticipant,
                               Request request,
                               long expiryDate) {
-        if (requestCallerDirectory.containsCaller(providerParticipant)) {
-            handleRequest(replyCallback, requestCallerDirectory.getCaller(providerParticipant), request);
+        if (requestCallerDirectory.contains(providerParticipant)) {
+            handleRequest(replyCallback, requestCallerDirectory.get(providerParticipant), request);
         } else {
             queueRequest(replyCallback, providerParticipant, request, ExpiryDate.fromAbsolute(expiryDate));
             logger.info("No requestCaller found for participantId: {} queuing request message.", providerParticipant);
@@ -297,7 +297,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
 
     @Override
     public void handleReply(final Reply reply) {
-        final ReplyCaller callBack = replyCallerDirectory.removeCaller(reply.getRequestReplyId());
+        final ReplyCaller callBack = replyCallerDirectory.remove(reply.getRequestReplyId());
         if (callBack == null) {
             logger.warn("No reply caller found for id: " + reply.getRequestReplyId());
             return;
@@ -310,7 +310,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     public void handleError(Request request, Throwable error) {
         String requestReplyId = request.getRequestReplyId();
         if (requestReplyId != null) {
-            ReplyCaller replyCaller = replyCallerDirectory.removeCaller(requestReplyId);
+            ReplyCaller replyCaller = replyCallerDirectory.remove(requestReplyId);
             if (replyCaller != null) {
                 replyCaller.error(error);
             }

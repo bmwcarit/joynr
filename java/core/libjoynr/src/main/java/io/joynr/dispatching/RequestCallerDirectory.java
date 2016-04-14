@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class RequestCallerDirectory extends CallerDirectory<RequestCaller> {
+public class RequestCallerDirectory extends Directory<RequestCaller> {
     private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
 
     @Override

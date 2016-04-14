@@ -85,7 +85,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
-        requestCallerDirectory.addCaller(participantId, requestCaller);
+        requestCallerDirectory.add(participantId, requestCaller);
 
         Callback<Void> callback = new Callback<Void>() {
             @Override
@@ -118,7 +118,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             }
         };
         localDiscoveryAggregator.remove(callback, participantId);
-        requestCallerDirectory.removeCaller(participantId);
+        requestCallerDirectory.remove(participantId);
     }
 
     @Override

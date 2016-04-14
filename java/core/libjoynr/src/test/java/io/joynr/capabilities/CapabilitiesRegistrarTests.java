@@ -118,7 +118,7 @@ public class CapabilitiesRegistrarTests {
 
         verify(requestCallerFactory).create(provider);
 
-        verify(requestCallerDirectory).addCaller(participantId, requestCaller);
+        verify(requestCallerDirectory).add(participantId, requestCaller);
     }
 
     @Test
@@ -130,7 +130,7 @@ public class CapabilitiesRegistrarTests {
         registrar.unregisterProvider(domain, provider);
 
         verify(localDiscoveryAggregator).remove(any(Callback.class), eq(participantId));
-        verify(requestCallerDirectory).removeCaller(eq(participantId));
+        verify(requestCallerDirectory).remove(eq(participantId));
     }
 
 }

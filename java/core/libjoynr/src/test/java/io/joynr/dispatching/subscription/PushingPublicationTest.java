@@ -166,8 +166,8 @@ public class PushingPublicationTest {
                                                         any(SubscriptionPublication.class),
                                                         any(MessagingQos.class));
 
-        when(requestCallerDirectory.getCaller(eq(providerId))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(providerId))).thenReturn(true);
+        when(requestCallerDirectory.get(eq(providerId))).thenReturn(requestCaller);
+        when(requestCallerDirectory.contains(eq(providerId))).thenReturn(true);
 
     }
 

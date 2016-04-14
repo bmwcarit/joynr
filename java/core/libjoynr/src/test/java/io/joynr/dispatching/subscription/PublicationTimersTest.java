@@ -108,8 +108,8 @@ public class PublicationTimersTest {
                                                                            requestCallerDirectory,
                                                                            cleanupScheduler);
 
-        when(requestCallerDirectory.getCaller(eq(providerId))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(providerId))).thenReturn(true);
+        when(requestCallerDirectory.get(eq(providerId))).thenReturn(requestCaller);
+        when(requestCallerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
 

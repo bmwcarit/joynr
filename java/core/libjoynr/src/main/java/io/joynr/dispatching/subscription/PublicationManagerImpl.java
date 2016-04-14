@@ -21,7 +21,7 @@ package io.joynr.dispatching.subscription;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
-import io.joynr.dispatching.CallerDirectoryListener;
+import io.joynr.dispatching.DirectoryListener;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
@@ -69,7 +69,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class PublicationManagerImpl implements PublicationManager, CallerDirectoryListener<RequestCaller> {
+public class PublicationManagerImpl implements PublicationManager, DirectoryListener<RequestCaller> {
     private static final Logger logger = LoggerFactory.getLogger(PublicationManagerImpl.class);
     // Map ProviderId -> SubscriptionRequest
     private final Multimap<String, PublicationInformation> queuedSubscriptionRequests;
@@ -320,11 +320,11 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
     public void addSubscriptionRequest(String proxyParticipantId,
                                        String providerParticipantId,
                                        SubscriptionRequest subscriptionRequest) {
-        if (requestCallerDirectory.containsCaller(providerParticipantId)) {
+        if (requestCallerDirectory.contains(providerParticipantId)) {
             addSubscriptionRequest(proxyParticipantId,
                                    providerParticipantId,
                                    subscriptionRequest,
-                                   requestCallerDirectory.getCaller(providerParticipantId));
+                                   requestCallerDirectory.get(providerParticipantId));
         } else {
             logger.debug("Adding subscription request for non existing provider to queue.");
             PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
@@ -652,12 +652,12 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
     }
 
     @Override
-    public void callerAdded(String providerParticipantId, RequestCaller requestCaller) {
+    public void entryAdded(String providerParticipantId, RequestCaller requestCaller) {
         restoreQueuedSubscription(providerParticipantId, requestCaller);
     }
 
     @Override
-    public void callerRemoved(String providerParticipantId) {
+    public void entryRemoved(String providerParticipantId) {
         stopPublicationByProviderId(providerParticipantId);
     }
 
