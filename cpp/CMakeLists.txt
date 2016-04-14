@@ -775,8 +775,8 @@ set(JoynrConfig_RESOLVE_DEPENDENCIES)
 
 macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
     file(READ "${CMAKE_CURRENT_LIST_DIR}/CMake/JoynrConfig/${DEPENDENCY_FILE}.cmake.in" FILE_CONTENTS)
-    string(CONCAT JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES} ${FILE_CONTENTS})
     string(CONFIGURE ${FILE_CONTENTS} FILE_CONTENTS @ONLY)
+    string(CONCAT JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES} "${FILE_CONTENTS}")
 endmacro(FillJoynrConfigDependencies)
 
 if(USE_PLATFORM_JSMN)
