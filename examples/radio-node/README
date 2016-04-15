@@ -8,6 +8,6 @@ Then run the node applications by doing the following:
 
 1. ensure a cluster controller allowing to be connected via web socket is running and accessible
 2. start a provider
-   npm run-script startprovider --radio-node:domain=<DOMAIN> [--radio-node:cc:host=<HOST>] [--radio-node:cc:port=<PORT>]
+   npm run-script startprovider --radio-node:domain=<DOMAIN> [(--radio-node:runtime=websocket --radio-node:cc:host=<HOST> --radio-node:cc:port=<PORT>) | (--radio-node:runtime=inprocess --radio-node:bounceProxyBaseUrl=<BACKEND_URL>)]
 3. start a consumer
-   npm run-script startconsumer --radio-node:domain=<DOMAIN> [--radio-node:cc:host=<HOST>] [--radio-node:cc:port=<PORT>]
+   npm run-script startconsumer --radio-node:domain=<DOMAIN> [(--radio-node:runtime=websocket --radio-node:cc:host=<HOST> --radio-node:cc:port=<PORT>) | (--radio-node:runtime=inprocess --radio-node:bounceProxyBaseUrl=<BACKEND_URL>)]

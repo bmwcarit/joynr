@@ -1,10 +1,15 @@
 #joynr 0.17.0
 
 ##API relevant changes
-* **[C++, Java, JS]** Provider and proxy interfaces as well as generated types (structs, enums and maps)
-  provide version constants (`MAJOR_VERSION` and `MINOR_VERSION`) to reflect the version set in the
-  Franca interface or type collection. Thus, setters for provider version have been removed from
-  the API of the provider qos.
+* **[C++, Java, JS]** Provider and proxy interfaces as well as generated types (structs, enums and
+  maps) provide version constants (`MAJOR_VERSION` and `MINOR_VERSION`) to reflect the version set
+  in the Franca interface or type collection. Thus, setters for provider version have been removed
+  from the API of the provider qos.
+
+##Other changes
+* **[C++]** The content of the message router and the local capabilities directory is now persisted
+  by default and automatically loaded at cluster-controller startup. Entries are being saved (in
+  JSON format) respectively to _MessageRouter.persist_ and to _LocalCapabilitiesDirectory.persist_.
 
 #joynr 0.16.0
 

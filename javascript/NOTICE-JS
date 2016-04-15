@@ -32,6 +32,10 @@ This project has dependencies to:
           <artifactId>javascript</artifactId>
           <version>2.0.9</version>
 
+* Atmosphere JS Client (https://github.com/Atmosphere/atmosphere.js-node)
+  License: Apache License, Version 2.0 (https://github.com/Atmosphere/atmosphere.js-node/blob/master/LICENSE)
+  npm package: version 2.3.1 (https://www.npmjs.com/package/atmosphere.js)
+
 * log4javascript (http://log4javascript.org/), Version 1.4.10
   License: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)
   Location: js-dependencies/src/main/js/log4javascript/log4javascript_uncompressed.js
@@ -89,3 +93,7 @@ This project has dependencies to:
 * promise (https://github.com/then/promise)
   License: MIT License (https://github.com/then/promise#license)
   npm package: version 7.1.1 (https://www.npmjs.com/package/promise)
+  
+* node-XMLHttpRequest (https://github.com/driverdan/node-XMLHttpRequest)
+  License: MIT License (https://github.com/driverdan/node-XMLHttpRequest/blob/master/LICENSE)
+  npm package: version 1.8.0 (https://www.npmjs.com/package/xmlhttprequest)

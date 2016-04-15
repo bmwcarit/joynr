@@ -8,9 +8,9 @@ In order to run the end-to-end test, do the following:
 
 1. make sure that a cluster controller is running and is accessible via WebSockets
 2. start a provider:
-   npm run-script startprovider --performance-test:domain=<DOMAIN>
+   npm run-script startprovider --performance-test:domain=<DOMAIN> [--performance-test:cc:host=<CLUSTER_CONTROLLER_HOST> --performance-test:cc:port=<CLUSTER_CONTROLLER_PORT>]
 3. start the javascript consumer test
-   npm run-script jsconsumertest --performance-test:domain=<DOMAIN> [--performance-test:runs=<TIMES>]
+   npm run-script jsconsumertest --performance-test:domain=<DOMAIN> [--performance-test:runs=<TIMES> --performance-test:cc:host=<CLUSTER_CONTROLLER_HOST> --performance-test:cc:port=<CLUSTER_CONTROLLER_PORT>]
 
 In order to run the short-circuit-test:
-    npm run-script jsconsumertest --performance-test:domain=<DOMAIN> --performance-test:viacc=FALSE [--performance-test:runs=<TIMES>]
+    npm run-script jsconsumertest --performance-test:domain=<DOMAIN> --performance-test:viacc=FALSE [--performance-test:runs=<TIMES>] [--performance-test:bounceProxyBaseUrl=<BACKEND_HOST_URL>]

@@ -217,21 +217,25 @@ var runInteractiveConsole =
             rl.prompt();
         };
 
-if (process.argv.length < 3) {
+if (process.env.domain === undefined) {
     log("please pass a domain as argument");
     process.exit(0);
 }
-var domain = process.argv[2];
+var domain = process.env.domain;
 log("domain: " + domain);
 
 var provisioning = require("./provisioning_common.js");
 
-if (process.argv.length >= 4) {
-    provisioning.ccAddress.host = process.argv[3];
-}
-
-if (process.argv.length >= 5) {
-    provisioning.ccAddress.port = process.argv[4];
+if (process.env.runtime !== undefined) {
+    if (process.env.runtime === "inprocess") {
+        provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl;
+        provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
+        joynr.selectRuntime("inprocess");
+    } else if (process.env.runtime === "websocket") {
+        provisioning.ccAddress.host = process.env.cchost;
+        provisioning.ccAddress.port = process.env.ccport;
+        joynr.selectRuntime("websocket.libjoynr");
+    }
 }
 
 RadioStation = require("../generated/js/joynr/vehicle/RadioStation");

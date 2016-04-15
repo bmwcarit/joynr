@@ -74,10 +74,21 @@ describe("js consumer performance test", function() {
 
             runs(function() {
                 console.log("Environment not yet setup");
-                joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
+                var viaClusterController = options.viacc == 'true';
+                var provisioning = testbase.provisioning_common;
+                if (viaClusterController) {
+                    provisioning.ccAddress.host = options.cchost;
+                    provisioning.ccAddress.port = options.ccport;
+                    joynr.selectRuntime("websocket.libjoynr");
+                } else {
+                    provisioning.bounceProxyBaseUrl = options.bounceProxyBaseUrl;
+                    provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
+                    joynr.selectRuntime("inprocess");
+                }
+                joynr.load(provisioning).then(function(loadedJoynr) {
                     log("joynr started");
                     joynr = loadedJoynr;
-                    if (options.viacc !== 'true') {
+                    if (!viaClusterController) {
                         registerProvider(joynr);
                     }
                     var messagingQos = new joynr.messaging.MessagingQos({

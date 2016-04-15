@@ -12,11 +12,16 @@
     "stringlength": 10,
     "bytearraylength": 100,
     "times": "100",
-    "viacc": "true"
+    "viacc": "true",
+    "cc": {
+      "host": "localhost",
+      "port": "4242"
+    },
+    "bounceProxyBaseUrl": "http://localhost:8080"
   },
   "scripts": {
     "preinstall": "npm install ../../javascript/libjoynr-js/target/classes ../test-base/target/classes",
     "startprovider" : "node src/main/js/provider.js $npm_package_config_domain",
-    "jsconsumertest" : "jasmine-node --verbose --forceexit --junitreport --config domain $npm_package_config_domain --config runs $npm_package_config_runs --config stringlength $npm_package_config_stringlength --config bytearraylength $npm_package_config_bytearraylength --config viacc $npm_package_config_viacc src/main/js/consumer.spec.js"
+    "jsconsumertest" : "jasmine-node --verbose --forceexit --junitreport --config domain $npm_package_config_domain --config runs $npm_package_config_runs --config stringlength $npm_package_config_stringlength --config bytearraylength $npm_package_config_bytearraylength --config viacc $npm_package_config_viacc --config cchost $npm_package_config_cc_host --config ccport $npm_package_config_cc_port --config bounceProxyBaseUrl $npm_package_config_bounceProxyBaseUrl src/main/js/consumer.spec.js"
   }
 }

@@ -105,9 +105,9 @@ class ProxyGenerator extends InterfaceTemplate {
 		 * @param {String} settings.joynrName the interface name //TODO: check do we need this?
 		 *
 		 * @param {Object} settings.discoveryQos the Quality of Service parameters for arbitration
-		 * @param {Number} settings.discoveryQos.discoveryTimeout for rpc calls to wait for arbitration to finish.
+		 * @param {Number} settings.discoveryQos.discoveryTimeoutMs for rpc calls to wait for arbitration to finish.
 		 * @param {String} settings.discoveryQos.arbitrationStrategy Strategy for choosing the appropriate provider from the list returned by the capabilities directory
-		 * @param {Number} settings.discoveryQos.cacheMaxAge Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+		 * @param {Number} settings.discoveryQos.cacheMaxAgeMs Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
 		 * @param {Boolean} settings.discoveryQos.discoveryScope If localOnly is set to true, only local providers will be considered.
 		 * @param {Object} settings.discoveryQos.additionalParameters a map holding additional parameters in the form of key value pairs in the javascript object, e.g.: {"myKey": "myValue", "myKey2": 5}
 		 *

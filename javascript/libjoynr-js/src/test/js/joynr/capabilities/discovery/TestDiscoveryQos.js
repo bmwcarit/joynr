@@ -29,10 +29,10 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
         it("is instantiable", function() {
             expect(new DiscoveryQos()).toBeDefined();
             expect(new DiscoveryQos({
-                discoveryTimeout : 5000,
-                discoveryRetryDelay : 0,
+                discoveryTimeoutMs : 5000,
+                discoveryRetryDelayMs : 0,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-                cacheMaxAge : 0,
+                cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL,
                 additionalParameters : {}
             })).toBeDefined();
@@ -46,10 +46,10 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
             expect(emptyDiscoveryQos instanceof DiscoveryQos).toBeTruthy();
 
             var defaultDiscoveryQos = new DiscoveryQos({
-                discoveryTimeout : 30000,
-                discoveryRetryDelay : 1000,
+                discoveryTimeoutMs : 30000,
+                discoveryRetryDelayMs : 1000,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-                cacheMaxAge : 0,
+                cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                 additionalParameters : {}
             });
@@ -61,10 +61,10 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
 
         it("constructs correct default object", function() {
             expect(new DiscoveryQos()).toEqual(new DiscoveryQos({
-                discoveryTimeout : 30000,
-                discoveryRetryDelay : 1000,
+                discoveryTimeoutMs : 30000,
+                discoveryRetryDelayMs : 1000,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-                cacheMaxAge : 0,
+                cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                 additionalParameters : {}
             }));
@@ -72,24 +72,58 @@ joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
 
         it("constructs with correct member values", function() {
             var discoveryQos = new DiscoveryQos({
-                discoveryTimeout : 12345,
-                discoveryRetryDelay : 123456,
+                discoveryTimeoutMs : 12345,
+                discoveryRetryDelayMs : 123456,
                 arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-                cacheMaxAge : 1234,
+                cacheMaxAgeMs : 1234,
                 discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL,
                 additionalParameters : {
                     testKey : "testValue"
                 }
             });
+            expect(discoveryQos.discoveryTimeoutMs).toEqual(12345);
+            expect(discoveryQos.discoveryRetryDelayMs).toEqual(123456);
+            expect(discoveryQos.arbitrationStrategy).toEqual(
+                    ArbitrationStrategyCollection.HighestPriority);
+            expect(discoveryQos.cacheMaxAgeMs).toEqual(1234);
+            expect(discoveryQos.discoveryScope).toEqual(DiscoveryScope.LOCAL_AND_GLOBAL);
+            expect(discoveryQos.additionalParameters).toEqual({
+                testKey : "testValue"
+            });
+        });
+
+        it("handles deprecated APIs", function() {
+            var discoveryQos = new DiscoveryQos({
+                discoveryTimeout : 12345,
+                discoveryRetryDelay : 123456,
+                arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
+                cacheMaxAgeMs : 1234,
+                discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL,
+                additionalParameters : {
+                    testKey : "testValue"
+                }
+            });
+            expect(discoveryQos.discoveryTimeoutMs).toEqual(12345);
             expect(discoveryQos.discoveryTimeout).toEqual(12345);
+            expect(discoveryQos.discoveryRetryDelayMs).toEqual(123456);
             expect(discoveryQos.discoveryRetryDelay).toEqual(123456);
             expect(discoveryQos.arbitrationStrategy).toEqual(
                     ArbitrationStrategyCollection.HighestPriority);
+            expect(discoveryQos.cacheMaxAgeMs).toEqual(1234);
             expect(discoveryQos.cacheMaxAge).toEqual(1234);
             expect(discoveryQos.discoveryScope).toEqual(DiscoveryScope.LOCAL_AND_GLOBAL);
             expect(discoveryQos.additionalParameters).toEqual({
                 testKey : "testValue"
             });
+            discoveryQos.discoveryTimeout = 1000;
+            expect(discoveryQos.discoveryTimeoutMs).toEqual(1000);
+            expect(discoveryQos.discoveryTimeout).toEqual(1000);
+            discoveryQos.discoveryRetryDelay = 2000;
+            expect(discoveryQos.discoveryRetryDelayMs).toEqual(2000);
+            expect(discoveryQos.discoveryRetryDelay).toEqual(2000);
+            discoveryQos.cacheMaxAge = 3000;
+            expect(discoveryQos.cacheMaxAgeMs).toEqual(3000);
+            expect(discoveryQos.cacheMaxAge).toEqual(3000);
         });
     });
 

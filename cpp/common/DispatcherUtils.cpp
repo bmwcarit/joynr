@@ -32,7 +32,7 @@ JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(std::int64_t ttl_ms)
 {
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
-    JoynrTimePoint expiryDate = now + std::chrono::duration<long long>(ttl_ms);
+    JoynrTimePoint expiryDate = now + std::chrono::milliseconds(ttl_ms);
 
     // check for overflow
     if (ttl_ms > 0) {
