@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
@@ -50,20 +51,20 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     private final MessageRouter messageRouter;
     private ParticipantIdStorage participantIdStorage;
     private Address libjoynrMessagingAddress;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
 
     @Inject
     public CapabilitiesRegistrarImpl(DiscoveryAsync localDiscoveryAggregator,
                                      RequestCallerFactory requestCallerFactory,
                                      MessageRouter messageRouter,
-                                     RequestCallerDirectory requestCallerDirectory,
+                                     ProviderDirectory providerDirectory,
                                      ParticipantIdStorage participantIdStorage,
                                      @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
         super();
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.requestCallerFactory = requestCallerFactory;
         this.messageRouter = messageRouter;
-        this.requestCallerDirectory = requestCallerDirectory;
+        this.providerDirectory = providerDirectory;
         this.participantIdStorage = participantIdStorage;
         this.libjoynrMessagingAddress = dispatcherAddress;
     }
@@ -85,7 +86,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
-        requestCallerDirectory.add(participantId, requestCaller);
+        providerDirectory.add(participantId, new ProviderContainer(requestCaller));
 
         Callback<Void> callback = new Callback<Void>() {
             @Override
@@ -118,7 +119,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             }
         };
         localDiscoveryAggregator.remove(callback, participantId);
-        requestCallerDirectory.remove(participantId);
+        providerDirectory.remove(participantId);
     }
 
     @Override

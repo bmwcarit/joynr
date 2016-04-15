@@ -23,7 +23,7 @@ import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -46,7 +46,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
     @Inject
     public ServletJoynrRuntimeImpl(ObjectMapper objectMapper,
                                    ProxyBuilderFactory builderFactory,
-                                   RequestCallerDirectory requestCallerDirectory,
+                                   ProviderDirectory providerContainer,
                                    ReplyCallerDirectory replyCallerDirectory,
                                    Dispatcher dispatcher,
                                    MessagingStubFactory messagingStubFactory,
@@ -64,7 +64,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
         // CHECKSTYLE:ON
         super(objectMapper,
               builderFactory,
-              requestCallerDirectory,
+              providerContainer,
               replyCallerDirectory,
               dispatcher,
               messagingStubFactory,

@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 
 import java.util.UUID;
@@ -71,7 +72,7 @@ public class DispatcherImplTest {
     private MessageReceiverMock messageReceiverMock = new MessageReceiverMock();
 
     private Dispatcher fixture;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory requestCallerDirectory;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException {
@@ -105,7 +106,7 @@ public class DispatcherImplTest {
             public void receiverException(Throwable e) {
             }
         });
-        requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
+        requestCallerDirectory = injector.getInstance(ProviderDirectory.class);
     }
 
     @Test
@@ -126,7 +127,7 @@ public class DispatcherImplTest {
                      *
                      */
                     messageReceiverMock.setBlockOnInitialisation(true);
-                    requestCallerDirectory.add(requestReplyId, requestCaller);
+                    requestCallerDirectory.add(requestReplyId, new ProviderContainer(requestCaller));
                 } finally {
                     messageReceiverMock.setBlockOnInitialisation(false);
                 }

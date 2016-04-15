@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,17 +29,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.proxy.Callback;
 import joynr.types.CommunicationMiddleware;
@@ -55,7 +57,7 @@ public class CapabilitiesRegistrarTests {
     @Mock
     private RequestCallerFactory requestCallerFactory;
     @Mock
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
 
     @Mock
     private MessageRouter messageRouter;
@@ -94,7 +96,7 @@ public class CapabilitiesRegistrarTests {
         registrar = new CapabilitiesRegistrarImpl(localDiscoveryAggregator,
                                                   requestCallerFactory,
                                                   messageRouter,
-                                                  requestCallerDirectory,
+                                                  providerDirectory,
                                                   participantIdStorage,
                                                   new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
     }
@@ -118,7 +120,7 @@ public class CapabilitiesRegistrarTests {
 
         verify(requestCallerFactory).create(provider);
 
-        verify(requestCallerDirectory).add(participantId, requestCaller);
+        verify(providerDirectory).add(participantId, eq(new ProviderContainer(requestCaller)));
     }
 
     @Test
@@ -130,7 +132,7 @@ public class CapabilitiesRegistrarTests {
         registrar.unregisterProvider(domain, provider);
 
         verify(localDiscoveryAggregator).remove(any(Callback.class), eq(participantId));
-        verify(requestCallerDirectory).remove(eq(participantId));
+        verify(providerDirectory).remove(eq(participantId));
     }
 
 }

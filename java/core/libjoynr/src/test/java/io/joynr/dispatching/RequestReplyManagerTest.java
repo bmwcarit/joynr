@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import io.joynr.provider.ProviderContainer;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -75,7 +76,7 @@ public class RequestReplyManagerTest {
     private static final long TIME_TO_LIVE = 10000L;
     private RequestReplyManager requestReplyManager;
     private ReplyCallerDirectory replyCallerDirectory;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
     private String testSenderParticipantId;
     private String testMessageListenerParticipantId;
     private String testMessageResponderParticipantId;
@@ -121,7 +122,7 @@ public class RequestReplyManagerTest {
         objectMapper.registerSubtypes(Request.class, OneWay.class);
 
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
-        requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
+        providerDirectory = injector.getInstance(ProviderDirectory.class);
         replyCallerDirectory = injector.getInstance(ReplyCallerDirectory.class);
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
 
@@ -158,7 +159,7 @@ public class RequestReplyManagerTest {
     @After
     public void tearDown() {
         requestReplyManager.removeListener(testMessageListenerParticipantId);
-        requestCallerDirectory.remove(testMessageResponderParticipantId);
+        providerDirectory.remove(testMessageResponderParticipantId);
     }
 
     @Test
@@ -202,7 +203,7 @@ public class RequestReplyManagerTest {
     public void requestCallerInvokedForIncomingRequest() throws Exception {
         TestRequestCaller testRequestCallerSpy = Mockito.spy(new TestRequestCaller(1));
 
-        requestCallerDirectory.add(testMessageResponderParticipantId, testRequestCallerSpy);
+        providerDirectory.add(testMessageResponderParticipantId, new ProviderContainer(testRequestCallerSpy));
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
         requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request1, TIME_TO_LIVE);
 
@@ -244,7 +245,7 @@ public class RequestReplyManagerTest {
         TestRequestCaller testResponderUnregistered = new TestRequestCaller(1);
 
         testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.05));
-        requestCallerDirectory.add(testResponderUnregisteredParticipantId, testResponderUnregistered);
+        providerDirectory.add(testResponderUnregisteredParticipantId, new ProviderContainer(testResponderUnregistered));
 
         testResponderUnregistered.assertAllPayloadsReceived((int) (TIME_TO_LIVE));
         testResponderUnregistered.assertReceivedPayloadsContainsNot(payload1);

@@ -1,9 +1,9 @@
-package io.joynr.dispatching;
+package io.joynr.provider;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,24 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.dispatching.RequestCaller;
 
-import javax.inject.Singleton;
+/**
+ * A data container for provider relevant information. It is used joynr internally to
+ * manage multiple information required during the lifetime of the joynr provider.
+ *
+ * @author christoph.ainhauser
+ */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class ProviderContainer {
+    private final RequestCaller requestCaller;
 
-@Singleton
-public class RequestCallerDirectory extends Directory<RequestCaller> {
-    private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
-
-    @Override
-    protected Logger getLogger() {
-        return logger;
+    public ProviderContainer(RequestCaller requestCaller) {
+        this.requestCaller = requestCaller;
     }
+
+    public RequestCaller getRequestCaller() {
+        return requestCaller;
+    }
+
 }

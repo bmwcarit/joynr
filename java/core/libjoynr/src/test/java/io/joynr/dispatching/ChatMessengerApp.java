@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
+import io.joynr.provider.ProviderContainer;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
@@ -186,10 +187,10 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(factoryProperties)).getInjector();
 
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
-        RequestCallerDirectory requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
+        ProviderDirectory providerDirectory = injector.getInstance(ProviderDirectory.class);
         // TODO register EndpointAddresses for participantIds
 
-        requestCallerDirectory.add(ownParticipant, new ChatMessengerAppRequestCaller());
+        providerDirectory.add(ownParticipant, new ProviderContainer(new ChatMessengerAppRequestCaller()));
 
         try {
             requestReplyManager.sendOneWay(ownParticipant,

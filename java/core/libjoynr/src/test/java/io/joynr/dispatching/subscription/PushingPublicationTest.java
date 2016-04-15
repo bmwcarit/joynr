@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
+import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 
@@ -47,7 +48,6 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
-import joynr.types.ProviderQos;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +75,7 @@ public class PushingPublicationTest {
     @Mock
     Dispatcher dispatcher;
     @Mock
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
 
@@ -87,7 +87,7 @@ public class PushingPublicationTest {
     private String providerId;
     private String attributeName;
     private SubscriptionQos qos;
-    private RequestCaller requestCaller;
+    private ProviderContainer providerContainer;
     private RequestCallerFactory requestCallerFactory;
     int testAttribute = 123;
     SubscriptionPublication publication;
@@ -99,7 +99,7 @@ public class PushingPublicationTest {
 
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
-                                                        requestCallerDirectory,
+                                                        providerDirectory,
                                                         cleanupScheduler);
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
@@ -108,8 +108,7 @@ public class PushingPublicationTest {
         publication = new SubscriptionPublication(Arrays.asList(testAttribute), subscriptionId);
 
         requestCallerFactory = new RequestCallerFactory();
-        requestCaller = requestCallerFactory.create(provider);
-
+        providerContainer = new ProviderContainer(requestCallerFactory.create(provider));
         setupMocks();
     }
 
@@ -142,7 +141,7 @@ public class PushingPublicationTest {
         Deferred<Integer> testAttributeDeferred = new Deferred<Integer>();
         testAttributeDeferred.resolve(testAttribute);
         Promise<Deferred<Integer>> testAttributePromise = new Promise<Deferred<Integer>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(RequestCaller.class),
+        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
                                                                                       any(Method.class));
 
         doAnswer(new Answer<Object>() {
@@ -166,8 +165,8 @@ public class PushingPublicationTest {
                                                         any(SubscriptionPublication.class),
                                                         any(MessagingQos.class));
 
-        when(requestCallerDirectory.get(eq(providerId))).thenReturn(requestCaller);
-        when(requestCallerDirectory.contains(eq(providerId))).thenReturn(true);
+        when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
     }
 
@@ -186,7 +185,7 @@ public class PushingPublicationTest {
                                                                  eq(proxyId),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
-        verify(attributePollInterpreter, times(1)).execute(any(RequestCaller.class), any(Method.class));
+        verify(attributePollInterpreter, times(1)).execute(any(ProviderContainer.class), any(Method.class));
 
     }
 
@@ -208,7 +207,7 @@ public class PushingPublicationTest {
                                                                  any(MessagingQos.class));
         assertEquals(publication.getResponse(), sentPublication.getValue().getResponse());
         assertEquals(publication.getSubscriptionId(), sentPublication.getValue().getSubscriptionId());
-        verify(attributePollInterpreter, times(1)).execute(any(RequestCaller.class), any(Method.class));
+        verify(attributePollInterpreter, times(1)).execute(any(ProviderContainer.class), any(Method.class));
 
     }
 

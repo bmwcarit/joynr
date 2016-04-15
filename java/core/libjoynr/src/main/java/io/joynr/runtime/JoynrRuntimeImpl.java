@@ -24,7 +24,7 @@ import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.PublicationManager;
@@ -81,7 +81,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     private final ProxyBuilderFactory proxyBuilderFactory;
 
-    protected final RequestCallerDirectory requestCallerDirectory;
+    protected final ProviderDirectory requestCallerDirectory;
     protected final ReplyCallerDirectory replyCallerDirectory;
     protected final String discoveryProxyParticipantId;
 
@@ -92,7 +92,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     public JoynrRuntimeImpl(ObjectMapper objectMapper,
                             ProxyBuilderFactory proxyBuilderFactory,
-                            RequestCallerDirectory requestCallerDirectory,
+                            ProviderDirectory requestCallerDirectory,
                             ReplyCallerDirectory replyCallerDirectory,
                             Dispatcher dispatcher,
                             MessagingStubFactory messagingStubFactory,

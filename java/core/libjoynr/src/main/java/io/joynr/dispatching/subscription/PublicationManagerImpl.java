@@ -24,7 +24,7 @@ import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.DirectoryListener;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -32,6 +32,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
+import io.joynr.provider.ProviderContainer;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.AttributeListener;
@@ -69,7 +70,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class PublicationManagerImpl implements PublicationManager, DirectoryListener<RequestCaller> {
+public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer> {
     private static final Logger logger = LoggerFactory.getLogger(PublicationManagerImpl.class);
     // Map ProviderId -> SubscriptionRequest
     private final Multimap<String, PublicationInformation> queuedSubscriptionRequests;
@@ -87,7 +88,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private AttributePollInterpreter attributePollInterpreter;
     private ScheduledExecutorService cleanupScheduler;
     private Dispatcher dispatcher;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -161,11 +162,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     @Inject
     public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
                                   Dispatcher dispatcher,
-                                  RequestCallerDirectory requestCallerDirectory,
+                                  ProviderDirectory providerDirectory,
                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         super();
         this.dispatcher = dispatcher;
-        this.requestCallerDirectory = requestCallerDirectory;
+        this.providerDirectory = providerDirectory;
         this.cleanupScheduler = cleanupScheduler;
         this.queuedSubscriptionRequests = HashMultimap.create();
         this.subscriptionId2PublicationInformation = Maps.newConcurrentMap();
@@ -174,24 +175,24 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         this.unregisterAttributeListeners = Maps.newConcurrentMap();
         this.unregisterBroadcastListeners = Maps.newConcurrentMap();
         this.attributePollInterpreter = attributePollInterpreter;
-        requestCallerDirectory.addListener(this);
+        providerDirectory.addListener(this);
 
     }
 
     private void handleSubscriptionRequest(PublicationInformation publicationInformation,
                                            SubscriptionRequest subscriptionRequest,
-                                           RequestCaller requestCaller) {
+                                           ProviderContainer providerContainer) {
 
         final String subscriptionId = subscriptionRequest.getSubscriptionId();
 
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
 
         try {
-            Method method = findGetterForAttributeName(requestCaller.getClass(),
+            Method method = findGetterForAttributeName(providerContainer.getRequestCaller().getClass(),
                                                        subscriptionRequest.getSubscribedToName());
 
             // Send initial publication
-            triggerPublication(publicationInformation, requestCaller, method);
+            triggerPublication(publicationInformation, providerContainer, method);
 
             boolean hasSubscriptionHeartBeat = subscriptionQos instanceof HeartbeatSubscriptionInformation;
             boolean isOnChangeSubscription = subscriptionQos instanceof OnChangeSubscriptionQos;
@@ -199,7 +200,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             if (hasSubscriptionHeartBeat || isOnChangeSubscription) {
                 final PublicationTimer timer = new PublicationTimer(publicationInformation,
                                                                     method,
-                                                                    requestCaller,
+                                                                    providerContainer,
                                                                     this,
                                                                     attributePollInterpreter);
 
@@ -207,6 +208,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                 publicationTimers.put(subscriptionId, timer);
             }
 
+            RequestCaller requestCaller = providerContainer.getRequestCaller();
             // Handle onChange subscriptions
             if (subscriptionQos instanceof OnChangeSubscriptionQos) {
                 AttributeListener attributeListener = new AttributeListenerImpl(subscriptionId, this);
@@ -234,9 +236,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private void handleBroadcastSubscriptionRequest(String proxyParticipantId,
                                                     String providerParticipantId,
                                                     BroadcastSubscriptionRequest subscriptionRequest,
-                                                    RequestCaller requestCaller) {
+                                                    ProviderContainer providerContainer) {
         logger.debug("adding broadcast publication: " + subscriptionRequest.toString());
 
+        RequestCaller requestCaller = providerContainer.getRequestCaller();
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
         requestCaller.registerBroadcastListener(broadcastName, broadcastListener);
@@ -249,7 +252,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private void addSubscriptionRequest(String proxyParticipantId,
                                         String providerParticipantId,
                                         SubscriptionRequest subscriptionRequest,
-                                        RequestCaller requestCaller) {
+                                        ProviderContainer providerContainer) {
 
         PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                    proxyParticipantId,
@@ -281,9 +284,9 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                 handleBroadcastSubscriptionRequest(proxyParticipantId,
                                                    providerParticipantId,
                                                    (BroadcastSubscriptionRequest) subscriptionRequest,
-                                                   requestCaller);
+                                                   providerContainer);
             } else {
-                handleSubscriptionRequest(publicationInformation, subscriptionRequest, requestCaller);
+                handleSubscriptionRequest(publicationInformation, subscriptionRequest, providerContainer);
             }
 
             if (subscriptionQos.getExpiryDateMs() != SubscriptionQos.NO_EXPIRY_DATE) {
@@ -320,11 +323,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     public void addSubscriptionRequest(String proxyParticipantId,
                                        String providerParticipantId,
                                        SubscriptionRequest subscriptionRequest) {
-        if (requestCallerDirectory.contains(providerParticipantId)) {
+        if (providerDirectory.contains(providerParticipantId)) {
             addSubscriptionRequest(proxyParticipantId,
                                    providerParticipantId,
                                    subscriptionRequest,
-                                   requestCallerDirectory.get(providerParticipantId));
+                                   providerDirectory.get(providerParticipantId));
         } else {
             logger.debug("Adding subscription request for non existing provider to queue.");
             PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
@@ -449,9 +452,9 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
      * subscriptionRequests waiting.
      * 
      * @param providerId provider id
-     * @param requestCaller request caller
+     * @param providerContainer provider container
      */
-    private void restoreQueuedSubscription(String providerId, RequestCaller requestCaller) {
+    private void restoreQueuedSubscription(String providerId, ProviderContainer providerContainer) {
         Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.get(providerId);
         Iterator<PublicationInformation> queuedRequestsIterator = queuedRequests.iterator();
         while (queuedRequestsIterator.hasNext()) {
@@ -461,7 +464,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                 addSubscriptionRequest(publicInformation.getProxyParticipantId(),
                                        publicInformation.getProviderParticipantId(),
                                        publicInformation.subscriptionRequest,
-                                       requestCaller);
+                                       providerContainer);
             }
         }
     }
@@ -597,10 +600,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     }
 
     private void triggerPublication(final PublicationInformation publicationInformation,
-                                    RequestCaller requestCaller,
+                                    ProviderContainer providerContainer,
                                     Method method) {
         try {
-            Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
+            Promise<?> attributeGetterPromise = attributePollInterpreter.execute(providerContainer, method);
             attributeGetterPromise.then(new PromiseListener() {
 
                 @Override
@@ -652,8 +655,8 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     }
 
     @Override
-    public void entryAdded(String providerParticipantId, RequestCaller requestCaller) {
-        restoreQueuedSubscription(providerParticipantId, requestCaller);
+    public void entryAdded(String providerParticipantId, ProviderContainer providerContainer) {
+        restoreQueuedSubscription(providerParticipantId, providerContainer);
     }
 
     @Override
@@ -663,6 +666,6 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
     @Override
     public void shutdown() {
-        requestCallerDirectory.removeListener(this);
+        providerDirectory.removeListener(this);
     }
 }
