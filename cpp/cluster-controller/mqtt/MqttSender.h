@@ -23,7 +23,6 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/BrokerUrl.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/Logger.h"
 
@@ -49,12 +48,6 @@ public:
                      const JoynrMessage& message,
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
-    /**
-    * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
-    * the channelIds.
-    */
-    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-              const MessagingSettings& settings) override;
 
     void registerReceiveQueueStartedCallback(
             std::function<void(void)> waitForReceiveQueueStarted) override;

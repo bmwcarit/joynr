@@ -68,15 +68,11 @@ public:
       */
     void stopReceiveQueue() override;
 
-    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) override;
-
     void registerReceiveCallback(
             std::function<void(const std::string&)> onTextMessageReceived) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttReceiver);
-
-    void init();
 
     /* This semaphore keeps track of the status of the channel. On creation no resources are
        available.
@@ -97,7 +93,6 @@ private:
     std::string receiverId;
 
     MessagingSettings settings;
-    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     MosquittoSubscriber mosquittoSubscriber;
 

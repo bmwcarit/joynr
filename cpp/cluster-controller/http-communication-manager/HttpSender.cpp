@@ -55,11 +55,6 @@ HttpSender::HttpSender(const BrokerUrl& brokerUrl,
 {
 }
 
-void HttpSender::init(const MessagingSettings& settings)
-{
-    std::ignore = settings;
-}
-
 HttpSender::~HttpSender()
 {
     delayedScheduler.shutdown();

@@ -40,13 +40,16 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings)
           globalClusterControllerAddress(),
           settings(settings),
           messageReceiver(nullptr),
-          channelUrlDirectory(),
           onTextMessageReceived(nullptr)
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
     channelId = persist.getChannelId();
     receiverId = persist.getReceiverId();
-    init();
+
+    JOYNR_LOG_DEBUG(logger, "Print settings... ");
+    settings.printSettings();
+    updateSettings();
+    JOYNR_LOG_DEBUG(logger, "Init finished.");
 
     system::RoutingTypes::ChannelAddress receiverChannelAddress(
             settings.getBounceProxyUrl().getBrokerChannelsBaseUrl().toString() + channelId + "/",
@@ -56,19 +59,6 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings)
 
     // Remove any existing curl handles
     HttpNetworking::getInstance()->getCurlHandlePool()->reset();
-}
-
-void HttpReceiver::init()
-{
-    JOYNR_LOG_DEBUG(logger, "Print settings... ");
-    settings.printSettings();
-    updateSettings();
-    JOYNR_LOG_DEBUG(logger, "Init finished.");
-}
-
-void HttpReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory)
-{
-    this->channelUrlDirectory = channelUrlDirectory;
 }
 
 void HttpReceiver::updateSettings()
@@ -104,11 +94,8 @@ HttpReceiver::~HttpReceiver()
 
 void HttpReceiver::startReceiveQueue()
 {
-
-    if (!onTextMessageReceived || !channelUrlDirectory) {
-        JOYNR_LOG_FATAL(
-                logger,
-                "FAIL::receiveQueue started with no onTextMessageReceived/channelUrlDirectory.");
+    if (!onTextMessageReceived) {
+        JOYNR_LOG_FATAL(logger, "FAIL::receiveQueue started with no onTextMessageReceived.");
     }
 
     // Get the settings specific to long polling
@@ -124,7 +111,6 @@ void HttpReceiver::startReceiveQueue()
                                                      receiverId,
                                                      longPollSettings,
                                                      channelCreatedSemaphore,
-                                                     channelUrlDirectory,
                                                      onTextMessageReceived);
     messageReceiver->start();
 }
@@ -173,8 +159,6 @@ bool HttpReceiver::tryToDeleteChannel()
         channelCreatedSemaphore->waitFor(
                 std::chrono::seconds(5)); // Reset the channel created Semaphore.
         JOYNR_LOG_INFO(logger, "channel deletion successfull");
-        channelUrlDirectory->unregisterChannelUrlsAsync(channelId);
-        JOYNR_LOG_INFO(logger, "Sendeing unregister request to ChannelUrlDirectory ...");
 
         return true;
     } else if (statusCode == 204) {

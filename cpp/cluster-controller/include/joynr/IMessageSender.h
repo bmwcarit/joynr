@@ -20,9 +20,9 @@
 #define IMESSAGESENDER_H
 
 #include "joynr/MessagingSettings.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include <string>
 #include <memory>
@@ -41,12 +41,6 @@ public:
             const joynr::system::RoutingTypes::Address& destinationAddress,
             const JoynrMessage& message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
-    /**
-    * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
-    * the channelIds.
-    */
-    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                      const MessagingSettings& settings) = 0;
 
     virtual void registerReceiveQueueStartedCallback(
             std::function<void(void)> waitForReceiveQueueStarted) = 0;

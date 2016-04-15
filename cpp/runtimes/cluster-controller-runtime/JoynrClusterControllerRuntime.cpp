@@ -52,7 +52,6 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
@@ -77,7 +76,6 @@
 #include "joynr/ProxyFactory.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
 #include "joynr/system/DiscoveryProvider.h"
 #include "joynr/system/RoutingProvider.h"
 
@@ -117,9 +115,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
           app(app),
           capabilitiesClient(nullptr),
           localCapabilitiesDirectory(nullptr),
-          channelUrlDirectory(),
           cache(),
-          channelUrlDirectoryProxy(nullptr),
           libJoynrMessagingSkeleton(nullptr),
           httpMessagingSkeleton(nullptr),
           mqttMessagingSkeleton(nullptr),
@@ -223,9 +219,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             messagingSettings.getCapabilitiesDirectoryChannelId();
     std::string capabilitiesDirectoryParticipantId =
             messagingSettings.getCapabilitiesDirectoryParticipantId();
-    std::string channelUrlDirectoryChannelId = messagingSettings.getChannelUrlDirectoryChannelId();
-    std::string channelUrlDirectoryParticipantId =
-            messagingSettings.getChannelUrlDirectoryParticipantId();
 
     // provision global capabilities directory
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
@@ -250,31 +243,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                         capabilitiesDirectoryChannelId);
         messageRouter->addProvisionedNextHop(
                 capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
-    }
-
-    // provision channel url directory
-    if (boost::starts_with(channelUrlDirectoryChannelId, "{")) {
-
-        try {
-            using system::RoutingTypes::MqttAddress;
-            auto globalChannelUrlDirectoryAddress = std::make_shared<MqttAddress>(
-                    JsonSerializer::deserialize<MqttAddress>(channelUrlDirectoryChannelId));
-            messageRouter->addProvisionedNextHop(
-                    channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);
-        } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_FATAL(logger,
-                            "could not deserialize MqttAddress from {} - error: {}",
-                            capabilitiesDirectoryChannelId,
-                            e.what());
-        }
-    } else {
-        auto globalChannelUrlDirectoryAddress =
-                std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-                        messagingSettings.getChannelUrlDirectoryUrl() + "/" +
-                                channelUrlDirectoryChannelId,
-                        channelUrlDirectoryChannelId);
-        messageRouter->addProvisionedNextHop(
-                channelUrlDirectoryParticipantId, globalChannelUrlDirectoryAddress);
     }
 
     // setup CC WebSocket interface
@@ -504,33 +472,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
         ((CapabilitiesClient*)capabilitiesClient)->init(capabilitiesProxy);
-    }
-
-    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
-            createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                    messagingSettings.getDiscoveryDirectoriesDomain());
-
-    DiscoveryQos discoveryQos(10000);
-    discoveryQos.setArbitrationStrategy(
-            DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
-                                                                  // should be available
-    channelUrlDirectoryProxy = std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy>(
-            channelUrlDirectoryProxyBuilder->setMessagingQos(MessagingQos(discoveryMessagesTtl))
-                    ->setCached(true)
-                    ->setDiscoveryQos(discoveryQos)
-                    ->build());
-
-    channelUrlDirectory =
-            std::make_shared<LocalChannelUrlDirectory>(messagingSettings, channelUrlDirectoryProxy);
-
-    if (doHttpMessaging) {
-        httpMessageReceiver->init(channelUrlDirectory);
-        httpMessageSender->init(channelUrlDirectory, messagingSettings);
-    }
-
-    if (doMqttMessaging) {
-        mqttMessageReceiver->init(channelUrlDirectory);
-        mqttMessageSender->init(channelUrlDirectory, messagingSettings);
     }
 }
 

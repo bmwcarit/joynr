@@ -41,9 +41,6 @@ public:
     static const std::string& SETTING_BROKER_URL();
     static const std::string& SETTING_BOUNCE_PROXY_URL();
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
-    static const std::string& SETTING_CHANNEL_URL_DIRECTORY_URL();
-    static const std::string& SETTING_CHANNEL_URL_DIRECTORY_CHANNELID();
-    static const std::string& SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
@@ -107,10 +104,6 @@ public:
     void setBounceProxyUrl(const BrokerUrl& brokerUrl);
 
     std::string getDiscoveryDirectoriesDomain() const;
-
-    std::string getChannelUrlDirectoryUrl() const;
-    std::string getChannelUrlDirectoryChannelId() const;
-    std::string getChannelUrlDirectoryParticipantId() const;
 
     std::string getCapabilitiesDirectoryUrl() const;
     std::string getCapabilitiesDirectoryChannelId() const;

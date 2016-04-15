@@ -23,7 +23,6 @@
 #include <string>
 
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/IMessageReceiver.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
@@ -81,14 +80,11 @@ public:
       */
     void stopReceiveQueue() override;
 
-    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) override;
-
     void registerReceiveCallback(
             std::function<void(const std::string&)> onTextMessageReceived) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
-    void init();
 
     const BrokerUrl getBrokerUrl();
 
@@ -111,7 +107,6 @@ private:
 
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;
-    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;

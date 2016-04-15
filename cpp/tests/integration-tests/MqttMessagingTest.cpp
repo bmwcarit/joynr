@@ -27,8 +27,8 @@ class MqttMessagingTest : public AbstractMessagingTest {
 public:
     ADD_LOGGER(MqttMessagingTest);
     MqttMessagingTest() :
-        brokerUri(),
-        mqttTopic("receiverChannelId")
+        mqttTopic("receiverChannelId"),
+        brokerUri()
     {
         std::string brokerHost = messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost();
         std::string brokerPort = std::to_string(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
@@ -36,9 +36,7 @@ public:
         // provision global capabilities directory
         auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri,messagingSettings.getCapabilitiesDirectoryChannelId());
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
-        // provision channel url directory
-        auto addressChannelUrlDirectory = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri,messagingSettings.getChannelUrlDirectoryChannelId());
-        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
+
         messagingStubFactory->registerStubFactory(std::make_unique<MqttMessagingStubFactory>(mockMessageSender, globalClusterControllerAddress));
     }
 
@@ -54,11 +52,11 @@ public:
     }
 
     std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> createJoynrMessagingEndpointAddress();
+protected:
+    const std::string mqttTopic;
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingTest);
     std::string brokerUri;
-protected:
-    std::string mqttTopic;
 };
 
 INIT_LOGGER(MqttMessagingTest);

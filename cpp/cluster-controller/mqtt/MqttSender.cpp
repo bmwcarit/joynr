@@ -38,13 +38,6 @@ MqttSender::~MqttSender()
     mosquittoPublisher.stop();
 }
 
-void MqttSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                      const MessagingSettings& settings)
-{
-    std::ignore = channelUrlDirectory;
-    std::ignore = settings;
-}
-
 void MqttSender::sendMessage(
         const system::RoutingTypes::Address& destinationAddress,
         const JoynrMessage& message,

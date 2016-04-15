@@ -113,9 +113,7 @@ protected:
     QCoreApplication* app;
     ICapabilitiesClient* capabilitiesClient;
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
-    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     ClientQCache cache;
-    std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 

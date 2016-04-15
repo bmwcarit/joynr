@@ -12,6 +12,9 @@
   kept to maintain backwards compatibility, but implementations derived directly from
   <Interace>Provider must change to the new API. Please have a look at the class diagram
   in docs/diagrams for further details about the restructured class hierarchy.
+* **[C++, Java, JS]** The communication protocol between local directories on the cluster controller
+  and global directories in the backend changed. Please make sure that clients and backend use
+  compatible versions.
 
 ##Other changes
 * **[C++]** The content of the message router and the local capabilities directory is now persisted

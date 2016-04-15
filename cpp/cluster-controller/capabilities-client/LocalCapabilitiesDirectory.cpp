@@ -22,7 +22,6 @@
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
-#include "joynr/infrastructure/IChannelUrlDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/CapabilityEntry.h"
@@ -75,22 +74,6 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
                         false,
                         true,
                         false);
-
-    // setting up the provisioned values for the ChannelUrlDirectory (domain, interface,
-    // participantId...)
-    // The ChannelUrlDirectory is also provisioned in MessageRouter  (participantId -> channelId)
-    types::ProviderQos channelUrlDirProviderQos;
-    channelUrlDirProviderQos.setPriority(1);
-    this->insertInCache(
-            joynr::types::DiscoveryEntry(messagingSettings.getDiscoveryDirectoriesDomain(),
-                                         infrastructure::IChannelUrlDirectory::INTERFACE_NAME(),
-                                         messagingSettings.getChannelUrlDirectoryParticipantId(),
-                                         channelUrlDirProviderQos,
-                                         lastSeenDateMs,
-                                         expiryDateMs),
-            false,
-            true,
-            false);
 }
 
 LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()

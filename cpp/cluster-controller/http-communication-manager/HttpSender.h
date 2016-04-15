@@ -59,8 +59,6 @@ public:
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
-    void init(const MessagingSettings& settings) override;
-
     void registerReceiveQueueStartedCallback(
             std::function<void(void)> waitForReceiveQueueStarted) override;
 

@@ -29,7 +29,6 @@
 #include "joynr/types/TestTypes/TStructExtended.h"
 #include "joynr/types/TestTypes/TStructComposition.h"
 #include "joynr/types/Localisation/Trip.h"
-#include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/Version.h"
@@ -1034,30 +1033,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
 
     EXPECT_EQ(capabilityInformation, deserializedCI);
     JOYNR_LOG_DEBUG(logger, "deserialized capabilityInformation {}", deserializedCI.toString());
-}
-
-//// Test of ChannelURLInformation which is of type std::Vector<std::string>.
-TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
-    std::vector<std::string> urls;
-    urls.push_back("http://example1.com/");
-    urls.push_back("http://example2.com/");
-    types::ChannelUrlInformation urlInformation(urls);
-
-    // Serialize the URL Information
-    std::string serialized = JsonSerializer::serialize(Variant::make<types::ChannelUrlInformation>(urlInformation));
-    JOYNR_LOG_DEBUG(logger, "serialized ChannelUrlInformation {}", serialized);
-
-    // Expected JSON : { "_typeName" : "joynr.types.ChannelUrlInformation", "urls" : [ "http://example1.com/", "http://example2.com/" ] }
-    std::string expected("{\"_typeName\":\"joynr.types.ChannelUrlInformation\",\"urls\": [\"http://example1.com/\",\"http://example2.com/\"]}");
-
-    EXPECT_EQ(expected, serialized);
-
-    // Deserialize
-    types::ChannelUrlInformation deserializedInfo = JsonSerializer::deserialize<types::ChannelUrlInformation>(serialized);
-
-    // Check the structure
-    std::vector<std::string> deserializedUrls = deserializedInfo.getUrls();
-    EXPECT_EQ(urls, deserializedUrls);
 }
 
 TEST_F(JsonSerializerTest, deserialize_ProviderQos) {

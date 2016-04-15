@@ -34,7 +34,6 @@ MqttReceiver::MqttReceiver(const MessagingSettings& settings)
           globalClusterControllerAddress(),
           receiverId(),
           settings(settings),
-          channelUrlDirectory(),
           mosquittoSubscriber(settings.getBrokerUrl(),
                               globalClusterControllerAddress,
                               channelCreatedSemaphore),
@@ -50,22 +49,12 @@ MqttReceiver::MqttReceiver(const MessagingSettings& settings)
     globalClusterControllerAddress = JsonSerializer::serialize(receiveMqttAddress);
     receiverId = persist.getReceiverId();
 
-    init();
+    mosquittoSubscriber.registerChannelId(channelIdForMqttTopic);
 }
 
 MqttReceiver::~MqttReceiver()
 {
     mosquittoSubscriber.stop();
-}
-
-void MqttReceiver::init()
-{
-    mosquittoSubscriber.registerChannelId(channelIdForMqttTopic);
-}
-
-void MqttReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory)
-{
-    std::ignore = channelUrlDirectory;
 }
 
 void MqttReceiver::updateSettings()
