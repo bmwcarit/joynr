@@ -128,7 +128,9 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
-        providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
+        providerRuntime = getRuntime(factoryPropertiesProvider,
+                                     getSubscriptionPublisherFactoryModule(),
+                                     new StaticDomainAccessControlProvisioningModule());
 
         provider = new DefaulttestProvider();
         Future<Void> voidFuture = providerRuntime.registerProvider(domain, provider, providerQos);//.waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
@@ -146,7 +148,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "ClientDomain-" + methodName + "-"
                 + UUID.randomUUID().toString());
 
-        consumerRuntime = getRuntime(factoryPropertiesB);
+        consumerRuntime = getRuntime(factoryPropertiesB, getSubscriptionPublisherFactoryModule());
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
 
@@ -336,8 +338,8 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
             }
         };
 
-        provider.addBroadcastFilter(filter1);
-        provider.addBroadcastFilter(filter2);
+        getSubscriptionTestsPublisher().addBroadcastFilter(filter1);
+        getSubscriptionTestsPublisher().addBroadcastFilter(filter2);
 
         long minInterval = 0;
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;
@@ -388,8 +390,8 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
             }
         };
 
-        provider.addBroadcastFilter(filter1);
-        provider.addBroadcastFilter(filter2);
+        getSubscriptionTestsPublisher().addBroadcastFilter(filter1);
+        getSubscriptionTestsPublisher().addBroadcastFilter(filter2);
 
         long minInterval = 0;
         long ttl = CONST_DEFAULT_TEST_TIMEOUT;

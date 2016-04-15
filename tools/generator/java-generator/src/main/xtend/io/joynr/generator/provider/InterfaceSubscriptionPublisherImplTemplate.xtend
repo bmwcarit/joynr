@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 
-class InterfaceAbstractProviderTemplate extends InterfaceTemplate {
+class InterfaceSubscriptionPublisherImplTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension NamingUtil
@@ -43,64 +43,41 @@ class InterfaceAbstractProviderTemplate extends InterfaceTemplate {
 
 	override generate() {
 		val interfaceName =  francaIntf.joynrName
-		val className = interfaceName + "AbstractProvider"
-		val providerInterfaceName = interfaceName + "Provider"
+		val className = interfaceName + "SubscriptionPublisher"
 		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
 «warning()»
 package «packagePath»;
 
-import io.joynr.provider.AbstractJoynrProvider;
-«IF !francaIntf.broadcasts.empty»
-import io.joynr.pubsub.publication.BroadcastFilterImpl;
-«ENDIF»
+import io.joynr.provider.AbstractSubscriptionPublisher;
 
 «FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true)»
 	import «datatype»;
 «ENDFOR»
 
-public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
+public class «className»Impl extends AbstractSubscriptionPublisher implements «className» {
 
-	public «className»() {
-		super();
-	}
-
-	@Override
-	public Class<?> getProvidedInterface() {
-		return «providerInterfaceName».class;
-	}
-
-	«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
-		protected «interfaceName»SubscriptionPublisher «interfaceName.toFirstLower»SubscriptionPublisher;
-
-		@Override
-		public void setSubscriptionPublisher(«interfaceName»SubscriptionPublisher «interfaceName.toFirstLower»SubscriptionPublisher) {
-			this.«interfaceName.toFirstLower»SubscriptionPublisher = «interfaceName.toFirstLower»SubscriptionPublisher;
-		}
-
-		«IF !francaIntf.broadcasts.empty»
-			public void addBroadcastFilter(BroadcastFilterImpl filter) {
-				this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filter);
-			}
-			public void addBroadcastFilter(BroadcastFilterImpl... filters){
-				this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filters);
-			}
-		«ENDIF»
-	«ENDIF»
-
-	«FOR attribute : getAttributes(francaIntf).filter(a | a.isNotifiable)»
+	«FOR attribute : getAttributes(francaIntf)»
 		«val attributeName = attribute.joynrName»
 		«val attributeType = attribute.typeName»
-		public void «attributeName»Changed(«attributeType» «attributeName») {
-			«interfaceName.toFirstLower»SubscriptionPublisher.«attributeName»Changed(«attributeName»);
-		}
+		«IF isNotifiable(attribute)»
+			public final void «attributeName»Changed(«attributeType» «attributeName») {
+				onAttributeValueChanged("«attributeName»", «attributeName»);
+			}
+		«ENDIF»
 	«ENDFOR»
 
 	«FOR broadcast : francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {
-			«interfaceName.toFirstLower»SubscriptionPublisher.fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedUntypedOutputParameterList»);
+			«IF broadcast.outArgs.length == 1 && (isArray(broadcast.outArgs.get(0)) || isByteBuffer(broadcast.outArgs.get(0).type))»
+				// passing array to varargs will cause array elements to be understood as multiple parameters.
+				// Cast to Object prevents this.
+				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), (Object) «broadcast.commaSeperatedUntypedOutputParameterList»);
+			«ELSE»
+				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «broadcast.commaSeperatedUntypedOutputParameterList»);
+			«ENDIF»
 		}
 
 	«ENDFOR»

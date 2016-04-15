@@ -132,7 +132,9 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
-        providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
+        providerRuntime = getRuntime(factoryPropertiesProvider,
+                                     getSubscriptionPublisherFactoryModule(),
+                                     new StaticDomainAccessControlProvisioningModule());
 
         provider = new SubscriptionTestsProviderImpl();
         providerQos.setPriority(System.currentTimeMillis());
@@ -150,7 +152,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "ClientDomain-" + methodName + "-"
                 + UUID.randomUUID().toString());
 
-        consumerRuntime = getRuntime(factoryPropertiesB);
+        consumerRuntime = getRuntime(factoryPropertiesB, getSubscriptionPublisherFactoryModule());
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -182,7 +184,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verify(integerListener, times(1)).onReceive(eq(45));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -324,7 +326,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         Thread.sleep(subscriptionDuration);
         verifyNoMoreInteractions(integerListener);
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @Test
@@ -348,7 +350,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        provider.waitForAttributeSubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         // when subscribing, we automatically get 1 publication. Expect the starting-publication
         verify(integerListener, times(0)).onError(null);
@@ -365,7 +367,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verifyNoMoreInteractions(integerListener);
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -421,7 +423,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        provider.waitForAttributeSubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
@@ -433,7 +435,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         }
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @Test
@@ -457,7 +459,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        provider.waitForAttributeSubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
@@ -474,7 +476,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + 1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @Test
@@ -489,7 +491,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        provider.waitForAttributeSubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         verify(integerListener, times(0)).onError(null);
         assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
@@ -498,7 +500,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -577,7 +579,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        provider.waitForAttributeSubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         // There should have only been one call - the automatic publication when a subscription is made
         assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
@@ -589,7 +591,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         assertFalse(onReceiveSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "NPE in test would fail test")
@@ -621,6 +623,6 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         String subscriptionId = proxyToNonexistentDomain.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(4000);
         proxyToNonexistentDomain.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 }

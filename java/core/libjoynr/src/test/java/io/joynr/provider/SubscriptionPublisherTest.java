@@ -1,9 +1,9 @@
-package io.joynr.proxy;
+package io.joynr.provider;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,11 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.pubsub.publication.BroadcastFilter;
 import io.joynr.pubsub.publication.BroadcastListener;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import joynr.types.ProviderQos;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,29 +35,16 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProviderTest {
+public class SubscriptionPublisherTest {
 
-    static class MyProviderClass extends AbstractJoynrProvider {
-
-        @Override
-        public ProviderQos getProviderQos() {
-            return new ProviderQos();
-        }
+    static class MySubscriptionPublisher extends AbstractSubscriptionPublisher {
 
         // change visibility from protected to public for testing purposes
+        @Override
         public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
             super.fireBroadcast(broadcastName, broadcastFilters, values);
         }
 
-        @Override
-        public Class<?> getProvidedInterface() {
-            return getClass();
-        }
-
-        @Override
-        public String getInterfaceName() {
-            return "myproviderclass";
-        }
     }
 
     @Before
@@ -73,15 +57,16 @@ public class ProviderTest {
         String value1 = "value1";
         String value2 = "value2";
 
-        ProviderTest.MyProviderClass provider = new ProviderTest.MyProviderClass();
+        MySubscriptionPublisher subscriptionPublisher = new MySubscriptionPublisher();
         BroadcastListener broadcastListener = mock(BroadcastListener.class);
-        provider.registerBroadcastListener(broadcastName, broadcastListener);
+
+        subscriptionPublisher.registerBroadcastListener(broadcastName, broadcastListener);
 
         List<BroadcastFilter> broadcastFilters = new ArrayList<BroadcastFilter>();
         BroadcastFilter broadcastFilter = mock(BroadcastFilter.class);
         broadcastFilters.add(broadcastFilter);
 
-        provider.fireBroadcast(broadcastName, broadcastFilters, value1, value2);
+        subscriptionPublisher.fireBroadcast(broadcastName, broadcastFilters, value1, value2);
 
         verify(broadcastListener).broadcastOccurred(eq(broadcastFilters), eq(value1), eq(value2));
 
@@ -93,16 +78,16 @@ public class ProviderTest {
         String value1 = "value1";
         String value2 = "value2";
 
-        ProviderTest.MyProviderClass provider = new ProviderTest.MyProviderClass();
+        MySubscriptionPublisher subscriptionPublisher = new MySubscriptionPublisher();
         BroadcastListener broadcastListener = mock(BroadcastListener.class);
-        provider.registerBroadcastListener(broadcastName, broadcastListener);
-        provider.unregisterBroadcastListener(broadcastName, broadcastListener);
+        subscriptionPublisher.registerBroadcastListener(broadcastName, broadcastListener);
+        subscriptionPublisher.unregisterBroadcastListener(broadcastName, broadcastListener);
 
         List<BroadcastFilter> broadcastFilters = new ArrayList<BroadcastFilter>();
         BroadcastFilter broadcastFilter = mock(BroadcastFilter.class);
         broadcastFilters.add(broadcastFilter);
 
-        provider.fireBroadcast(broadcastName, broadcastFilters, value1, value2);
+        subscriptionPublisher.fireBroadcast(broadcastName, broadcastFilters, value1, value2);
 
         verify(broadcastListener, never()).broadcastOccurred(eq(broadcastFilters), eq(value1), eq(value2));
     }

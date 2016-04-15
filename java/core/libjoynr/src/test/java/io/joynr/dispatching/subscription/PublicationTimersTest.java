@@ -40,10 +40,6 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import joynr.PeriodicSubscriptionQos;
-import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,6 +51,11 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+
+import io.joynr.provider.AbstractSubscriptionPublisher;
+import joynr.PeriodicSubscriptionQos;
+import joynr.SubscriptionPublication;
+import joynr.SubscriptionRequest;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PublicationTimersTest {
@@ -70,6 +71,12 @@ public class PublicationTimersTest {
     private TestRequestCaller requestCaller;
 
     @Mock
+    private AbstractSubscriptionPublisher subscriptionPublisher;
+
+    @Mock
+    private ProviderContainer providerContainer;
+
+    @Mock
     private Dispatcher dispatcher;
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
@@ -81,6 +88,9 @@ public class PublicationTimersTest {
 
     @Before
     public void setUp() {
+        when(providerContainer.getRequestCaller()).thenReturn(requestCaller);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
+
         Deferred<String> testAttributeDeferred = new Deferred<String>();
         testAttributeDeferred.resolve("testAttributeValue");
         Promise<Deferred<String>> testAttributePromise = new Promise<Deferred<String>>(testAttributeDeferred);
@@ -109,7 +119,7 @@ public class PublicationTimersTest {
                                                                            providerDirectory,
                                                                            cleanupScheduler);
 
-        when(providerDirectory.get(eq(providerId))).thenReturn(new ProviderContainer(requestCaller));
+        when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);

@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,15 +123,26 @@ import io.joynr.provider.MinorVersion;
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
+«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
+
+import io.joynr.provider.SubscriptionPublisherInjection;
+
+interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPublisherInjection<«interfaceName»SubscriptionPublisher> {}
+«ENDIF»
 
 @InterfaceClass(«className».class)
 @InterfaceName(«className».INTERFACE_NAME)
 @MajorVersion(«className».MAJOR_VERSION)
 @MinorVersion(«className».MINOR_VERSION)
+«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
+public interface «className» extends «interfaceName»SubscriptionPublisherInjection, JoynrProvider {
+«ELSE»
 public interface «className» extends JoynrProvider {
+«ENDIF»
 	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
 	public static final int MAJOR_VERSION = «majorVersion»;
 	public static final int MINOR_VERSION = «minorVersion»;
+
 	«FOR attribute : getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
@@ -141,9 +152,6 @@ public interface «className» extends JoynrProvider {
 		«ENDIF»
 		«IF isWritable(attribute)»
 			Promise<DeferredVoid> set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
-		«ENDIF»
-		«IF isNotifiable(attribute)»
-			public void «attributeName»Changed(«attributeType» «attributeName»);
 		«ENDIF»
 	«ENDFOR»
 	«FOR method : getMethods(francaIntf)»
@@ -189,11 +197,6 @@ public interface «className» extends JoynrProvider {
 				}
 			«ENDIF»
 		}
-	«ENDFOR»
-	«FOR broadcast : francaIntf.broadcasts»
-		«val broadcastName = broadcast.joynrName»
-
-		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList»);
 	«ENDFOR»
 }
 		'''

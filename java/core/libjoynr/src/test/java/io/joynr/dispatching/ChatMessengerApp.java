@@ -23,9 +23,6 @@ import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.pubsub.publication.AttributeListener;
-import io.joynr.pubsub.publication.BroadcastFilterImpl;
-import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -92,51 +89,9 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         }
 
         @Override
-        public void registerAttributeListener(String attributeName, AttributeListener attributeListener) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void addBroadcastFilter(BroadcastFilterImpl filter) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void addBroadcastFilter(BroadcastFilterImpl... filters) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
         public Class<?> getProvidedInterface() {
             return getClass();
         }
-
-        @Override
-        public String getInterfaceName() {
-            return "chatmessagnerapp";
-        }
-
     }
 
     public static void main(String[] args) throws JoynrMessageNotSentException {
@@ -190,7 +145,9 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         ProviderDirectory providerDirectory = injector.getInstance(ProviderDirectory.class);
         // TODO register EndpointAddresses for participantIds
 
-        providerDirectory.add(ownParticipant, new ProviderContainer(new ChatMessengerAppRequestCaller()));
+        providerDirectory.add(ownParticipant, new ProviderContainer("interfaceName",
+                                                                    new ChatMessengerAppRequestCaller(),
+                                                                    null));
 
         try {
             requestReplyManager.sendOneWay(ownParticipant,

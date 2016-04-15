@@ -28,14 +28,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderContainer;
-import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 
 import java.io.IOException;
@@ -64,6 +63,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import joynr.tests.testSubscriptionPublisherImpl;
+
 @RunWith(MockitoJUnitRunner.class)
 public class PushingPublicationTest {
 
@@ -74,8 +75,13 @@ public class PushingPublicationTest {
 
     @Mock
     Dispatcher dispatcher;
+
     @Mock
     private ProviderDirectory providerDirectory;
+
+    @Mock
+    private ProviderContainer providerContainer;
+
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
 
@@ -87,8 +93,6 @@ public class PushingPublicationTest {
     private String providerId;
     private String attributeName;
     private SubscriptionQos qos;
-    private ProviderContainer providerContainer;
-    private RequestCallerFactory requestCallerFactory;
     int testAttribute = 123;
     SubscriptionPublication publication;
 
@@ -107,8 +111,10 @@ public class PushingPublicationTest {
         attributeName = "testAttribute";
         publication = new SubscriptionPublication(Arrays.asList(testAttribute), subscriptionId);
 
-        requestCallerFactory = new RequestCallerFactory();
-        providerContainer = new ProviderContainer(requestCallerFactory.create(provider));
+        testSubscriptionPublisherImpl testSubscriptionPublisher = new testSubscriptionPublisherImpl();
+        provider.setSubscriptionPublisher(testSubscriptionPublisher);
+        when(providerContainer.getRequestCaller()).thenReturn(new RequestCallerFactory().create(provider));
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(testSubscriptionPublisher);
         setupMocks();
     }
 

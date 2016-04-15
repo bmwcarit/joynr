@@ -37,12 +37,13 @@ import static org.mockito.Mockito.when;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderContainer;
-import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.BroadcastFilter;
 
@@ -108,8 +109,12 @@ public class PublicationManagerTest {
     @Mock
     private JoynrProvider provider;
 
+    @Mock
+    private AbstractSubscriptionPublisher subscriptionPublisher;
+
     private RequestCaller requestCaller;
 
+    @Mock
     private ProviderContainer providerContainer;
 
     String valueToPublish = "valuePublished";
@@ -127,9 +132,9 @@ public class PublicationManagerTest {
                                                         providerDirectory,
                                                         cleanupScheduler);
 
-        RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
-        requestCaller = requestCallerFactory.create(provider);
-        providerContainer = new ProviderContainer(requestCaller);
+        requestCaller = new RequestCallerFactory().create(provider);
+        when(providerContainer.getRequestCaller()).thenReturn(requestCaller);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
 
         when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(false);
 

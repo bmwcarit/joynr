@@ -120,21 +120,6 @@ public class ProviderWrapperTest {
     }
 
     @Test
-    public void testInvokeGetInterfaceName() throws Throwable {
-        Bean<?> bean = Mockito.mock(Bean.class);
-        BeanManager beanManager = Mockito.mock(BeanManager.class);
-
-        ProviderWrapper subject = new ProviderWrapper(TestServiceProviderInterface.class, bean, beanManager);
-        JoynrProvider proxy = createProxy(subject);
-
-        Method getInterfaceName = JoynrProvider.class.getMethod("getInterfaceName", new Class[0]);
-
-        Object result = subject.invoke(proxy, getInterfaceName, new Object[0]);
-        assertNotNull(result);
-        assertEquals(TestServiceInterface.INTERFACE_NAME, result);
-    }
-
-    @Test
     public void testInvokeVoidReturnMethod() throws Throwable {
         ProviderWrapper subject = createSubject();
         JoynrProvider proxy = createProxy(subject);

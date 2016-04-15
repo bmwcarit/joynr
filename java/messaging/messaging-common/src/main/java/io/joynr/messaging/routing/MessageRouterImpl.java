@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,6 @@ import joynr.system.RoutingTypes.CommonApiDbusAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
-import joynr.types.ProviderQos;
-import joynr.types.ProviderScope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -274,18 +272,11 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         }
     }
 
-    @Override
-    public ProviderQos getProviderQos() {
-        //set provider qos to local to prevent global registration of the routing provider
-        ProviderQos providerQos = super.getProviderQos();
-        providerQos.setScope(ProviderScope.LOCAL);
-        return providerQos;
-    }
-
     private long exponentialBackoff(long delayMs, int retries) {
         logger.debug("TRIES: " + retries);
         long millis = delayMs + (long) ((2 ^ (retries)) * delayMs * Math.random());
         logger.debug("MILLIS: " + millis);
         return millis;
     }
+
 }

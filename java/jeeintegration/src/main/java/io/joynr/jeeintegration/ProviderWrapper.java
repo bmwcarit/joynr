@@ -27,7 +27,6 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -81,18 +80,6 @@ public class ProviderWrapper extends AbstractJoynrProvider implements Invocation
     @Override
     public Class<?> getProvidedInterface() {
         return serviceInterface;
-    }
-
-    @Override
-    public String getInterfaceName() {
-        Field interfaceNameField;
-        try {
-            interfaceNameField = serviceInterface.getDeclaredField("INTERFACE_NAME");
-            return (String) interfaceNameField.get(serviceInterface);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            LOG.error(format("Problem getting interface name from service interface: %s", serviceInterface), e);
-        }
-        return "";
     }
 
     /**

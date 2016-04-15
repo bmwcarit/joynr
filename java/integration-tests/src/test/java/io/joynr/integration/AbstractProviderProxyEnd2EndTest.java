@@ -192,7 +192,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         joynrConfigProvider.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
-        providerRuntime = getRuntime(joynrConfigProvider, new StaticDomainAccessControlProvisioningModule());
+        providerRuntime = getRuntime(joynrConfigProvider,
+                                     getSubscriptionPublisherFactoryModule(),
+                                     new StaticDomainAccessControlProvisioningModule());
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
@@ -201,7 +203,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         joynrConfigConsumer.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
-        consumerRuntime = getRuntime(joynrConfigConsumer);
+        consumerRuntime = getRuntime(joynrConfigConsumer, getSubscriptionPublisherFactoryModule());
 
         provider = new TestProvider();
         ProviderQos testProviderQos = new ProviderQos();
@@ -249,12 +251,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         @Override
         public Promise<DeferredVoid> setAttributeWithProviderRuntimeException(Integer attributeWithProviderRuntimeException) {
             throw new IllegalArgumentException("thrownException");
-        }
-
-        // change visibility from protected to public for testing purposes
-        @Override
-        public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
-            super.fireBroadcast(broadcastName, broadcastFilters, values);
         }
 
         @Override
@@ -398,19 +394,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             throw new IllegalArgumentException("thrownException");
         }
 
-        boolean broadcastSubscriptionArrived = false;
-
-        public void waitForBroadcastSubscription() {
-            synchronized (this) {
-                while (!broadcastSubscriptionArrived) {
-                    try {
-                        this.wait();
-                    } catch (InterruptedException e) {
-                    }
-                }
-            }
-        }
-
         @Override
         public Promise<MethodWithByteBufferDeferred> methodWithByteBuffer(Byte[] input) {
             MethodWithByteBufferDeferred deferred = new MethodWithByteBufferDeferred();
@@ -418,16 +401,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             return new Promise<MethodWithByteBufferDeferred>(deferred);
         }
 
-        @Override
-        public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-            super.registerBroadcastListener(broadcastName, broadcastListener);
-            if (!broadcastSubscriptionArrived) {
-                synchronized (this) {
-                    broadcastSubscriptionArrived = true;
-                    this.notify();
-                }
-            }
-        }
     }
 
     protected static class TestAsyncProviderImpl extends DefaulttestProvider {
@@ -762,8 +735,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }, subscriptionQos);
 
         // wait to allow the subscription request to arrive at the provider
-        provider.waitForBroadcastSubscription();
-        provider.fireBroadcast("locationUpdateWithSpeed", null, gpsLocation, currentSpeed);
+        getSubscriptionTestsPublisher().waitForBroadcastSubscription();
+        provider.fireLocationUpdateWithSpeed(gpsLocation, currentSpeed);
         broadcastReceived.acquire();
 
     }
@@ -796,7 +769,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }, subscriptionQos);
 
         // wait to allow the subscription request to arrive at the provider
-        provider.waitForBroadcastSubscription();
+        getSubscriptionTestsPublisher().waitForBroadcastSubscription();
         provider.fireBroadcastWithMapParameters(mapParam);
         broadcastReceived.acquire();
 

@@ -30,13 +30,26 @@ import io.joynr.dispatching.RequestCaller;
 
 public class ProviderContainer {
     private final RequestCaller requestCaller;
+    private final SubscriptionPublisherObservable subscriptionPublisher;
+    private final String interfaceName;
 
-    public ProviderContainer(RequestCaller requestCaller) {
+    public ProviderContainer(String interfaceName,
+                             RequestCaller requestCaller,
+                             SubscriptionPublisherObservable subscriptionPublisher) {
+        this.interfaceName = interfaceName;
         this.requestCaller = requestCaller;
+        this.subscriptionPublisher = subscriptionPublisher;
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
     public RequestCaller getRequestCaller() {
         return requestCaller;
     }
 
+    public SubscriptionPublisherObservable getSubscriptionPublisher() {
+        return subscriptionPublisher;
+    }
 }

@@ -116,7 +116,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(proxyBuilderFactory,
                                                                          discoveryDirectoriesDomain);
 
-        this.providerQos.setScope(ProviderScope.LOCAL);
     }
 
     /**

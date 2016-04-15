@@ -23,7 +23,6 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.DirectoryListener;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -33,6 +32,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.provider.ProviderContainer;
+import io.joynr.provider.SubscriptionPublisherObservable;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.AttributeListener;
@@ -208,13 +208,13 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                 publicationTimers.put(subscriptionId, timer);
             }
 
-            RequestCaller requestCaller = providerContainer.getRequestCaller();
             // Handle onChange subscriptions
             if (subscriptionQos instanceof OnChangeSubscriptionQos) {
                 AttributeListener attributeListener = new AttributeListenerImpl(subscriptionId, this);
                 String attributeName = subscriptionRequest.getSubscribedToName();
-                requestCaller.registerAttributeListener(attributeName, attributeListener);
-                unregisterAttributeListeners.put(subscriptionId, new UnregisterAttributeListener(requestCaller,
+                SubscriptionPublisherObservable subscriptionPublisher = providerContainer.getSubscriptionPublisher();
+                subscriptionPublisher.registerAttributeListener(attributeName, attributeListener);
+                unregisterAttributeListeners.put(subscriptionId, new UnregisterAttributeListener(subscriptionPublisher,
                                                                                                  attributeName,
                                                                                                  attributeListener));
             }
@@ -239,12 +239,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     ProviderContainer providerContainer) {
         logger.debug("adding broadcast publication: " + subscriptionRequest.toString());
 
-        RequestCaller requestCaller = providerContainer.getRequestCaller();
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
-        requestCaller.registerBroadcastListener(broadcastName, broadcastListener);
+        providerContainer.getSubscriptionPublisher().registerBroadcastListener(broadcastName, broadcastListener);
         unregisterBroadcastListeners.put(subscriptionRequest.getSubscriptionId(),
-                                         new UnregisterBroadcastListener(requestCaller,
+                                         new UnregisterBroadcastListener(providerContainer.getSubscriptionPublisher(),
                                                                          broadcastName,
                                                                          broadcastListener));
     }
@@ -373,39 +372,39 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
     // Class that holds information needed to unregister attribute listener
     static class UnregisterAttributeListener {
-        final RequestCaller requestCaller;
-        final String attributeName;
-        final AttributeListener attributeListener;
+        private final String attributeName;
+        private final AttributeListener attributeListener;
+        private final SubscriptionPublisherObservable subscriptionPublisher;
 
-        public UnregisterAttributeListener(RequestCaller requestCaller,
+        public UnregisterAttributeListener(SubscriptionPublisherObservable subscriptionPublisher,
                                            String attributeName,
                                            AttributeListener attributeListener) {
-            this.requestCaller = requestCaller;
+            this.subscriptionPublisher = subscriptionPublisher;
             this.attributeName = attributeName;
             this.attributeListener = attributeListener;
         }
 
         public void unregister() {
-            requestCaller.unregisterAttributeListener(attributeName, attributeListener);
+            subscriptionPublisher.unregisterAttributeListener(attributeName, attributeListener);
         }
     }
 
     // Class that holds information needed to unregister broadcast listener
     static class UnregisterBroadcastListener {
-        final RequestCaller requestCaller;
-        final String broadcastName;
-        final BroadcastListener broadcastListener;
+        private final String broadcastName;
+        private final BroadcastListener broadcastListener;
+        private final SubscriptionPublisherObservable subscriptionPublisher;
 
-        public UnregisterBroadcastListener(RequestCaller requestCaller,
+        public UnregisterBroadcastListener(SubscriptionPublisherObservable subscriptionPublisher,
                                            String broadcastName,
                                            BroadcastListener broadcastListener) {
-            this.requestCaller = requestCaller;
+            this.subscriptionPublisher = subscriptionPublisher;
             this.broadcastName = broadcastName;
             this.broadcastListener = broadcastListener;
         }
 
         public void unregister() {
-            requestCaller.unregisterBroadcastListener(broadcastName, broadcastListener);
+            subscriptionPublisher.unregisterBroadcastListener(broadcastName, broadcastListener);
         }
     }
 

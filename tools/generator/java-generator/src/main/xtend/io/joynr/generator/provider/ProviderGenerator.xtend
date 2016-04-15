@@ -59,5 +59,19 @@ class ProviderGenerator {
 			path + serviceName + "AbstractProvider.java",
 			interfaceAbstractProviderTemplate
 		);
+
+		var subscriptionPublisherTemplate = templateFactory.createSubscriptionPublisherTemplate(fInterface)
+		generateFile(
+			fsa,
+			path + serviceName + "SubscriptionPublisher.java",
+			subscriptionPublisherTemplate
+		);
+
+		var subscriptionPublisherImplTemplate = templateFactory.createSubscriptionPublisherImplTemplate(fInterface)
+		generateFile(
+			fsa,
+			path + serviceName + "SubscriptionPublisherImpl.java",
+			subscriptionPublisherImplTemplate
+		);
 	}
 }

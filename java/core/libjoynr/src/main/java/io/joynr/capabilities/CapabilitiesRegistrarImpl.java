@@ -27,14 +27,14 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.RequestCaller;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderContainer;
-import io.joynr.provider.RequestCallerFactory;
+import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
+
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.CommunicationMiddleware;
@@ -47,22 +47,22 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesRegistrarImpl.class);
 
     private DiscoveryAsync localDiscoveryAggregator;
-    private RequestCallerFactory requestCallerFactory;
     private final MessageRouter messageRouter;
     private ParticipantIdStorage participantIdStorage;
     private Address libjoynrMessagingAddress;
     private ProviderDirectory providerDirectory;
+    private ProviderContainerFactory providerContainerFactory;
 
     @Inject
     public CapabilitiesRegistrarImpl(DiscoveryAsync localDiscoveryAggregator,
-                                     RequestCallerFactory requestCallerFactory,
+                                     ProviderContainerFactory providerContainerFactory,
                                      MessageRouter messageRouter,
                                      ProviderDirectory providerDirectory,
                                      ParticipantIdStorage participantIdStorage,
                                      @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
         super();
         this.localDiscoveryAggregator = localDiscoveryAggregator;
-        this.requestCallerFactory = requestCallerFactory;
+        this.providerContainerFactory = providerContainerFactory;
         this.messageRouter = messageRouter;
         this.providerDirectory = providerDirectory;
         this.participantIdStorage = participantIdStorage;
@@ -78,15 +78,15 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     @Override
     public Future<Void> registerProvider(final String domain, JoynrProvider provider, ProviderQos providerQos) {
         String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
+        ProviderContainer providerContainer = providerContainerFactory.create(provider);
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
-                                                           provider.getInterfaceName(),
+                                                           providerContainer.getInterfaceName(),
                                                            participantId,
                                                            providerQos,
                                                            new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
-        RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
-        providerDirectory.add(participantId, new ProviderContainer(requestCaller));
+        providerDirectory.add(participantId, providerContainer);
 
         Callback<Void> callback = new Callback<Void>() {
             @Override

@@ -27,6 +27,7 @@ import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 
@@ -120,6 +121,7 @@ public class DispatcherImplTest {
                 try {
                     String requestReplyId = UUID.randomUUID().toString();
                     RequestCaller requestCaller = mock(RequestCaller.class);
+                    AbstractSubscriptionPublisher subscriptionPublisher = mock(AbstractSubscriptionPublisher.class);
                     /* setBlockInitialisation to true causes the messageReceiver to block
                      * during startup
                      * The MessageReceiver is invoked by the dispatcher once a request caller
@@ -127,7 +129,9 @@ public class DispatcherImplTest {
                      *
                      */
                     messageReceiverMock.setBlockOnInitialisation(true);
-                    requestCallerDirectory.add(requestReplyId, new ProviderContainer(requestCaller));
+                    requestCallerDirectory.add(requestReplyId, new ProviderContainer("interfaceName",
+                                                                                     requestCaller,
+                                                                                     subscriptionPublisher));
                 } finally {
                     messageReceiverMock.setBlockOnInitialisation(false);
                 }
