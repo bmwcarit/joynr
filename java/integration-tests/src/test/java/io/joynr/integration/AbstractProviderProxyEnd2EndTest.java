@@ -81,7 +81,6 @@ import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.Trip;
-import joynr.types.ProviderQos;
 
 import org.junit.After;
 import org.junit.Before;
@@ -716,12 +715,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
-        long expiryDate = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        long publicationTtl_ms = CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
-                                                                              expiryDate,
-                                                                              publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(0)
+                       .setValidityMs(CONST_DEFAULT_TEST_TIMEOUT)
+                       .setPublicationTtlMs(CONST_DEFAULT_TEST_TIMEOUT);
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastAdapter() {
 
             @Override
@@ -747,12 +744,11 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
-        long expiryDate = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        long publicationTtl_ms = CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
-                                                                              expiryDate,
-                                                                              publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(0)
+                       .setValidityMs(CONST_DEFAULT_TEST_TIMEOUT)
+                       .setPublicationTtlMs(CONST_DEFAULT_TEST_TIMEOUT);
+
         final TStringKeyMap mapParam = new TStringKeyMap();
         mapParam.put("key", "value");
         proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastListener() {

@@ -38,7 +38,6 @@ import com.google.inject.Injector;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.JsonMessageSerializerModule;
-import io.joynr.pubsub.SubscriptionQos;
 import joynr.JoynrMessage;
 import joynr.PeriodicSubscriptionQos;
 import joynr.Reply;
@@ -86,7 +85,8 @@ public class JoynrMessageFactoryTest {
 
         String subscriptionId = "subscription";
         String attributeName = "attribute";
-        SubscriptionQos subscriptionqos = new PeriodicSubscriptionQos(1000, System.currentTimeMillis() + 10, 1500, 1000);
+        PeriodicSubscriptionQos subscriptionqos = new PeriodicSubscriptionQos();
+        subscriptionqos.setPeriodMs(1000).setValidityMs(10).setAlertAfterIntervalMs(1500).setPublicationTtlMs(1000);
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, subscriptionqos);
         String response = "response";
         publication = new SubscriptionPublication(Arrays.asList(response), subscriptionId);

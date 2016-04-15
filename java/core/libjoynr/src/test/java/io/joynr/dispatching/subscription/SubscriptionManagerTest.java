@@ -67,10 +67,10 @@ public class SubscriptionManagerTest {
     private String attributeName;
     private AttributeSubscriptionListener<?> attributeSubscriptionCallback;
 
-    private SubscriptionQos qos;
+    private PeriodicSubscriptionQos qos;
     private OnChangeSubscriptionQos onChangeQos;
 
-    private SubscriptionQos qosWithoutExpiryDate;
+    private PeriodicSubscriptionQos qosWithoutExpiryDate;
     private MessagingQos qosSettings;
 
     @Mock
@@ -127,17 +127,27 @@ public class SubscriptionManagerTest {
         };
         long minInterval_ms = 100;
         long maxInterval_ms = 5000;
-        long endDate_ms = System.currentTimeMillis() + 20000;
+        long subscriptionDuration = 20000;
         long alertInterval_ms = 6000;
         long publicationTtl_ms = 1000;
-        qos = new PeriodicSubscriptionQos(maxInterval_ms, endDate_ms, alertInterval_ms, publicationTtl_ms);
+        qos = new PeriodicSubscriptionQos();
+        qos.setPeriodMs(maxInterval_ms);
+        qos.setValidityMs(subscriptionDuration);
+        qos.setAlertAfterIntervalMs(alertInterval_ms);
+        qos.setPublicationTtlMs(publicationTtl_ms);
 
-        onChangeQos = new OnChangeSubscriptionQos(minInterval_ms, endDate_ms, publicationTtl_ms);
-        qosWithoutExpiryDate = new PeriodicSubscriptionQos(maxInterval_ms,
-                                                           SubscriptionQos.NO_EXPIRY_DATE,
-                                                           alertInterval_ms,
-                                                           publicationTtl_ms);
-        missedPublicationTimer = new MissedPublicationTimer(endDate_ms,
+        onChangeQos = new OnChangeSubscriptionQos();
+        onChangeQos.setMinIntervalMs(minInterval_ms);
+        onChangeQos.setValidityMs(subscriptionDuration);
+        onChangeQos.setPublicationTtlMs(publicationTtl_ms);
+
+        qosWithoutExpiryDate = new PeriodicSubscriptionQos();
+        qosWithoutExpiryDate.setPeriodMs(maxInterval_ms);
+        qosWithoutExpiryDate.setValidityMs(SubscriptionQos.IGNORE_VALUE);
+        qosWithoutExpiryDate.setAlertAfterIntervalMs(alertInterval_ms);
+        qosWithoutExpiryDate.setPublicationTtlMs(publicationTtl_ms);
+
+        missedPublicationTimer = new MissedPublicationTimer(System.currentTimeMillis() + subscriptionDuration,
                                                             maxInterval_ms,
                                                             alertInterval_ms,
                                                             attributeSubscriptionCallback,
