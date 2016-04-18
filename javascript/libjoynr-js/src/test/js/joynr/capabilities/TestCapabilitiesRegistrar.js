@@ -134,7 +134,6 @@ joynrTestRequire(
                                 libjoynrMessagingAddress : libjoynrMessagingAddress,
                                 requestReplyManager : requestReplyManagerSpy,
                                 publicationManager : publicationManagerSpy,
-                                localChannelId : localChannelId,
                                 loggingManager : loggingManagerSpy
                             });
 

@@ -46,8 +46,6 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
      *            dependencies.requestReplyManager passed on to providerAttribute, providerOperation and providerEvent
      * @param {PublicationManager}
      *            dependencies.publicationManager passed on to providerAttribute
-     * @param {String}
-     *            dependencies.localChannelId passed on to providerAttribute
      * 
      */
     function CapabilitiesRegistrar(dependencies) {
@@ -57,7 +55,6 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
         var libjoynrMessagingAddress = dependencies.libjoynrMessagingAddress;
         var requestReplyManager = dependencies.requestReplyManager;
         var publicationManager = dependencies.publicationManager;
-        var localChannelId = dependencies.localChannelId;
         var loggingManager = dependencies.loggingManager;
 
         /**

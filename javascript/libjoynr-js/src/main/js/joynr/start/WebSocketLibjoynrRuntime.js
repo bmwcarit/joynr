@@ -378,7 +378,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                     subscriptionManager = new SubscriptionManager(dispatcher);
                     publicationManager =
-                            new PublicationManager(dispatcher, persistency, "localchannelId");//TODO: create joynrInstanceId
+                            new PublicationManager(dispatcher, persistency, "joynrInstanceId");//TODO: create joynrInstanceId
 
                     dispatcher.registerRequestReplyManager(requestReplyManager);
                     dispatcher.registerSubscriptionManager(subscriptionManager);
@@ -394,7 +394,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                         publicationManager : publicationManager,
                         libjoynrMessagingAddress : new InProcessAddress(libjoynrMessagingSkeleton),
                         participantIdStorage : participantIdStorage,
-                        localChannelId : "localchannelId", //TODO: create joynrInstanceId
                         loggingManager : loggingManager
                     }));
 

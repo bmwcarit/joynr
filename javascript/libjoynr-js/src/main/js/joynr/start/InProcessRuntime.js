@@ -441,7 +441,6 @@ define(
                                     libjoynrMessagingAddress : new InProcessAddress(
                                             libjoynrMessagingSkeleton),
                                     participantIdStorage : participantIdStorage,
-                                    localChannelId : channelId,
                                     loggingManager : loggingManager
                                 }));
 
