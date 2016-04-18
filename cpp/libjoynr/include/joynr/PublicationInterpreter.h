@@ -19,16 +19,16 @@
 #ifndef PUBLICATIONINTERPRETER_H
 #define PUBLICATIONINTERPRETER_H
 
+#include <cassert>
+#include <memory>
+#include <functional>
+
 #include "joynr/IPublicationInterpreter.h"
 #include "joynr/Logger.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
-#include <functional>
-
-#include <cassert>
-#include <memory>
 
 namespace joynr
 {

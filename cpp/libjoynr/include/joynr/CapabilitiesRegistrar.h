@@ -18,9 +18,12 @@
  */
 #ifndef CAPABILITIESREGISTRAR_H
 #define CAPABILITIESREGISTRAR_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrExport.h"
+#include <cassert>
+#include <string>
+#include <vector>
+#include <memory>
+#include <tuple>
 
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/ParticipantIdStorage.h"
@@ -30,12 +33,8 @@
 #include "joynr/Logger.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
-
-#include <string>
-#include <vector>
-#include <cassert>
-#include <memory>
-#include <tuple>
+#include "joynr/JoynrExport.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

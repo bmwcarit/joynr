@@ -59,7 +59,6 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/exceptions/JoynrException.h"
-#include <cassert>
 
 «getNamespaceStarter(francaIntf)»
 «asyncClassName»::«asyncClassName»(

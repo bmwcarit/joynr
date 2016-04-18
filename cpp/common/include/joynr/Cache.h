@@ -19,9 +19,9 @@
 #ifndef CACHE_H
 #define CACHE_H
 
+#include <cassert>
 #include <map>
 #include <memory>
-#include <cassert>
 #include <vector>
 
 namespace joynr

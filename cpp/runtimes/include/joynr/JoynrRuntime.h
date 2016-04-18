@@ -19,10 +19,12 @@
 #ifndef JOYNRUNTIME_H
 #define JOYNRUNTIME_H
 
+#include <cassert>
+#include <string>
+#include <memory>
+
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
-
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/ProxyBuilder.h"
@@ -35,10 +37,6 @@
 #include "joynr/PublicationManager.h"
 #include "joynr/IBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
-
-#include <string>
-#include <cassert>
-#include <memory>
 
 namespace joynr
 {

@@ -18,7 +18,11 @@
  */
 #ifndef PROXYBUILDER_H
 #define PROXYBUILDER_H
-#include "joynr/PrivateCopyAssign.h"
+
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "joynr/MessagingQos.h"
 #include "joynr/ProxyFactory.h"
@@ -30,13 +34,10 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
-#include "Future.h"
+#include "joynr/Future.h"
 #include "joynr/Semaphore.h"
-#include <string>
-#include <cstdint>
 #include <joynr/TypeUtil.h>
-#include <cassert>
-#include <memory>
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

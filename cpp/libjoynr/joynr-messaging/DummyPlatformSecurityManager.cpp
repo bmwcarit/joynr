@@ -17,9 +17,11 @@
  * #L%
  */
 #include "DummyPlatformSecurityManager.h"
-#include "joynr/JoynrMessage.h"
+
 #include <cassert>
 #include <tuple>
+
+#include "joynr/JoynrMessage.h"
 
 namespace joynr
 {

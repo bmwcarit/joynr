@@ -18,14 +18,12 @@
  */
 #include "joynr/SubscriptionManager.h"
 
+#include <cstdint>
+#include <mutex>
+#include <chrono>
+
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
-
-#include <mutex>
-
-#include <cassert>
-#include <chrono>
-#include <cstdint>
 
 namespace joynr
 {

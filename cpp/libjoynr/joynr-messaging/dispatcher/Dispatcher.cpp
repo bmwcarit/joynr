@@ -16,14 +16,13 @@
  * limitations under the License.
  * #L%
  */
-/*
- * Dispatcher.cpp
- *
- *  Created on: Aug 12, 2011
- *      Author: grape
- */
-#include "joynr/DispatcherUtils.h"
 #include "joynr/Dispatcher.h"
+
+#include <cassert>
+#include <cstdint>
+#include <chrono>
+
+#include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/SubscriptionReply.h"
@@ -45,10 +44,6 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/TypeUtil.h"
-
-#include <chrono>
-#include <cstdint>
-#include <cassert>
 
 namespace joynr
 {

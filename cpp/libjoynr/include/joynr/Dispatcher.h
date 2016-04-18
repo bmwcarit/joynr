@@ -16,25 +16,18 @@
  * limitations under the License.
  * #L%
  */
-/*
- * Dispatcher.h
- *
- *  Created on: Aug 9, 2011
- *      Author: grape
- */
-
 #ifndef DISPATCHER_H
 #define DISPATCHER_H
+
+#include <string>
+#include <memory>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
-
 #include "joynr/IDispatcher.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/Logger.h"
 #include "joynr/ThreadPool.h"
-
-#include <string>
-#include <memory>
 
 namespace joynr
 {

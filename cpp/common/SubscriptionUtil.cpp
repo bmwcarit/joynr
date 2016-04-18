@@ -17,13 +17,15 @@
  * #L%
  */
 #include "joynr/SubscriptionUtil.h"
+
+#include <cassert>
+
 #include "joynr/Variant.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/SubscriptionQos.h"
-#include <cassert>
 
 namespace joynr
 {

@@ -17,11 +17,11 @@
  * #L%
  */
 
+#include <cassert>
+#include <cstdint>
 #include <fstream>
 #include <sstream>
-#include <cassert>
 #include <chrono>
-#include <cstdint>
 #include <mutex>
 
 #include "joynr/PublicationManager.h"

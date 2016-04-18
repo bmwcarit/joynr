@@ -18,8 +18,10 @@
  */
 #include "cluster-controller/http-communication-manager/HttpSender.h"
 
+#include <cassert>
 #include <algorithm>
 #include <chrono>
+
 #include <curl/curl.h>
 
 #include "joynr/JoynrMessage.h"

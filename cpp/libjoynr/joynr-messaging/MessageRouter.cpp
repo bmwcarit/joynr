@@ -16,9 +16,10 @@
  * limitations under the License.
  * #L%
  */
+#include "joynr/MessageRouter.h"
+
 #include <cassert>
 
-#include "joynr/MessageRouter.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/Address.h"

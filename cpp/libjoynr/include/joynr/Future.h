@@ -20,7 +20,6 @@
 #define FUTURE_H
 
 #include <tuple>
-#include <cassert>
 #include <functional>
 #include <utility>
 #include <cstdint>

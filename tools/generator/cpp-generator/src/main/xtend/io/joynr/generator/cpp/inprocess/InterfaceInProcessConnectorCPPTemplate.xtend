@@ -50,6 +50,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 '''
 «var interfaceName = francaIntf.joynrName»
 «warning()»
+#include <cassert>
 #include <functional>
 #include <tuple>
 

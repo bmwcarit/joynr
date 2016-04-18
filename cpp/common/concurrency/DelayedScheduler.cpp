@@ -18,8 +18,8 @@
  */
 #include "joynr/DelayedScheduler.h"
 
-#include <utility>
 #include <cassert>
+#include <utility>
 
 #include "joynr/Runnable.h"
 

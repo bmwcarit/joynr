@@ -19,7 +19,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <cassert>
 #include <cstddef>
 #include <tuple>
 #include <type_traits>

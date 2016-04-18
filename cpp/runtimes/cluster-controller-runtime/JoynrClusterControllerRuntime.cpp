@@ -16,22 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#include <QCoreApplication>
-#include <QThread>
-#include <boost/algorithm/string/predicate.hpp>
-#include <cassert>
-
-#include "mosquittopp.h"
-
-#include "JoynrClusterControllerRuntime.h"
-
 #include <cassert>
 #include <cstdint>
 #include <chrono>
 #include <functional>
 
 #include <QCoreApplication>
+#include <QThread>
+#include <boost/algorithm/string/predicate.hpp>
+#include <mosquittopp.h>
 
+#include "JoynrClusterControllerRuntime.h"
 #include "joynr/Dispatcher.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"

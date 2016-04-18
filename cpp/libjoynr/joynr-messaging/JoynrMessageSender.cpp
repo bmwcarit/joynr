@@ -18,6 +18,9 @@
  */
 
 #include "joynr/JoynrMessageSender.h"
+
+#include <cassert>
+
 #include "joynr/IMessaging.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/Request.h"
@@ -25,8 +28,6 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/MessageRouter.h"
-
-#include <cassert>
 
 namespace joynr
 {

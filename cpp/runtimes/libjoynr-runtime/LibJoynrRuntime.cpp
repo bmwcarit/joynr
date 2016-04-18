@@ -18,6 +18,9 @@
  */
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
+#include <cassert>
+#include <vector>
+
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
@@ -34,7 +37,6 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
-#include <vector>
 
 namespace joynr
 {

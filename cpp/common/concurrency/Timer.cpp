@@ -18,8 +18,8 @@
  */
 #include "joynr/Timer.h"
 
-#include <chrono>
 #include <cassert>
+#include <chrono>
 #include <utility>
 
 #include "concurrency/TimerData.h"

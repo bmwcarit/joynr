@@ -19,6 +19,7 @@
 #ifndef REPLYINTERPRETER_H
 #define REPLYINTERPRETER_H
 
+#include <cassert>
 #include <memory>
 #include <utility>
 #include <tuple>

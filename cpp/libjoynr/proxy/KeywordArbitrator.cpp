@@ -23,8 +23,6 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/TypeUtil.h"
 
-#include <cassert>
-
 namespace joynr
 {
 

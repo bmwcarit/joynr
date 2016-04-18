@@ -19,10 +19,10 @@
 #ifndef IREPLYCALLER_H
 #define IREPLYCALLER_H
 
+#include <memory>
+
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/ITimeoutListener.h"
-#include <cassert>
-#include <memory>
 
 namespace joynr
 {

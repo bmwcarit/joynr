@@ -17,11 +17,12 @@
  * #L%
  */
 #include "joynr/MessagingSettings.h"
+
+#include <cassert>
+
 #include "joynr/BrokerUrl.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
-
-#include <cassert>
 
 namespace joynr
 {

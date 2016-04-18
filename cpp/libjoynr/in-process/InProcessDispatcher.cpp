@@ -18,9 +18,11 @@
  */
 #include "joynr/InProcessDispatcher.h"
 
+#include <cassert>
+#include <tuple>
+
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
-#include <tuple>
 
 namespace joynr
 {

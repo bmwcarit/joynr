@@ -17,10 +17,11 @@
  * #L%
  */
 #include "joynr/SystemServicesSettings.h"
-#include "joynr/Settings.h"
-#include "joynr/TypeUtil.h"
 
 #include <cassert>
+
+#include "joynr/Settings.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {

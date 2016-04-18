@@ -19,7 +19,6 @@
 #include "joynr/DispatcherUtils.h"
 
 #include <limits>
-#include <cassert>
 #include <ctime>
 
 namespace joynr
