@@ -139,7 +139,7 @@ import io.joynr.UsedBy;
 import io.joynr.exceptions.DiscoveryException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, false)»
 	import «datatype»;
 «ENDFOR»
 
@@ -153,7 +153,7 @@ import io.joynr.exceptions.DiscoveryException;
 @ProvidedBy(«francaIntf.providerClassName».class)
 @UsedBy(«francaIntf.proxyClassName».class)
 «ENDIF»
-public interface «asyncClassName» extends «interfaceName» {
+public interface «asyncClassName» extends «interfaceName»«IF hasFireAndForgetMethods(francaIntf)», «interfaceName»FireAndForget«ENDIF» {
 
 	«FOR attribute: getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
@@ -217,7 +217,7 @@ public interface «asyncClassName» extends «interfaceName» {
 		}
 	«ENDFOR»
 
-	«FOR method: getMethods(francaIntf)»
+	«FOR method: getMethods(francaIntf).filter[!fireAndForget]»
 		«var methodName = method.joynrName»
 		«var params = method.inputParameters.typedParameterList»
 		«var callbackParameter = getCallbackParameter(method, methodToCallbackName)»

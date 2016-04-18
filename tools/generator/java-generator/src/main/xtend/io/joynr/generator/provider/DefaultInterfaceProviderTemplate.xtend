@@ -55,15 +55,17 @@ package «packagePath»;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.joynr.provider.Promise;
-«IF hasReadAttribute(francaIntf)»
-	import io.joynr.provider.Deferred;
-«ENDIF»
-«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
-	import io.joynr.provider.DeferredVoid;
+«IF hasNonFireAndForgetMethods(francaIntf) || hasReadAttribute(francaIntf) || hasWriteAttribute(francaIntf)»
+	import io.joynr.provider.Promise;
+	«IF hasReadAttribute(francaIntf)»
+		import io.joynr.provider.Deferred;
+	«ENDIF»
+	«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
+		import io.joynr.provider.DeferredVoid;
+	«ENDIF»
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, true)»
 	import «datatype»;
 «ENDFOR»
 
@@ -121,17 +123,23 @@ public class «className» extends «abstractProviderName» {
 		* «methodName»
 		*/
 		@Override
-		public Promise<«deferredName»> «methodName»(
+		«IF method.fireAndForget»
+		public void «methodName» (
+		«ELSE»
+		public Promise<«deferredName»> «methodName» (
+		«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF») {
 			logger.warn("**********************************************");
 			logger.warn("* «className».«methodName» called");
 			logger.warn("**********************************************");
+			«IF !method.fireAndForget»
 			«deferredName» deferred = new «deferredName»();
 			«FOR outputParameter : outputParameters»
 				«outputParameter.typeName» «outputParameter.name» = «outputParameter.defaultValue»;
 			«ENDFOR»
 			deferred.resolve(«method.commaSeperatedUntypedOutputParameterList»);
 			return new Promise<«deferredName»>(deferred);
+			«ENDIF»
 		}
 	«ENDFOR»
 }

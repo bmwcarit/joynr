@@ -1,8 +1,7 @@
-package io.joynr.generator.util
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +16,15 @@ package io.joynr.generator.util
  * limitations under the License.
  * #L%
  */
+package nofireandforget
 
-typeCollection TestTypes {
-	struct TopLevelStruct polymorphic {
-		
-	}
-	
-	struct SecondLevelStruct extends TopLevelStruct{
-		TopLevelStruct link
-	}
-	
-	struct fixture extends SecondLevelStruct {
-		
+interface FireAndForgetTest {
+
+	version {major 0 minor 1}
+
+	method callMe {
+		in {
+			String message
+		}
 	}
 }

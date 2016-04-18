@@ -107,7 +107,7 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 	}
 
 	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface) {
-		getRequiredIncludesFor(serviceInterface, true, true, true, true, true);
+		getRequiredIncludesFor(serviceInterface, true, true, true, true, true, true);
 	}
 
 	def Iterable<String> getRequiredIncludesFor(
@@ -116,11 +116,13 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 			boolean readAttributes,
 			boolean writeAttributes,
 			boolean notifyAttributes,
-			boolean broadcasts
+			boolean broadcasts,
+			boolean fireAndForget
 	) {
 		val includeSet = new TreeSet<String>();
 		val selector = TypeSelector::defaultTypeSelector
 		selector.methods(methods);
+		selector.fireAndForget(fireAndForget);
 		selector.readAttributes(readAttributes);
 		selector.writeAttributes(writeAttributes);
 		selector.notifyAttributes(notifyAttributes);
