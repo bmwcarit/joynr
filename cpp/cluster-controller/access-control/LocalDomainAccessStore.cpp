@@ -335,12 +335,15 @@ LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
                                    "    role INTEGER,"
                                    "    domain TEXT)",
                                    db);
-        assert(createDomainRole.exec());
+        bool success = false;
+        success = createDomainRole.exec();
+        assert(success);
 
         QSqlQuery createDomainRoleIndex("CREATE INDEX IF NOT EXISTS "
                                         "DomainRoleIdx ON DomainRole (uid, role)",
                                         db);
-        assert(createDomainRoleIndex.exec());
+        success = createDomainRoleIndex.exec();
+        assert(success);
 
         QSqlQuery createMasterACL("CREATE TABLE IF NOT EXISTS MasterACL("
                                   "    uid TEXT,"
@@ -355,7 +358,8 @@ LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
                                   "    possibleChangeTrustLevels BLOB,"
                                   "    PRIMARY KEY(uid, domain, interfaceName, operation))",
                                   db);
-        assert(createMasterACL.exec());
+        success = createMasterACL.exec();
+        assert(success);
 
         QSqlQuery createMediatorACL("CREATE TABLE IF NOT EXISTS MediatorACL("
                                     "    uid TEXT,"
@@ -370,7 +374,8 @@ LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
                                     "    possibleChangeTrustLevels BLOB,"
                                     "    PRIMARY KEY(uid, domain, interfaceName, operation))",
                                     db);
-        assert(createMediatorACL.exec());
+        success = createMediatorACL.exec();
+        assert(success);
 
         QSqlQuery createOwnerACL("CREATE TABLE IF NOT EXISTS OwnerACL("
                                  "       uid TEXT,"
@@ -382,7 +387,8 @@ LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
                                  "       consumerPermission INTEGER,"
                                  "       PRIMARY KEY(uid, domain, interfaceName, operation))",
                                  db);
-        assert(createOwnerACL.exec());
+        success = createOwnerACL.exec();
+        assert(success);
     }
     JOYNR_LOG_DEBUG(logger, "Connection to SQLite DB opened");
 }
@@ -420,10 +426,13 @@ boost::optional<DomainRoleEntry> LocalDomainAccessStore::getDomainRole(const std
 {
     // Execute a query to get the domain role entry
     QSqlQuery query;
-    assert(query.prepare(QtTypeUtil::toQt(SELECT_DRE)));
+    bool success = false;
+    success = query.prepare(QtTypeUtil::toQt(SELECT_DRE));
+    assert(success);
     query.bindValue(BIND_UID, QtTypeUtil::toQt(uid));
     query.bindValue(BIND_ROLE, QtTypeUtil::toQt(role));
-    assert(query.exec());
+    success = query.exec();
+    assert(success);
 
     int domainField = query.record().indexOf("domain");
 
@@ -470,7 +479,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
         const std::string& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_MASTER_ACES, uid);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractMasterAces(query);
 }
@@ -483,7 +494,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterA
 
     // Get all the Master ACEs for the domains where the user is master
     QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_MASTER_ACES, userId, Role::MASTER);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractMasterAces(query);
 }
@@ -493,7 +506,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
         const std::string& interfaceName)
 {
     QSqlQuery query = createGetAceQuery(GET_DOMAIN_INTERFACE_MASTER_ACES, domain, interfaceName);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractMasterAces(query);
 }
@@ -505,7 +520,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
 {
     QSqlQuery query =
             createGetAceQuery(GET_UID_DOMAIN_INTERFACE_MASTER_ACES, uid, domain, interfaceName);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractMasterAces(query);
 }
@@ -517,7 +534,9 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAcces
         const std::string& operation)
 {
     QSqlQuery query = createGetAceQuery(GET_MASTER_ACE, uid, domain, interfaceName, operation);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     std::vector<MasterAccessControlEntry> masterAceList = extractMasterAces(query);
     return firstEntry(masterAceList);
@@ -548,7 +567,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
         const std::string& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_MEDIATOR_ACES, uid);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractMasterAces(query);
 }
@@ -560,8 +581,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
 
     // Get all the Mediator ACEs for the domains where the user is master
     QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_MEDIATOR_ACES, userId, Role::MASTER);
-    assert(query.exec());
-
+    bool success = false;
+    success = query.exec();
+    assert(success);
     return extractMasterAces(query);
 }
 
@@ -570,7 +592,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
         const std::string& interfaceName)
 {
     QSqlQuery query = createGetAceQuery(GET_DOMAIN_INTERFACE_MEDIATOR_ACES, domain, interfaceName);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractMasterAces(query);
 }
@@ -582,7 +606,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
 {
     QSqlQuery query =
             createGetAceQuery(GET_UID_DOMAIN_INTERFACE_MEDIATOR_ACES, uid, domain, interfaceName);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractMasterAces(query);
 }
@@ -594,7 +620,9 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAcc
         const std::string& operation)
 {
     QSqlQuery query = createGetAceQuery(GET_MEDIATOR_ACE, uid, domain, interfaceName, operation);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     std::vector<MasterAccessControlEntry> mediatorAceList = extractMasterAces(query);
     return firstEntry(mediatorAceList);
@@ -648,7 +676,9 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
         const std::string& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_OWNER_ACES, uid);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractOwnerAces(query);
 }
@@ -660,7 +690,9 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAcc
 
     // Get all the Owner ACEs for the domains owned by the user
     QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_OWNER_ACES, userId, Role::OWNER);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractOwnerAces(query);
 }
@@ -670,7 +702,9 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
         const std::string& interfaceName)
 {
     QSqlQuery query = createGetAceQuery(GET_DOMAIN_INTERFACE_OWNER_ACES, domain, interfaceName);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractOwnerAces(query);
 }
@@ -682,7 +716,9 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
 {
     QSqlQuery query =
             createGetAceQuery(GET_UID_DOMAIN_INTERFACE_OWNER_ACES, userId, domain, interfaceName);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     return extractOwnerAces(query);
 }
@@ -694,7 +730,9 @@ boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessC
         const std::string& operation)
 {
     QSqlQuery query = createGetAceQuery(GET_OWNER_ACE, userId, domain, interfaceName, operation);
-    assert(query.exec());
+    bool success = false;
+    success = query.exec();
+    assert(success);
 
     std::vector<OwnerAccessControlEntry> ownerAceList = extractOwnerAces(query);
     return firstEntry(ownerAceList);
@@ -768,12 +806,21 @@ void LocalDomainAccessStore::reset()
     QSqlQuery dropMediatorAcl("DROP TABLE IF EXISTS MediatorACL", db);
     QSqlQuery dropOwnerAcl("DROP TABLE IF EXISTS OwnerACL", db);
     QSqlQuery vacuum("VACUUM", db);
+    bool success = false;
+    success = dropDomainRole.exec();
+    assert(success);
 
-    assert(dropDomainRole.exec());
-    assert(dropMasterAcl.exec());
-    assert(dropMediatorAcl.exec());
-    assert(dropOwnerAcl.exec());
-    assert(vacuum.exec());
+    success = dropMasterAcl.exec();
+    assert(success);
+
+    success = dropMediatorAcl.exec();
+    assert(success);
+
+    success = dropOwnerAcl.exec();
+    assert(success);
+
+    success = vacuum.exec();
+    assert(success);
 }
 
 bool LocalDomainAccessStore::insertDomainRoleEntry(const std::string& userId,
