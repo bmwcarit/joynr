@@ -18,18 +18,20 @@
  */
 
 #include "LocalDomainAccessStore.h"
-#include "joynr/Util.h"
-#include "AceValidator.h"
 
+#include <cassert>
+
+#include <boost/format.hpp>
+#include <QVector>
+#include <QVariant>
 #include <QIODevice>
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QDataStream>
+
+#include "joynr/Util.h"
+#include "AceValidator.h"
 #include "joynr/QtTypeUtil.h"
-#include <cassert>
-#include <QVector>
-#include "joynr/FormatString.h"
-#include <QVariant>
 
 namespace joynr
 {
@@ -39,246 +41,241 @@ INIT_LOGGER(LocalDomainAccessStore);
 
 QSqlDatabase LocalDomainAccessStore::db = QSqlDatabase::addDatabase("QSQLITE");
 
+//--- SQL placeholders -------------------------------------------------------------
+
+const char* LocalDomainAccessStore::BIND_UID = ":uid";
+const char* LocalDomainAccessStore::BIND_DOMAIN = ":domain";
+const char* LocalDomainAccessStore::BIND_ROLE = ":role";
+const char* LocalDomainAccessStore::BIND_INTERFACE = ":interface";
+const char* LocalDomainAccessStore::BIND_OPERATION = ":operation";
+const char* LocalDomainAccessStore::BIND_DEFAULT_TRUSTLEVEL = ":defaultRequiredTrustLevel";
+const char* LocalDomainAccessStore::BIND_DEFAULT_CHANGETRUSTLEVEL =
+        ":defaultRequiredControlEntryTrustLevel";
+const char* LocalDomainAccessStore::BIND_DEFAULT_CONSUMERPERMISSION = ":defaultConsumerPermission";
+const char* LocalDomainAccessStore::BIND_POSSIBLE_CONSUMERPERMISSIONS =
+        ":possibleConsumerPermissions";
+const char* LocalDomainAccessStore::BIND_POSSIBLE_TRUSTLEVELS = ":possibleTrustLevels";
+const char* LocalDomainAccessStore::BIND_POSSIBLE_CHANGETRUSTLEVELS = ":possibleChangeTrustLevels";
+const char* LocalDomainAccessStore::BIND_REQUIRED_TRUSTLEVEL = ":requiredTrustLevel";
+const char* LocalDomainAccessStore::BIND_REQUIRED_CHANGETRUSTLEVEL = ":requiredAceChangeTrustLevel";
+const char* LocalDomainAccessStore::BIND_CONSUMERPERMISSION = ":consumerPermission";
+
 //--- SQL statements -------------------------------------------------------------
 
 const std::string LocalDomainAccessStore::SELECT_DRE =
-        FormatString("SELECT domain from DomainRole WHERE uid = %1 AND role = %2")
-                .arg(BIND_UID)
-                .arg(BIND_ROLE)
-                .str();
+        (boost::format("SELECT domain from DomainRole WHERE uid = %1% AND role = %2%") % BIND_UID %
+         BIND_ROLE).str();
 
 const std::string LocalDomainAccessStore::UPDATE_DRE =
-        FormatString("INSERT OR REPLACE INTO DomainRole(uid, role, domain) VALUES(%1, %2, %3)")
-                .arg(BIND_UID)
-                .arg(BIND_ROLE)
-                .arg(BIND_DOMAIN)
-                .str();
+        (boost::format(
+                 "INSERT OR REPLACE INTO DomainRole(uid, role, domain) VALUES(%1%, %2%, %3%)") %
+         BIND_UID %
+         BIND_ROLE %
+         BIND_DOMAIN).str();
 
 const std::string LocalDomainAccessStore::DELETE_DRE =
-        FormatString("DELETE FROM DomainRole WHERE uid = %1 AND role = %2")
-                .arg(BIND_UID)
-                .arg(BIND_ROLE)
-                .str();
+        (boost::format("DELETE FROM DomainRole WHERE uid = %1% AND role = %2%") % BIND_UID %
+         BIND_ROLE).str();
 
 const std::string LocalDomainAccessStore::GET_UID_MASTER_ACES =
-        FormatString("SELECT * FROM MasterACL WHERE uid IN (%1 , '*')").arg(BIND_UID).str();
+        (boost::format("SELECT * FROM MasterACL WHERE uid IN (%1% , '*')") % BIND_UID).str();
 
 const std::string LocalDomainAccessStore::GET_DOMAIN_INTERFACE_MASTER_ACES =
-        FormatString("SELECT * FROM MasterACL "
-                     "WHERE domain = %1 AND interfaceName = %2")
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .str();
+        (boost::format("SELECT * FROM MasterACL "
+                       "WHERE domain = %1% AND interfaceName = %2%") %
+         BIND_DOMAIN %
+         BIND_INTERFACE).str();
 
 const std::string LocalDomainAccessStore::GET_UID_DOMAIN_INTERFACE_MASTER_ACES =
-        FormatString("SELECT * FROM MasterACL "
-                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .str();
+        (boost::format("SELECT * FROM MasterACL "
+                       "WHERE uid IN (%1% , '*') AND domain = %2% AND interfaceName = %3%") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE).str();
 
 const std::string LocalDomainAccessStore::GET_MASTER_ACE =
-        FormatString("SELECT * FROM MasterACL "
-                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3"
-                     " AND operation IN (%4 , '*') "
-                     "ORDER BY CASE uid"
-                     " WHEN '*' THEN 2"
-                     " ELSE 1 "
-                     "END, "
-                     "CASE operation"
-                     " WHEN '*' THEN 2"
-                     " ELSE 1 "
-                     "END")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION)
-                .str();
+        (boost::format("SELECT * FROM MasterACL "
+                       "WHERE uid IN (%1% , '*') AND domain = %2% AND interfaceName = %3%"
+                       " AND operation IN (%4% , '*') "
+                       "ORDER BY CASE uid"
+                       " WHEN '*' THEN 2"
+                       " ELSE 1 "
+                       "END, "
+                       "CASE operation"
+                       " WHEN '*' THEN 2"
+                       " ELSE 1 "
+                       "END") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE %
+         BIND_OPERATION).str();
 
 const std::string LocalDomainAccessStore::UPDATE_MASTER_ACE =
-        FormatString("INSERT OR REPLACE INTO MasterACL "
-                     "(uid, domain, interfaceName, operation,"
-                     " defaultRequiredTrustLevel, defaultRequiredControlEntryTrustLevel,"
-                     " defaultConsumerPermission, possibleConsumerPermissions,"
-                     " possibleTrustLevels, possibleChangeTrustLevels) "
-                     "VALUES(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10)")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION)
-                .arg(BIND_DEFAULT_TRUSTLEVEL)
-                .arg(BIND_DEFAULT_CHANGETRUSTLEVEL)
-                .arg(BIND_DEFAULT_CONSUMERPERMISSION)
-                .arg(BIND_POSSIBLE_CONSUMERPERMISSIONS)
-                .arg(BIND_POSSIBLE_TRUSTLEVELS)
-                .arg(BIND_POSSIBLE_CHANGETRUSTLEVELS)
-                .str();
+        (boost::format("INSERT OR REPLACE INTO MasterACL "
+                       "(uid, domain, interfaceName, operation,"
+                       " defaultRequiredTrustLevel, defaultRequiredControlEntryTrustLevel,"
+                       " defaultConsumerPermission, possibleConsumerPermissions,"
+                       " possibleTrustLevels, possibleChangeTrustLevels) "
+                       "VALUES(%1%, %2%, %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%)") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE %
+         BIND_OPERATION %
+         BIND_DEFAULT_TRUSTLEVEL %
+         BIND_DEFAULT_CHANGETRUSTLEVEL %
+         BIND_DEFAULT_CONSUMERPERMISSION %
+         BIND_POSSIBLE_CONSUMERPERMISSIONS %
+         BIND_POSSIBLE_TRUSTLEVELS %
+         BIND_POSSIBLE_CHANGETRUSTLEVELS).str();
 
 const std::string LocalDomainAccessStore::DELETE_MASTER_ACE =
-        FormatString("DELETE FROM MasterACL "
-                     "WHERE uid = %1 AND domain = %2 AND interfaceName = %3"
-                     " AND operation = %4")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION)
-                .str();
+        (boost::format("DELETE FROM MasterACL "
+                       "WHERE uid = %1% AND domain = %2% AND interfaceName = %3%"
+                       " AND operation = %4%") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE %
+         BIND_OPERATION).str();
 
 const std::string LocalDomainAccessStore::GET_EDITABLE_MASTER_ACES =
-        FormatString("SELECT acl.* FROM DomainRole as role, MasterACL as acl "
-                     "WHERE role.uid = %1 AND role.role = %2"
-                     " AND role.domain = acl.domain")
-                .arg(BIND_UID)
-                .arg(BIND_ROLE)
-                .str();
+        (boost::format("SELECT acl.* FROM DomainRole as role, MasterACL as acl "
+                       "WHERE role.uid = %1% AND role.role = %2%"
+                       " AND role.domain = acl.domain") %
+         BIND_UID %
+         BIND_ROLE).str();
 
 const std::string LocalDomainAccessStore::GET_UID_MEDIATOR_ACES =
-        FormatString("SELECT * FROM MediatorACL "
-                     "WHERE uid IN (%1 , '*')")
-                .arg(BIND_UID)
-                .str();
+        (boost::format("SELECT * FROM MediatorACL "
+                       "WHERE uid IN (%1% , '*')") %
+         BIND_UID).str();
 
 const std::string LocalDomainAccessStore::GET_DOMAIN_INTERFACE_MEDIATOR_ACES =
-        FormatString("SELECT * FROM MediatorACL "
-                     "WHERE domain = %1 AND interfaceName = %2")
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .str();
+        (boost::format("SELECT * FROM MediatorACL "
+                       "WHERE domain = %1% AND interfaceName = %2%") %
+         BIND_DOMAIN %
+         BIND_INTERFACE).str();
 
 const std::string LocalDomainAccessStore::GET_UID_DOMAIN_INTERFACE_MEDIATOR_ACES =
-        FormatString("SELECT * FROM MediatorACL "
-                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .str();
+        (boost::format("SELECT * FROM MediatorACL "
+                       "WHERE uid IN (%1% , '*') AND domain = %2% AND interfaceName = %3%") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE).str();
 
 const std::string LocalDomainAccessStore::GET_MEDIATOR_ACE =
-        FormatString("SELECT * FROM MediatorACL "
-                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3"
-                     " AND operation IN (%4 , '*')"
-                     "ORDER BY CASE uid"
-                     " WHEN '*' THEN 2"
-                     " ELSE 1 "
-                     "END, "
-                     "CASE operation"
-                     " WHEN '*' THEN 2"
-                     " ELSE 1 "
-                     "END")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION)
-                .str();
+        (boost::format("SELECT * FROM MediatorACL "
+                       "WHERE uid IN (%1% , '*') AND domain = %2% AND interfaceName = %3%"
+                       " AND operation IN (%4% , '*')"
+                       "ORDER BY CASE uid"
+                       " WHEN '*' THEN 2"
+                       " ELSE 1 "
+                       "END, "
+                       "CASE operation"
+                       " WHEN '*' THEN 2"
+                       " ELSE 1 "
+                       "END") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE %
+         BIND_OPERATION).str();
 
 const std::string LocalDomainAccessStore::UPDATE_MEDIATOR_ACE =
-        FormatString("INSERT OR REPLACE INTO MediatorACL "
-                     "(uid, domain, interfaceName, operation,"
-                     " defaultRequiredTrustLevel, defaultRequiredControlEntryTrustLevel,"
-                     " defaultConsumerPermission, possibleConsumerPermissions,"
-                     " possibleTrustLevels, possibleChangeTrustLevels) "
-                     "VALUES(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10)")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION)
-                .arg(BIND_DEFAULT_TRUSTLEVEL)
-                .arg(BIND_DEFAULT_CHANGETRUSTLEVEL)
-                .arg(BIND_DEFAULT_CONSUMERPERMISSION)
-                .arg(BIND_POSSIBLE_CONSUMERPERMISSIONS)
-                .arg(BIND_POSSIBLE_TRUSTLEVELS)
-                .arg(BIND_POSSIBLE_CHANGETRUSTLEVELS)
-                .str();
+        (boost::format("INSERT OR REPLACE INTO MediatorACL "
+                       "(uid, domain, interfaceName, operation,"
+                       " defaultRequiredTrustLevel, defaultRequiredControlEntryTrustLevel,"
+                       " defaultConsumerPermission, possibleConsumerPermissions,"
+                       " possibleTrustLevels, possibleChangeTrustLevels) "
+                       "VALUES(%1%, %2%, %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%)") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE %
+         BIND_OPERATION %
+         BIND_DEFAULT_TRUSTLEVEL %
+         BIND_DEFAULT_CHANGETRUSTLEVEL %
+         BIND_DEFAULT_CONSUMERPERMISSION %
+         BIND_POSSIBLE_CONSUMERPERMISSIONS %
+         BIND_POSSIBLE_TRUSTLEVELS %
+         BIND_POSSIBLE_CHANGETRUSTLEVELS).str();
 
 const std::string LocalDomainAccessStore::DELETE_MEDIATOR_ACE =
-        FormatString("DELETE FROM MediatorACL "
-                     "WHERE uid = %1 AND domain = %2 AND interfaceName = %3"
-                     " AND operation = %4")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION)
-                .str();
+        (boost::format("DELETE FROM MediatorACL "
+                       "WHERE uid = %1% AND domain = %2% AND interfaceName = %3%"
+                       " AND operation = %4%") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE %
+         BIND_OPERATION).str();
 
 const std::string LocalDomainAccessStore::GET_EDITABLE_MEDIATOR_ACES =
-        FormatString("SELECT acl.* FROM DomainRole as role, MediatorACL as acl "
-                     "WHERE role.uid = %1 AND role.role = %2"
-                     " AND role.domain = acl.domain")
-                .arg(BIND_UID)
-                .arg(BIND_ROLE)
-                .str();
+        (boost::format("SELECT acl.* FROM DomainRole as role, MediatorACL as acl "
+                       "WHERE role.uid = %1% AND role.role = %2%"
+                       " AND role.domain = acl.domain") %
+         BIND_UID %
+         BIND_ROLE).str();
 
 const std::string LocalDomainAccessStore::GET_UID_OWNER_ACES =
-        FormatString("SELECT * from OwnerACL "
-                     "WHERE uid IN (%1, '*')")
-                .arg(BIND_UID)
-                .str();
+        (boost::format("SELECT * from OwnerACL "
+                       "WHERE uid IN (%1%, '*')") %
+         BIND_UID).str();
 
 const std::string LocalDomainAccessStore::GET_DOMAIN_INTERFACE_OWNER_ACES =
-        FormatString("SELECT * from OwnerACL "
-                     "WHERE domain = %1 AND interfaceName = %2")
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .str();
+        (boost::format("SELECT * from OwnerACL "
+                       "WHERE domain = %1% AND interfaceName = %2%") %
+         BIND_DOMAIN %
+         BIND_INTERFACE).str();
 
 const std::string LocalDomainAccessStore::GET_UID_DOMAIN_INTERFACE_OWNER_ACES =
-        FormatString("SELECT * from OwnerACL "
-                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .str();
+        (boost::format("SELECT * from OwnerACL "
+                       "WHERE uid IN (%1% , '*') AND domain = %2% AND interfaceName = %3%") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE).str();
 
 const std::string LocalDomainAccessStore::GET_OWNER_ACE =
-        FormatString("SELECT * from OwnerACL "
-                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3"
-                     " AND operation IN (%4 , '*')"
-                     "ORDER BY CASE uid"
-                     " WHEN '*' THEN 2"
-                     " ELSE 1 "
-                     "END, "
-                     "CASE operation"
-                     " WHEN '*' THEN 2"
-                     " ELSE 1 "
-                     "END")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION)
-                .str();
+        (boost::format("SELECT * from OwnerACL "
+                       "WHERE uid IN (%1% , '*') AND domain = %2% AND interfaceName = %3%"
+                       " AND operation IN (%4% , '*')"
+                       "ORDER BY CASE uid"
+                       " WHEN '*' THEN 2"
+                       " ELSE 1 "
+                       "END, "
+                       "CASE operation"
+                       " WHEN '*' THEN 2"
+                       " ELSE 1 "
+                       "END") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE %
+         BIND_OPERATION).str();
 
 const std::string LocalDomainAccessStore::UPDATE_OWNER_ACE =
-        FormatString("INSERT OR REPLACE INTO OwnerACL "
-                     "(uid, domain, interfaceName, operation, requiredTrustLevel,"
-                     " requiredAceChangeTrustLevel, consumerPermission) "
-                     "VALUES(%1, %2, %3, %4, %5, %6, %7)")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION)
-                .arg(BIND_REQUIRED_TRUSTLEVEL)
-                .arg(BIND_REQUIRED_CHANGETRUSTLEVEL)
-                .arg(BIND_CONSUMERPERMISSION)
-                .str();
+        (boost::format("INSERT OR REPLACE INTO OwnerACL "
+                       "(uid, domain, interfaceName, operation, requiredTrustLevel,"
+                       " requiredAceChangeTrustLevel, consumerPermission) "
+                       "VALUES(%1%, %2%, %3%, %4%, %5%, %6%, %7%)") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE %
+         BIND_OPERATION %
+         BIND_REQUIRED_TRUSTLEVEL %
+         BIND_REQUIRED_CHANGETRUSTLEVEL %
+         BIND_CONSUMERPERMISSION).str();
 
 const std::string LocalDomainAccessStore::DELETE_OWNER_ACE =
-        FormatString("DELETE FROM OwnerACL "
-                     "WHERE uid = %1 AND domain = %2 AND interfaceName = %3"
-                     " AND operation = %4")
-                .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION)
-                .str();
+        (boost::format("DELETE FROM OwnerACL "
+                       "WHERE uid = %1% AND domain = %2% AND interfaceName = %3%"
+                       " AND operation = %4%") %
+         BIND_UID %
+         BIND_DOMAIN %
+         BIND_INTERFACE %
+         BIND_OPERATION).str();
 
 const std::string LocalDomainAccessStore::GET_EDITABLE_OWNER_ACES =
-        FormatString("SELECT acl.* FROM DomainRole as role, OwnerACL as acl "
-                     "WHERE role.uid = %1 AND role.role = %2"
-                     " AND role.domain = acl.domain")
-                .arg(BIND_UID)
-                .arg(BIND_ROLE)
-                .str();
+        (boost::format("SELECT acl.* FROM DomainRole as role, OwnerACL as acl "
+                       "WHERE role.uid = %1% AND role.role = %2%"
+                       " AND role.domain = acl.domain") %
+         BIND_UID %
+         BIND_ROLE).str();
 
 //--- Generic serialization functions --------------------------------------------
 

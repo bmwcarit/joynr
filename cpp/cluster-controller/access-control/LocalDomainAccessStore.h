@@ -370,21 +370,20 @@ private:
     static QSqlDatabase db;
 
     // Bind values to queries
-    static constexpr const char* BIND_UID = ":uid";
-    static constexpr const char* BIND_DOMAIN = ":domain";
-    static constexpr const char* BIND_ROLE = ":role";
-    static constexpr const char* BIND_INTERFACE = ":interface";
-    static constexpr const char* BIND_OPERATION = ":operation";
-    static constexpr const char* BIND_DEFAULT_TRUSTLEVEL = ":defaultRequiredTrustLevel";
-    static constexpr const char* BIND_DEFAULT_CHANGETRUSTLEVEL =
-            ":defaultRequiredControlEntryTrustLevel";
-    static constexpr const char* BIND_DEFAULT_CONSUMERPERMISSION = ":defaultConsumerPermission";
-    static constexpr const char* BIND_POSSIBLE_CONSUMERPERMISSIONS = ":possibleConsumerPermissions";
-    static constexpr const char* BIND_POSSIBLE_TRUSTLEVELS = ":possibleTrustLevels";
-    static constexpr const char* BIND_POSSIBLE_CHANGETRUSTLEVELS = ":possibleChangeTrustLevels";
-    static constexpr const char* BIND_REQUIRED_TRUSTLEVEL = ":requiredTrustLevel";
-    static constexpr const char* BIND_REQUIRED_CHANGETRUSTLEVEL = ":requiredAceChangeTrustLevel";
-    static constexpr const char* BIND_CONSUMERPERMISSION = ":consumerPermission";
+    static const char* BIND_UID;
+    static const char* BIND_DOMAIN;
+    static const char* BIND_ROLE;
+    static const char* BIND_INTERFACE;
+    static const char* BIND_OPERATION;
+    static const char* BIND_DEFAULT_TRUSTLEVEL;
+    static const char* BIND_DEFAULT_CHANGETRUSTLEVEL;
+    static const char* BIND_DEFAULT_CONSUMERPERMISSION;
+    static const char* BIND_POSSIBLE_CONSUMERPERMISSIONS;
+    static const char* BIND_POSSIBLE_TRUSTLEVELS;
+    static const char* BIND_POSSIBLE_CHANGETRUSTLEVELS;
+    static const char* BIND_REQUIRED_TRUSTLEVEL;
+    static const char* BIND_REQUIRED_CHANGETRUSTLEVEL;
+    static const char* BIND_CONSUMERPERMISSION;
 
     // Queries
     static const std::string SELECT_DRE;

@@ -22,9 +22,10 @@
 #include <algorithm>
 #include <string>
 
+#include <boost/format.hpp>
+
 #include "websocket/WebSocketMessagingStub.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/FormatString.h"
 
 namespace joynr
 {
@@ -143,12 +144,8 @@ Url WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
             joynr::system::RoutingTypes::WebSocketProtocol::getLiteral(address.getProtocol());
     std::transform(protocol.begin(), protocol.end(), protocol.begin(), ::tolower);
 
-    return Url(FormatString("%1://%2:%3%4")
-                       .arg(protocol)
-                       .arg(address.getHost())
-                       .arg(address.getPort())
-                       .arg(address.getPath())
-                       .str());
+    return Url((boost::format("%1%://%2%:%3%%4%") % protocol % address.getHost() %
+                address.getPort() % address.getPath()).str());
 }
 
 } // namespace joynr

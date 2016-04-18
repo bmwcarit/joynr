@@ -17,8 +17,10 @@
  * #L%
  */
 #include "cluster-controller/httpnetworking/HttpResult.h"
+
 #include <curl/curl.h>
-#include "joynr/FormatString.h"
+#include <boost/format.hpp>
+
 namespace joynr
 {
 
@@ -60,10 +62,8 @@ std::string HttpResult::getErrorMessage() const
         case CURLE_SSL_CONNECT_ERROR:
             return std::string("SSL connection error");
         default:
-            return FormatString("Error during HTTP request/response, curl error code: %1: %2")
-                    .arg(curlError)
-                    .arg(curl_easy_strerror(static_cast<CURLcode>(curlError)))
-                    .str();
+            return (boost::format("Error during HTTP request/response, curl error code: %1%: %2%") %
+                    curlError % curl_easy_strerror(static_cast<CURLcode>(curlError))).str();
         }
     } else {
         switch (statusCode) {
@@ -76,7 +76,7 @@ std::string HttpResult::getErrorMessage() const
         case 503:
             return std::string("503 Service unavailable");
         default:
-            return FormatString("HTTP error, status code : %1").arg(statusCode).str();
+            return (boost::format("HTTP error, status code : %1%") % statusCode).str();
         }
     }
 }
