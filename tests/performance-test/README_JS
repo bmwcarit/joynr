@@ -13,4 +13,4 @@ In order to run the end-to-end test, do the following:
    npm run-script jsconsumertest --performance-test:domain=<DOMAIN> [--performance-test:runs=<TIMES> --performance-test:cc:host=<CLUSTER_CONTROLLER_HOST> --performance-test:cc:port=<CLUSTER_CONTROLLER_PORT>]
 
 In order to run the short-circuit-test:
-    npm run-script jsconsumertest --performance-test:domain=<DOMAIN> --performance-test:viacc=FALSE [--performance-test:runs=<TIMES>]
+    npm run-script jsconsumertest --performance-test:domain=<DOMAIN> --performance-test:viacc=FALSE [--performance-test:runs=<TIMES>] [--performance-test:bounceProxyBaseUrl=<BACKEND_HOST_URL>]

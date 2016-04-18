@@ -103,7 +103,7 @@ define(
                  */
                 Util.objectDefineProperty(this, "_typeName", "joynr.SubscriptionQos");
                 Util.checkPropertyIfDefined(settings, "Object", "settings");
-                if (settings) {
+                if (settings && !(settings instanceof SubscriptionQos)) {
                     if (settings.expiryDate !== undefined) {
                         log
                                 .warn("SubscriptionQos has been invoked with deprecated settings member \"expiryDate\". "

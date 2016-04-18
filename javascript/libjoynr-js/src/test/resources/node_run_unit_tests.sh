@@ -87,7 +87,7 @@ TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestTyping.js"
 #TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestCookiePersistency.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestInProcessStubAndSkeleton.js"
 
-cd ${project.build.outputDirectory}
+cd ${project.build.directory}/node-classes
 
 echo "preparing the node environment incl. required dependencies"
 
@@ -97,7 +97,7 @@ npm install
 
 #so far, only files located at the ${project.build.outputDirectory} can find the installed node_modules
 #make the installed node_modules available for the test-classes
-ln -sf ${project.build.outputDirectory}/node_modules ..
+ln -sf ${project.build.directory}/node-classes/node_modules ..
 
 #check if all defined test files really exist. Jasmine-node would return 0 without running the tests otherwise.
 for Test in $TESTS

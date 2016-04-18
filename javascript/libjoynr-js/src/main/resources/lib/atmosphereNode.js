@@ -22,7 +22,7 @@
  *
  * @returns atmosphere-client which is the equivalent for atmosphere in node.js
  */
-define([ "atmosphere-client"
+define([ "atmosphere.js"
 ], function(atmosphere) {
     return atmosphere;
 });

@@ -17,6 +17,14 @@ under the License.
 
 This project has dependencies to:
 
-joynr under The Apache Software License, Version 2.0
+* joynr under The Apache Software License, Version 2.0
     the joynr NOTICE file lists transitive joynr dependencies
     https://github.com/bmwcarit/joynr/blob/develop/javascript/NOTICE-JS
+
+
+* bluebird (https://github.com/petkaantonov/bluebird)
+  License: MIT License (https://github.com/petkaantonov/bluebird/blob/master/LICENSE)
+  Webjar: <groupId>org.webjars</groupId>
+          <artifactId>bluebird</artifactId>
+          <version>3.1.1</version>
+  npm package: version 3.1.1 (https://www.npmjs.com/package/bluebird)

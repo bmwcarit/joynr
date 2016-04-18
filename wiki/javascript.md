@@ -103,13 +103,13 @@ joynr.load(provisioning).then(function(loadedJoynr) {
 The ```DiscoveryQos``` configures how the search for a provider will be handled. It has the
 following members:
 
-* **discoveryTimeout**  Timeout for the discovery process (milliseconds). A timeout triggers an exception.
-* **cacheMaxAge** Defines the maximum allowed age of cached entries (milliseconds); only younger
+* **discoveryTimeoutMs**  Timeout for the discovery process (milliseconds). A timeout triggers an exception.
+* **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds); only younger
 entries will be considered. If no suitable providers are found, depending on the discoveryScope,
 a remote global lookup may be triggered.
 * **arbitrationStrategy** (details see below)
 * **additionalParameters** special application-specific parameters that must match, e.g. a keyword
-* **discoveryRetryDelay** The time to wait between discovery retries after encountering a discovery
+* **discoveryRetryDelayMs** The time to wait between discovery retries after encountering a discovery
 error.
 * **discoveryScope** (details see below)
 
@@ -151,14 +151,13 @@ Example for setting up a ```DiscoveryQos``` object:
 // { "fixedParticipantId" : "someParticipantId" }
 // { }
 //
-var discoveryQos = new joynr.system.DiscoveryQos({
-    discoveryTimeout : 30000,
-    cacheMaxAge : 0,
+var discoveryQos = new joynr.proxy.DiscoveryQos({
+    discoveryTimeoutMs : 30000,
+    cacheMaxAgeMs : 0,
     arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
     additionalParameters: {},
-    providerMustSupportOnChange: true,
     discoveryScope : DiscoveryScope.LOCAL\_ONLY,
-    retryInterval : 1000
+    discoveryRetryDelayMs : 1000
 });
 ```
 

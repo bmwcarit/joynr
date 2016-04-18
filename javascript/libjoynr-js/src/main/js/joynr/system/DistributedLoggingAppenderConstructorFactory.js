@@ -69,7 +69,7 @@ define(
                                 messagingQos : messagingQos,
                                 discoveryQos : new DiscoveryQos({
                                     discoveryScope : DiscoveryScope.GLOBAL_ONLY,
-                                    cacheMaxAge : Util.getMaxLongValue()
+                                    cacheMaxAgeMs : Util.getMaxLongValue()
                                 })
                             }).then(function(newLoggingProxy) {
                                 newAppender.setProxy(newLoggingProxy);

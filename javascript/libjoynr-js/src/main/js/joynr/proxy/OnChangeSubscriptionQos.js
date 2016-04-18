@@ -99,7 +99,7 @@ define(
                  */
                 Util.objectDefineProperty(this, "_typeName", "joynr.OnChangeSubscriptionQos");
                 Util.checkPropertyIfDefined(settings, "Object", "settings");
-                if (settings) {
+                if (settings && !(settings instanceof OnChangeSubscriptionQos)) {
                     if (settings.minInterval !== undefined) {
                         log
                                 .warn("OnChangeSubscriptionQos has been invoked with deprecated settings member \"minIntervalMs\". "

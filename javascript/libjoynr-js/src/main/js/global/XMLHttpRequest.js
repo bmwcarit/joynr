@@ -1,14 +1,9 @@
-package io.joynr.servlet;
-
-import io.joynr.accesscontrol.global.GlobalDomainAccessControllerModule;
-import com.google.inject.AbstractModule;
-import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdmin;
-import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdminEhCache;
+/*jslint node: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +19,10 @@ import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdminEhCache;
  * #L%
  */
 
-public class ServletModule extends AbstractModule {
-
-    @Override
-    protected void configure() {
-        bind(GlobalDomainAccessStoreAdmin.class).to(GlobalDomainAccessStoreAdminEhCache.class);
-        install(new GlobalDomainAccessControllerModule());
-    }
-
-}
+/**
+ *
+ * @returns browser supported XMLHttpRequest.
+ */
+define([], function() {
+    return XMLHttpRequest;
+});

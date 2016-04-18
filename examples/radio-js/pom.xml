@@ -160,7 +160,7 @@
 							<outputDirectory>${project.build.outputDirectory}/js/</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${basedir}/target/dependencies/lib/joynr/js</directory>
+									<directory>${basedir}/target/dependencies/lib/joynr</directory>
 									<includes>
 										<include>joynr.js</include>
 										<include>joynr.websocket.js</include>
