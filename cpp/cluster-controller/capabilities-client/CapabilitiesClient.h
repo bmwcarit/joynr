@@ -69,7 +69,7 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    void add(std::vector<types::CapabilityInformation> capabilitiesInformationList) override;
+    void add(std::vector<types::GlobalDiscoveryEntry> capabilitiesInformationList) override;
 
     /*
       Remove previously created capabilities directory entries.
@@ -84,21 +84,21 @@ public:
     /*
       Synchronous lookup of capabilities for domain and interface.
       */
-    std::vector<types::CapabilityInformation> lookup(const std::string& domain,
-                                                     const std::string& interfaceName) override;
+    std::vector<types::GlobalDiscoveryEntry> lookup(const std::string& domain,
+                                                    const std::string& interfaceName) override;
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
       */
     void lookup(const std::string& domain,
                 const std::string& interfaceName,
-                std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
                         onSuccess,
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                         nullptr) override;
 
     void lookup(const std::string& participantId,
-                std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
                         onSuccess,
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                         nullptr) override;

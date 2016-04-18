@@ -27,7 +27,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/Future.h"
-#include "joynr/types/CapabilityInformation.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include <string>
 #include <cstdint>
 #include <cassert>
@@ -47,7 +47,7 @@ std::string CapabilitiesClient::getLocalChannelId()
     return localChannelId;
 }
 
-void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilitiesInformationList)
+void CapabilitiesClient::add(std::vector<types::GlobalDiscoveryEntry> capabilitiesInformationList)
 {
     assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
                                // the capabilitiesProxy has been set via the init method
@@ -57,7 +57,7 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
                        // yet;
     } else {
         for (std::uint32_t i = 0; i < capabilitiesInformationList.size(); i++) {
-            capabilitiesInformationList[i].setChannelId(localChannelId);
+            capabilitiesInformationList[i].setAddress(localChannelId);
         }
         // TM switching from sync to async
         // capabilitiesProxy->add(capabilitiesInformationList);
@@ -85,14 +85,14 @@ void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
     capabilitiesProxy->remove(participantIdList);
 }
 
-std::vector<types::CapabilityInformation> CapabilitiesClient::lookup(
+std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName)
 {
     assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
                                // the capabilitiesProxy has been set via the init method
 
-    std::vector<types::CapabilityInformation> result;
+    std::vector<types::GlobalDiscoveryEntry> result;
     capabilitiesProxy->lookup(result, domain, interfaceName);
     return result;
 }
@@ -100,7 +100,7 @@ std::vector<types::CapabilityInformation> CapabilitiesClient::lookup(
 void CapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName,
-        std::function<void(const std::vector<types::CapabilityInformation>& result)> onSuccess,
+        std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
     assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
@@ -111,7 +111,7 @@ void CapabilitiesClient::lookup(
 
 void CapabilitiesClient::lookup(
         const std::string& participantId,
-        std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+        std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
                 onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
@@ -119,8 +119,8 @@ void CapabilitiesClient::lookup(
                                // the capabilitiesProxy has been set via the init method
     capabilitiesProxy->lookupAsync(
             participantId,
-            [onSuccess](const joynr::types::CapabilityInformation& capability) {
-                std::vector<joynr::types::CapabilityInformation> result;
+            [onSuccess](const joynr::types::GlobalDiscoveryEntry& capability) {
+                std::vector<joynr::types::GlobalDiscoveryEntry> result;
                 result.push_back(capability);
                 onSuccess(result);
             },

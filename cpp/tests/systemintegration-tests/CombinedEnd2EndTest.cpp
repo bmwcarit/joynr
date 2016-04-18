@@ -36,7 +36,6 @@
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/types/CapabilityInformation.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "PrettyPrint.h"
 #include "joynr/MessagingSettings.h"

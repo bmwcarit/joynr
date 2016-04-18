@@ -99,34 +99,42 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
         );
     capabilitiesClient->init(cabilitiesProxy);
 
-    std::vector<types::CapabilityInformation> capabilitiesInformationList;
+    std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntryList;
     std::string capDomain("testDomain");
     std::string capInterface("testInterface");
     types::ProviderQos capProviderQos;
-    std::string capChannelId("testChannelId");
+    std::string capSerializedChannelAddress("testChannelId");
     std::string capParticipantId("testParticipantId");
     joynr::types::Version providerVersion(47, 11);
+    std::int64_t capLastSeenMs = 0;
+    std::int64_t capExpiryDateMs = 1000;
 
-    capabilitiesInformationList.push_back(types::CapabilityInformation(providerVersion,
-        capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
+    globalDiscoveryEntryList.push_back(types::GlobalDiscoveryEntry(
+                                           providerVersion,
+                                           capDomain,
+                                           capInterface,
+                                           capParticipantId,
+                                           capProviderQos,
+                                           capLastSeenMs,
+                                           capExpiryDateMs,
+                                           capSerializedChannelAddress));
+
     JOYNR_LOG_DEBUG(logger, "Registering capabilities");
-    capabilitiesClient->add(capabilitiesInformationList);
+    capabilitiesClient->add(globalDiscoveryEntryList);
     JOYNR_LOG_DEBUG(logger, "Registered capabilities");
-    //sync methods are not yet implemented
-//    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
-//    EXPECT_EQ(capResultList, capabilitiesInformationList);
+
     auto callback = std::make_shared<GlobalCapabilitiesMock>();
 
     // use a semaphore to wait for capabilities to be received
     Semaphore semaphore(0);
-    EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::CapabilityInformation>&>()))
+    EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::GlobalDiscoveryEntry>&>()))
            .WillRepeatedly(
                 DoAll(
                     ReleaseSemaphore(&semaphore),
                     Return()
                 ));
-    std::function<void(const std::vector<types::CapabilityInformation>&)> onSuccess =
-            [&](const std::vector<types::CapabilityInformation>& capabilities) {
+    std::function<void(const std::vector<types::GlobalDiscoveryEntry>&)> onSuccess =
+            [&](const std::vector<types::GlobalDiscoveryEntry>& capabilities) {
                 callback->capabilitiesReceived(capabilities);
             };
 

@@ -103,16 +103,18 @@ void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discove
 
     // register globally
     if (isGlobal) {
-        types::CapabilityInformation capInfo(discoveryEntry.getProviderVersion(),
-                                             discoveryEntry.getDomain(),
-                                             discoveryEntry.getInterfaceName(),
-                                             discoveryEntry.getQos(),
-                                             capabilitiesClient->getLocalChannelId(),
-                                             discoveryEntry.getParticipantId());
+        types::GlobalDiscoveryEntry globalDiscoveryEntry(discoveryEntry.getProviderVersion(),
+                                                         discoveryEntry.getDomain(),
+                                                         discoveryEntry.getInterfaceName(),
+                                                         discoveryEntry.getParticipantId(),
+                                                         discoveryEntry.getQos(),
+                                                         discoveryEntry.getLastSeenDateMs(),
+                                                         discoveryEntry.getExpiryDateMs(),
+                                                         capabilitiesClient->getLocalChannelId());
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
-                      capInfo) == registeredGlobalCapabilities.end()) {
-            registeredGlobalCapabilities.push_back(capInfo);
+                      globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
+            registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
         }
         this->capabilitiesClient->add(registeredGlobalCapabilities);
     }
@@ -134,16 +136,17 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
     for (std::size_t i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
-            types::CapabilityInformation capInfo(entry.getProviderVersion(),
-                                                 domain,
-                                                 interfaceName,
-                                                 qos,
-                                                 capabilitiesClient->getLocalChannelId(),
-                                                 entry.getParticipantId());
+            auto compareFunc =
+                    [&entry, &domain, &interfaceName, &qos](const types::GlobalDiscoveryEntry& it) {
+                return it.getProviderVersion() == entry.getProviderVersion() &&
+                       it.getDomain() == domain && it.getInterfaceName() == interfaceName &&
+                       it.getQos() == qos && it.getParticipantId() == entry.getParticipantId();
+            };
+
             while (registeredGlobalCapabilities.erase(
-                           std::remove(registeredGlobalCapabilities.begin(),
-                                       registeredGlobalCapabilities.end(),
-                                       capInfo),
+                           std::remove_if(registeredGlobalCapabilities.begin(),
+                                          registeredGlobalCapabilities.end(),
+                                          compareFunc),
                            registeredGlobalCapabilities.end()) !=
                    registeredGlobalCapabilities.end()) {
             }
@@ -267,7 +270,7 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
 }
 
 void LocalCapabilitiesDirectory::capabilitiesReceived(
-        const std::vector<types::CapabilityInformation>& results,
+        const std::vector<types::GlobalDiscoveryEntry>& results,
         std::vector<CapabilityEntry> cachedLocalCapabilies,
         std::shared_ptr<ILocalCapabilitiesCallback> callback,
         joynr::types::DiscoveryScope::Enum discoveryScope)
@@ -275,14 +278,14 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
     QMap<std::string, CapabilityEntry> capabilitiesMap;
     std::vector<CapabilityEntry> mergedEntries;
 
-    for (types::CapabilityInformation capInfo : results) {
-        CapabilityEntry capEntry(capInfo.getProviderVersion(),
-                                 capInfo.getDomain(),
-                                 capInfo.getInterfaceName(),
-                                 capInfo.getProviderQos(),
-                                 capInfo.getParticipantId(),
+    for (types::GlobalDiscoveryEntry globalDiscoveryEntry : results) {
+        CapabilityEntry capEntry(globalDiscoveryEntry.getProviderVersion(),
+                                 globalDiscoveryEntry.getDomain(),
+                                 globalDiscoveryEntry.getInterfaceName(),
+                                 globalDiscoveryEntry.getQos(),
+                                 globalDiscoveryEntry.getParticipantId(),
                                  true);
-        capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);
+        capabilitiesMap.insertMulti(globalDiscoveryEntry.getAddress(), capEntry);
         mergedEntries.push_back(capEntry);
     }
     registerReceivedCapabilities(capabilitiesMap);
@@ -311,7 +314,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
         auto onSuccess = [this, participantId, callback](
-                const std::vector<joynr::types::CapabilityInformation>& result) {
+                const std::vector<joynr::types::GlobalDiscoveryEntry>& result) {
             this->capabilitiesReceived(result,
                                        getCachedLocalCapabilities(participantId),
                                        callback,
@@ -335,7 +338,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& domain,
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
         auto onSuccess = [this, interfaceAddress, callback, discoveryQos](
-                std::vector<joynr::types::CapabilityInformation> capabilities) {
+                std::vector<joynr::types::GlobalDiscoveryEntry> capabilities) {
             this->capabilitiesReceived(capabilities,
                                        getCachedLocalCapabilities(interfaceAddress),
                                        callback,
