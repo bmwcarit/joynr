@@ -20,6 +20,7 @@
 #include "ShortCircuitRuntime.h"
 
 #include <chrono>
+#include <limits>
 
 #include "joynr/Util.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -90,12 +91,14 @@ ShortCircuitRuntime::ShortCircuitRuntime()
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
     discoveryProxy = std::make_unique<DummyDiscovery>();
-    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
-                                                                    *discoveryProxy,
-                                                                    libjoynrMessagingAddress,
-                                                                    participantIdStorage,
-                                                                    dispatcherAddress,
-                                                                    messageRouter);
+    capabilitiesRegistrar =
+            std::make_unique<CapabilitiesRegistrar>(dispatcherList,
+                                                    *discoveryProxy,
+                                                    libjoynrMessagingAddress,
+                                                    participantIdStorage,
+                                                    dispatcherAddress,
+                                                    messageRouter,
+                                                    std::numeric_limits<std::int64_t>::max());
 
     maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
 }

@@ -465,12 +465,14 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                               discoveryProviderAddress);
         discoveryProxy->setDiscoveryProxy(std::move(discoveryInProcessConnector));
     }
-    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
-                                                                    *discoveryProxy,
-                                                                    libjoynrMessagingAddress,
-                                                                    participantIdStorage,
-                                                                    dispatcherAddress,
-                                                                    messageRouter);
+    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
+            dispatcherList,
+            *discoveryProxy,
+            libjoynrMessagingAddress,
+            participantIdStorage,
+            dispatcherAddress,
+            messageRouter,
+            messagingSettings.getDiscoveryEntryExpiryIntervalMs());
 
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);

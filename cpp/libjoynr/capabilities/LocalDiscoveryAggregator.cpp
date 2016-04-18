@@ -20,6 +20,7 @@
 
 #include <utility>
 #include <chrono>
+#include <limits>
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/IRequestCallerDirectory.h"
@@ -39,6 +40,8 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
         : discoveryProxy(), provisionedDiscoveryEntries()
 {
     std::int64_t lastSeenDateMs = 0;
+    std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+
     joynr::types::Version providerVersion;
     joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
             providerVersion,
@@ -46,7 +49,8 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             joynr::system::IRouting::INTERFACE_NAME(),
             systemServicesSettings.getCcRoutingProviderParticipantId(),
             joynr::types::ProviderQos(),
-            lastSeenDateMs);
+            lastSeenDateMs,
+            expiryDateMs);
     provisionedDiscoveryEntries.insert(std::make_pair(
             routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
     joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
@@ -55,7 +59,8 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             joynr::system::IDiscovery::INTERFACE_NAME(),
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),
             joynr::types::ProviderQos(),
-            lastSeenDateMs);
+            lastSeenDateMs,
+            expiryDateMs);
     provisionedDiscoveryEntries.insert(std::make_pair(
             discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
 }

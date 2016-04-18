@@ -123,6 +123,7 @@ public:
                 .WillByDefault(Return("fooParticipantId"));
 
         std::int64_t lastSeenDateMs = 0;
+        std::int64_t expiryDateMs = 0;
         joynr::types::Version providerVersion(47, 11);
         discoveryEntry = DiscoveryEntry(
                 providerVersion,
@@ -130,7 +131,8 @@ public:
                 TEST_INTERFACE,
                 toParticipantId,
                 types::ProviderQos(),
-                lastSeenDateMs
+                lastSeenDateMs,
+                expiryDateMs
         );
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,

@@ -43,6 +43,7 @@ public:
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
     joynr::system::DiscoveryProxy* discoveryProxy;
     std::int64_t lastSeenDateMs;
+    std::int64_t expiryDateMs;
 
     SystemServicesDiscoveryTest() :
         settingsFilename("test-resources/SystemServicesDiscoveryTest.settings"),
@@ -55,7 +56,8 @@ public:
         discoveryQos(),
         discoveryProxyBuilder(nullptr),
         discoveryProxy(nullptr),
-        lastSeenDateMs(-1)
+        lastSeenDateMs(-1),
+        expiryDateMs(-1)
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
@@ -180,7 +182,8 @@ TEST_F(SystemServicesDiscoveryTest, add)
                 interfaceName,
                 participantId,
                 providerQos,
-                lastSeenDateMs
+                lastSeenDateMs,
+                expiryDateMs
     );
     expectedResult.push_back(discoveryEntry);
 
@@ -235,7 +238,8 @@ TEST_F(SystemServicesDiscoveryTest, remove)
                 interfaceName,
                 participantId,
                 providerQos,
-                lastSeenDateMs
+                lastSeenDateMs,
+                expiryDateMs
     );
     expectedResult.push_back(discoveryEntry);
 

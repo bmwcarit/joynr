@@ -18,6 +18,7 @@
  */
 #include <memory>
 #include <string>
+#include <limits>
 
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
@@ -56,7 +57,8 @@ public:
                     messagingStubAddress,
                     mockParticipantIdStorage,
                     messagingStubAddress,
-                    mockMessageRouter
+                    mockMessageRouter,
+                    std::numeric_limits<std::int64_t>::max()
         );
     }
     void TearDown(){

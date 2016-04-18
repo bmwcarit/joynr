@@ -54,7 +54,8 @@ public:
             std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingStubAddress,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-            std::shared_ptr<MessageRouter> messageRouter);
+            std::shared_ptr<MessageRouter> messageRouter,
+            std::int64_t defaultExpiryIntervalMs);
 
     template <class T>
     std::string add(const std::string& domain,
@@ -77,12 +78,19 @@ public:
             currentDispatcher->addRequestCaller(participantId, caller);
         }
 
-        std::int64_t lastSeenDateMs =
+        const std::int64_t now =
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch()).count();
+        const std::int64_t lastSeenDateMs = now;
+        const std::int64_t defaultExpiryDateMs = now + defaultExpiryIntervalMs;
         joynr::types::Version providerVersion;
-        joynr::types::DiscoveryEntry entry(
-                providerVersion, domain, interfaceName, participantId, providerQos, lastSeenDateMs);
+        joynr::types::DiscoveryEntry entry(providerVersion,
+                                           domain,
+                                           interfaceName,
+                                           participantId,
+                                           providerQos,
+                                           lastSeenDateMs,
+                                           defaultExpiryDateMs);
         try {
             discoveryProxy.add(entry);
         } catch (const exceptions::JoynrException& e) {
@@ -128,6 +136,7 @@ private:
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
+    std::int64_t defaultExpiryIntervalMs;
     ADD_LOGGER(CapabilitiesRegistrar);
 };
 

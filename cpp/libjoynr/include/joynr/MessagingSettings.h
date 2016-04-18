@@ -52,6 +52,7 @@ public:
     static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_SEND_MSG_RETRY_INTERVAL();
     static const std::string& SETTING_LONGPOLL_RETRY_INTERVAL();
+    static const std::string& SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
 
     static const std::string& SETTING_LOCAL_PROXY_HOST();
     static const std::string& SETTING_LOCAL_PROXY_PORT();
@@ -121,6 +122,8 @@ public:
     void setCreateChannelRetryInterval(const int& retryInterval);
     int getDeleteChannelRetryInterval() const;
     void setDeleteChannelRetryInterval(const int& retryInterval);
+    int getDiscoveryEntryExpiryIntervalMs() const;
+    void setDiscoveryEntryExpiryIntervalMs(int expiryIntervalMs);
     int getSendMsgRetryInterval() const;
     void setSendMsgRetryInterval(const int& retryInterval);
     int getLongPollRetryInterval() const;

@@ -35,6 +35,7 @@ class ArbitratorTest : public ::testing::Test {
 public:
     ArbitratorTest() :
         lastSeenDateMs(0),
+        expiryDateMs(0),
         mockDiscovery()
     {}
 
@@ -44,6 +45,7 @@ public:
     }
 protected:
     std::int64_t lastSeenDateMs;
+    std::int64_t expiryDateMs;
     MockDiscovery mockDiscovery;
 };
 
@@ -76,7 +78,8 @@ TEST_F(ArbitratorTest, getHighestPriority) {
                                  interfaceName,
                                  participantId[i],
                                  qosEntries[i],
-                                 lastSeenDateMs
+                                 lastSeenDateMs,
+                                 expiryDateMs
         ));
     }
 
@@ -115,7 +118,8 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
                                  interfaceName,
                                  participantId[i],
                                  qosEntries[i],
-                                 lastSeenDateMs
+                                 lastSeenDateMs,
+                                 expiryDateMs
         ));
     }
 
@@ -169,7 +173,8 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
                                  interfaceName,
                                  participantId[i],
                                  qosEntries[i],
-                                 lastSeenDateMs
+                                 lastSeenDateMs,
+                                 expiryDateMs
         ));
     }
 

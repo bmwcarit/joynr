@@ -141,6 +141,12 @@ const std::string& MessagingSettings::SETTING_LONGPOLL_RETRY_INTERVAL()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS()
+{
+    static const std::string value("messaging/discovery-entry-expiry-interval-ms");
+    return value;
+}
+
 const std::string& MessagingSettings::SETTING_LOCAL_PROXY_HOST()
 {
     static const std::string value("messaging/local-proxy-host");
@@ -374,6 +380,16 @@ int MessagingSettings::getDeleteChannelRetryInterval() const
 void MessagingSettings::setDeleteChannelRetryInterval(const int& retryInterval)
 {
     settings.set(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), retryInterval);
+}
+
+int MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
+{
+    return settings.get<int>(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
+}
+
+void MessagingSettings::setDiscoveryEntryExpiryIntervalMs(int expiryIntervalMs)
+{
+    settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(), expiryIntervalMs);
 }
 
 int MessagingSettings::getSendMsgRetryInterval() const

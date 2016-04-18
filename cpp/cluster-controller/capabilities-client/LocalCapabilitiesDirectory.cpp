@@ -18,6 +18,7 @@
  */
 #include <boost/algorithm/string/predicate.hpp>
 #include <chrono>
+#include <limits>
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
@@ -61,6 +62,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
     std::int64_t lastSeenDateMs = 0;
+    std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     types::Version providerVersion;
     this->insertInCache(joynr::types::DiscoveryEntry(
                                 providerVersion,
@@ -68,7 +70,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
                                 infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
                                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
                                 providerQos,
-                                lastSeenDateMs),
+                                lastSeenDateMs,
+                                expiryDateMs),
                         false,
                         true,
                         false);
@@ -83,7 +86,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
                                          infrastructure::IChannelUrlDirectory::INTERFACE_NAME(),
                                          messagingSettings.getChannelUrlDirectoryParticipantId(),
                                          channelUrlDirProviderQos,
-                                         lastSeenDateMs),
+                                         lastSeenDateMs,
+                                         expiryDateMs),
             false,
             true,
             false);
