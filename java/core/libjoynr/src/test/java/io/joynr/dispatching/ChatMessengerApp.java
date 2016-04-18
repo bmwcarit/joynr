@@ -88,10 +88,6 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
             return new ProviderQos();
         }
 
-        @Override
-        public Class<?> getProvidedInterface() {
-            return getClass();
-        }
     }
 
     public static void main(String[] args) throws JoynrMessageNotSentException {
@@ -143,9 +139,9 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
 
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
         ProviderDirectory providerDirectory = injector.getInstance(ProviderDirectory.class);
-        // TODO register EndpointAddresses for participantIds
 
         providerDirectory.add(ownParticipant, new ProviderContainer("interfaceName",
+                                                                    ChatMessengerApp.class,
                                                                     new ChatMessengerAppRequestCaller(),
                                                                     null));
 

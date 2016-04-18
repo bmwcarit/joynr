@@ -130,6 +130,7 @@ public class DispatcherImplTest {
                      */
                     messageReceiverMock.setBlockOnInitialisation(true);
                     requestCallerDirectory.add(requestReplyId, new ProviderContainer("interfaceName",
+                                                                                     DispatcherImplTest.class,
                                                                                      requestCaller,
                                                                                      subscriptionPublisher));
                 } finally {

@@ -32,17 +32,24 @@ public class ProviderContainer {
     private final RequestCaller requestCaller;
     private final SubscriptionPublisherObservable subscriptionPublisher;
     private final String interfaceName;
+    private final Class<?> providedInterface;
 
     public ProviderContainer(String interfaceName,
+                             Class<?> providedInterface,
                              RequestCaller requestCaller,
                              SubscriptionPublisherObservable subscriptionPublisher) {
         this.interfaceName = interfaceName;
+        this.providedInterface = providedInterface;
         this.requestCaller = requestCaller;
         this.subscriptionPublisher = subscriptionPublisher;
     }
 
     public String getInterfaceName() {
         return interfaceName;
+    }
+
+    public Class<?> getProvidedInterface() {
+        return providedInterface;
     }
 
     public RequestCaller getRequestCaller() {

@@ -44,6 +44,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderContainer;
+import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.BroadcastFilter;
 
@@ -107,7 +108,7 @@ public class PublicationManagerTest {
     @Mock
     private Dispatcher dispatcher;
     @Mock
-    private JoynrProvider provider;
+    private testProvider provider;
 
     @Mock
     private AbstractSubscriptionPublisher subscriptionPublisher;
@@ -124,7 +125,6 @@ public class PublicationManagerTest {
         Deferred<String> valueToPublishDeferred = new Deferred<String>();
         valueToPublishDeferred.resolve(valueToPublish);
         Promise<Deferred<String>> valueToPublishPromise = new Promise<Deferred<String>>(valueToPublishDeferred);
-        doReturn(testProvider.class).when(provider).getProvidedInterface();
 
         cleanupScheduler = new ScheduledThreadPoolExecutor(1);
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,

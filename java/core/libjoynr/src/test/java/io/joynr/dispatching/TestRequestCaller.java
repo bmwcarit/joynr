@@ -86,9 +86,4 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
         return new ProviderQos();
     }
 
-    @Override
-    public Class<?> getProvidedInterface() {
-        return getClass();
-    }
-
 }

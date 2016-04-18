@@ -56,7 +56,6 @@ public class ProviderWrapper extends AbstractJoynrProvider implements Invocation
 
     private static final List<Method> OBJECT_METHODS = Arrays.asList(Object.class.getMethods());
 
-    private Class<?> serviceInterface;
     private Bean<?> bean;
     private BeanManager beanManager;
 
@@ -72,14 +71,8 @@ public class ProviderWrapper extends AbstractJoynrProvider implements Invocation
      *            the bean manager
      */
     public ProviderWrapper(Class<?> serviceInterface, Bean<?> bean, BeanManager beanManager) {
-        this.serviceInterface = serviceInterface;
         this.bean = bean;
         this.beanManager = beanManager;
-    }
-
-    @Override
-    public Class<?> getProvidedInterface() {
-        return serviceInterface;
     }
 
     /**

@@ -30,11 +30,4 @@ public interface JoynrProvider {
     @Deprecated
     ProviderQos getProviderQos();
 
-    /**
-     * Interface class which is implemented by the provider and accessible
-     * by proxy objects. Interface classes are generated from Franca models.
-     *
-     * @return the interface class implemented by the provider.
-     */
-    Class<?> getProvidedInterface();
 }

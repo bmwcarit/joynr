@@ -21,7 +21,7 @@ package io.joynr.capabilities;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,15 +32,14 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.AbstractSubscriptionPublisher;
+import io.joynr.provider.InterfaceName;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
@@ -67,7 +66,7 @@ public class CapabilitiesRegistrarTests {
     private Dispatcher dispatcher;
 
     @Mock
-    private JoynrProvider provider;
+    private TestProvider provider;
 
     @Mock
     private RequestCaller requestCaller;
@@ -85,16 +84,9 @@ public class CapabilitiesRegistrarTests {
     private String participantId = "participantId";
     private ProviderQos providerQos = new ProviderQos();
 
-    private static String interfaceName = "interfaceName";
-
-    private interface ProvidedInterface extends JoynrInterface {
-        @SuppressWarnings("unused")
-        // this Field is read with a getField method, so it is indeed needed.
-        public static String INTERFACE_NAME = interfaceName;
-    }
-
-    interface TestInterface extends JoynrInterface {
-        public static String INTERFACE_NAME = interfaceName;
+    @InterfaceName(TestProvider.INTERFACE_NAME)
+    interface TestProvider extends JoynrProvider {
+        public static String INTERFACE_NAME = "interfaceName";
     }
 
     @Before
@@ -111,32 +103,28 @@ public class CapabilitiesRegistrarTests {
     @Test
     public void registerWithCapRegistrar() {
 
-        when(provider.getProviderQos()).thenReturn(providerQos);
-        doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
-        when(providerContainer.getInterfaceName()).thenReturn(TestInterface.INTERFACE_NAME);
-        when(providerContainer.getRequestCaller()).thenReturn(new RequestCallerFactory().create(provider));
+        when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
+        RequestCaller requestCallerMock = mock(RequestCaller.class);
+        when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
-
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
         when(providerContainerFactory.create(provider)).thenReturn(providerContainer);
 
         registrar.registerProvider(domain, provider, providerQos);
         verify(localDiscoveryAggregator).add(any(Callback.class),
                                              eq(new DiscoveryEntry(domain,
-                                                                   TestInterface.INTERFACE_NAME,
+                                                                   TestProvider.INTERFACE_NAME,
                                                                    participantId,
                                                                    providerQos,
                                                                    new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR })));
 
-        verify(providerDirectory).add(participantId, eq(providerContainer));
+        verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }
 
     @Test
     public void unregisterProvider() {
-        when(provider.getProviderQos()).thenReturn(providerQos);
-        doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
-        when(providerContainer.getInterfaceName()).thenReturn(TestInterface.INTERFACE_NAME);
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
+        when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
         registrar.unregisterProvider(domain, provider);
 
         verify(localDiscoveryAggregator).remove(any(Callback.class), eq(participantId));

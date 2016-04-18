@@ -66,11 +66,6 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 		super();
 	}
 
-	@Override
-	public Class<?> getProvidedInterface() {
-		return «providerInterfaceName».class;
-	}
-
 	«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
 		protected «interfaceName»SubscriptionPublisher «interfaceName.toFirstLower»SubscriptionPublisher;
 

@@ -24,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -128,6 +127,8 @@ public class RpcStubbingTest {
     @InterfaceName("testProvider")
     @InterfaceClass(TestProvider.class)
     public static interface TestProvider extends JoynrInterface, JoynrProvider {
+        public static final String INTERFACE_NAME = "rpcstubbing/test";
+
         public Promise<Deferred<GpsLocation>> returnsGpsLocation();
 
         public Promise<Deferred<List<GpsLocation>>> returnsGpsLocationList();
@@ -159,8 +160,6 @@ public class RpcStubbingTest {
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF", justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
                        JsonMappingException, IOException, JoynrMessageNotSentException {
-        doReturn(TestProvider.class).when(testMock).getProvidedInterface();
-
         Deferred<GpsLocation> deferredGpsLocation = new Deferred<GpsLocation>();
         deferredGpsLocation.resolve(gpsValue);
         when(testMock.returnsGpsLocation()).thenReturn(new Promise<Deferred<GpsLocation>>(deferredGpsLocation));

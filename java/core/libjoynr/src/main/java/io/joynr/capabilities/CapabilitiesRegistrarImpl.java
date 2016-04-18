@@ -32,6 +32,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 
@@ -77,8 +78,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      */
     @Override
     public Future<Void> registerProvider(final String domain, JoynrProvider provider, ProviderQos providerQos) {
-        String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
         ProviderContainer providerContainer = providerContainerFactory.create(provider);
+        String participantId = participantIdStorage.getProviderParticipantId(domain,
+                                                                             providerContainer.getInterfaceName());
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
                                                            providerContainer.getInterfaceName(),
                                                            participantId,
@@ -107,7 +109,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     public void unregisterProvider(String domain, JoynrProvider provider) {
 
         final String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                                   provider.getProvidedInterface());
+                                                                                   ProviderAnnotations.getInterfaceName(provider));
         Callback<Void> callback = new Callback<Void>() {
             @Override
             public void onSuccess(@CheckForNull Void result) {
