@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import joynr.Request;
-import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,11 +78,6 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
         for (Object payload : payloads) {
             assertTrue(getSentPayloads().contains(payload));
         }
-    }
-
-    @Override
-    public ProviderQos getProviderQos() {
-        return new ProviderQos();
     }
 
 }

@@ -20,6 +20,7 @@ package io.joynr.runtime;
  */
 
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -43,7 +44,7 @@ public interface JoynrRuntime {
      * @return Returns a Future which can be used to check the registration status.
      */
     @Deprecated
-    Future<Void> registerProvider(String domain, JoynrProvider provider);
+    Future<Void> registerProvider(String domain, AbstractJoynrProvider provider);
 
     /**
      * Registers a provider in the joynr framework

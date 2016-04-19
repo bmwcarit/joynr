@@ -37,7 +37,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import joynr.Reply;
-import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,11 +80,6 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
 
         public Object respond(Object payload) {
             return "Reply to " + payload.toString();
-        }
-
-        @Override
-        public ProviderQos getProviderQos() {
-            return new ProviderQos();
         }
 
     }

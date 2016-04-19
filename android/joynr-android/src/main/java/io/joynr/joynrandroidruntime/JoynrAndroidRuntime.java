@@ -20,6 +20,7 @@ package io.joynr.joynrandroidruntime;
  */
 
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -31,7 +32,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import joynr.types.ProviderQos;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Messenger;
@@ -93,7 +93,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
       */
     @Deprecated
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider) {
+    public Future<Void> registerProvider(String domain, AbstractJoynrProvider provider) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
         // this will not block to long

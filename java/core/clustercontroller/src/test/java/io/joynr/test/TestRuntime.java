@@ -20,6 +20,7 @@ package io.joynr.test;
  */
 
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -30,7 +31,7 @@ public class TestRuntime implements JoynrRuntime {
 
     @Deprecated
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider) {
+    public Future<Void> registerProvider(String domain, AbstractJoynrProvider provider) {
         return null;
     }
 

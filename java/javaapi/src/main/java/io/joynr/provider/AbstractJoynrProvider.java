@@ -39,7 +39,6 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
      * @return provider QoS that applies to this provider instance.
      */
     @Deprecated
-    @Override
     public ProviderQos getProviderQos() {
         return providerQos;
     }
