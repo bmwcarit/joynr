@@ -299,9 +299,10 @@ void MessageRouter::scheduleMessage(
     } else {
         std::string errorMessage("Message with payload " + message.getPayload() +
                                  "  could not be send to " + destAddress->toString() +
-                                 ". Stub creation failed");
+                                 ". Stub creation failed. Queueing message.");
         JOYNR_LOG_WARN(logger, errorMessage);
-        throw exceptions::JoynrMessageNotSentException(errorMessage);
+        // save the message for later delivery
+        messageQueue->queueMessage(message);
     }
 }
 

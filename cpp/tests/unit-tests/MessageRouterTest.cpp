@@ -163,6 +163,8 @@ TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     const std::string testHttp = "TEST_HTTP";
     const std::string testMqtt = "TEST_MQTT";
     const std::string brokerUri = "brokerUri";
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
     // this message should be added because destination is unknown
     joynrMessage.setHeaderTo(testHttp);
     messageRouter->route(joynrMessage);
