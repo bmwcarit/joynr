@@ -34,6 +34,7 @@
 #include "joynr/CapabilityEntry.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/Logger.h"
+#include "joynr/LibjoynrSettings.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;
@@ -46,6 +47,7 @@ public:
         settingsFileName("LocalCapabilitiesDirectoryTest.settings"),
         settings(settingsFileName),
         messagingSettings(settings),
+        libjoynrsettings(settings),
         capabilitiesClient(new MockCapabilitiesClient()),
         mockMessageRouter(),
         localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings, capabilitiesClient, mockMessageRouter)),
@@ -195,6 +197,7 @@ protected:
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
+    LibjoynrSettings libjoynrsettings;
     MockCapabilitiesClient* capabilitiesClient;
     MockMessageRouter mockMessageRouter;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
@@ -934,38 +937,38 @@ TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerHttpAd
     registerReceivedCapabilities(addressType, channelId);
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, serializerTest)
+TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
 {
+    // Attempt loading (action usually performed by cluster-controller runtime)
+    localCapabilitiesDirectory->loadFromFile(libjoynrsettings.getLocalCapabilitiesDirectoryPersistenceFilename());
+
+    // add few entries
     const std::string DOMAIN_NAME = "LocalCapabilitiesDirectorySerializerTest_Domain";
     const std::string INTERFACE_NAME = "LocalCapabilitiesDirectorySerializerTest_InterfaceName";
-
-    std::vector<std::string> participantIds {util::createUuid(),util::createUuid(),util::createUuid()};
-    joynr::types::DiscoveryEntry entry1 (DOMAIN_NAME,INTERFACE_NAME, participantIds[0],types::ProviderQos(),{joynr::types::CommunicationMiddleware::JOYNR});
-    joynr::types::DiscoveryEntry entry2 (DOMAIN_NAME,INTERFACE_NAME, participantIds[1],types::ProviderQos(),{joynr::types::CommunicationMiddleware::JOYNR});
-    joynr::types::DiscoveryEntry entry3 (DOMAIN_NAME,INTERFACE_NAME, participantIds[2],types::ProviderQos(),{joynr::types::CommunicationMiddleware::JOYNR});
+    const std::vector<std::string> participantIds {util::createUuid(),util::createUuid(),util::createUuid()};
+    const types::DiscoveryEntry entry1 (DOMAIN_NAME,INTERFACE_NAME, participantIds[0],types::ProviderQos(),{types::CommunicationMiddleware::JOYNR});
+    const types::DiscoveryEntry entry2 (DOMAIN_NAME,INTERFACE_NAME, participantIds[1],types::ProviderQos(),{types::CommunicationMiddleware::JOYNR});
+    const types::DiscoveryEntry entry3 (DOMAIN_NAME,INTERFACE_NAME, participantIds[2],types::ProviderQos(),{types::CommunicationMiddleware::JOYNR});
 
     localCapabilitiesDirectory->add(entry1);
     localCapabilitiesDirectory->add(entry2);
     localCapabilitiesDirectory->add(entry3);
 
-    // serialize
-    const std::string serializedJson { localCapabilitiesDirectory->serializeToJson() };
-    JOYNR_LOG_TRACE(logger, serializedJson);
+    // delete LocalCapabilitiesDirectory
+    delete localCapabilitiesDirectory;
+    localCapabilitiesDirectory = nullptr;
 
-    localCapabilitiesDirectory->cleanCache(std::chrono::milliseconds::zero());
-    JOYNR_LOG_TRACE(logger, localCapabilitiesDirectory->serializeToJson());
+    // create a new object
+    localCapabilitiesDirectory = new LocalCapabilitiesDirectory(messagingSettings, capabilitiesClient, mockMessageRouter);
 
-    // deserialize and check content
-    localCapabilitiesDirectory->deserializeFromJson(serializedJson);
+    // load persistency
+    localCapabilitiesDirectory->loadFromFile(libjoynrsettings.getLocalCapabilitiesDirectoryPersistenceFilename());
 
-    localCapabilitiesDirectory->lookup(participantIds[0], callback);
-    EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
-    callback->clearResults();
-
-    localCapabilitiesDirectory->lookup(participantIds[1], callback);
-    EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
-    callback->clearResults();
-
-    localCapabilitiesDirectory->lookup(participantIds[2], callback);
-    EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
+    // check all entries are there
+    for(auto& partecipantID : participantIds)
+    {
+        localCapabilitiesDirectory->lookup(partecipantID, callback);
+        EXPECT_EQ(1, callback->getResults(1000).size());
+        callback->clearResults();
+    }
 }

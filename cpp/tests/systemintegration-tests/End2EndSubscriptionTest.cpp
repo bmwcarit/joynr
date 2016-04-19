@@ -89,7 +89,10 @@ public:
         runtime1->stop(deleteChannel);
         runtime2->stop(deleteChannel);
 
-        // Delete the persisted participant ids so that each test uses different participant ids
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 

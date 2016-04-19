@@ -127,6 +127,8 @@ void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discove
         }
         this->capabilitiesClient->add(registeredGlobalCapabilities);
     }
+
+    saveToFile();
 }
 
 void LocalCapabilitiesDirectory::remove(const std::string& domain,
@@ -171,6 +173,8 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
     if (!participantIdsToRemove.empty()) {
         capabilitiesClient->remove(participantIdsToRemove);
     }
+
+    saveToFile();
 }
 
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
@@ -189,6 +193,8 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
     types::DiscoveryEntry discoveryEntry;
     convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
     informObserversOnRemove(discoveryEntry);
+
+    saveToFile();
 }
 
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
