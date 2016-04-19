@@ -80,7 +80,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(End2EndSSLTest);
 };
 
-TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
+TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
 {
 
     // Create a provider
