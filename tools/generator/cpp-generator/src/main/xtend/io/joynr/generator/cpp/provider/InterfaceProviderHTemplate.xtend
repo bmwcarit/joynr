@@ -28,6 +28,7 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
+import io.joynr.generator.templates.util.BroadcastUtil
 
 class InterfaceProviderHTemplate extends InterfaceTemplate {
 	@Inject private extension TemplateBase
@@ -35,6 +36,7 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
+	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
 	@Inject private extension MethodUtil
 
@@ -196,7 +198,9 @@ public:
 		 * @param «broadcastName» the new broadcast value
 		 */
 		virtual void fire«broadcastName.toFirstUpper»(
-				«broadcast.commaSeperatedTypedConstOutputParameterList»
+				«IF !broadcast.outputParameters.empty»
+					«broadcast.commaSeperatedTypedConstOutputParameterList»
+				«ENDIF»
 		) = 0;
 
 	«ENDFOR»

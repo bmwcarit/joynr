@@ -359,6 +359,9 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     outputParams = broadcast.createBroadcastOutputParameters();
                     outputParams.setEnumOutput(Country.CANADA);
                     outputParams.setEnumArrayOutput([Country.GERMANY, Country.ITALY]);
+                } else if (opArgs.broadcastName === "emptyBroadcast"){
+                    broadcast = radioProvider.emptyBroadcast;
+                    outputParams = broadcast.createBroadcastOutputParameters();
                 } else if (opArgs.broadcastName === "weakSignal"){
                     //weakSignal
                     broadcast = radioProvider.weakSignal;

@@ -659,6 +659,9 @@ interface test {
 			TEverythingStruct[] structWithStringArrayArrayOut
 		}
 	}
+
+	broadcast emptyBroadcast {}
+
 	enumeration ErrorEnumInterface {
 		BASE_ERROR_INTERFACE
 	}

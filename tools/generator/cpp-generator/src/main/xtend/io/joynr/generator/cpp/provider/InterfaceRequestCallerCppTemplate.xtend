@@ -131,7 +131,9 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
 	«val methodName = method.joynrName»
 	void «interfaceName»RequestCaller::«methodName»(
-			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+			«IF !method.inputParameters.empty»
+				«inputTypedParamList»,
+			«ENDIF»
 			«IF method.outputParameters.empty»
 				std::function<void()> onSuccess,
 			«ELSE»

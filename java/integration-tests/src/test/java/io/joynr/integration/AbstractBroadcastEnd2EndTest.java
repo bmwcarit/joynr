@@ -271,6 +271,41 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void subscribeAndUnsubscribeFromEmptyBroadcast() throws InterruptedException {
+
+        final Semaphore broadcastReceived = new Semaphore(0);
+
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(0)
+                       .setValidityMs(CONST_DEFAULT_TEST_TIMEOUT)
+                       .setPublicationTtlMs(CONST_DEFAULT_TEST_TIMEOUT);
+        String subscriptionId = proxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+
+                                                                             @Override
+                                                                             public void onReceive() {
+                                                                                 broadcastReceived.release();
+                                                                             }
+                                                                         },
+                                                                         subscriptionQos);
+
+        Thread.sleep(300);
+
+        provider.fireEmptyBroadcast();
+        broadcastReceived.acquire();
+
+        //unsubscribe incorrect subscription -> now, a firing broadcast shall still be received
+        proxy.unsubscribeFromEmptyBroadcastBroadcast(UUID.randomUUID().toString());
+        provider.fireEmptyBroadcast();
+        broadcastReceived.acquire();
+
+        //unsubscribe correct subscription -> now, no more broadcast shall be received
+        proxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionId);
+        Thread.sleep(300);
+        provider.fireEmptyBroadcast();
+        assertFalse(broadcastReceived.tryAcquire(300, TimeUnit.MILLISECONDS));
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeAndUnsubscribeFromBroadcast() throws InterruptedException {
 
         final Semaphore broadcastReceived = new Semaphore(0);

@@ -75,6 +75,8 @@ public class «className»Impl extends AbstractSubscriptionPublisher implements 
 				// passing array to varargs will cause array elements to be understood as multiple parameters.
 				// Cast to Object prevents this.
 				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), (Object) «broadcast.commaSeperatedUntypedOutputParameterList»);
+			«ELSEIF broadcast.outArgs.empty»
+				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"));
 			«ELSE»
 				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «broadcast.commaSeperatedUntypedOutputParameterList»);
 			«ENDIF»
