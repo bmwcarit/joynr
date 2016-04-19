@@ -270,19 +270,6 @@ std::size_t hash_value(const «typeName»& «typeName.toFirstLower»Value);
 
 «getNamespaceEnder(type, true)»
 
-namespace joynr
-{
-namespace util {
-template <>
-inline std::vector<«type.typeName»> valueOf<
-		std::vector<«type.typeName»>>(const Variant& variant)
-{
-	return convertVariantVectorToVector<«type.typeName»>(
-			variant.get<std::vector<Variant>>());
-}
-} // namespace util
-} // namespace joynr
-
 namespace std {
 
 /**
