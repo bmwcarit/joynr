@@ -21,27 +21,35 @@
 
 joynrTestRequire("joynr/messaging/channel/TestChannelMessagingStub", [
     "global/Promise",
+    "joynr/system/RoutingTypes/ChannelAddress",
     "joynr/messaging/channel/ChannelMessagingStub"
-], function(Promise, ChannelMessagingStub) {
+], function(Promise, ChannelAddress, ChannelMessagingStub) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() {
-        var channelMessagingSender, destChannelId, myChannelId;
+        var channelMessagingSender, destinationChannelAddress, myChannelAddress;
         var channelMessagingStub1, channelMessagingStub2, joynrMessage;
+        var url = "http://testurl";
 
         beforeEach(function() {
             channelMessagingSender = jasmine.createSpyObj("channelMessagingSender", [ "send"
             ]);
             channelMessagingSender.send.andReturn(Promise.resolve());
-            destChannelId = "destChannelId";
-            myChannelId = "myChannelId";
+            destinationChannelAddress = new ChannelAddress({
+                channelId : "destChannelId",
+                messagingEndpointUrl : url
+            });
+            myChannelAddress = new ChannelAddress({
+                channelId : "myChannelId",
+                messagingEndpointUrl : url
+            });
             channelMessagingStub1 = new ChannelMessagingStub({
-                destChannelId : destChannelId,
-                myChannelId : myChannelId,
+                destinationChannelAddress : destinationChannelAddress,
+                myChannelAddress : myChannelAddress,
                 channelMessagingSender : channelMessagingSender
             });
             channelMessagingStub2 = new ChannelMessagingStub({
-                destChannelId : destChannelId,
-                myChannelId : destChannelId,
+                destinationChannelAddress : destinationChannelAddress,
+                myChannelAddress : destinationChannelAddress,
                 channelMessagingSender : channelMessagingSender
             });
             joynrMessage = {
@@ -67,8 +75,10 @@ joynrTestRequire("joynr/messaging/channel/TestChannelMessagingStub", [
         it("transmits a message and set replyChannelId", function() {
             expect(joynrMessage.replyChannelId).toBeUndefined();
             var result = channelMessagingStub1.transmit(joynrMessage);
-            expect(channelMessagingSender.send).toHaveBeenCalledWith(joynrMessage, destChannelId);
-            expect(joynrMessage.replyChannelId).toBe(myChannelId);
+            expect(channelMessagingSender.send).toHaveBeenCalledWith(
+                    joynrMessage,
+                    destinationChannelAddress);
+            expect(joynrMessage.replyChannelId).toBe(JSON.stringify(myChannelAddress));
         });
 
     });

@@ -27,18 +27,18 @@ joynrTestRequire(
             "global/Promise",
             "joynr/capabilities/CapabilitiesRegistrar",
             "joynr/types/ProviderQos",
-            "joynr/types/CapabilityInformation",
+            "joynr/types/GlobalDiscoveryEntry",
             "joynr/provider/ProviderAttributeNotifyReadWrite",
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderScope",
+            "joynr/types/Version",
             "uuid",
-            "joynr/types/CommunicationMiddleware"
         ],
         function(
                 Promise,
                 CapabilitiesRegistrar,
                 ProviderQos,
-                CapabilityInformation,
+                GlobalDiscoveryEntry,
                 ProviderAttributeNotifyReadWrite,
                 DiscoveryEntry,
                 ProviderScope,
@@ -62,6 +62,7 @@ joynrTestRequire(
                         var capability;
                         var localChannelId;
                         var providerQos;
+                        var address;
                         var checkImplementation;
 
                         beforeEach(function() {
@@ -96,6 +97,7 @@ joynrTestRequire(
 
                             localChannelId = "localChannelId";
                             domain = "testdomain";
+                            address = "address";
                             authToken = "authToken";
                             participantId = "myParticipantId";
                             participantIdStorageSpy =
@@ -136,13 +138,14 @@ joynrTestRequire(
                                 loggingManager : loggingManagerSpy
                             });
 
-                            capability = new CapabilityInformation({
+                            capability = new GlobalDiscoveryEntry({
                                 providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                                 domain : domain,
                                 interfaceName : provider.interfaceName,
-                                providerQos : providerQos,
+                                qos : providerQos,
                                 channelId : localChannelId,
-                                participantId : participantId
+                                participantId : participantId,
+                                address : address
                             });
                         });
 

@@ -22,7 +22,7 @@
 joynrTestRequire(
         "joynr/util/TestInProcessStubAndSkeleton",
         [
-            "joynr/types/CapabilityInformation",
+            "joynr/types/GlobalDiscoveryEntry",
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
             "joynr/types/CustomParameter",
@@ -32,7 +32,7 @@ joynrTestRequire(
             "joynr/util/InProcessSkeleton"
         ],
         function(
-                CapabilityInformation,
+                GlobalDiscoveryEntry,
                 ProviderQos,
                 ProviderScope,
                 CustomParameter,
@@ -57,14 +57,14 @@ joynrTestRequire(
             });
 
             var capability = {
-                discoveryEntry : new CapabilityInformation({
+                discoveryEntry : new GlobalDiscoveryEntry({
                     providerVersion : new Version({
                         majorVersion : 47,
                         minorVersion : 11
                     }),
                     domain : "KeywordmyDomain",
                     interfaceName : "myInterfaceName",
-                    providerQos : new ProviderQos({
+                    qos : new ProviderQos({
                         customParameters : [ new CustomParameter({
                             name : "theName",
                             value : "theValue"
@@ -74,21 +74,21 @@ joynrTestRequire(
                         scope : ProviderScope.LOCAL,
                         supportsOnChangeSubscriptions : true
                     }),
-                    channelId : "InProcessAddress",
+                    address : "InProcessAddress",
                     participantId : "1"
                 })
             };
 
             var arrayOfCapabilities = {
                 discoveryEntries : [
-                    new CapabilityInformation({
+                    new GlobalDiscoveryEntry({
                         providerVersion : new Version({
                             majorVersion : 47,
                             minorVersion : 11
                         }),
                         domain : "KeywordmyDomain",
                         interfaceName : "myInterfaceName",
-                        providerQos : new ProviderQos({
+                        qos : new ProviderQos({
                             customParameters : [ new CustomParameter({
                                 name : "theName",
                                 value : "theValue"
@@ -98,17 +98,17 @@ joynrTestRequire(
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true
                         }),
-                        channelId : "InProcessAddress",
+                        address : "InProcessAddress",
                         participantId : "1"
                     }),
-                    new CapabilityInformation({
+                    new GlobalDiscoveryEntry({
                         providerVersion : new Version({
                             majorVersion : 47,
                             minorVersion : 11
                         }),
                         domain : "myDomain",
                         interfaceName : "myInterfaceName",
-                        providerQos : new ProviderQos({
+                        qos : new ProviderQos({
                             customParameters : [ new CustomParameter({
                                 name : "theName",
                                 value : "theValue"
@@ -118,17 +118,17 @@ joynrTestRequire(
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true
                         }),
-                        channelId : "InProcessAddress",
+                        address : "InProcessAddress",
                         participantId : "1"
                     }),
-                    new CapabilityInformation({
+                    new GlobalDiscoveryEntry({
                         providerVersion : new Version({
                             majorVersion : 47,
                             minorVersion : 11
                         }),
                         domain : "myWithKeywordDomain",
                         interfaceName : "myInterfaceName",
-                        providerQos : new ProviderQos({
+                        qos : new ProviderQos({
                             customParameters : [ new CustomParameter({
                                 name : "theName",
                                 value : "theValue"
@@ -138,17 +138,17 @@ joynrTestRequire(
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true
                         }),
-                        channelId : "InProcessAddress",
+                        address : "InProcessAddress",
                         participantId : "1"
                     }),
-                    new CapabilityInformation({
+                    new GlobalDiscoveryEntry({
                         providerVersion : new Version({
                             majorVersion : 47,
                             minorVersion : 11
                         }),
                         domain : "myDomain",
                         interfaceName : "myInterfaceNameKeyword",
-                        providerQos : new ProviderQos({
+                        qos : new ProviderQos({
                             customParameters : [ new CustomParameter({
                                 name : "theName",
                                 value : "theValue"
@@ -158,17 +158,17 @@ joynrTestRequire(
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true
                         }),
-                        channelId : "InProcessAddress",
+                        address : "InProcessAddress",
                         participantId : "1"
                     }),
-                    new CapabilityInformation({
+                    new GlobalDiscoveryEntry({
                         providerVersion : new Version({
                             majorVersion : 47,
                             minorVersion : 11
                         }),
                         domain : "myDomain",
                         interfaceName : "myInterfaceName",
-                        providerQos : new ProviderQos({
+                        qos : new ProviderQos({
                             customParameters : [ new CustomParameter({
                                 name : "theName",
                                 value : "theValue"
@@ -178,7 +178,7 @@ joynrTestRequire(
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true
                         }),
-                        channelId : "InProcessAddress",
+                        address : "InProcessAddress",
                         participantId : "1"
                     })
                 ]

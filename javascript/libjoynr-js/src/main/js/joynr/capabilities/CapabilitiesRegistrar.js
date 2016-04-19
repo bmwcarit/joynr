@@ -21,10 +21,9 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
     "global/Promise",
     "joynr/util/UtilInternal",
     "joynr/types/DiscoveryEntry",
-    "joynr/types/CapabilityInformation",
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/types/Version"
-], function(Promise, Util, DiscoveryEntry, CapabilityInformation, ParticipantIdStorage, Version) {
+], function(Promise, Util, DiscoveryEntry, ParticipantIdStorage, Version) {
 
     /**
      * The Capabilities Registrar

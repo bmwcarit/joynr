@@ -1,4 +1,4 @@
-/*jslint es5: true */
+/*jslint es5: true, continue: true */
 
 /*
  * #%L
@@ -27,7 +27,7 @@ define(
         "joynr/capabilities/discovery/CapabilityDiscovery",
         [
             "global/Promise",
-            "joynr/types/CapabilityInformation",
+            "joynr/types/GlobalDiscoveryEntry",
             "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/types/DiscoveryEntry",
             "joynr/proxy/DiscoveryQos",
@@ -35,13 +35,14 @@ define(
             "joynr/types/ProviderScope",
             "joynr/types/Version",
             "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy",
+            "joynr/types/TypeRegistrySingleton",
+            "joynr/util/Typing",
             "joynr/system/LoggerFactory",
-            "joynr/util/CapabilitiesUtil",
             "joynr/util/UtilInternal"
         ],
         function(
                 Promise,
-                CapabilityInformation,
+                GlobalDiscoveryEntry,
                 ChannelAddress,
                 DiscoveryEntry,
                 DiscoveryQos,
@@ -49,8 +50,9 @@ define(
                 ProviderScope,
                 Version,
                 GlobalCapabilitiesDirectoryProxy,
+                TypeRegistrySingleton,
+                Typing,
                 LoggerFactory,
-                CapabilitiesUtil,
                 Util) {
 
             /**
@@ -68,8 +70,6 @@ define(
              * @param {ProxyBuilder}
              *            proxyBuilder the proxy builder used to create the GlobalCapabilitiesDirectoryProxy
              * @param {String}
-             *            localChannelId the local channel Id
-             * @param {String}
              *            globalCapabilitiesDomain the domain to communicate with the GlobalCapablitiesDirectory
              *                                     GlobalCapab
              *
@@ -79,11 +79,13 @@ define(
                     globalCapabilitiesCache,
                     messageRouter,
                     proxyBuilder,
-                    localChannelId,
                     globalCapabilitiesDomain) {
                 var log =
                         LoggerFactory.getLogger("joynr/capabilities/discovery/CapabilityDiscovery");
                 var TTL_30DAYS_IN_MS = 30*24*60*60*1000;
+                var globalAddress, globalAddressSerialized;
+                var typeRegistry = TypeRegistrySingleton.getInstance();
+                var queuedGlobalDiscoveryEntries = [];
 
                 if (!localCapabilitiesStore
                     || !localCapabilitiesStore.lookup
@@ -111,36 +113,9 @@ define(
                             "constructor of CapabilityDiscovery requires the proxyBuilder as argument");
                 }
 
-                if (localChannelId === undefined) {
-                    throw new Error(
-                            "constructor of CapabilityDiscovery requires the local channelId");
-                }
-
                 if (globalCapabilitiesDomain === undefined) {
                     throw new Error(
                             "constructor of CapabilityDiscovery requires the globalCapabilitiesDomain");
-                }
-
-                /**
-                 * This method transforms a discoveryEntry into an object of type "CapabilityInformation"
-                 *
-                 * @function
-                 * @name CapabilityDiscovery#toCapabilityInformation
-                 *
-                 * @param {DiscoveryEntry}
-                 *            discoveryEntry the object to be transformed
-                 *
-                 * @returns {CapabilityInformation} the transformed object
-                 */
-                function toCapabilityInformation(discoveryEntry) {
-                    return new CapabilityInformation({
-                        providerVersion : discoveryEntry.providerVersion,
-                        domain : discoveryEntry.domain,
-                        interfaceName : discoveryEntry.interfaceName,
-                        providerQos : discoveryEntry.qos,
-                        channelId : localChannelId,
-                        participantId : discoveryEntry.participantId
-                    });
                 }
 
                 /**
@@ -190,19 +165,23 @@ define(
                             interfaceName : interfaceName
                         }).then(function(opArgs) {
                             var i, messageRouterPromises = [], globalCapabilities = opArgs.result;
+                            var globalAddress;
                             for (i = globalCapabilities.length - 1; i >= 0; i--) {
-                                var capabilityInformation = globalCapabilities[i];
-                                if (capabilityInformation.channelId === localChannelId) {
+                                var globalDiscoveryEntry = globalCapabilities[i];
+                                if (globalDiscoveryEntry.address === globalAddressSerialized) {
                                     globalCapabilities.splice(i, 1);
                                 } else {
+                                    try {
+                                        globalAddress = Typing.augmentTypes(JSON.parse(globalDiscoveryEntry.address), typeRegistry);
+                                    } catch (e) {
+                                        log.error("unable to use global discoveryEntry with unknown address type: " + globalDiscoveryEntry.address);
+                                        continue;
+                                    }
                                     // Update routing table
                                     messageRouterPromises.push(messageRouter.addNextHop(
-                                            capabilityInformation.participantId,
-                                            new ChannelAddress(
-                                                    {
-                                                        channelId : capabilityInformation.channelId
-                                                    })));
-                                    capabilities.push(CapabilitiesUtil.toDiscoveryEntry(capabilityInformation));
+                                            globalDiscoveryEntry.participantId,
+                                            globalAddress));
+                                    capabilities.push(globalDiscoveryEntry);
                                 }
                             }
                             return Promise.all(messageRouterPromises).then(function() {
@@ -211,6 +190,51 @@ define(
                         });
                     });
                 }
+
+                /**
+                 *
+                 * @param discoveryEntry to be added to the global discovery directory
+                 * @returns {Object} an A+ promise
+                 */
+                function addGlobal(discoveryEntry) {
+                    return getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS).then(function(globalCapabilitiesDirectoryProxy){
+                        discoveryEntry.address = globalAddressSerialized;
+                        return globalCapabilitiesDirectoryProxy.add({
+                            globalDiscoveryEntry : new GlobalDiscoveryEntry(discoveryEntry)
+                        }).catch(function(error) {
+                            throw new Error("Error calling operation \"add\" of GlobalCapabilitiesDirectory because: "
+                                    + error);
+                        });
+                    });
+                }
+
+                /**
+                 *
+                 * @param {Object} queuedDiscoveryEntry contains a discoveryEntry and the resolve
+                 * and reject functions from the original Promise created on add().
+                 */
+                function addGlobalQueued(queuedDiscoveryEntry) {
+                    addGlobal(queuedDiscoveryEntry.discoveryEntry).then(queuedDiscoveryEntry.resolve).catch(queuedDiscoveryEntry.reject);
+                }
+
+                /**
+                 * This method is called when the global address has been created
+                 *
+                 * @function
+                 * @name CapabilityDiscovery#globalAddressReady
+                 *
+                 * @param {Address}
+                 *            globalAddress the address used to register discovery entries globally
+                 */
+                this.globalAddressReady = function globalAddressReady(newGlobalAddress) {
+                    var i;
+                    globalAddress = newGlobalAddress;
+                    globalAddressSerialized = JSON.stringify(newGlobalAddress);
+                    for (i=0;i<queuedGlobalDiscoveryEntries.lengh;i++) {
+                        addGlobalQueued(queuedGlobalDiscoveryEntries[i]);
+                    }
+                    queuedGlobalDiscoveryEntries = [];
+                };
 
                 /**
                  * This method queries the local and/or global capabilities directory according to the given discoveryStrategy given in the
@@ -228,7 +252,7 @@ define(
                  * @param {DiscoveryScope}
                  *            dDiscoveryQos.discoveryScope the strategy to discover capabilities
                  * @returns {Object} an A+ Promise object, that will provide an array of discovered capabilities, callback signatures:
-                 *          then({Array[CapabilityInformation]} discoveredCaps).catch({Error} error)
+                 *          then({Array[GlobalDiscoveryEntry]} discoveredCaps).catch({Error} error)
                  */
                 this.lookup =
                         function lookup(domain, interfaceName, discoveryQos) {
@@ -258,7 +282,7 @@ define(
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
                                     if (globalCapabilities.length > 0) {
-                                        return Promise.resolve(CapabilitiesUtil.toDiscoveryEntries(globalCapabilities));
+                                        return Promise.resolve(globalCapabilities);
                                     }
                                     return lookupGlobalCapabilities(
                                             domain,
@@ -285,7 +309,7 @@ define(
                                                 localCapabilities);
                                     }
                                     return Promise.resolve(localCapabilities
-                                            .concat(CapabilitiesUtil.toDiscoveryEntries(globalCapabilities)));
+                                            .concat(globalCapabilities));
 
                                 case DiscoveryScope.GLOBAL_ONLY.value:
                                     globalCapabilities = globalCapabilitiesCache.lookup({
@@ -294,7 +318,7 @@ define(
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
                                     if (globalCapabilities.length > 0) {
-                                        return Promise.resolve(CapabilitiesUtil.toDiscoveryEntries(globalCapabilities));
+                                        return Promise.resolve(globalCapabilities);
                                     }
                                     return lookupGlobalCapabilities(
                                             domain,
@@ -331,17 +355,21 @@ define(
                                 remote : false
                             });
                             var promise;
+                            discoveryEntry.lastSeenDateMs = Date.now();
                             if (discoveryEntry.qos.scope === ProviderScope.LOCAL) {
-                                promise= Promise.resolve();
+                                promise = Promise.resolve();
                             } else if (discoveryEntry.qos.scope === ProviderScope.GLOBAL) {
-                                promise = getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS).then(function(globalCapabilitiesDirectoryProxy){
-                                    return globalCapabilitiesDirectoryProxy.add({
-                                        capability : toCapabilityInformation(discoveryEntry)
-                                    }).catch(function(error) {
-                                        throw new Error("Error calling operation \"add\" of GlobalCapabilitiesDirectory because: "
-                                                + error);
+                                if (! globalAddressSerialized) {
+                                    promise = new Promise(function (resolve, reject) {
+                                        queuedGlobalDiscoveryEntries.push({
+                                            discoveryEntry: discoveryEntry,
+                                            resolve: resolve,
+                                            reject: reject
+                                        });
                                     });
-                                });
+                                } else {
+                                    promise = addGlobal(discoveryEntry);
+                                }
                             } else {
                                 promise = Promise.reject(new Error("Encountered unknown ProviderQos scope \""
                                         + discoveryEntry.qos.scope + "\""));

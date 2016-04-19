@@ -27,24 +27,28 @@ joynrTestRequire("joynr/messaging/channel/TestChannelMessagingStubFactory", [
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", function() {
         var channelMessagingSender, channelMessagingStubFactory, destChannelId;
-        var myChannelId, channelAddress1, channelAddress2, joynrMessage;
+        var url, myChannelId, channelAddress1, channelAddress2, joynrMessage;
 
         beforeEach(function() {
             destChannelId = "destChannelId";
             myChannelId = "myChannelId";
+            url = "http://testurl";
             channelMessagingSender = jasmine.createSpyObj("channelMessagingSender", [ "send"
             ]);
             channelMessagingSender.send.andReturn(Promise.resolve());
-            channelMessagingStubFactory = new ChannelMessagingStubFactory({
-                myChannelId : myChannelId,
-                channelMessagingSender : channelMessagingSender
-            });
             channelAddress1 = new ChannelAddress({
-                channelId : destChannelId
+                channelId : destChannelId,
+                messagingEndpointUrl : url
             });
             channelAddress2 = new ChannelAddress({
-                channelId : myChannelId
+                channelId : myChannelId,
+                messagingEndpointUrl : url
             });
+            channelMessagingStubFactory = new ChannelMessagingStubFactory({
+                channelMessagingSender : channelMessagingSender
+            });
+
+            channelMessagingStubFactory.globalAddressReady(channelAddress2);
             joynrMessage = {
                 key : "joynrMessage"
             };
@@ -62,17 +66,21 @@ joynrTestRequire("joynr/messaging/channel/TestChannelMessagingStubFactory", [
                     expect(typeof channelMessagingStubFactory.build === "function").toBeTruthy();
                 });
 
-        it("creates a messaging stub and uses it correctly", function() {
-            var channelMessagingStub = channelMessagingStubFactory.build(channelAddress1);
-            var result = channelMessagingStub.transmit(joynrMessage);
-            expect(channelMessagingSender.send).toHaveBeenCalledWith(joynrMessage, destChannelId);
+        it(
+                "creates a messaging stub and uses it correctly",
+                function() {
+                    var channelMessagingStub = channelMessagingStubFactory.build(channelAddress1);
+                    var result = channelMessagingStub.transmit(joynrMessage);
+                    expect(channelMessagingSender.send).toHaveBeenCalledWith(
+                            joynrMessage,
+                            channelAddress1);
 
-            channelMessagingSender.send.reset();
-            //in case of target channelId is the local one --> missconfiguration, drop the message
-            channelMessagingStub = channelMessagingStubFactory.build(channelAddress2);
-            result = channelMessagingStub.transmit(joynrMessage);
-            expect(channelMessagingSender.send).not.toHaveBeenCalled();
-        });
+                    channelMessagingSender.send.reset();
+                    //in case of target channelId is the local one --> missconfiguration, drop the message
+                    channelMessagingStub = channelMessagingStubFactory.build(channelAddress2);
+                    result = channelMessagingStub.transmit(joynrMessage);
+                    expect(channelMessagingSender.send).not.toHaveBeenCalled();
+                });
 
     });
 

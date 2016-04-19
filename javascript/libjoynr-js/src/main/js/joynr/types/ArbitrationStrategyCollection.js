@@ -40,8 +40,8 @@ define(
              *
              * @param {Array}
              *            capabilities the array of capability entries
-             * @param {CapabilityInformation}
-             *            capabilities.array the array of capability entries
+             * @param {DiscoveryEntry}
+             *            capabilities.array the array of DiscoveryEntries
              *
              * @returns {Array} an array of capabilities as it came in through the
              *          capabilities parameter
@@ -56,7 +56,7 @@ define(
              *
              * @param {Array}
              *            capabilities the array of capability entries
-             * @param {CapabilityInformation}
+             * @param {DiscoveryEntry}
              *            capabilities.array the array of capability entries
              *
              * @returns {Array} an array of capabilities sorted by the highest priority
@@ -81,7 +81,7 @@ define(
              *
              * @param {Array}
              *            capabilities the array of capability entries
-             * @param {CapabilityInformation}
+             * @param {DiscoveryEntry}
              *            capabilities.array the array of capability entries
              * @param {String}
              *            keyword the keyword to search for
