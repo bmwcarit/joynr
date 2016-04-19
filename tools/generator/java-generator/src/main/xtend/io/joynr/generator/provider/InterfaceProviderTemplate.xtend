@@ -115,11 +115,19 @@ package «packagePath»;
 «ENDIF»
 
 import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.InterfaceClass;
+import io.joynr.provider.InterfaceName;
+import io.joynr.provider.MajorVersion;
+import io.joynr.provider.MinorVersion;
 
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
 
+@InterfaceClass(«className».class)
+@InterfaceName(«className».INTERFACE_NAME)
+@MajorVersion(«className».MAJOR_VERSION)
+@MinorVersion(«className».MINOR_VERSION)
 public interface «className» extends JoynrProvider {
 	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
 	public static final int MAJOR_VERSION = «majorVersion»;
