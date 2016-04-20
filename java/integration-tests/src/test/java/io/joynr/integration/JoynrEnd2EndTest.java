@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.dispatching.subscription.SubscriptionTestsPublisher;
 import io.joynr.provider.AbstractSubscriptionPublisher;
@@ -109,7 +110,9 @@ public class JoynrEnd2EndTest {
     }
 
     protected static void provisionDiscoveryDirectoryAccessControlEntries() throws Exception {
-        provisionPermissiveAccessControlEntry("io.joynr", GlobalCapabilitiesDirectoryProvider.INTERFACE_NAME);
-        provisionPermissiveAccessControlEntry("io.joynr", ChannelUrlDirectoryProvider.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry("io.joynr",
+                                              ProviderAnnotations.getInterfaceName(GlobalCapabilitiesDirectoryProvider.class));
+        provisionPermissiveAccessControlEntry("io.joynr",
+                                              ProviderAnnotations.getInterfaceName(ChannelUrlDirectoryProvider.class));
     }
 }

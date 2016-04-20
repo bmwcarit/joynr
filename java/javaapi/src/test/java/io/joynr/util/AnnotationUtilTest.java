@@ -24,10 +24,8 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import io.joynr.provider.InterfaceClass;
-import io.joynr.provider.InterfaceName;
-import io.joynr.provider.MajorVersion;
-import io.joynr.provider.MinorVersion;
+import io.joynr.provider.JoynrInterface;
+import io.joynr.provider.JoynrVersion;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -49,41 +47,42 @@ public class AnnotationUtilTest {
     public void testgetAnnotationsRecursive() {
         Collection<Annotation> annotations = AnnotationUtil.getAnnotationsRecursive(DefaulttestProvider.class);
 
-        Collection<? extends Annotation> interfaceNameAnnotations = Collections2.filter(annotations,
-                                                                                        Predicates.instanceOf(InterfaceName.class));
-        assertThat(interfaceNameAnnotations, hasSize(1));
+        Collection<? extends Annotation> joynrInterfaceAnnotations = Collections2.filter(annotations,
+                                                                                         Predicates.instanceOf(JoynrInterface.class));
+        assertThat(joynrInterfaceAnnotations, hasSize(1));
 
-        Annotation interfaceNameAnnotation = interfaceNameAnnotations.iterator().next();
-        assertThat(interfaceNameAnnotation, instanceOf(InterfaceName.class));
-        assertThat(((InterfaceName) interfaceNameAnnotation).value(), equalTo(testProvider.INTERFACE_NAME));
+        Annotation interfaceNameAnnotation = joynrInterfaceAnnotations.iterator().next();
+        assertThat(interfaceNameAnnotation, instanceOf(JoynrInterface.class));
+        assertThat(((JoynrInterface) interfaceNameAnnotation).name(), equalTo("tests/test"));
     }
 
     @Test
     public void testInterfaceNameAnnotation() {
-        InterfaceName interfaceNameAnnotation = AnnotationUtil.getAnnotation(DefaulttestProvider.class,
-                                                                             InterfaceName.class);
-        assertThat(interfaceNameAnnotation.value(), equalTo(testProvider.INTERFACE_NAME));
+        JoynrInterface joynrInterfaceAnnotations = AnnotationUtil.getAnnotation(DefaulttestProvider.class,
+                                                                                JoynrInterface.class);
+        assertThat(joynrInterfaceAnnotations.name(), equalTo("tests/test"));
     }
 
     @Test
     public void testInterfaceClassAnnotation() {
-        InterfaceClass interfaceClassAnnotation = AnnotationUtil.getAnnotation(DefaulttestProvider.class,
-                                                                               InterfaceClass.class);
-        assertEquals(interfaceClassAnnotation.value(), testProvider.class);
+        JoynrInterface interfaceClassAnnotation = AnnotationUtil.getAnnotation(DefaulttestProvider.class,
+                                                                               JoynrInterface.class);
+        assertEquals(interfaceClassAnnotation.provides(), testProvider.class);
     }
 
     @Test
     public void testMajorVersionAnnotation() {
-        MajorVersion majorVersionAnnotation = AnnotationUtil.getAnnotation(DefaulttestProvider.class,
-                                                                           MajorVersion.class);
-        assertThat(majorVersionAnnotation.value(), equalTo(testProvider.MAJOR_VERSION));
+        JoynrVersion joynrVersionnAnnotation = AnnotationUtil.getAnnotation(DefaulttestProvider.class,
+                                                                            JoynrVersion.class);
+        assertThat(joynrVersionnAnnotation.major(), equalTo(47));
     }
 
     @Test
     public void testMinorVersionAnnotation() {
-        MinorVersion majorVersionAnnotation = AnnotationUtil.getAnnotation(DefaulttestProvider.class,
-                                                                           MinorVersion.class);
-        assertThat(majorVersionAnnotation.value(), equalTo(testProvider.MINOR_VERSION));
+        JoynrVersion joynrVersionnAnnotation = AnnotationUtil.getAnnotation(DefaulttestProvider.class,
+                                                                            JoynrVersion.class);
+        assertThat(joynrVersionnAnnotation.minor(), equalTo(11));
+
     }
 
 }

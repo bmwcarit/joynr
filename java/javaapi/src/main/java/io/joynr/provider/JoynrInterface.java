@@ -35,7 +35,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
-public @interface InterfaceClass {
+public @interface JoynrInterface {
 
-    Class<? extends JoynrProvider> value();
+    Class<? extends JoynrProvider> provides();
+
+    String name();
+
 }

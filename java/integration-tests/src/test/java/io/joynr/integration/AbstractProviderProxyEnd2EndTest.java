@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -46,8 +47,6 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.publication.BroadcastFilter;
-import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
@@ -176,8 +175,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
         domainAsync = domain + "Async";
-        provisionPermissiveAccessControlEntry(domain, TestProvider.INTERFACE_NAME);
-        provisionPermissiveAccessControlEntry(domainAsync, TestProvider.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domain, ProviderAnnotations.getInterfaceName(TestProvider.class));
+        provisionPermissiveAccessControlEntry(domainAsync, ProviderAnnotations.getInterfaceName(TestProvider.class));
 
         // use channelNames = test name
         String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()

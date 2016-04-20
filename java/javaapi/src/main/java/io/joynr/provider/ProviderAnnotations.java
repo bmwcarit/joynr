@@ -26,21 +26,25 @@ import java.lang.annotation.Annotation;
 
 public class ProviderAnnotations {
 
+    public static String getInterfaceName(Class<? extends JoynrProvider> providerClass) throws JoynrRuntimeException {
+        return getAnnotation(providerClass, JoynrInterface.class).name();
+    }
+
     public static String getInterfaceName(JoynrProvider provider) throws JoynrRuntimeException {
-        return getAnnotation(provider.getClass(), InterfaceName.class).value();
+        return getInterfaceName(provider.getClass());
     }
 
     public static Class<? extends JoynrProvider> getProvidedInterface(JoynrProvider provider)
                                                                                              throws JoynrRuntimeException {
-        return getAnnotation(provider.getClass(), InterfaceClass.class).value();
+        return getAnnotation(provider.getClass(), JoynrInterface.class).provides();
     }
 
     public static int getMajorVersion(JoynrProvider provider) throws JoynrRuntimeException {
-        return getAnnotation(provider.getClass(), MajorVersion.class).value();
+        return getAnnotation(provider.getClass(), JoynrVersion.class).major();
     }
 
     public static int getMinorVersion(JoynrProvider provider) throws JoynrRuntimeException {
-        return getAnnotation(provider.getClass(), MinorVersion.class).value();
+        return getAnnotation(provider.getClass(), JoynrVersion.class).minor();
     }
 
     private static <T extends Annotation> T getAnnotation(Class<?> clazz, Class<T> annotationType)

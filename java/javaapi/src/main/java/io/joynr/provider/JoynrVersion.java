@@ -35,8 +35,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
-public @interface MajorVersion {
+public @interface JoynrVersion {
 
-    int value();
+    int major();
+
+    int minor();
 
 }

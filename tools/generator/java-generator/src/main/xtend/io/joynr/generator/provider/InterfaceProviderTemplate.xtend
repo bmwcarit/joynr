@@ -115,10 +115,8 @@ package «packagePath»;
 «ENDIF»
 
 import io.joynr.provider.JoynrProvider;
-import io.joynr.provider.InterfaceClass;
-import io.joynr.provider.InterfaceName;
-import io.joynr.provider.MajorVersion;
-import io.joynr.provider.MinorVersion;
+import io.joynr.provider.JoynrInterface;
+import io.joynr.provider.JoynrVersion;
 
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
@@ -130,18 +128,13 @@ import io.joynr.provider.SubscriptionPublisherInjection;
 interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPublisherInjection<«interfaceName»SubscriptionPublisher> {}
 «ENDIF»
 
-@InterfaceClass(«className».class)
-@InterfaceName(«className».INTERFACE_NAME)
-@MajorVersion(«className».MAJOR_VERSION)
-@MinorVersion(«className».MINOR_VERSION)
+@JoynrInterface(provides=«className».class, name="«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»")
+@JoynrVersion(major=«majorVersion», minor=«minorVersion»)
 «IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
 public interface «className» extends «interfaceName»SubscriptionPublisherInjection, JoynrProvider {
 «ELSE»
 public interface «className» extends JoynrProvider {
 «ENDIF»
-	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
-	public static final int MAJOR_VERSION = «majorVersion»;
-	public static final int MINOR_VERSION = «minorVersion»;
 
 	«FOR attribute : getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»

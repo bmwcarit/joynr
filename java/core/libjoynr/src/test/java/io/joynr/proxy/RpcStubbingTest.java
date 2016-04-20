@@ -51,7 +51,6 @@ import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatching.RequestCaller;
@@ -76,8 +75,7 @@ import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
-import io.joynr.provider.InterfaceClass;
-import io.joynr.provider.InterfaceName;
+import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderCallback;
@@ -124,9 +122,8 @@ public class RpcStubbingTest {
         public void noParamsNoReturnValue();
     }
 
-    @InterfaceName("testProvider")
-    @InterfaceClass(TestProvider.class)
-    public static interface TestProvider extends JoynrInterface, JoynrProvider {
+    @JoynrInterface(provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
+    public static interface TestProvider extends io.joynr.dispatcher.rpc.JoynrInterface, JoynrProvider {
         public static final String INTERFACE_NAME = "rpcstubbing/test";
 
         public Promise<Deferred<GpsLocation>> returnsGpsLocation();

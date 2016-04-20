@@ -19,6 +19,8 @@ package io.joynr.discovery;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
+
 import java.util.HashMap;
 
 import io.joynr.runtime.SystemServicesSettings;
@@ -30,6 +32,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import joynr.system.DiscoveryAsync;
@@ -54,9 +57,9 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                     @Named(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE) CommunicationMiddleware clusterControllerConnection) {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        provisionedDiscoveryEntries.put(systemServicesDomain + DiscoveryProvider.INTERFACE_NAME,
+        provisionedDiscoveryEntries.put(systemServicesDomain + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                         new DiscoveryEntry(systemServicesDomain,
-                                                           DiscoveryProvider.INTERFACE_NAME,
+                                                           ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                                            discoveryProviderParticipantId,
                                                            providerQos,
                                                            new CommunicationMiddleware[]{

@@ -19,6 +19,8 @@
 
 package io.joynr.performance;
 
+import io.joynr.provider.ProviderAnnotations;
+
 import java.util.Properties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -138,7 +140,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
                                                                                             invocationParams.getDomain(),
-                                                                                            EchoProviderImpl.INTERFACE_NAME,
+                                                                                            ProviderAnnotations.getInterfaceName(EchoProviderImpl.class),
                                                                                             TrustLevel.LOW,
                                                                                             new TrustLevel[]{ TrustLevel.LOW },
                                                                                             TrustLevel.LOW,

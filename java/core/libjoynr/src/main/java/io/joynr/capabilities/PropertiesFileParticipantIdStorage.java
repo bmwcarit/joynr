@@ -19,6 +19,7 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -96,15 +97,17 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         } else if (defaultValue != null) {
             participantId = defaultValue;
             // if no default value, generate one and save it to the persistence file
-        } else if (ChannelUrlDirectoryProvider.INTERFACE_NAME.equals(interfaceName)) {
+        } else if (ProviderAnnotations.getInterfaceName(ChannelUrlDirectoryProvider.class).equals(interfaceName)) {
             participantId = channelUrlDirectoryParticipantId;
-        } else if (GlobalCapabilitiesDirectoryProvider.INTERFACE_NAME.equals(interfaceName)) {
+        } else if (ProviderAnnotations.getInterfaceName(GlobalCapabilitiesDirectoryProvider.class)
+                                      .equals(interfaceName)) {
             participantId = capabilitiesDirectoryParticipantId;
-        } else if (GlobalDomainAccessControllerProvider.INTERFACE_NAME.equals(interfaceName)) {
+        } else if (ProviderAnnotations.getInterfaceName(GlobalDomainAccessControllerProvider.class)
+                                      .equals(interfaceName)) {
             participantId = domainAccessControllerParticipantId;
-        } else if (DiscoveryProvider.INTERFACE_NAME.equals(interfaceName)) {
+        } else if (ProviderAnnotations.getInterfaceName(DiscoveryProvider.class).equals(interfaceName)) {
             participantId = discoveryProviderParticipantId;
-        } else if (RoutingProvider.INTERFACE_NAME.equals(interfaceName)) {
+        } else if (ProviderAnnotations.getInterfaceName(RoutingProvider.class).equals(interfaceName)) {
             participantId = routingProviderParticipantId;
         } else {
 

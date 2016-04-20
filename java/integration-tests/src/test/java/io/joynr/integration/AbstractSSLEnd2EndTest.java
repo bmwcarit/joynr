@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import static org.junit.Assert.assertEquals;
 import com.google.inject.Module;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
@@ -73,7 +74,7 @@ public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
         logger.info("{} setup beginning...", methodName);
 
         domain = "SSLEnd2EndTest." + methodName + System.currentTimeMillis();
-        provisionPermissiveAccessControlEntry(domain, DefaulttestProvider.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domain, ProviderAnnotations.getInterfaceName(DefaulttestProvider.class));
 
         // use channelNames = test name
         String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()

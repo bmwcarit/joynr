@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
@@ -110,7 +111,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         String methodName = name.getMethodName();
         logger.info("Starting {} ...", methodName);
         domain = "ProviderDomain-SubscriptionEnd2End-" + methodName + "-" + System.currentTimeMillis();
-        provisionPermissiveAccessControlEntry(domain, SubscriptionTestsProviderImpl.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domain,
+                                              ProviderAnnotations.getInterfaceName(SubscriptionTestsProviderImpl.class));
 
         setupProviderRuntime(methodName);
         setupConsumerRuntime(methodName);

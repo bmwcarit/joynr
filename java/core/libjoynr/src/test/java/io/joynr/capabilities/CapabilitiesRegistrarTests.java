@@ -39,7 +39,7 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.AbstractSubscriptionPublisher;
-import io.joynr.provider.InterfaceName;
+import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
@@ -84,7 +84,7 @@ public class CapabilitiesRegistrarTests {
     private String participantId = "participantId";
     private ProviderQos providerQos = new ProviderQos();
 
-    @InterfaceName(TestProvider.INTERFACE_NAME)
+    @JoynrInterface(provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
     interface TestProvider extends JoynrProvider {
         public static String INTERFACE_NAME = "interfaceName";
     }
