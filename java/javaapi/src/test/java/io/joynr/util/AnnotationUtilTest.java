@@ -25,9 +25,14 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import io.joynr.provider.JoynrInterface;
+import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.JoynrVersion;
+import io.joynr.provider.ProviderAnnotations;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Collection;
 
 import joynr.tests.DefaulttestProvider;
@@ -85,4 +90,18 @@ public class AnnotationUtilTest {
 
     }
 
+    @Test
+    public void getAnnotationInProxyObject() {
+        Object fixture = Proxy.newProxyInstance(this.getClass().getClassLoader(),
+                                                new Class<?>[]{ testProvider.class },
+                                                new InvocationHandler() {
+
+                                                    @Override
+                                                    public Object invoke(Object proxy, Method method, Object[] args)
+                                                                                                                    throws Throwable {
+                                                        return null;
+                                                    }
+                                                });
+        assertThat(ProviderAnnotations.getInterfaceName(fixture), equalTo("tests/test"));
+    }
 }

@@ -28,7 +28,7 @@ public class SubscriptionPublisherFactory {
      * parameter. It is guaranteed by the generated joynr providers that the cast works as expected
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public AbstractSubscriptionPublisher create(final JoynrProvider provider) throws JoynrRuntimeException {
+    public AbstractSubscriptionPublisher create(final Object provider) throws JoynrRuntimeException {
         try {
             String subscriptionPublisherClassName = "joynr." + getInterfaceName(provider).replace("/", ".")
                     + SubscriptionPublisher.class.getSimpleName();

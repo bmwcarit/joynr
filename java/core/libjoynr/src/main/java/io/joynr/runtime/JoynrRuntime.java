@@ -35,7 +35,7 @@ public interface JoynrRuntime {
     /**
      * Registers a provider in the joynr framework
      *
-     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)} instead.
+     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntime#registerProvider(String, Object, ProviderQos)} instead.
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
@@ -53,12 +53,14 @@ public interface JoynrRuntime {
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
-     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     *            Instance of the provider implementation. It is assumed that the provided implementations offers
+     *            the following annotations in its (inherited) class definition: {@link io.joynr.provider.JoynrInterface}
+     *            and {@link io.joynr.provider.JoynrVersion}.
      * @param providerQos
      *            The providers quality of service settings.
      * @return Returns a Future which can be used to check the registration status.
      */
-    Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos);
+    Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
 
     /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.

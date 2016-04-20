@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface JoynrInterface {
 
-    Class<? extends JoynrProvider> provides();
+    Class<?> provides();
 
     String name();
 

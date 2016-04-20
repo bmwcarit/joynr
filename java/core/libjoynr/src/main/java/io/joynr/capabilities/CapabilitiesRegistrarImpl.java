@@ -77,7 +77,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      * io.joynr.provider.JoynrProvider, java.lang.Class)
      */
     @Override
-    public Future<Void> registerProvider(final String domain, JoynrProvider provider, ProviderQos providerQos) {
+    public Future<Void> registerProvider(final String domain, Object provider, ProviderQos providerQos) {
         ProviderContainer providerContainer = providerContainerFactory.create(provider);
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              providerContainer.getInterfaceName());

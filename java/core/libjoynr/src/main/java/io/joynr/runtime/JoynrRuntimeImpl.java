@@ -163,7 +163,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     /**
      * Registers a provider in the joynr framework
      *
-     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntimeImpl#registerProvider(String, JoynrProvider, ProviderQos)} instead.
+     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntimeImpl#registerProvider(String, Object, ProviderQos)} instead.
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
@@ -178,7 +178,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     }
 
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos) {
+    public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         return capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
     }
 

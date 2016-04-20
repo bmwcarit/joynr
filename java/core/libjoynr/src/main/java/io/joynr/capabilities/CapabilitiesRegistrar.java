@@ -36,7 +36,7 @@ public interface CapabilitiesRegistrar {
      *            Provider quality of service.
      * @return registration future
      */
-    Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos);
+    Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
 
     void unregisterProvider(String domain, JoynrProvider provider);
 

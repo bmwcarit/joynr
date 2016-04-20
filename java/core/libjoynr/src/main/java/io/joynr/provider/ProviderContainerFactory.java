@@ -28,7 +28,7 @@ import java.util.Map;
 import com.google.inject.Inject;
 
 public class ProviderContainerFactory {
-    private final Map<JoynrProvider, ProviderContainer> providerContainers;
+    private final Map<Object, ProviderContainer> providerContainers;
     private final SubscriptionPublisherFactory subscriptionPublisherFactory;
     private final RequestCallerFactory requestCallerFactory;
 
@@ -40,14 +40,14 @@ public class ProviderContainerFactory {
         providerContainers = new HashMap<>();
     }
 
-    public ProviderContainer create(final JoynrProvider provider) {
+    public ProviderContainer create(final Object provider) {
         if (providerContainers.get(provider) == null) {
             providerContainers.put(provider, createInternal(provider));
         }
         return providerContainers.get(provider);
     }
 
-    private ProviderContainer createInternal(final JoynrProvider provider) throws JoynrRuntimeException {
+    private ProviderContainer createInternal(final Object provider) throws JoynrRuntimeException {
         return new ProviderContainer(ProviderAnnotations.getInterfaceName(provider),
                                      ProviderAnnotations.getProvidedInterface(provider),
                                      requestCallerFactory.create(provider),

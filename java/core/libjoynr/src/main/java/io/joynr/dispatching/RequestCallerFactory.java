@@ -19,7 +19,6 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderAnnotations;
 
 import java.lang.reflect.InvocationHandler;
@@ -28,7 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 public class RequestCallerFactory {
-    public RequestCaller create(final JoynrProvider provider) {
+    public RequestCaller create(final Object provider) {
         return (RequestCaller) Proxy.newProxyInstance(provider.getClass().getClassLoader(), new Class<?>[]{
                 ProviderAnnotations.getProvidedInterface(provider), RequestCaller.class }, new InvocationHandler() {
 

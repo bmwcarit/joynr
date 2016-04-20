@@ -104,7 +104,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos) {
+    public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
         // this will not block to long

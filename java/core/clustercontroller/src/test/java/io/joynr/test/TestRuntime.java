@@ -36,7 +36,7 @@ public class TestRuntime implements JoynrRuntime {
     }
 
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos) {
+    public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         return null;
     }
 
