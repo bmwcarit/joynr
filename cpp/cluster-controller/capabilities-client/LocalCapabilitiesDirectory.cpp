@@ -43,10 +43,12 @@ INIT_LOGGER(LocalCapabilitiesDirectory);
 
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                                        ICapabilitiesClient* capabilitiesClientPtr,
+                                                       const std::string& localAddress,
                                                        MessageRouter& messageRouter)
         : joynr::system::DiscoveryAbstractProvider(),
           messagingSettings(messagingSettings),
           capabilitiesClient(capabilitiesClientPtr),
+          localAddress(localAddress),
           cacheLock(),
           interfaceAddress2GlobalCapabilities(),
           participantId2GlobalCapabilities(),
@@ -110,7 +112,7 @@ void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discove
                                                          discoveryEntry.getQos(),
                                                          discoveryEntry.getLastSeenDateMs(),
                                                          discoveryEntry.getExpiryDateMs(),
-                                                         capabilitiesClient->getLocalChannelId());
+                                                         localAddress);
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {

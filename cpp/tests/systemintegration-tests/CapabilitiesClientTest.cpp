@@ -46,7 +46,6 @@ public:
     JoynrClusterControllerRuntime* runtime;
     Settings *settings;
     MessagingSettings messagingSettings;
-    std::string channelId;
 
     CapabilitiesClientTest() :
         runtime(nullptr),
@@ -55,7 +54,6 @@ public:
     {
         messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
         MessagingPropertiesPersistence storage(messagingSettings.getMessagingPropertiesPersistenceFilename());
-        channelId = storage.getChannelId();
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
@@ -83,7 +81,7 @@ private:
 INIT_LOGGER(CapabilitiesClientTest);
 
 TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
-    auto capabilitiesClient = std::make_unique<CapabilitiesClient>(channelId);
+    auto capabilitiesClient = std::make_unique<CapabilitiesClient>();
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                 messagingSettings.getDiscoveryDirectoriesDomain()

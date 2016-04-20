@@ -37,38 +37,23 @@ namespace joynr
 
 INIT_LOGGER(CapabilitiesClient);
 
-CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
-        : localChannelId(localChannelId), capabilitiesProxy(nullptr)
+CapabilitiesClient::CapabilitiesClient() : capabilitiesProxy(nullptr)
 {
 }
 
-std::string CapabilitiesClient::getLocalChannelId()
-{
-    return localChannelId;
-}
-
-void CapabilitiesClient::add(std::vector<types::GlobalDiscoveryEntry> capabilitiesInformationList)
+void CapabilitiesClient::add(
+        const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList)
 {
     assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
                                // the capabilitiesProxy has been set via the init method
-    if (localChannelId.empty()) {
-        assert(false); // "Assertion in CapabilitiesClient: Local channelId is empty. Tried to
-                       // register capabilities before messaging was started(no queueing implemented
-                       // yet;
-    } else {
-        for (std::uint32_t i = 0; i < capabilitiesInformationList.size(); i++) {
-            capabilitiesInformationList[i].setAddress(localChannelId);
-        }
-        // TM switching from sync to async
-        // capabilitiesProxy->add(capabilitiesInformationList);
 
-        std::function<void(const exceptions::JoynrException&)> onError =
-                [&](const exceptions::JoynrException& error) {
-            std::ignore = error;
-            JOYNR_LOG_ERROR(logger, "Error occured during the execution of capabilitiesProxy->add");
-        };
-        capabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
-    }
+    std::function<void(const exceptions::JoynrException&)> onError =
+            [&](const exceptions::JoynrException& error) {
+        std::ignore = error;
+        JOYNR_LOG_ERROR(logger, "Error occured during the execution of capabilitiesProxy->add");
+    };
+
+    capabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
 }
 
 void CapabilitiesClient::remove(const std::string& participantId)

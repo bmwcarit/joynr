@@ -69,6 +69,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
 public:
     LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                ICapabilitiesClient* capabilitiesClientPtr,
+                               const std::string& localAddress,
                                MessageRouter& messageRouter);
 
     ~LocalCapabilitiesDirectory() override;
@@ -215,6 +216,7 @@ private:
 
     ADD_LOGGER(LocalCapabilitiesDirectory);
     ICapabilitiesClient* capabilitiesClient;
+    std::string localAddress;
     std::mutex cacheLock;
 
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2GlobalCapabilities;

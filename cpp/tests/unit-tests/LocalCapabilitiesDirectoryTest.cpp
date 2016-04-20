@@ -49,7 +49,10 @@ public:
         messagingSettings(settings),
         capabilitiesClient(new MockCapabilitiesClient()),
         mockMessageRouter(),
-        localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings, capabilitiesClient, mockMessageRouter)),
+        localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings,
+                                                                  capabilitiesClient,
+                                                                  LOCAL_ADDRESS,
+                                                                  mockMessageRouter)),
         lastSeenDateMs(0),
         expiryDateMs(0),
         dummyParticipantId1(),
@@ -72,7 +75,6 @@ public:
         callback = std::make_shared<MockLocalCapabilitiesDirectoryCallback>();
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
-        EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).WillRepeatedly(Return(LOCAL_ADDRESS));
 
         // init a capentry recieved from the global capabilities directory
         types::ProviderQos qos;
@@ -264,7 +266,7 @@ const int LocalCapabilitiesDirectoryTest::TIMEOUT(2000);
 
 
 TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient) {
-    EXPECT_CALL(*capabilitiesClient, add(An<std::vector<types::GlobalDiscoveryEntry> >())).Times(1);
+    EXPECT_CALL(*capabilitiesClient, add(An<const std::vector<types::GlobalDiscoveryEntry>& >())).Times(1);
     joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry entry(
         providerVersion,

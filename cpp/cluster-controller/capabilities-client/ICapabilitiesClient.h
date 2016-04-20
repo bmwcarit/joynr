@@ -34,7 +34,8 @@ class ICapabilitiesClient
 {
 public:
     virtual ~ICapabilitiesClient() = default;
-    virtual void add(std::vector<types::GlobalDiscoveryEntry> capabilitiesInformationList) = 0;
+    virtual void add(
+            const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList) = 0;
     virtual void remove(const std::string& participantId) = 0;
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
     virtual std::vector<types::GlobalDiscoveryEntry> lookup(const std::string& domain,
@@ -52,7 +53,6 @@ public:
                     onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)>
                     onError = nullptr) = 0;
-    virtual std::string getLocalChannelId() = 0;
 };
 
 } // namespace joynr

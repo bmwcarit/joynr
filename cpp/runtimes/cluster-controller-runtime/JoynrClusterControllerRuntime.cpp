@@ -365,21 +365,22 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // CapabilitiesServer.
     bool usingRealCapabilitiesClient =
             /*when switching this to true, turn on the UUID in systemintegrationtests again*/ true;
-    if (doMqttMessaging) {
-        capabilitiesClient = new CapabilitiesClient(
-                mqttSerializedGlobalClusterControllerAddress); // ownership of this is not
-                                                               // transferred
-    } else {
-        capabilitiesClient = new CapabilitiesClient(
-                httpSerializedGlobalClusterControllerAddress); // ownership of this is not
-                                                               // transferred
-    }
+
+    capabilitiesClient = new CapabilitiesClient();
+
     // try using the real capabilitiesClient again:
     // capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not
     // transferred
 
+    std::string localAddress;
+    if (doMqttMessaging) {
+        localAddress = mqttSerializedGlobalClusterControllerAddress;
+    } else {
+        localAddress = httpSerializedGlobalClusterControllerAddress;
+    }
+
     localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
-            messagingSettings, capabilitiesClient, *messageRouter);
+            messagingSettings, capabilitiesClient, localAddress, *messageRouter);
 
     importPersistedLocalCapabilitiesDirectory();
 

@@ -117,7 +117,7 @@ using ::testing::Property;
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
-    MOCK_METHOD1(add, void(std::vector<joynr::types::GlobalDiscoveryEntry> capabilitiesInformationList));
+    MOCK_METHOD1(add, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilitiesInformationList));
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
     MOCK_METHOD2(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::string& domain, const std::string& interfaceName));
@@ -130,7 +130,6 @@ public:
                      const std::string& participantId,
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> callbackFct,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-    MOCK_METHOD0(getLocalChannelId, std::string());
 
 };
 
@@ -951,7 +950,7 @@ class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory 
 public:
     MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings):
         messageRouter(),
-        LocalCapabilitiesDirectory(messagingSettings,nullptr, messageRouter){}
+        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter){}
 
     MOCK_METHOD3(
             lookup,
