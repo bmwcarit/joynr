@@ -3,49 +3,76 @@
 title Java Provider Hierarchy
 
 interface JoynrProvider {
-	+ProviderQos getProviderQos()
-	+Class<?> getProvidedInterface()
-	+String getInterfaceName()
+}
+
+interface SubscriptionPublisher {
+	+void addBroadcastFilter(BroadcastFilterImpl filter)
+	+void addBroadcastFilter(BroadcastFilterImpl... filters)
+}
+
+interface SubscriptionPublisherObservable {
+	+void registerAttributeListener(String attributeName, AttributeListener attributeListener)
+	+void unregisterAttributeListener(String attributeName, AttributeListener attributeListener)
+	+void registerBroadcastListener(String broadcastName, BroadcastListener attributeListener)
+	+void unregisterBroadcastListener(String broadcastName, BroadcastListener attributeListener)
+}
+
+interface "<Interface>SubscriptionPublisherInjection" {
+}
+
+interface "SubscriptionPublisherInjection<T extends SubscriptionPublisher>" {
+	+void setSubscriptionPublisher(T subscriptionPublisher);
+}
+
+abstract AbstractSubscriptionPublisher {
+	-- @Override --
 	+void registerAttributeListener(String attributeName, AttributeListener attributeListener)
 	+void unregisterAttributeListener(String attributeName, AttributeListener attributeListener)
 	+void registerBroadcastListener(String broadcastName, BroadcastListener attributeListener)
 	+void unregisterBroadcastListener(String broadcastName, BroadcastListener attributeListener)
 	+void addBroadcastFilter(BroadcastFilterImpl filter)
+	+void addBroadcastFilter(BroadcastFilterImpl... filters)
+}
+
+interface "<Interface>SubscriptionPublisher" {
+	.. Attributes ..
+	+void <attribute>Changed(...)
+	.. Broadcasts ..
+	+void fire<Broadcast>(...)
+}
+
+class "<Interface>SubscriptionPublisherImpl" {
+	-- @Override --
+	.. Attributes ..
+	+void <attribute>Changed(...)
+	.. Broadcasts ..
+	+void fire<Broadcast>(...)
 }
 
 abstract AbstractJoynrProvider {
-	#void onAttributeValueChanged(String attributeName, Object value)
-	#void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values)
-	-- @Override --
 	+ProviderQos getProviderQos()
-	+void registerAttributeListener(String attributeName, AttributeListener attributeListener)
-	+void unregisterAttributeListener(String attributeName, AttributeListener attributeListener)
-	+void registerBroadcastListener(String broadcastName, BroadcastListener attributeListener)
-	+void unregisterBroadcastListener(String broadcastName, BroadcastListener attributeListener)
-	+void addBroadcastFilter(BroadcastFilterImpl filter)
 }
 
 interface "<Interface>Provider" {
 	+{static} String INTERFACE_NAME
+	+{static} int MAJOR_VERSION
+	+{static} int MINOR_VERSION
 	__
 	.. Attributes ..
 	+Promise<...> get<Attribute>()
 	+Promise<...> set<Attribute>(...)
-	+void <attribute>Changed(...)
 	.. Methods ..
 	+Promise<...> <method>(...)
-	.. Broadcasts ..
-	+void fire<Broadcast>(...)
 }
 
 abstract "<Interface>AbstractProvider" {
-	-- @Override --
-	+Class<?> getProvidedInterface()
-	+String getInterfaceName()
+	#<Interface>SubscriptionPublisher subscriptionPublisher
 	.. Attributes ..
-	+void <attribute>Changed(...)
+	+void <attribute>Changed(...) { subscriptionPublisher.<attribute>Changed(...) }
 	.. Broadcasts ..
-	+void fire<Broadcast>(...)
+	+void fire<Broadcast>(...) { subscriptionPublisher.fire<Broadcast>(...) }
+	-- @Override --
+	void setSubscriptionPublisher(<Interface>SubscriptionPublisher subscriptionPublisher)
 }
 
 class "Default<Interface>Provider" {
@@ -61,16 +88,26 @@ class "Default<Interface>Provider" {
 class "Option A: MyProviderImplementation" {
 	Put your provider implementation code here.
 }
-class "Option B: MyProivderImplementation" {
+
+class "Option B: MyProviderImplementation" {
+	Put your provider implementation code here.
+}
+class "Option C: MyProviderImplementation" {
 	Put your provider implementation code here.
 }
 
-JoynrProvider <|-- "<Interface>Provider"
+SubscriptionPublisher <|.. AbstractSubscriptionPublisher
+SubscriptionPublisherObservable <|.. AbstractSubscriptionPublisher
+SubscriptionPublisher <|-- "<Interface>SubscriptionPublisher"
+AbstractSubscriptionPublisher <|-- "<Interface>SubscriptionPublisherImpl"
+"<Interface>SubscriptionPublisher" <|.. "<Interface>SubscriptionPublisherImpl"
 JoynrProvider <|.. AbstractJoynrProvider
 AbstractJoynrProvider <|-- "<Interface>AbstractProvider"
 "<Interface>Provider" <|.. "<Interface>AbstractProvider"
+"<Interface>Provider" <|.. "Option A: MyProviderImplementation"
 "<Interface>AbstractProvider" <|-- "Default<Interface>Provider"
-"<Interface>AbstractProvider" <|-- "Option A: MyProviderImplementation"
-"Default<Interface>Provider" <|-- "Option B: MyProivderImplementation"
-
+"<Interface>AbstractProvider" <|-- "Option B: MyProviderImplementation"
+"Default<Interface>Provider" <|-- "Option C: MyProviderImplementation"
+"SubscriptionPublisherInjection<T extends SubscriptionPublisher>" <|-- "<Interface>SubscriptionPublisherInjection"
+"<Interface>SubscriptionPublisherInjection" <|-- "<Interface>Provider"
 @enduml
