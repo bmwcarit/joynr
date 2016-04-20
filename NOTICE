@@ -38,6 +38,26 @@ This project has dependencies to:
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   Apache XBean :: ASM 4 shaded (repackaged) under Apache License, Version 2.0
   Apache XBean :: Reflect under The Apache Software License, Version 2.0
+  Arquillian Config API under Apache License, Version 2.0
+  Arquillian Config Implementation Base under Apache License, Version 2.0
+  Arquillian Container GlassFish Embedded 3.1 under Public Domain
+  Arquillian Container Implementation Base under Apache License, Version 2.0
+  Arquillian Container Test API under Apache License, Version 2.0
+  Arquillian Container Test Implementation Base under Apache License, Version 2.0
+  Arquillian Container Test SPI under Apache License, Version 2.0
+  Arquillian Core API under Apache License, Version 2.0
+  Arquillian Core Implementation Base under Apache License, Version 2.0
+  Arquillian Core SPI under Apache License, Version 2.0
+  Arquillian Protocol Servlet 2.5/3.x under Apache License, Version 2.0
+  Arquillian Test API under Apache License, Version 2.0
+  Arquillian Test Implementation Base under Apache License, Version 2.0
+  Arquillian Test SPI under Apache License, Version 2.0
+  Arquillian TestEnricher CDI under Apache License, Version 2.0
+  Arquillian TestEnricher EJB under Apache License, Version 2.0
+  Arquillian TestEnricher InitialContext under Apache License, Version 2.0
+  Arquillian TestEnricher Resource under Apache License, Version 2.0
+  Arquillian TestRunner JUnit Container under Apache License, Version 2.0
+  Arquillian TestRunner JUnit Core under Apache License, Version 2.0
   ASM Analysis under BSD
   ASM Commons under BSD
   ASM Core under BSD License
@@ -77,6 +97,7 @@ This project has dependencies to:
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
+  Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
   Expression Language 2.2 API under lgpl
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -317,6 +338,10 @@ This project has dependencies to:
   Serp under BSD
   ServiceLocator Default Implementation under CDDL + GPLv2 with classpath exception
   shadows-core under MIT license
+  ShrinkWrap API under Apache License, Version 2.0
+  ShrinkWrap Descriptors SPI under Apache License, Version 2.0
+  ShrinkWrap Implementation Base under Apache License, Version 2.0
+  ShrinkWrap SPI under Apache License, Version 2.0
   Simple API for CSS under The W3C Software License
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
