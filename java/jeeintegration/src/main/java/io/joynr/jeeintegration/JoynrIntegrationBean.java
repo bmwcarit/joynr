@@ -72,7 +72,7 @@ public class JoynrIntegrationBean {
     @Inject
     private ServiceProviderDiscovery serviceProviderDiscovery;
 
-    private Set<JoynrProvider> registeredProviders = new HashSet<>();
+    private Set<Object> registeredProviders = new HashSet<>();
 
     private JoynrRuntime joynrRuntime;
 
@@ -104,11 +104,9 @@ public class JoynrIntegrationBean {
                                  bean,
                                  serviceInterface));
             }
-            JoynrProvider provider = (JoynrProvider) Proxy.newProxyInstance(bean.getBeanClass().getClassLoader(),
-                                                                            new Class<?>[]{ JoynrProvider.class,
-                                                                                    serviceInterface },
-                                                                            new ProviderWrapper(serviceInterface,
-                                                                                                bean,
+            Object provider = Proxy.newProxyInstance(bean.getBeanClass().getClassLoader(),
+                                                                            new Class<?>[]{ serviceInterface },
+                                                                            new ProviderWrapper(bean,
                                                                                                 beanManager));
             ProviderQos providerQos = null;
             for (ProviderQosFactory factory : providerQosFactories) {
@@ -137,7 +135,7 @@ public class JoynrIntegrationBean {
 
     @PreDestroy
     public void destroy() {
-        for (JoynrProvider provider : registeredProviders) {
+        for (Object provider : registeredProviders) {
             try {
                 joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
             } catch (Exception e) {

@@ -186,7 +186,7 @@ public class ProviderWrapperTest {
         Bean<?> bean = Mockito.mock(Bean.class);
         Mockito.doReturn(TestServiceImpl.class).when(bean).getBeanClass();
         Mockito.doReturn(new TestServiceImpl()).when(bean).create(null);
-        ProviderWrapper subject = new ProviderWrapper(TestServiceInterface.class, bean, beanManager);
+        ProviderWrapper subject = new ProviderWrapper(bean, beanManager);
         return subject;
     }
 

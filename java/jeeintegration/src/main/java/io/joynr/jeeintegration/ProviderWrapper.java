@@ -21,7 +21,6 @@ package io.joynr.jeeintegration;
 
 import static java.lang.String.format;
 import io.joynr.provider.AbstractDeferred;
-import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
@@ -50,7 +49,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author clive.jevons commissioned by MaibornWolff
  */
-public class ProviderWrapper extends AbstractJoynrProvider implements InvocationHandler {
+public class ProviderWrapper implements InvocationHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProviderWrapper.class);
 
@@ -63,14 +62,12 @@ public class ProviderWrapper extends AbstractJoynrProvider implements Invocation
      * Initialises the instance with the service interface which will be exposed and the bean reference it is meant to
      * wrap.
      *
-     * @param serviceInterface
-     *            the service interface which will be exposed as the joynr provider.
      * @param bean
      *            the bean reference to which calls will be delegated.
      * @param beanManager
      *            the bean manager
      */
-    public ProviderWrapper(Class<?> serviceInterface, Bean<?> bean, BeanManager beanManager) {
+    public ProviderWrapper(Bean<?> bean, BeanManager beanManager) {
         this.bean = bean;
         this.beanManager = beanManager;
     }
