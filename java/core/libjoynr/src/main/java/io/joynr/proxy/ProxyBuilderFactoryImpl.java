@@ -19,7 +19,6 @@ package io.joynr.proxy;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 
@@ -53,7 +52,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     }
 
     @Override
-    public <T extends JoynrInterface> ProxyBuilder<T> get(String domain, Class<T> interfaceClass) {
+    public <T> ProxyBuilder<T> get(String domain, Class<T> interfaceClass) {
         return new ProxyBuilderDefaultImpl<>(localDiscoveryAggregator,
                 domain,
                 interfaceClass,

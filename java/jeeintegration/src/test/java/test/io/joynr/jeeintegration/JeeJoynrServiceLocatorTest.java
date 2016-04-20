@@ -140,16 +140,6 @@ public class JeeJoynrServiceLocatorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testGetInvalidProxy() {
-        JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
-        JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);
-        when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
-
-        subject.get(MyInvalidServiceBCI.class, "local");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void testGetNoProxyAvailable() {
         JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
         JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);

@@ -124,7 +124,6 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 «warning()»
 package «packagePath»;
 
-import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 «IF getMethods(francaIntf).size > 0 || hasReadAttribute»
 import io.joynr.proxy.Callback;
 «IF francaIntf.hasMethodWithErrorEnum»
@@ -137,6 +136,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 «IF uniqueMultioutMethods.size > 0»
 import io.joynr.proxy.ICallback;
 «ENDIF»
+import io.joynr.Async;
 «IF hasWriteAttribute»
 import io.joynr.exceptions.DiscoveryException;
 «ENDIF»
@@ -150,7 +150,8 @@ import io.joynr.exceptions.DiscoveryException;
 	import «packagePath».«interfaceName»Sync.«syncReturnedName»;
 «ENDFOR»
 
-public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterface {
+@Async
+public interface «asyncClassName» extends «interfaceName» {
 
 	«FOR attribute: getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»

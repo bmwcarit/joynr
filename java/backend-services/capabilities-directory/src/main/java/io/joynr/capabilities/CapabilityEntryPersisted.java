@@ -19,7 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.endpoints.AddressPersisted;
 import io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted;
 
@@ -96,12 +95,12 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
         this.endpointAddresses = new ArrayList<AddressPersisted>(Arrays.asList(endpointAddresses));
     }
 
-    public <T extends JoynrInterface> CapabilityEntryPersisted(String domain,
-                                                               Class<T> providedInterface,
-                                                               ProviderQos providerQos,
-                                                               String participantId,
-                                                               long dateWhenRegistered,
-                                                               AddressPersisted... endpointAddresses) {
+    public <T> CapabilityEntryPersisted(String domain,
+                                        Class<T> providedInterface,
+                                        ProviderQos providerQos,
+                                        String participantId,
+                                        long dateWhenRegistered,
+                                        AddressPersisted... endpointAddresses) {
         this(domain, "", providerQos, participantId, dateWhenRegistered, endpointAddresses);
         String name = null;
         String reason = "shadow field INTERFACE_NAME in your interface";

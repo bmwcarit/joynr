@@ -19,7 +19,6 @@ package io.joynr.test;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -45,7 +44,7 @@ public class TestRuntime implements JoynrRuntime {
     }
 
     @Override
-    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
+    public <T> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
         return null;
     }
 

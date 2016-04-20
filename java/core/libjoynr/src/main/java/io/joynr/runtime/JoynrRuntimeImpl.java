@@ -22,7 +22,6 @@ package io.joynr.runtime;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestReplyManager;
@@ -145,7 +144,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     }
 
     @Override
-    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass) {
+    public <T> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass) {
 
         if (domain == null || domain.isEmpty()) {
             throw new IllegalArgumentException("Cannot create ProxyBuilder: domain was not set");

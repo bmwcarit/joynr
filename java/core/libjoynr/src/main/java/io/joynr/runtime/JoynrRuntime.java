@@ -19,7 +19,6 @@ package io.joynr.runtime;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -82,7 +81,7 @@ public interface JoynrRuntime {
      * @return After setting arbitration, proxy and messaging QoS parameters the returned ProxyBuilder can be used to
      *         build the proxy instance.
      */
-    <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass);
+    <T> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass);
 
     /**
      * Shutdown the joynr instance:

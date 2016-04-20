@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.messaging.MessagingQos;
 
@@ -76,12 +75,12 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         if (joynrIntegrationBean.getRuntime() == null) {
             throw new IllegalStateException("You can't get service proxies until the joynr runtime has been initialised.");
         }
-        final Class<? extends JoynrInterface> joynrProxyInterface = findJoynrProxyInterface(serviceInterface);
-        final JoynrInterface joynrProxy = joynrIntegrationBean.getRuntime()
-                                                              .getProxyBuilder(domain, joynrProxyInterface)
-                                                              .setMessagingQos(messagingQos)
-                                                              .setDiscoveryQos(discoveryQos)
-                                                              .build();
+        final Class<?> joynrProxyInterface = findJoynrProxyInterface(serviceInterface);
+        final Object joynrProxy = joynrIntegrationBean.getRuntime()
+                                                      .getProxyBuilder(domain, joynrProxyInterface)
+                                                      .setMessagingQos(messagingQos)
+                                                      .setDiscoveryQos(discoveryQos)
+                                                      .build();
         return (I) Proxy.newProxyInstance(serviceInterface.getClassLoader(),
                                           new Class<?>[]{ serviceInterface },
                                           new InvocationHandler() {
@@ -103,7 +102,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                                           });
     }
 
-    private <I> Class<? extends JoynrInterface> findJoynrProxyInterface(Class<I> serviceInterface) {
+    private <I> Class<?> findJoynrProxyInterface(Class<I> serviceInterface) {
         String joynrProxyInterfaceName = serviceInterface.getName().replaceAll("BCI$", "Proxy");
         if (LOG.isDebugEnabled()) {
             LOG.debug(format("Looking for joynr proxy interface named %s for BCI interface %s",
@@ -111,13 +110,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                              serviceInterface));
         }
         try {
-            @SuppressWarnings("unchecked")
-            Class<? extends JoynrInterface> result = (Class<? extends JoynrInterface>) Class.forName(joynrProxyInterfaceName);
-            if (!JoynrInterface.class.isAssignableFrom(result)) {
-                throw new IllegalArgumentException(format("The Proxy class %s found for the BCI interface %s does not extend JoynrInterface.",
-                                                          result,
-                                                          serviceInterface));
-            }
+            Class<?> result = (Class<?>) Class.forName(joynrProxyInterfaceName);
             return result;
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException(format("Unable to find suitable joynr proxy interface named %s for BCI interface %s",

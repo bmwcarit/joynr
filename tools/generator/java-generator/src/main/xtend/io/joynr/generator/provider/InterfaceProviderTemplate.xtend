@@ -111,7 +111,6 @@ package «packagePath»;
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
-import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.JoynrVersion;
 
@@ -128,9 +127,9 @@ interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPu
 @JoynrInterface(provides=«className».class, name="«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»")
 @JoynrVersion(major=«majorVersion», minor=«minorVersion»)
 «IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
-public interface «className» extends «interfaceName»SubscriptionPublisherInjection, JoynrProvider {
+public interface «className» extends «interfaceName»SubscriptionPublisherInjection {
 «ELSE»
-public interface «className» extends JoynrProvider {
+public interface «className» {
 «ENDIF»
 
 	«FOR attribute : getAttributes(francaIntf)»

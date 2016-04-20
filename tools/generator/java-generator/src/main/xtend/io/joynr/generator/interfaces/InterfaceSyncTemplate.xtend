@@ -98,7 +98,7 @@ class InterfaceSyncTemplate extends InterfaceTemplate {
 
 package «packagePath»;
 
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
+import io.joynr.Sync;
 import io.joynr.exceptions.JoynrRuntimeException;
 «IF hasMethodWithErrorEnum(francaIntf)»
 	import joynr.exceptions.ApplicationException;
@@ -108,7 +108,8 @@ import io.joynr.exceptions.JoynrRuntimeException;
 	import «datatype»;
 «ENDFOR»
 
-public interface «syncClassName» extends «interfaceName», JoynrSyncInterface {
+@Sync
+public interface «syncClassName» extends «interfaceName» {
 
 «FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
 	«var attributeName = attribute.joynrName»

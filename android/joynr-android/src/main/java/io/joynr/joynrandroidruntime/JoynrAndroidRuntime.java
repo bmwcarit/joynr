@@ -19,7 +19,6 @@ package io.joynr.joynrandroidruntime;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -124,7 +123,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
+    public <T> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
         return new AndroidProxyBuilder<T>(runtimeInitTask, domain, interfaceClass, uiLogger);
     }
 

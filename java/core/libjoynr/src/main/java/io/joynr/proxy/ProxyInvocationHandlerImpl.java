@@ -19,12 +19,12 @@ package io.joynr.proxy;
  * #L%
  */
 
+import io.joynr.Async;
+import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -439,9 +439,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             return executeSubscriptionMethod(method, args);
         } else if (JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeBroadcastSubscriptionMethod(method, args);
-        } else if (JoynrSyncInterface.class.isAssignableFrom(methodInterfaceClass)) {
+        } else if (methodInterfaceClass.getAnnotation(Sync.class) != null) {
             return executeSyncMethod(method, args);
-        } else if (JoynrAsyncInterface.class.isAssignableFrom(methodInterfaceClass)) {
+        } else if (methodInterfaceClass.getAnnotation(Async.class) != null) {
             return executeAsyncMethod(method, args);
         } else {
             throw new JoynrIllegalStateException("Method is not part of sync, async or subscription interface");

@@ -1,9 +1,13 @@
-package io.joynr.dispatcher.rpc;
+package io.joynr;
+
+/**
+ *
+ */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +23,16 @@ package io.joynr.dispatcher.rpc;
  * #L%
  */
 
-public interface JoynrAsyncInterface extends JoynrInterface {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
+/**
+ *
+ * @author christoph.ainhauser
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface Async {
 }

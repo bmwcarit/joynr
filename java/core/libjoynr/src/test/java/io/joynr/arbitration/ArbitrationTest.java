@@ -40,7 +40,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.proxy.Callback;
 import joynr.system.RoutingTypes.Address;
@@ -59,7 +58,7 @@ public class ArbitrationTest {
     String testKeyword = "testKeyword";
     long testPriority = 42;
 
-    public interface TestInterface extends JoynrInterface {
+    public interface TestInterface {
         public static final String INTERFACE_NAME = interfaceName;
     }
 

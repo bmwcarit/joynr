@@ -22,14 +22,12 @@ package test.io.joynr.jeeintegration.servicelocator;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
-
 /**
  * Dummy joynr proxy interface to be used when testing consumer proxies.
  *
  * @author clive.jevons commissioned by MaibornWolff
  */
-public interface MyServiceProxy extends JoynrInterface {
+public interface MyServiceProxy {
 
     String callMe(String parameterOne);
 

@@ -51,7 +51,6 @@ import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.dispatching.RequestReplyManager;
@@ -111,7 +110,7 @@ public class RpcStubbingTest {
 
     private static final long DEFAULT_TTL = 2000L;
 
-    public static interface TestSync extends JoynrSyncInterface {
+    public static interface TestSync {
         public GpsLocation returnsGpsLocation();
 
         public List<GpsLocation> returnsGpsLocationList();
@@ -122,7 +121,7 @@ public class RpcStubbingTest {
     }
 
     @JoynrInterface(provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
-    public static interface TestProvider extends io.joynr.dispatcher.rpc.JoynrInterface, JoynrProvider {
+    public static interface TestProvider extends JoynrProvider {
         public static final String INTERFACE_NAME = "rpcstubbing/test";
 
         public Promise<Deferred<GpsLocation>> returnsGpsLocation();
