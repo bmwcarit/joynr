@@ -21,7 +21,6 @@ package io.joynr.joynrandroidruntime;
 
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.AbstractJoynrProvider;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
@@ -115,7 +114,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider) {
+    public void unregisterProvider(String domain, Object provider) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the unregister call to be async, we need to check if
         // this will not block to long

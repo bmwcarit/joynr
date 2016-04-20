@@ -34,7 +34,6 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.provider.AbstractJoynrProvider;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -183,7 +182,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider) {
+    public void unregisterProvider(String domain, Object provider) {
         capabilitiesRegistrar.unregisterProvider(domain, provider);
 
     }

@@ -30,7 +30,6 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilderFactory;
 
 import javax.inject.Named;
@@ -91,7 +90,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
      * but there is no obvious fix (other than create a long polling message receiver for the unregister)
      * since the servelet lifecycle does not consist of any further usful events.
      */
-    public void unregisterProvider(String domain, JoynrProvider provider) {
+    public void unregisterProvider(String domain, Object provider) {
         try {
             super.unregisterProvider(domain, provider);
         } catch (JoynrCommunicationException e) {

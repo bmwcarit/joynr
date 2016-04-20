@@ -29,7 +29,6 @@ import com.google.inject.Singleton;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.provider.ProviderAnnotations;
@@ -106,7 +105,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider) {
+    public void unregisterProvider(String domain, Object provider) {
 
         final String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                                    ProviderAnnotations.getInterfaceName(provider));

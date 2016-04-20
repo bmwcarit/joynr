@@ -21,7 +21,6 @@ package io.joynr.runtime;
 
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.AbstractJoynrProvider;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import joynr.types.ProviderQos;
@@ -70,7 +69,7 @@ public interface JoynrRuntime {
      * @param provider
      *            The provider instance.
      */
-    void unregisterProvider(String domain, JoynrProvider provider);
+    void unregisterProvider(String domain, Object provider);
 
     /**
      * Returns a proxy builder instance to build a proxy object.
