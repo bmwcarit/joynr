@@ -162,13 +162,13 @@ public:
 		 */
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»
-					«inputTypedParamList.substring(1)»,
+					«inputTypedParamList»,
 				«ENDIF»
 				«IF method.outputParameters.empty»
 					std::function<void()> onSuccess,
 				«ELSE»
 					std::function<void(
-							«outputTypedParamList.substring(1)»
+							«outputTypedParamList»
 					)> onSuccess,
 				«ENDIF»
 				«IF method.hasErrorEnum»

@@ -90,7 +90,7 @@ public:
 	 * @return true, if this broadcast should be published, false otherwise
 	 */
 	virtual bool filter(
-			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»,
+			«broadcast.commaSeperatedTypedConstOutputParameterList»,
 			const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters
 	) = 0;
 private:

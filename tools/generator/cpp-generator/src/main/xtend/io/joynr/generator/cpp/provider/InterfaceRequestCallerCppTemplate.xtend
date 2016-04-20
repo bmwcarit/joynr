@@ -136,7 +136,7 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 				std::function<void()> onSuccess,
 			«ELSE»
 				std::function<void(
-						«outputTypedParamList.substring(1)»
+						«outputTypedParamList»
 				)> onSuccess,
 			«ENDIF»
 			std::function<void(

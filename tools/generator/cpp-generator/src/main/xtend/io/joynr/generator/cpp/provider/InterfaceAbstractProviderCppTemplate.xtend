@@ -104,7 +104,7 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 «FOR broadcast : francaIntf.broadcasts»
 	«var broadcastName = broadcast.joynrName»
 	void «interfaceName»AbstractProvider::fire«broadcastName.toFirstUpper»(
-			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
+			«broadcast.commaSeperatedTypedConstOutputParameterList»
 	) {
 		std::vector<Variant> broadcastValues;
 		«FOR param: getOutputParameters(broadcast)»

@@ -117,7 +117,7 @@ public:
 		 «ENDFOR»
 		 */
 		void fire«broadcastName.toFirstUpper»(
-				«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
+				«broadcast.commaSeperatedTypedConstOutputParameterList»
 		) override;
 	«ENDFOR»
 
