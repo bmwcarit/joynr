@@ -19,7 +19,7 @@
 #ifndef DEFAULTHTTPREQUEST_H
 #define DEFAULTHTTPREQUEST_H
 
-#include <QByteArray>
+#include <string>
 
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -36,19 +36,19 @@ namespace joynr
 class DefaultHttpRequest : public HttpRequest
 {
 public:
-    DefaultHttpRequest(void* handle, const QByteArray& content, curl_slist* headers);
+    DefaultHttpRequest(void* handle, const std::string& content, curl_slist* headers);
     HttpResult execute() override;
     ~DefaultHttpRequest() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultHttpRequest);
-    static size_t writeToQByteArray(void* buffer, size_t size, size_t nmemb, void* userp);
+    static size_t writeToString(void* buffer, size_t size, size_t nmemb, void* userp);
     static size_t writeToMultiMap(void* buffer, size_t size, size_t nmemb, void* userp);
 
     void* handle;
     curl_slist* headers;
 
-    QByteArray content;
+    std::string content;
     ADD_LOGGER(DefaultHttpRequest);
 };
 

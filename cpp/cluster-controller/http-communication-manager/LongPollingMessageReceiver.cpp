@@ -21,7 +21,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-#include <QString>
+#include <boost/lexical_cast.hpp>
 
 #include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
@@ -140,9 +140,8 @@ void LongPollingMessageReceiver::run()
             // 200 does nott refect the state of the message body! It could be empty.
             if (longPollingResult.getStatusCode() == 200 ||
                 longPollingResult.getStatusCode() == 503) {
-                util::logSerializedMessage(logger,
-                                           "long polling successful; contents: ",
-                                           longPollingResult.getBody().data());
+                util::logSerializedMessage(
+                        logger, "long polling successful; contents: ", longPollingResult.getBody());
                 processReceivedInput(longPollingResult.getBody());
                 // Atmosphere currently cannot return 204 when a long poll times out, so this code
                 // is currently never executed (2.2.2012)
@@ -150,8 +149,8 @@ void LongPollingMessageReceiver::run()
                 JOYNR_LOG_DEBUG(logger, "long polling successfull);full; no data");
             } else {
                 std::string body("NULL");
-                if (!longPollingResult.getBody().isNull()) {
-                    body = QString(longPollingResult.getBody().data()).toStdString();
+                if (!longPollingResult.getBody().empty()) {
+                    body = longPollingResult.getBody();
                 }
                 JOYNR_LOG_ERROR(logger,
                                 "long polling failed; error message: {}; contents: {}",
@@ -164,10 +163,9 @@ void LongPollingMessageReceiver::run()
     }
 }
 
-void LongPollingMessageReceiver::processReceivedInput(const QByteArray& receivedInput)
+void LongPollingMessageReceiver::processReceivedInput(const std::string& receivedInput)
 {
-    std::vector<std::string> jsonObjects =
-            util::splitIntoJsonObjects(QString(receivedInput).toStdString());
+    std::vector<std::string> jsonObjects = util::splitIntoJsonObjects(receivedInput);
     for (std::size_t i = 0; i < jsonObjects.size(); i++) {
         processReceivedJsonObjects(jsonObjects.at(i));
     }
@@ -207,14 +205,13 @@ void LongPollingMessageReceiver::checkServerTime()
         JOYNR_LOG_ERROR(logger,
                         "CheckServerTime: Bounce Proxy not reached [statusCode={}] [body={}]",
                         timeCheckResult.getStatusCode(),
-                        QString(timeCheckResult.getBody()).toStdString());
+                        timeCheckResult.getBody());
     } else {
         JOYNR_LOG_TRACE(logger,
                         "CheckServerTime: reply received [statusCode={}] [body={}]",
                         timeCheckResult.getStatusCode(),
-                        QString(timeCheckResult.getBody()).toStdString());
-        std::uint64_t serverTime =
-                TypeUtil::toStdUInt64(QString(timeCheckResult.getBody()).toLongLong());
+                        timeCheckResult.getBody());
+        std::uint64_t serverTime = boost::lexical_cast<std::uint64_t>(timeCheckResult.getBody());
 
         auto minMaxTime = std::minmax(serverTime, localTime);
         std::uint64_t diff = minMaxTime.second - minMaxTime.first;

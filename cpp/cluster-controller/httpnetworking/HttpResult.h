@@ -24,8 +24,6 @@
 #include <string>
 #include <unordered_map>
 
-#include <QByteArray>
-
 #include "joynr/JoynrClusterControllerExport.h"
 
 namespace joynr
@@ -41,7 +39,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT HttpResult
 public:
     HttpResult(std::int32_t curlError,
                std::int64_t statusCode,
-               QByteArray* body,
+               std::string* body,
                std::unordered_multimap<std::string, std::string>* headers);
     ~HttpResult() = default;
 
@@ -49,13 +47,13 @@ public:
     std::int32_t getCurlError() const;
     std::int64_t getStatusCode() const;
     std::string getErrorMessage() const;
-    const QByteArray& getBody() const;
+    const std::string& getBody() const;
     const std::unordered_multimap<std::string, std::string>& getHeaders() const;
 
 private:
     std::int32_t curlError;
     std::int64_t statusCode;
-    std::shared_ptr<QByteArray> body;
+    std::shared_ptr<std::string> body;
     std::shared_ptr<std::unordered_multimap<std::string, std::string>> headers;
 };
 
