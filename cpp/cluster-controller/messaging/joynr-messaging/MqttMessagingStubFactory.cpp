@@ -25,9 +25,11 @@
 namespace joynr
 {
 
-MqttMessagingStubFactory::MqttMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
-                                                   std::string receiveChannelId)
-        : messageSender(messageSender), receiveChannelId(receiveChannelId)
+MqttMessagingStubFactory::MqttMessagingStubFactory(
+        std::shared_ptr<IMessageSender> messageSender,
+        const std::string& globalClusterControllerAddress)
+        : messageSender(messageSender),
+          globalClusterControllerAddress(globalClusterControllerAddress)
 {
 }
 
@@ -41,7 +43,8 @@ std::shared_ptr<IMessaging> MqttMessagingStubFactory::create(
 {
     const system::RoutingTypes::MqttAddress* mqttAddress =
             dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destAddress);
-    return std::make_shared<MqttMessagingStub>(messageSender, *mqttAddress, receiveChannelId);
+    return std::make_shared<MqttMessagingStub>(
+            messageSender, *mqttAddress, globalClusterControllerAddress);
 }
 
 } // namespace joynr

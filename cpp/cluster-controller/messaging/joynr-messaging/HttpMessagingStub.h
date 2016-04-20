@@ -40,7 +40,7 @@ class HttpMessagingStub : public IMessaging
 public:
     explicit HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
                                const system::RoutingTypes::ChannelAddress& destinationAddress,
-                               const std::string& receiveChannelId);
+                               const std::string& globalClusterControllerAddress);
     ~HttpMessagingStub() override = default;
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
@@ -50,7 +50,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingStub);
     std::shared_ptr<IMessageSender> messageSender;
     const system::RoutingTypes::ChannelAddress destinationAddress;
-    const std::string receiveChannelId;
+    const std::string globalClusterControllerAddress;
 };
 
 } // namespace joynr

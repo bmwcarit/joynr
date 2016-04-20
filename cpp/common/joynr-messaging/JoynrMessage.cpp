@@ -68,8 +68,8 @@ const std::string& JoynrMessage::HEADER_EXPIRY_DATE()
 }
 const std::string& JoynrMessage::HEADER_REPLY_ADDRESS()
 {
-    static const std::string headerReplyChannelId("replyChannelId");
-    return headerReplyChannelId;
+    static const std::string headerReplyAddress("replyChannelId");
+    return headerReplyAddress;
 }
 
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY = "oneWay";

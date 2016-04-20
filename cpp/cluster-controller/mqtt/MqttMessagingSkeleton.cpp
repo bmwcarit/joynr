@@ -39,17 +39,17 @@ void MqttMessagingSkeleton::transmit(
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        std::string replyChannelId = message.getHeaderReplyAddress();
+        std::string serializedReplyAddress = message.getHeaderReplyAddress();
 
         try {
             using system::RoutingTypes::MqttAddress;
-            MqttAddress address = JsonSerializer::deserialize<MqttAddress>(replyChannelId);
+            MqttAddress address = JsonSerializer::deserialize<MqttAddress>(serializedReplyAddress);
             messageRouter.addNextHop(
                     message.getHeaderFrom(), std::make_shared<const MqttAddress>(address));
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,
                             "could not deserialize MqttAddress from {} - error: {}",
-                            replyChannelId,
+                            serializedReplyAddress,
                             e.what());
             // do not try to route the message if address is not valid
             return;
