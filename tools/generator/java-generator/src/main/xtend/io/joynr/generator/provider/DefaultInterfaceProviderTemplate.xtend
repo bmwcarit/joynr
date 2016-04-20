@@ -66,9 +66,6 @@ import io.joynr.provider.Promise;
 «IF hasReadAttribute(francaIntf)»
 	import io.joynr.provider.Deferred;
 «ENDIF»
-«IF hasWriteAttribute(francaIntf) || hasMethodWithArguments(francaIntf)»
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-«ENDIF»
 «IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
 	import io.joynr.provider.DeferredVoid;
 «ENDIF»
@@ -124,7 +121,7 @@ public class «className» extends «abstractProviderName» {
 	«FOR method : getMethods(francaIntf)»
 		«var methodName = method.joynrName»
 		«var deferredName = methodToDeferredName.get(method)»
-		«var params = method.typedParameterListJavaRpc»
+		«var params = method.inputParameters.typedParameterList»
 		«val outputParameters = getOutputParameters(method)»
 
 		/*

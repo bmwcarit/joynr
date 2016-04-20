@@ -104,9 +104,6 @@ package «packagePath»;
 «IF !uniqueMethodsToCreateDeferreds.isEmpty»
 	import io.joynr.provider.AbstractDeferred;
 «ENDIF»
-«IF hasWriteAttribute(francaIntf) || hasMethodWithArguments(francaIntf)»
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-«ENDIF»
 «IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
 	import io.joynr.provider.DeferredVoid;
 «ENDIF»
@@ -149,7 +146,7 @@ public interface «className» extends JoynrProvider {
 	«ENDFOR»
 	«FOR method : getMethods(francaIntf)»
 		«var methodName = method.joynrName»
-		«var params = method.typedParameterListJavaRpc»
+		«var params = method.inputParameters.typedParameterList»
 		«var comments = method.javadocCommentsParameterListJavaRpc»
 
 		/**

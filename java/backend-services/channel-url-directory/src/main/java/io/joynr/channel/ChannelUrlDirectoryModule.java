@@ -20,7 +20,6 @@ package io.joynr.channel;
  */
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -99,8 +98,8 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
             @Override
             public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback,
-                                                    @JoynrRpcParam("channelId") String channelId,
-                                                    @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+                                                    String channelId,
+                                                    ChannelUrlInformation channelUrlInformation) {
                 channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation);
 
                 callback.onSuccess(null);
@@ -111,7 +110,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
             @Override
             public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserializationType = Void.class) final Callback<Void> callback,
-                                                      @JoynrRpcParam("channelId") String channelId) {
+                                                      String channelId) {
                 final Future<Void> future = new Future<Void>();
                 channelUrlDirectory.unregisterChannelUrls(channelId).then(new PromiseListener() {
 
@@ -135,7 +134,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
             @Override
             public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserializationType = ChannelUrlInformation.class) final Callback<ChannelUrlInformation> callback,
-                                                                   @JoynrRpcParam("channelId") String channelId) {
+                                                                   String channelId) {
                 final Future<ChannelUrlInformation> future = new Future<ChannelUrlInformation>();
                 channelUrlDirectory.getUrlsForChannel(channelId).then(new PromiseListener() {
 
@@ -158,8 +157,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public void registerChannelUrls(@JoynrRpcParam("channelId") String channelId,
-                                            @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+            public void registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
                 PromiseKeeper keeper = new PromiseKeeper();
                 channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation).then(keeper);
                 try {
@@ -171,7 +169,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public void unregisterChannelUrls(@JoynrRpcParam("channelId") String channelId) {
+            public void unregisterChannelUrls(String channelId) {
                 PromiseKeeper keeper = new PromiseKeeper();
                 channelUrlDirectory.unregisterChannelUrls(channelId).then(keeper);
                 try {

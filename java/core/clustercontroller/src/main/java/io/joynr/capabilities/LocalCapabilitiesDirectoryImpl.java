@@ -24,19 +24,22 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
 import javax.annotation.CheckForNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -459,9 +462,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(@JoynrRpcParam("domain") String domain,
-                                           @JoynrRpcParam("interfaceName") String interfaceName,
-                                           @JoynrRpcParam("discoveryQos") joynr.types.DiscoveryQos discoveryQos) {
+    public Promise<Lookup1Deferred> lookup(String domain,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
@@ -488,7 +491,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup2Deferred> lookup(@JoynrRpcParam("participantId") String participantId) {
+    public Promise<Lookup2Deferred> lookup(String participantId) {
         Lookup2Deferred deferred = new Lookup2Deferred();
         DiscoveryEntry discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
         deferred.resolve(discoveryEntry);
@@ -496,7 +499,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<DeferredVoid> remove(@JoynrRpcParam("participantId") String participantId) {
+    public io.joynr.provider.Promise<io.joynr.provider.DeferredVoid> remove(String participantId) {
         DeferredVoid deferred = new DeferredVoid();
         CapabilityEntry entryToRemove = localCapabilitiesStore.lookup(participantId, Long.MAX_VALUE);
         if (entryToRemove != null) {

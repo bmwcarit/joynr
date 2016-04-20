@@ -119,7 +119,6 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 
 		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 		val hasReadAttribute = hasReadAttribute(francaIntf);
-		val hasMethodWithArguments = hasMethodWithArguments(francaIntf);
 		val hasWriteAttribute = hasWriteAttribute(francaIntf);
 		'''
 «warning()»
@@ -134,9 +133,6 @@ import io.joynr.proxy.CallbackWithModeledError;
 «ENDIF»
 import io.joynr.proxy.Future;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-«ENDIF»
-«IF hasWriteAttribute || hasMethodWithArguments»
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 «ENDIF»
 «IF uniqueMultioutMethods.size > 0»
 import io.joynr.proxy.ICallback;
@@ -165,7 +161,7 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «attributeType»«IF isArray(attribute)»[]«ENDIF».class) Callback<«attributeType»> callback);
 		«ENDIF»
 		«IF isWritable(attribute)»
-			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserializationType = «attributeType».class) «attributeType» «attributeName») throws DiscoveryException;
+			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, «attributeType» «attributeName») throws DiscoveryException;
 		«ENDIF»
 	«ENDFOR»
 
@@ -220,15 +216,15 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 
 	«FOR method: getMethods(francaIntf)»
 		«var methodName = method.joynrName»
-		«var params = getTypedParameterListJavaRpc(method)»
+		«var params = method.inputParameters.typedParameterList»
 		«var callbackParameter = getCallbackParameter(method, methodToCallbackName)»
 
 		/*
 		* «methodName»
 		*/
 		public «methodToFutureName.get(method)» «methodName»(
-				«callbackParameter»«IF !params.equals("")»,«ENDIF»
-				«IF !params.equals("")»«params»«ENDIF»
+				«callbackParameter»«IF !method.inputParameters.empty»,«ENDIF»
+				«params»
 		);
 	«ENDFOR»
 }

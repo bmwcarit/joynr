@@ -93,19 +93,12 @@ class InterfaceSyncTemplate extends InterfaceTemplate {
 		val interfaceName =  francaIntf.joynrName
 		val syncClassName = interfaceName + "Sync"
 		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
-		val hasMethodWithArguments = hasMethodWithArguments(francaIntf);
-		val hasWriteAttribute = hasWriteAttribute(francaIntf);
 		'''
 «warning()»
 
 package «packagePath»;
 
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-
-«IF hasWriteAttribute || hasMethodWithArguments»
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-«ENDIF»
-
 import io.joynr.exceptions.JoynrRuntimeException;
 «IF hasMethodWithErrorEnum(francaIntf)»
 	import joynr.exceptions.ApplicationException;
@@ -151,22 +144,11 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 
 «FOR method: getMethods(francaIntf) SEPARATOR "\n"»
 	«var methodName = method.joynrName»
-	«var outputParameters = method.typeNamesForOutputParameter»
 		/*
 		* «methodName»
 		*/
-		«IF outputParameters.size > 1»
-			public «methodToReturnTypeName.get(method)» «methodName»(
-					«method.typedParameterListJavaRpc»
-		«ELSE»
-			«IF method.typeNamesForOutputParameter.iterator.next=="void"»
-				public «methodToReturnTypeName.get(method)» «methodName»(
-						«getTypedParameterListJavaRpc(method)»
-			«ELSE»
-				public «methodToReturnTypeName.get(method)» «methodName»(
-						«getTypedParameterListJavaRpc(method)»
-			«ENDIF»
-		«ENDIF»
+		public «methodToReturnTypeName.get(method)» «methodName»(
+				«method.inputParameters.typedParameterList»
 		) throws JoynrRuntimeException«IF method.hasErrorEnum», ApplicationException«ENDIF»;
 «ENDFOR»
 }

@@ -20,7 +20,6 @@ package io.joynr.messaging;
  */
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 
@@ -44,8 +43,8 @@ public class TestChannelUrlClientImpl implements ChannelUrlDirectoryProxy {
 
     @Override
     public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback,
-                                            @JoynrRpcParam("channelId") String channelId,
-                                            @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+                                            String channelId,
+                                            ChannelUrlInformation channelUrlInformation) {
         entries.put(channelId, channelUrlInformation);
         Future<Void> future = new Future<Void>();
         future.onSuccess(null);
@@ -54,7 +53,7 @@ public class TestChannelUrlClientImpl implements ChannelUrlDirectoryProxy {
 
     @Override
     public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback,
-                                              @JoynrRpcParam("channelId") String channelId) {
+                                              String channelId) {
         Future<Void> future = new Future<Void>();
         future.onSuccess(null);
         return future;
@@ -62,20 +61,19 @@ public class TestChannelUrlClientImpl implements ChannelUrlDirectoryProxy {
 
     @Override
     public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserializationType = ChannelUrlInformation.class) Callback<ChannelUrlInformation> callback,
-                                                           @JoynrRpcParam("channelId") String channelId) {
+                                                           String channelId) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public void unregisterChannelUrls(@JoynrRpcParam("channelId") String channelId) {
+    public void unregisterChannelUrls(String channelId) {
         entries.remove(channelId);
 
     }
 
     @Override
-    public void registerChannelUrls(@JoynrRpcParam("channelId") String channelId,
-                                    @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+    public void registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
         // TODO Auto-generated method stub
 
     }

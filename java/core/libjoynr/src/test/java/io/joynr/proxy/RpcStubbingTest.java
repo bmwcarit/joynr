@@ -52,7 +52,6 @@ import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.dispatching.RequestReplyManager;
@@ -117,7 +116,7 @@ public class RpcStubbingTest {
 
         public List<GpsLocation> returnsGpsLocationList();
 
-        public void takesTwoSimpleParams(@JoynrRpcParam("a") Integer a, @JoynrRpcParam("b") String b);
+        public void takesTwoSimpleParams(Integer a, String b);
 
         public void noParamsNoReturnValue();
     }
@@ -130,7 +129,7 @@ public class RpcStubbingTest {
 
         public Promise<Deferred<List<GpsLocation>>> returnsGpsLocationList();
 
-        public Promise<DeferredVoid> takesTwoSimpleParams(@JoynrRpcParam("a") Integer a, @JoynrRpcParam("b") String b);
+        public Promise<DeferredVoid> takesTwoSimpleParams(Integer a, String b);
 
         public Promise<DeferredVoid> noParamsNoReturnValue();
     }
