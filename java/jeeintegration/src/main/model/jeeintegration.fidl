@@ -1,12 +1,7 @@
-/**
- *
- */
-package test.io.joynr.jeeintegration.servicelocator;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +17,15 @@ package test.io.joynr.jeeintegration.servicelocator;
  * #L%
  */
 
-/**
- * Dummy BCI interface for use when testing consumer proxies.
- *
- * @author clive.jevons commissioned by MaibornWolff
- */
-public interface MyServiceBCI {
+package jeeintegration.servicelocator
 
-    String callMe(String parameterOne);
-
+interface MyService {
+	method callMe {
+		in {
+			String parameterOne
+		}
+		out {
+			String returnValue
+		}
+	}
 }

@@ -22,6 +22,7 @@ package io.joynr.jeeintegration;
  * #L%
  */
 
+import static io.joynr.util.AnnotationUtil.getAnnotation;
 import static java.lang.String.format;
 
 import java.util.HashSet;
@@ -36,8 +37,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.ProvidedBy;
 import io.joynr.jeeintegration.api.ServiceProvider;
-import io.joynr.provider.JoynrProvider;
 
 /**
  * This class is reponsible for finding all beans registered in the {@link BeanManager} which are annotated with
@@ -62,12 +63,12 @@ public class ServiceProviderDiscovery {
         for (Bean<?> bean : beanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
         })) {
             ServiceProvider serviceProvider = bean.getBeanClass().getAnnotation(ServiceProvider.class);
-            if (serviceProvider != null
-                    && JoynrProvider.class.isAssignableFrom(getProviderInterfaceFor(serviceProvider.serviceInterface()))) {
+            if (serviceProvider != null &&
+                    getProvidedByAnnotation(serviceProvider.serviceInterface()) != null) {
+                result.add(bean);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace(format("Bean %s is a service provider. Adding to result.", bean));
                 }
-                result.add(bean);
             } else if (LOG.isTraceEnabled()) {
                 LOG.trace(format("Ignoring bean: %s", bean));
             }
@@ -93,19 +94,22 @@ public class ServiceProviderDiscovery {
             LOG.trace(format("Looking for provider interface for business interface %s", businessInterface));
         }
         assert businessInterface != null : "businessInterface must not be null";
-        String providerInterfaceName = businessInterface.getName().replaceFirst("BCI$", "Provider");
-        Class<?> result;
-        try {
-            result = Class.forName(providerInterfaceName);
-        } catch (ClassNotFoundException e) {
-            LOG.warn(format("Could find class named %s - defaulting to interface which was passed in.",
-                            providerInterfaceName));
-            result = businessInterface;
+        ProvidedBy providedBy = getProvidedByAnnotation(businessInterface);
+
+        if (providedBy == null) {
+            throw new IllegalArgumentException(format("Unable to find suitable joynr provider for interface %s",
+                                                      businessInterface));
+        } else {
+            Class<?> result = providedBy.value();
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(format("Returning: %s", result));
+            }
+            return result;
         }
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(format("Returning: %s", result));
-        }
-        return result;
+    }
+
+    private ProvidedBy getProvidedByAnnotation(Class<?> businessInterface) {
+        return getAnnotation(businessInterface, ProvidedBy.class);
     }
 
 }

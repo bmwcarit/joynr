@@ -5,4 +5,5 @@ build
 .classpath
 .project
 .settings
+/src/test/generated
 joynr.properties

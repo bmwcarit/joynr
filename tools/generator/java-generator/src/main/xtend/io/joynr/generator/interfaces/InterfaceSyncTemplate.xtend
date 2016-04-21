@@ -100,6 +100,10 @@ package «packagePath»;
 
 import io.joynr.Sync;
 import io.joynr.exceptions.JoynrRuntimeException;
+«IF jeeExtension»
+import io.joynr.ProvidedBy;
+import io.joynr.UsedBy;
+«ENDIF»
 «IF hasMethodWithErrorEnum(francaIntf)»
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
@@ -109,8 +113,11 @@ import io.joynr.exceptions.JoynrRuntimeException;
 «ENDFOR»
 
 @Sync
+«IF jeeExtension»
+@ProvidedBy(«francaIntf.providerClassName».class)
+@UsedBy(«francaIntf.proxyClassName».class)
+«ENDIF»
 public interface «syncClassName» extends «interfaceName» {
-
 «FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
 	«var attributeName = attribute.joynrName»
 	«var attributeType = attribute.typeName.objectDataTypeForPlainType»

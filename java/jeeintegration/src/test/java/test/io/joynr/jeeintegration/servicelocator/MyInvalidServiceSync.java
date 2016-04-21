@@ -27,7 +27,7 @@ package test.io.joynr.jeeintegration.servicelocator;
  *
  * @author clive.jevons commissioned by MaibornWolff
  */
-public interface MyUnproxiedServiceBCI {
+public interface MyInvalidServiceSync {
 
     void test();
 

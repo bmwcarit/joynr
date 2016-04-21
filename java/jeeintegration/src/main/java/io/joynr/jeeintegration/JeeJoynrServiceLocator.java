@@ -34,9 +34,11 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.UsedBy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.util.AnnotationUtil;
 
 /**
  * JEE integration joynr service locator which uses a joynr proxy to provide an implementation for a service interface.
@@ -103,20 +105,12 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
     }
 
     private <I> Class<?> findJoynrProxyInterface(Class<I> serviceInterface) {
-        String joynrProxyInterfaceName = serviceInterface.getName().replaceAll("BCI$", "Proxy");
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(format("Looking for joynr proxy interface named %s for BCI interface %s",
-                             joynrProxyInterfaceName,
-                             serviceInterface));
-        }
-        try {
-            Class<?> result = (Class<?>) Class.forName(joynrProxyInterfaceName);
-            return result;
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(format("Unable to find suitable joynr proxy interface named %s for BCI interface %s",
-                                                      joynrProxyInterfaceName,
+        UsedBy usedByAnnotation = AnnotationUtil.getAnnotation(serviceInterface, UsedBy.class);
+        if (usedByAnnotation == null) {
+            throw new IllegalArgumentException(format("Unable to find suitable joynr proxy for interface %s",
                                                       serviceInterface));
         }
+        return usedByAnnotation.value();
     }
 
 }

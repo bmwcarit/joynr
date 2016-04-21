@@ -1,12 +1,13 @@
+package io.joynr;
+
 /**
  *
  */
-package test.io.joynr.jeeintegration.servicelocator;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +23,17 @@ package test.io.joynr.jeeintegration.servicelocator;
  * #L%
  */
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- * Proxy of {@link MyInvalidServiceBCI}, which deliberately doesn't extend JoynrService.
  *
- * @author clive.jevons commissioned by MaibornWolff
+ * @author christoph.ainhauser
  */
-public interface MyInvalidServiceProxy {
-
-    void test();
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ProvidedBy {
+    Class<?> value();
 }

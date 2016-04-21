@@ -137,6 +137,10 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.proxy.ICallback;
 «ENDIF»
 import io.joynr.Async;
+«IF jeeExtension»
+import io.joynr.ProvidedBy;
+import io.joynr.UsedBy;
+«ENDIF»
 «IF hasWriteAttribute»
 import io.joynr.exceptions.DiscoveryException;
 «ENDIF»
@@ -151,6 +155,10 @@ import io.joynr.exceptions.DiscoveryException;
 «ENDFOR»
 
 @Async
+«IF jeeExtension»
+@ProvidedBy(«francaIntf.providerClassName».class)
+@UsedBy(«francaIntf.proxyClassName».class)
+«ENDIF»
 public interface «asyncClassName» extends «interfaceName» {
 
 	«FOR attribute: getAttributes(francaIntf)»

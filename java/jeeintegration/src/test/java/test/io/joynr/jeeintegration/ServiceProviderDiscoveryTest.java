@@ -37,14 +37,18 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 
+import joynr.jeeintegration.servicelocator.MyServiceProvider;
+import joynr.jeeintegration.servicelocator.MyServiceSync;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.ServiceProvider;
-import io.joynr.provider.JoynrProvider;
 
 /**
  * Unit tests for {@link ServiceProviderDiscovery}.
@@ -54,19 +58,33 @@ import io.joynr.provider.JoynrProvider;
 @RunWith(MockitoJUnitRunner.class)
 public class ServiceProviderDiscoveryTest {
 
-    private interface DummyInterfaceProvider extends JoynrProvider {
-    }
-
-    private interface DummyInterfaceBCI {
-    }
-
-    @ServiceProvider(serviceInterface = DummyInterfaceBCI.class)
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
     @Stateless
-    private class DummyBeanOne implements DummyInterfaceBCI {
+    private class DummyBeanOne implements MyServiceSync {
+
+        @Override
+        public String callMe(String parameterOne) throws JoynrRuntimeException {
+            return "DummyBeanOne";
+        }
     }
 
     @Stateless
-    private class DummyBeanTwo {
+    private class DummyBeanTwo implements MyServiceSync {
+
+        @Override
+        public String callMe(String parameterOne) throws JoynrRuntimeException {
+            return "DummyBeanTwo";
+        }
+    }
+
+    @ServiceProvider(serviceInterface = MyInvalidServiceSync.class)
+    @Stateless
+    private class DummyBeanThree implements MyInvalidServiceSync {
+
+        @Override
+        public void test() {
+            //do nothing
+        }
     }
 
     @SuppressWarnings({ "unchecked", "serial" })
@@ -76,12 +94,15 @@ public class ServiceProviderDiscoveryTest {
 
         Bean<DummyBeanOne> mockBeanOne = mock(Bean.class);
         Mockito.doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
-        Bean<DummyBeanOne> mockBeanTwo = mock(Bean.class);
+        Bean<DummyBeanTwo> mockBeanTwo = mock(Bean.class);
         Mockito.doReturn(DummyBeanTwo.class).when(mockBeanTwo).getBeanClass();
+        Bean<DummyBeanThree> mockBeanThree = mock(Bean.class);
+        Mockito.doReturn(DummyBeanThree.class).when(mockBeanThree).getBeanClass();
 
         Set<Bean<?>> beans = new HashSet<>();
         beans.add(mockBeanOne);
         beans.add(mockBeanTwo);
+        beans.add(mockBeanThree);
         Mockito.when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
         })).thenReturn(beans);
 
@@ -95,19 +116,23 @@ public class ServiceProviderDiscoveryTest {
     }
 
     @Test
-    public void testFindProviderForBCI() {
+    public void testFindProviderForCorrectInterface() {
         ServiceProviderDiscovery subject = new ServiceProviderDiscovery(mock(BeanManager.class));
-        Class<?> result = subject.getProviderInterfaceFor(DummyInterfaceBCI.class);
+        Class<?> result = subject.getProviderInterfaceFor(MyServiceSync.class);
         assertNotNull(result);
-        assertEquals(DummyInterfaceProvider.class, result);
+        assertEquals(MyServiceProvider.class, result);
     }
 
-    @Test
-    public void testFindProviderForNonBCI() {
+    @Test(expected = IllegalArgumentException.class)
+    public void testFindProviderForInterfaceWithoutServiceProviderAnnotation() {
         ServiceProviderDiscovery subject = new ServiceProviderDiscovery(mock(BeanManager.class));
-        Class<?> result = subject.getProviderInterfaceFor(Serializable.class);
-        assertNotNull(result);
-        assertEquals(Serializable.class, result);
+        subject.getProviderInterfaceFor(Serializable.class);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFindProviderForInterfaceWithCorruptServiceProviderAnnotation() {
+        ServiceProviderDiscovery subject = new ServiceProviderDiscovery(mock(BeanManager.class));
+        subject.getProviderInterfaceFor(MyInvalidServiceSync.class);
     }
 
 }

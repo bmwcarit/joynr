@@ -73,6 +73,66 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>io.joynr.tools.generator</groupId>
+				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>testSources</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/src/main/model</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+							<parameter>
+								<jee>true</jee>
+							</parameter>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>io.joynr.tools.generator</groupId>
+						<artifactId>java-generator</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>src/test/generated</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>add-test-source</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>add-test-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/test/generated</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 

@@ -87,8 +87,8 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
 		init(francaIntf, methodToDeferredName, uniqueMethodsToCreateDeferreds);
 
-		val interfaceName =  francaIntf.joynrName
-		val className = interfaceName + "Provider"
+		val interfaceName = francaIntf.joynrName
+		val className = francaIntf.providerClassName
 		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
