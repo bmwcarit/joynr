@@ -99,7 +99,6 @@ class InterfaceSyncTemplate extends InterfaceTemplate {
 package «packagePath»;
 
 import io.joynr.Sync;
-import io.joynr.exceptions.JoynrRuntimeException;
 «IF jeeExtension»
 import io.joynr.ProvidedBy;
 import io.joynr.UsedBy;
@@ -124,10 +123,10 @@ public interface «syncClassName» extends «interfaceName» {
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
-			public «attributeType» «getAttribute»() throws JoynrRuntimeException;
+			public «attributeType» «getAttribute»();
 		«ENDIF»
 		«IF isWritable(attribute)»
-			void «setAttribute»(«attributeType» «attributeName») throws JoynrRuntimeException;
+			void «setAttribute»(«attributeType» «attributeName»);
 		«ENDIF»
 «ENDFOR»
 
@@ -157,7 +156,7 @@ public interface «syncClassName» extends «interfaceName» {
 		*/
 		public «methodToReturnTypeName.get(method)» «methodName»(
 				«method.inputParameters.typedParameterList»
-		) throws JoynrRuntimeException«IF method.hasErrorEnum», ApplicationException«ENDIF»;
+		) «IF method.hasErrorEnum»throws ApplicationException«ENDIF»;
 «ENDFOR»
 }
 		'''
