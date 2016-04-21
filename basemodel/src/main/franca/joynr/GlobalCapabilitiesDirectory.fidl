@@ -21,89 +21,99 @@ package infrastructure
 import types.* from "DiscoveryTypes.fidl"
 
 <**
-	@description: The <code>GlobalCapabilitiesDirectory</code> is a joynr
-		internal interface. When a provider that is globally available is
-		registered with joynr, the framework creates an entry for that provider
-		in the global capabilities directory. These
-		<code>CapabilityInformation</code> entries contain access
-		information as well as supported QoS. The information is later used in
-		the arbitration process to pick a provider for a proxy.
-	@see: CapabilityInformation
+	@description: The GlobalCapabilitiesDirectory is a joynr
+	internal interface. The joynr framework uses it to register
+	providers, which are available at a global scope, with the backend.
+	A provider is registered along with parameters which will be used
+	during the arbitration process to select a suitable provider for
+	a proxy. These information are stored in GlobalDiscoveryEntry objects.
+	@see: GlobalDiscoveryEntry
 **>
 interface GlobalCapabilitiesDirectory{
 
 	version {major 0 minor 1}
 
 	<**
-		@description: Registers a list of GlobalDiscoveryEntry with the
-			directory.
+		@description: Registers several providers with the backend.
 	**>
 	method add {
 		in {
-			<** @description: the list of globalDiscoveryEntries to register **>
+			<**
+				@description: A list which stores information about each provider instance
+				that shall be registered with the backend.
+				@see: GlobalDiscoveryEntry
+			**>
 			GlobalDiscoveryEntry[] globalDiscoveryEntries
 		}
 	}
 
-	<** @description: Registers a GlobalDiscoveryEntry with the directory. **>
+	<** @description: Registers a single provider with the backend. **>
 	method add {
 		in {
-			<** @description: the globalDiscoveryEntry to register **>
+			<**
+				@description: Information about the provider which shall be registered with
+				the backend.
+				@see: GlobalDiscoveryEntry
+			**>
 			GlobalDiscoveryEntry globalDiscoveryEntry
 		}
 	}
 
 	<**
-		@description: Looks up a list of GlobalDiscoveryEntry for a given domain,
-			interface name and provider QoS.
+		@description: Looks up a list of providers for a domain and an interface name. The domain
+		and interface name correspond to the attributes stored in GlobalDiscoveryEntry.
+		@see: GlobalDiscoveryEntry
 	**>
 	method lookup {
 		in {
-			<** @description: the name of the domain **>
+			<** @description: A domain name for which providers shall be returned. **>
 			String domain
-			<** @description: the interface name of the capability **>
+			<** @description: The name of the requested provider interface. **>
 			String interfaceName
 		}
 
 		out {
-			<** @description: a list of matching capabilities **>
+			<** @description: Information about all providers which were found for the given
+			domain and interface name.
+			**>
 			GlobalDiscoveryEntry[] result
 		}
 	}
 
 	<**
-		@description: Looks up the GlobalDiscoveryEntry for a given
-			participant ID.
+		@description: Looks up a provider for a given participant Id.
 	**>
 	method lookup {
 		in {
-			<** @description: the participant ID identifying the provider **>
+			<** @description: The participant Id which identifies the requested provider. **>
 			String participantId
 		}
 		out{
-			<** @description: the matching GlobalDiscoveryEntry **>
+			<** @description: Information about the found provider. **>
 			GlobalDiscoveryEntry result
 		}
 	}
 	<**
-		@description: Unregisters a list of GlobalDiscoveryEntry from the directory.
+		@description: Unregisters providers from the backend.
 	**>
 	method remove {
 		in {
 			<**
-				@description: the list of participant IDs, for which a
-					GlobalDiscoveryEntry has to be removed
+				@description: The participand Ids which identify the providers that shall be removed
+				from the backend.
 			**>
 			String[] participantIds
 		}
 	}
 
-	<** @description: Unregisters a GlobalDiscoveryEntry from the directory. **>
+	<**
+		@description: Unregisters a provider from the backend.
+	**>
 	method remove {
 		in {
 			<**
-				@description: the participant ID for which the GlobalDiscoveryEntry has
-					to be removed
+				@description: The participant Id which identifies the provider that shall be removed
+            from the backend.
 			**>
 			String participantId
 		}
