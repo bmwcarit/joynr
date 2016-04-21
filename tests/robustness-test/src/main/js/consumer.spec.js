@@ -413,6 +413,120 @@ var runTestsWithJsProvider = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onError).not.toHaveBeenCalled();
             });
         });
+
+        it("subscribeToBroadcastWithSingleStringParameter", function() {
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var subscriptionId;
+            var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
+            var sleepDone;
+            spy.onFulfilled.reset();
+            spy.onError.reset();
+            spy.onPublication.reset();
+            spy.onPublicationError.reset();
+
+            runs(function() {
+                log("subscribeToBroadcastWithSingleStringParameter");
+                testInterfaceProxy.broadcastWithSingleStringParameter.subscribe({
+                    "subscriptionQos": subscriptionQosOnChange,
+                    "onReceive": spy.onPublication,
+                    "onError": spy.onPublicationError
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "subscribeToBroadcastWithSingleStringParameter", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+                subscriptionId = spy.onFulfilled.calls[0].args[0];
+                log("subscriptionId = " + subscriptionId);
+                // This wait is necessary, because subcriptions are async, and a broadcast could occur
+                // before the subscription has started.
+                setTimeout(function() {
+                    sleepDone = true;
+                }, 3000);
+            });
+
+            waitsFor(function() {
+                return sleepDone;
+            }, "subscribeToBroadcastWithSingleStringParameter sleep done", 5000);
+
+            runs(function() {
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                killProvider().then(function() {
+                    return startProviderJs();
+                }).then(function() {
+                    return testInterfaceProxy.startFireBroadcastWithSingleStringParameter();
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "startFireBroadcastWithSingleStringParameter", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+            });
+
+            waitsFor(function() {
+                // Wait for a subscription message to arrive
+                return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
+            }, "subscribeToBroadcastWithSingleStringParameter Publication", 60000);
+
+            runs(function() {
+                expect(spy.onPublication.callCount).toBeGreaterThan(0);
+                expect(spy.onPublicationError.callCount).toEqual(0);
+
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                testInterfaceProxy.stopFireBroadcastWithSingleStringParameter(
+                        ).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "stopFireBroadcastWithSingleStringParameter", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+            });
+
+            runs(function() {
+                // unsubscribe again
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                testInterfaceProxy.broadcastWithSingleStringParameter.unsubscribe({
+                    "subscriptionId": subscriptionId
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "subscribeToBroadcastWithSingleStringParameter unsubscribe", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+            });
+
+        });
     });
 };
 
