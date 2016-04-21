@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
@@ -26,7 +27,7 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
+class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
@@ -34,12 +35,17 @@ class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 	@Inject extension CppInterfaceUtil
 	@Inject private extension NamingUtil
 
-	override generate(FInterface serviceInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"AsyncProxy_h").toUpperCase»
 «warning()»
 
@@ -48,7 +54,7 @@ class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
 
 namespace joynr
 {
@@ -61,14 +67,17 @@ namespace exceptions
 } // namespace exceptions
 } // namespace joynr
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 
-«getNamespaceStarter(serviceInterface)»
-/** @brief proxy class for asynchronous calls of interface «interfaceName» */
+«getNamespaceStarter(francaIntf)»
+/** @brief proxy class for asynchronous calls of interface «interfaceName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
 public:
 
@@ -82,7 +91,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«asyncClassName»(
-			std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
+			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,
@@ -90,16 +99,16 @@ public:
 			bool cached
 	);
 
-	«produceAsyncGetterDeclarations(serviceInterface, false)»
-	«produceAsyncSetterDeclarations(serviceInterface, false)»
-	«produceAsyncMethodDeclarations(serviceInterface, false, true)»
+	«produceAsyncGetterDeclarations(francaIntf, false)»
+	«produceAsyncSetterDeclarations(francaIntf, false)»
+	«produceAsyncMethodDeclarations(francaIntf, false, true)»
 
 	friend class «className»;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«asyncClassName»);
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 
 '''

@@ -56,7 +56,6 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     for (int priority = 0; priority < 8; priority++) {
         qosEntries.push_back(types::ProviderQos(
                           std::vector<types::CustomParameter>(),     // custom provider parameters
-                          1,                                   // version
                           priority,                            // priority
                           joynr::types::ProviderScope::GLOBAL, // discovery scope
                           false                                // supports on change notifications
@@ -98,11 +97,11 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     std::vector<types::ProviderQos> qosEntries;
     std::vector<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
-        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(), 1, priority, types::ProviderScope::GLOBAL, false));
+        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(), priority, types::ProviderScope::GLOBAL, false));
         participantId.push_back(std::to_string(priority));
     }
     for (int priority = 0; priority < 2; priority++) {
-        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(), 1, priority, types::ProviderScope::GLOBAL, true));
+        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(), priority, types::ProviderScope::GLOBAL, true));
         participantId.push_back("onChange_%1" + std::to_string(priority));
     }
 
@@ -143,24 +142,24 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     std::vector<std::string> participantId;
     for (int priority = 0; priority < 8; priority++) {
         // Entries with no parameters
-        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(), 1, priority, types::ProviderScope::GLOBAL, false));
+        qosEntries.push_back(types::ProviderQos(std::vector<types::CustomParameter>(), priority, types::ProviderScope::GLOBAL, false));
         participantId.push_back(std::to_string(priority));
     }
 
     // An entry with no keyword parameters
     std::vector<types::CustomParameter> parameterList;
     parameterList.push_back(types::CustomParameter("xxx", "yyy"));
-    qosEntries.push_back(types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false));
+    qosEntries.push_back(types::ProviderQos(parameterList, 1, types::ProviderScope::GLOBAL, false));
     participantId.push_back("no_keyword");
 
     // An entry with an incorrect keyword parameter
     parameterList.push_back(types::CustomParameter("keyword", "unwanted"));
-    qosEntries.push_back(types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false));
+    qosEntries.push_back(types::ProviderQos(parameterList, 1, types::ProviderScope::GLOBAL, false));
     participantId.push_back("incorrect_keyword");
 
     // An entry with the correct keyword parameter
     parameterList.push_back(types::CustomParameter("keyword", keywordValue));
-    qosEntries.push_back(types::ProviderQos(parameterList, 1, 1, types::ProviderScope::GLOBAL, false));
+    qosEntries.push_back(types::ProviderQos(parameterList, 1, types::ProviderScope::GLOBAL, false));
     participantId.push_back("correct_keyword");
 
     // Create a list of fake connections

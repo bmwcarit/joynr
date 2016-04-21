@@ -33,8 +33,12 @@ class JOYNR_EXPORT LibjoynrSettings
 {
 public:
     static const std::string& SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
+    static const std::string& SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME();
+    static const std::string& SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
+    static const std::string& DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME();
+    static const std::string& DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME();
 
     explicit LibjoynrSettings(Settings& settings);
@@ -46,14 +50,20 @@ public:
     std::string getParticipantIdsPersistenceFilename() const;
     void setParticipantIdsPersistenceFilename(const std::string& filename);
 
+    std::string getMessageRouterPersistenceFilename() const;
+    void setMessageRouterPersistenceFilename(const std::string& filename);
+
+    std::string getLocalCapabilitiesDirectoryPersistenceFilename() const;
+    void setLocalCapabilitiesDirectoryPersistenceFilename(const std::string& filename);
+
     void printSettings() const;
 
 private:
-    void operator=(const LibjoynrSettings& other);
+    void operator=(const LibjoynrSettings& other) = delete;
 
     Settings& settings;
     ADD_LOGGER(LibjoynrSettings);
-    void checkSettings() const;
+    void checkSettings();
 };
 
 } // namespace joynr

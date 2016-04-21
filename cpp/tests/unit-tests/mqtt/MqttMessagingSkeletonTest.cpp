@@ -78,7 +78,7 @@ MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "") {
     if (arg == nullptr) {
         return false;
     }
-    std::shared_ptr<system::RoutingTypes::MqttAddress> mqttAddress = std::dynamic_pointer_cast<system::RoutingTypes::MqttAddress>(arg);
+    std::shared_ptr<const joynr::system::RoutingTypes::MqttAddress> mqttAddress = std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(arg);
     if (mqttAddress == nullptr) {
         return false;
     }
@@ -91,7 +91,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest) {
     EXPECT_CALL(mockMessageRouter, addNextHop(
         _,
         AnyOf(
-            Pointee(A<const joynr::system::RoutingTypes::Address>()),
+            Pointee(A<joynr::system::RoutingTypes::Address>()),
             pointerToMqttAddressWithChannelId(replyChannelId)
         ),
         _)

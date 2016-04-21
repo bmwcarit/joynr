@@ -45,16 +45,14 @@ LibJoynrDbusRuntime::LibJoynrDbusRuntime(Settings* settings)
     std::string libjoynrMessagingId("libjoynr.messaging.participantid_" + uuid);
     libjoynrMessagingServiceUrl = libjoynrMessagingDomain + ":" + libjoynrMessagingServiceName +
                                   ":" + libjoynrMessagingId;
-    std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress(
-            new system::RoutingTypes::CommonApiDbusAddress(
-                    libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
+    auto libjoynrMessagingAddress = std::make_shared<system::RoutingTypes::CommonApiDbusAddress>(
+                    libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId);
 
     // create connection to parent routing service
-    std::shared_ptr<joynr::system::RoutingTypes::Address> ccMessagingAddress(
-            new system::RoutingTypes::CommonApiDbusAddress(
+    auto ccMessagingAddress = std::make_shared<system::RoutingTypes::CommonApiDbusAddress>(
                     dbusSettings->getClusterControllerMessagingDomain(),
                     dbusSettings->getClusterControllerMessagingServiceName(),
-                    dbusSettings->getClusterControllerMessagingParticipantId()));
+                    dbusSettings->getClusterControllerMessagingParticipantId());
 
     LibJoynrRuntime::init(
             new DbusMessagingStubFactory(), libjoynrMessagingAddress, ccMessagingAddress);

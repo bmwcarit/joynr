@@ -15,7 +15,7 @@ function(AddTest TARGET)
     endif(NOT USE_PLATFORM_GTEST_GMOCK)
 
     if(NOT USE_PLATFORM_MOSQUITTO)
-        add_dependencies(${TARGET} mosquitto)
+        add_dependencies(${TARGET} mosquitto::mosquitto)
     endif(NOT USE_PLATFORM_MOSQUITTO)
 
     target_include_directories(

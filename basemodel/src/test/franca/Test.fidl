@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import types.Localisation.* from "LocalisationTypes.fidl"
 import types.TestTypes.* from "TestTypes.fidl"
 
 typeCollection testTypes {
+	version { major 48 minor 12 }
 
 	enumeration TestEnum {
 		ZERO = 0
@@ -75,11 +76,51 @@ typeCollection testTypes {
 	}
 }
 
+interface TestWithoutVersion {
+	struct StructInsideInterfaceWithoutVersion {
+		Int32 a
+	}
+
+	enumeration EnumInsideInterfaceWithoutVersion {
+		A
+	}
+
+	map MapInsideInterfaceWithoutVersion {
+		String to Int32
+	}
+}
+
+interface TestWithVersion {
+	version { major 47 minor 11 }
+
+	struct StructInsideInterfaceWithVersion {
+		Int32 b
+	}
+
+	enumeration EnumInsideInterfaceWithVersion {
+		B
+	}
+
+	map MapInsideInterfaceWithVersion {
+		String to Int32
+	}
+}
 
 //this interface starts in lower case (in contrary to our modelling guidelines) for testing purposes
 interface test {
+	version { major 47 minor 11 }
 
-	version { major 0 minor 1 }
+	struct StructInsideInterface {
+		Int16 a
+	}
+
+	enumeration EnumInsideInterface {
+		A
+	}
+
+	map MapInsideInterface {
+		String to Int32
+	}
 
 	attribute testTypes.TestEnum enumAttribute
 

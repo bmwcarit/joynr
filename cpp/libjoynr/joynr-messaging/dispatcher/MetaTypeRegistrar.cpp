@@ -18,6 +18,8 @@
  */
 #include "joynr/MetaTypeRegistrar.h"
 
+#include <cassert>
+
 namespace joynr
 {
 

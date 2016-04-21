@@ -242,24 +242,37 @@ class JSTypeUtil extends AbstractTypeUtil {
 		«ENDIF»
 	'''
 
-	def writeJSDocForSignature(FMethod operation, String prefix)'''
+	def writeJSDocForSignature(String interfaceName, FMethod operation, String prefix)'''
 		«FOR param: operation.inputParameters»
 			«prefix»@param {«param.jsdocTypeName»} «param.joynrName» -
 			«IF param.comment!=null»
-			«prefix»«FOR comment: param.comment.elements»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
+			«prefix»«FOR comment: param.comment.elements SEPARATOR "<br/>"»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
 			«ENDIF»
 		«ENDFOR»
 		«IF operation.outputParameters.size==1»
 			«val returnParam = operation.outputParameters.iterator.next»
 			«prefix»@returns {«returnParam.jsdocTypeName»} «returnParam.joynrName» -
 			«IF returnParam.comment!=null»
-			«prefix»«FOR comment: returnParam.comment.elements»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
+			«prefix»«FOR comment: returnParam.comment.elements SEPARATOR "<br/>"»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
 			«ENDIF»
 		«ELSE»
 			«IF operation.outputParameters.size>1»
-				«prefix»@returns {the JS code generator does not support methods with multiple return values}
+				«prefix»@returns {«interfaceName»#«operation.joynrName.toFirstUpper»Returned}
+				«FOR param : operation.outputParameters SEPARATOR "<br/>"»
+					«prefix»	{«param.jsdocTypeName»} «param.joynrName»
+				«ENDFOR»
 			«ENDIF»
 		«ENDIF»
+	'''
+
+	def writeJSDocTypedefForMultipleReturnValues(String interfaceName, FMethod operation, String operationName, String prefix)'''
+		«prefix»@typedef {Object} «interfaceName»#«operationName.toFirstUpper»Returned
+		«FOR param : operation.outputParameters»
+			«prefix»@property {«param.jsdocTypeName»} «param.joynrName»
+			«IF param.comment!=null»
+			«prefix»«FOR comment: param.comment.elements SEPARATOR "<br/>"»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
+			«ENDIF»
+		«ENDFOR»
 	'''
 
 	def getDefaultValue(FTypedElement element) {

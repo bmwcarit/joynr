@@ -18,7 +18,11 @@
  */
 #ifndef PROXYBUILDER_H
 #define PROXYBUILDER_H
-#include "joynr/PrivateCopyAssign.h"
+
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "joynr/MessagingQos.h"
 #include "joynr/ProxyFactory.h"
@@ -30,13 +34,10 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
-#include "Future.h"
+#include "joynr/Future.h"
 #include "joynr/Semaphore.h"
-#include <string>
-#include <cstdint>
 #include <joynr/TypeUtil.h>
-#include <cassert>
-#include <memory>
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -67,7 +68,7 @@ public:
     ProxyBuilder(ProxyFactory* proxyFactory,
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
-                 std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress,
+                 std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
                  std::shared_ptr<MessageRouter> messageRouter,
                  std::uint64_t messagingMaximumTtlMs);
 
@@ -193,18 +194,19 @@ private:
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     std::int64_t discoveryTimeout;
 
-    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
 };
 
 template <class T>
-ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
-                              joynr::system::IDiscoverySync& discoveryProxy,
-                              const std::string& domain,
-                              std::shared_ptr<system::RoutingTypes::Address> dispatcherAddress,
-                              std::shared_ptr<MessageRouter> messageRouter,
-                              std::uint64_t messagingMaximumTtlMs)
+ProxyBuilder<T>::ProxyBuilder(
+        ProxyFactory* proxyFactory,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const std::string& domain,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
+        std::shared_ptr<MessageRouter> messageRouter,
+        std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
           cached(false),
           hasArbitrationStarted(false),

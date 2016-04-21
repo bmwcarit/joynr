@@ -28,6 +28,10 @@
 #include "joynr/types/TestTypes/TEverythingExtendedStruct.h"
 #include "joynr/types/TestTypes/TEverythingExtendedExtendedStruct.h"
 #include "joynr/types/TestTypes/TEnum.h"
+#include "joynr/tests/StructInsideInterface.h"
+#include "joynr/tests/testTypes/ComplexTestType.h"
+#include "joynr/tests/StructInsideInterfaceWithoutVersion.h"
+#include "joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion.h"
 
 using namespace joynr::types;
 
@@ -307,6 +311,39 @@ TEST_F(StdComplexDataTypeTest, equalsOperatorExtended) {
     EXPECT_NE(tEverythingExtended2, tEverythingExtended1);
 }
 
+TEST_F(StdComplexDataTypeTest, equalsOperatorCompareSameClass) {
+    TestTypes::TEverythingExtendedStruct rhs = tEverythingExtended1;
+    TestTypes::TEverythingExtendedStruct lhs = rhs;
+    EXPECT_TRUE(lhs == rhs);
+    EXPECT_FALSE(lhs != rhs);
+
+    lhs.setTBoolean(!lhs.getTBoolean());
+    EXPECT_FALSE(lhs == rhs);
+    EXPECT_TRUE(lhs != rhs);
+}
+
+TEST_F(StdComplexDataTypeTest, equalsOperatorCompareWithReferenceToBase) {
+    const TestTypes::TEverythingExtendedStruct& rhs = tEverythingExtended1;
+    const TestTypes::TEverythingStruct& lhs1 = rhs;
+    EXPECT_TRUE(lhs1 == rhs);
+    EXPECT_FALSE(lhs1 != rhs);
+
+    TestTypes::TEverythingExtendedStruct tEverythingExtended2 = tEverythingExtended1;
+    tEverythingExtended2.setTBoolean(!tEverythingExtended2.getTBoolean());
+    const TestTypes::TEverythingStruct& lhs2 = tEverythingExtended2;
+    EXPECT_FALSE(lhs2 == rhs);
+    EXPECT_TRUE(lhs2 != rhs);
+}
+
+TEST_F(StdComplexDataTypeTest, equalsOperatorBaseCompareWithDerived) {
+    // intended object slicing:
+    // only get those parts of TEverythingExtendedStruct which stem from TEverythingStruct
+    TestTypes::TEverythingStruct rhs = tEverythingExtended1;
+    TestTypes::TEverythingExtendedStruct lhs = tEverythingExtended1;
+    EXPECT_FALSE(lhs == rhs);
+    EXPECT_TRUE(lhs != rhs);
+}
+
 TEST_F(StdComplexDataTypeTest, assignExtendedComplexDataType) {
     TestTypes::TEverythingExtendedStruct tEverythingExtended2;
     tEverythingExtended2 = tEverythingExtended1;
@@ -374,3 +411,34 @@ TEST_F(StdComplexDataTypeTest, mapTypeListInitialization) {
     EXPECT_EQ(map["lorem"], "ipsum");
 }
 
+TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideInterface) {
+    std::uint32_t expectedMajorVersion = 47;
+    std::uint32_t expectedMinorVersion = 11;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::tests::StructInsideInterface::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::tests::StructInsideInterface::MINOR_VERSION);
+}
+
+TEST_F(StdComplexDataTypeTest, defaultVersionIsSetInStructInsideInterfaceWithoutVersion) {
+    std::uint32_t expectedMajorVersion = 0;
+    std::uint32_t expectedMinorVersion = 0;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::tests::StructInsideInterfaceWithoutVersion::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::tests::StructInsideInterfaceWithoutVersion::MINOR_VERSION);
+}
+
+TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideTypeCollection) {
+    std::uint32_t expectedMajorVersion = 48;
+    std::uint32_t expectedMinorVersion = 12;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::tests::testTypes::ComplexTestType::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::tests::testTypes::ComplexTestType::MINOR_VERSION);
+}
+
+TEST_F(StdComplexDataTypeTest, defaultVersionIsSetInStructInsideTypeCollectionWithoutVersion) {
+    std::uint32_t expectedMajorVersion = 0;
+    std::uint32_t expectedMinorVersion = 0;
+
+    EXPECT_EQ(expectedMajorVersion, joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::MINOR_VERSION);
+}

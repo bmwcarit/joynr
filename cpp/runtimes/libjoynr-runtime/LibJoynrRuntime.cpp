@@ -18,6 +18,9 @@
  */
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
+#include <cassert>
+#include <vector>
+
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
@@ -34,7 +37,6 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
-#include <vector>
 
 namespace joynr
 {
@@ -70,8 +72,8 @@ LibJoynrRuntime::~LibJoynrRuntime()
 
 void LibJoynrRuntime::init(
         std::unique_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
-        std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
-        std::shared_ptr<joynr::system::RoutingTypes::Address> ccMessagingAddress)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress)
 {
     // create messaging stub factory
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();

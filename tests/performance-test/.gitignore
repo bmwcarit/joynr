@@ -1,0 +1,9 @@
+generated-java/
+generated-javascript/
+generated-cpp/
+localStorageStorage
+node_modules
+reports
+/joynr_participantIds.properties
+/joynr.properties
+/java-consumer.persistence_file

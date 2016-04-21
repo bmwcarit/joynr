@@ -18,27 +18,32 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.communicationmodel.EnumTypeTemplate
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 
-class InterfacesTemplate implements InterfaceTemplate{
+class InterfacesTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension NamingUtil
 	@Inject extension InterfaceUtil
-	@Inject extension EnumTypeTemplate
 	@Inject extension TemplateBase
+	@Inject JavaTemplateFactory templateFactory
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.joynrName
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+	override generate() {
+		val interfaceName =  francaIntf.joynrName
 		val className = interfaceName
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		val hasMethodWithImplicitErrorEnum = hasMethodWithImplicitErrorEnum(serviceInterface)
-		val methodToErrorEnumName = serviceInterface.methodToErrorEnumName()
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val hasMethodWithImplicitErrorEnum = hasMethodWithImplicitErrorEnum(francaIntf)
+		val methodToErrorEnumName = francaIntf.methodToErrorEnumName()
 		'''
 
 		«warning()»
@@ -52,7 +57,7 @@ import java.util.List;
 «ENDIF»
 
 import com.fasterxml.jackson.core.type.TypeReference;
-«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+«FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
 
@@ -63,13 +68,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.TreeSet;
 @SuppressWarnings("unused")
 public interface «className»  {
-	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»";
+	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
 
-	«FOR method: getMethods(serviceInterface)»
+	«FOR method: getMethods(francaIntf)»
 		«var enumType = method.errors»
 		«IF enumType != null»
+			«var enumTypeTemplate = templateFactory.createEnumTypeTemplate(enumType)»
 			«enumType.name = methodToErrorEnumName.get(method)»
-			«generateEnumCode(enumType)»
+			«enumTypeTemplate.generateEnumCode()»
 
 		«ENDIF»
 	«ENDFOR»

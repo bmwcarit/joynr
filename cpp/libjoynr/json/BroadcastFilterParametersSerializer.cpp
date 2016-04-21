@@ -51,7 +51,7 @@ void ClassSerializerImpl<BroadcastFilterParameters>::serialize(
     stream << R"("_typeName":")" << JoynrTypeId<BroadcastFilterParameters>::getTypeName()
            << R"(",)";
     stream << R"("filterParameters": )";
-    MapSerializer::serialize<std::string>(parameters.getFilterParameters(), stream);
+    MapSerializer::serialize(parameters.getFilterParameters(), stream);
     stream << R"(})";
 }
 } // namespace joynr

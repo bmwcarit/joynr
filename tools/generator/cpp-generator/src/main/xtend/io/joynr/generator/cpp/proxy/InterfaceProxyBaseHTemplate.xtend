@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -28,7 +29,7 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
+class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
@@ -37,11 +38,16 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
 
-	override generate(FInterface serviceInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "ProxyBase"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"ProxyBase_h").toUpperCase»
 «warning()»
 
@@ -49,7 +55,7 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include "joynr/system/RoutingTypes/Address.h"
@@ -57,11 +63,15 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 
 «getDllExportIncludeStatement()»
 #include "joynr/ProxyBase.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
 
-«getNamespaceStarter(serviceInterface)»
-/** @brief Proxy base class for interface «interfaceName» */
-class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Subscription {
+«getNamespaceStarter(francaIntf)»
+/**
+ * @brief Proxy base class for interface «interfaceName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
+class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«interfaceName»Subscription {
 public:
 	/**
 	 * @brief Parameterized constructor
@@ -73,7 +83,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«className»(
-			std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
+			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,
@@ -91,7 +101,7 @@ public:
 			const joynr::types::CommunicationMiddleware::Enum& connection
 	) override;
 
-	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+	«FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 		«val returnType = attribute.typeName»
 		«var attributeName = attribute.joynrName»
 		/**
@@ -123,7 +133,7 @@ public:
 		void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId) override;
 	«ENDFOR»
 
-	«FOR broadcast: serviceInterface.broadcasts»
+	«FOR broadcast: francaIntf.broadcasts»
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«var broadcastName = broadcast.joynrName»
 		«IF isSelective(broadcast)»
@@ -187,14 +197,14 @@ public:
 
 protected:
 	/** @brief The joynr messaging address */
-	std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress;
+	std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress;
 	/** @brief The kind of connector */
 	std::unique_ptr<I«interfaceName»Connector> connector;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

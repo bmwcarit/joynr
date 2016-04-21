@@ -53,7 +53,6 @@ define(
             "joynr/system/DiscoveryProxy",
             "joynr/system/RoutingProxy",
             "joynr/types/TypeRegistrySingleton",
-            "joynr/types/DiscoveryQos",
             "joynr/types/DiscoveryScope",
             "joynr/types/DiscoveryEntry",
             "joynr/util/UtilInternal",
@@ -101,7 +100,6 @@ define(
                 DiscoveryProxy,
                 RoutingProxy,
                 TypeRegistrySingleton,
-                DiscoveryQosGenerated,
                 DiscoveryScope,
                 DiscoveryEntry,
                 Util,
@@ -254,7 +252,7 @@ define(
                 }
 
                 var loggingMessagingQos = new MessagingQos({
-                    ttl : Date.now() + relativeTtl
+                    ttl : relativeTtl
                 });
                 loggingManager = Object.freeze(new LoggingManager());
                 LoggerFactory.init(loggingManager);
@@ -456,7 +454,7 @@ define(
                                         domain,
                                         interfaceName,
                                         discoveryQos) {
-                                    return getDiscoveryProxy(discoveryQos.discoveryTimeout).then(function(newDiscoveryProxy) {
+                                    return getDiscoveryProxy(discoveryQos.discoveryTimeoutMs).then(function(newDiscoveryProxy) {
                                         return newDiscoveryProxy.lookup({
                                             domain : domain,
                                             interfaceName : interfaceName,

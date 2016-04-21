@@ -18,6 +18,7 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -27,7 +28,7 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 
-class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
+class InterfaceAbstractProviderTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension NamingUtil
@@ -35,11 +36,16 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.joynrName
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate() {
+		val interfaceName =  francaIntf.joynrName
 		val className = interfaceName + "AbstractProvider"
 		val providerInterfaceName = interfaceName + "Provider"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
 «warning()»
@@ -47,7 +53,7 @@ package «packagePath»;
 
 import io.joynr.provider.AbstractJoynrProvider;
 
-«FOR datatype : getRequiredIncludesFor(serviceInterface, false, false, false, true, true)»
+«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true)»
 	import «datatype»;
 «ENDFOR»
 
@@ -63,7 +69,7 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 		return «providerInterfaceName».INTERFACE_NAME;
 	}
 
-	«FOR attribute : getAttributes(serviceInterface)»
+	«FOR attribute : getAttributes(francaIntf)»
 		«val attributeName = attribute.joynrName»
 		«val attributeType = attribute.typeName»
 		«IF isNotifiable(attribute)»
@@ -74,7 +80,7 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 		«ENDIF»
 	«ENDFOR»
 
-	«FOR broadcast : serviceInterface.broadcasts»
+	«FOR broadcast : francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		@Override
 		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {

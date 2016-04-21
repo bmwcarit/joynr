@@ -25,17 +25,23 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FMapType
 import org.franca.core.franca.FType
+import com.google.inject.assistedinject.Assisted
 
-class MapTypeTemplate implements MapTemplate {
+class MapTypeTemplate extends MapTemplate {
 
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 	@Inject extension NamingUtil
 
-	override generate(FMapType mapType) {
-		val typeName = mapType.joynrName
-		val mapTypePackageName = mapType.buildPackagePath(".", true)
+	@Inject
+	new(@Assisted FMapType type) {
+		super(type)
+	}
+
+	override generate() {
+		val typeName = type.joynrName
+		val mapTypePackageName = type.buildPackagePath(".", true)
 
 '''
 «warning()»
@@ -45,8 +51,8 @@ import java.util.HashMap;
 
 import io.joynr.subtypes.JoynrType;
 
-«val keyType = getDatatype(mapType.keyType)»
-«val valueType = getDatatype(mapType.valueType)»
+«val keyType = getDatatype(type.keyType)»
+«val valueType = getDatatype(type.valueType)»
 «IF keyType instanceof FType»
 import «getIncludeOf(keyType)»;
 «ENDIF»
@@ -60,10 +66,12 @@ import «getIncludeOf(valueType)»;
 //       which is probably more restrictive than what we want.
 
 /**
-«appendJavadocSummaryAndWriteSeeAndDescription(mapType, " *")»
+«appendJavadocSummaryAndWriteSeeAndDescription(type, " *")»
  */
 @SuppressWarnings("serial")
-public class «typeName» extends HashMap<«mapType.keyType.typeName», «mapType.valueType.typeName»> implements JoynrType {
+public class «typeName» extends HashMap<«type.keyType.typeName», «type.valueType.typeName»> implements JoynrType {
+    public static final int MAJOR_VERSION = «majorVersion»;
+    public static final int MINOR_VERSION = «minorVersion»;
     public «typeName»() {
         super();
     }

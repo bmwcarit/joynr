@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -26,11 +27,11 @@ import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
+import java.util.Map
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
-import java.util.Map
 
-class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
+class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -40,32 +41,37 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	@Inject private extension InterfaceUtil
 	@Inject private extension MethodUtil
 
-	override generate(FInterface serviceInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
-«var interfaceName = serviceInterface.joynrName»
+«var interfaceName = francaIntf.joynrName»
 «warning()»
 #include <functional>
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
-«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
+«FOR datatype: getRequiredIncludesFor(francaIntf)»
 	#include «datatype»
 «ENDFOR»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
-«IF !serviceInterface.methods.empty || !serviceInterface.attributes.empty»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
+«IF !francaIntf.methods.empty || !francaIntf.attributes.empty»
 	#include "joynr/TypeUtil.h"
 «ENDIF»
 
-«getNamespaceStarter(serviceInterface)»
-«interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider)
+«getNamespaceStarter(francaIntf)»
+«interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider)
 	: joynr::RequestCaller(provider->getInterfaceName()),
 	  provider(provider)
 {
 }
 
-«IF !serviceInterface.attributes.empty»
+«IF !francaIntf.attributes.empty»
 	// attributes
 «ENDIF»
-«FOR attribute : serviceInterface.attributes»
+«FOR attribute : francaIntf.attributes»
 	«var attributeName = attribute.joynrName»
 	«val returnType = attribute.typeName»
 	«IF attribute.readable»
@@ -115,11 +121,11 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	«ENDIF»
 
 «ENDFOR»
-«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
-«IF !serviceInterface.methods.empty»
+«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
+«IF !francaIntf.methods.empty»
 	// methods
 «ENDIF»
-«FOR method : serviceInterface.methods»
+«FOR method : francaIntf.methods»
 	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
 	«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
@@ -195,7 +201,7 @@ void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::stri
 	provider->unregisterBroadcastListener(broadcastName, broadcastListener);
 }
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 
 def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName) {

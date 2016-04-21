@@ -52,7 +52,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/system/DiscoveryProxy",
     "joynr/system/RoutingProxy",
     "joynr/types/TypeRegistrySingleton",
-    "joynr/types/DiscoveryQos",
     "joynr/types/DiscoveryScope",
     "joynr/types/DiscoveryEntry",
     "joynr/util/UtilInternal",
@@ -101,7 +100,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         DiscoveryProxy,
         RoutingProxy,
         TypeRegistrySingleton,
-        DiscoveryQosGenerated,
         DiscoveryScope,
         DiscoveryEntry,
         Util,
@@ -252,7 +250,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         }
 
         var loggingMessagingQos = new MessagingQos({
-            ttl : Date.now() + relativeTtl
+            ttl : relativeTtl
         });
         loggingManager = Object.freeze(new LoggingManager());
         LoggerFactory.init(loggingManager);

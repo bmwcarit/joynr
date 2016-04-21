@@ -30,6 +30,10 @@
 #include "joynr/MessageRouter.h"
 #include "common/InterfaceAddress.h"
 
+#include "joynr/Util.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/CapabilityEntrySerializer.h"
+
 namespace joynr
 {
 
@@ -49,7 +53,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
           registeredGlobalCapabilities(),
           messageRouter(messageRouter),
           observers(),
-          mqttSettings()
+          mqttSettings(),
+          localCapabilitiesDirectoryFileName()
 {
     // setting up the provisioned values for GlobalCapabilitiesClient
     // The GlobalCapabilitiesServer is also provisioned in MessageRouter
@@ -85,7 +90,11 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
 
 LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 {
-    // cleanup
+    cleanCaches();
+}
+
+void LocalCapabilitiesDirectory::cleanCaches()
+{
     const auto zero = std::chrono::milliseconds::zero();
     interfaceAddress2GlobalCapabilities.cleanup(zero);
     participantId2GlobalCapabilities.cleanup(zero);
@@ -399,8 +408,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                                 e.what());
             }
         } else {
-            auto joynrAddress =
-                    std::make_shared<system::RoutingTypes::ChannelAddress>(entryIterator.key());
+            auto joynrAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
+                    entryIterator.key());
             messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
         }
         this->insertInCache(currentEntry, false, true);
@@ -481,6 +490,70 @@ void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
         std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
 {
     util::removeAll(observers, observer);
+}
+
+void LocalCapabilitiesDirectory::saveToFile()
+{
+    try {
+        joynr::util::saveStringToFile(localCapabilitiesDirectoryFileName, serializeToJson());
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+    }
+}
+
+std::string LocalCapabilitiesDirectory::serializeToJson() const
+{
+    const std::vector<std::string>& capEntriesKeys = participantId2LocalCapability.getKeys();
+
+    // put all entries in a vector to be serialized
+    std::vector<CapabilityEntry> toBeSerialized;
+
+    // convert each entry with Joynr::serialize
+    for (const auto& key : capEntriesKeys) {
+        auto capEntriesAtKey = participantId2LocalCapability.lookUpAll(key);
+        toBeSerialized.insert(
+                toBeSerialized.end(), capEntriesAtKey.cbegin(), capEntriesAtKey.cend());
+    }
+
+    std::stringstream outputJson;
+    outputJson << "{";
+    outputJson << "\"listOfCapabilities\":";
+    outputJson << JsonSerializer::serialize<std::vector<CapabilityEntry>>(toBeSerialized);
+    outputJson << "}";
+    return outputJson.str();
+}
+
+void LocalCapabilitiesDirectory::deserializeFromJson(const std::string& jsonString)
+{
+    if (jsonString.empty()) {
+        return;
+    }
+
+    std::vector<CapabilityEntry> vectorOfCapEntries =
+            JsonSerializer::deserialize<std::vector<CapabilityEntry>>(jsonString);
+
+    if (vectorOfCapEntries.empty()) {
+        return;
+    }
+
+    cleanCaches();
+
+    // move all capability entries into local cache
+    for (const auto& entry : vectorOfCapEntries) {
+        insertInCache(entry, true, entry.isGlobal());
+    }
+}
+
+void LocalCapabilitiesDirectory::loadFromFile(std::string fileName)
+{
+    // update reference file
+    localCapabilitiesDirectoryFileName = std::move(fileName);
+
+    try {
+        deserializeFromJson(joynr::util::loadStringFromFile(localCapabilitiesDirectoryFileName));
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+    }
 }
 
 /**
@@ -600,6 +673,17 @@ void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(
         joynr::types::DiscoveryEntry discoveryEntry;
         convertCapabilityEntryIntoDiscoveryEntry(capabilityEntry, discoveryEntry);
         discoveryEntries.push_back(discoveryEntry);
+    }
+}
+
+void LocalCapabilitiesDirectory::convertDiscoveryEntriesIntoCapabilityEntries(
+        const std::vector<types::DiscoveryEntry>& discoveryEntries,
+        std::vector<CapabilityEntry>& capabilityEntries)
+{
+    for (const types::DiscoveryEntry& discoveryEntry : discoveryEntries) {
+        CapabilityEntry capabilityEntry;
+        convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, capabilityEntry);
+        capabilityEntries.push_back(capabilityEntry);
     }
 }
 

@@ -7,8 +7,9 @@ fi
 
 oldVersion=$1
 newVersion=$2
-newVersionFiltered=`echo $newVersion | sed -e "s/-SNAPSHOT//g"`
-IFS='.' read -a version <<< "$newVersionFiltered"
+oldVersionWithoutSnapshot=`echo $oldVersion | sed -e "s/-SNAPSHOT//g"`
+newVersionWithoutSnapshot=`echo $newVersion | sed -e "s/-SNAPSHOT//g"`
+IFS='.' read -a version <<< "$newVersionWithoutSnapshot"
 
 echo sed -i '' 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
 sed -i '' 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
@@ -17,10 +18,19 @@ sed -i '' 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}'
 echo sed -i '' 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
 sed -i '' 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
 
-echo sed -i '' 's/find_package(Joynr .*/find_package(Joynr '${newVersionFiltered}' REQUIRED)/g' \
-examples/radio-app/CMakeLists.txt inter-language-test/CMakeLists.txt
-sed -i '' 's/find_package(Joynr .*/find_package(Joynr '${newVersionFiltered}' REQUIRED)/g' \
-examples/radio-app/CMakeLists.txt inter-language-test/CMakeLists.txt
+echo sed -i '' 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSnapshot}' REQUIRED)/g' \
+examples/radio-app/CMakeLists.txt \
+tests/inter-language-test/CMakeLists.txt \
+tests/performance-test/CMakeLists.txt \
+tests/robustness-test/CMakeLists.txt \
+tests/system-integration-test/CMakeLists.txt
+
+sed -i '' 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSnapshot}' REQUIRED)/g' \
+examples/radio-app/CMakeLists.txt \
+tests/inter-language-test/CMakeLists.txt \
+tests/performance-test/CMakeLists.txt \
+tests/robustness-test/CMakeLists.txt \
+tests/system-integration-test/CMakeLists.txt
 
 echo mvn versions:set -o -P android,javascript -DnewVersion=$2
 mvn versions:set -o -P android,javascript -DnewVersion=$2
@@ -31,10 +41,15 @@ echo "sed files..."
 
 sed -i '' 's/'$oldVersion'/'$newVersion'/g' \
 cpp/CMakeLists.txt \
-inter-language-test/CMakeLists.txt \
-inter-language-test/package.json \
+tests/inter-language-test/CMakeLists.txt \
+tests/inter-language-test/package.json \
+tests/performance-test/CMakeLists.txt \
+tests/performance-test/package.json \
+tests/robustness-test/CMakeLists.txt \
+tests/robustness-test/package.json \
+tests/system-integration-test/CMakeLists.txt \
+tests/test-base/src/main/js/package.json \
 examples/radio-app/CMakeLists.txt \
-examples/joynr-system-integration-test/CMakeLists.txt \
 android/robolectric-integration-tests/src/test/AndroidManifest.xml \
 android/robolectric-unittests/src/main/AndroidManifest.xml \
 examples/android-location-provider/AndroidManifest.xml \
@@ -44,6 +59,12 @@ java/backend-services/domain-access-controller-servlet/pom.xml \
 examples/radio-node/pom.xml \
 examples/radio-node/package.json \
 javascript/libjoynr-js/src/main/resources/package.json
+
+sed -i '' 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
+java/core/clustercontroller-standalone/README
+
+sed -i '' 's/Version:        '${oldVersionWithoutSnapshot}'/Version:        '${newVersionWithoutSnapshot}'/g' \
+cpp/distribution/joynr.spec
 
 echo "prepare git patch"
 

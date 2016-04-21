@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
  * #L%
  */
 #include "cluster-controller/httpnetworking/HttpResult.h"
+
 #include <curl/curl.h>
-#include "joynr/FormatString.h"
+#include <boost/format.hpp>
+
 namespace joynr
 {
 
@@ -60,9 +62,8 @@ std::string HttpResult::getErrorMessage() const
         case CURLE_SSL_CONNECT_ERROR:
             return std::string("SSL connection error");
         default:
-            return FormatString("Error during HTTP request/response, curl error code : %1")
-                    .arg(curlError)
-                    .str();
+            return (boost::format("Error during HTTP request/response, curl error code: %1%: %2%") %
+                    curlError % curl_easy_strerror(static_cast<CURLcode>(curlError))).str();
         }
     } else {
         switch (statusCode) {
@@ -75,7 +76,7 @@ std::string HttpResult::getErrorMessage() const
         case 503:
             return std::string("503 Service unavailable");
         default:
-            return FormatString("HTTP error, status code : %1").arg(statusCode).str();
+            return (boost::format("HTTP error, status code : %1%") % statusCode).str();
         }
     }
 }

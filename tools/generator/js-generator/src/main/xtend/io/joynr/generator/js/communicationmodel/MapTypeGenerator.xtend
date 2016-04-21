@@ -3,7 +3,7 @@ package io.joynr.generator.js.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,16 @@ package io.joynr.generator.js.communicationmodel
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
+import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import org.franca.core.franca.FMapType
-import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 
-class MapTypeGenerator {
+class MapTypeGenerator extends MapTemplate {
 
 	@Inject extension JSTypeUtil
 	@Inject private extension NamingUtil
@@ -35,7 +37,12 @@ class MapTypeGenerator {
 	@Inject
 	extension GeneratorParameter
 
-	def generateMapType(FMapType type) '''
+	@Inject
+	new(@Assisted FMapType type) {
+		super(type)
+	}
+
+	override generate() '''
 	«val generationDate = (new Date()).toString»
 	/**
 	 * This is the generated map type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
@@ -49,11 +56,13 @@ class MapTypeGenerator {
 		 * This is the generated map type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
 		 * <br/>Generation date: «generationDate»
 		 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
+		 *
+		 * @returns {«type.joynrName»} a new instance of a «type.joynrName»
 		 */
 		var «type.joynrName» = function «type.joynrName»(settings){
 			if (!(this instanceof «type.joynrName»)) {
 				// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-				return new «type.joynrName»(members);
+				return new «type.joynrName»(settings);
 			}
 
 			/**
@@ -70,18 +79,19 @@ class MapTypeGenerator {
 			});
 
 			if (settings !== undefined) {
-				var clone = JSON.parse(JSON.stringify(settings));
-				for (var key in clone) {
-					this[key] = clone[key];
+				var clone = JSON.parse(JSON.stringify(settings)), settingKey;
+				for (settingKey in clone) {
+					this[settingKey] = clone[settingKey];
 				}
 			}
 
 			Object.defineProperty(this, 'checkMembers', {
 				enumerable: false,
 				value: function checkMembers(check) {
-					for (var key in this) {
-						if (this.hasOwnProperty(key)) {
-							check(this[key], «type.valueType.checkPropertyTypeName(false)», key);
+					var memberKey;
+					for (memberKey in this) {
+						if (this.hasOwnProperty(memberKey)) {
+							check(this[memberKey], «type.valueType.checkPropertyTypeName(false)», memberKey);
 						}
 					}
 				}
@@ -108,6 +118,33 @@ class MapTypeGenerator {
 				}
 			});
 		};
+
+		/**
+		 * @name «type.joynrName»#MAJOR_VERSION
+		 * @constant {Number}
+		 * @default «majorVersion»
+		 * @summary The MAJOR_VERSION of the map type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «majorVersion»
+		});
+		/**
+		 * @name «type.joynrName»#MINOR_VERSION
+		 * @constant {Number}
+		 * @default «minorVersion»
+		 * @summary The MINOR_VERSION of the map type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«type.joynrName», 'MINOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «minorVersion»
+		});
 
 		«IF requireJSSupport»
 		// AMD support

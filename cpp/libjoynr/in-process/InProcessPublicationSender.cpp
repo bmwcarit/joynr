@@ -17,12 +17,14 @@
  * #L%
  */
 #include "joynr/InProcessPublicationSender.h"
+
+#include <cassert>
+#include <tuple>
+
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/IPublicationInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/ISubscriptionManager.h"
-#include <cassert>
-#include <tuple>
 
 namespace joynr
 {

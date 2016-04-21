@@ -106,7 +106,7 @@ define(
                  */
                 Util.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
                 Util.checkPropertyIfDefined(settings, "Object", "settings");
-                if (settings) {
+                if (settings && !(settings instanceof PeriodicSubscriptionQos)) {
                     if (settings.period !== undefined) {
                         log
                                 .warn("PeriodicSubscriptionQos has been invoked with deprecated settings member \"period\". "

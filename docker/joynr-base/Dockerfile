@@ -1,4 +1,4 @@
-FROM fedora:21
+FROM fedora:23
 
 # set this date to cause all images to be updated
 ENV REFRESHED_AT 2016-02-16
@@ -12,8 +12,8 @@ RUN rm /etc/localtime \
 ###################################################
 # install base packages
 ###################################################
-RUN yum update -y \
-	&& yum install -y \
+RUN dnf update -y \
+	&& dnf install -y \
 	autoconf \
 	automake \
 	cmake \
@@ -46,56 +46,31 @@ RUN yum update -y \
 	xcb-util-devel \
 	xcb-util-*-devel \
 	zlib.i686 \
+	java-1.8.0-openjdk \
+	xz \
+	maven \
 	hostname.x86_64 \
-	&& yum groupinstall -y 'Development Tools' \
-	&& yum clean all
-
-###################################################
-# install Oracle JDK
-###################################################
-RUN cd /opt \
-	&& wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" \
-		"http://download.oracle.com/otn-pub/java/jdk/8u40-b26/jdk-8u40-linux-x64.tar.gz"
-
-RUN cd /opt \
-	&& tar xvf jdk-8u40-linux-x64.tar.gz \
-	&& alternatives --install /usr/bin/java java /opt/jdk1.8.0_40/bin/java 18000400 \
-	&& alternatives --install /usr/bin/javac javac /opt/jdk1.8.0_40/bin/javac 18000400 \
-	&& alternatives --install /usr/bin/jar jar /opt/jdk1.8.0_40/bin/jar 18000400 \
-	&& rm /opt/jdk-8u40-linux-x64.tar.gz
-
-###################################################
-# install Maven
-###################################################
-WORKDIR /opt
-
-ENV MAVEN_VERSION=3.3.3
-RUN wget http://mirror.serversupportforum.de/apache/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
-	&& tar -xf apache-maven-${MAVEN_VERSION}-bin.tar.gz \
-	&& rm apache-maven-${MAVEN_VERSION}-bin.tar.gz \
-	&& mkdir -p /home/joynr/.m2
-
-ENV PATH $PATH:/opt/apache-maven-${MAVEN_VERSION}/bin
-ENV MAVEN_OPTS -Xmx2048M -XX:+CMSClassUnloadingEnabled
-VOLUME /home/joynr/.m2
+	&& dnf groupinstall -y 'Development Tools' \
+	&& dnf clean all
 
 ###################################################
 # build and install mosquitto 1.4.7 mqtt broker
 # do not build documentation
-# use default settings
 # run mosquitto as user "joynr"
+# do not limit message queue
+# use settings in /etc/mosquitto/mosquitto.conf
 ###################################################
-RUN yum update -y \
-    && yum install -y c-ares-devel libuuid-devel\
+RUN dnf update -y \
+    && dnf install -y c-ares-devel libuuid-devel\
     && cd /opt \
     && git clone https://git.eclipse.org/r/mosquitto/org.eclipse.mosquitto.git \
     && cd org.eclipse.mosquitto \
     && git checkout v1.4.7 \
     && make DOCDIRS= install -j"$(nproc)" \
     && mv /etc/mosquitto/mosquitto.conf.example /etc/mosquitto/mosquitto.conf \
-    && echo "user joynr" >> /etc/mosquitto/mosquitto.conf \
-    && yum clean all
-
+    && sed -i "s/#max_queued_messages 100/max_queued_messages 0/" /etc/mosquitto/mosquitto.conf \
+    && sed -i "s/#user mosquitto/user joynr/" /etc/mosquitto/mosquitto.conf \
+    && dnf clean all
 
 ###################################################
 # create data directories and volumes

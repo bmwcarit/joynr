@@ -3,18 +3,18 @@ FROM joynr-android:latest
 ###################################################
 # install node.js
 ###################################################
-RUN yum install -y \
+RUN dnf install -y \
 	nodejs \
 	npm \
-	&& yum clean all
+	&& dnf clean all
 
 ###################################################
 # install libs needed to run phantomjs
 ###################################################
-RUN yum install -y \
+RUN dnf install -y \
 	freetype-devel \
 	fontconfig-devel \
-	&& yum clean all
+	&& dnf clean all
 
 ###################################################
 # deploy the build scripts

@@ -49,7 +49,6 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
                     value : "theValue"
                 })
                 ],
-                providerVersion : 123,
                 priority : 1234,
                 scope : ProviderScope.LOCAL,
                 onChangeSubscriptions : true

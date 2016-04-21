@@ -19,6 +19,7 @@ package io.joynr.generator.proxy
 
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -29,20 +30,18 @@ class ProxyGenerator {
 	@Inject
 	extension JoynrJavaGeneratorExtensions
 	@Inject private extension NamingUtil
-
-	@Inject
-	InterfaceProxyTemplate interfaceProxy
+	@Inject JavaTemplateFactory templateFactory
 
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
 		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
 
 		var serviceName =  fInterface.joynrName
 
+		var interfaceProxyTemplate = templateFactory.createInterfaceProxyTemplate(fInterface)
 		generateFile(
 			fsa,
 			path + serviceName + "Proxy.java",
-			interfaceProxy,
-			fInterface
+			interfaceProxyTemplate
 		);
 	}
 }

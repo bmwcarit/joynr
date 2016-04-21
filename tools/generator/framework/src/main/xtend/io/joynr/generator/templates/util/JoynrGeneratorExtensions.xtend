@@ -25,6 +25,7 @@ import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.EnumTemplate
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.MapTemplate
+import io.joynr.generator.templates.TypeDefTemplate
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.StringReader
@@ -33,18 +34,14 @@ import org.eclipse.emf.ecore.impl.BasicEObjectImpl
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
-import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModel
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
-import org.franca.core.franca.FMapType
+import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
-import io.joynr.generator.templates.TypeDefTemplate
-import org.franca.core.franca.FTypeDef
 
 abstract class JoynrGeneratorExtensions {
 
@@ -192,14 +189,13 @@ abstract class JoynrGeneratorExtensions {
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		InterfaceTemplate generator,
-		FInterface serviceInterface
+		InterfaceTemplate generator
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate(serviceInterface).toString);
+			fsa.generateFile(path, generator.generate.toString);
 		}
 	}
 
@@ -220,42 +216,39 @@ abstract class JoynrGeneratorExtensions {
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		EnumTemplate generator,
-		FEnumerationType enumType
+		EnumTemplate generator
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate(enumType).toString);
+			fsa.generateFile(path, generator.generate.toString);
 		}
 	}
 
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		MapTemplate generator,
-		FMapType mapType
+		MapTemplate generator
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate(mapType).toString);
+			fsa.generateFile(path, generator.generate.toString);
 		}
 	}
 
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		CompoundTypeTemplate generator,
-		FCompoundType compoundType
+		CompoundTypeTemplate generator
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate(compoundType).toString);
+			fsa.generateFile(path, generator.generate.toString);
 		}
 	}
 

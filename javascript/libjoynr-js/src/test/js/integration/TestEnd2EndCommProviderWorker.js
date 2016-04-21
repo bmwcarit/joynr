@@ -26,7 +26,7 @@ importScripts("WorkerUtils.js");
 importScripts("../joynr/provisioning/provisioning_root.js");
 importScripts("LocalStorageSimulator.js");
 
-importScripts("../../classes/js/joynr.js");
+importScripts("../../jar-classes/joynr.js");
 importScripts("../joynr/provisioning/provisioning_cc.js");
 importScripts("provisioning_end2end_common.js");
 importScripts("../joynr/vehicle/RadioProvider.js");
@@ -94,7 +94,6 @@ function initializeTest(provisioningSuffix, providedDomain) {
             libjoynrAsync = asynclib;
             providerQos = new libjoynrAsync.types.ProviderQos({
                 customParameters : [],
-                providerVersion : 1,
                 priority : Date.now(),
                 scope : libjoynrAsync.types.ProviderScope.GLOBAL,
                 onChangeSubscriptions : true

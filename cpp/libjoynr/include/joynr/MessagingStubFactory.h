@@ -23,10 +23,13 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <unordered_map>
+
+#include <boost/functional/hash/extensions.hpp>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RuntimeConfig.h"
-#include "joynr/Directory.h"
+#include "joynr/ThreadSafeMap.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMessaging.h"
@@ -54,17 +57,30 @@ public:
     // Those Skeletons must be registered before the MessagingStubFactory is used.
     MessagingStubFactory();
 
-    std::shared_ptr<IMessaging> create(
-            const joynr::system::RoutingTypes::Address& destinationAddress) override;
-    void remove(const joynr::system::RoutingTypes::Address& destinationAddress) override;
-    bool contains(const joynr::system::RoutingTypes::Address& destinationAddress) override;
+    std::shared_ptr<IMessaging> create(const std::shared_ptr<
+            const joynr::system::RoutingTypes::Address>& destinationAddress) override;
+    void remove(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                        destinationAddress) override;
+    bool contains(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                          destinationAddress) override;
 
     void registerStubFactory(std::unique_ptr<IMiddlewareMessagingStubFactory> factory);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
 
-    Directory<joynr::system::RoutingTypes::Address, IMessaging> address2MessagingStubDirectory;
+    using AddressPtr = std::shared_ptr<const joynr::system::RoutingTypes::Address>;
+    using AddressPtrHash = boost::hash<AddressPtr>;
+    struct AddressPtrCompare
+    {
+        bool operator()(const AddressPtr& p1, const AddressPtr& p2) const
+        {
+            return *p1 == *p2;
+        }
+    };
+    template <typename K, typename V>
+    using Map = std::unordered_map<K, V, AddressPtrHash, AddressPtrCompare>;
+    ThreadSafeMap<AddressPtr, std::shared_ptr<IMessaging>, Map> address2MessagingStubMap;
     std::vector<std::unique_ptr<IMiddlewareMessagingStubFactory>> factoryList;
     std::mutex mutex;
 };

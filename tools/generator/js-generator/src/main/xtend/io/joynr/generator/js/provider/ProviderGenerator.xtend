@@ -3,7 +3,7 @@ package io.joynr.generator.js.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,10 @@ import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
-import org.franca.core.franca.FType
+import io.joynr.generator.templates.InterfaceTemplate
+import com.google.inject.assistedinject.Assisted
 
-class ProviderGenerator {
+class ProviderGenerator extends InterfaceTemplate {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension JSTypeUtil
@@ -45,6 +46,11 @@ class ProviderGenerator {
 
 	int packagePathDepth
 
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
 	def relativePathToBase() {
 		var relativePath = ""
 		for (var i=0; i<packagePathDepth; i++) {
@@ -53,30 +59,30 @@ class ProviderGenerator {
 		return relativePath
 	}
 
-	def generateProvider(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
+	def generateProvider(IFileSystemAccess fsa){
 		var containerpath = File::separator
-		val packagePath = getPackagePathWithJoynrPrefix(fInterface, File::separator)
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, File::separator)
 		val path = containerpath + packagePath + File::separator
 
 		packagePathDepth = packagePath.split(File::separator).length
 
-		val fileName = path + "" + fInterface.providerName + ".js"
+		val fileName = path + "" + providerName + ".js"
 		if (clean) {
 			fsa.deleteFile(fileName)
 		}
 		if (generate) {
 			fsa.generateFile(
 				fileName,
-				generate(fInterface, types).toString
+				generate().toString
 			)
 		}
 	}
 
-	def getProviderName(FInterface fInterface){
-		fInterface.joynrName + "Provider"
+	def getProviderName(){
+		francaIntf.joynrName + "Provider"
 	}
 
-	def generate(FInterface fInterface, Iterable<FType> types)'''
+	override generate()'''
 	«val generationDate = (new Date()).toString»
 	/*
 	 * PLEASE NOTE. THIS IS A GENERATED FILE!
@@ -86,14 +92,14 @@ class ProviderGenerator {
 
 		var checkImpl = function() {
 			var missingInImplementation = [];
-			«FOR attribute: getAttributes(fInterface)»
+			«FOR attribute: getAttributes(francaIntf)»
 			«val attributeName = attribute.joynrName»
 			if (! this.«attributeName».check()) missingInImplementation.push("Attribute:«attributeName»");
 			«ENDFOR»
-			«FOR methodName : getMethodNames(fInterface)»
+			«FOR methodName : getMethodNames(francaIntf)»
 			if (! this.«methodName».checkOperation())  missingInImplementation.push("Operation:«methodName»");
 			«ENDFOR»
-			«FOR event: getEvents(fInterface)»
+			«FOR event: getEvents(francaIntf)»
 			// check if implementation was provided for «event.joynrName»
 			«ENDFOR»
 
@@ -101,15 +107,15 @@ class ProviderGenerator {
 		};
 
 		/**
-		 * @name «fInterface.providerName»
+		 * @name «providerName»
 		 * @constructor
 		 *
 		 * @classdesc
 		 * PLEASE NOTE. THIS IS A GENERATED FILE!
 		 * <br/>Generation date: «generationDate»
-		 «appendJSDocSummaryAndWriteSeeAndDescription(fInterface, "* ")»
+		 «appendJSDocSummaryAndWriteSeeAndDescription(francaIntf, "* ")»
 		 *
-		 * @summary Constructor of «fInterface.providerName» object
+		 * @summary Constructor of «providerName» object
 		 *
 		 * @param {Object} [implementation] the implementation of the provider
 		 * @param {Object} [implementation.ATTRIBUTENAME] the definition of attribute implementation
@@ -120,16 +126,16 @@ class ProviderGenerator {
 		 * @param {Function} [implementation.OPERATIONNAME] the operation function
 		 * @param {Object} [implementation.EVENTNAME] the definition of the event implementation
 		 *
-		 * @returns {«fInterface.providerName»} a «fInterface.providerName» object to communicate with the joynr infrastructure
+		 * @returns {«providerName»} a «providerName» object to communicate with the joynr infrastructure
 		 */
-		var «fInterface.providerName» = null;
-		«fInterface.providerName» = function «fInterface.providerName»(
+		var «providerName» = null;
+		«providerName» = function «providerName»(
 			passedImplementation,
 			dependencies
 		) {
-			if (!(this instanceof «fInterface.providerName»)) {
+			if (!(this instanceof «providerName»)) {
 				// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-				return new «fInterface.providerName»(
+				return new «providerName»(
 					passedImplementation,
 					dependencies);
 			}
@@ -137,10 +143,10 @@ class ProviderGenerator {
 			var implementation = passedImplementation || {};
 
 			// defining provider members
-			«FOR attribute: getAttributes(fInterface)»
+			«FOR attribute: getAttributes(francaIntf)»
 				«val attributeName = attribute.joynrName»
 				/**
-				 * @name «fInterface.providerName»#«attributeName»
+				 * @name «providerName»#«attributeName»
 				 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
 				 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 				 */
@@ -150,23 +156,28 @@ class ProviderGenerator {
 					implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
 				}
 			«ENDFOR»
-			«val methodToErrorEnumName = fInterface.methodToErrorEnumName»
-			«FOR methodName : getMethodNames(fInterface)»
-				«val operations = getMethods(fInterface, methodName)»
+			«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
+			«FOR methodName : getMethodNames(francaIntf)»
+				«val operations = getMethods(francaIntf, methodName)»
 				«FOR operation : operations»
 					/**
-					 * @function «fInterface.providerName»#«methodName»
+					 * @function «providerName»#«methodName»
 					 * @summary The «methodName» operation is GENERATED FROM THE INTERFACE DESCRIPTION
 					 «IF operations.size > 1»
 					 * <br/>method overloading: different call semantics possible
 					 «ENDIF»
 					 «appendJSDocSummaryAndWriteSeeAndDescription(operation, "* ")»
 					 *
-					 «writeJSDocForSignature(operation, "* ")»
+					 «writeJSDocForSignature(providerName, operation, "* ")»
 					 */
+					«IF operation.outputParameters.size>1»
+						/**
+						 «writeJSDocTypedefForMultipleReturnValues(providerName, operation, methodName, "* ")»
+						 */
+					«ENDIF»
 				«ENDFOR»
 				this.«methodName» = new dependencies.ProviderOperation(this, implementation.«methodName», "«methodName»", [
-					«FOR operation: getMethods(fInterface, methodName) SEPARATOR ","»
+					«FOR operation: getMethods(francaIntf, methodName) SEPARATOR ","»
 					{
 						inputParameter: [
 							«FOR param: getInputParameters(operation) SEPARATOR ","»
@@ -191,11 +202,11 @@ class ProviderGenerator {
 					«ENDFOR»
 				]);
 			«ENDFOR»
-			«FOR event: getEvents(fInterface)»
+			«FOR event: getEvents(francaIntf)»
 				«val filterParameters = getFilterParameters(event)»
 				«val eventName = event.joynrName»
 				/**
-				 * @name «fInterface.providerName»#«eventName»
+				 * @name «providerName»#«eventName»
 				 * @summary The «eventName» event is GENERATED FROM THE INTERFACE DESCRIPTION
 				 «appendJSDocSummaryAndWriteSeeAndDescription(event, "* ")»
 				 */
@@ -235,40 +246,67 @@ class ProviderGenerator {
 				value: checkImpl
 			});
 
-			this.interfaceName = "«getFQN(fInterface)»";
+			this.interfaceName = "«getFQN(francaIntf)»";
 
 			this.id = dependencies.uuid();
 
 			return Object.freeze(this);
 		};
 
+		/**
+		 * @name «providerName»#MAJOR_VERSION
+		 * @constant {Number}
+		 * @default «majorVersion»
+		 * @summary The MAJOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«providerName», 'MAJOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «majorVersion»
+		});
+		/**
+		 * @name «providerName»#MINOR_VERSION
+		 * @constant {Number}
+		 * @default «minorVersion»
+		 * @summary The MINOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«providerName», 'MINOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «minorVersion»
+		});
+
 		«IF requireJSSupport»
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
-			define(«fInterface.defineName(fInterface.providerName)»[
-				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
+			define(«francaIntf.defineName(providerName)»[
+				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
 						"«datatype.getDependencyPath»"
 				«ENDFOR»
 				], function () {
-					return «fInterface.providerName»;
+					return «providerName»;
 				}
 			);
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {
-				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
+				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
 					require("«relativePathToBase() + datatype.getDependencyPath()»");
 				«ENDFOR»
-				exports = module.exports = «fInterface.providerName»;
+				exports = module.exports = «providerName»;
 			}
 			else {
 				// support CommonJS module 1.1.1 spec (`exports` cannot be a function)
-				exports.«fInterface.providerName» = «fInterface.providerName»;
+				exports.«providerName» = «providerName»;
 			}
 		} else {
-			window.«fInterface.providerName» = «fInterface.providerName»;
+			window.«providerName» = «providerName»;
 		}
 		«ELSE»
-		window.«fInterface.providerName» = «fInterface.providerName»;
+		window.«providerName» = «providerName»;
 		«ENDIF»
 	})();
 	'''

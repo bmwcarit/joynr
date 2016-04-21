@@ -18,6 +18,7 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -31,7 +32,7 @@ import java.util.HashMap
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
-class InterfaceAsyncTemplate implements InterfaceTemplate{
+class InterfaceAsyncTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension InterfaceUtil
@@ -39,6 +40,12 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 	@Inject extension NamingUtil
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
+
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName,  HashMap<FMethod, String> methodToErrorEnumName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods) {
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 		var uniqueMultioutMethodSignatureToOutputContainerName = new HashMap<String, String>();
@@ -100,28 +107,28 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 		}
 	}
 
-	override generate(FInterface serviceInterface) {
+	override generate() {
 		var methodToCallbackName = new HashMap<FMethod, String>();
 		var methodToFutureName = new HashMap<FMethod, String>();
-		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName
+		var methodToErrorEnumName = francaIntf.methodToErrorEnumName
 		var methodToSyncReturnedName = new HashMap<FMethod, String>();
 		var uniqueMultioutMethods = new ArrayList<FMethod>();
-		init(serviceInterface, methodToCallbackName, methodToFutureName, methodToErrorEnumName, methodToSyncReturnedName, uniqueMultioutMethods);
-		val interfaceName =  serviceInterface.joynrName
+		init(francaIntf, methodToCallbackName, methodToFutureName, methodToErrorEnumName, methodToSyncReturnedName, uniqueMultioutMethods);
+		val interfaceName =  francaIntf.joynrName
 		val asyncClassName = interfaceName + "Async"
 
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		val hasReadAttribute = hasReadAttribute(serviceInterface);
-		val hasMethodWithArguments = hasMethodWithArguments(serviceInterface);
-		val hasWriteAttribute = hasWriteAttribute(serviceInterface);
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val hasReadAttribute = hasReadAttribute(francaIntf);
+		val hasMethodWithArguments = hasMethodWithArguments(francaIntf);
+		val hasWriteAttribute = hasWriteAttribute(francaIntf);
 		'''
 «warning()»
 package «packagePath»;
 
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
-«IF getMethods(serviceInterface).size > 0 || hasReadAttribute»
+«IF getMethods(francaIntf).size > 0 || hasReadAttribute»
 import io.joynr.proxy.Callback;
-«IF serviceInterface.hasMethodWithErrorEnum»
+«IF francaIntf.hasMethodWithErrorEnum»
 import io.joynr.proxy.ICallbackWithModeledError;
 import io.joynr.proxy.CallbackWithModeledError;
 «ENDIF»
@@ -138,7 +145,7 @@ import io.joynr.proxy.ICallback;
 import io.joynr.exceptions.DiscoveryException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
 	import «datatype»;
 «ENDFOR»
 
@@ -149,7 +156,7 @@ import io.joynr.exceptions.DiscoveryException;
 
 public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterface {
 
-	«FOR attribute: getAttributes(serviceInterface)»
+	«FOR attribute: getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 		«var getAttribute = "get" + attributeName.toFirstUpper»
@@ -211,7 +218,7 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 		}
 	«ENDFOR»
 
-	«FOR method: getMethods(serviceInterface)»
+	«FOR method: getMethods(francaIntf)»
 		«var methodName = method.joynrName»
 		«var params = getTypedParameterListJavaRpc(method)»
 		«var callbackParameter = getCallbackParameter(method, methodToCallbackName)»

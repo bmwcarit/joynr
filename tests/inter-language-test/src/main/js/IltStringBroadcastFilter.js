@@ -20,9 +20,10 @@
  */
 
 (function(undefined) {
-    var log = require("./logging.js").log;
-    var prettyLog = require("./logging.js").prettyLog;
-    var error = require("./logging.js").error;
+    var testbase = require("test-base");
+    var log = testbase.logging.log;
+    var prettyLog = testbase.logging.prettyLog;
+    var error = testbase.logging.error;
     var IltUtil = require("./IltUtil.js");
     var ExtendedTypeCollectionEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.js");
     /**

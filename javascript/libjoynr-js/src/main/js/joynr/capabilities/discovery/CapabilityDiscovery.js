@@ -30,7 +30,7 @@ define(
             "joynr/types/CapabilityInformation",
             "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/types/DiscoveryEntry",
-            "joynr/types/DiscoveryQos",
+            "joynr/proxy/DiscoveryQos",
             "joynr/types/DiscoveryScope",
             "joynr/types/ProviderScope",
             "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy",
@@ -160,7 +160,7 @@ define(
                         },
                         discoveryQos : new DiscoveryQos({
                             discoveryScope : DiscoveryScope.GLOBAL_ONLY,
-                            cacheMaxAge : Util.getMaxLongValue()
+                            cacheMaxAgeMs : Util.getMaxLongValue()
                         })
                     }).catch(function(error) {
                         throw new Error("Failed to create global capabilities directory proxy: " + error);

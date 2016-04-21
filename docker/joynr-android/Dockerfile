@@ -4,13 +4,13 @@ USER root
 ###################################################
 # install android sdk
 ###################################################
-RUN yum  install -y \
+RUN dnf install -y \
     glibc.i686 \
     glibc-devel.i686 \
     libstdc++.i686 \
     zlib-devel.i686 \
     ncurses-devel.i686 \
-    && yum clean all
+    && dnf clean all
 
 ENV ANDROID_SDK_FILENAME android-sdk_r24.1.2-linux.tgz
 ENV ANDROID_SDK_URL http://dl.google.com/android/${ANDROID_SDK_FILENAME}

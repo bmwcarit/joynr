@@ -1,10 +1,24 @@
 package io.joynr.generator.cpp.communicationmodel.serializer;
 
+import java.net.URL;
+
+import org.eclipse.emf.ecore.resource.Resource;
+import org.franca.core.franca.FCompoundType;
+import org.franca.core.franca.FModel;
+import org.franca.core.franca.FType;
+import org.junit.Test;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
+import com.google.inject.name.Names;
+
+import io.joynr.generator.cpp.util.CppTemplateFactory;
+
 /*
  * #%L
- * io.joynr.tools.generator:generator-framework
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +36,6 @@ package io.joynr.generator.cpp.communicationmodel.serializer;
 
 import io.joynr.generator.loading.ModelLoader;
 
-import java.net.URL;
-
-import org.eclipse.emf.ecore.resource.Resource;
-import org.franca.core.franca.FCompoundType;
-import org.franca.core.franca.FModel;
-import org.franca.core.franca.FType;
-import org.junit.Test;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.name.Names;
-
 public class TypeSerializerTest {
 
     @Test
@@ -41,20 +43,22 @@ public class TypeSerializerTest {
         URL fixtureURL = TypeSerializerTest.class.getResource("TypeSerializer.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
         Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
-        TypeSerializerCppTemplate typeSerializerCppTemplate = Guice.createInjector(new AbstractModule() {
+        CppTemplateFactory templateFactory = Guice.createInjector(new AbstractModule() {
 
             @Override
             protected void configure() {
                 bindConstant().annotatedWith(Names.named("generationId")).to("");
+                install(new FactoryModuleBuilder().build(CppTemplateFactory.class));
             }
-        }).getInstance(TypeSerializerCppTemplate.class);
+        }).getInstance(CppTemplateFactory.class);
 
         FModel model = (FModel) fixtureResource.getContents().get(0);
         FType fixture = model.getInterfaces().get(0).getTypes().get(0);
 
         assert fixture instanceof FCompoundType;
         /* this test ensures that no runtime exceptions of the generator occur */
-        typeSerializerCppTemplate.generate((FCompoundType) fixture);
+        TypeSerializerCppTemplate typeSerializerCppTemplate = templateFactory.createTypeSerializerCppTemplate((FCompoundType) fixture);
+        typeSerializerCppTemplate.generate();
     }
 
 }

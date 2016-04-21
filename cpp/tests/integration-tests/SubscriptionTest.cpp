@@ -197,9 +197,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
-    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation>> subscriptionCallback(
-            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsLocationListener));
-
+    auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(mockGpsLocationListener);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -254,9 +252,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     response.push_back(Variant::make<joynr::tests::testTypes::TestEnum::Enum>(tests::testTypes::TestEnum::ZERO));
     subscriptionPublication.setResponse(response);
 
-    std::shared_ptr<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>> subscriptionCallback(
-            new SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>(mockTestEnumSubscriptionListener));
-
+    auto subscriptionCallback = std::make_shared<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>>(mockTestEnumSubscriptionListener);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -492,5 +488,3 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
 }
-
-

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ void ClassSerializerImpl<JoynrMessage>::serialize(const JoynrMessage& msg, std::
     stream << R"({)";
     stream << R"("_typeName":")" << JoynrTypeId<JoynrMessage>::getTypeName() << R"(",)";
     stream << R"("header": )";
-    MapSerializer::serialize<std::string, std::string>(msg.getHeader(), stream);
+    MapSerializer::serialize(msg.getHeader(), stream);
     stream << R"(,"payload": )";
     ClassSerializer<std::string> stringSerializer{};
     stringSerializer.serialize(msg.getPayload(), stream);

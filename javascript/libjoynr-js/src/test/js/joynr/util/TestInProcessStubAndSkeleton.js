@@ -64,7 +64,6 @@ joynrTestRequire(
                             value : "theValue"
                         })
                         ],
-                        providerVersion : 1,
                         priority : 1,
                         scope : ProviderScope.LOCAL,
                         supportsOnChangeSubscriptions : true
@@ -85,7 +84,6 @@ joynrTestRequire(
                                 value : "theValue"
                             })
                             ],
-                            providerVersion : 1,
                             priority : 1,
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true
@@ -102,7 +100,6 @@ joynrTestRequire(
                                 value : "theValue"
                             })
                             ],
-                            providerVersion : 1,
                             priority : 4,
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true
@@ -119,7 +116,6 @@ joynrTestRequire(
                                 value : "theValue"
                             })
                             ],
-                            providerVersion : 1,
                             priority : 3,
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true
@@ -136,7 +132,6 @@ joynrTestRequire(
                                 value : "theValue"
                             })
                             ],
-                            providerVersion : 1,
                             priority : 5,
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true
@@ -153,7 +148,6 @@ joynrTestRequire(
                                 value : "theValue"
                             })
                             ],
-                            providerVersion : 1,
                             priority : 2,
                             scope : ProviderScope.LOCAL,
                             supportsOnChangeSubscriptions : true

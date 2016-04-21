@@ -43,10 +43,9 @@ void MqttMessagingSkeleton::transmit(
 
         try {
             using system::RoutingTypes::MqttAddress;
-            MqttAddress address =
-                    JsonSerializer::deserialize<system::RoutingTypes::MqttAddress>(replyChannelId);
-            auto addressPtr = std::make_shared<MqttAddress>(address);
-            messageRouter.addNextHop(message.getHeaderFrom(), addressPtr);
+            MqttAddress address = JsonSerializer::deserialize<MqttAddress>(replyChannelId);
+            messageRouter.addNextHop(
+                    message.getHeaderFrom(), std::make_shared<const MqttAddress>(address));
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,
                             "could not deserialize MqttAddress from {} - error: {}",

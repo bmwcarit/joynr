@@ -18,7 +18,7 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.templates.InterfaceTemplate
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
@@ -31,7 +31,7 @@ import java.util.HashMap
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
-class DefaultInterfaceProviderTemplate implements InterfaceTemplate {
+class DefaultInterfaceProviderTemplate extends InterfaceProviderTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension NamingUtil
 	@Inject extension InterfaceUtil
@@ -39,17 +39,21 @@ class DefaultInterfaceProviderTemplate implements InterfaceTemplate {
 	@Inject extension MethodUtil
 	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
-	@Inject extension InterfaceProviderTemplate
 
-	override generate(FInterface serviceInterface) {
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate() {
 		var methodToDeferredName = new HashMap<FMethod, String>();
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
-		init(serviceInterface, methodToDeferredName, uniqueMethodsToCreateDeferreds);
+		init(francaIntf, methodToDeferredName, uniqueMethodsToCreateDeferreds);
 
-		val interfaceName =  serviceInterface.joynrName
+		val interfaceName =  francaIntf.joynrName
 		val className = "Default" + interfaceName + "Provider"
 		val abstractProviderName = interfaceName + "AbstractProvider"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
 «warning()»
@@ -59,24 +63,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.provider.Promise;
-«IF hasReadAttribute(serviceInterface)»
+«IF hasReadAttribute(francaIntf)»
 	import io.joynr.provider.Deferred;
 «ENDIF»
-«IF hasWriteAttribute(serviceInterface) || hasMethodWithArguments(serviceInterface)»
+«IF hasWriteAttribute(francaIntf) || hasMethodWithArguments(francaIntf)»
 	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 «ENDIF»
-«IF hasWriteAttribute(serviceInterface) || hasMethodWithoutReturnValue(serviceInterface)»
+«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
 	import io.joynr.provider.DeferredVoid;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
 	import «datatype»;
 «ENDFOR»
 
 public class «className» extends «abstractProviderName» {
 	private static final Logger logger = LoggerFactory.getLogger(«className».class);
 
-	«FOR attribute: getAttributes(serviceInterface)»
+	«FOR attribute: getAttributes(francaIntf)»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.type.isTypeDef»
 			«val typeDefType = attribute.type.typeDefType.actualType.typeName»
@@ -91,7 +95,7 @@ public class «className» extends «abstractProviderName» {
 		providerQos.setPriority(System.currentTimeMillis());
 	}
 
-	«FOR attribute : getAttributes(serviceInterface)»
+	«FOR attribute : getAttributes(francaIntf)»
 		«val attributeName = attribute.joynrName»
 		«val attributeType = attribute.typeName»
 
@@ -117,7 +121,7 @@ public class «className» extends «abstractProviderName» {
 		«ENDIF»
 	«ENDFOR»
 
-	«FOR method : getMethods(serviceInterface)»
+	«FOR method : getMethods(francaIntf)»
 		«var methodName = method.joynrName»
 		«var deferredName = methodToDeferredName.get(method)»
 		«var params = method.typedParameterListJavaRpc»

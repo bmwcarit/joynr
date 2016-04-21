@@ -106,11 +106,10 @@ public class AndroidLocationProvider extends DefaultGpsProvider {
     @Override
     public ProviderQos getProviderQos() {
         CustomParameter[] customParameters = {};
-        Integer providerVersion = 1;
         Long priority = System.currentTimeMillis();
         ProviderScope scope = ProviderScope.LOCAL;
         Boolean supportsOnChangeSubscriptions = false;
-        return new ProviderQos(customParameters, providerVersion, priority, scope, supportsOnChangeSubscriptions);
+        return new ProviderQos(customParameters, priority, scope, supportsOnChangeSubscriptions);
     }
 
     private void logToOutput(String string) {

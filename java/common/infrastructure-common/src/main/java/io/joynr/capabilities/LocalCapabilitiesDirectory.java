@@ -93,7 +93,7 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
     /**
      * Shuts down the local capabilities directory and all used thread pools.
      * @param unregisterAllRegisteredCapabilities if set to true, all added capabilities that are not removed up to
-     * this point, will be removed automatically 
+     * this point, will be removed automatically
      */
     void shutdown(boolean unregisterAllRegisteredCapabilities);
 

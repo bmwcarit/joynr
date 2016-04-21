@@ -105,7 +105,7 @@ public:
         types::ProviderQos providerQos;
         providerQos.setPriority(DispatcherUtils::nowInMilliseconds());
 
-        std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));
+        auto provider = std::make_shared<MockTestProvider>(providerQos);
 
         // register provider
         std::string participantId = runtime1->registerProvider(domain, provider);

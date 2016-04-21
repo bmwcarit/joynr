@@ -68,7 +68,6 @@ public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
         webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
 
         testProviderQos = new ProviderQos(new CustomParameter[0],
-                                          1,
                                           System.currentTimeMillis(),
                                           ProviderScope.LOCAL,
                                           false);

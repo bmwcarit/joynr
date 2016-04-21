@@ -23,35 +23,13 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
+import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class ProviderGenerator {
 
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
-
-	@Inject
-	InterfaceRequestCallerHTemplate interfaceRequestCallerH;
-
-	@Inject
-	InterfaceRequestCallerCppTemplate interfaceRequestCallerCpp;
-
-	@Inject
-	InterfaceRequestInterpreterHTemplate interfaceRequestInterpreterH;
-
-	@Inject
-	InterfaceRequestInterpreterCppTemplate interfaceRequestInterpreterCpp;
-
-	@Inject
-	InterfaceProviderCppTemplate interfaceProviderCppTemplate;
-
-	@Inject
-	InterfaceProviderHTemplate interfaceProviderHTemplate;
-
-	@Inject
-	InterfaceAbstractProviderCppTemplate interfaceAbstractProviderCppTemplate;
-
-	@Inject
-	InterfaceAbstractProviderHTemplate interfaceAbstractProviderHTemplate;
+	@Inject CppTemplateFactory templateFactory;
 
 	def doGenerate(
 		FModel model,
@@ -66,59 +44,60 @@ class ProviderGenerator {
 			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator;
 			var serviceName = serviceInterface.joynrName
 
-			generateFile(headerFileSystem,
+			var interfaceRequestInterpreterHTemplate = templateFactory.createInterfaceRequestInterpreterHTemplate(serviceInterface)
+			generateFile(
+				headerFileSystem,
 				headerPath + serviceName + "RequestInterpreter.h",
-				interfaceRequestInterpreterH,
-				serviceInterface
+				interfaceRequestInterpreterHTemplate
 			);
 
+			var interfaceRequestInterpreterCppTemplate = templateFactory.createInterfaceRequestInterpreterCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "RequestInterpreter.cpp",
-				interfaceRequestInterpreterCpp,
-				serviceInterface
+				interfaceRequestInterpreterCppTemplate
 			);
 
+			var interfaceRequestCallerHTemplate = templateFactory.createInterfaceRequestCallerHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "RequestCaller.h",
-				interfaceRequestCallerH,
-				serviceInterface
+				interfaceRequestCallerHTemplate
 			);
 
+			var interfaceRequestCallerCppTemplate = templateFactory.createInterfaceRequestCallerCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "RequestCaller.cpp",
-				interfaceRequestCallerCpp,
-				serviceInterface
+				interfaceRequestCallerCppTemplate
 			);
 
+			var interfaceProviderCppTemplate = templateFactory.createInterfaceProviderCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "Provider.cpp",
-				interfaceProviderCppTemplate,
-				serviceInterface
+				interfaceProviderCppTemplate
 			);
 
+			var interfaceProviderHTemplate = templateFactory.createInterfaceProviderHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "Provider.h",
-				interfaceProviderHTemplate,
-				serviceInterface
+				interfaceProviderHTemplate
 			);
 
+			var interfaceAbstractProviderCppTemplate = templateFactory.createInterfaceAbstractProviderCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "AbstractProvider.cpp",
-				interfaceAbstractProviderCppTemplate,
-				serviceInterface
+				interfaceAbstractProviderCppTemplate
 			);
 
+			var interfaceAbstractProviderHTemplate = templateFactory.createInterfaceAbstractProviderHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "AbstractProvider.h",
-				interfaceAbstractProviderHTemplate,
-				serviceInterface
+				interfaceAbstractProviderHTemplate
 			);
 		}
 	}

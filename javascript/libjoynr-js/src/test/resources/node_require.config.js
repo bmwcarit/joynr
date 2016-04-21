@@ -56,6 +56,9 @@ requirejs.config({
         "joynr/Runtime" : "joynr/Runtime.inprocess",
 
         "joynr/tests" : "../test-classes/joynr/tests",
+        "joynr/types" : "../classes/joynr/types",
+        "joynr/types/TestTypes" : "../test-classes/joynr/types/TestTypes",
+        "joynr/types/TestTypesWithoutVersion" : "../test-classes/joynr/types/TestTypesWithoutVersion",
         "joynr/vehicle" : "../test-classes/joynr/vehicle",
         "joynr/datatypes" : "../test-classes/joynr/datatypes",
         "joynr/provisioning" : "../test-classes/joynr/provisioning",

@@ -138,3 +138,8 @@ TEST(UnfixturedDirectoryTest, useStdStringKeys)
     directory.remove(key);
     ASSERT_FALSE(directory.contains(key));
 }
+
+TEST_F(DirectoryTest, lookupNonExisingKeys)
+{
+    ASSERT_TRUE(nullptr == directory->lookup("__THIS__KEY__DOES__NOT__EXIST__"));
+}

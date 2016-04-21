@@ -3,7 +3,7 @@ package io.joynr.generator.js.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,38 +18,43 @@ package io.joynr.generator.js.communicationmodel
  * limitations under the License.
  */
 
+import com.google.common.collect.Sets
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
-import java.util.Set
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FStructType
 import org.franca.core.franca.FUnionType
 
-class CompoundTypeGenerator {
+class CompoundTypeGenerator extends CompoundTypeTemplate {
 
 	@Inject extension JSTypeUtil
 	@Inject extension GeneratorParameter
 	@Inject private extension NamingUtil
 	@Inject private extension JoynrJSGeneratorExtensions
 
-	def generateCompoundType(FCompoundType compoundType, Set<Object> generatedTypes) '''
-		«IF !generatedTypes.contains(compoundType)»
-			«IF compoundType instanceof FStructType»
-				«generateStructType(compoundType)»
-			«ELSEIF compoundType instanceof FUnionType»
-				«generateUnionType(compoundType as FUnionType)»
+	static var generatedTypes = Sets.newHashSet()
+
+	@Inject
+	new(@Assisted FCompoundType type) {
+		super(type)
+	}
+
+	override generate() '''
+		«IF !generatedTypes.contains(type)»
+			«IF type instanceof FStructType»
+				«generateStructType(type)»
+			«ELSEIF type instanceof FUnionType»
+				«generateUnionType(type as FUnionType)»
 			«ENDIF»
-			«generatedTypes.updateGeneratedTypesSet(compoundType)»
+			«generatedTypes.add(type)»
 		«ENDIF»
 	'''
-
-	def private void updateGeneratedTypesSet(Set<Object> generatedTypes, Object newType) {
-		generatedTypes.add(newType)
-	}
 
 	def generateUnionType(FUnionType type) '''
 		//TODO generate union type «type.joynrName»
@@ -137,6 +142,33 @@ class CompoundTypeGenerator {
 				}
 
 			};
+
+			/**
+			 * @name «type.joynrName»#MAJOR_VERSION
+			 * @constant {Number}
+			 * @default «majorVersion»
+			 * @summary The MAJOR_VERSION of the struct type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
+			 */
+			Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', {
+				enumerable: false,
+				configurable: false,
+				writable: false,
+				readable: true,
+				value: «majorVersion»
+			});
+			/**
+			 * @name «type.joynrName»#MINOR_VERSION
+			 * @constant {Number}
+			 * @default «minorVersion»
+			 * @summary The MINOR_VERSION of the struct type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
+			 */
+			Object.defineProperty(«type.joynrName», 'MINOR_VERSION', {
+				enumerable: false,
+				configurable: false,
+				writable: false,
+				readable: true,
+				value: «minorVersion»
+			});
 
 			var memberTypes = {
 				«FOR member : members SEPARATOR ","»

@@ -272,7 +272,6 @@ $(function() { // DOM ready
                             radioProvider,
                             new joynr.types.ProviderQos({
                                 customParameters : [],
-                                providerVersion : 1,
                                 priority : Date.now(),
                                 scope : joynr.types.ProviderScope.GLOBAL,
                                 onChangeSubscriptions : true

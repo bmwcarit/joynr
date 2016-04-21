@@ -19,6 +19,7 @@
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 
 #include <cmath>
+#include <cassert>
 #include <memory>
 #include <chrono>
 

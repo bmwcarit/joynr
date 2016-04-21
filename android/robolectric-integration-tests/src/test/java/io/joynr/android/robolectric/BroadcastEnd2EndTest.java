@@ -67,7 +67,7 @@ public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
         webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
         webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
 
-        providerQos = new ProviderQos(new CustomParameter[0], 1, System.currentTimeMillis(), ProviderScope.LOCAL, false);
+        providerQos = new ProviderQos(new CustomParameter[0], System.currentTimeMillis(), ProviderScope.LOCAL, false);
         discoveryQos = new DiscoveryQos(10000,
                                         ArbitrationStrategy.HighestPriority,
                                         Long.MAX_VALUE,

@@ -23,17 +23,13 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
+import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class JoynrMessagingGenerator {
 
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
-
-	@Inject
-	InterfaceJoynrMessagingConnectorHTemplate interfaceJoynrMessagingConnectorH;
-
-	@Inject
-	InterfaceJoynrMessagingConnectorCppTemplate interfaceJoynrMessagingConnectorCpp;
+	@Inject CppTemplateFactory templateFactory;
 
 	def doGenerate(FModel model,
 		IFileSystemAccess sourceFileSystem,
@@ -47,18 +43,18 @@ class JoynrMessagingGenerator {
 			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
 			val serviceName = serviceInterface.joynrName
 
+			var interfaceJoynrMessagingConnectorHTemplate = templateFactory.createInterfaceJoynrMessagingConnectorHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "JoynrMessagingConnector.h",
-				interfaceJoynrMessagingConnectorH,
-				serviceInterface
+				interfaceJoynrMessagingConnectorHTemplate
 			);
 
+			var interfaceJoynrMessagingConnectorCppTemplate = templateFactory.createInterfaceJoynrMessagingConnectorCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "JoynrMessagingConnector.cpp",
-				interfaceJoynrMessagingConnectorCpp,
-				serviceInterface
+				interfaceJoynrMessagingConnectorCppTemplate
 			);
 		}
 	}

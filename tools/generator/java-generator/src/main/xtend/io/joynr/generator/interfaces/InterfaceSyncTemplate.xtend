@@ -18,6 +18,7 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -31,7 +32,7 @@ import java.util.HashMap
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
-class InterfaceSyncTemplate implements InterfaceTemplate{
+class InterfaceSyncTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension MethodUtil
@@ -39,6 +40,12 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 	@Inject extension InterfaceUtil
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
+
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToReturnTypeName, ArrayList<FMethod> uniqueMultioutMethods) {
 		var uniqueMultioutMethodSignatureToContainerNames = new HashMap<String, String>();
 		var methodCounts = overloadedMethodCounts(getMethods(serviceInterface));
@@ -79,15 +86,15 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 		}
 	}
 
-	override generate(FInterface serviceInterface) {
+	override generate() {
 		var methodToReturnTypeName = new HashMap<FMethod, String>();
 		var uniqueMultioutMethods = new ArrayList<FMethod>();
-		init(serviceInterface, methodToReturnTypeName, uniqueMultioutMethods);
-		val interfaceName =  serviceInterface.joynrName
+		init(francaIntf, methodToReturnTypeName, uniqueMultioutMethods);
+		val interfaceName =  francaIntf.joynrName
 		val syncClassName = interfaceName + "Sync"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		val hasMethodWithArguments = hasMethodWithArguments(serviceInterface);
-		val hasWriteAttribute = hasWriteAttribute(serviceInterface);
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val hasMethodWithArguments = hasMethodWithArguments(francaIntf);
+		val hasWriteAttribute = hasWriteAttribute(francaIntf);
 		'''
 «warning()»
 
@@ -100,17 +107,17 @@ import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 «ENDIF»
 
 import io.joynr.exceptions.JoynrRuntimeException;
-«IF hasMethodWithErrorEnum(serviceInterface)»
+«IF hasMethodWithErrorEnum(francaIntf)»
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
 	import «datatype»;
 «ENDFOR»
 
 public interface «syncClassName» extends «interfaceName», JoynrSyncInterface {
 
-«FOR attribute: getAttributes(serviceInterface) SEPARATOR "\n"»
+«FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
 	«var attributeName = attribute.joynrName»
 	«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 	«var getAttribute = "get" + attributeName.toFirstUpper»
@@ -142,7 +149,7 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 		}
 «ENDFOR»
 
-«FOR method: getMethods(serviceInterface) SEPARATOR "\n"»
+«FOR method: getMethods(francaIntf) SEPARATOR "\n"»
 	«var methodName = method.joynrName»
 	«var outputParameters = method.typeNamesForOutputParameter»
 		/*

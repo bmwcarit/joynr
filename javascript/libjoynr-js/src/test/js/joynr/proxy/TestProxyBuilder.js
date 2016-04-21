@@ -79,10 +79,10 @@ joynrTestRequire(
                             domain = "myDomain";
                             interfaceName = "vehicle/Radio";
                             discoveryQos = new DiscoveryQos({
-                                discoveryTimeout : 5000,
-                                discoveryRetryDelay : 900,
+                                discoveryTimeoutMs : 5000,
+                                discoveryRetryDelayMs : 900,
                                 arbitrationStrategy : ArbitrationStrategyCollection.Nothing,
-                                maxAgeOfCachedProviders : 0,
+                                cacheMaxAgeMs : 0,
                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                                 additionalParameters : {}
                             });
@@ -99,7 +99,6 @@ joynrTestRequire(
                                 interfaceName : interfaceName,
                                 providerQos : new ProviderQos({
                                     customParameter : [],
-                                    providerVersion : 1,
                                     priority : 1,
                                     scope : ProviderScope.GLOBAL,
                                     supportsOnChangeSubscriptions : true

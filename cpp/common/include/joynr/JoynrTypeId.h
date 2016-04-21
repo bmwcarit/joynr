@@ -19,8 +19,8 @@
 #ifndef JOYNRTYPEID_H
 #define JOYNRTYPEID_H
 
-#include <string>
 #include <cassert>
+#include <string>
 
 namespace joynr
 {

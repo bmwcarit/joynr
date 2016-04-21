@@ -25,7 +25,7 @@
 
         requirejs.config({
             paths : {
-                "joynr" : "js/joynr.websocket",
+                "joynr" : "../jar-classes/joynr.websocket",
                 "integration" : "../test-classes/integration",
                 "joynr/vehicle" : "../test-classes/joynr/vehicle",
                 "joynr/datatypes" : "../test-classes/joynr/datatypes"

@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
@@ -29,7 +30,7 @@ import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceHTemplate implements InterfaceTemplate{
+class InterfaceHTemplate extends InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 
@@ -40,19 +41,24 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 	@Inject private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface){
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate() {
 		var selector = TypeSelector::defaultTypeSelector
 		selector.errorTypes(true)
 		selector.typeDefs(true)
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"_h").toUpperCase»
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+"_I"+interfaceName+"_h").toUpperCase»
 «warning()»
 
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(serviceInterface, selector),new FMapTypeAsLastComparator())»
+«FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(francaIntf, selector),new FMapTypeAsLastComparator())»
 	«IF isCompound(datatype) || isMap(datatype)»
 		«datatype.forwardDeclaration»
 	«ELSE »
@@ -60,7 +66,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 	«ENDIF»
 «ENDFOR»
 
-«FOR include: serviceInterface.allPrimitiveTypes.includesFor.addElements(includeForArray, includeForString)»
+«FOR include: francaIntf.allPrimitiveTypes.includesFor.addElements(includeForArray, includeForString)»
 	#include «include»
 «ENDFOR»
 
@@ -81,10 +87,12 @@ namespace exceptions
 
 } // namespace joynr
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 /**
  * @brief Base interface.
+ *
+ * @version «majorVersion».«minorVersion»
  */
 class «getDllExportMacro()» I«interfaceName»Base {
 public:
@@ -92,36 +100,53 @@ public:
 	virtual ~I«interfaceName»Base() = default;
 
 	static const std::string& INTERFACE_NAME();
+	/**
+	 * @brief MAJOR_VERSION The major version of this provider interface as specified in the
+	 * Franca model.
+	 */
+	static const std::uint32_t MAJOR_VERSION;
+	/**
+	 * @brief MINOR_VERSION The minor version of this provider interface as specified in the
+	 * Franca model.
+	 */
+	static const std::uint32_t MINOR_VERSION;
 };
 
 /**
  * @brief This is the «interfaceName» synchronous interface.
  *
+ * @version «majorVersion».«minorVersion»
  */
 class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
 public:
 	~I«interfaceName»Sync() override = default;
-	«produceSyncGetterDeclarations(serviceInterface,true)»
-	«produceSyncSetterDeclarations(serviceInterface,true)»
-	«produceSyncMethodDeclarations(serviceInterface,true)»
+	«produceSyncGetterDeclarations(francaIntf,true)»
+	«produceSyncSetterDeclarations(francaIntf,true)»
+	«produceSyncMethodDeclarations(francaIntf,true)»
 };
 
 /**
  * @brief This is the «interfaceName» asynchronous interface.
  *
+ * @version «majorVersion».«minorVersion»
  */
 class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
 public:
 	~I«interfaceName»Async() override = default;
-	«produceAsyncGetterDeclarations(serviceInterface,true)»
-	«produceAsyncSetterDeclarations(serviceInterface,true)»
-	«produceAsyncMethodDeclarations(serviceInterface,true, true)»
+	«produceAsyncGetterDeclarations(francaIntf,true)»
+	«produceAsyncSetterDeclarations(francaIntf,true)»
+	«produceAsyncMethodDeclarations(francaIntf,true, true)»
 };
 
+/**
+ * @brief This is the «interfaceName» interface.
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
 public:
 	~I«interfaceName»() override = default;
-	«FOR attribute: getAttributes(serviceInterface)»
+	«FOR attribute: getAttributes(francaIntf)»
 		«val attributeName = attribute.name.toFirstUpper»
 		«IF attribute.readable»
 			using I«interfaceName»Sync::get«attributeName»;
@@ -132,13 +157,13 @@ public:
 			using I«interfaceName»Async::set«attributeName»Async;
 		«ENDIF»
 	«ENDFOR»
-	«FOR methodName: getUniqueMethodNames(serviceInterface)»
+	«FOR methodName: getUniqueMethodNames(francaIntf)»
 		using I«interfaceName»Sync::«methodName»;
 		using I«interfaceName»Async::«methodName»Async;
 	«ENDFOR»
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

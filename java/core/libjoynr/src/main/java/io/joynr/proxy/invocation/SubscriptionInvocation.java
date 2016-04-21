@@ -27,7 +27,7 @@ public abstract class SubscriptionInvocation extends Invocation {
     }
 
     public boolean hasSubscriptionId() {
-        return getSubscriptionId() == null || !getSubscriptionId().isEmpty();
+        return getSubscriptionId() != null && !getSubscriptionId().isEmpty();
     }
 
     public abstract String getSubscriptionId();

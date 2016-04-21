@@ -76,7 +76,7 @@ protected:
     MockJoynrMessageSender* mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
-    std::shared_ptr<system::RoutingTypes::ChannelAddress> endPointAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::ChannelAddress> endPointAddress;
 
 
 private:

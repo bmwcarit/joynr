@@ -246,7 +246,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
 
 TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
     std::string domain("LibJoynrRuntimeTest.Domain.C");
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
 
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
@@ -273,7 +273,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
 
 TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     std::string domain("LibJoynrRuntimeTest.Domain.D");
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
 
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
@@ -317,7 +317,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
 
 TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     std::string domain("LibJoynrRuntimeTest.Domain.E");
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
 
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,

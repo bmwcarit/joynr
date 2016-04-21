@@ -19,9 +19,9 @@
 
 #include "joynr/JsonTokenizer.h"
 
-#include <utility>
 #include <cassert>
 #include <cctype>
+#include <utility>
 
 namespace joynr
 {

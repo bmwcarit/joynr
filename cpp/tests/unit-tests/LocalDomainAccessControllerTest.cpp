@@ -297,22 +297,20 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
-    std::shared_ptr<ConsumerPermissionCallback> getConsumerPersmissionCallback(
-            new ConsumerPermissionCallback()
-    );
+    auto getConsumerPermissionCallback = std::make_shared<ConsumerPermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
             LocalDomainAccessControllerTest::TEST_USER,
             LocalDomainAccessControllerTest::TEST_DOMAIN1,
             LocalDomainAccessControllerTest::TEST_INTERFACE1,
             TrustLevel::HIGH,
-            getConsumerPersmissionCallback
+            getConsumerPermissionCallback
     );
 
-    EXPECT_TRUE(getConsumerPersmissionCallback->expectCallback(1000));
+    EXPECT_TRUE(getConsumerPermissionCallback->expectCallback(1000));
 
     // The operation is ambigious and interface level permission is not available
-    EXPECT_FALSE(getConsumerPersmissionCallback->isPermissionAvailable());
+    EXPECT_FALSE(getConsumerPermissionCallback->isPermissionAvailable());
 
     // Operation level permission should work
     EXPECT_EQ(
@@ -369,9 +367,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
-    std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback(
-            new ConsumerPermissionCallback()
-    );
+    auto getConsumerPermissionCallback = std::make_shared<ConsumerPermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
             LocalDomainAccessControllerTest::TEST_USER,
@@ -429,9 +425,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
-    std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback1(
-            new ConsumerPermissionCallback()
-    );
+    auto getConsumerPermissionCallback1 = std::make_shared<ConsumerPermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
             LocalDomainAccessControllerTest::TEST_USER,
@@ -442,9 +436,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     );
 
     // Make another request for consumer permission
-    std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback2(
-                new ConsumerPermissionCallback()
-    );
+    auto getConsumerPermissionCallback2 = std::make_shared<ConsumerPermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
                 LocalDomainAccessControllerTest::TEST_USER,

@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.16.0</version>
+		<version>0.17.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -476,6 +476,62 @@
 							</resources>
 						</configuration>
 					</execution>
+					<execution>
+						<id>prepare-jar-classes</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/jar-classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/classes</directory>
+									<includes>
+										<include>JoynrBuildSignature.js</include>
+										<include>DISCLAIMER</include>
+										<include>META-INF/**</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>prepare-node-classes</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/node-classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/classes</directory>
+									<includes>
+										<include>DISCLAIMER</include>
+										<include>joynr.js</include>
+										<include>libjoynr-deps*.js</include>
+										<include>package.json</include>
+										<include>require.config.node.js</include>
+										<include>joynr/**</include>
+										<include>global/LocalStorageNode.js</include>
+										<include>global/Promise.js</include>
+										<include>global/WebSocketNode.js</include>
+										<include>global/XMLHttpRequestNode.js</include>
+										<include>lib/atmosphereNode.js</include>
+										<include>lib/JsonParser.js</include>
+										<include>lib/log4javascriptNode.js</include>
+										<include>lib/uuid-annotated.js</include>
+										<include>META-INF/**</include>
+									</includes>
+									<excludes>
+										<exclude>joynr/security/PlatformSecurityManager.js</exclude>
+										<exclude>joynr/system/LoggingManager.js</exclude>
+									</excludes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<!-- the nodejs plugin is used to temp-install node.js to speed up performance of the
@@ -644,17 +700,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-					<includes>
-						<include>JoynrBuildSignature.js</include>
-						<include>LICENSE</include>
-						<include>NOTICE</include>
-						<include>DISCLAIMER</include>
-						<include>META-INF/licenses/*</include>
-						<include>js/joynr.intertab.js</include>
-						<include>js/joynr.js</include>
-						<include>js/joynr.intertab.clustercontroller.js</include>
-						<include>js/joynr.websocket.js</include>
-					</includes>
+				    <classesDirectory>${project.build.directory}/jar-classes</classesDirectory>
 				</configuration>
 			</plugin>
 
@@ -672,16 +718,11 @@
  					</execution>
 				</executions>
 				<configuration>
-					<!--verbose argument is not supported in outdated JSDoc 3.2.3 shipped with
-						jsdoc3-maven-plugin 1.1.0 -> plugin verboseOutput in conf.json-->
 					<directoryRoots>
 						<directoryRoot>src/main/js</directoryRoot>
 						<directoryRoot>src/main/generated</directoryRoot>
 					</directoryRoots>
 					<recursive>true</recursive>
-					<!--the lenient=false (default) argument is replaced by pedantic=true in newer
-						JSDoc versions-->
-					<lenient>false</lenient>
 					<outputDirectory>${project.build.directory}/jsdoc</outputDirectory>
 					<includePrivate>false</includePrivate>
 					<configFile>jsdoc3.conf.json</configFile>

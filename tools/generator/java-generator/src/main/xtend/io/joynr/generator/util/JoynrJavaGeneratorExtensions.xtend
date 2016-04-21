@@ -123,15 +123,10 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 		selector.broadcasts(broadcasts);
 
 		for(datatype : getAllComplexTypes(serviceInterface, selector)) {
-			if (datatype instanceof FType){
-				val include = getIncludeOf(datatype);
-				if (include != null) {
-					includeSet.add(include);
-				}
+			val include = getIncludeOf(datatype);
+			if (include != null) {
+				includeSet.add(include);
 			}
-//			else{
-//				includeSet.add(getIncludeOf(datatype as FBasicTypeId));
-//			}
 		}
 		return includeSet;
 	}
@@ -139,9 +134,7 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 	def Iterable<String> getRequiredIncludesFor(FBroadcast broadcast) {
 		val includeSet = new TreeSet<String>();
 		for(datatype: getAllComplexTypes(broadcast)) {
-			if (datatype instanceof FType) {
-				includeSet.add(getIncludeOf(datatype));
-			}
+			includeSet.add(getIncludeOf(datatype));
 		}
 		return includeSet;
 	}

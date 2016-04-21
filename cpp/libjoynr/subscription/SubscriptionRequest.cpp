@@ -17,13 +17,12 @@
  * #L%
  */
 #include "joynr/SubscriptionRequest.h"
+
 #include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/PeriodicSubscriptionQos.h"
-
-#include <cassert>
 
 namespace joynr
 {

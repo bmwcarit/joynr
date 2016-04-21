@@ -132,7 +132,7 @@ define(
                         "_typeName",
                         "joynr.OnChangeWithKeepAliveSubscriptionQos");
                 Util.checkPropertyIfDefined(settings, "Object", "settings");
-                if (settings) {
+                if (settings && !(settings instanceof OnChangeWithKeepAliveSubscriptionQos)) {
                     if (settings.maxInterval !== undefined) {
                         log
                                 .warn("OnChangeWithKeepAliveSubscriptionQos has been invoked with deprecated settings member \"maxInterval\". "

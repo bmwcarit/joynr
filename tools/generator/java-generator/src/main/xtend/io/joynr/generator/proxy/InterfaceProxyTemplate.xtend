@@ -18,32 +18,40 @@ package io.joynr.generator.proxy
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 
-class InterfaceProxyTemplate implements InterfaceTemplate{
+class InterfaceProxyTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
-	override generate(FInterface fInterface) {
-		val interfaceName =  fInterface.joynrName
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate() {
+		val interfaceName =  francaIntf.joynrName
 		val className = interfaceName + "Proxy"
 		val asyncClassName = interfaceName + "Async"
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
 		val broadcastClassName = interfaceName + "BroadcastInterface"
-		val packagePath = getPackagePathWithJoynrPrefix(fInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 		'''
 
 		«warning()»
 		package «packagePath»;
 
-		public interface «className» extends «asyncClassName», «syncClassName»«IF fInterface.attributes.size>0», «subscriptionClassName»«ENDIF»«IF fInterface.broadcasts.size>0», «broadcastClassName»«ENDIF» {
-		    public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(fInterface, "/")»/«interfaceName»";
+		public interface «className» extends «asyncClassName», «syncClassName»«IF francaIntf.attributes.size>0», «subscriptionClassName»«ENDIF»«IF francaIntf.broadcasts.size>0», «broadcastClassName»«ENDIF» {
+			public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
+			public static final int MAJOR_VERSION = «majorVersion»;
+			public static final int MINOR_VERSION = «minorVersion»;
 		}
 		'''
 	}

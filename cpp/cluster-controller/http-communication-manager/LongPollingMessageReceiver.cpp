@@ -16,9 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#include <algorithm>
+#include <cassert>
 #include <cstdint>
 #include <cstdlib>
+#include <algorithm>
+
 #include <QString>
 
 #include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"

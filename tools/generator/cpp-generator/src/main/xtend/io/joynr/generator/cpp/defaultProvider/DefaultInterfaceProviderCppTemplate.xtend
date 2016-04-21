@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.defaultProvider
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -29,7 +30,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FInterface
 
-class DefaultInterfaceProviderCppTemplate implements InterfaceTemplate{
+class DefaultInterfaceProviderCppTemplate extends InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -41,25 +42,30 @@ class DefaultInterfaceProviderCppTemplate implements InterfaceTemplate{
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
+«val interfaceName = francaIntf.joynrName»
 «warning()»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/Default«interfaceName»Provider.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/Default«interfaceName»Provider.h"
 
 #include <chrono>
 #include <cstdint>
 #include <tuple>
 
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 INIT_LOGGER(Default«interfaceName»Provider);
 
 Default«interfaceName»Provider::Default«interfaceName»Provider() :
 		«interfaceName»AbstractProvider()
-		«IF !serviceInterface.attributes.empty»,«ENDIF»
-		«FOR attribute : serviceInterface.attributes SEPARATOR ","»
+		«IF !francaIntf.attributes.empty»,«ENDIF»
+		«FOR attribute : francaIntf.attributes SEPARATOR ","»
 			«attribute.joynrName»()
 		«ENDFOR»
 {
@@ -80,10 +86,10 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 {
 }
 
-«IF !serviceInterface.attributes.empty»
+«IF !francaIntf.attributes.empty»
 	// attributes
 «ENDIF»
-«FOR attribute : serviceInterface.attributes»
+«FOR attribute : francaIntf.attributes»
 	«var attributeName = attribute.joynrName»
 	«IF attribute.readable»
 		void Default«interfaceName»Provider::get«attributeName.toFirstUpper»(
@@ -113,11 +119,11 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 
 	«ENDIF»
 «ENDFOR»
-«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
-«IF !serviceInterface.methods.empty»
+«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
+«IF !francaIntf.methods.empty»
 	// methods
 «ENDIF»
-«FOR method : serviceInterface.methods»
+«FOR method : francaIntf.methods»
 	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 	«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
@@ -185,7 +191,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 	}
 
 «ENDFOR»
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 
 	/**

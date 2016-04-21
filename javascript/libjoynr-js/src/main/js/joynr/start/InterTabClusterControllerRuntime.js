@@ -57,7 +57,7 @@ define(
             "joynr/messaging/webmessaging/WebMessagingSkeleton",
             "joynr/messaging/channel/LongPollingChannelMessageReceiver",
             "joynr/messaging/MessagingQos",
-            "joynr/types/DiscoveryQos",
+            "joynr/proxy/DiscoveryQos",
             "joynr/infrastructure/ChannelUrlDirectoryProxy",
             "joynr/types/ChannelUrlInformation",
             "joynr/types/ProviderQos",
@@ -285,7 +285,7 @@ define(
                 }
 
                 var loggingMessagingQos = new MessagingQos({
-                    ttl : Date.now() + relativeTtl
+                    ttl : relativeTtl
                 });
                 loggingManager = Object.freeze(new LoggingManager());
                 LoggerFactory.init(loggingManager);
@@ -558,7 +558,7 @@ define(
                                 discoveryQos : new DiscoveryQos(
                                         {
                                             discoveryScope : DiscoveryScope.GLOBAL_ONLY,
-                                            cacheMaxAge : Util.getMaxLongValue()
+                                            cacheMaxAgeMs : Util.getMaxLongValue()
                                         })
                             };
 
@@ -619,7 +619,6 @@ define(
 
                             providerQos = new ProviderQos({
                                 customParameters : [],
-                                providerVersion : 1,
                                 priority : Date.now(),
                                 scope : ProviderScope.LOCAL
                             });

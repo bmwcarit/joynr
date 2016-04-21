@@ -48,7 +48,7 @@ joynrTestRequire(
                 joynr,
                 DiscoveryEntry,
                 DiscoveryScope,
-                DiscoveryQos,
+                DiscoveryQosGen,
                 DiscoveryProxy,
                 RoutingProxy,
                 RoutingProvider,
@@ -73,7 +73,7 @@ joynrTestRequire(
                         var workerStarted, libjoynrLoaded;
                         var numberOfStations;
                         var provisioningSuffix;
-                        var discoveryTimeout;
+                        var discoveryTimeoutMs;
                         var messagingQos;
 
                         beforeEach(function() {
@@ -83,7 +83,7 @@ joynrTestRequire(
                             libjoynrLoaded = false;
                             var webWorkerAndLibJoynrStarted = false;
                             provisioningSuffix = "-" + Date.now();
-                            discoveryTimeout = 4000;
+                            discoveryTimeoutMs = 4000;
 
                             /*
                              * The parent window is used by libjoynr to postMessages in case of
@@ -209,7 +209,7 @@ joynrTestRequire(
                             return joynr.proxyBuilder.build(DiscoveryProxy, {
                                 domain : "io.joynr",
                                 messagingQos : internalMessagingQos,
-                                discoveryQos : new DiscoveryQos({
+                                discoveryQos : new joynr.proxy.DiscoveryQos({
                                     discoveryScope : DiscoveryScope.LOCAL_ONLY
                                 })
                             });
@@ -222,7 +222,7 @@ joynrTestRequire(
                             return joynr.proxyBuilder.build(RoutingProxy, {
                                 domain : "io.joynr",
                                 messagingQos : internalMessagingQos,
-                                discoveryQos : new DiscoveryQos({
+                                discoveryQos : new joynr.proxy.DiscoveryQos({
                                     discoveryScope : DiscoveryScope.LOCAL_ONLY
                                 })
                             });
@@ -245,7 +245,7 @@ joynrTestRequire(
                                                         {
                                                             domain : domain,
                                                             interfaceName : interfaceName,
-                                                            discoveryQos : new DiscoveryQos(
+                                                            discoveryQos : new DiscoveryQosGen(
                                                                     {
                                                                         discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL
                                                                     })
@@ -321,7 +321,6 @@ joynrTestRequire(
                                    // the Provider
                                     var providerQos = new joynr.types.ProviderQos({
                                         customParameters : [],
-                                        providerVersion : 1,
                                         priority : Date.now(),
                                         scope : joynr.types.ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -663,7 +662,7 @@ joynrTestRequire(
                                                     domain : domain,
                                                     messagingQos : messagingQos,
                                                     discoveryQos : {
-                                                        discoveryTimeout : discoveryTimeout
+                                                        discoveryTimeoutMs : discoveryTimeoutMs
                                                     }
                                                 })
                                                 .then(
@@ -679,7 +678,7 @@ joynrTestRequire(
 
                                     waitsFor(function() {
                                         return proxyResolved === false;
-                                    }, "Proxy not be resolved", discoveryTimeout + 500);
+                                    }, "Proxy not be resolved", discoveryTimeoutMs + 500);
 
                                     runs(function() {
                                         expect(proxyResolved).toBeFalsy();
@@ -818,7 +817,7 @@ joynrTestRequire(
                                                         {
                                                             domain : domain,
                                                             interfaceName : "vehicle/Radio",
-                                                            discoveryQos : new DiscoveryQos(
+                                                            discoveryQos : new DiscoveryQosGen(
                                                                     {
                                                                         discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
                                                                     })
@@ -838,7 +837,7 @@ joynrTestRequire(
                                                                                                 {
                                                                                                     domain : domain,
                                                                                                     interfaceName : "vehicle/Radio",
-                                                                                                    discoveryQos : new DiscoveryQos(
+                                                                                                    discoveryQos : new DiscoveryQosGen(
                                                                                                             {
                                                                                                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
                                                                                                             })
@@ -885,7 +884,6 @@ joynrTestRequire(
 
                                         providerQos = new joynr.types.ProviderQos({
                                             customParameters : [],
-                                            providerVersion : 1,
                                             priority : Date.now(),
                                             scope : joynr.types.ProviderScope.GLOBAL,
                                             onChangeSubscriptions : true
@@ -908,7 +906,7 @@ joynrTestRequire(
                                                                             {
                                                                                 domain : domain,
                                                                                 interfaceName : interfaceName,
-                                                                                discoveryQos : new DiscoveryQos(
+                                                                                discoveryQos : new DiscoveryQosGen(
                                                                                         {
                                                                                             discoveryScope : DiscoveryScope.LOCAL_ONLY
                                                                                         })
@@ -943,7 +941,7 @@ joynrTestRequire(
                                                                                                                     {
                                                                                                                         domain : domain,
                                                                                                                         interfaceName : interfaceName,
-                                                                                                                        discoveryQos : new DiscoveryQos(
+                                                                                                                        discoveryQos : new DiscoveryQosGen(
                                                                                                                                 {
                                                                                                                                     discoveryScope : DiscoveryScope.LOCAL_ONLY
                                                                                                                                 })
@@ -983,7 +981,7 @@ joynrTestRequire(
                                                                                                                                                                                 {
                                                                                                                                                                                     domain : domain,
                                                                                                                                                                                     interfaceName : interfaceName,
-                                                                                                                                                                                    discoveryQos : new DiscoveryQos(
+                                                                                                                                                                                    discoveryQos : new DiscoveryQosGen(
                                                                                                                                                                                             {
                                                                                                                                                                                                 discoveryScope : DiscoveryScope.LOCAL_ONLY
                                                                                                                                                                                             })

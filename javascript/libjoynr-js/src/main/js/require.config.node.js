@@ -29,9 +29,9 @@ var requirejsConfig = {
         "joynr/system/LoggingManager" : "joynr/system/LoggingManagerNode",
         "joynr/security/PlatformSecurityManager" : "joynr/security/PlatformSecurityManagerNode",
         "global/LocalStorage" : "global/LocalStorageNode",
+        "global/XMLHttpRequest" : "global/XMLHttpRequestNode",
         "atmosphere" : "lib/atmosphereNode",
         "log4javascript" : "lib/log4javascriptNode",
-        "bluebird" : "lib/bluebird",
         "global/WebSocket" : "global/WebSocketNode",
 
         "joynr/Runtime" : "joynr/Runtime.websocket.libjoynr"

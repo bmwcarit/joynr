@@ -18,13 +18,16 @@ package io.joynr.generator
  */
 
 import com.google.common.collect.Sets
+import com.google.inject.AbstractModule
 import com.google.inject.Inject
+import com.google.inject.assistedinject.FactoryModuleBuilder
 import io.joynr.generator.communicationmodel.CommunicationModelGenerator
 import io.joynr.generator.filter.FilterGenerator
 import io.joynr.generator.interfaces.InterfaceGenerator
 import io.joynr.generator.provider.ProviderGenerator
 import io.joynr.generator.proxy.ProxyGenerator
 import io.joynr.generator.util.IgnoreSVNFileFilter
+import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import java.io.FileNotFoundException
@@ -58,17 +61,23 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 
 	@Inject extension JoynrJavaGeneratorExtensions
 
-	@Inject private FrancaPersistenceManager francaPersistenceManager
-
 	override getLanguageId() {
 		"java"
+	}
+
+	override getGeneratorModule() {
+		new AbstractModule() {
+			override protected configure() {
+				install(new FactoryModuleBuilder().build(JavaTemplateFactory))
+			}
+		}
 	}
 
 	/*
 	 * Triggers the generation. In case the parameter "generate" is set to false, the generator is cleaning the generation folder
 	 */
 	override doGenerate(Resource input, IFileSystemAccess fsa) {
-		val isFrancaIDLResource = input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)
+		val isFrancaIDLResource = input.URI.fileExtension.equals(FrancaPersistenceManager.FRANCA_FILE_EXTENSION)
 		checkArgument(isFrancaIDLResource, "Unknown input: " + input)
 
 		val fModel = input.contents.get(0) as FModel

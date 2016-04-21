@@ -18,13 +18,8 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerCppTemplate
-import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerHTemplate
-import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerCppTemplate
-import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerHTemplate
-import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerCppTemplate
-import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerHTemplate
 import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.cpp.util.CppTemplateFactory
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
@@ -41,26 +36,9 @@ class CommunicationModelGenerator {
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
 
-	@Inject InterfaceHTemplate interfaceH;
-	@Inject InterfaceCppTemplate interfaceCpp;
-
-	@Inject StdEnumHTemplate stdEnumH;
-	@Inject StdEnumCppTemplate stdEnumCpp;
-
-	@Inject StdTypeHTemplate stdTypeH;
-	@Inject StdTypeCppTemplate stdTypeCpp;
-
-	@Inject MapHTemplate mapH;
-	@Inject MapCppTemplate mapCpp;
-
 	@Inject TypeDefHTemplate typeDefH;
 
-	@Inject TypeSerializerHTemplate typeSerializerH;
-	@Inject TypeSerializerCppTemplate typeSerializerCpp;
-	@Inject MapSerializerHTemplate mapSerializerH;
-	@Inject MapSerializerCppTemplate mapSerializerCpp;
-	@Inject EnumSerializerHTemplate enumSerializerH;
-	@Inject EnumSerializerCppTemplate enumSerializerCpp;
+	@Inject CppTemplateFactory templateFactory;
 
 	def doGenerate(FModel fModel,
 		IFileSystemAccess sourceFileSystem,
@@ -83,32 +61,32 @@ class CommunicationModelGenerator {
 				sourcepath += type.typeCollectionName + File::separator
 			}
 
+			var typeHTemplate = templateFactory.createTypeHTemplate(type)
 			generateFile(
 				headerFileSystem,
 				headerpath + getGenerationTypeName(type) + ".h",
-				stdTypeH,
-				type
+				typeHTemplate
 			)
 
+			var typeCppTemplate = templateFactory.createTypeCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + getGenerationTypeName(type) + ".cpp",
-				stdTypeCpp,
-				type
+				typeCppTemplate
 			)
 
+			var typeSerializerHTemplate = templateFactory.createTypeSerializerHTemplate(type)
 			generateFile(
 				headerFileSystem,
 				headerpath + getGenerationTypeName(type) + "Serializer.h",
-				typeSerializerH,
-				type
+				typeSerializerHTemplate
 			)
 
+			var typeSerializerCppTemplate = templateFactory.createTypeSerializerCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + getGenerationTypeName(type) + "Serializer.cpp",
-				typeSerializerCpp,
-				type
+				typeSerializerCppTemplate
 			)
 		}
 
@@ -140,31 +118,31 @@ class CommunicationModelGenerator {
 			val headerFilename = headerpath + getGenerationTypeName(type)
 			val sourceFilename = sourcepath + getGenerationTypeName(type)
 
+			var mapHTemplate = templateFactory.createMapHTemplate(type)
 			generateFile(
 				headerFileSystem,
 				headerFilename + ".h",
-				mapH,
-				type
+				mapHTemplate
 			)
 
+			var mapCppTemplate = templateFactory.createMapCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourceFilename + ".cpp",
-				mapCpp,
-				type
+				mapCppTemplate
 			)
 
+			var mapSerializerHTemplate = templateFactory.createMapSerializerHTemplate(type)
 			generateFile(
 				headerFileSystem,
 				headerFilename + "Serializer.h",
-				mapSerializerH,
-				type
+				mapSerializerHTemplate
 			)
+			var mapSerializerCppTemplate = templateFactory.createMapSerializerCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourceFilename + "Serializer.cpp",
-				mapSerializerCpp,
-				type
+				mapSerializerCppTemplate
 			)
 		}
 
@@ -195,18 +173,18 @@ class CommunicationModelGenerator {
 			val sourcepath = interfacePath + getPackageSourceDirectory(serviceInterface) + File::separator 
 			val headerpath = headerInterfacePath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
 
+			var interfaceHTemplate = templateFactory.createInterfaceHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerpath + "I" + serviceInterface.joynrName + ".h",
-				interfaceH,
-				serviceInterface
+				interfaceHTemplate
 			);
 
+			var interfaceCppTemplate = templateFactory.createInterfaceCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + "I" + serviceInterface.joynrName + ".cpp",
-				interfaceCpp,
-				serviceInterface
+				interfaceCppTemplate
 			);
 
 			generateErrorEnumTypes(
@@ -248,31 +226,31 @@ class CommunicationModelGenerator {
 		String headerFilename,
 		String sourceFilename
 	) {
+		var enumHTemplate = templateFactory.createEnumHTemplate(enumType)
 		generateFile(
 			headerFileSystem,
 			headerFilename + ".h",
-			stdEnumH,
-			enumType
+			enumHTemplate
 		)
 
+		var enumCppTemplate = templateFactory.createEnumCppTemplate(enumType)
 		generateFile(
 			sourceFileSystem,
 			sourceFilename + ".cpp",
-			stdEnumCpp,
-			enumType
+			enumCppTemplate
 		)
 
+		var enumSerializerHTemplate = templateFactory.createEnumSerializerHTemplate(enumType)
 		generateFile(
 			headerFileSystem,
 			headerFilename + "Serializer.h",
-			enumSerializerH,
-			enumType
+			enumSerializerHTemplate
 		)
+		var enumSerializerCppTemplate = templateFactory.createEnumSerializerCppTemplate(enumType)
 		generateFile(
 			sourceFileSystem,
 			sourceFilename + "Serializer.cpp",
-			enumSerializerCpp,
-			enumType
+			enumSerializerCppTemplate
 		)
 
 	}

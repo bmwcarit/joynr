@@ -24,7 +24,6 @@
             interfaceName : "system/Discovery",
             providerQos : {
                 customParameters : [],
-                providerVersion : 0,
                 priority : 1,
                 scope : ProviderScope.LOCAL,
                 onChangeSubscriptions : true
@@ -37,7 +36,6 @@
             interfaceName : "system/Routing",
             providerQos : {
                 customParameters : [],
-                providerVersion : 0,
                 priority : 1,
                 scope : ProviderScope.LOCAL,
                 onChangeSubscriptions : true

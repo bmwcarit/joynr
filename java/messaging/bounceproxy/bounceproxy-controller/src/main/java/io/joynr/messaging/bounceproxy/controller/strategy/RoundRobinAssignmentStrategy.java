@@ -33,9 +33,9 @@ import com.google.inject.Inject;
 
 /**
  * Assignment strategy to simply assign the channels round-robin.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class RoundRobinAssignmentStrategy implements ChannelAssignmentStrategy {
 
@@ -44,7 +44,7 @@ public class RoundRobinAssignmentStrategy implements ChannelAssignmentStrategy {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy
      * #calculateBounceProxy(java.lang.String)
@@ -59,7 +59,7 @@ public class RoundRobinAssignmentStrategy implements ChannelAssignmentStrategy {
             throw new JoynrChannelNotAssignableException("No bounce proxy instances available", ccid);
         }
 
-        // Sort records by the timestamp when they were last assigned a channel. 
+        // Sort records by the timestamp when they were last assigned a channel.
         // Smallest timestamp should appear first in the list.
         // Records that never have been assigned a channel have the timestamp
         // -1, so they appear first in the list.

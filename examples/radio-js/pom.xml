@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>0.16.0</version>
+		<version>0.17.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -160,7 +160,7 @@
 							<outputDirectory>${project.build.outputDirectory}/js/</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${basedir}/target/dependencies/lib/joynr/js</directory>
+									<directory>${basedir}/target/dependencies/lib/joynr</directory>
 									<includes>
 										<include>joynr.js</include>
 										<include>joynr.websocket.js</include>
@@ -239,6 +239,32 @@
 					<attachClasses>false</attachClasses>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>com.phasebash.jsdoc</groupId>
+				<artifactId>jsdoc3-maven-plugin</artifactId>
+				<version>1.2.0</version>
+				<inherited>false</inherited>
+				<executions>
+ 					<execution>
+ 						<goals>
+ 							<goal>jsdoc3</goal>
+ 						</goals>
+ 						<phase>install</phase>
+ 					</execution>
+				</executions>
+				<configuration>
+					<directoryRoots>
+						<!--directoryRoot>src/main/webapp</directoryRoot-->
+						<directoryRoot>src/main/generated</directoryRoot>
+					</directoryRoots>
+					<recursive>true</recursive>
+					<outputDirectory>${project.build.directory}/jsdoc</outputDirectory>
+					<includePrivate>false</includePrivate>
+					<configFile>jsdoc3.conf.json</configFile>
+				</configuration>
+			</plugin>
+
 			<!--
 				Skip deploy because the DISCLAIMER is currently missing.
 			-->

@@ -24,6 +24,8 @@
 #include "joynr/AbstractJoynrProvider.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
 #include "tests/utils/MockObjects.h"
+#include "joynr/tests/testProvider.h"
+#include "joynr/tests/TestWithoutVersionProvider.h"
 
 using namespace joynr;
 
@@ -88,4 +90,18 @@ TEST(ProviderTest, unregister_attributeListener) {
 
     // This should not contact the publicationManager
     provider.onAttributeValueChanged(attributeName, attributeValue);
+}
+
+TEST(ProviderTest, versionIsSetCorrectly) {
+    std::uint32_t expectedMajorVersion = 47;
+    std::uint32_t expectedMinorVersion = 11;
+    EXPECT_EQ(expectedMajorVersion, tests::testProvider::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, tests::testProvider::MINOR_VERSION);
+}
+
+TEST(ProviderTest, defaultVersionIsSetCorrectly) {
+    std::uint32_t expectedDefaultMajorVersion = 0;
+    std::uint32_t expectedDefaultMinorVersion = 0;
+    EXPECT_EQ(expectedDefaultMajorVersion, tests::TestWithoutVersionProvider::MAJOR_VERSION);
+    EXPECT_EQ(expectedDefaultMinorVersion, tests::TestWithoutVersionProvider::MINOR_VERSION);
 }

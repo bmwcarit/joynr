@@ -18,9 +18,12 @@
  */
 #ifndef CAPABILITIESREGISTRAR_H
 #define CAPABILITIESREGISTRAR_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrExport.h"
+#include <cassert>
+#include <string>
+#include <vector>
+#include <memory>
+#include <tuple>
 
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/ParticipantIdStorage.h"
@@ -30,12 +33,8 @@
 #include "joynr/Logger.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
-
-#include <string>
-#include <vector>
-#include <cassert>
-#include <memory>
-#include <tuple>
+#include "joynr/JoynrExport.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -49,9 +48,9 @@ public:
     CapabilitiesRegistrar(
             std::vector<IDispatcher*> dispatcherList,
             joynr::system::IDiscoverySync& discoveryProxy,
-            std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingStubAddress,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
-            std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<MessageRouter> messageRouter);
 
     template <class T>
@@ -120,9 +119,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     std::vector<IDispatcher*> dispatcherList;
     joynr::system::IDiscoverySync& discoveryProxy;
-    std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingStubAddress;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
-    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
     ADD_LOGGER(CapabilitiesRegistrar);
 };

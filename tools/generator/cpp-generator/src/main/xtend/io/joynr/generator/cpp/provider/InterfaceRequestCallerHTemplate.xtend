@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -27,7 +28,7 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
+class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -36,10 +37,15 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
 
-	override generate(FInterface serviceInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"RequestCaller_h").toUpperCase»
 «warning()»
 #include <functional>
@@ -51,14 +57,14 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 «getDllExportIncludeStatement()»
 #include "joynr/RequestCaller.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include <memory>
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 class «interfaceName»Provider;
 
@@ -74,10 +80,10 @@ public:
 	/** @brief Destructor */
 	~«interfaceName»RequestCaller() override = default;
 
-	«IF !serviceInterface.attributes.empty»
+	«IF !francaIntf.attributes.empty»
 		// attributes
 	«ENDIF»
-	«FOR attribute : serviceInterface.attributes»
+	«FOR attribute : francaIntf.attributes»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
 			/**
@@ -113,10 +119,10 @@ public:
 		«ENDIF»
 
 	«ENDFOR»
-	«IF !serviceInterface.methods.empty»
+	«IF !francaIntf.methods.empty»
 		// methods
 	«ENDIF»
-	«FOR method : serviceInterface.methods»
+	«FOR method : francaIntf.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		/**
@@ -177,10 +183,10 @@ public:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
-	std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider;
+	std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider;
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

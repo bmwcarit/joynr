@@ -1,6 +1,10 @@
 # Building joynr C++
-The following scripts found within the joynr c++ docker container can be used
-to build joynr without having to install anything on the build machine.
+The following scripts found within the joynr repository can be used
+to build joynr inside a docker container without having to install
+anything on the build machine.
+
+## Prerequisites
+See [Building joynr Java and common components](java_building_joynr.md#Prerequisites).
 
 ## Building with Docker
 joynr C++ can be built by executing the following commands:

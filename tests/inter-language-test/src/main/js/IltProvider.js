@@ -19,12 +19,13 @@
  * #L%
  */
 
-var prettyLog = require("./logging.js").prettyLog;
-var error = require("./logging.js").error;
-
-var Promise = require("joynr/lib/bluebird.js").Promise;
+var Promise = require("bluebird").Promise;
 
 var joynr = require("joynr");
+var testbase = require("test-base");
+var log = testbase.logging.log;
+var prettyLog = testbase.logging.prettyLog;
+var error = testbase.logging.error;
 
 var IltUtil = require("./IltUtil.js");
 var ExtendedEnumerationWithPartlyDefinedValues = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues.js");
@@ -442,14 +443,14 @@ exports.implementation = {
                 reject(new joynr.exceptions.ProviderRuntimeException(
                         {detailMessage: "methodWithStringsAndSpecifiedStringOutLength: Maximum length exceeded"}));
             } else {
-                console.log("### opArgs.int32StringLengthArg: " + opArgs.int32StringLengthArg);
+                log("### opArgs.int32StringLengthArg: " + opArgs.int32StringLengthArg);
                 var stringOutValue = "";
-                console.log("### before for: " + stringOutValue);
+                log("### before for: " + stringOutValue);
                 for (i = 0; i < opArgs.int32StringLengthArg; i++) {
-                    console.log("### for: " + i);
+                    log("### for: " + i);
                     stringOutValue += "A";
                 }
-                console.log("### after for: " + stringOutValue);
+                log("### after for: " + stringOutValue);
                 resolve({stringOut: stringOutValue});
             }
         });

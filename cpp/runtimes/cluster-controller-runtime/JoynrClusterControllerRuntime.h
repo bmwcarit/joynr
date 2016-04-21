@@ -100,7 +100,9 @@ public:
     void registerDiscoveryProvider();
 
 protected:
+    void importMessageRouterFromFile();
     void initializeAllDependencies();
+    void importPersistedLocalCapabilitiesDirectory();
 
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;

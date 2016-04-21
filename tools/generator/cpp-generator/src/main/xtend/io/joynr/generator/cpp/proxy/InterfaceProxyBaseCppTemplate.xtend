@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -28,7 +29,7 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
+class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
@@ -37,21 +38,26 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
 
-	override generate(FInterface fInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
-«val serviceName =  fInterface.joynrName»
+«val serviceName =  francaIntf.joynrName»
 «val className = serviceName + "ProxyBase"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«className».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/ISubscriptionListener.h"
-#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«serviceName»InProcessConnector.h"
-#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«serviceName»JoynrMessagingConnector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»InProcessConnector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»JoynrMessagingConnector.h"
 
-«getNamespaceStarter(fInterface)»
+«getNamespaceStarter(francaIntf)»
 «className»::«className»(
-		std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
+		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
 		const std::string &domain,
@@ -69,7 +75,7 @@ void «className»::handleArbitrationFinished(
 		const std::string &providerParticipantId,
 		const joynr::types::CommunicationMiddleware::Enum& connection
 ) {
-	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(fInterface, "::")»::I«serviceName»Connector>(
+	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«serviceName»Connector>(
 				domain,
 				proxyParticipantId,
 				providerParticipantId,
@@ -82,7 +88,7 @@ void «className»::handleArbitrationFinished(
 	joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, connection);
 }
 
-«FOR attribute: getAttributes(fInterface).filter[attribute | attribute.notifiable]»
+«FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 	«var attributeName = attribute.joynrName»
 	«val returnType = attribute.typeName»
 	void «className»::unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId)
@@ -130,7 +136,7 @@ void «className»::handleArbitrationFinished(
 
 «ENDFOR»
 
-«FOR broadcast: fInterface.broadcasts»
+«FOR broadcast: francaIntf.broadcasts»
 	«var broadcastName = broadcast.joynrName»
 	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 	void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId)
@@ -147,7 +153,7 @@ void «className»::handleArbitrationFinished(
 
 	«IF isSelective(broadcast)»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					const «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+					const «francaIntf.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 					const joynr::OnChangeSubscriptionQos& subscriptionQos) {
 	«ELSE»
@@ -176,7 +182,7 @@ void «className»::handleArbitrationFinished(
 
 	«IF isSelective(broadcast)»
 		std::string «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					const «fInterface.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+					const «francaIntf.name.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 					const joynr::OnChangeSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId) {
@@ -208,6 +214,6 @@ void «className»::handleArbitrationFinished(
 	}
 «ENDFOR»
 
-«getNamespaceEnder(fInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }

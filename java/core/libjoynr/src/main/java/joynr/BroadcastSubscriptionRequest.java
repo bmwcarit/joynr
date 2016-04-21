@@ -27,7 +27,7 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
      *
      */
     private static final long serialVersionUID = 1L;
-    private BroadcastFilterParameters filterParameters;
+    private BroadcastFilterParameters filterParameters = new BroadcastFilterParameters();
 
     /**
      * \class BroadcastSubscriptionRequest \brief BroadcastSubscriptionRequest stores the information that is necessary
@@ -43,7 +43,6 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
                                         BroadcastFilterParameters filterParameters,
                                         OnChangeSubscriptionQos qos) {
         super(subscriptionId, subscribedToName, qos);
-        this.filterParameters = new BroadcastFilterParameters();
         if (filterParameters != null) {
             this.filterParameters.setFilterParameters(filterParameters.getFilterParameters());
         }

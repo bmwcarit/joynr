@@ -24,7 +24,7 @@ import io.joynr.qos.QualityOfService;
 import java.util.NoSuchElementException;
 
 /**
- * This cache is on a per provider basis. 
+ * This cache is on a per provider basis.
  */
 public interface ClientCache {
 
@@ -35,7 +35,7 @@ public interface ClientCache {
     void setQoS(QualityOfService qos);
 
     /**
-     * Checks if current cached value conforms to the QoS constraints.  
+     * Checks if current cached value conforms to the QoS constraints.
      * If the attribute does not appear in the cache, then it will return false.
      * @param attributeId attribute id
      * @return boolean value, true if current cached value conforms to the QoS constraints

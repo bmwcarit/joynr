@@ -19,7 +19,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <cassert>
 #include <cstddef>
 #include <tuple>
 #include <type_traits>
@@ -52,6 +51,12 @@ std::string removeEscapeFromSpecialChars(const std::string& inputStr);
 std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
 
 std::string attributeGetterFromName(const std::string& attributeName);
+
+std::string loadStringFromFile(const std::string& fileName);
+void saveStringToFile(const std::string& fileName, const std::string& strToSave);
+
+// If the file is not open log the reason why. fileName is required for logging
+bool isFileOpen(const std::fstream& file, const std::string& fileName);
 
 template <typename T>
 typename T::Enum convertVariantToEnum(const Variant& v)

@@ -19,24 +19,8 @@ START=$(date +%s)
 # fail on first error
 set -e
 
-(
-	log "INSTALL BASE MODEL"
-	cd basemodel
-	mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
-)
-
-(
-	log "INSTALL FRANCA"
-	cd tools/generator
-	mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
-)
-
-
-(
-	log "INSTALL GENERATOR AND GENERATE CPP SOURCES, ALSO FOR USE OF LATER BUILD STEPS"
-	cd cpp
-	mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
-)
+log "INSTALL REQUIRED MODULES AND GENERATE SOURCES"
+mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
@@ -62,4 +46,3 @@ make -j 20
 END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "C++ build time: $DIFF seconds"
-

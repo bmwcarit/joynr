@@ -17,9 +17,13 @@
  * #L%
  */
 #include "joynr/LocalChannelUrlDirectory.h"
+
+#include <cassert>
+
+#include <QString>
+
 #include "joynr/Future.h"
 #include "joynr/QtTypeUtil.h"
-#include <QString>
 
 namespace joynr
 {
@@ -104,8 +108,7 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDire
 
     if (localCache.contains(channelIdQT)) {
         JOYNR_LOG_TRACE(logger, "using cached Urls for id = {}", channelIdQT.toStdString());
-        std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> future(
-                new Future<joynr::types::ChannelUrlInformation>());
+        auto future = std::make_shared<Future<joynr::types::ChannelUrlInformation>>();
         future->onSuccess(localCache.value(channelIdQT));
         if (onSuccess) {
             onSuccess(localCache.value(channelIdQT));

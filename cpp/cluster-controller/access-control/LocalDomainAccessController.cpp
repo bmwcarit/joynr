@@ -144,13 +144,13 @@ LocalDomainAccessController::LocalDomainAccessController(
           consumerPermissionRequests(),
           initStateMutex(),
           domainRoleEntryChangedBroadcastListener(
-                  new DomainRoleEntryChangedBroadcastListener(*this)),
+                  std::make_shared<DomainRoleEntryChangedBroadcastListener>(*this)),
           masterAccessControlEntryChangedBroadcastListener(
-                  new MasterAccessControlEntryChangedBroadcastListener(*this)),
+                  std::make_shared<MasterAccessControlEntryChangedBroadcastListener>(*this)),
           mediatorAccessControlEntryChangedBroadcastListener(
-                  new MediatorAccessControlEntryChangedBroadcastListener(*this)),
+                  std::make_shared<MediatorAccessControlEntryChangedBroadcastListener>(*this)),
           ownerAccessControlEntryChangedBroadcastListener(
-                  new OwnerAccessControlEntryChangedBroadcastListener(*this))
+                  std::make_shared<OwnerAccessControlEntryChangedBroadcastListener>(*this))
 {
 }
 

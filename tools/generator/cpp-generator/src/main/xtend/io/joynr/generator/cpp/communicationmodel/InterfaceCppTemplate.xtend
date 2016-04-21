@@ -21,7 +21,6 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -30,8 +29,10 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.util.HashSet
 import org.franca.core.franca.FInterface
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
+import io.joynr.generator.templates.InterfaceTemplate
+import com.google.inject.assistedinject.Assisted
 
-class InterfaceCppTemplate implements InterfaceTemplate{
+class InterfaceCppTemplate extends InterfaceTemplate {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -57,27 +58,32 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 	@Inject
 	private extension TemplateBase
 
-	override generate(FInterface serviceInterface){
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate() {
 		var selector = TypeSelector::defaultTypeSelector
 		selector.transitiveTypes(true)
 '''
-«val interfaceName = serviceInterface.joynrName»
+«val interfaceName = francaIntf.joynrName»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include "joynr/MetaTypeRegistrar.h"
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 I«interfaceName»Base::I«interfaceName»Base()
 {
-	«val typeObjs = getAllComplexTypes(serviceInterface, selector)»
-	«var replyMetatypes = getReplyMetatypes(serviceInterface)»
-	«var broadcastMetatypes = getBroadcastMetatypes(serviceInterface)»
+	«val typeObjs = getAllComplexTypes(francaIntf, selector)»
+	«var replyMetatypes = getReplyMetatypes(francaIntf)»
+	«var broadcastMetatypes = getBroadcastMetatypes(francaIntf)»
 
 	«IF !typeObjs.isEmpty() || !replyMetatypes.empty || !broadcastMetatypes.empty»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
@@ -94,7 +100,7 @@ I«interfaceName»Base::I«interfaceName»Base()
 		«ENDIF»
 	«ENDFOR»
 
-	«IF serviceInterface.broadcasts.size > 0»
+	«IF francaIntf.broadcasts.size > 0»
 		/*
 		 * Broadcast output parameters are packed into a single publication message when the
 		 * broadcast occurs. They are encapsulated in a map. Hence, a new composite data type is
@@ -114,11 +120,14 @@ I«interfaceName»Base::I«interfaceName»Base()
 
 const std::string& I«interfaceName»Base::INTERFACE_NAME()
 {
-	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»");
+	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»");
 	return INTERFACE_NAME;
 }
 
-«getNamespaceEnder(serviceInterface)»
+const std::uint32_t I«interfaceName»Base::MAJOR_VERSION = «majorVersion»;
+const std::uint32_t I«interfaceName»Base::MINOR_VERSION = «minorVersion»;
+
+«getNamespaceEnder(francaIntf)»
 '''
 }
 def getReplyMetatypes(FInterface serviceInterface) {

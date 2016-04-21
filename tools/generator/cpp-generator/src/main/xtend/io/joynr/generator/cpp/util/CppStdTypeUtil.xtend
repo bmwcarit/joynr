@@ -20,8 +20,11 @@ package io.joynr.generator.cpp.util
 import com.google.inject.Inject
 import java.util.HashSet
 import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FStructType
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FUnionType
 
 class CppStdTypeUtil extends CppTypeUtil {
 
@@ -132,6 +135,34 @@ class CppStdTypeUtil extends CppTypeUtil {
 		else {
 			super.getDefaultValue(element)
 		}
+	}
+
+	def FStructType getRootType(FStructType datatype)
+	{
+		if (datatype.base != null) {
+			return datatype.base.rootType
+		}
+		return datatype
+	}
+
+	def FUnionType getRootType(FUnionType datatype)
+	{
+		if (datatype.base != null) {
+			return datatype.base.rootType
+		}
+		return datatype
+	}
+
+	def FCompoundType getRootType(FCompoundType datatype)
+	{
+		if (datatype instanceof FStructType) {
+			return datatype.rootType
+		} else if (datatype instanceof FUnionType) {
+			return datatype.rootType
+		}
+		throw new IllegalStateException("CppStdTypeUtil.getRootType: unknown type "
+										+ datatype.class.simpleName
+		);
 	}
 
 	def getForwardDeclaration(FType datatype)'''

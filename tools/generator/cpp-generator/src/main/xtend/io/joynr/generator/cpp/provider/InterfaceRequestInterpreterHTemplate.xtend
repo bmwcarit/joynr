@@ -18,22 +18,28 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
+class InterfaceRequestInterpreterHTemplate extends InterfaceTemplate {
 
 	@Inject private extension TemplateBase
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 
-	override generate(FInterface serviceInterface)
+	@Inject
+	new(@Assisted FInterface francaIntf) {
+		super(francaIntf)
+	}
+
+	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"RequestInterpreter_h").toUpperCase»
 «warning()»
 
@@ -52,7 +58,7 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 #include <string>
 #include <vector>
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 /** @brief RequestInterpreter class for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»RequestInterpreter: public joynr::IRequestInterpreter {
@@ -86,7 +92,7 @@ private:
 	ADD_LOGGER(«interfaceName»RequestInterpreter);
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

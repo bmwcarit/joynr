@@ -16,18 +16,18 @@
  * limitations under the License.
  * #L%
  */
+#include "joynr/ProviderArbitrator.h"
+
+#include <cassert>
 #include <vector>
 #include <chrono>
-#include "joynr/ProviderArbitrator.h"
+
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Logger.h"
 #include "joynr/system/IDiscovery.h"
-
 #include "joynr/TypeUtil.h"
 #include "joynr/types/DiscoveryScope.h"
 #include "joynr/Semaphore.h"
-
-#include <cassert>
 
 namespace joynr
 {
