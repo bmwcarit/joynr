@@ -32,7 +32,7 @@ namespace joynr
 INIT_LOGGER(HttpReceiver);
 
 HttpReceiver::HttpReceiver(const MessagingSettings& settings)
-        : channelCreatedSemaphore(new Semaphore(0)),
+        : channelCreatedSemaphore(std::make_shared<Semaphore>(0)),
           channelId(),
           receiverId(),
           settings(settings),

@@ -100,7 +100,7 @@ private:
        On Channel deletion, the semaphore tries to acquire a resource again, so that the next cycle
        of
        createChannel and waitForReceiveQueueStarted works as well. */
-    Semaphore* channelCreatedSemaphore;
+    std::shared_ptr<Semaphore> channelCreatedSemaphore;
     std::string channelId; // currently channelid is used to construct the channelUrl or
                            // channelLocation.
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).

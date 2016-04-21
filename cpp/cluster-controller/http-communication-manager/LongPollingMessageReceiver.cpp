@@ -48,7 +48,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const std::string& channelId,
         const std::string& receiverId,
         const LongPollingMessageReceiverSettings& settings,
-        Semaphore* channelCreatedSemaphore,
+        std::shared_ptr<Semaphore> channelCreatedSemaphore,
         std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
         std::function<void(const std::string&)> onTextMessageReceived)
         : Thread("LongPollRecv"),

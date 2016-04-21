@@ -61,7 +61,7 @@ public:
                                const std::string& channelId,
                                const std::string& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
-                               Semaphore* channelCreatedSemaphore,
+                               std::shared_ptr<Semaphore> channelCreatedSemaphore,
                                std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                                std::function<void(const std::string&)> onTextMessageReceived);
     void stop() override;
@@ -87,7 +87,9 @@ private:
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     ADD_LOGGER(LongPollingMessageReceiver);
-    Semaphore* channelCreatedSemaphore;
+
+    // Ownership shared between this and HttpReceiver
+    std::shared_ptr<Semaphore> channelCreatedSemaphore;
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;
