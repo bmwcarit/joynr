@@ -33,7 +33,6 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/IRequestInterpreter.h"
-#include "joynr/IReplyInterpreter.h"
 #include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
 #include "joynr/PublicationInterpreter.h"
 #include "joynr/PublicationManager.h"
@@ -231,13 +230,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
             return;
         }
 
-        // Get the reply interpreter - this has to be a reference to support ReplyInterpreter
-        // polymorphism
-        int typeId = caller->getTypeId();
-        IReplyInterpreter& interpreter = MetaTypeRegistrar::instance().getReplyInterpreter(typeId);
-
-        // pass reply
-        interpreter.execute(caller, reply);
+        caller->execute(reply);
 
         // Clean up
         removeReplyCaller(requestReplyId);

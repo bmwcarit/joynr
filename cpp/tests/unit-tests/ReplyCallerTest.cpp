@@ -61,38 +61,6 @@ public:
 
 typedef ReplyCallerTest ReplyCallerDeathTest;
 
-TEST_F(ReplyCallerTest, getType) {
-    ASSERT_EQ(util::getTypeId<int>(), intFixture.getTypeId());
-}
-
-TEST_F(ReplyCallerTest, getTypeInt64_t) {
-    auto callback = std::make_shared<MockCallbackWithJoynrException<std::int64_t>>();
-    ReplyCaller<std::int64_t> int64_tReplyCaller(
-                [callback](const std::int64_t& value) {
-                    callback->onSuccess(value);
-                },
-                [](const exceptions::JoynrException& error){
-                });
-    ASSERT_EQ(util::getTypeId<std::int64_t>(), int64_tReplyCaller.getTypeId());
-}
-
-TEST_F(ReplyCallerTest, getTypeInt8_t) {
-    auto callback = std::make_shared<MockCallbackWithJoynrException<std::int8_t>>();
-    ReplyCaller<std::int8_t> int8_tReplyCaller(
-                [callback](const std::int8_t& value) {
-                    callback->onSuccess(value);
-                },
-                [](const exceptions::JoynrException& error){
-                });
-    ASSERT_EQ(util::getTypeId<std::int8_t>(), int8_tReplyCaller.getTypeId());
-}
-
-TEST_F(ReplyCallerTest, getTypeForVoid) {
-    int typeId = voidFixture.getTypeId();
-    ASSERT_EQ(util::getTypeId<void>(), typeId);
-}
-
-
 TEST_F(ReplyCallerTest, timeOut) {
     EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
     EXPECT_CALL(*intCallback, onError(timeoutException())).Times(1);
@@ -130,4 +98,3 @@ TEST_F(ReplyCallerTest, resultReceivedForVoid) {
     EXPECT_CALL(*voidCallback, onError(_)).Times(0);
     voidFixture.returnValue();
 }
-
