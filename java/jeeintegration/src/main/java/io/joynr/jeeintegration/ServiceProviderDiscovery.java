@@ -80,9 +80,10 @@ public class ServiceProviderDiscovery {
     }
 
     /**
-     * Use this method to get the joynr provider interface for the given business interface. We do this be convention.
-     * We substitute the business interface ending 'BCI' for the provider interface ending 'Provider' and try to load
-     * that class.
+     * Use this method to get the joynr provider interface for the given business interface.
+     * The business interface is mapped to its joynr provider, by expecting a {@link io.joynr.ProvidedBy} annotation
+     * is attached in the class hierarchy of the business interface. With this annotation, the provider is found by
+     * the ServiceProviderDiscovery. 
      *
      * @param businessInterface
      *            the business interface for which we want to find the joynr provider interface.

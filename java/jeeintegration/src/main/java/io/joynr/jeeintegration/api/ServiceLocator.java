@@ -27,7 +27,7 @@ import io.joynr.messaging.MessagingQos;
 
 /**
  * The container runtime will provide an instance of this which can be injected and then used in order to obtain client
- * proxies for BCI services.
+ * proxies for services.
  *
  * @author clive.jevons commissioned by MaibornWolff
  */
@@ -41,11 +41,11 @@ public interface ServiceLocator {
      * @param <I>
      *            the service type
      * @param serviceInterface
-     *            the BCI interface for which to get a client proxy.
+     *            the service interface for which to get a client proxy.
      * @param domain
      *            the domain in which the service implementation must be available.
      *
-     * @return the client proxy, which can be used to call methods on the BCI service.
+     * @return the client proxy, which can be used to call methods on the service service.
      */
     <I> I get(Class<I> serviceInterface, String domain);
 
@@ -57,14 +57,14 @@ public interface ServiceLocator {
      * @param <I>
      *            the service type
      * @param serviceInterface
-     *            the BCI interface for which to get a client proxy.
+     *            the service interface for which to get a client proxy.
      * @param domain
      *            the domain in which the service implementation must be available.
      * @param ttl
      *            the maximum time to live for messages sent via the service. If the time to live expires (the message
      *            takes longer to deliver), then an exception is thrown.
      *
-     * @return the client proxy, which can be used to call methods on the BCI service.
+     * @return the client proxy, which can be used to call methods on the service interface.
      */
     <I> I get(Class<I> serviceInterface, String domain, long ttl);
 
@@ -75,7 +75,7 @@ public interface ServiceLocator {
      * @param <I>
      *            the service type
      * @param serviceInterface
-     *            the BCI interface for which to get a client proxy.
+     *            the service interface for which to get a client proxy.
      * @param domain
      *            the domain in which the service implementation must be available.
      * @param messagingQos
@@ -84,7 +84,7 @@ public interface ServiceLocator {
      * @param discoveryQos
      *            the discovery quality of service information to use when communicating to the service.
      *
-     * @return the client proxy, which can be used to call methods on the BCI service.
+     * @return the client proxy, which can be used to call methods on the service service.
      */
     <I> I get(Class<I> serviceInterface, String domain, MessagingQos messagingQos, DiscoveryQos discoveryQos);
 

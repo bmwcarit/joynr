@@ -42,10 +42,9 @@ import io.joynr.util.AnnotationUtil;
 
 /**
  * JEE integration joynr service locator which uses a joynr proxy to provide an implementation for a service interface.
- * The BCI service interface is mapped to its joynr *Proxy equivalent by naming convention; the BCI interface must be in
- * the same package as the Proxy interface, and the name preceding the appendage [BCI|Proxy] must be the same. So if we
- * have <code>a.b.c.MyServiceBCI</code> we must be able to find <code>a.b.c.MyServiceProxy</code>, which must also be a
- * valid joynr proxy interface.
+ * The service interface is mapped to its joynr proxy, by expecting a {@link io.joynr.UsedBy} annotation
+ * is attached in the class hierarchy of the service interface. With this annotation, the proxy is found by
+ * the JeeJoynrServiceLocator.
  *
  * @author clive.jevons commissioned by MaibornWolff
  */

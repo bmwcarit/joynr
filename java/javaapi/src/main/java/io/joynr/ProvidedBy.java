@@ -29,8 +29,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Points to the provider class of the joynr interface
  *
- * @author christoph.ainhauser
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
