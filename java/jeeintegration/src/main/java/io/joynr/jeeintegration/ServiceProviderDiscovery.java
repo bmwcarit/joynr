@@ -63,8 +63,8 @@ public class ServiceProviderDiscovery {
         for (Bean<?> bean : beanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
         })) {
             ServiceProvider serviceProvider = bean.getBeanClass().getAnnotation(ServiceProvider.class);
-            if (serviceProvider != null &&
-                    getProvidedByAnnotation(serviceProvider.serviceInterface()) != null) {
+            if (serviceProvider != null
+                && getProvidedByAnnotation(serviceProvider.serviceInterface()) != null) {
                 result.add(bean);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace(format("Bean %s is a service provider. Adding to result.", bean));

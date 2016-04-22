@@ -19,7 +19,6 @@ package io.joynr.provider;
  * #L%
  */
 
-import static io.joynr.provider.ProviderAnnotations.getInterfaceName;
 import io.joynr.exceptions.JoynrRuntimeException;
 
 public class SubscriptionPublisherFactory {
@@ -30,7 +29,8 @@ public class SubscriptionPublisherFactory {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public AbstractSubscriptionPublisher create(final Object provider) throws JoynrRuntimeException {
         try {
-            String subscriptionPublisherClassName = "joynr." + getInterfaceName(provider).replace("/", ".")
+            String subscriptionPublisherClassName = "joynr."
+                    + ProviderAnnotations.getInterfaceName(provider).replace("/", ".")
                     + SubscriptionPublisher.class.getSimpleName();
 
             Class<?> subscriptionPublisherImplClass = Class.forName(subscriptionPublisherClassName + "Impl");

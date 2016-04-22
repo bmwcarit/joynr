@@ -34,7 +34,7 @@ public class ProviderAnnotations {
         return getInterfaceName(provider.getClass());
     }
 
-    public static Class<? extends Object> getProvidedInterface(Object provider) throws JoynrRuntimeException {
+    public static Class<?> getProvidedInterface(Object provider) throws JoynrRuntimeException {
         return getAnnotation(provider.getClass(), JoynrInterface.class).provides();
     }
 

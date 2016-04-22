@@ -32,7 +32,6 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import joynr.system.DiscoveryAsync;
