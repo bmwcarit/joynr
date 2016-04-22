@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,22 +26,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
+import io.joynr.provider.ProviderContainer;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import joynr.PeriodicSubscriptionQos;
-import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,6 +51,11 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+
+import io.joynr.provider.AbstractSubscriptionPublisher;
+import joynr.PeriodicSubscriptionQos;
+import joynr.SubscriptionPublication;
+import joynr.SubscriptionRequest;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PublicationTimersTest {
@@ -69,6 +71,12 @@ public class PublicationTimersTest {
     private TestRequestCaller requestCaller;
 
     @Mock
+    private AbstractSubscriptionPublisher subscriptionPublisher;
+
+    @Mock
+    private ProviderContainer providerContainer;
+
+    @Mock
     private Dispatcher dispatcher;
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
@@ -80,10 +88,13 @@ public class PublicationTimersTest {
 
     @Before
     public void setUp() {
+        when(providerContainer.getRequestCaller()).thenReturn(requestCaller);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
+
         Deferred<String> testAttributeDeferred = new Deferred<String>();
         testAttributeDeferred.resolve("testAttributeValue");
         Promise<Deferred<String>> testAttributePromise = new Promise<Deferred<String>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(RequestCaller.class),
+        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
                                                                                       any(Method.class));
     }
 
@@ -101,15 +112,15 @@ public class PublicationTimersTest {
         String proxyId = "proxyId";
         String providerId = "providerId";
 
-        RequestCallerDirectory requestCallerDirectory = Mockito.mock(RequestCallerDirectory.class);
+        ProviderDirectory providerDirectory = Mockito.mock(ProviderDirectory.class);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
-                                                                           requestCallerDirectory,
+                                                                           providerDirectory,
                                                                            cleanupScheduler);
 
-        when(requestCallerDirectory.getCaller(eq(providerId))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(providerId))).thenReturn(true);
+        when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
 

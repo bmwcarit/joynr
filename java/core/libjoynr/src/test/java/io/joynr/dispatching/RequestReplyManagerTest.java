@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,16 @@ package io.joynr.dispatching;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import io.joynr.provider.AbstractSubscriptionPublisher;
+import io.joynr.provider.ProviderContainer;
+import io.joynr.provider.SubscriptionPublisherFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -40,7 +47,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -75,7 +81,7 @@ public class RequestReplyManagerTest {
     private static final long TIME_TO_LIVE = 10000L;
     private RequestReplyManager requestReplyManager;
     private ReplyCallerDirectory replyCallerDirectory;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
     private String testSenderParticipantId;
     private String testMessageListenerParticipantId;
     private String testMessageResponderParticipantId;
@@ -92,6 +98,12 @@ public class RequestReplyManagerTest {
 
     @Mock
     private MessageRouter messageRouterMock;
+
+    @Mock
+    private AbstractSubscriptionPublisher subscriptionPublisherMock;
+
+    @Mock
+    private ProviderContainer providerContainer;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException, JsonGenerationException, IOException {
@@ -121,7 +133,7 @@ public class RequestReplyManagerTest {
         objectMapper.registerSubtypes(Request.class, OneWay.class);
 
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
-        requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
+        providerDirectory = injector.getInstance(ProviderDirectory.class);
         replyCallerDirectory = injector.getInstance(ReplyCallerDirectory.class);
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
 
@@ -158,7 +170,7 @@ public class RequestReplyManagerTest {
     @After
     public void tearDown() {
         requestReplyManager.removeListener(testMessageListenerParticipantId);
-        requestCallerDirectory.removeCaller(testMessageResponderParticipantId);
+        providerDirectory.remove(testMessageResponderParticipantId);
     }
 
     @Test
@@ -169,7 +181,7 @@ public class RequestReplyManagerTest {
                                        TIME_TO_LIVE);
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
-        verify(messageRouterMock, Mockito.times(1)).route(messageCapture.capture());
+        verify(messageRouterMock, times(1)).route(messageCapture.capture());
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                      testSenderParticipantId);
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
@@ -186,7 +198,7 @@ public class RequestReplyManagerTest {
                                         TIME_TO_LIVE);
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
-        verify(messageRouterMock, Mockito.times(1)).route(messageCapture.capture());
+        verify(messageRouterMock, times(1)).route(messageCapture.capture());
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                      testSenderParticipantId);
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
@@ -200,16 +212,18 @@ public class RequestReplyManagerTest {
 
     @Test
     public void requestCallerInvokedForIncomingRequest() throws Exception {
-        TestRequestCaller testRequestCallerSpy = Mockito.spy(new TestRequestCaller(1));
+        TestRequestCaller testRequestCallerSpy = spy(new TestRequestCaller(1));
 
-        requestCallerDirectory.addCaller(testMessageResponderParticipantId, testRequestCallerSpy);
+        when(providerContainer.getRequestCaller()).thenReturn(testRequestCallerSpy);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
+        providerDirectory.add(testMessageResponderParticipantId, providerContainer);
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
         requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request1, TIME_TO_LIVE);
 
         String reply = (String) testRequestCallerSpy.getSentPayloadFor(request1);
 
         ArgumentCaptor<Reply> replyCapture = ArgumentCaptor.forClass(Reply.class);
-        verify(testRequestCallerSpy).respond(Mockito.eq(payload1));
+        verify(testRequestCallerSpy).respond(eq(payload1));
         verify(replyCallbackMock).onSuccess(replyCapture.capture());
         assertEquals(reply, replyCapture.getValue().getResponse()[0]);
     }
@@ -244,7 +258,9 @@ public class RequestReplyManagerTest {
         TestRequestCaller testResponderUnregistered = new TestRequestCaller(1);
 
         testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.05));
-        requestCallerDirectory.addCaller(testResponderUnregisteredParticipantId, testResponderUnregistered);
+        when(providerContainer.getRequestCaller()).thenReturn(testResponderUnregistered);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
+        providerDirectory.add(testResponderUnregisteredParticipantId, providerContainer);
 
         testResponderUnregistered.assertAllPayloadsReceived((int) (TIME_TO_LIVE));
         testResponderUnregistered.assertReceivedPayloadsContainsNot(payload1);

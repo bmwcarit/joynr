@@ -19,11 +19,9 @@ package io.joynr.messaging.datatypes;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-
 public class JsonTestCaller {
 
-    public String respond(@JoynrRpcParam("payload") Object payload) {
+    public String respond(Object payload) {
         String response = "response to " + payload.toString();
         return response;
     }

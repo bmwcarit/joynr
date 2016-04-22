@@ -19,6 +19,7 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -79,9 +80,9 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
      * java.lang.String)
      */
     @Override
-    public String getProviderParticipantId(String domain, Class<?> providedInterface, String defaultValue) {
+    public String getProviderParticipantId(String domain, String interfaceName, String defaultValue) {
 
-        String token = getProviderParticipantIdKey(domain, providedInterface);
+        String token = getProviderParticipantIdKey(domain, interfaceName);
 
         String participantId;
 
@@ -92,13 +93,15 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         } else if (defaultValue != null) {
             participantId = defaultValue;
             // if no default value, generate one and save it to the persistence file
-        } else if (GlobalCapabilitiesDirectoryProvider.class.isAssignableFrom(providedInterface)) {
+        } else if (ProviderAnnotations.getInterfaceName(GlobalCapabilitiesDirectoryProvider.class)
+                                      .equals(interfaceName)) {
             participantId = capabilitiesDirectoryParticipantId;
-        } else if (GlobalDomainAccessControllerProvider.class.isAssignableFrom(providedInterface)) {
+        } else if (ProviderAnnotations.getInterfaceName(GlobalDomainAccessControllerProvider.class)
+                                      .equals(interfaceName)) {
             participantId = domainAccessControllerParticipantId;
-        } else if (DiscoveryProvider.class.isAssignableFrom(providedInterface)) {
+        } else if (ProviderAnnotations.getInterfaceName(DiscoveryProvider.class).equals(interfaceName)) {
             participantId = discoveryProviderParticipantId;
-        } else if (RoutingProvider.class.isAssignableFrom(providedInterface)) {
+        } else if (ProviderAnnotations.getInterfaceName(RoutingProvider.class).equals(interfaceName)) {
             participantId = routingProviderParticipantId;
         } else {
 
@@ -123,26 +126,19 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         return participantId;
     }
 
-    private static String getProviderParticipantIdKey(String domain, Class<?> providedInterface) {
-        String interfaceName = providedInterface.getName();
-        try {
-            if (providedInterface.getField("INTERFACE_NAME") != null) {
-                interfaceName = providedInterface.getField("INTERFACE_NAME").get(null).toString();
-            }
-        } catch (Exception e) {
-        }
+    private static String getProviderParticipantIdKey(String domain, String interfaceName) {
         String token = "joynr.participant." + domain + "." + interfaceName;
         return token.replace('/', '.');
     }
 
     @Override
-    public String getProviderParticipantId(String domain, Class<?> providedInterface) {
+    public String getProviderParticipantId(String domain, String interfaceName) {
         String defaultParticipantId = null;
-        String providerParticipantIdKey = getProviderParticipantIdKey(domain, providedInterface).toLowerCase();
+        String providerParticipantIdKey = getProviderParticipantIdKey(domain, interfaceName).toLowerCase();
         if (joynrProperties.containsKey(providerParticipantIdKey)) {
             defaultParticipantId = joynrProperties.getProperty(providerParticipantIdKey);
         }
-        return getProviderParticipantId(domain, providedInterface, defaultParticipantId);
+        return getProviderParticipantId(domain, interfaceName, defaultParticipantId);
     }
 
 }

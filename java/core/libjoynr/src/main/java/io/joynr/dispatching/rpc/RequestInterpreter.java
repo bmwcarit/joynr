@@ -64,7 +64,7 @@ public class RequestInterpreter {
         Promise<? extends AbstractDeferred> promise;
         try {
             promise = (Promise<?>) invokeMethod(requestCaller, request);
-        } catch (MethodInvocationException|ProviderRuntimeException e) {
+        } catch (MethodInvocationException | ProviderRuntimeException e) {
             callback.onFailure(e);
             return;
         } catch (Exception e) {

@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,6 @@ import joynr.system.RoutingTypes.CommonApiDbusAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
-import joynr.types.ProviderQos;
-import joynr.types.ProviderScope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,14 +149,18 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         routeInternal(message, 0, 0);
     }
 
-    private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
+    protected void schedule(Runnable runnable, String messageId, long delay, TimeUnit timeUnit) {
         if (scheduler.isShutdown()) {
             JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("MessageScheduler is shutting down already. Unable to send message [messageId: "
-                    + message.getId() + "].");
+                    + messageId + "].");
             throw joynrShutdownEx;
         }
+        scheduler.schedule(runnable, delay, timeUnit);
+    }
+
+    private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
         try {
-            scheduler.schedule(new Runnable() {
+            schedule(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -190,8 +192,9 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                     }
                 }
             },
-                               delayMs,
-                               TimeUnit.MILLISECONDS);
+                     message.getId(),
+                     delayMs,
+                     TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException e) {
             logger.error("Execution rejected while scheduling SendSerializedMessageRequest ", e);
             throw new JoynrSendBufferFullException(e);
@@ -270,18 +273,11 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         }
     }
 
-    @Override
-    public ProviderQos getProviderQos() {
-        //set provider qos to local to prevent global registration of the routing provider
-        ProviderQos providerQos = super.getProviderQos();
-        providerQos.setScope(ProviderScope.LOCAL);
-        return providerQos;
-    }
-
     private long exponentialBackoff(long delayMs, int retries) {
         logger.debug("TRIES: " + retries);
         long millis = delayMs + (long) ((2 ^ (retries)) * delayMs * Math.random());
         logger.debug("MILLIS: " + millis);
         return millis;
     }
+
 }

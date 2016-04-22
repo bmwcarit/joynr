@@ -2,7 +2,7 @@ package io.joynr.runtime;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
@@ -47,7 +47,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
     @Inject
     public LibjoynrRuntime(ObjectMapper objectMapper,
                            ProxyBuilderFactory proxyBuilderFactory,
-                           RequestCallerDirectory requestCallerDirectory,
+                           ProviderDirectory requestCallerDirectory,
                            ReplyCallerDirectory replyCallerDirectory,
                            Dispatcher dispatcher,
                            MessagingStubFactory messagingStubFactory,

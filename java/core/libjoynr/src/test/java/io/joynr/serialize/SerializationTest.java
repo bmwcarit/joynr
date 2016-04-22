@@ -23,7 +23,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrChannelMissingException;
@@ -113,7 +112,7 @@ public class SerializationTest {
 
     public static final String interfaceName = "interfaceName";
 
-    public interface TestInterface extends JoynrInterface {
+    public interface TestInterface {
         public static final String INTERFACE_NAME = interfaceName;
     }
 

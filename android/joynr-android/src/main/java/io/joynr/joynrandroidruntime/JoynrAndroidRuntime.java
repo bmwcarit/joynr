@@ -19,8 +19,7 @@ package io.joynr.joynrandroidruntime;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
@@ -31,7 +30,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import joynr.types.ProviderQos;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Messenger;
@@ -94,7 +92,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
      */
     @Deprecated
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider) {
+    public Future<Void> registerProvider(String domain, AbstractJoynrProvider provider) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
         // this will not block to long
@@ -105,7 +103,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos) {
+    public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
         // this will not block to long
@@ -116,7 +114,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider) {
+    public void unregisterProvider(String domain, Object provider) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the unregister call to be async, we need to check if
         // this will not block to long
@@ -126,7 +124,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
+    public <T> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
         return new AndroidProxyBuilder<T>(runtimeInitTask, domain, interfaceClass, uiLogger);
     }
 

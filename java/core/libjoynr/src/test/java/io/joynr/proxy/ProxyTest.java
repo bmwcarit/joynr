@@ -30,7 +30,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.io.IOException;
 import java.util.UUID;
 
+import io.joynr.Async;
+import io.joynr.Sync;
 import io.joynr.runtime.SystemServicesSettings;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,9 +60,6 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.ExpiryDate;
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
-import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatching.Dispatcher;
@@ -126,7 +126,8 @@ public class ProxyTest {
         ERROR_VALUE_1, ERROR_VALUE_2, ERROR_VALUE_3
     }
 
-    public interface SyncTestInterface extends JoynrSyncInterface {
+    @Sync
+    public interface SyncTestInterface {
         String method1();
 
         String methodWithApplicationError() throws ApplicationException;
@@ -135,7 +136,8 @@ public class ProxyTest {
     public static class StringTypeRef extends TypeReference<String> {
     }
 
-    public interface AsyncTestInterface extends JoynrAsyncInterface {
+    @Async
+    public interface AsyncTestInterface {
         Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
 
         Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
@@ -235,7 +237,7 @@ public class ProxyTest {
         messagingQos = new MessagingQos();
     }
 
-    private <T extends JoynrInterface> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {
+    private <T> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {
         return (ProxyBuilderDefaultImpl<T>) proxyBuilderFactory.get(domain, interfaceClass);
     }
 

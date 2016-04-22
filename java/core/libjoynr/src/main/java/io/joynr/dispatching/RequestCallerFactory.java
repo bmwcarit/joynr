@@ -1,9 +1,9 @@
-package io.joynr.provider;
+package io.joynr.dispatching;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.dispatching.RequestCaller;
+import io.joynr.provider.ProviderAnnotations;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -27,9 +27,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 public class RequestCallerFactory {
-    public RequestCaller create(final JoynrProvider provider) {
+    public RequestCaller create(final Object provider) {
         return (RequestCaller) Proxy.newProxyInstance(provider.getClass().getClassLoader(), new Class<?>[]{
-                provider.getProvidedInterface(), RequestCaller.class }, new InvocationHandler() {
+                ProviderAnnotations.getProvidedInterface(provider), RequestCaller.class }, new InvocationHandler() {
 
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

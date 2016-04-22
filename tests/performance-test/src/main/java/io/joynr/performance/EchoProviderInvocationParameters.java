@@ -31,11 +31,11 @@ import joynr.types.ProviderScope;
 
 public class EchoProviderInvocationParameters {
 
-    public enum RUNTIME_CONFIG {
+    public enum RuntimeConfig {
         IN_PROCESS_CC
     }
 
-    public enum BACKEND_CONFIG {
+    public enum BackendConfig {
         MQTT
     }
 
@@ -48,8 +48,8 @@ public class EchoProviderInvocationParameters {
     private String domain = "";
     private ProviderScope providerScope = ProviderScope.GLOBAL;
 
-    private RUNTIME_CONFIG runtimeConfig = RUNTIME_CONFIG.IN_PROCESS_CC;
-    private BACKEND_CONFIG backendConfig = BACKEND_CONFIG.MQTT;
+    private RuntimeConfig runtimeConfig = RuntimeConfig.IN_PROCESS_CC;
+    private BackendConfig backendConfig = BackendConfig.MQTT;
 
     private String mqttBrokerUri = "tcp://localhost:1883";
 
@@ -63,11 +63,11 @@ public class EchoProviderInvocationParameters {
         }
 
         if (cmdLine.hasOption(CMDLINE_OPTIONNAME_RUNTIMECFG)) {
-            runtimeConfig = RUNTIME_CONFIG.valueOf(cmdLine.getOptionValue(CMDLINE_OPTIONNAME_RUNTIMECFG));
+            runtimeConfig = RuntimeConfig.valueOf(cmdLine.getOptionValue(CMDLINE_OPTIONNAME_RUNTIMECFG));
         }
 
         if (cmdLine.hasOption(CMDLINE_OPTIONNAME_BACKENDCFG)) {
-            backendConfig = BACKEND_CONFIG.valueOf(cmdLine.getOptionValue(CMDLINE_OPTIONNAME_BACKENDCFG));
+            backendConfig = BackendConfig.valueOf(cmdLine.getOptionValue(CMDLINE_OPTIONNAME_BACKENDCFG));
         }
 
         if (cmdLine.hasOption(CMDLINE_OPTIONNAME_MQTTBROKERURI)) {
@@ -102,7 +102,7 @@ public class EchoProviderInvocationParameters {
                                 .required(false)
                                 .hasArg()
                                 .argName("runtime")
-                                .type(RUNTIME_CONFIG.class)
+                                .type(RuntimeConfig.class)
                                 .desc("Runtime module configuration. "
                                         + "At the moment only IN_PROCESS_CC is supported. Default is "
                                         + runtimeConfig.toString())
@@ -113,7 +113,7 @@ public class EchoProviderInvocationParameters {
                                 .required(false)
                                 .hasArg()
                                 .argName("backend")
-                                .type(BACKEND_CONFIG.class)
+                                .type(BackendConfig.class)
                                 .desc("Backend configuration. At the moment only MQTT is supported. Default is "
                                         + backendConfig.toString())
                                 .build());
@@ -123,7 +123,7 @@ public class EchoProviderInvocationParameters {
                                 .required(false)
                                 .hasArg()
                                 .argName("uri")
-                                .type(BACKEND_CONFIG.class)
+                                .type(BackendConfig.class)
                                 .desc("MQTT broker URI. Default is " + mqttBrokerUri)
                                 .build());
 
@@ -150,11 +150,11 @@ public class EchoProviderInvocationParameters {
         return mqttBrokerUri;
     }
 
-    public RUNTIME_CONFIG getRuntimeMode() {
+    public RuntimeConfig getRuntimeMode() {
         return runtimeConfig;
     }
 
-    public BACKEND_CONFIG getBackendTransportMode() {
+    public BackendConfig getBackendTransportMode() {
         return backendConfig;
     }
 }

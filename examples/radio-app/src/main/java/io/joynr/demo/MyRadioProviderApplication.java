@@ -19,6 +19,7 @@ package io.joynr.demo;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -269,7 +270,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
                                                                                             domain,
-                                                                                            MyRadioProvider.INTERFACE_NAME,
+                                                                                            ProviderAnnotations.getInterfaceName(MyRadioProvider.class),
                                                                                             TrustLevel.LOW,
                                                                                             new TrustLevel[]{ TrustLevel.LOW },
                                                                                             TrustLevel.LOW,

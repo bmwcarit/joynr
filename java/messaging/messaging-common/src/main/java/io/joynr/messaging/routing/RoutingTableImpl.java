@@ -1,17 +1,5 @@
 package io.joynr.messaging.routing;
 
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
-
-import io.joynr.runtime.SystemServicesSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
 /*
  * #%L
  * %%
@@ -31,7 +19,18 @@ import com.google.inject.name.Named;
  * #L%
  */
 
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.RoutingTypes.Address;
 
 @Singleton
@@ -58,27 +57,41 @@ public class RoutingTableImpl implements RoutingTable {
 
     @Override
     public Address get(String participantId) {
-        logger.debug("lookup participant: " + participantId);
-        for (Entry<String, Address> eachEntry : hashMap.entrySet()) {
-            logger.trace(eachEntry.getKey() + ": " + eachEntry.getValue());
+        logger.debug("lookup participant: {}", participantId);
+        dumpRoutingTableEntry();
+        Address result = hashMap.get(participantId);
+        logger.debug("Returning: {}", result);
+        return result;
+    }
+
+    private void dumpRoutingTableEntry() {
+        if (logger.isTraceEnabled()) {
+            StringBuilder message = new StringBuilder("Routing table entries:\n");
+            for (Entry<String, Address> eachEntry : hashMap.entrySet()) {
+                message.append("\t> ")
+                       .append(eachEntry.getKey())
+                       .append("\t-\t")
+                       .append(eachEntry.getValue())
+                       .append("\n");
+            }
+            logger.trace(message.toString());
         }
-        return hashMap.get(participantId);
     }
 
     @Override
     public Address put(String participantId, Address address) {
-        logger.debug("adding endpoint address: " + participantId + ": " + address);
-        return hashMap.putIfAbsent(participantId, address);
+        logger.debug("adding endpoint address: {} for participant with ID {}", address, participantId);
+        Address result = hashMap.putIfAbsent(participantId, address);
+        logger.debug("Returning: {}", result);
+        return result;
     }
 
     @Override
     public boolean containsKey(String participantId) {
         boolean containsKey = hashMap.containsKey(participantId);
-        logger.debug("checking for participant: " + participantId + " success: " + containsKey);
+        logger.debug("checking for participant: {} success: {}", participantId, containsKey);
         if (!containsKey) {
-            for (String eachkey : hashMap.keySet()) {
-                logger.trace("MessagingEndpointDirectory: " + eachkey + ": " + this.get(eachkey));
-            }
+            dumpRoutingTableEntry();
         }
         return containsKey;
     }

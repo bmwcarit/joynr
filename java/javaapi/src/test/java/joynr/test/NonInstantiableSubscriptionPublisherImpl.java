@@ -1,9 +1,9 @@
-package io.joynr.dispatching;
+package joynr.test;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,9 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+public class NonInstantiableSubscriptionPublisherImpl {
 
-import javax.inject.Singleton;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-@Singleton
-public class RequestCallerDirectory extends CallerDirectory<RequestCaller> {
-    private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
-
-    @Override
-    protected Logger getLogger() {
-        return logger;
+    public NonInstantiableSubscriptionPublisherImpl() throws InstantiationException {
+        throw new InstantiationException("this ensures the publisher is not instantiable by default");
     }
 }

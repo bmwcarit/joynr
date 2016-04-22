@@ -19,6 +19,8 @@ package io.joynr.discovery;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
+
 import java.util.HashMap;
 
 import io.joynr.runtime.SystemServicesSettings;
@@ -53,10 +55,10 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                     @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        provisionedDiscoveryEntries.put(systemServicesDomain + DiscoveryProvider.INTERFACE_NAME,
+        provisionedDiscoveryEntries.put(systemServicesDomain + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                         new DiscoveryEntry(new Version(),
                                                            systemServicesDomain,
-                                                           DiscoveryProvider.INTERFACE_NAME,
+                                                           ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                                            discoveryProviderParticipantId,
                                                            providerQos,
                                                            System.currentTimeMillis(),

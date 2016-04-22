@@ -19,6 +19,7 @@ package io.joynr.examples.android_example;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -209,7 +210,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
                                                                                             domain,
-                                                                                            MyGpsProvider.INTERFACE_NAME,
+                                                                                            ProviderAnnotations.getInterfaceName(MyGpsProvider.class),
                                                                                             TrustLevel.LOW,
                                                                                             new TrustLevel[]{ TrustLevel.LOW },
                                                                                             TrustLevel.LOW,

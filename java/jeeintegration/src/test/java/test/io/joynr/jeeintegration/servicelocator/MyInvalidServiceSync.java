@@ -1,9 +1,12 @@
-package io.joynr.dispatcher.rpc;
+/**
+ *
+ */
+package test.io.joynr.jeeintegration.servicelocator;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +22,13 @@ package io.joynr.dispatcher.rpc;
  * #L%
  */
 
-public interface JoynrAsyncInterface extends JoynrInterface {
+/**
+ * Dummy service interface which deliberately doesn't have a proxy interface.
+ *
+ * @author clive.jevons commissioned by MaibornWolff
+ */
+public interface MyInvalidServiceSync {
+
+    void test();
 
 }

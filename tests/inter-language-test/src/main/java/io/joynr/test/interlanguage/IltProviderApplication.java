@@ -19,6 +19,7 @@ package io.joynr.test.interlanguage;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -168,7 +169,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
                                                                                             domain,
-                                                                                            IltProvider.INTERFACE_NAME,
+                                                                                            ProviderAnnotations.getInterfaceName(IltProvider.class),
                                                                                             TrustLevel.LOW,
                                                                                             new TrustLevel[]{ TrustLevel.LOW },
                                                                                             TrustLevel.LOW,

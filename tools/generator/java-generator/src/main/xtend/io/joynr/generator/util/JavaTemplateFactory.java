@@ -34,6 +34,8 @@ import io.joynr.generator.interfaces.InterfaceSyncTemplate;
 import io.joynr.generator.interfaces.InterfacesTemplate;
 import io.joynr.generator.provider.DefaultInterfaceProviderTemplate;
 import io.joynr.generator.provider.InterfaceAbstractProviderTemplate;
+import io.joynr.generator.provider.InterfaceSubscriptionPublisherImplTemplate;
+import io.joynr.generator.provider.InterfaceSubscriptionPublisherTemplate;
 import io.joynr.generator.provider.InterfaceProviderTemplate;
 import io.joynr.generator.proxy.InterfaceProxyTemplate;
 
@@ -53,6 +55,10 @@ public interface JavaTemplateFactory {
     DefaultInterfaceProviderTemplate createDefaultInterfaceProviderTemplate(FInterface francaIntf);
 
     InterfaceAbstractProviderTemplate createInterfaceAbstractProviderTemplate(FInterface francaIntf);
+
+    InterfaceSubscriptionPublisherTemplate createSubscriptionPublisherTemplate(FInterface francaIntf);
+
+    InterfaceSubscriptionPublisherImplTemplate createSubscriptionPublisherImplTemplate(FInterface francaIntf);
 
     InterfaceProxyTemplate createInterfaceProxyTemplate(FInterface francaIntf);
 

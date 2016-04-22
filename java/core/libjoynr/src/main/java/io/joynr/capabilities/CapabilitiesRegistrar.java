@@ -19,7 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import joynr.types.ProviderQos;
 
@@ -36,9 +35,9 @@ public interface CapabilitiesRegistrar {
      *            Provider quality of service.
      * @return registration future
      */
-    Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos);
+    Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
 
-    void unregisterProvider(String domain, JoynrProvider provider);
+    void unregisterProvider(String domain, Object provider);
 
     /**
      * Shuts down the local capabilities directory and all used thread pools.

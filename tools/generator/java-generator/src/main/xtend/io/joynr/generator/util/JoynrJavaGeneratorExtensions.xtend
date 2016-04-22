@@ -31,11 +31,15 @@ import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import org.franca.core.franca.FTypedElement
+import javax.inject.Singleton
 
+@Singleton
 class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.JoynrGeneratorExtensions {
 	@Inject extension JavaTypeUtil
 	@Inject extension InterfaceUtil
 	@Inject extension BroadcastUtil
+
+	var jeeExtension = false
 
 	def String getNamespaceStarter(FInterface interfaceType) {
 		getNamespaceStarter(getPackageNames(interfaceType));
@@ -219,4 +223,21 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 	def getJoynTypePackagePrefix(){
 		joynrGenerationPrefix
 	}
+
+	def activateJeeExtension() {
+		jeeExtension = true
+	}
+
+	def jeeExtension() {
+		jeeExtension
+	}
+
+	def getProviderClassName(FInterface francaIntf) {
+		francaIntf.joynrName + "Provider"
+	}
+
+	def getProxyClassName(FInterface francaIntf) {
+		francaIntf.joynrName + "Proxy"
+	}
+
 }

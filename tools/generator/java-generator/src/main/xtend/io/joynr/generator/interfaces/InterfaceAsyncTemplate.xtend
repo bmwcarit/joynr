@@ -119,13 +119,11 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 
 		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 		val hasReadAttribute = hasReadAttribute(francaIntf);
-		val hasMethodWithArguments = hasMethodWithArguments(francaIntf);
 		val hasWriteAttribute = hasWriteAttribute(francaIntf);
 		'''
 «warning()»
 package «packagePath»;
 
-import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 «IF getMethods(francaIntf).size > 0 || hasReadAttribute»
 import io.joynr.proxy.Callback;
 «IF francaIntf.hasMethodWithErrorEnum»
@@ -135,11 +133,13 @@ import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 «ENDIF»
-«IF hasWriteAttribute || hasMethodWithArguments»
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-«ENDIF»
 «IF uniqueMultioutMethods.size > 0»
 import io.joynr.proxy.ICallback;
+«ENDIF»
+import io.joynr.Async;
+«IF jeeExtension»
+import io.joynr.ProvidedBy;
+import io.joynr.UsedBy;
 «ENDIF»
 «IF hasWriteAttribute»
 import io.joynr.exceptions.DiscoveryException;
@@ -154,7 +154,12 @@ import io.joynr.exceptions.DiscoveryException;
 	import «packagePath».«interfaceName»Sync.«syncReturnedName»;
 «ENDFOR»
 
-public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterface {
+@Async
+«IF jeeExtension»
+@ProvidedBy(«francaIntf.providerClassName».class)
+@UsedBy(«francaIntf.proxyClassName».class)
+«ENDIF»
+public interface «asyncClassName» extends «interfaceName» {
 
 	«FOR attribute: getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
@@ -165,7 +170,7 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «attributeType»«IF isArray(attribute)»[]«ENDIF».class) Callback<«attributeType»> callback);
 		«ENDIF»
 		«IF isWritable(attribute)»
-			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserializationType = «attributeType».class) «attributeType» «attributeName») throws DiscoveryException;
+			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, «attributeType» «attributeName») throws DiscoveryException;
 		«ENDIF»
 	«ENDFOR»
 
@@ -220,15 +225,15 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 
 	«FOR method: getMethods(francaIntf)»
 		«var methodName = method.joynrName»
-		«var params = getTypedParameterListJavaRpc(method)»
+		«var params = method.inputParameters.typedParameterList»
 		«var callbackParameter = getCallbackParameter(method, methodToCallbackName)»
 
 		/*
 		* «methodName»
 		*/
 		public «methodToFutureName.get(method)» «methodName»(
-				«callbackParameter»«IF !params.equals("")»,«ENDIF»
-				«IF !params.equals("")»«params»«ENDIF»
+				«callbackParameter»«IF !method.inputParameters.empty»,«ENDIF»
+				«params»
 		);
 	«ENDFOR»
 }

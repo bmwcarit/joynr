@@ -272,21 +272,15 @@ public class InterfaceUtil {
 	}
 
 	def boolean hasReadAttribute(FInterface interfaceType){
-		for(attribute: interfaceType.attributes){
-			if (isReadable(attribute)){
-				return true
-			}
-		}
-		return false
+		return interfaceType.attributes.exists[readable]
 	}
 
 	def boolean hasWriteAttribute(FInterface interfaceType){
-		for(attribute: interfaceType.attributes){
-			if (isWritable(attribute)){
-				return true
-			}
-		}
-		return false
+		return interfaceType.attributes.exists[writable]
+	}
+
+	def boolean hasNotifiableAttribute(FInterface interfaceType){
+		return interfaceType.attributes.exists[notifiable]
 	}
 
 	def boolean hasMethodWithReturnValue(FInterface interfaceType){

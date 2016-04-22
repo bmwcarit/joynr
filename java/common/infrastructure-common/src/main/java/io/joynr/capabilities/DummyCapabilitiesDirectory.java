@@ -36,7 +36,6 @@ import com.google.inject.name.Named;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
@@ -65,9 +64,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(@JoynrRpcParam("domain") String domain,
-                                           @JoynrRpcParam("interfaceName") String interfaceName,
-                                           @JoynrRpcParam("discoveryQos") joynr.types.DiscoveryQos discoveryQos) {
+    public Promise<Lookup1Deferred> lookup(String domain, String interfaceName, joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
@@ -94,7 +91,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public Promise<Lookup2Deferred> lookup(@JoynrRpcParam("participantId") String participantId) {
+    public Promise<Lookup2Deferred> lookup(String participantId) {
         Lookup2Deferred deferred = new Lookup2Deferred();
         DiscoveryEntry discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
         deferred.resolve(discoveryEntry);
@@ -102,7 +99,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public Promise<DeferredVoid> remove(@JoynrRpcParam("participantId") String participantId) {
+    public Promise<DeferredVoid> remove(String participantId) {
         DeferredVoid deferred = new DeferredVoid();
         logger.info("!!!!!!!!!!!!!!!removeCapabilities");
         deferred.resolve();

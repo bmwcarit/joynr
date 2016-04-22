@@ -2,7 +2,6 @@ package joynr;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -28,7 +27,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 
 /**
  * Value class representing a java method, that will later be called using reflection. Offers methods to access the
@@ -36,14 +34,12 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
  */
 public class MethodMetaInformation {
     private final Method method;
-    private final List<JoynrRpcParam> joynrAnnotations;
     private JoynrRpcCallback callbackAnnotation;
     private int callbackIndex = -1;
 
     public MethodMetaInformation(Method method) throws JsonMappingException {
         this.method = method;
         if (method.getParameterTypes().length > 0) {
-            joynrAnnotations = new ArrayList<JoynrRpcParam>(method.getParameterTypes().length);
             // create a list containing a list of annotations for each parameter
             List<List<Annotation>> parameterAnnotations = ReflectionUtils.findAndMergeParameterAnnotations(method);
             // for (List<Annotation> parameterAnnotation : parameterAnnotations) {
@@ -54,9 +50,6 @@ public class MethodMetaInformation {
                     callbackIndex = i;
                 }
             }
-
-        } else {
-            joynrAnnotations = null;
         }
     }
 
@@ -80,23 +73,8 @@ public class MethodMetaInformation {
         return method.getName();
     }
 
-    public JoynrRpcParam getJoynAnnotation(int paramIndex) {
-        return joynrAnnotations.get(paramIndex);
-    }
-
-    public List<JoynrRpcParam> getJoynAnnotations() {
-        return joynrAnnotations;
-    }
-
     public Class<?>[] getClasses() {
         return method.getParameterTypes();
-    }
-
-    public boolean isMethodWithoutParameters() {
-        if ((joynrAnnotations == null) || (joynrAnnotations.size() == 0)) {
-            return true;
-        }
-        return false;
     }
 
     public JoynrRpcCallback getCallbackAnnotation() {

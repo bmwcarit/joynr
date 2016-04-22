@@ -20,7 +20,6 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.messaging.MessagingQos;
 
@@ -33,14 +32,14 @@ import io.joynr.messaging.MessagingQos;
  * @param <T>
  *            Provided interface
  */
-public interface ProxyBuilder<T extends JoynrInterface> {
+public interface ProxyBuilder<T> {
 
     /**
      * Callback for async proxy creation
      *
      * @param <T> Provided interface
      */
-    public interface ProxyCreatedCallback<T extends JoynrInterface> {
+    public interface ProxyCreatedCallback<T> {
 
         /**
          * Called when the proxy is created and ready to use. Does not ensure successful arbitration.

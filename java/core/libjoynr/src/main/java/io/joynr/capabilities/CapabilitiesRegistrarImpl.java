@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.provider.JoynrProvider;
-import io.joynr.provider.RequestCallerFactory;
+import io.joynr.provider.ProviderContainer;
+import io.joynr.provider.ProviderContainerFactory;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
+
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
@@ -47,27 +48,27 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesRegistrarImpl.class);
 
     private DiscoveryAsync localDiscoveryAggregator;
-    private RequestCallerFactory requestCallerFactory;
     private final MessageRouter messageRouter;
     private ParticipantIdStorage participantIdStorage;
     private Address libjoynrMessagingAddress;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
+    private ProviderContainerFactory providerContainerFactory;
 
     private long defaultExpiryTimeMs;
 
     @Inject
     public CapabilitiesRegistrarImpl(DiscoveryAsync localDiscoveryAggregator,
-                                     RequestCallerFactory requestCallerFactory,
+                                     ProviderContainerFactory providerContainerFactory,
                                      MessageRouter messageRouter,
-                                     RequestCallerDirectory requestCallerDirectory,
+                                     ProviderDirectory providerDirectory,
                                      ParticipantIdStorage participantIdStorage,
                                      @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) long defaultExpiryTimeMs,
                                      @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
         super();
         this.localDiscoveryAggregator = localDiscoveryAggregator;
-        this.requestCallerFactory = requestCallerFactory;
+        this.providerContainerFactory = providerContainerFactory;
         this.messageRouter = messageRouter;
-        this.requestCallerDirectory = requestCallerDirectory;
+        this.providerDirectory = providerDirectory;
         this.participantIdStorage = participantIdStorage;
         this.defaultExpiryTimeMs = defaultExpiryTimeMs;
         this.libjoynrMessagingAddress = dispatcherAddress;
@@ -80,19 +81,20 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      * io.joynr.provider.JoynrProvider, java.lang.Class)
      */
     @Override
-    public Future<Void> registerProvider(final String domain, JoynrProvider provider, ProviderQos providerQos) {
-        String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
+    public Future<Void> registerProvider(final String domain, Object provider, ProviderQos providerQos) {
+        ProviderContainer providerContainer = providerContainerFactory.create(provider);
+        String participantId = participantIdStorage.getProviderParticipantId(domain,
+                                                                             providerContainer.getInterfaceName());
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(),
                                                            domain,
-                                                           provider.getInterfaceName(),
+                                                           providerContainer.getInterfaceName(),
                                                            participantId,
                                                            providerQos,
                                                            System.currentTimeMillis(),
                                                            System.currentTimeMillis() + defaultExpiryTimeMs);
-        RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
-        requestCallerDirectory.addCaller(participantId, requestCaller);
+        providerDirectory.add(participantId, providerContainer);
 
         Callback<Void> callback = new Callback<Void>() {
             @Override
@@ -110,10 +112,10 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider) {
+    public void unregisterProvider(String domain, Object provider) {
 
         final String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                                   provider.getProvidedInterface());
+                                                                                   ProviderAnnotations.getInterfaceName(provider));
         Callback<Void> callback = new Callback<Void>() {
             @Override
             public void onSuccess(@CheckForNull Void result) {
@@ -125,7 +127,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             }
         };
         localDiscoveryAggregator.remove(callback, participantId);
-        requestCallerDirectory.removeCaller(participantId);
+        providerDirectory.remove(participantId);
     }
 
     @Override

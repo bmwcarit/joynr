@@ -23,7 +23,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -100,7 +99,7 @@ public class LocalCapabilitiesDirectoryTest {
     private DiscoveryEntry discoveryEntry;
     private GlobalDiscoveryEntry globalDiscoveryEntry;
 
-    public interface TestInterface extends JoynrInterface {
+    public interface TestInterface {
         public static final String INTERFACE_NAME = "interfaceName";
     }
 

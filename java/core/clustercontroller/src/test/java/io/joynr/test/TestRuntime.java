@@ -19,8 +19,7 @@ package io.joynr.test;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
@@ -30,22 +29,22 @@ public class TestRuntime implements JoynrRuntime {
 
     @Deprecated
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider) {
+    public Future<Void> registerProvider(String domain, AbstractJoynrProvider provider) {
         return null;
     }
 
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos) {
+    public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         return null;
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider) {
+    public void unregisterProvider(String domain, Object provider) {
 
     }
 
     @Override
-    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
+    public <T> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
         return null;
     }
 
