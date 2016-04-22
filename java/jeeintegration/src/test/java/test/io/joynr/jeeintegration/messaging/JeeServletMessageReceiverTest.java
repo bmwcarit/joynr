@@ -25,7 +25,6 @@ package test.io.joynr.jeeintegration.messaging;
 import io.joynr.common.ExpiryDate;
 import io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient;
 import io.joynr.jeeintegration.messaging.JeeServletMessageReceiver;
-import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageArrivedListener;
 import joynr.JoynrMessage;
 import org.junit.Before;
@@ -37,10 +36,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
@@ -62,12 +58,6 @@ public class JeeServletMessageReceiverTest {
     private String hostPath = "http://localhost";
 
     @Mock
-    private LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient;
-
-    @Mock
-    private ExecutorService executorService;
-
-    @Mock
     private MessageArrivedListener messageArrivedListener;
 
     @Mock
@@ -77,12 +67,7 @@ public class JeeServletMessageReceiverTest {
 
     @Before
     public void setup() {
-        subject = new JeeServletMessageReceiver(channelId,
-                                                localChannelUrlDirectoryClient,
-                                                executorService,
-                                                contextRoot,
-                                                hostPath,
-                                                httpBridgeRegistryClient);
+        subject = new JeeServletMessageReceiver(channelId, contextRoot, hostPath, httpBridgeRegistryClient);
     }
 
     @Test
@@ -104,7 +89,7 @@ public class JeeServletMessageReceiverTest {
 
     @Test
     public void testIsStarted() {
-        assertFalse(subject.isStarted());
+        assertTrue(subject.isStarted());
     }
 
     @Test
@@ -127,18 +112,13 @@ public class JeeServletMessageReceiverTest {
         start();
         assertTrue(subject.isStarted());
         assertTrue(subject.isReady());
-        verify(localChannelUrlDirectoryClient).registerChannelUrls(Mockito.any(), Mockito.any());
         verify(httpBridgeRegistryClient).register(Mockito.any(), Mockito.any());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void testShutdown() {
         start();
-        Future<Void> future = mock(Future.class);
-        when(executorService.submit(Mockito.<Callable<Void>> any())).thenReturn(future);
         subject.shutdown(true);
-        verify(executorService).submit(Mockito.<Callable> any());
     }
 
     @Test

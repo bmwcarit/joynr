@@ -22,13 +22,8 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
@@ -36,14 +31,11 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.dispatcher.ServletMessageReceiver;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient;
-import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
 import joynr.JoynrMessage;
-import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,26 +61,18 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
 
     private boolean registered = false;
 
-    private final LocalChannelUrlDirectoryClient channelUrlDirectory;
-
-    private final ExecutorService executorService;
-
     private MessageArrivedListener messageListener;
 
     private final HttpBridgeRegistryClient httpBridgeRegistryClient;
 
     @Inject
     public JeeServletMessageReceiver(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                                     LocalChannelUrlDirectoryClient channelUrlDirectory,
-                                     ExecutorService executorService,
                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot,
                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath,
                                      HttpBridgeRegistryClient httpBridgeRegistryClient) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug(format("Initialising with:%n\tchannelId: %s%n\tchannelUrlDirectory: %s%n\texecutorService: %s%n\tcontextRoot: %s%n\thostPath: %s%n\thttpBridgeRegistryClient: %s",
+            LOG.debug(format("Initialising with:%n\tchannelId: %s%n\tcontextRoot: %s%n\thostPath: %s%n\thttpBridgeRegistryClient: %s",
                              channelId,
-                             channelUrlDirectory,
-                             executorService,
                              contextRoot,
                              hostPath,
                              httpBridgeRegistryClient));
@@ -96,8 +80,6 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
         this.channelId = channelId;
         this.hostPath = hostPath;
         this.contextRoot = contextRoot;
-        this.channelUrlDirectory = channelUrlDirectory;
-        this.executorService = executorService;
         this.httpBridgeRegistryClient = httpBridgeRegistryClient;
     }
 
@@ -108,20 +90,9 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
 
     @Override
     public void shutdown(boolean clear) {
-        LOG.info("Shutting down servlet message receiver.");
         if (registered) {
-            try {
-                executorService.submit(new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        channelUrlDirectory.unregisterChannelUrls(channelId);
-                        registered = false;
-                        return null;
-                    }
-                }).get(5, TimeUnit.SECONDS);
-            } catch (JoynrRuntimeException | InterruptedException | ExecutionException | TimeoutException e) {
-                LOG.error(format("Problem unregistering channel %s.", channelId));
-            }
+            LOG.info("Shutting down servlet message receiver.");
+            registered = false;
         }
     }
 
@@ -200,7 +171,6 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
 
     private synchronized void registerChannelUrl() {
         if (!registered) {
-            ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
             if (hostPath == null) {
                 String message = "The system property hostPath must be set with name:port eg. http://localhost:8080";
                 IllegalArgumentException illegalArgumentException = new IllegalArgumentException(message);
@@ -210,8 +180,6 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
             String endpointUrl = hostPath + contextRoot + "/channels/" + channelId + "/";
             CompletionStage<Void> registrationResult = httpBridgeRegistryClient.register(endpointUrl, channelId);
             registrationResult.thenAccept((v) -> {
-                channelUrlInformation.setUrls(new String[]{ endpointUrl });
-                channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation);
                 registered = true;
             }).exceptionally((t) -> {
                 LOG.error("Unable to register channel URL.", t);

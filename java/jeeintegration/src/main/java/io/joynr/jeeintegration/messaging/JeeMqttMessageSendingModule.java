@@ -25,6 +25,7 @@ package io.joynr.jeeintegration.messaging;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
+import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
@@ -82,8 +83,11 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         messageSerializerFactory.addBinding(MqttAddress.class).to(MqttMessageSerializerFactory.class);
         messagingSkeletonFactory.addBinding(MqttAddress.class).to(NoOpMessagingSkeleton.class);
 
-        Multibinder<GlobalAddressFactory> globalAddresses = Multibinder.newSetBinder(binder(),
-                                                                                     GlobalAddressFactory.class);
+        Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
+        globalAddresses = Multibinder.newSetBinder(binder(),
+                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+
+                                                   });
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);
