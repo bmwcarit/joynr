@@ -19,13 +19,12 @@ package io.joynr.provider;
  * #L%
  */
 
-import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProvider;
 import joynr.tests.testSubscriptionPublisherImpl;
 
 import org.junit.Before;
@@ -51,16 +50,37 @@ public class SubscriptionPublisherFactoryTest {
         verify(providerSpy, times(1)).setSubscriptionPublisher(any(testSubscriptionPublisherImpl.class));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testCreateWithWrongProvider() throws Exception {
         JoynrProvider providerSpy = mock(JoynrProvider.class);
-        try {
-            subscriptionPublisherFactory.create(providerSpy);
-            assertFalse("Expected exception didn't arrive when calling ProviderContainerFactory.create "
-                    + "with wrong parameter", true);
-        } catch (JoynrRuntimeException e) {
-            //expected exception
-        }
+        subscriptionPublisherFactory.create(providerSpy);
     }
 
+    @JoynrInterface(name = "test/WithoutSubscriptionPublisher", provides = testProvider.class)
+    private static interface testProviderWithoutSubscriptionPublisher {
+        /*
+         *  In this case, no matching SubscriptionPublisherImpl exists
+         */
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateWithMissingSubscriptionPublisher() throws Exception {
+        testProviderWithoutSubscriptionPublisher providerSpy = mock(testProviderWithoutSubscriptionPublisher.class);
+        subscriptionPublisherFactory.create(providerSpy);
+    }
+
+    @JoynrInterface(name = "test/NonInstantiable", provides = testProvider.class)
+    private static interface testProviderWithNonInstantiableSubscriptionPublisher {
+        /*
+         *  In this case, a matching SubscriptionPublisherImpl exists {@link joynr/test/NonInstantiableSubscriptionImpl.class}.
+         *  However, the subscription publisher cannot be instantiated, as it has no nullable constructor.
+         */
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateWithNonInstantiableSubscriptionPublisher() throws Exception {
+        testProviderWithNonInstantiableSubscriptionPublisher providerSpy = mock(testProviderWithNonInstantiableSubscriptionPublisher.class);
+        subscriptionPublisherFactory.create(providerSpy);
+    }
 }

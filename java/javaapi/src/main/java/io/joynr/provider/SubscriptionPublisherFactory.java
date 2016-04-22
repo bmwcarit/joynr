@@ -19,21 +19,20 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrRuntimeException;
-
 public class SubscriptionPublisherFactory {
     /*
      * Suppressing warnings allows to case a provider to SubscriptionPublisherInjection without template
      * parameter. It is guaranteed by the generated joynr providers that the cast works as expected
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public AbstractSubscriptionPublisher create(final Object provider) throws JoynrRuntimeException {
+    public AbstractSubscriptionPublisher create(final Object provider) {
+        String interfaceName = ProviderAnnotations.getInterfaceName(provider);
+        String subscriptionPublisherClassName = "joynr." + interfaceName.replace("/", ".")
+                + SubscriptionPublisher.class.getSimpleName();
+        String subcriptionPublisherImplClassName = subscriptionPublisherClassName + "Impl";
         try {
-            String subscriptionPublisherClassName = "joynr."
-                    + ProviderAnnotations.getInterfaceName(provider).replace("/", ".")
-                    + SubscriptionPublisher.class.getSimpleName();
 
-            Class<?> subscriptionPublisherImplClass = Class.forName(subscriptionPublisherClassName + "Impl");
+            Class<?> subscriptionPublisherImplClass = Class.forName(subcriptionPublisherImplClassName);
             AbstractSubscriptionPublisher subscriptionPublisherImpl = (AbstractSubscriptionPublisher) subscriptionPublisherImplClass.newInstance();
             try {
                 Class<?> subscriptionPublisherInjectionClass = Class.forName(subscriptionPublisherClassName
@@ -46,9 +45,19 @@ public class SubscriptionPublisherFactory {
             }
 
             return subscriptionPublisherImpl;
-        } catch (Exception e) {
-            throw new JoynrRuntimeException("ProviderContainerFactory could not create subscription publisher for "
-                    + provider.getClass().getSimpleName() + " due to the following error: " + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("For given provider of joynr interface \"" + interfaceName
+                    + "\", expected subscription publisher class of type \"" + subcriptionPublisherImplClassName
+                    + "\" could not be found by the classloader." + " Please ensure the class can be loaded.");
+        } catch (InstantiationException e) {
+            throw new IllegalArgumentException("For given provider of joynr interface \"" + interfaceName
+                    + "\", expected subscription publisher class of type \"" + subcriptionPublisherImplClassName
+                    + "\" could not be instantiated due to the following error: " + e.getMessage());
+
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException("For given provider of joynr interface \"" + interfaceName
+                    + "\", expected subscription publisher class of type \"" + subcriptionPublisherImplClassName
+                    + "\" could not be accessed due to the following error: " + e.getMessage());
         }
     }
 }

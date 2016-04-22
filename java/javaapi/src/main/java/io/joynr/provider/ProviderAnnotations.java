@@ -19,38 +19,36 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.util.AnnotationUtil;
 
 import java.lang.annotation.Annotation;
 
 public class ProviderAnnotations {
 
-    public static String getInterfaceName(Class<?> providerClass) throws JoynrRuntimeException {
+    public static String getInterfaceName(Class<?> providerClass) {
         return getAnnotation(providerClass, JoynrInterface.class).name();
     }
 
-    public static String getInterfaceName(Object provider) throws JoynrRuntimeException {
+    public static String getInterfaceName(Object provider) {
         return getInterfaceName(provider.getClass());
     }
 
-    public static Class<?> getProvidedInterface(Object provider) throws JoynrRuntimeException {
+    public static Class<?> getProvidedInterface(Object provider) {
         return getAnnotation(provider.getClass(), JoynrInterface.class).provides();
     }
 
-    public static int getMajorVersion(Object provider) throws JoynrRuntimeException {
+    public static int getMajorVersion(Object provider) {
         return getAnnotation(provider.getClass(), JoynrVersion.class).major();
     }
 
-    public static int getMinorVersion(Object provider) throws JoynrRuntimeException {
+    public static int getMinorVersion(Object provider) {
         return getAnnotation(provider.getClass(), JoynrVersion.class).minor();
     }
 
-    private static <T extends Annotation> T getAnnotation(Class<?> clazz, Class<T> annotationType)
-                                                                                                  throws JoynrRuntimeException {
+    private static <T extends Annotation> T getAnnotation(Class<?> clazz, Class<T> annotationType) {
         T annotation = AnnotationUtil.getAnnotation(clazz, annotationType);
         if (annotation == null) {
-            throw new JoynrRuntimeException("Missing annotation " + annotationType.getName()
+            throw new IllegalArgumentException("Missing annotation " + annotationType.getName()
                     + " in hierarchy of class " + clazz.getName());
         }
         return annotation;

@@ -3,7 +3,7 @@ package io.joynr.util;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import io.joynr.provider.JoynrInterface;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.JoynrVersion;
 import io.joynr.provider.ProviderAnnotations;
 
@@ -88,6 +87,11 @@ public class AnnotationUtilTest {
                                                                             JoynrVersion.class);
         assertThat(joynrVersionnAnnotation.minor(), equalTo(11));
 
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getExceptionForProviderInstanceWithouthAnnotation() {
+        ProviderAnnotations.getInterfaceName("");
     }
 
     @Test

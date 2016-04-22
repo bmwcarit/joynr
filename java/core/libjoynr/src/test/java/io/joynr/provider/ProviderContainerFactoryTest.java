@@ -24,7 +24,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import io.joynr.dispatching.RequestCallerFactory;
-import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.tests.DefaulttestProvider;
 
 import org.junit.Before;
@@ -57,16 +56,12 @@ public class ProviderContainerFactoryTest {
         verify(requestCallerFactory, times(1)).create(provider);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testCreateWithWrongProvider() throws Exception {
         JoynrProvider providerSpy = mock(JoynrProvider.class);
-        try {
-            providerContainerFactory.create(providerSpy);
-            assertFalse("Expected exception didn't arrive when calling ProviderContainerFactory.create "
-                    + "with wrong parameter", true);
-        } catch (JoynrRuntimeException e) {
-            //expected exception
-        }
+        providerContainerFactory.create(providerSpy);
+        assertFalse("Expected exception didn't arrive when calling ProviderContainerFactory.create "
+                + "with wrong parameter", true);
     }
 
 }
