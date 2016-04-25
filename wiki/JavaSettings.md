@@ -1,0 +1,303 @@
+# Joynr Java Settings
+
+The following describes which settings can be made in Java, either by:
+
+1. properties file
+2. OS environment settings
+3. Java System settings
+4. programmatically
+
+All defaults are set in defaultMessaging.properties and defaultServletMessaging.properties. The
+properties that must be overriden for a normal deployment (assuming you are not just testing on
+localhost) are marked below as REQUIRED.
+
+## ConfigurableMessagingSettings
+
+### `PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID`
+The channel ID of the global capabilities directory (backend). To be able to connect to the global
+capabilities directory a disovery entry is created in the local capabilities directory as well as an
+appropriate routing table entry.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.capabilitiesdirectorychannelid`
+* **Default value**: `discoverydirectory_channelid`
+
+### `PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID`
+The participant ID of the global capabilities directory (backend). To be able to connect to the
+global capabilities directory a disovery entry is created in the local capabilities directory as
+well as an appropriate routing table entry.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.capabilitiesdirectoryparticipantid`
+* **Default value**: `capabilitiesdirectory_participantid`
+
+### `PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN`
+The domain of the discovery services (backend). To be able to connect to the global discovery
+directories (capability directory, channel url directory, access controller) a disovery entry is
+created in the local capabilities directory.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.discoverydirectoriesdomain`
+* **Default value**: `io.joynr`
+
+### `PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID`
+The channel ID of the global domain access controller (backend). To be able to connect to the global
+domain access controller a disovery entry is created in the local capabilities directory as well as
+an appropriate routing table entry.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.domainaccesscontrollerchannelid`
+* **Default value**: `domainaccesscontroller_channelid`
+
+### `PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID`
+The participant ID of the global domain access controller (backend). To be able to connect to the
+global domain access controller a disovery entry is created in the local capabilities directory as
+well as an appropriate routing table entry.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.domainaccesscontrollerparticipantid`
+* **Default value**: `domainaccesscontroller_participantid`
+
+### `PROPERTY_HOSTS_FILENAME`
+File used by the HTTP messaging stub to map URLs. It uses the Java properties file format. The key
+of an entry identifies a hostname that must be replaced in a URL. The value of an entry consists of
+up to four compoments separated by a colon:
+
+1. replacement host name,
+2. replacement port,
+3. path search term and
+4. replacement path.
+
+```
+hostname-to-replace=host-replacement:port-replacement:path-search-term:path-replacement
+```
+
+This entry will apply to all URLs with hostname `hostname-to-replace`. The original hostname and
+port are replaced by `host-replacement` and `port-replacement`, respectively. Furthermore, the
+original path is searched for `path-search-term` and the first occurance is relaced by
+`path-replacement`.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.hostsFileName`
+* **Default value**: `hosts.properties`
+
+### `PROPERTY_MAX_MESSAGE_SIZE`
+The maximum length of a text message the WebSocket transport is able to send/receive.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.maxmessagesize`
+* **Default value**: `4000000`
+
+### `PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS`
+The number of threads used by the message router to send joynr messages.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.maximumparallelsends`
+* **Default value**: `20`
+
+### `PROPERTY_MESSAGING_MAXIMUM_TTL_MS`
+The maximum allowed time-to-live (TTL) of joynr messages. The TTL used in a joynr message is set on
+the proxy builder using the messaging QoS object. These TTLs are only accepted up to the maximum
+value defined by this property.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.maxttlms`
+* **Default value**: `2592000000` (30 days)
+
+### `PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE`
+If the file based participant ID storage (`PropertiesFileParticipantIdStorage`) is used, participant
+IDs of registered providers are persisted to this file and reused for further registrations to the
+same interface and domain combination.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.discovery.participantids_persistence_file`
+* **Default value**: `joynr_participantIds.properties`
+
+### `PROPERTY_SEND_MSG_RETRY_INTERVAL_MS`
+The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
+MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
+initiates a retransmission. If the messaging stub does not provide information on when to retry
+message transmission, the message router will use the send message retry interval defined by this
+property to delay the message transmission and start a new transmission attempt. Multiple
+unsuccessful retransmittion attempts will add an additional exponential backoff to delay message
+transmission.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.sendmsgretryintervalms`
+* **Default value**: `3000`
+
+##MessagingPropertyKeys
+
+### `BOUNCE_PROXY_URL`
+The root URL of the BounceProxy backend service when using HTTP messaging. The cluster controller
+uses this service to create a receive channel (message queue). Messages are posted to the receive
+channel in the backend. The cluster controller polls the channel to download the incoming messages.
+
+* **REQUIRED if using the AtmosphereMessagingModule**
+* **Type**: String
+* **User property**: `joynr.messaging.bounceproxyurl`
+* **Default value**: `http://localhost:8080/bounceproxy/`
+
+### `DISCOVERYDIRECTORYURL`
+The URL of the receive channel (incoming message queue) of the global capabilities directory backend
+service. To connect to the global capabilities directory the cluster controller creates an
+appropriate entry in the local capabilities directory.
+
+* **REQUIRED if using the AtmosphereMessagingModule**
+* **Type**: String
+* **User property**: `joynr.messaging.capabilitiesdirectoryurl`
+* **Default value**: `http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
+
+### `PROPERTY_SERVLET_HOST_PATH`
+If a joynr application is deployed into a servlet on an application server, the servlet host path is
+used to register provider with the global capabilities and channel URL directories. Hence, this must
+be a public host that is directly addressable from all joynr endpoints.
+
+* **REQUIRED if using the JEE integration**
+* **Type**: String
+* **User property**: `joynr.servlet.hostpath`
+* **Default value**: `http://localhost:8080`
+
+### `PROPERTY_SERVLET_SHUTDOWN_TIMEOUT`
+During joynr shutdown, providers must be removed from the global capabilities directory.
+Since messages could not be received during servlet shutdown anymore, the joynr message receiver
+switches to long polling to perform the directory cleanup. This timeout (in milliseconds) is
+used to switch to long polling.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.servlet.shutdown.timeout`
+* **Default value**: `10000`
+
+### `PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION`
+If set to true, the joynr message receiver will not switch to long polling for deregistration (cf.
+[`PROPERTY_SERVLET_SHUTDOWN_TIMEOUT`](#property_servlet_shutdown_timeout)).
+
+
+* **OPTIONAL**
+* **Type**: boolean
+* **User property**: `joynr.servlet.skiplongpollderegistration`
+* **Default value**: `false`
+
+## MqttModule
+
+### `PROPERTY_KEY_MQTT_BROKER_URI`
+The URI of the MQTT broker backend service the cluster controller connects to.
+
+* **REQUIRED if using the MQTTModule**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.brokeruri`
+* **Default value**:
+
+### `PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS`
+If an error occurs on the MQTT connection, joynr will wait for this time (in milliseconds) before
+trying to connect again.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.reconnect.sleepms`
+* **Default value**: `1000`
+
+## SystemServicesSettings
+
+### `PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID`
+The participant ID of the discovery provider on the cluster controller. On the one hand, the cluster
+controller assigns this participant ID to the discovery provider, on the other hand, the libjoynr
+connects the discovery proxy to this participant ID and creates an appropriate routing table entry.
+Hence, this config must match between processes using a libjoynr to connect to a cluster controller
+and the cluster controller process itself.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.discoveryproviderparticipantid`
+* **Default value**: `CC.DiscoveryProvider.ParticipantId`
+
+### `PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID`
+The participant ID of the routing provider on the cluster controller. On the one hand, the cluster
+controller assigns this participant ID to the routing provider, on the other hand, the libjoynr
+connects the routing proxy to this participant ID and creates an appropriate routing table entry.
+Hence, this config must match between processes using a libjoynr to connect to a cluster controller
+and the cluster controller process itself.
+
+* **INTERNAL ONLY**
+* **Type**: String
+* **User property**: `joynr.messaging.routingproviderparticipantid`
+* **Default value**: `CC.RoutingProvider.ParticipantId`
+
+### `PROPERTY_SYSTEM_SERVICES_DOMAIN`
+The domain used to register system serivces (i.e. discovery and routing provider) on the cluster
+controller. On the one hand, the cluster controller registers system serivces on this domain, on the
+other hand, the libjoynr connects the discovery and routing proxy to this domain and creates
+appropriate discovery entries. Hence, this config must match between processes using a libjoynr to
+connect to a cluster controller and the cluster controller process itself.
+
+* **INTERNAL ONLY**
+* **Type**: String
+* **User property**: `joynr.messaging.systemservicesdomain`
+* **Default value**: `io.joynr.system`
+
+## WebsocketModule
+
+### `PROPERTY_WEBSOCKET_MESSAGING_HOST`
+The host running a cluster controller with activated web socket transport to connect to.
+
+* **REQUIRED if using the WebsocketModule to connect a Java libjoynr to the Cluster Controller
+  via WebSockets**
+* **Type**: String
+* **User property**: `joynr.messaging.cc.host`
+* **Default value**:
+
+### `PROPERTY_WEBSOCKET_MESSAGING_IDLE_TIMEOUT`
+The maximum idle time out (in milliseconds) for web socket connections.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.cc.idletimeout`
+* **Default value**: `60000`
+
+### `PROPERTY_WEBSOCKET_MESSAGING_PATH`
+The path to the cluster controller's web socket transport to connect to.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.cc.path`
+* **Default value**: empty string
+
+### `PROPERTY_WEBSOCKET_MESSAGING_PORT`
+The port of the cluster controller's web socket transport to connect to.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.cc.port`
+* **Default value**:
+
+### `PROPERTY_WEBSOCKET_MESSAGING_RECONNECT_DELAY`
+If the connect to the cluster controller's web socket transport fails, the libjoynr perform a new
+connect attempt after this delay.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.cc.reconnectdelay`
+* **Default value**: `1000`
+
+### `PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL`
+The protocol used for the web socket connection to the cluster controller's web socket transport.
+Possible values are:
+
+* **OPTIONAL**
+* **Type**: Enumeration
+ * `ws`
+ * `wss`
+* **User property**: `joynr.messaging.cc.protocol`
+* **Default value**: `ws`
