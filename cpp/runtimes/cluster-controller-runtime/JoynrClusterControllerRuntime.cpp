@@ -358,19 +358,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                 mqttMessageSender, mqttSerializedGlobalClusterControllerAddress));
     }
 
-    // joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
-    // ccDispatcher = DispatcherFactory::createDispatcherInSameThread(messagingSettings);
-
-    // we currently have to use the fake client, because JAVA side is not yet working for
-    // CapabilitiesServer.
-    bool usingRealCapabilitiesClient =
-            /*when switching this to true, turn on the UUID in systemintegrationtests again*/ true;
-
     capabilitiesClient = new CapabilitiesClient();
-
-    // try using the real capabilitiesClient again:
-    // capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not
-    // transferred
 
     std::string localAddress;
     if (doMqttMessaging) {
@@ -459,21 +447,19 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
      */
     std::int64_t discoveryMessagesTtl = messagingSettings.getDiscoveryMessagesTtl();
 
-    if (usingRealCapabilitiesClient) {
-        ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
-                createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                        messagingSettings.getDiscoveryDirectoriesDomain());
-        DiscoveryQos discoveryQos(10000);
-        discoveryQos.setArbitrationStrategy(
-                DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
-                                                                      // should be available
-        std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy(
-                capabilitiesProxyBuilder->setMessagingQos(MessagingQos(discoveryMessagesTtl))
-                        ->setCached(true)
-                        ->setDiscoveryQos(discoveryQos)
-                        ->build());
-        ((CapabilitiesClient*)capabilitiesClient)->init(capabilitiesProxy);
-    }
+    ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
+            createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                    messagingSettings.getDiscoveryDirectoriesDomain());
+    DiscoveryQos discoveryQos(10000);
+    discoveryQos.setArbitrationStrategy(
+            DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
+                                                                  // should be available
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy(
+            capabilitiesProxyBuilder->setMessagingQos(MessagingQos(discoveryMessagesTtl))
+                    ->setCached(true)
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
+    ((CapabilitiesClient*)capabilitiesClient)->init(capabilitiesProxy);
 }
 
 void JoynrClusterControllerRuntime::registerRoutingProvider()
