@@ -27,6 +27,11 @@
 #include <set>
 #include <algorithm>
 
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/begin_end.hpp>
+#include <boost/mpl/deref.hpp>
+#include <boost/mpl/next_prior.hpp>
+
 #include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
 
@@ -266,6 +271,38 @@ private:
 public:
     static constexpr bool value = decltype(IsDerivedFromTemplate::test(std::declval<U>()))::value;
 };
+
+template <typename CurrentIterator, typename EndIterator, typename Fun>
+std::enable_if_t<std::is_same<CurrentIterator, EndIterator>::value, bool> InvokeOnImpl(const Fun&)
+{
+    return false;
+}
+
+template <typename CurrentIterator, typename EndIterator, typename Fun>
+std::enable_if_t<!std::is_same<CurrentIterator, EndIterator>::value, bool> InvokeOnImpl(
+        const Fun& fun)
+{
+    using CurrentType = typename boost::mpl::deref<CurrentIterator>::type;
+    using NextIterator = typename boost::mpl::next<CurrentIterator>::type;
+    if (fun(CurrentType{})) {
+        return InvokeOnImpl<NextIterator, EndIterator>(fun);
+    }
+    return true;
+}
+
+/**
+ * @brief invoke a Function for each type of a boost::mpl Sequence.
+ *
+ * This will call fun(Ti{}) for each type Ti of the Sequence.
+ * The iteration can be exited early by returning false from fun.
+ */
+template <typename Sequence, typename Fun>
+bool InvokeOn(const Fun& fun)
+{
+    using BeginIterator = typename boost::mpl::begin<Sequence>::type;
+    using EndIterator = typename boost::mpl::end<Sequence>::type;
+    return InvokeOnImpl<BeginIterator, EndIterator>(fun);
+}
 
 } // namespace util
 
