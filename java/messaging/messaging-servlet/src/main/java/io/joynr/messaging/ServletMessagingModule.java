@@ -28,6 +28,7 @@ import com.google.inject.name.Names;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.dispatcher.ServletMessageReceiverImpl;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
+import io.joynr.messaging.http.ServletHttpGlobalAddressFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
