@@ -43,7 +43,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/cluster-controller/resource
 
 ######## Add Boost ########
 
-find_package(Boost 1.56.0 REQUIRED
+find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     filesystem
     program_options
