@@ -27,7 +27,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
@@ -39,10 +41,12 @@ import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.http.HttpMessageSender;
 import io.joynr.messaging.http.IMessageSender;
+import io.joynr.messaging.http.ServletHttpGlobalAddressFactory;
 import io.joynr.messaging.http.operation.ApacheHttpRequestFactory;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.http.operation.HttpRequestFactory;
+import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
 import joynr.system.RoutingTypes.Address;
@@ -70,6 +74,17 @@ public class JeeHttpMessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeleton.class);
+        messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
+        messageSerializerFactory.addBinding(ChannelAddress.class).to(ChannelMessageSerializerFactory.class);
+
+        Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
+        globalAddresses = Multibinder.newSetBinder(binder(),
+                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+
+                                                   });
+        globalAddresses.addBinding().to(ServletHttpGlobalAddressFactory.class);
+
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
         bind(IMessageSender.class).to(HttpMessageSender.class);
@@ -78,10 +93,6 @@ public class JeeHttpMessagingModule extends AbstractModule {
         bind(MessageRouter.class).to(io.joynr.jeeintegration.messaging.JeeMessageRouter.class).in(Singleton.class);
         bind(MessageReceiver.class).to(JeeServletMessageReceiver.class);
         bind(ServletMessageReceiver.class).to(JeeServletMessageReceiver.class);
-
-        messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeleton.class);
-        messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
-        messageSerializerFactory.addBinding(ChannelAddress.class).to(ChannelMessageSerializerFactory.class);
     }
 
 }

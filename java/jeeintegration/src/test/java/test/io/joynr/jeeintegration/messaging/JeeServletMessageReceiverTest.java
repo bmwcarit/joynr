@@ -89,7 +89,7 @@ public class JeeServletMessageReceiverTest {
 
     @Test
     public void testIsStarted() {
-        assertTrue(subject.isStarted());
+        assertFalse(subject.isStarted());
     }
 
     @Test
