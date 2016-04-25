@@ -332,6 +332,8 @@ public class DiscoveryQos {
     /**
      * @deprecated use setCacheMaxAgeMs() instead
      * @param cacheMaxAgeMs
+     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
+     *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
      */
     @Deprecated
     public void setCacheMaxAge(long cacheMaxAgeMs) {
@@ -350,6 +352,8 @@ public class DiscoveryQos {
     /**
      * @deprecated use setDiscoveryTimeoutMs() instead
      * @param discoveryTimeoutMs
+     *            Sets the amount of time the arbitrator keeps trying to find a suitable provider. The arbitration
+     *            lookup might happen multiple times during this time span.
      */
     @Deprecated
     public void setDiscoveryTimeout(long discoveryTimeoutMs) {
@@ -368,6 +372,8 @@ public class DiscoveryQos {
     /**
      * @deprecated use setRetryIntervalMs() instead
      * @param retryIntervalMs
+     *            The time to wait between discovery retries after encountering a discovery error. The actual delay may
+     *            be longer, as there is a system-wide minimum delay.
      */
     @Deprecated
     public void setRetryInterval(long retryIntervalMs) {

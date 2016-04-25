@@ -33,6 +33,7 @@ public abstract class GlobalAddressFactory<T extends Address> {
 
     /**
      * @param transport
+     *          the transport, for which the support request is triggered
      * @return the boolean representing the transport supported by this Address type.
      */
     public abstract boolean supportsTransport(@Nullable String transport);
