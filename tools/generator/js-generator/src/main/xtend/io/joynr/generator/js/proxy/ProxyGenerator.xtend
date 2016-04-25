@@ -153,9 +153,9 @@ class ProxyGenerator extends InterfaceTemplate {
 				 *
 				 «writeJSDocForSignature(proxyName, operation, "* ")»
 				 */
-				«IF operation.outputParameters.size>1»
+				«IF operation.outputParameters.size>0»
 					/**
-					 «writeJSDocTypedefForMultipleReturnValues(proxyName, operation, operationName, "* ")»
+					 «writeJSDocTypedefForSignature(proxyName, operation, operationName, "* ")»
 					 */
 				«ENDIF»
 			«ENDFOR»

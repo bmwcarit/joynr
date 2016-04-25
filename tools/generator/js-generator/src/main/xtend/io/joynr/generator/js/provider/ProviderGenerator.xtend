@@ -170,9 +170,9 @@ class ProviderGenerator extends InterfaceTemplate {
 					 *
 					 «writeJSDocForSignature(providerName, operation, "* ")»
 					 */
-					«IF operation.outputParameters.size>1»
+					«IF operation.outputParameters.size>0»
 						/**
-						 «writeJSDocTypedefForMultipleReturnValues(providerName, operation, methodName, "* ")»
+						 «writeJSDocTypedefForSignature(providerName, operation, methodName, "* ")»
 						 */
 					«ENDIF»
 				«ENDFOR»
