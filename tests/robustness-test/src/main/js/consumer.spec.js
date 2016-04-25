@@ -414,6 +414,116 @@ var runTestsWithJsProvider = function(testInterfaceProxy, joynr, onDone) {
             });
         });
 
+        it("subscribeToAttributeString", function() {
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
+            var subscriptionId;
+
+            var qosSettings = {
+                minIntervalMs: 5000,
+                maxIntervalMs: 10000,
+                validityMs: 120000
+            }
+            var subscriptionQosOnChangeWithKeepAlive = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos(qosSettings);
+            spy.onFulfilled.reset();
+            spy.onError.reset();
+            spy.onPublication.reset();
+            spy.onPublicationError.reset();
+
+            runs(function() {
+                log("subscribeToAttributeString");
+                testInterfaceProxy.attributeString.subscribe({
+                    "subscriptionQos": subscriptionQosOnChangeWithKeepAlive,
+                    "onReceive": spy.onPublication,
+                    "onError": spy.onPublicationError
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "subscribeToAttributeString", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+                subscriptionId = spy.onFulfilled.calls[0].args[0];
+                log("subscriptionId = " + subscriptionId);
+            });
+
+            // the first publication should arrive immediately after subscription is done
+            waitsFor(function() {
+                // Wait for a subscription message to arrive
+                return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
+            }, "subscribeToAttributeString Publication", 60000);
+
+            runs(function() {
+                expect(spy.onPublication.callCount).toEqual(1);
+                expect(spy.onPublicationError.callCount).toEqual(0);
+                var retObj = spy.onPublication.calls[0].args[0];
+                expect(retObj).toBeDefined();
+            });
+
+            // kill and restart the provider while the time period until the next
+            // publication happens is passing; the time period must be long enough
+            // so that no further publication is sent until the provider got killed
+            runs(function() {
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                killProvider().then(function() {
+                    spy.onPublication.reset();
+                    spy.onPublicationError.reset();
+                    return startProviderJs();
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "subscribeToAttributeString restart provider", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+            });
+
+            waitsFor(function() {
+                // Wait for a subscription message to arrive
+                return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
+            }, "subscribeToAttributeString Publication after provider restart", 60000);
+
+            runs(function() {
+                expect(spy.onPublication.callCount).toEqual(1);
+                expect(spy.onPublicationError.callCount).toEqual(0);
+                var retObj = spy.onPublication.calls[0].args[0];
+                expect(retObj).toBeDefined();
+            });
+
+            runs(function() {
+                // unsubscribe again
+                spy.onFulfilled.reset();
+                spy.onError.reset();
+                testInterfaceProxy.attributeString.unsubscribe({
+                    "subscriptionId": subscriptionId
+                }).then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "subscribeToAttributeString unsubscribe", 5000);
+
+            runs(function() {
+                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                    log(spy.onError.calls[0].args[0]);
+                }
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+            });
+        });
+
         it("subscribeToBroadcastWithSingleStringParameter", function() {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
             var subscriptionId;
