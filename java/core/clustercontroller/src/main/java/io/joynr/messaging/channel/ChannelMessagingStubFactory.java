@@ -51,7 +51,7 @@ public class ChannelMessagingStubFactory extends
             }
         }
         if (channelAddressFactory == null) {
-            throw new IllegalStateException("A http global address factiory must be registered if using channel messaging via HTTP");
+            throw new IllegalStateException("A http global address factory must be registered if using channel messaging via HTTP");
         }
     }
 
