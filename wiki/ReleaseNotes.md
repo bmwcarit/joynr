@@ -1,28 +1,36 @@
 #joynr 0.17.0
 
 ##API relevant changes
-* **[C++, Java, JS]** Added suffix "Ms" to timing related discoveryQos parameters: _discoveryTimeoutMs_,
-  _cacheMaxAgeMs_, and _retryIntervalMs_.
+* **[JEE]** Backend JEE applications are now supported natively with new joynr annotations
+  @ServiceProvider and @ServiceLocator, allowing applications to focus solely on business logic.
+  See [the JEE documentation](JEE.md) for more information.
+* **[C++, Java, JS]** Added suffix "Ms" to timing related discoveryQos parameters:
+  _discoveryTimeoutMs_, _cacheMaxAgeMs_, and _retryIntervalMs_. The original getters and setters
+  are now deprecated and will be removed by the end of 2016.
 * **[C++, Java, JS]** Provider and proxy interfaces as well as generated types (structs, enums and
-  maps) provide version constants (`MAJOR_VERSION` and `MINOR_VERSION`) to reflect the version set
-  in the Franca interface or type collection. Thus, setters for provider version have been removed
-  from the API of the provider qos.
+  maps) contain version constants (`MAJOR_VERSION` and `MINOR_VERSION`) that reflect the version set
+  in the Franca interface or type collection. Setters for provider version have been removed
+  from the API of the ProviderQos.
 * **[Java]** Restructured the class hierarchy of the generated providers. The application provider
-  now implements an interface free of joynr internal details. <Interface>AbstractProvider has been
+  now implements an interface free of joynr-internal details. <Interface>AbstractProvider has been
   kept to maintain backwards compatibility, but implementations derived directly from
   <Interace>Provider must change to the new API. Please have a look at the class diagram
   in docs/diagrams for further details about the restructured class hierarchy.
 * **[C++, Java, JS]** The communication protocol between local directories on the cluster controller
   and global directories in the backend changed. Please make sure that clients and backend use
-  compatible versions.
+  the same versions.
 * **[Java]** Renamed setting _joynr.messaging.capabilitiesdirectoryurl_ to
   _joynr.messaging.discoverydirectoryurl_. The older setting will continue to work until the end of
   2016.
+* **[JS, C++, Java]** The provider version can no longer be set programmatically in ProviderQos.
+  Instead the value as modeled in Franca is generated into the provider interface.
 
 ##Other changes
 * **[C++]** The content of the message router and the local capabilities directory is now persisted
   by default and automatically loaded at cluster-controller startup. Entries are being saved (in
   JSON format) respectively to _MessageRouter.persist_ and to _LocalCapabilitiesDirectory.persist_.
+* **[C++, Java, JS]** The backend service ChannelUrlDirectory has been eliminated. Addressing is
+  now saved in the Discovery Directory.
 
 #joynr 0.16.0
 
