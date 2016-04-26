@@ -118,4 +118,17 @@ interface GlobalCapabilitiesDirectory{
 			String participantId
 		}
 	}
+
+	<**
+		@description: Updates the last seen date for a specific cluster controller.
+	**>
+	method touch {
+		in {
+			<**
+				@description: Identifies the cluster controller for which the last
+				seen date shall be updated.
+			**>
+			String clusterControllerId
+		}
+	}
 }

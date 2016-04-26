@@ -121,4 +121,11 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         }
         return new Promise<Lookup2Deferred>(deferred);
     }
+
+    @Override
+    public Promise<DeferredVoid> touch(String clusterControllerId) {
+        DeferredVoid deferred = new DeferredVoid();
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
 }
