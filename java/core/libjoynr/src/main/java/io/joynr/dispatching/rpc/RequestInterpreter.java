@@ -1,15 +1,5 @@
 package io.joynr.dispatching.rpc;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-
 /*
  * #%L
  * %%
@@ -29,6 +19,16 @@ import com.google.inject.Inject;
  * #L%
  */
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.exceptions.JoynrException;
@@ -37,6 +37,7 @@ import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.MethodSignature;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.MethodInvocationException;
@@ -86,7 +87,7 @@ public class RequestInterpreter {
 
     }
 
-    private Object invokeMethod(RequestCaller requestCaller, Request request) {
+    public Object invokeMethod(RequestCaller requestCaller, OneWayRequest request) {
         // A method is identified by its defining request caller, its name and the types of its arguments
         MethodSignature methodSignature = new MethodSignature(requestCaller,
                                                               request.getMethodName(),
@@ -114,7 +115,7 @@ public class RequestInterpreter {
         }
     }
 
-    private void ensureMethodMetaInformationPresent(Request request, MethodSignature methodSignature) {
+    private void ensureMethodMetaInformationPresent(OneWayRequest request, MethodSignature methodSignature) {
         try {
             if (!methodSignatureToMethodMap.containsKey(methodSignature)) {
                 Method method;

@@ -52,7 +52,7 @@ import joynr.BroadcastSubscriptionRequest;
 import joynr.JoynrMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
-import joynr.OneWay;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
@@ -355,17 +355,17 @@ public class SerializationTest {
 
     @Test
     public void serializeAndDeserializeOneWayTest() throws Exception {
-
-        GpsLocation GpsLocation = new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0);
-        OneWay oneway = new OneWay(GpsLocation);
+        GpsLocation gpsLocation = new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0);
+        OneWayRequest oneway = new OneWayRequest("methodName",
+                                                 new Object[]{ gpsLocation },
+                                                 new Class<?>[]{ GpsLocation.class });
 
         String valueAsString = objectMapper.writeValueAsString(oneway);
 
-        System.out.println(valueAsString);
+        LOG.debug(valueAsString);
 
-        OneWay oneway2 = objectMapper.readValue(valueAsString, OneWay.class);
+        OneWayRequest oneway2 = objectMapper.readValue(valueAsString, OneWayRequest.class);
         assertEquals(oneway, oneway2);
-
     }
 
     @Test
