@@ -19,12 +19,14 @@ package io.joynr.generator.templates
 
 import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import org.franca.core.franca.FInterface
 
 /*
  * This is the base class used by all generation templates which process a Franca interface type
  */
 abstract class InterfaceTemplate {
+	@Inject protected extension JoynrGeneratorExtensions
 	protected FInterface francaIntf
 	protected var majorVersion = 0
 	protected var minorVersion = 0

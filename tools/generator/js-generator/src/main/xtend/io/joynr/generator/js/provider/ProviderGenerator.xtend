@@ -19,10 +19,10 @@ package io.joynr.generator.js.provider
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.js.templates.InterfaceJsTemplate
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
-import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
@@ -32,7 +32,7 @@ import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FMethod
 
-class ProviderGenerator extends InterfaceTemplate {
+class ProviderGenerator extends InterfaceJsTemplate {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension JSTypeUtil
@@ -41,8 +41,6 @@ class ProviderGenerator extends InterfaceTemplate {
 	@Inject private extension MethodUtil
 	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
-
-	int packagePathDepth
 
 	def relativePathToBase() {
 		var relativePath = ""
@@ -53,13 +51,7 @@ class ProviderGenerator extends InterfaceTemplate {
 	}
 
 	def generateProvider(IFileSystemAccess fsa){
-		var containerpath = File::separator
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, File::separator)
-		val path = containerpath + packagePath + File::separator
-
-		packagePathDepth = packagePath.split(File::separator).length
-
-		val fileName = path + "" + providerName + ".js"
+		var fileName = path + "" + providerName + ".js"
 		if (clean) {
 			fsa.deleteFile(fileName)
 		}
