@@ -62,8 +62,8 @@ define("joynr/messaging/channel/ChannelMessagingStub", [
                                 "Discarding message "
                                     + joynrMessage.msgId
                                     + ": message marked as outgoing, but channel address "
-                                    + settings.destationChannelAddress
-                                    + " is the local channe address.";
+                                    + settings.destinationChannelAddress
+                                    + " is the local channel address.";
                         return Promise.reject(errorMsg);
                     }
                     // if outgoing request => set my own channel address as replyChannelId

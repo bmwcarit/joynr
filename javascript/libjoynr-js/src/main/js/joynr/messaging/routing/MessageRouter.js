@@ -319,7 +319,7 @@ define(
                             var promise;
                             if ((serializedAddress === undefined
                                 || serializedAddress === null || serializedAddress === '{}')) {
-                                log.info("registerNextHop: HOP address "
+                                log.info("addNextHop: HOP address "
                                     + serializedAddress
                                     + " will not be persisted for participant id: "
                                     + participantId);

@@ -497,11 +497,10 @@ define(
                                 loggingManager.configure(provisioning.logging);
                             }
 
-                            return longPollingPromise.then(function() {
-                                joynrState = JoynrStates.STARTED;
-                                publicationManager.restore();
-                                log.debug("joynr initialized");
-                            });
+                            joynrState = JoynrStates.STARTED;
+                            publicationManager.restore();
+                            log.debug("joynr initialized");
+                            return Promise.resolve();
                         };
 
                 /**

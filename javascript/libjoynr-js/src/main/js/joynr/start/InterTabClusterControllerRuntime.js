@@ -634,7 +634,6 @@ define(
                             // when everything's ready we can resolve the promise
                             return Promise.all(
                                     [
-                                        longPollingPromise,
                                         registerDiscoveryProviderPromise,
                                         registerRoutingProviderPromise
                                     ]).then(function() {
