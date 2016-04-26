@@ -1,7 +1,7 @@
 /**
  *
  */
-package io.joynr.provider;
+package io.joynr;
 
 /*
  * #%L

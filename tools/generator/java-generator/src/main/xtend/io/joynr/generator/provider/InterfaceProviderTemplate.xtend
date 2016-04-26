@@ -112,7 +112,7 @@ package «packagePath»;
 «ENDIF»
 
 import io.joynr.provider.JoynrInterface;
-import io.joynr.provider.JoynrVersion;
+import io.joynr.JoynrVersion;
 
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;

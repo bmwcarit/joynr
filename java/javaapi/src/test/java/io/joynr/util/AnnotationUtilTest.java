@@ -24,8 +24,8 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import io.joynr.JoynrVersion;
 import io.joynr.provider.JoynrInterface;
-import io.joynr.provider.JoynrVersion;
 import io.joynr.provider.ProviderAnnotations;
 
 import java.lang.annotation.Annotation;
