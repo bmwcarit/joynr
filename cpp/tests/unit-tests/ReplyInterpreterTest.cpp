@@ -19,11 +19,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "joynr/ReplyInterpreter.h"
-#include "joynr/MetaTypeRegistrar.h"
+#include "joynr/ReplyCaller.h"
 
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
-#include "joynr/IReplyCaller.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
 

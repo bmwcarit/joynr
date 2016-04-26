@@ -19,19 +19,20 @@
 #ifndef IJOYNRMESSAGESENDER_H
 #define IJOYNRMESSAGESENDER_H
 
-#include "joynr/IPublicationSender.h"
 #include <string>
-
 #include <memory>
+
+#include "joynr/IPublicationSender.h"
 
 namespace joynr
 {
 
-class IDispatcher;
 class IReplyCaller;
-class Reply;
+class IDispatcher;
 class Request;
 class OneWayRequest;
+class Reply;
+class MessagingQos;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
 class SubscriptionReply;

@@ -18,21 +18,22 @@
  */
 #ifndef INPROCESSDISPATCHER_H
 #define INPROCESSDISPATCHER_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrExport.h"
+#include <string>
+#include <memory>
+
 #include "joynr/IDispatcher.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/InProcessAddress.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/Logger.h"
-
-#include <string>
-#include <memory>
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {
 
+class IReplyCaller;
 class MessagingQos;
 
 class JOYNR_EXPORT InProcessDispatcher : public IDispatcher, public IRequestCallerDirectory

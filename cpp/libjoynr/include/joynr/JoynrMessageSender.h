@@ -18,19 +18,30 @@
  */
 #ifndef JOYNRMESSAGESENDER_H
 #define JOYNRMESSAGESENDER_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrExport.h"
+#include <string>
+#include <memory>
+
 #include "joynr/IJoynrMessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/Logger.h"
-#include <string>
-#include <memory>
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {
 
 class MessageRouter;
+class IReplyCaller;
+class IDispatcher;
+class Request;
+class Reply;
+class MessagingQos;
+class SubscriptionRequest;
+class BroadcastSubscriptionRequest;
+class SubscriptionReply;
+class SubscriptionStop;
+class SubscriptionPublication;
 
 /**
   * The class JoynrMessageSender enables the exchange of JoynrMessages
