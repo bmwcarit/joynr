@@ -25,7 +25,6 @@
 #include <curl/curl.h>
 
 #include "joynr/JoynrMessage.h"
-#include "joynr/ObjectWithDecayTime.h"
 #include "joynr/Util.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/JsonSerializer.h"
