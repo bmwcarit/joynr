@@ -18,14 +18,16 @@
  */
 #ifndef JOYNRMESSAGEFACTORY_H
 #define JOYNRMESSAGEFACTORY_H
+
+#include <string>
+
+#include "joynr/JoynrMessage.h"
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrExport.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/OneWayRequest.h"
-#include <string>
 namespace joynr
 {
 
@@ -46,7 +48,6 @@ class JOYNR_EXPORT JoynrMessageFactory
 {
 public:
     JoynrMessageFactory();
-    virtual ~JoynrMessageFactory();
 
     JoynrMessage createRequest(const std::string& senderId,
                                const std::string& receiverId,
@@ -110,7 +111,7 @@ private:
                                         const std::int64_t ttl,
                                         const SubscriptionPublication& payload) const;
 
-    IPlatformSecurityManager* securityManager;
+    std::unique_ptr<IPlatformSecurityManager> securityManager;
     ADD_LOGGER(JoynrMessageFactory);
 };
 

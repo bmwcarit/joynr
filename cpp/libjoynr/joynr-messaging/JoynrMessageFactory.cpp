@@ -26,7 +26,6 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/Util.h"
 #include "joynr-messaging/DummyPlatformSecurityManager.h"
 
 namespace joynr
@@ -34,13 +33,9 @@ namespace joynr
 
 INIT_LOGGER(JoynrMessageFactory);
 
-JoynrMessageFactory::JoynrMessageFactory() : securityManager(new DummyPlatformSecurityManager())
+JoynrMessageFactory::JoynrMessageFactory()
+        : securityManager(std::make_unique<DummyPlatformSecurityManager>())
 {
-}
-
-JoynrMessageFactory::~JoynrMessageFactory()
-{
-    delete securityManager;
 }
 
 JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
