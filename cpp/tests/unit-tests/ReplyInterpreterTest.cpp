@@ -61,7 +61,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
     reply.setResponse(std::move(response));
 
     // Interpret the reply
-    icaller->execute(reply);
+    icaller->execute(std::move(reply));
 }
 
 TEST_F(ReplyInterpreterTest, execute_calls_caller) {
@@ -90,7 +90,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     reply.setResponse(std::move(response));
 
     // Interpret the reply
-    icaller->execute(reply);
+    icaller->execute(std::move(reply));
 }
 
 TEST_F(ReplyInterpreterTest, execute_calls_caller_void) {
@@ -113,7 +113,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void) {
     Reply reply;
 
     // Interpret the reply
-    icaller->execute(reply);
+    icaller->execute(std::move(reply));
 }
 
 TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
@@ -138,7 +138,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
                 callback->onError(error);
             });
 
-    icaller->execute(reply);
+    icaller->execute(std::move(reply));
 }
 
 TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
@@ -163,7 +163,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
             });
 
     // Interpret the reply
-    icaller->execute(reply);
+    icaller->execute(std::move(reply));
 }
 
 TEST_F(ReplyInterpreterTest, execute_empty_reply) {
@@ -189,5 +189,5 @@ TEST_F(ReplyInterpreterTest, execute_empty_reply) {
     Reply reply;
 
     // Interpret the reply
-    icaller->execute(reply);
+    icaller->execute(std::move(reply));
 }
