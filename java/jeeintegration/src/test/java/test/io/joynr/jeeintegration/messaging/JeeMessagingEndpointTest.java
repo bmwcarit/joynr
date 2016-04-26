@@ -45,8 +45,6 @@ import joynr.JoynrMessage;
 
 /**
  * Unit tests for the {@link JeeMessagingEndpoint}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class JeeMessagingEndpointTest {
 

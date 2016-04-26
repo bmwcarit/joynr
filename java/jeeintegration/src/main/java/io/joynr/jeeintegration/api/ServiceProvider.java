@@ -29,8 +29,6 @@ import java.lang.annotation.Target;
 
 /**
  * Used to annotate a class which provides a service in the system.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

@@ -30,8 +30,6 @@ import javax.ws.rs.core.Application;
 
 /**
  * The JAX RS application which registers the {@link JeeMessagingEndpoint} with the runtime.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @ApplicationPath("messaging")
 public class JeeMessagingApplication extends Application {

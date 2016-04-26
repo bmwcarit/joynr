@@ -41,8 +41,6 @@ import io.joynr.jeeintegration.ServiceProviderDiscovery;
 
 /**
  * Integration tests for the JEE integration bean.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @RunWith(Arquillian.class)
 public class JeeIntegrationBeanTest {

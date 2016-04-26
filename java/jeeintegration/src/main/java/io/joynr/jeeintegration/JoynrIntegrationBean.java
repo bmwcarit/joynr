@@ -54,8 +54,6 @@ import io.joynr.runtime.JoynrRuntime;
  * Singleton EJB which will create and keep the Joynr runtime and also shut it down when the app server shuts down as
  * well as scan the system for all CDI beans present which are annotated with {@link ServiceProvider} and register those
  * as joynr providers with the joynr runtime.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @Singleton
 @Startup

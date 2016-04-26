@@ -30,8 +30,6 @@ import com.google.inject.Injector;
  * Used by the JEE integration bean in order to obtain the joynr application to use. This can principally be a new
  * instance every time, but a singleton probably makes more sense.
  *
- * @author clive.jevons commissioned by MaibornWolff
- *
  * @see JoynrIntegrationBean
  */
 public interface JoynrRuntimeFactory {

@@ -42,7 +42,6 @@ import com.google.inject.name.Named;
  * environment. Hence, this implementation overrides the {@link #schedule(Runnable, String, long, TimeUnit)} method and provides an
  * implementation which doesn't call <code>isShutdown()</code>.
  *
- * @author clive.jevons commissioned by MaibornWolff GmbH
  * @see io.joynr.messaging.routing.MessageRouterImpl
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that no new messages are scheduled when scheduler is shuting down")

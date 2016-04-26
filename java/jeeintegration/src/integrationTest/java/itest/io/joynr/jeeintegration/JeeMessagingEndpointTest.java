@@ -52,8 +52,6 @@ import io.joynr.jeeintegration.messaging.JeeMessagingEndpoint;
 
 /**
  * Integration tests for the {@link JeeMessagingEndpoint}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @RunWith(Arquillian.class)
 @RunAsClient

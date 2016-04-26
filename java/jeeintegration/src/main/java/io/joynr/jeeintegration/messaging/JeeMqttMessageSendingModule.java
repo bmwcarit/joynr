@@ -50,8 +50,6 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Like {@link io.joynr.messaging.mqtt.MqttModule}, but does not configure the messaging skeleton, so that messages are
  * only sent via MQTT, but not received via MQTT. This is so that we can receive messages via HTTP from the
  * {@link JeeServletMessageReceiver} so that a load balancer can distribute the load in a JEE cluster.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class JeeMqttMessageSendingModule extends AbstractModule {
 
@@ -97,8 +95,6 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
      * Because the messaging stub will refuse to send a message via MQTT unless a messaging skeleton has been registered
      * for the MqttAddress type, we bind a dummy implementation in this module which simply does nothing (no operation -
      * NoOp).
-     *
-     * @author clive.jevons commissioned by MaibornWolff
      */
     public static class NoOpMessagingSkeleton implements IMessagingSkeleton {
 

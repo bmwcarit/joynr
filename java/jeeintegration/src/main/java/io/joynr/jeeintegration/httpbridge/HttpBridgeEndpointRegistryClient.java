@@ -52,8 +52,6 @@ import static java.lang.String.format;
  *
  * The registration is performed asynchronously and will also perform up to 10 retries if the registration service can't
  * be reached.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClient {
 

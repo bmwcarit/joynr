@@ -55,8 +55,6 @@ import joynr.system.RoutingTypes.ChannelAddress;
 /**
  * Configures bindings so that joynr can send and receive messages via HTTP. In particular, the messages are received
  * via a custom {@link JeeMessagingEndpoint} and sent to the custom {@link JeeServletMessageReceiver}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class JeeHttpMessagingModule extends AbstractModule {
 

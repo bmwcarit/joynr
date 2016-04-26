@@ -33,8 +33,6 @@ import joynr.types.ProviderQos;
  * {@link #create()} in order to perform the service registration. There is no guarantee in which order the factories
  * will be asked, so it's safer to just provide one factory for a given service interface type.<br>
  * If no factory is found to provide the QoS information, then the default values are used.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public interface ProviderQosFactory {
 

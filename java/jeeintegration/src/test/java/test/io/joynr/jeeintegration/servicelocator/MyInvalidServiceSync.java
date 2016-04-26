@@ -24,8 +24,6 @@ package test.io.joynr.jeeintegration.servicelocator;
 
 /**
  * Dummy service interface which deliberately doesn't have a proxy interface.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public interface MyInvalidServiceSync {
 

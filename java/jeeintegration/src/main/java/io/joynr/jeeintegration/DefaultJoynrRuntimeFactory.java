@@ -69,8 +69,6 @@ import joynr.infrastructure.DacTypes.TrustLevel;
  * <p>
  * <b>IMPORTANT</b>: This class requires the EE runtime to have been configured with a ManagedScheduledExecutorService
  * resource which has been given the name 'concurrent/joynrMessagingScheduledExecutor'.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @Singleton
 public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {

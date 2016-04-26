@@ -34,8 +34,6 @@ import io.joynr.jeeintegration.messaging.JeeMessagingEndpoint;
 
 /**
  * Unit tests for the {@link JeeMessagingApplication}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class JeeMessagingApplicationTest {
 

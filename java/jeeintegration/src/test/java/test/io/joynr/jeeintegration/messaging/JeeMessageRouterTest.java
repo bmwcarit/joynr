@@ -43,8 +43,6 @@ import joynr.system.RoutingTypes.Address;
 
 /**
  * Unit tests for the {@link io.joynr.jeeintegration.messaging.JeeMessageRouter}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @RunWith(MockitoJUnitRunner.class)
 public class JeeMessageRouterTest {

@@ -42,8 +42,6 @@ import com.google.inject.Guice;
 
 /**
  * Unit tests for the {@link JoynrIntegrationBean}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @RunWith(MockitoJUnitRunner.class)
 public class JoynrIntegrationBeanTest {

@@ -48,8 +48,6 @@ import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for the {@link HttpBridgeEndpointRegistryClient}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class HttpBridgeEndpointRegistryClientTest {
 
