@@ -88,8 +88,8 @@ TEST_F(SubscriptionQosTest, createOnChangeSubscriptionQosWithValidity)
         std::int64_t expiryDateUpperBound = nowPlusTimeSpan(validityMs);
         onChangeSubscriptionQos.setPublicationTtlMs(publicationTtlMs);
 
-        EXPECT_GE(expiryDateLowerBound, onChangeSubscriptionQos.getExpiryDateMs());
-        EXPECT_LE(expiryDateUpperBound, onChangeSubscriptionQos.getExpiryDateMs());
+        EXPECT_LE(expiryDateLowerBound, onChangeSubscriptionQos.getExpiryDateMs());
+        EXPECT_GE(expiryDateUpperBound, onChangeSubscriptionQos.getExpiryDateMs());
         EXPECT_EQ(publicationTtlMs, onChangeSubscriptionQos.getPublicationTtlMs());
         EXPECT_EQ(minIntervalMs, onChangeSubscriptionQos.getMinIntervalMs());
     }
@@ -101,8 +101,8 @@ TEST_F(SubscriptionQosTest, createOnChangeSubscriptionQosWithValidity)
         onChangeSubscriptionQos.setPublicationTtlMs(publicationTtlMs);
         onChangeSubscriptionQos.setMinIntervalMs(minIntervalMs);
 
-        EXPECT_GE(expiryDateLowerBound, onChangeSubscriptionQos.getExpiryDateMs());
-        EXPECT_LE(expiryDateUpperBound, onChangeSubscriptionQos.getExpiryDateMs());
+        EXPECT_LE(expiryDateLowerBound, onChangeSubscriptionQos.getExpiryDateMs());
+        EXPECT_GE(expiryDateUpperBound, onChangeSubscriptionQos.getExpiryDateMs());
         EXPECT_EQ(publicationTtlMs, onChangeSubscriptionQos.getPublicationTtlMs());
         EXPECT_EQ(minIntervalMs, onChangeSubscriptionQos.getMinIntervalMs());
     }
@@ -121,8 +121,8 @@ TEST_F(SubscriptionQosTest, createOnChangeSubscriptionQosWithValidityDeprecatedA
         std::int64_t expiryDateUpperBound = nowPlusTimeSpan(validityMs);
         onChangeSubscriptionQos.setPublicationTtl(publicationTtlMs);
 
-        EXPECT_GE(expiryDateLowerBound, onChangeSubscriptionQos.getExpiryDateMs());
-        EXPECT_LE(expiryDateUpperBound, onChangeSubscriptionQos.getExpiryDateMs());
+        EXPECT_LE(expiryDateLowerBound, onChangeSubscriptionQos.getExpiryDateMs());
+        EXPECT_GE(expiryDateUpperBound, onChangeSubscriptionQos.getExpiryDateMs());
         EXPECT_EQ(publicationTtlMs, onChangeSubscriptionQos.getPublicationTtl());
         EXPECT_EQ(minIntervalMs, onChangeSubscriptionQos.getMinInterval());
     }
@@ -134,8 +134,8 @@ TEST_F(SubscriptionQosTest, createOnChangeSubscriptionQosWithValidityDeprecatedA
         onChangeSubscriptionQos.setPublicationTtl(publicationTtlMs);
         onChangeSubscriptionQos.setMinInterval(minIntervalMs);
 
-        EXPECT_GE(expiryDateLowerBound, onChangeSubscriptionQos.getExpiryDateMs());
-        EXPECT_LE(expiryDateUpperBound, onChangeSubscriptionQos.getExpiryDateMs());
+        EXPECT_LE(expiryDateLowerBound, onChangeSubscriptionQos.getExpiryDateMs());
+        EXPECT_GE(expiryDateUpperBound, onChangeSubscriptionQos.getExpiryDateMs());
         EXPECT_EQ(publicationTtlMs, onChangeSubscriptionQos.getPublicationTtl());
         EXPECT_EQ(minIntervalMs, onChangeSubscriptionQos.getMinInterval());
     }
