@@ -35,6 +35,7 @@ This project has dependencies to:
   Arquillian Config Implementation Base under Apache License, Version 2.0
   Arquillian Container GlassFish Embedded 3.1 under Public Domain
   Arquillian Container Implementation Base under Apache License, Version 2.0
+  Arquillian Container SPI under Apache License, Version 2.0
   Arquillian Container Test API under Apache License, Version 2.0
   Arquillian Container Test Implementation Base under Apache License, Version 2.0
   Arquillian Container Test SPI under Apache License, Version 2.0
@@ -240,6 +241,7 @@ This project has dependencies to:
   Serp under BSD
   ServiceLocator Default Implementation under CDDL + GPLv2 with classpath exception
   ShrinkWrap API under Apache License, Version 2.0
+  ShrinkWrap Descriptors API Base under Apache License, Version 2.0
   ShrinkWrap Descriptors SPI under Apache License, Version 2.0
   ShrinkWrap Implementation Base under Apache License, Version 2.0
   ShrinkWrap SPI under Apache License, Version 2.0
