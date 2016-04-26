@@ -24,6 +24,8 @@
   2016.
 * **[JS, C++, Java]** The provider version can no longer be set programmatically in ProviderQos.
   Instead the value as modeled in Franca is generated into the provider interface.
+* **[C++, Java, JS]** Support for empty broadcast. Broadcast with no output parameter is now
+  supported in all three languages.
 
 ##Other changes
 * **[C++]** The content of the message router and the local capabilities directory is now persisted
@@ -31,6 +33,7 @@
   JSON format) respectively to _MessageRouter.persist_ and to _LocalCapabilitiesDirectory.persist_.
 * **[C++, Java, JS]** The backend service ChannelUrlDirectory has been eliminated. Addressing is
   now saved in the Discovery Directory.
+* **[JS]** Small fixes in the jsdoc of generated proxies and providers.
 
 #joynr 0.16.0
 
