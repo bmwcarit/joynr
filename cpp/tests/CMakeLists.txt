@@ -340,16 +340,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 endif(${BUILD_CLUSTER_CONTROLLER})
 
-file(
-    GLOB_RECURSE JoynrTest_GENSOURCES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "gen/*.cpp"
-)
-
-file(
-    GLOB_RECURSE JoynrTest_GENHEADERS
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "gen/*.h"
+set(
+    test_TARGET_LIBRARIES
+    JoynrCommon
+    Joynr
+    JoynrJsonSerializer
 )
 
 set(
@@ -365,11 +360,31 @@ set(
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 
-set(
-    test_TARGET_LIBRARIES
-    JoynrCommon
-    Joynr
-    JoynrJsonSerializer
+file(
+    GLOB_RECURSE JoynrTest_GENSOURCES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "gen/*.cpp"
+)
+
+file(
+    GLOB_RECURSE JoynrTest_GENHEADERS
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "gen/*.h"
+)
+
+add_library(JoynrTestGenerated SHARED
+    ${JoynrTest_GENSOURCES}
+    ${JoynrTest_GENHEADERS}
+)
+
+target_link_libraries(
+    JoynrTestGenerated
+    ${test_TARGET_LIBRARIES}
+)
+
+target_include_directories(
+    JoynrTestGenerated
+    PUBLIC ${JoynrTest_INCLUDE_DIRECTORIES}
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -483,14 +498,12 @@ set(
     "utils/MockObjects.cpp"
     "utils/MockLocalCapabilitiesDirectoryCallback.cpp"
     "TestMain.cpp"
-    ${JoynrTest_GENSOURCES}
 )
 
 set(
     libjoynr_test_SOURCES
     "PrettyPrint.cpp"
     "TestMain.cpp"
-    ${JoynrTest_GENSOURCES}
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -525,6 +538,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_UnitTests
+            JoynrTestGenerated
             Qt5::Test
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
@@ -564,7 +578,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
            ${g_IntegrationTests_SOURCES}
         )
 
-        target_link_libraries(g_IntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
+        target_link_libraries(
+            g_IntegrationTests
+            JoynrTestGenerated
+            ${cluster_controller_test_TARGET_LIBRARIES}
+        )
 
         target_include_directories(
             g_IntegrationTests
@@ -600,7 +618,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
            ${g_SystemIntegrationTests_SOURCES}
         )
 
-        target_link_libraries(g_SystemIntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
+        target_link_libraries(
+            g_SystemIntegrationTests
+            JoynrTestGenerated
+            ${cluster_controller_test_TARGET_LIBRARIES}
+        )
 
         set_target_properties(
            g_SystemIntegrationTests
@@ -646,6 +668,7 @@ else()
 
     target_link_libraries(
             g_UnitTests
+            JoynrTestGenerated
             Qt5::Test
             ${libjoynr_test_TARGET_LIBRARIES}
         )
@@ -680,7 +703,11 @@ else()
            ${g_SystemIntegrationTests_SOURCES}
         )
 
-        target_link_libraries(g_SystemIntegrationTests ${libjoynr_test_TARGET_LIBRARIES})
+        target_link_libraries(
+            g_SystemIntegrationTests
+            JoynrTestGenerated
+            ${libjoynr_test_TARGET_LIBRARIES}
+        )
 
         target_include_directories(
             g_SystemIntegrationTests
