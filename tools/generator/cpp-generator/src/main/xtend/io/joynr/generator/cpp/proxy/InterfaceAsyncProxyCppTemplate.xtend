@@ -49,8 +49,6 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 «ENDFOR»
 
 #include "joynr/Future.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
 #include "joynr/exceptions/JoynrException.h"
 
 «getNamespaceStarter(francaIntf)»
