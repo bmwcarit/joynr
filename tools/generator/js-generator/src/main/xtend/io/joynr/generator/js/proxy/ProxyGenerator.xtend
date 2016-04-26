@@ -30,6 +30,7 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import java.util.Date
+import java.util.regex.Pattern
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
 
@@ -63,7 +64,7 @@ class ProxyGenerator extends InterfaceTemplate {
 
 		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, File::separator)
 		val path = containerpath + packagePath + File::separator
-		packagePathDepth = packagePath.split(File::separator).length
+		packagePathDepth = packagePath.split(Pattern.quote(File::separator)).length
 
 		val fileName = path + "" + proxyName + ".js"
 		if (clean) {
