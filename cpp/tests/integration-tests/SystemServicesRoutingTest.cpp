@@ -49,17 +49,26 @@ public:
         routingDomain = systemSettings.getDomain();
         routingProviderParticipantId = systemSettings.getCcRoutingProviderParticipantId();
 
-        discoveryQos.setCacheMaxAge(1000);
+        discoveryQos.setCacheMaxAgeMs(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
         discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
-        discoveryQos.setDiscoveryTimeout(50);
+        discoveryQos.setDiscoveryTimeoutMs(50);
 
-        std::string channelIdHttp("SystemServicesRoutingTest.ChannelId");
-        std::string channelIdMqtt("mqtt_SystemServicesRoutingTest.ChannelId");
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdHttp));
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdMqtt));
+        std::string httpChannelId("http_SystemServicesRoutingTest.ChannelId");
+        std::string httpEndPointUrl("http_SystemServicesRoutingTest.endPointUrl");
+        std::string mqttTopic("mqtt_SystemServicesRoutingTest.topic");
+        std::string mqttBrokerUrl("mqtt_SystemServicesRoutingTest.brokerUrl");
+
+        using system::RoutingTypes::ChannelAddress;
+        using system::RoutingTypes::MqttAddress;
+
+        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
+
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getGlobalClusterControllerAddress())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
@@ -153,7 +162,7 @@ TEST_F(SystemServicesRoutingTest, addNextHopHttp)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
     bool isResolvable = false;
 
     try {
@@ -184,7 +193,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
     bool isResolvable = false;
 
     try {

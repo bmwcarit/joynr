@@ -1,7 +1,5 @@
 package joynr.system.RoutingTypes;
 
-import java.io.IOException;
-
 /*
  * #%L
  * %%
@@ -21,9 +19,10 @@ import java.io.IOException;
  * #L%
  */
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.exceptions.JoynrIllegalStateException;
 
 public class RoutingTypesUtil {
@@ -31,31 +30,20 @@ public class RoutingTypesUtil {
     static ObjectMapper objectMapper = new ObjectMapper();
 
     public static String toAddressString(Address address) {
-        if (address instanceof ChannelAddress) {
-            return ((ChannelAddress) address).getChannelId();
-        } else if (address instanceof MqttAddress) {
-            MqttAddress mqttAddress = (MqttAddress) address;
-            try {
-                return objectMapper.writeValueAsString(mqttAddress);
-            } catch (JsonProcessingException e) {
-                throw new JoynrIllegalStateException("MQTT address could not be serilaized: " + e.getMessage());
-            }
+        try {
+            return objectMapper.writeValueAsString(address);
+        } catch (JsonProcessingException e) {
+            throw new JoynrIllegalStateException("unable to serialize address: " + address + " reason:"
+                    + e.getMessage());
         }
-        throw new JoynrIllegalStateException("unable to convert address to string: unknown address type: " + address);
     }
 
     public static Address fromAddressString(String addressString) {
-        //TODO channelId for ChannelAddress not yet serialized as object. Later this If will not be necessary
-        if (addressString.startsWith("{")) {
-            try {
-                return objectMapper.readValue(addressString, MqttAddress.class);
-            } catch (IOException e) {
-                throw new JoynrIllegalStateException("unable to deserialize address: " + addressString + " reason:"
-                        + e.getMessage());
-            }
-        } else {
-            return new ChannelAddress(addressString);
+        try {
+            return objectMapper.readValue(addressString, Address.class);
+        } catch (IOException e) {
+            throw new JoynrIllegalStateException("unable to deserialize address: " + addressString + " reason:"
+                    + e.getMessage());
         }
-
     }
 }

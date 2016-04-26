@@ -37,7 +37,7 @@ FixedParticipantArbitrator::FixedParticipantArbitrator(
         const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
           participantId(discoveryQos.getCustomParameter("fixedParticipantId").getValue()),
-          reqCacheDataFreshness(discoveryQos.getCacheMaxAge())
+          reqCacheDataFreshness(discoveryQos.getCacheMaxAgeMs())
 {
 }
 
@@ -46,10 +46,9 @@ void FixedParticipantArbitrator::attemptArbitration()
     joynr::types::DiscoveryEntry result;
     try {
         discoveryProxy.lookup(result, participantId);
-        joynr::types::CommunicationMiddleware::Enum preferredConnection(
-                selectPreferredCommunicationMiddleware(result.getConnections()));
+
         updateArbitrationStatusParticipantIdAndAddress(
-                ArbitrationStatus::ArbitrationSuccessful, participantId, preferredConnection);
+                ArbitrationStatus::ArbitrationSuccessful, participantId);
     } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "

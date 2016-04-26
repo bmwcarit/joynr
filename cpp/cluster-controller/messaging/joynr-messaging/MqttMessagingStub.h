@@ -23,6 +23,7 @@
 
 #include "joynr/IMessaging.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {
@@ -36,8 +37,8 @@ class MqttMessagingStub : public IMessaging
 {
 public:
     explicit MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                               const std::string& destinationChannelId,
-                               const std::string& receiveChannelId);
+                               const system::RoutingTypes::MqttAddress& destinationAddress,
+                               const std::string& globalClusterControllerAddress);
     ~MqttMessagingStub() override = default;
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
@@ -46,8 +47,8 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingStub);
     std::shared_ptr<IMessageSender> messageSender;
-    const std::string destinationChannelId;
-    const std::string receiveChannelId;
+    const system::RoutingTypes::MqttAddress destinationAddress;
+    const std::string globalClusterControllerAddress;
 };
 
 } // namespace joynr

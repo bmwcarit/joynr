@@ -93,20 +93,16 @@ class InterfaceSyncTemplate extends InterfaceTemplate {
 		val interfaceName =  francaIntf.joynrName
 		val syncClassName = interfaceName + "Sync"
 		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
-		val hasMethodWithArguments = hasMethodWithArguments(francaIntf);
-		val hasWriteAttribute = hasWriteAttribute(francaIntf);
 		'''
 «warning()»
 
 package «packagePath»;
 
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-
-«IF hasWriteAttribute || hasMethodWithArguments»
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.Sync;
+«IF jeeExtension»
+import io.joynr.ProvidedBy;
+import io.joynr.UsedBy;
 «ENDIF»
-
-import io.joynr.exceptions.JoynrRuntimeException;
 «IF hasMethodWithErrorEnum(francaIntf)»
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
@@ -115,18 +111,22 @@ import io.joynr.exceptions.JoynrRuntimeException;
 	import «datatype»;
 «ENDFOR»
 
-public interface «syncClassName» extends «interfaceName», JoynrSyncInterface {
-
+@Sync
+«IF jeeExtension»
+@ProvidedBy(«francaIntf.providerClassName».class)
+@UsedBy(«francaIntf.proxyClassName».class)
+«ENDIF»
+public interface «syncClassName» extends «interfaceName» {
 «FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
 	«var attributeName = attribute.joynrName»
 	«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
-			public «attributeType» «getAttribute»() throws JoynrRuntimeException;
+			public «attributeType» «getAttribute»();
 		«ENDIF»
 		«IF isWritable(attribute)»
-			void «setAttribute»(«attributeType» «attributeName») throws JoynrRuntimeException;
+			void «setAttribute»(«attributeType» «attributeName»);
 		«ENDIF»
 «ENDFOR»
 
@@ -151,23 +151,12 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 
 «FOR method: getMethods(francaIntf) SEPARATOR "\n"»
 	«var methodName = method.joynrName»
-	«var outputParameters = method.typeNamesForOutputParameter»
 		/*
 		* «methodName»
 		*/
-		«IF outputParameters.size > 1»
-			public «methodToReturnTypeName.get(method)» «methodName»(
-					«method.typedParameterListJavaRpc»
-		«ELSE»
-			«IF method.typeNamesForOutputParameter.iterator.next=="void"»
-				public «methodToReturnTypeName.get(method)» «methodName»(
-						«getTypedParameterListJavaRpc(method)»
-			«ELSE»
-				public «methodToReturnTypeName.get(method)» «methodName»(
-						«getTypedParameterListJavaRpc(method)»
-			«ENDIF»
-		«ENDIF»
-		) throws JoynrRuntimeException«IF method.hasErrorEnum», ApplicationException«ENDIF»;
+		public «methodToReturnTypeName.get(method)» «methodName»(
+				«method.inputParameters.typedParameterList»
+		) «IF method.hasErrorEnum»throws ApplicationException«ENDIF»;
 «ENDFOR»
 }
 		'''

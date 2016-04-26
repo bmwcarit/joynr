@@ -36,11 +36,11 @@
 #include "joynr/TypedClientMultiCache.h"
 #include "joynr/Logger.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/types/CapabilityInformation.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/Semaphore.h"
 #include "common/InterfaceAddress.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
@@ -69,6 +69,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
 public:
     LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                ICapabilitiesClient* capabilitiesClientPtr,
+                               const std::string& localAddress,
                                MessageRouter& messageRouter);
 
     ~LocalCapabilitiesDirectory() override;
@@ -171,7 +172,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
-    void capabilitiesReceived(const std::vector<types::CapabilityInformation>& results,
+    void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
                               std::vector<CapabilityEntry> cachedLocalCapabilies,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
                               joynr::types::DiscoveryScope::Enum discoveryScope);
@@ -215,6 +216,7 @@ private:
 
     ADD_LOGGER(LocalCapabilitiesDirectory);
     ICapabilitiesClient* capabilitiesClient;
+    std::string localAddress;
     std::mutex cacheLock;
 
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2GlobalCapabilities;
@@ -223,7 +225,7 @@ private:
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2LocalCapabilities;
     TypedClientMultiCache<std::string, CapabilityEntry> participantId2LocalCapability;
 
-    std::vector<types::CapabilityInformation> registeredGlobalCapabilities;
+    std::vector<types::GlobalDiscoveryEntry> registeredGlobalCapabilities;
     MessageRouter& messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 

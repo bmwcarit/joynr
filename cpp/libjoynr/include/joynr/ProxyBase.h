@@ -23,7 +23,6 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/types/CommunicationMiddleware.h"
 #include <string>
 
 namespace joynr
@@ -57,9 +56,8 @@ protected:
      *  handleArbitrationFinished has to be implemented by the concrete provider proxy.
      *  It is called as soon as the arbitration result is available.
      */
-    virtual void handleArbitrationFinished(
-            const std::string& participantId,
-            const joynr::types::CommunicationMiddleware::Enum& connection);
+    virtual void handleArbitrationFinished(const std::string& participantId,
+                                           bool useInProcessConnector);
 
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
@@ -68,7 +66,6 @@ protected:
     bool cached;
     std::string providerParticipantId;
     std::string proxyParticipantId;
-    joynr::types::CommunicationMiddleware::Enum* connection;
     ADD_LOGGER(ProxyBase);
 };
 

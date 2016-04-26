@@ -30,9 +30,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/TypeUtil.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
-#include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/MessageRouter.h"
@@ -49,7 +47,6 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const std::string& receiverId,
         const LongPollingMessageReceiverSettings& settings,
         std::shared_ptr<Semaphore> channelCreatedSemaphore,
-        std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
         std::function<void(const std::string&)> onTextMessageReceived)
         : Thread("LongPollRecv"),
           brokerUrl(brokerUrl),
@@ -59,7 +56,6 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
           interrupted(false),
           interruptedMutex(),
           interruptedWait(),
-          channelUrlDirectory(channelUrlDirectory),
           channelCreatedSemaphore(channelCreatedSemaphore),
           onTextMessageReceived(onTextMessageReceived)
 {
@@ -111,18 +107,8 @@ void LongPollingMessageReceiver::run()
             interruptedWait.wait_for(lock, settings.createChannelRetryInterval);
         }
     }
-    /**
-      * register the channelUrl with the ChannelUrlDirectory (asynchronously)
-      */
-    assert(channelUrlDirectory != nullptr);
-    types::ChannelUrlInformation urlInformation;
-    std::vector<std::string> urls = {channelUrl};
-    urlInformation.setUrls(urls);
-    JOYNR_LOG_INFO(
-            logger,
-            "Adding channelId and Url of cluster controller to remote ChannelUrlDirectory {}",
-            channelUrl);
-    channelUrlDirectory->registerChannelUrlsAsync(channelId, urlInformation);
+
+    // TODO: The received URL must be forwarded in such a way that ChannelAddress objects use it.
 
     while (!isInterrupted()) {
 

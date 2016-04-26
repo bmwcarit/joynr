@@ -19,8 +19,7 @@ package io.joynr.runtime;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import joynr.types.ProviderQos;
@@ -34,7 +33,7 @@ public interface JoynrRuntime {
     /**
      * Registers a provider in the joynr framework
      *
-     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)} instead.
+     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntime#registerProvider(String, Object, ProviderQos)} instead.
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
@@ -43,7 +42,7 @@ public interface JoynrRuntime {
      * @return Returns a Future which can be used to check the registration status.
      */
     @Deprecated
-    Future<Void> registerProvider(String domain, JoynrProvider provider);
+    Future<Void> registerProvider(String domain, AbstractJoynrProvider provider);
 
     /**
      * Registers a provider in the joynr framework
@@ -52,12 +51,14 @@ public interface JoynrRuntime {
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
-     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     *            Instance of the provider implementation. It is assumed that the provided implementations offers
+     *            the following annotations in its (inherited) class definition: {@link io.joynr.provider.JoynrInterface}
+     *            and {@link io.joynr.provider.JoynrVersion}.
      * @param providerQos
      *            The providers quality of service settings.
      * @return Returns a Future which can be used to check the registration status.
      */
-    Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos);
+    Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
 
     /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.
@@ -67,7 +68,7 @@ public interface JoynrRuntime {
      * @param provider
      *            The provider instance.
      */
-    void unregisterProvider(String domain, JoynrProvider provider);
+    void unregisterProvider(String domain, Object provider);
 
     /**
      * Returns a proxy builder instance to build a proxy object.
@@ -80,7 +81,7 @@ public interface JoynrRuntime {
      * @return After setting arbitration, proxy and messaging QoS parameters the returned ProxyBuilder can be used to
      *         build the proxy instance.
      */
-    <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass);
+    <T> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass);
 
     /**
      * Shutdown the joynr instance:

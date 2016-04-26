@@ -13,7 +13,7 @@ include(AddClangFormat)
 set(
     JOYNR_SERVER
     "localhost:8080"
-    CACHE STRING "joynr infrastructure server (BounceProxy, CapDir, ChannelUrlDir) to use in settings files."
+    CACHE STRING "joynr infrastructure server (BounceProxy, CapDir) to use in settings files."
 )
 
 message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")

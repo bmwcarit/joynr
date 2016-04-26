@@ -20,6 +20,14 @@ package types
 
 typeCollection {
 
+	<** @description: a version information **>
+	struct Version {
+		<** @description: the major version id **>
+		Int32 majorVersion
+		<** @description: the minor version id **>
+		Int32 minorVersion
+	}
+
 	<** @description: a custom parameter consisting of a name and a value **>
 	struct CustomParameter {
 		<** @description: the name of the custom parameter **>
@@ -79,24 +87,6 @@ typeCollection {
 		GLOBAL_ONLY
 	}
 
-	<** @description: Enumeration specifying the different means for communication **>
-	enumeration CommunicationMiddleware {
-		<** @description: Joynr internal communication **>
-		JOYNR
-		<** @description: Communication using CommonAPI over DBus **>
-		COMMONAPI_DBUS
-		<** @description: Communication using Browser **>
-		BROWSER
-		<** @description: Communication using web sockets **>
-		WEBSOCKET
-		<** @description: Communication using Some IP protocol **>
-		SOME_IP
-		<** @description: Communication using in process means **>
-		IN_PROCESS
-		<** @description: None of the above **>
-		NONE
-	}
-
 	<** @description: Discovery quality of service settings **>
 	struct DiscoveryQos {
 		<** @description: The maximum age of a cached entry in milliseconds **>
@@ -107,7 +97,9 @@ typeCollection {
 		Boolean providerMustSupportOnChange
 	}
 
-	struct DiscoveryEntry {
+	struct DiscoveryEntry polymorphic {
+		<** @description: semantic version information **>
+		Version providerVersion
 		<** @description: the domain to register the provider with **>
 		String domain
 		<** @description: the name of the provider interface **>
@@ -116,34 +108,14 @@ typeCollection {
 		String participantId
 		<** @description: the qos of the provider **>
 		ProviderQos qos
-		<**
-			@description: a list of communications middlewares that can be used
-				to access the provider
-		**>
-		CommunicationMiddleware[] connections
+		<** @description: the date in millis since epoch when the source for this provider last contacted the directory **>
+		Int64 lastSeenDateMs
+		<** @description: the date in millis since epoch when this entry can be purged from the directory and caches **>
+		Int64 expiryDateMs
 	}
 
-	<** @description: the capability information holding the information for a provider **>
-	struct CapabilityInformation {
-		<** @description: the domain name of the provider **>
-		String domain
-
-		<** @description: the name of the interface of the provider **>
-		String interfaceName
-
-		<** @description: the provider quality of service settings **>
-		ProviderQos providerQos
-
-		<** @description: the channel id of the provider **>
-		String channelId
-
-		<** @description: the participant id of the provider **>
-		String participantId
-	}
-
-	<** @description: the channel URL information **>
-	struct ChannelUrlInformation {
-		<** @description: a list of urls **>
-		String[] urls
+	struct GlobalDiscoveryEntry extends DiscoveryEntry {
+		<** @description: the serialized transport-middleware-specific address where the provider can be reached **>
+		String address
 	}
 }

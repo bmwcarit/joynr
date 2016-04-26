@@ -77,8 +77,7 @@ public class ServersUtil {
     }
 
     private static void setDirectoriesUrl() {
-        if (System.getProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) != null
-                && System.getProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) != null) {
+        if (System.getProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) != null) {
             // use existing discovery
             return;
         }
@@ -88,8 +87,7 @@ public class ServersUtil {
         }
         String directoriesUrl = serverUrl + DISCOVERY_CONTEXT + "/channels/discoverydirectory_channelid/";
 
-        System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
-        System.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, directoriesUrl);
+        System.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, directoriesUrl);
     }
 
     public static Server startServers() throws Exception {

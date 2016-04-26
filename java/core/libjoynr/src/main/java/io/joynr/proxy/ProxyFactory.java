@@ -19,7 +19,6 @@ package io.joynr.proxy;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.messaging.MessagingQos;
 
 import java.lang.reflect.Proxy;
@@ -32,9 +31,9 @@ public final class ProxyFactory {
 
     @SuppressWarnings("unchecked")
     // necessary for jenkins?
-    public static <T extends JoynrInterface> T createProxy(Class<T> interfaceClass,
-                                                           final MessagingQos qosSettings,
-                                                           ProxyInvocationHandler proxyInvocationHandler) {
+    public static <T> T createProxy(Class<T> interfaceClass,
+                                    final MessagingQos qosSettings,
+                                    ProxyInvocationHandler proxyInvocationHandler) {
         return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(),
                                           new Class<?>[]{ interfaceClass },
                                           proxyInvocationHandler);

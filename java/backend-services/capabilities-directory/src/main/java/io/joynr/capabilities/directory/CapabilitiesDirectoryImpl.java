@@ -20,23 +20,21 @@ package io.joynr.capabilities.directory;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.capabilities.CapabilitiesStore;
-import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.CapabilityEntryPersisted;
+import io.joynr.capabilities.DiscoveryEntryStore;
+import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
-import joynr.types.CapabilityInformation;
+import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -45,42 +43,33 @@ import com.google.inject.Singleton;
  * Capability informations are stored in a concurrentHashMap. Using a in memory database could be possible optimization.
  */
 
-// TODO Evaluate pro /cons of a in memory database
-// TODO Using the interfaceAddress as the key may increase performance in most
-// requests.
-
 @Singleton
 public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryImpl.class);
-    private CapabilitiesStore capabiltiesStore;
+
+    private DiscoveryEntryStore discoveryEntryStore;
 
     @Inject
-    public CapabilitiesDirectoryImpl(CapabilitiesStore capabiltiesStore) {
-        this.capabiltiesStore = capabiltiesStore;
+    public CapabilitiesDirectoryImpl(@Persisted DiscoveryEntryStore discoveryEntryStore) {
+        this.discoveryEntryStore = discoveryEntryStore;
     }
 
     @Override
-    public Promise<DeferredVoid> add(CapabilityInformation capabilityInformation) {
+    public Promise<DeferredVoid> add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         DeferredVoid deferred = new DeferredVoid();
-        CapabilityEntry capabilityEntry = new CapabilityEntryPersisted(capabilityInformation);
-        logger.debug("registered capability: {}", capabilityEntry);
-        capabiltiesStore.add(capabilityEntry);
+        GlobalDiscoveryEntryPersisted discoveryEntry = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry);
+        logger.debug("registered discovery entry: {}", discoveryEntry);
+        discoveryEntryStore.add(discoveryEntry);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
-    public Promise<DeferredVoid> add(CapabilityInformation[] capabilitiesInformation) {
+    public Promise<DeferredVoid> add(GlobalDiscoveryEntry[] globalDiscoveryEntries) {
         DeferredVoid deferred = new DeferredVoid();
-        // TODO check interfaces before adding them
-        List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
-        for (CapabilityInformation capInfo : capabilitiesInformation) {
-            capabilityEntries.add(new CapabilityEntryPersisted(capInfo));
+        for (GlobalDiscoveryEntry globalDiscoveryEntry : globalDiscoveryEntries) {
+            add(globalDiscoveryEntry);
         }
-
-        logger.debug("registered capabilities: interface {}", capabilityEntries.toString());
-
-        capabiltiesStore.add(capabilityEntries);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -88,19 +77,16 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public Promise<DeferredVoid> remove(String participantId) {
         DeferredVoid deferred = new DeferredVoid();
-        logger.debug("removed capability with participantId: {}", participantId);
-        capabiltiesStore.remove(participantId);
+        logger.debug("removed discovery entry with participantId: {}", participantId);
+        discoveryEntryStore.remove(participantId);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
-    public Promise<DeferredVoid> remove(String[] capabilities) {
+    public Promise<DeferredVoid> remove(String[] participantIds) {
         DeferredVoid deferred = new DeferredVoid();
-        // TODO who is allowed to remove capabilities
-        List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
-        logger.debug("Removing capabilities: Capabilities {}", capabilityEntries);
-        capabiltiesStore.remove(Arrays.asList(capabilities));
+        discoveryEntryStore.remove(Arrays.asList(participantIds));
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -109,26 +95,29 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     public Promise<Lookup1Deferred> lookup(final String domain, final String interfaceName) {
         Lookup1Deferred deferred = new Lookup1Deferred();
         logger.debug("Searching channels for domain: " + domain + " interfaceName: " + interfaceName + " {}");
-        Collection<CapabilityEntry> entryCollection = capabiltiesStore.lookup(domain, interfaceName);
-        CapabilityInformation[] capabilityInformationList = new CapabilityInformation[entryCollection.size()];
+        Collection<DiscoveryEntry> discoveryEntries = discoveryEntryStore.lookup(domain, interfaceName);
+        GlobalDiscoveryEntry[] globalDiscoveryEntries = new GlobalDiscoveryEntry[discoveryEntries.size()];
         int index = 0;
-        for (CapabilityEntry entry : entryCollection) {
-            capabilityInformationList[index] = entry.toCapabilityInformation();
+        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+            // entries from persisted store are of type GlobalDiscoveryEntryPersisted.
+            // Copy required or else _typeName will be incorrect
+            globalDiscoveryEntries[index] = new GlobalDiscoveryEntry((GlobalDiscoveryEntry) discoveryEntry);
             index++;
         }
-        deferred.resolve(capabilityInformationList);
+        deferred.resolve(globalDiscoveryEntries);
         return new Promise<Lookup1Deferred>(deferred);
     }
 
     @Override
     public Promise<Lookup2Deferred> lookup(String forParticipantId) {
         Lookup2Deferred deferred = new Lookup2Deferred();
-        logger.debug("Searching capabilities for participantId: {}", forParticipantId);
-        CapabilityEntry capEntry = capabiltiesStore.lookup(forParticipantId, DiscoveryQos.NO_FILTER.getCacheMaxAge());
-        if (capEntry == null) {
+        logger.debug("Searching discovery entries for participantId: {}", forParticipantId);
+        DiscoveryEntry discoveryEntry = discoveryEntryStore.lookup(forParticipantId,
+                                                                   DiscoveryQos.NO_FILTER.getCacheMaxAgeMs());
+        if (discoveryEntry == null) {
             deferred.resolve(null);
         } else {
-            deferred.resolve(capEntry.toCapabilityInformation());
+            deferred.resolve((GlobalDiscoveryEntry) discoveryEntry);
         }
         return new Promise<Lookup2Deferred>(deferred);
     }

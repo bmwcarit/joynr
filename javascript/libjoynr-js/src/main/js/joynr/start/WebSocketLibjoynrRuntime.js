@@ -25,7 +25,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/capabilities/arbitration/Arbitrator",
     "joynr/provider/ProviderBuilder",
     "joynr/proxy/ProxyBuilder",
-    "joynr/types/CapabilityInformation",
+    "joynr/types/GlobalDiscoveryEntry",
     "joynr/capabilities/CapabilitiesRegistrar",
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/dispatching/RequestReplyManager",
@@ -73,7 +73,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         Arbitrator,
         ProviderBuilder,
         ProxyBuilder,
-        CapabilityInformation,
+        GlobalDiscoveryEntry,
         CapabilitiesRegistrar,
         ParticipantIdStorage,
         RequestReplyManager,
@@ -318,7 +318,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     typedCapabilities = [];
                     for (i = 0; i < untypedCapabilities.length; i++) {
-                        var capability = new CapabilityInformation(untypedCapabilities[i]);
+                        var capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
                         initialRoutingTable[capability.participantId] = ccAddress;
                         typedCapabilities.push(capability);
                     }

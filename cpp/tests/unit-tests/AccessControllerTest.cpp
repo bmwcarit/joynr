@@ -23,6 +23,7 @@
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/Version.h"
 #include <tuple>
 #include <string>
 
@@ -121,12 +122,17 @@ public:
         )
                 .WillByDefault(Return("fooParticipantId"));
 
+        std::int64_t lastSeenDateMs = 0;
+        std::int64_t expiryDateMs = 0;
+        joynr::types::Version providerVersion(47, 11);
         discoveryEntry = DiscoveryEntry(
+                providerVersion,
                 TEST_DOMAIN,
                 TEST_INTERFACE,
                 toParticipantId,
                 types::ProviderQos(),
-                connections
+                lastSeenDateMs,
+                expiryDateMs
         );
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
@@ -160,7 +166,6 @@ protected:
     static const std::string TEST_DOMAIN;
     static const std::string TEST_INTERFACE;
     static const std::string TEST_OPERATION;
-    static const std::vector<CommunicationMiddleware::Enum> connections;
 private:
     DISALLOW_COPY_AND_ASSIGN(AccessControllerTest);
 };
@@ -173,9 +178,6 @@ const std::string AccessControllerTest::DUMMY_USERID("testUserId");
 const std::string AccessControllerTest::TEST_DOMAIN("testDomain");
 const std::string AccessControllerTest::TEST_INTERFACE("testInterface");
 const std::string AccessControllerTest::TEST_OPERATION("testOperation");
-const std::vector<CommunicationMiddleware::Enum> AccessControllerTest::connections = {
-        CommunicationMiddleware::SOME_IP
-};
 
 //----- Tests ------------------------------------------------------------------
 

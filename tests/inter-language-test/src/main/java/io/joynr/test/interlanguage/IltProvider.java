@@ -18,7 +18,6 @@ package io.joynr.test.interlanguage;
  * limitations under the License.
  * #L%
  */
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -256,7 +255,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * can only resolve or reject since there is no output parameter
      */
     @Override
-    public Promise<DeferredVoid> methodWithoutOutputParameter(@JoynrRpcParam("booleanArg") Boolean booleanArg) {
+    public Promise<DeferredVoid> methodWithoutOutputParameter(Boolean booleanArg) {
         logger.warn("*************************************************");
         logger.warn("* IltProvider.methodWithoutOutputParameter called");
         logger.warn("*************************************************");
@@ -277,7 +276,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * returns the integer parameter as string
      */
     @Override
-    public Promise<MethodWithSinglePrimitiveParametersDeferred> methodWithSinglePrimitiveParameters(@JoynrRpcParam("uInt16Arg") Short uInt16Arg) {
+    public Promise<MethodWithSinglePrimitiveParametersDeferred> methodWithSinglePrimitiveParameters(Short uInt16Arg) {
         logger.warn("********************************************************");
         logger.warn("* IltProvider.methodWithSinglePrimitiveParameters called");
         logger.warn("********************************************************");
@@ -303,9 +302,9 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * and return the integer argument as string
      */
     @Override
-    public Promise<MethodWithMultiplePrimitiveParametersDeferred> methodWithMultiplePrimitiveParameters(@JoynrRpcParam("int32Arg") Integer int32Arg,
-                                                                                                        @JoynrRpcParam("floatArg") Float floatArg,
-                                                                                                        @JoynrRpcParam("booleanArg") Boolean booleanArg) {
+    public Promise<MethodWithMultiplePrimitiveParametersDeferred> methodWithMultiplePrimitiveParameters(Integer int32Arg,
+                                                                                                        Float floatArg,
+                                                                                                        Boolean booleanArg) {
         logger.warn("**********************************************************");
         logger.warn("* IltProvider.methodWithMultiplePrimitiveParameters called");
         logger.warn("**********************************************************");
@@ -331,7 +330,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * Return an array with the stringified double entries
      */
     @Override
-    public Promise<MethodWithSingleArrayParametersDeferred> methodWithSingleArrayParameters(@JoynrRpcParam("doubleArrayArg") Double[] doubleArrayArg) {
+    public Promise<MethodWithSingleArrayParametersDeferred> methodWithSingleArrayParameters(Double[] doubleArrayArg) {
         logger.warn("****************************************************");
         logger.warn("* IltProvider.methodWithSingleArrayParameters called");
         logger.warn("****************************************************");
@@ -358,10 +357,10 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * refers to the one from input
      */
     @Override
-    public Promise<MethodWithMultipleArrayParametersDeferred> methodWithMultipleArrayParameters(@JoynrRpcParam("stringArrayArg") String[] stringArrayArg,
-                                                                                                @JoynrRpcParam("int8ArrayArg") Byte[] int8ArrayArg,
-                                                                                                @JoynrRpcParam("enumArrayArg") ExtendedInterfaceEnumerationInTypeCollection[] enumArrayArg,
-                                                                                                @JoynrRpcParam("structWithStringArrayArrayArg") StructWithStringArray[] structWithStringArrayArrayArg) {
+    public Promise<MethodWithMultipleArrayParametersDeferred> methodWithMultipleArrayParameters(String[] stringArrayArg,
+                                                                                                Byte[] int8ArrayArg,
+                                                                                                ExtendedInterfaceEnumerationInTypeCollection[] enumArrayArg,
+                                                                                                StructWithStringArray[] structWithStringArrayArrayArg) {
         logger.warn("******************************************************");
         logger.warn("* IltProvider.methodWithMultipleArrayParameters called");
         logger.warn("******************************************************");
@@ -402,7 +401,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * return fixed value for now
      */
     @Override
-    public Promise<MethodWithSingleEnumParametersDeferred> methodWithSingleEnumParameters(@JoynrRpcParam("enumerationArg") ExtendedEnumerationWithPartlyDefinedValues enumerationArg) {
+    public Promise<MethodWithSingleEnumParametersDeferred> methodWithSingleEnumParameters(ExtendedEnumerationWithPartlyDefinedValues enumerationArg) {
         logger.warn("***************************************************");
         logger.warn("* IltProvider.methodWithSingleEnumParameters called");
         logger.warn("***************************************************");
@@ -427,8 +426,8 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * return fixed values for now
      */
     @Override
-    public Promise<MethodWithMultipleEnumParametersDeferred> methodWithMultipleEnumParameters(@JoynrRpcParam("enumerationArg") Enumeration enumerationArg,
-                                                                                              @JoynrRpcParam("extendedEnumerationArg") ExtendedTypeCollectionEnumerationInTypeCollection extendedEnumerationArg) {
+    public Promise<MethodWithMultipleEnumParametersDeferred> methodWithMultipleEnumParameters(Enumeration enumerationArg,
+                                                                                              ExtendedTypeCollectionEnumerationInTypeCollection extendedEnumerationArg) {
         logger.warn("*****************************************************");
         logger.warn("* IltProvider.methodWithMultipleEnumParameters called");
         logger.warn("*****************************************************");
@@ -453,7 +452,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodWithSingleStructParameters
      */
     @Override
-    public Promise<MethodWithSingleStructParametersDeferred> methodWithSingleStructParameters(@JoynrRpcParam("extendedBaseStructArg") ExtendedBaseStruct extendedBaseStructArg) {
+    public Promise<MethodWithSingleStructParametersDeferred> methodWithSingleStructParameters(ExtendedBaseStruct extendedBaseStructArg) {
         logger.warn("*****************************************************");
         logger.warn("* IltProvider.methodWithSingleStructParameters called");
         logger.warn("*****************************************************");
@@ -475,8 +474,8 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodWithMultipleStructParameters
      */
     @Override
-    public Promise<MethodWithMultipleStructParametersDeferred> methodWithMultipleStructParameters(@JoynrRpcParam("extendedStructOfPrimitivesArg") ExtendedStructOfPrimitives extendedStructOfPrimitivesArg,
-                                                                                                  @JoynrRpcParam("baseStructArg") BaseStruct baseStructArg) {
+    public Promise<MethodWithMultipleStructParametersDeferred> methodWithMultipleStructParameters(ExtendedStructOfPrimitives extendedStructOfPrimitivesArg,
+                                                                                                  BaseStruct baseStructArg) {
         MethodWithMultipleStructParametersDeferred deferred = new MethodWithMultipleStructParametersDeferred();
         logger.warn("*******************************************************");
         logger.warn("* IltProvider.methodWithMultipleStructParameters called");
@@ -519,7 +518,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * overloadedMethod (2)
      */
     @Override
-    public Promise<OverloadedMethod1Deferred> overloadedMethod(@JoynrRpcParam("booleanArg") Boolean booleanArg) {
+    public Promise<OverloadedMethod1Deferred> overloadedMethod(Boolean booleanArg) {
         logger.warn("*****************************************");
         logger.warn("* IltProvider.overloadedMethod called (2)");
         logger.warn("*****************************************");
@@ -538,10 +537,10 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * overloadedMethod (3)
      */
     @Override
-    public Promise<OverloadedMethod2Deferred> overloadedMethod(@JoynrRpcParam("enumArrayArg") ExtendedExtendedEnumeration[] enumArrayArg,
-                                                               @JoynrRpcParam("int64Arg") Long int64Arg,
-                                                               @JoynrRpcParam("baseStructArg") BaseStruct baseStructArg,
-                                                               @JoynrRpcParam("booleanArg") Boolean booleanArg) {
+    public Promise<OverloadedMethod2Deferred> overloadedMethod(ExtendedExtendedEnumeration[] enumArrayArg,
+                                                               Long int64Arg,
+                                                               BaseStruct baseStructArg,
+                                                               Boolean booleanArg) {
         logger.warn("*****************************************");
         logger.warn("* IltProvider.overloadedMethod called (3)");
         logger.warn("*****************************************");
@@ -594,7 +593,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * overloadedMethodWithSelector (2)
      */
     @Override
-    public Promise<OverloadedMethodWithSelector1Deferred> overloadedMethodWithSelector(@JoynrRpcParam("booleanArg") Boolean booleanArg) {
+    public Promise<OverloadedMethodWithSelector1Deferred> overloadedMethodWithSelector(Boolean booleanArg) {
         logger.warn("*************************************************");
         logger.warn("* IltProvider.overloadedMethodWithSelector called");
         logger.warn("*************************************************");
@@ -617,10 +616,10 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * overloadedMethodWithSelector (3)
      */
     @Override
-    public Promise<OverloadedMethodWithSelector2Deferred> overloadedMethodWithSelector(@JoynrRpcParam("enumArrayArg") ExtendedExtendedEnumeration[] enumArrayArg,
-                                                                                       @JoynrRpcParam("int64Arg") Long int64Arg,
-                                                                                       @JoynrRpcParam("baseStructArg") BaseStruct baseStructArg,
-                                                                                       @JoynrRpcParam("booleanArg") Boolean booleanArg) {
+    public Promise<OverloadedMethodWithSelector2Deferred> overloadedMethodWithSelector(ExtendedExtendedEnumeration[] enumArrayArg,
+                                                                                       Long int64Arg,
+                                                                                       BaseStruct baseStructArg,
+                                                                                       Boolean booleanArg) {
         logger.warn("*************************************************");
         logger.warn("* IltProvider.overloadedMethodWithSelector called");
         logger.warn("*************************************************");
@@ -661,8 +660,8 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodWithStringsAndSpecifiedStringOutLength
      */
     @Override
-    public Promise<MethodWithStringsAndSpecifiedStringOutLengthDeferred> methodWithStringsAndSpecifiedStringOutLength(@JoynrRpcParam("stringArg") String stringArg,
-                                                                                                                      @JoynrRpcParam("int32StringLengthArg") Integer int32StringLengthArg) {
+    public Promise<MethodWithStringsAndSpecifiedStringOutLengthDeferred> methodWithStringsAndSpecifiedStringOutLength(String stringArg,
+                                                                                                                      Integer int32StringLengthArg) {
         logger.warn("*****************************************************************");
         logger.warn("* IltProvider.methodWithStringsAndSpecifiedStringOutLength called");
         logger.warn("*****************************************************************");
@@ -683,7 +682,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodWithoutErrorEnum
      */
     @Override
-    public Promise<DeferredVoid> methodWithoutErrorEnum(@JoynrRpcParam("wantedExceptionArg") String wantedExceptionArg) {
+    public Promise<DeferredVoid> methodWithoutErrorEnum(String wantedExceptionArg) {
         logger.warn("*******************************************");
         logger.warn("* IltProvider.methodWithoutErrorEnum called");
         logger.warn("*******************************************");
@@ -701,7 +700,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodWithAnonymousErrorEnum
      */
     @Override
-    public Promise<MethodWithAnonymousErrorEnumDeferred> methodWithAnonymousErrorEnum(@JoynrRpcParam("wantedExceptionArg") String wantedExceptionArg) {
+    public Promise<MethodWithAnonymousErrorEnumDeferred> methodWithAnonymousErrorEnum(String wantedExceptionArg) {
         logger.warn("*************************************************");
         logger.warn("* IltProvider.methodWithAnonymousErrorEnum called");
         logger.warn("*************************************************");
@@ -721,7 +720,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodWithExistingErrorEnum
      */
     @Override
-    public Promise<MethodWithExistingErrorEnumDeferred> methodWithExistingErrorEnum(@JoynrRpcParam("wantedExceptionArg") String wantedExceptionArg) {
+    public Promise<MethodWithExistingErrorEnumDeferred> methodWithExistingErrorEnum(String wantedExceptionArg) {
         logger.warn("************************************************");
         logger.warn("* IltProvider.methodWithExistingErrorEnum called");
         logger.warn("************************************************");
@@ -742,7 +741,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodWithExtendedErrorEnum
      */
     @Override
-    public Promise<MethodWithExtendedErrorEnumDeferred> methodWithExtendedErrorEnum(@JoynrRpcParam("wantedExceptionArg") String wantedExceptionArg) {
+    public Promise<MethodWithExtendedErrorEnumDeferred> methodWithExtendedErrorEnum(String wantedExceptionArg) {
         logger.warn("************************************************");
         logger.warn("* IltProvider.methodWithExtendedErrorEnum called");
         logger.warn("************************************************");
@@ -887,7 +886,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
      * methodToFireBroadcastWithFiltering
      */
     @Override
-    public Promise<DeferredVoid> methodToFireBroadcastWithFiltering(@JoynrRpcParam("stringArg") String stringArg) {
+    public Promise<DeferredVoid> methodToFireBroadcastWithFiltering(String stringArg) {
         logger.warn("*******************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithFiltering called");
         logger.warn("*******************************************************");

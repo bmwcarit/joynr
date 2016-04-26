@@ -25,6 +25,8 @@
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {
@@ -35,31 +37,28 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings)
         : channelCreatedSemaphore(std::make_shared<Semaphore>(0)),
           channelId(),
           receiverId(),
+          globalClusterControllerAddress(),
           settings(settings),
           messageReceiver(nullptr),
-          channelUrlDirectory(),
           onTextMessageReceived(nullptr)
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
     channelId = persist.getChannelId();
     receiverId = persist.getReceiverId();
-    init();
 
-    // Remove any existing curl handles
-    HttpNetworking::getInstance()->getCurlHandlePool()->reset();
-}
-
-void HttpReceiver::init()
-{
     JOYNR_LOG_DEBUG(logger, "Print settings... ");
     settings.printSettings();
     updateSettings();
     JOYNR_LOG_DEBUG(logger, "Init finished.");
-}
 
-void HttpReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory)
-{
-    this->channelUrlDirectory = channelUrlDirectory;
+    system::RoutingTypes::ChannelAddress receiverChannelAddress(
+            settings.getBounceProxyUrl().getBrokerChannelsBaseUrl().toString() + channelId + "/",
+            channelId);
+
+    globalClusterControllerAddress = JsonSerializer::serialize(receiverChannelAddress);
+
+    // Remove any existing curl handles
+    HttpNetworking::getInstance()->getCurlHandlePool()->reset();
 }
 
 void HttpReceiver::updateSettings()
@@ -95,11 +94,8 @@ HttpReceiver::~HttpReceiver()
 
 void HttpReceiver::startReceiveQueue()
 {
-
-    if (!onTextMessageReceived || !channelUrlDirectory) {
-        JOYNR_LOG_FATAL(
-                logger,
-                "FAIL::receiveQueue started with no onTextMessageReceived/channelUrlDirectory.");
+    if (!onTextMessageReceived) {
+        JOYNR_LOG_FATAL(logger, "FAIL::receiveQueue started with no onTextMessageReceived.");
     }
 
     // Get the settings specific to long polling
@@ -115,7 +111,6 @@ void HttpReceiver::startReceiveQueue()
                                                      receiverId,
                                                      longPollSettings,
                                                      channelCreatedSemaphore,
-                                                     channelUrlDirectory,
                                                      onTextMessageReceived);
     messageReceiver->start();
 }
@@ -140,9 +135,9 @@ void HttpReceiver::stopReceiveQueue()
     }
 }
 
-const std::string& HttpReceiver::getReceiveChannelId() const
+const std::string& HttpReceiver::getGlobalClusterControllerAddress() const
 {
-    return channelId;
+    return globalClusterControllerAddress;
 }
 
 bool HttpReceiver::tryToDeleteChannel()
@@ -150,8 +145,9 @@ bool HttpReceiver::tryToDeleteChannel()
     // If more than one attempt is needed, create a deleteChannelRunnable and move this to
     // messageSender.
     // TODO channelUrl is known only to the LongPlooMessageReceiver!
-    std::string deleteChannelUrl =
-            settings.getBounceProxyUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
+    std::string deleteChannelUrl = settings.getBounceProxyUrl()
+                                           .getDeleteChannelUrl(getGlobalClusterControllerAddress())
+                                           .toString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(
@@ -163,8 +159,6 @@ bool HttpReceiver::tryToDeleteChannel()
         channelCreatedSemaphore->waitFor(
                 std::chrono::seconds(5)); // Reset the channel created Semaphore.
         JOYNR_LOG_INFO(logger, "channel deletion successfull");
-        channelUrlDirectory->unregisterChannelUrlsAsync(channelId);
-        JOYNR_LOG_INFO(logger, "Sendeing unregister request to ChannelUrlDirectory ...");
 
         return true;
     } else if (statusCode == 204) {

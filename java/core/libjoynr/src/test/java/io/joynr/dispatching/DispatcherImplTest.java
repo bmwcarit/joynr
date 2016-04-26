@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.provider.AbstractSubscriptionPublisher;
+import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 
 import java.util.UUID;
@@ -71,7 +73,7 @@ public class DispatcherImplTest {
     private MessageReceiverMock messageReceiverMock = new MessageReceiverMock();
 
     private Dispatcher fixture;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory requestCallerDirectory;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException {
@@ -105,7 +107,7 @@ public class DispatcherImplTest {
             public void receiverException(Throwable e) {
             }
         });
-        requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
+        requestCallerDirectory = injector.getInstance(ProviderDirectory.class);
     }
 
     @Test
@@ -119,6 +121,7 @@ public class DispatcherImplTest {
                 try {
                     String requestReplyId = UUID.randomUUID().toString();
                     RequestCaller requestCaller = mock(RequestCaller.class);
+                    AbstractSubscriptionPublisher subscriptionPublisher = mock(AbstractSubscriptionPublisher.class);
                     /* setBlockInitialisation to true causes the messageReceiver to block
                      * during startup
                      * The MessageReceiver is invoked by the dispatcher once a request caller
@@ -126,7 +129,10 @@ public class DispatcherImplTest {
                      *
                      */
                     messageReceiverMock.setBlockOnInitialisation(true);
-                    requestCallerDirectory.addCaller(requestReplyId, requestCaller);
+                    requestCallerDirectory.add(requestReplyId, new ProviderContainer("interfaceName",
+                                                                                     DispatcherImplTest.class,
+                                                                                     requestCaller,
+                                                                                     subscriptionPublisher));
                 } finally {
                     messageReceiverMock.setBlockOnInitialisation(false);
                 }

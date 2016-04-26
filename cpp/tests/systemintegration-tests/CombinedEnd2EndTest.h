@@ -27,7 +27,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/types/CapabilityInformation.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"

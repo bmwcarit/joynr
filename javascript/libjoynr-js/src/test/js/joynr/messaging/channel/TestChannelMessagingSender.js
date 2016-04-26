@@ -26,18 +26,19 @@ joynrTestRequire(
             "global/Promise",
             "joynr/messaging/channel/ChannelMessagingSender",
             "joynr/messaging/JoynrMessage",
+            "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/util/Typing",
             "joynr/system/LoggerFactory",
             "joynr/provisioning/provisioning_root"
         ],
-        function(Promise, ChannelMessagingSender, JoynrMessage, Typing, LoggerFactory, provisioning) {
+        function(Promise, ChannelMessagingSender, JoynrMessage, ChannelAddress, Typing, LoggerFactory, provisioning) {
 
             var log = LoggerFactory.getLogger("joynr.messaging.TestChannelMessagingSender");
 
             describe(
                     "libjoynr-js.joynr.messaging.ChannelMessagingSender",
                     function() {
-                        var communicationModuleSpy, channelMessageSender, channelUrlDirectorySpy;
+                        var communicationModuleSpy, channelMessageSender;
                         var channelId, channelUrl, channelUrlInformation, joynrMessage;
                         var resendDelay_ms;
 
@@ -49,10 +50,6 @@ joynrTestRequire(
                             resendDelay_ms = 500;
                             channelId = "myChannel" + Date.now();
                             channelUrl = provisioning.bounceProxyUrl + "/channels/" + channelId;
-                            channelUrlInformation = {
-                                urls : [ channelUrl
-                                ]
-                            };
                             var channelQos = {
                                 resendDelay_ms : resendDelay_ms
                             };
@@ -67,11 +64,6 @@ joynrTestRequire(
                             joynrMessage.payload = "hello";
 
                             // instantiate spies
-                            channelUrlDirectorySpy =
-                                    jasmine.createSpyObj(
-                                            "channelUrlDirectory",
-                                            [ "getUrlsForChannel"
-                                            ]);
                             communicationModuleSpy =
                                     jasmine.createSpyObj(
                                             "communicationModule",
@@ -79,7 +71,6 @@ joynrTestRequire(
                                             ]);
 
                             channelMessageSender = new ChannelMessagingSender({
-                                channelUrlDirectory : channelUrlDirectorySpy,
                                 communicationModule : communicationModuleSpy,
                                 channelQos : channelQos
                             });
@@ -96,34 +87,6 @@ joynrTestRequire(
                         });
 
                         it(
-                                "fails if channelUrlDirectory fails",
-                                function() {
-                                    var spy = jasmine.createSpyObj("spy", [
-                                        "onFulfilled",
-                                        "onRejected"
-                                    ]);
-                                    runs(function() {
-                                        channelUrlDirectorySpy.getUrlsForChannel.andReturn(Promise.reject(new Error("error")));
-                                        channelMessageSender.send(joynrMessage, channelId).then(
-                                                spy.onFulfilled).catch(spy.onRejected);
-                                    });
-
-                                    waitsFor(function() {
-                                        return spy.onRejected.callCount > 0;
-                                    }, "message send to fail", provisioning.ttl);
-
-                                    runs(function() {
-                                        expect(spy.onFulfilled).not.toHaveBeenCalled();
-                                        expect(spy.onRejected).toHaveBeenCalled();
-                                        expect(Object.prototype.toString
-                                                        .call(spy.onRejected.mostRecentCall.args[0]) === "[object Error]")
-                                                .toBeTruthy();
-                                        expect(communicationModuleSpy.createXMLHTTPRequest).not
-                                                .toHaveBeenCalled();
-                                    });
-                                });
-
-                        it(
                                 "if communicationModule.createXMLHTTPRequest call fails, channelMessageSender only fails if message expires",
                                 function() {
                                     var spy = jasmine.createSpyObj("spy", [
@@ -134,7 +97,6 @@ joynrTestRequire(
                                     var relativeExpiryDate = resendDelay_ms * 3;
 
                                     runs(function() {
-                                        channelUrlDirectorySpy.getUrlsForChannel.andReturn(Promise.resolve(channelUrlInformation));
                                         communicationModuleSpy.createXMLHTTPRequest.andReturn(Promise.reject({
                                                     status : 500,
                                                     responseText : "responseText",
@@ -143,7 +105,7 @@ joynrTestRequire(
                                         joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = Date.now() + relativeExpiryDate;
                                         channelMessageSender.start();
                                         timeStamp = Date.now();
-                                        channelMessageSender.send(joynrMessage, channelId).then(
+                                        channelMessageSender.send(joynrMessage, new ChannelAddress({channelId: channelId, messagingEndpointUrl: "http://testurl"})).then(
                                                 spy.onFulfilled).catch(spy.onRejected);
                                     });
 
@@ -174,7 +136,6 @@ joynrTestRequire(
                                     var relativeExpiryDate = resendDelay_ms;
 
                                     runs(function() {
-                                        channelUrlDirectorySpy.getUrlsForChannel.andReturn(Promise.resolve(channelUrlInformation));
                                         joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = Date.now() + relativeExpiryDate;
                                         channelMessageSender.send(joynrMessage, channelId).then(
                                                 spy.onFulfilled).catch(spy.onRejected);
@@ -206,7 +167,6 @@ joynrTestRequire(
                                         "onRejected"
                                     ]);
                                     runs(function() {
-                                        channelUrlDirectorySpy.getUrlsForChannel.andReturn(Promise.resolve(channelUrlInformation));
                                         communicationModuleSpy.createXMLHTTPRequest.andReturn(Promise.resolve());
                                         channelMessageSender.start();
                                         channelMessageSender.send(joynrMessage, channelId).then(

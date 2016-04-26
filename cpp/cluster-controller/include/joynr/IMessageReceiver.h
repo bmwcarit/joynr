@@ -21,11 +21,10 @@
 
 #include <memory>
 #include <string>
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {
-
-class ILocalChannelUrlDirectory;
 
 /**
   * @class IMessageReceiver
@@ -42,9 +41,9 @@ public:
     virtual ~IMessageReceiver() = default;
 
     /**
-      * Gets the channel ID of the receive channel for incoming messages.
+      * Returns the serialized (json) receive address
       */
-    virtual const std::string& getReceiveChannelId() const = 0;
+    virtual const std::string& getGlobalClusterControllerAddress() const = 0;
 
     /**
       * Starts processing incomming messages. This method must be called
@@ -72,8 +71,6 @@ public:
       * Will try to delete the channel from the server. Returns true if successfull, false if not.
       */
     virtual bool tryToDeleteChannel() = 0;
-
-    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) = 0;
 
     virtual void registerReceiveCallback(
             std::function<void(const std::string&)> onTextMessageReceived) = 0;

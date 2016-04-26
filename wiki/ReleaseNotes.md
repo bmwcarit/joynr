@@ -1,10 +1,20 @@
 #joynr 0.17.0
 
 ##API relevant changes
+* **[C++, Java, JS]** Added suffix "Ms" to timing related discoveryQos parameters: _discoveryTimeoutMs_,
+  _cacheMaxAgeMs_, and _retryIntervalMs_.
 * **[C++, Java, JS]** Provider and proxy interfaces as well as generated types (structs, enums and
   maps) provide version constants (`MAJOR_VERSION` and `MINOR_VERSION`) to reflect the version set
   in the Franca interface or type collection. Thus, setters for provider version have been removed
   from the API of the provider qos.
+* **[Java]** Restructured the class hierarchy of the generated providers. The application provider
+  now implements an interface free of joynr internal details. <Interface>AbstractProvider has been
+  kept to maintain backwards compatibility, but implementations derived directly from
+  <Interace>Provider must change to the new API. Please have a look at the class diagram
+  in docs/diagrams for further details about the restructured class hierarchy.
+* **[C++, Java, JS]** The communication protocol between local directories on the cluster controller
+  and global directories in the backend changed. Please make sure that clients and backend use
+  compatible versions.
 
 ##Other changes
 * **[C++]** The content of the message router and the local capabilities directory is now persisted

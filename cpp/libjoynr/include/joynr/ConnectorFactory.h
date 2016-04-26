@@ -26,7 +26,6 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/types/CommunicationMiddleware.h"
 
 #include <string>
 
@@ -48,20 +47,14 @@ public:
                               const MessagingQos& qosSettings,
                               IClientCache* cache,
                               bool cached,
-                              const joynr::types::CommunicationMiddleware::Enum& connection)
+                              bool createInProcessConnector)
     {
-
-        if (inProcessConnectorFactory->canBeCreated(connection)) {
+        if (createInProcessConnector) {
             return inProcessConnectorFactory->create<T>(proxyParticipantId, providerParticipantId);
-        }
-
-        if (joynrMessagingConnectorFactory->canBeCreated(connection)) {
+        } else {
             return joynrMessagingConnectorFactory->create<T>(
                     domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached);
         }
-
-        JOYNR_LOG_ERROR(logger, "Can not create Connector: Unknown address type.");
-        return nullptr;
     }
 
 private:

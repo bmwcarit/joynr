@@ -34,7 +34,6 @@
 	<modules>
 		<module>discovery-directory-servlet</module>
 		<module>capabilities-directory</module>
-		<module>channel-url-directory</module>
 		<module>domain-access-controller</module>
 		<module>domain-access-controller-servlet</module>
 	</modules>

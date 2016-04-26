@@ -53,7 +53,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.name.Named;
 
 @Path("/channels")
 /**
@@ -176,25 +175,5 @@ public class MessagingService {
             log.error("POST message to channel: {} error: {}", channelId, e.getMessage());
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    /**
-     * Register the default channelId with the channelUrlDirectory
-     * @param channelId the id of the channel to be registered
-     * @return Response ok, if successfull (otherwise throws exception)
-     */
-    @POST
-    @Path("/register")
-    public Response registerChannel(@Named("joynr.messaging.channelId") String channelId) {
-        log.debug("POST register channel: " + channelId);
-
-        if (channelId == null) {
-            log.error("REGISTER channel failed because channelId was not set");
-            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
-        }
-
-        // TODO really register
-        return Response.ok().build();
-
     }
 }

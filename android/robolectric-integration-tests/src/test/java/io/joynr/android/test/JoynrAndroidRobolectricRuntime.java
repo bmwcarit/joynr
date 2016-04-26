@@ -19,7 +19,6 @@ package io.joynr.android.test;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
 import io.joynr.proxy.ProxyBuilder;
 
@@ -43,7 +42,7 @@ public class JoynrAndroidRobolectricRuntime extends JoynrAndroidRuntime {
     }
 
     @Override
-    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
+    public <T> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
         return new AndroidRobolectricProxyBuilder<T>(runtimeInitTask, domain, interfaceClass, uiLogger);
     }
 }

@@ -19,6 +19,8 @@ package io.joynr.discovery;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
+
 import java.util.HashMap;
 
 import io.joynr.runtime.SystemServicesSettings;
@@ -29,46 +31,47 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import joynr.system.DiscoveryAsync;
 import joynr.system.DiscoveryProvider;
 import joynr.system.DiscoveryProxy;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryQos;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 
 public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
+    private static final long NO_EXPIRY = Long.MAX_VALUE;
     private HashMap<String, DiscoveryEntry> provisionedDiscoveryEntries = new HashMap<>();
     private DiscoveryProxy discoveryProxy;
 
     @Inject
     public LocalDiscoveryAggregator(@Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
-                                    @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId,
-                                    @Named(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE) CommunicationMiddleware clusterControllerConnection) {
+                                    @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        provisionedDiscoveryEntries.put(systemServicesDomain + DiscoveryProvider.INTERFACE_NAME,
-                                        new DiscoveryEntry(systemServicesDomain,
-                                                           DiscoveryProvider.INTERFACE_NAME,
+        provisionedDiscoveryEntries.put(systemServicesDomain + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
+                                        new DiscoveryEntry(new Version(),
+                                                           systemServicesDomain,
+                                                           ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                                            discoveryProviderParticipantId,
                                                            providerQos,
-                                                           new CommunicationMiddleware[]{
-                                                                   clusterControllerConnection }));
+                                                           System.currentTimeMillis(),
+                                                           NO_EXPIRY));
         //provision routing provider to prevent lookup via discovery proxy during startup.
         provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
-                                        new DiscoveryEntry(systemServicesDomain,
+                                        new DiscoveryEntry(new Version(),
+                                                           systemServicesDomain,
                                                            Routing.INTERFACE_NAME,
                                                            routingProviderParticipantId,
                                                            providerQos,
-                                                           new CommunicationMiddleware[]{
-                                                                   clusterControllerConnection }));
+                                                           System.currentTimeMillis(),
+                                                           NO_EXPIRY));
     }
 
     public void setDiscoveryProxy(DiscoveryProxy discoveryProxy) {

@@ -896,7 +896,7 @@ joynrTestRequire(
                                                         interfaceName : interfaceName,
                                                         participantId : participantId,
                                                         qos : providerQos,
-                                                        connections : []
+                                                        lastSeenDateMs : Date.now()
                                                     })
                                                 })
                                                 .then(
@@ -931,7 +931,7 @@ joynrTestRequire(
                                                                                                                 interfaceName : interfaceName,
                                                                                                                 participantId : participantId2,
                                                                                                                 qos : providerQos,
-                                                                                                                connections : []
+                                                                                                                lastSeenDateMs: Date.now()
                                                                                                             })
                                                                                                 })
                                                                                         .then(

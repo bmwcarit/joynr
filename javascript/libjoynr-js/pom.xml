@@ -184,17 +184,6 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>channelURLDirectory</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>joynr/ChannelUrlDirectory.fidl</model>
-							<outputPath>${basedir}/src/main/generated</outputPath>
-						</configuration>
-					</execution>
-					<execution>
 						<id>distributedLogging</id>
 						<phase>generate-sources</phase>
 						<goals>

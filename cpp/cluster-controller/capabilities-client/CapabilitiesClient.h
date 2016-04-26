@@ -56,9 +56,8 @@ public:
        To create the GlobalCapabilitiesDirectoryProxy the provisioned data in the
        LocalCapabilitiesDirectory
         has to be used.
-       Todo: Ownership of libjoynr is not transferred, should not be a pointer.
     */
-    explicit CapabilitiesClient(const std::string& localChannelId);
+    CapabilitiesClient();
 
     /*
       * The init method has to be caleld before any calls to the CapabilitiesClient are made.
@@ -66,10 +65,9 @@ public:
     void init(std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy);
 
     /*
-       Add a capabilities record to the directory containing a list of capabilities and the
-       channelId of the provider(the client's channelId)
+       Add a capabilities record to the directory containing a list of capabilities
       */
-    void add(std::vector<types::CapabilityInformation> capabilitiesInformationList) override;
+    void add(const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList) override;
 
     /*
       Remove previously created capabilities directory entries.
@@ -84,33 +82,29 @@ public:
     /*
       Synchronous lookup of capabilities for domain and interface.
       */
-    std::vector<types::CapabilityInformation> lookup(const std::string& domain,
-                                                     const std::string& interfaceName) override;
+    std::vector<types::GlobalDiscoveryEntry> lookup(const std::string& domain,
+                                                    const std::string& interfaceName) override;
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
       */
     void lookup(const std::string& domain,
                 const std::string& interfaceName,
-                std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
                         onSuccess,
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                         nullptr) override;
 
     void lookup(const std::string& participantId,
-                std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
                         onSuccess,
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                         nullptr) override;
 
     ~CapabilitiesClient() override = default;
 
-    std::string getLocalChannelId() override;
-
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
-
-    std::string localChannelId;
 
     // capabilitiesProxy is a shared_ptr, because ownership is shared between CapabilitiesClient and
     // Joynr

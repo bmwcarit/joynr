@@ -19,38 +19,48 @@ package io.joynr.capabilities.directory;
  * #L%
  */
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import io.joynr.provider.PromiseKeeper;
 
 import java.util.Properties;
 import java.util.UUID;
 
-import joynr.types.CapabilityInformation;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class CapabilitiesDirectoryTest {
 
     private static final CustomParameter[] CUSTOM_PARAMETERS = {};
 
+    private static final long ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
 
     String channelId = "capabilitiesProvider";
+    String url = "http://testUrl";
+    Address channelAddres = new ChannelAddress(url, channelId);
+    String channelAddresSerialized;
     String domain = "com";
     String interface1 = "interface1";
     String interface2 = "interface2";
     String interface3 = "Interface3";
 
     ProviderQos providerQos = new ProviderQos(CUSTOM_PARAMETERS, 1L, ProviderScope.GLOBAL, true);
-    CapabilityInformation capInfo1;
-    CapabilityInformation capInfo2;
-    CapabilityInformation capInfo3;
+    GlobalDiscoveryEntry disoveryEntry1;
+    GlobalDiscoveryEntry discoveryEntry2;
+    GlobalDiscoveryEntry dicoveryEntry3;
     String postFix = "" + System.currentTimeMillis();
 
     @BeforeClass
@@ -60,15 +70,38 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Before
-    public void setUp() {
-
+    public void setUp() throws Exception {
+        channelAddresSerialized = new ObjectMapper().writeValueAsString(channelAddres);
         String participantId1 = "testParticipantId1_" + UUID.randomUUID().toString();
         String participantId2 = "testParticipantId2_" + UUID.randomUUID().toString();
         String participantId3 = "testParticipantId3_" + UUID.randomUUID().toString();
 
-        capInfo1 = new CapabilityInformation(domain, interface1, providerQos, channelId, participantId1);
-        capInfo2 = new CapabilityInformation(domain, interface2, providerQos, channelId, participantId2);
-        capInfo3 = new CapabilityInformation(domain, interface3, providerQos, channelId, participantId3);
+        long lastSeenDateMs = System.currentTimeMillis();
+        long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
+        disoveryEntry1 = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                  domain,
+                                                  interface1,
+                                                  participantId1,
+                                                  providerQos,
+                                                  lastSeenDateMs,
+                                                  expiryDateMs,
+                                                  channelAddresSerialized);
+        discoveryEntry2 = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                   domain,
+                                                   interface2,
+                                                   participantId2,
+                                                   providerQos,
+                                                   lastSeenDateMs,
+                                                   expiryDateMs,
+                                                   channelAddresSerialized);
+        dicoveryEntry3 = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                  domain,
+                                                  interface3,
+                                                  participantId3,
+                                                  providerQos,
+                                                  lastSeenDateMs,
+                                                  expiryDateMs,
+                                                  channelAddresSerialized);
 
     }
 
@@ -85,29 +118,44 @@ public class CapabilitiesDirectoryTest {
     @Test
     public void registerMultipleCapabilitiesAsArray() throws InterruptedException {
 
-        CapabilityInformation[] interfaces2And3 = { capInfo2, capInfo3 };
+        GlobalDiscoveryEntry[] interfaces2And3 = { discoveryEntry2, dicoveryEntry3 };
         capabilitiesDirectory.add(interfaces2And3);
 
         PromiseKeeper lookupCapInfo2 = new PromiseKeeper();
         capabilitiesDirectory.lookup(domain, interface2).then(lookupCapInfo2);
-        assertArrayEquals(new CapabilityInformation[]{ capInfo2 },
-                          (CapabilityInformation[]) lookupCapInfo2.getValues()[0]);
+        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry2 },
+                                    (GlobalDiscoveryEntry[]) lookupCapInfo2.getValues()[0]);
 
         PromiseKeeper lookupCapInfo3 = new PromiseKeeper();
         capabilitiesDirectory.lookup(domain, interface3).then(lookupCapInfo3);
-        assertArrayEquals(new CapabilityInformation[]{ capInfo3 },
-                          (CapabilityInformation[]) lookupCapInfo3.getValues()[0]);
+
+        GlobalDiscoveryEntry[] passedDiscoveryEntries = (GlobalDiscoveryEntry[]) lookupCapInfo3.getValues()[0];
+        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ dicoveryEntry3 }, passedDiscoveryEntries);
     }
 
     @Test
     public void registerProviderAndRequestChannels() throws Exception {
-        capabilitiesDirectory.add(capInfo1);
+        capabilitiesDirectory.add(disoveryEntry1);
 
         PromiseKeeper lookupCapInfo1 = new PromiseKeeper();
         capabilitiesDirectory.lookup(domain, interface1).then(lookupCapInfo1);
         lookupCapInfo1.waitForSettlement();
-        assertArrayEquals(new CapabilityInformation[]{ capInfo1 },
-                          (CapabilityInformation[]) lookupCapInfo1.getValues()[0]);
+        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ disoveryEntry1 },
+                                    (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0]);
 
+    }
+
+    private void assertDiscoveryEntriesEqual(GlobalDiscoveryEntry[] expectedDiscoveryEntries,
+                                             GlobalDiscoveryEntry[] passedDiscoveryEntries) {
+        int i = 0;
+        for (GlobalDiscoveryEntry expectedGlobalDiscoveryEntry : expectedDiscoveryEntries) {
+            GlobalDiscoveryEntry passedDiscoveryEntry = passedDiscoveryEntries[i];
+            assertEquals(expectedGlobalDiscoveryEntry.getDomain(), passedDiscoveryEntry.getDomain());
+            assertEquals(expectedGlobalDiscoveryEntry.getInterfaceName(), passedDiscoveryEntry.getInterfaceName());
+            assertEquals(expectedGlobalDiscoveryEntry.getAddress(), passedDiscoveryEntry.getAddress());
+            assertEquals(expectedGlobalDiscoveryEntry.getParticipantId(), passedDiscoveryEntry.getParticipantId());
+            assertEquals(expectedGlobalDiscoveryEntry.getQos(), passedDiscoveryEntry.getQos());
+            i++;
+        }
     }
 }

@@ -64,6 +64,25 @@ private:
     joynr::types::DiscoveryEntry entry;
 };
 
+class DummyRequestCallerDirectory : public joynr::IRequestCallerDirectory
+{
+public:
+    virtual std::shared_ptr<RequestCaller> lookupRequestCaller(
+            const std::string& participantId) override
+    {
+        std::ignore = participantId;
+        return std::shared_ptr<RequestCaller>();
+    }
+
+    virtual bool containsRequestCaller(const std::string& participantId) override
+    {
+        std::ignore = participantId;
+        // By returning false here, we prevent the proxy builder from selecting the in-process
+        // connector
+        return false;
+    }
+};
+
 /**
  * @brief Very reduced Runtime which uses DummyDiscovery as the discovery proxy.
  */
@@ -91,6 +110,7 @@ public:
     ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
     {
         ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(proxyFactory.get(),
+                                                                         &requestCallerDirectory,
                                                                          *discoveryProxy,
                                                                          domain,
                                                                          dispatcherAddress,
@@ -116,6 +136,7 @@ private:
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
     std::uint64_t maximumTtlMs;
+    DummyRequestCallerDirectory requestCallerDirectory;
 };
 
 } // namespace joynr

@@ -34,58 +34,40 @@ import com.google.inject.Inject;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilitiesStore;
-import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.channel.ChannelUrlDirectoyImpl;
-import io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted;
+import io.joynr.capabilities.DiscoveryEntryStore;
+import io.joynr.capabilities.directory.Persisted;
 import io.joynr.servlet.JoynrWebServlet;
-import joynr.types.CapabilityInformation;
-import joynr.types.ChannelUrlInformation;
+import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderScope;
 
 @Singleton
 @JoynrWebServlet(value = "/capabilities/")
 public class DiscoveryInformationServlet extends HttpServlet {
     private static final long serialVersionUID = 8839103126167589803L;
-    private transient CapabilitiesStore capabilitiesStore;
+    private transient DiscoveryEntryStore discoveryEntryStore;
     transient private Gson gson = new GsonBuilder().create();
-    transient private ChannelUrlDirectoyImpl channelUrlDirectory;
 
     @Inject
-    public DiscoveryInformationServlet(CapabilitiesStore capabilitiesStore, ChannelUrlDirectoyImpl channelUrlDirectory) {
-        this.capabilitiesStore = capabilitiesStore;
-        this.channelUrlDirectory = channelUrlDirectory;
+    public DiscoveryInformationServlet(@Persisted DiscoveryEntryStore discoveryEntryStore) {
+        this.discoveryEntryStore = discoveryEntryStore;
     }
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        Set<CapabilityInformation> globalCapabilities = new HashSet<CapabilityInformation>();
-        Set<CapabilityEntry> allCapabilities = capabilitiesStore.getAllCapabilities();
-        for (CapabilityEntry capabilityEntry : allCapabilities) {
-            if (capabilityEntry.getProviderQos().getScope() == ProviderScope.GLOBAL) {
-                String channelId = "";
-                String channelUrl = "";
+        Set<DiscoveryEntry> globalDiscoveryEntries = new HashSet<DiscoveryEntry>();
+        Set<DiscoveryEntry> allDiscoveryEntries = discoveryEntryStore.getAllDiscoveryEntries();
+        for (DiscoveryEntry discoveryEntry : allDiscoveryEntries) {
+            if (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL) {
                 try {
-                    JoynrMessagingEndpointAddressPersisted address = (JoynrMessagingEndpointAddressPersisted) capabilityEntry.getAddresses()
-                                                                                                                             .get(0);
-
-                    channelId = address.getChannelId();
-                    ChannelUrlInformation channelUrlInformation = channelUrlDirectory.getRegisteredChannels()
-                                                                                     .get(channelId);
-                    if (channelUrlInformation != null) {
-                        channelUrl = channelUrlInformation.getUrls()[0];
-                    }
-                    CapabilityInformation capabilityInformation = capabilityEntry.toCapabilityInformation();
-                    capabilityInformation.setChannelId(channelId + ":" + channelUrl);
-                    globalCapabilities.add(capabilityInformation);
+                    globalDiscoveryEntries.add(discoveryEntry);
                 } catch (Exception e) {
                     log("error adding channel information", e);
                 }
             }
         }
-        out.println(gson.toJson(globalCapabilities));
+        out.println(gson.toJson(globalDiscoveryEntries));
     }
 
     @Override
@@ -94,7 +76,7 @@ public class DiscoveryInformationServlet extends HttpServlet {
         String[] query = queryString.split("=");
         boolean removed = false;
         if (query.length > 1) {
-            removed = capabilitiesStore.remove(query[1]);
+            removed = discoveryEntryStore.remove(query[1]);
         }
         response.setStatus(200);
         PrintWriter out = response.getWriter();

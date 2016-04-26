@@ -20,7 +20,6 @@ package io.joynr.joynrandroidruntime;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -33,7 +32,7 @@ import java.util.concurrent.TimeoutException;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Object, String, T> implements
+public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> implements
         ProxyBuilder<T> {
 
     private JoynrRuntime runtime;
@@ -74,7 +73,7 @@ public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Obj
     }
 
     protected T buildProxy() throws InterruptedException, ExecutionException, TimeoutException {
-        this.runtime = runtimeInitTask.get(discoveryQos.getDiscoveryTimeout(), TimeUnit.MILLISECONDS);
+        this.runtime = runtimeInitTask.get(discoveryQos.getDiscoveryTimeoutMs(), TimeUnit.MILLISECONDS);
         builder = runtime.getProxyBuilder(providerDomain, proxyInterface);
         if (participantId != null) {
             builder.setParticipantId(participantId);

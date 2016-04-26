@@ -124,19 +124,20 @@ void LibJoynrRuntime::init(
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
-            *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
+    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(systemServicesSettings);
+    requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
+
     std::string systemServicesDomain = systemServicesSettings.getDomain();
     std::string routingProviderParticipantId =
             systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
-    routingProviderDiscoveryQos.setCacheMaxAge(1000);
+    routingProviderDiscoveryQos.setCacheMaxAgeMs(1000);
     routingProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     routingProviderDiscoveryQos.addCustomParameter(
             "fixedParticipantId", routingProviderParticipantId);
-    routingProviderDiscoveryQos.setDiscoveryTimeout(50);
+    routingProviderDiscoveryQos.setDiscoveryTimeoutMs(50);
 
     auto routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
@@ -153,12 +154,12 @@ void LibJoynrRuntime::init(
     std::string discoveryProviderParticipantId =
             systemServicesSettings.getCcDiscoveryProviderParticipantId();
     DiscoveryQos discoveryProviderDiscoveryQos;
-    discoveryProviderDiscoveryQos.setCacheMaxAge(1000);
+    discoveryProviderDiscoveryQos.setCacheMaxAgeMs(1000);
     discoveryProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryProviderDiscoveryQos.addCustomParameter(
             "fixedParticipantId", discoveryProviderParticipantId);
-    discoveryProviderDiscoveryQos.setDiscoveryTimeout(1000);
+    discoveryProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
 
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
@@ -168,11 +169,13 @@ void LibJoynrRuntime::init(
                     ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                     ->build();
     discoveryProxy->setDiscoveryProxy(std::unique_ptr<joynr::system::IDiscoverySync>(proxy));
-    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
-                                                                    *discoveryProxy,
-                                                                    participantIdStorage,
-                                                                    dispatcherAddress,
-                                                                    messageRouter);
+    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
+            dispatcherList,
+            *discoveryProxy,
+            participantIdStorage,
+            dispatcherAddress,
+            messageRouter,
+            messagingSettings.getDiscoveryEntryExpiryIntervalMs());
 }
 
 void LibJoynrRuntime::unregisterProvider(const std::string& participantId)

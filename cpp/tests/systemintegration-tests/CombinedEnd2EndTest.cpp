@@ -36,7 +36,6 @@
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/types/CapabilityInformation.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "PrettyPrint.h"
 #include "joynr/MessagingSettings.h"
@@ -132,7 +131,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeout(1000);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
 
         std::uint64_t qosRoundTripTTL = 40000;
 
@@ -353,7 +352,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeout(1000);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
 
         std::uint64_t qosRoundTripTTL = 1;
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -373,7 +372,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeout(1000);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
 
         std::uint64_t qosRoundTripTTL = 40000;
 
@@ -400,7 +399,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeout(1000);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
 
         std::uint64_t qosRoundTripTTL = 40000;
 
@@ -499,7 +498,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         ProxyBuilder<tests::TestProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HighestPriority);
-        discoveryQos.setDiscoveryTimeout(1000);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
 
         std::uint64_t qosOneWayTTL = 40000;
         std::uint64_t qosRoundTripTTL = 40000;
@@ -549,7 +548,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::uint64_t qosRoundTripTTL = 40000;
 
@@ -601,7 +600,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::uint64_t qosRoundTripTTL = 40000;
 
@@ -677,7 +676,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::uint64_t qosRoundTripTTL = 40000;
 
@@ -721,7 +720,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
     const int arbitrationTimeout = 5000;
 
     std::uint64_t qosRoundTripTTL = 40000;
-    discoveryQos.setDiscoveryTimeout(arbitrationTimeout);
+    discoveryQos.setDiscoveryTimeoutMs(arbitrationTimeout);
 
     // Time how long arbitration takes
     auto start = std::chrono::system_clock::now();
@@ -784,7 +783,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::uint64_t qosRoundTripTTL = 40000;
 
@@ -829,7 +828,7 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::uint64_t qosRoundTripTTL = 40000;
 
@@ -857,7 +856,7 @@ tests::testProxy* createTestProxy(JoynrRuntime *runtime, const std::string& doma
            = runtime->createProxyBuilder<tests::testProxy>(domainName);
    DiscoveryQos discoveryQos;
    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-   discoveryQos.setDiscoveryTimeout(1000);
+   discoveryQos.setDiscoveryTimeoutMs(1000);
 
    std::uint64_t qosRoundTripTTL = 40000;
 
@@ -941,7 +940,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation) {
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::uint64_t qosRoundTripTTL = 20000;
 
@@ -989,7 +988,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure) {
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::uint64_t qosRoundTripTTL = 20000;
 

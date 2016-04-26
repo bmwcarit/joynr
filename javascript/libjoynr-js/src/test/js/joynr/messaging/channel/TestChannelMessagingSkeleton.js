@@ -19,69 +19,70 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/channel/TestChannelMessagingSkeletion",
-        [ "joynr/messaging/channel/ChannelMessagingSkeleton"
-        ],
-        function(ChannelMessagingSkeleton) {
+joynrTestRequire("joynr/messaging/channel/TestChannelMessagingSkeletion", [
+    "joynr/messaging/channel/ChannelMessagingSkeleton",
+    "joynr/system/RoutingTypes/ChannelAddress"
+], function(ChannelMessagingSkeleton, ChannelAddress) {
 
-            describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", function() {
+    describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", function() {
 
-                var channelMessagingSkeleton, joynrMessage1, joynrMessage2, messageRouterSpy;
+        var channelMessagingSkeleton, joynrMessage1, joynrMessage2, messageRouterSpy;
+        var channelAddress = new ChannelAddress({
+            channelId : "channelId",
+            messagingEndpointUrl : "http://testurl"
+        });
 
-                beforeEach(function() {
-                    messageRouterSpy = jasmine.createSpyObj("messageRouterSpy", [
-                        "addNextHop",
-                        "route"
-                    ]);
-                    channelMessagingSkeleton = new ChannelMessagingSkeleton({
-                        messageRouter : messageRouterSpy
-                    });
-
-                    joynrMessage1 = {
-                        key : "joynrMessage2"
-                    };
-                    joynrMessage2 = {
-                        key : "joynrMessage1",
-                        replyChannelId : "channelId"
-                    };
-                });
-
-                it("is of correct type and has all members", function() {
-                    expect(ChannelMessagingSkeleton).toBeDefined();
-                    expect(typeof ChannelMessagingSkeleton === "function").toBeTruthy();
-                    expect(channelMessagingSkeleton).toBeDefined();
-                    expect(channelMessagingSkeleton instanceof ChannelMessagingSkeleton)
-                            .toBeTruthy();
-                });
-
-                it("throws if arguments are missing or of wrong type", function() {
-                    expect(function() {
-                        channelMessagingSkeleton = new ChannelMessagingSkeleton();
-                    }).toThrow(); // correct call
-                    expect(function() {
-                        channelMessagingSkeleton = new ChannelMessagingSkeleton({
-                            messageRouter : messageRouterSpy
-                        });
-                    }).not.toThrow(); // correct call
-                });
-
-                it("event calls through to messageRouter", function() {
-                    expect(messageRouterSpy.route).not.toHaveBeenCalled();
-                    channelMessagingSkeleton.receiveMessage(joynrMessage1);
-                    expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage1);
-                    expect(messageRouterSpy.addNextHop).not.toHaveBeenCalled();
-                    expect(messageRouterSpy.route.calls.length).toBe(1);
-                    channelMessagingSkeleton.receiveMessage(joynrMessage2);
-                    expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage2);
-                    expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
-                    expect(messageRouterSpy.addNextHop.mostRecentCall.args[0]).toBe(
-                            joynrMessage2.from);
-                    expect(messageRouterSpy.addNextHop.mostRecentCall.args[1].channelId).toBe(
-                            joynrMessage2.replyChannelId);
-                    expect(messageRouterSpy.route.calls.length).toBe(2);
-                });
-
+        beforeEach(function() {
+            messageRouterSpy = jasmine.createSpyObj("messageRouterSpy", [
+                "addNextHop",
+                "route"
+            ]);
+            channelMessagingSkeleton = new ChannelMessagingSkeleton({
+                messageRouter : messageRouterSpy
             });
 
+            joynrMessage1 = {
+                key : "joynrMessage2"
+            };
+            joynrMessage2 = {
+                key : "joynrMessage1",
+                replyChannelId : JSON.stringify(channelAddress)
+            };
         });
+
+        it("is of correct type and has all members", function() {
+            expect(ChannelMessagingSkeleton).toBeDefined();
+            expect(typeof ChannelMessagingSkeleton === "function").toBeTruthy();
+            expect(channelMessagingSkeleton).toBeDefined();
+            expect(channelMessagingSkeleton instanceof ChannelMessagingSkeleton).toBeTruthy();
+        });
+
+        it("throws if arguments are missing or of wrong type", function() {
+            expect(function() {
+                channelMessagingSkeleton = new ChannelMessagingSkeleton();
+            }).toThrow(); // correct call
+            expect(function() {
+                channelMessagingSkeleton = new ChannelMessagingSkeleton({
+                    messageRouter : messageRouterSpy
+                });
+            }).not.toThrow(); // correct call
+        });
+
+        it("event calls through to messageRouter", function() {
+            expect(messageRouterSpy.route).not.toHaveBeenCalled();
+            channelMessagingSkeleton.receiveMessage(joynrMessage1);
+            expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage1);
+            expect(messageRouterSpy.addNextHop).not.toHaveBeenCalled();
+            expect(messageRouterSpy.route.calls.length).toBe(1);
+            channelMessagingSkeleton.receiveMessage(joynrMessage2);
+            expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage2);
+            expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
+            expect(messageRouterSpy.addNextHop.mostRecentCall.args[0]).toBe(joynrMessage2.from);
+            expect(messageRouterSpy.addNextHop.mostRecentCall.args[1].channelId).toBe(
+                    channelAddress.channelId);
+            expect(messageRouterSpy.route.calls.length).toBe(2);
+        });
+
+    });
+
+});

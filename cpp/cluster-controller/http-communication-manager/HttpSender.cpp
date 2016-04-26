@@ -25,14 +25,14 @@
 #include <curl/curl.h>
 
 #include "joynr/JoynrMessage.h"
+#include "joynr/ObjectWithDecayTime.h"
 #include "joynr/Util.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/JsonSerializer.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
-#include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
-#include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/QtTypeUtil.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {
@@ -54,36 +54,33 @@ HttpSender::HttpSender(const BrokerUrl& brokerUrl,
                        std::chrono::milliseconds maxAttemptTtl,
                        std::chrono::milliseconds messageSendRetryInterval)
         : brokerUrl(brokerUrl),
-          channelUrlCache(new ChannelUrlSelector(this->brokerUrl,
-                                                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
-                                                 ChannelUrlSelector::PUNISHMENT_FACTOR())),
           maxAttemptTtl(maxAttemptTtl),
           messageSendRetryInterval(messageSendRetryInterval)
 {
 }
 
-void HttpSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                      const MessagingSettings& settings)
-{
-    channelUrlCache->init(channelUrlDirectory, settings);
-}
-
 HttpSender::~HttpSender()
 {
-    delete channelUrlCache;
 }
 
 void HttpSender::sendMessage(
-        const std::string& channelId,
+        const system::RoutingTypes::Address& destinationAddress,
         const JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
+    if (dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destinationAddress) == nullptr) {
+        JOYNR_LOG_DEBUG(logger, "Invalid destination address type provided");
+        onFailure(exceptions::JoynrRuntimeException("Invalid destination address type provided"));
+        return;
+    }
+
+    auto channelAddress =
+            dynamic_cast<const system::RoutingTypes::ChannelAddress&>(destinationAddress);
+
     JOYNR_LOG_TRACE(logger, "sendMessage: ...");
     std::string&& serializedMessage = JsonSerializer::serialize(message);
 
     auto startTime = std::chrono::system_clock::now();
-
-    assert(channelUrlCache != nullptr);
 
     std::chrono::milliseconds decayTimeMillis =
             std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -98,16 +95,15 @@ void HttpSender::sendMessage(
     std::int64_t curlTimeout = std::max(
             remainingTtl.count() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
             HttpSender::MIN_ATTEMPT_TTL().count());
-    std::string url = resolveUrlForChannelId(channelId, std::chrono::milliseconds(curlTimeout));
 
     JOYNR_LOG_TRACE(logger,
                     "Sending message; url: {}, time left: {}",
-                    url,
+                    toUrl(channelAddress),
                     DispatcherUtils::convertAbsoluteTimeToTtlString(message.getHeaderExpiryDate()));
 
     JOYNR_LOG_TRACE(logger, "going to buildRequest");
-    HttpResult sendMessageResult =
-            buildRequestAndSend(serializedMessage, url, std::chrono::milliseconds(curlTimeout));
+    HttpResult sendMessageResult = buildRequestAndSend(
+            serializedMessage, toUrl(channelAddress), std::chrono::milliseconds(curlTimeout));
 
     // Delay the next request if an error occurs
     auto now = std::chrono::system_clock::now();
@@ -122,7 +118,6 @@ void HttpSender::sendMessage(
     JOYNR_LOG_TRACE(
             logger, "sendMessageResult.getStatusCode() = {}", sendMessageResult.getStatusCode());
     if (sendMessageResult.getStatusCode() != 201) {
-        channelUrlCache->feedback(false, channelId, url);
         std::string body("NULL");
         if (!sendMessageResult.getBody().isNull()) {
             body = std::string(sendMessageResult.getBody().data());
@@ -142,33 +137,10 @@ void HttpSender::sendMessage(
     } else {
         JOYNR_LOG_DEBUG(logger,
                         "sending message - success; url: {} status code: {} at ",
-                        url,
+                        toUrl(channelAddress),
                         sendMessageResult.getStatusCode(),
                         DispatcherUtils::nowInMilliseconds());
     }
-}
-
-std::string HttpSender::resolveUrlForChannelId(const std::string& channelId,
-                                               std::chrono::milliseconds curlTimeout)
-{
-    JOYNR_LOG_TRACE(logger, "obtaining Url with a curlTimeout of : {}", curlTimeout.count());
-    StatusCodeEnum status(StatusCodeEnum::IN_PROGRESS);
-    // we also use the curl timeout here, to prevent long blocking during shutdown.
-    std::string url = channelUrlCache->obtainUrl(channelId, status, curlTimeout);
-    if (!(status == StatusCodeEnum::SUCCESS)) {
-        JOYNR_LOG_ERROR(logger,
-                        "Issue while trying to obtained URl from the ChannelUrlDirectory: {}",
-                        StatusCode::toString(status));
-    }
-    if (url.empty()) {
-        JOYNR_LOG_DEBUG(logger,
-                        "Url for channelId could not be obtained from the "
-                        "ChannelUrlDirectory ... EXITING ...");
-        assert(false); // OR: url =
-                       // messageSender->brokerUrl.getSendUrl(channelId).toString();
-    }
-
-    return url;
 }
 
 HttpResult HttpSender::buildRequestAndSend(const std::string& data,
@@ -190,6 +162,22 @@ HttpResult HttpSender::buildRequestAndSend(const std::string& data,
     util::logSerializedMessage(logger, "Sending Message: ", data);
 
     return sendMessageRequest->execute();
+}
+
+std::string HttpSender::toUrl(const system::RoutingTypes::ChannelAddress& channelAddress) const
+{
+    std::string result;
+    result.reserve(256);
+
+    result.append(channelAddress.getMessagingEndpointUrl());
+
+    if (result.length() > 0 && result.back() != '/') {
+        result.append("/");
+    }
+
+    result.append("message/");
+
+    return result;
 }
 
 void HttpSender::registerReceiveQueueStartedCallback(

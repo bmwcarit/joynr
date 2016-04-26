@@ -123,8 +123,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // JoynInjectorFactory. E.g. uncomment the following lines to set a certain joynr server
         // instance.
         // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8080/bounceproxy/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
+        // joynrConfig.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "radioapp_consumer_local_domain");
 
         // 2) Or set them in the static persistence file (default: joynr.properties in working dir) at
@@ -136,12 +135,10 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // instance.
         // joynr.messaging.bounceproxyurl=http://localhost:8080/bounceproxy/
         // joynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // joynr.messaging.channelurldirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // 3) Or set them in Java System properties.
         // -Djoynr.messaging.bounceProxyUrl=http://localhost:8080/bounceproxy/
         // -Djoynr.messaging.capabilitiesDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // -Djoynr.messaging.channelUrlDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // NOTE:
         // Programmatically set configuration properties override properties set in the static persistence file.
@@ -231,7 +228,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // As soon as the arbitration QoS is set on the proxy builder, discovery of suitable providers
         // is triggered. If the discovery process does not find matching providers within the
         // arbitration timeout duration it will be terminated and you will get an arbitration exception.
-        discoveryQos.setDiscoveryTimeout(10000);
+        discoveryQos.setDiscoveryTimeoutMs(10000);
         discoveryQos.setDiscoveryScope(discoveryScope);
         // Provider entries in the global capabilities directory are cached locally. Discovery will
         // consider entries in this cache valid if they are younger as the max age of cached
@@ -240,7 +237,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
         // directory. Therefore, not all providers registered with the global capabilities
         // directory might be taken into account during arbitration.
-        discoveryQos.setCacheMaxAge(Long.MAX_VALUE);
+        discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
         // The discovery process outputs a list of matching providers. The arbitration strategy then
         // chooses one or more of them to be used by the proxy.
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
@@ -259,7 +256,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // The provider will send notifications until the end date is reached. The consumer will not receive any
         // notifications (neither value notifications nor missed publication notifications) after
         // this date.
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
+        long validityMs = 60000;
         // If no notification was received within the last alert interval, a missed publication
         // notification will be raised.
         int alertAfterInterval_ms = 20000;
@@ -269,11 +266,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // missed publication notification (depending on the value of the alert interval QoS).
         int publicationTtl_ms = 5000;
 
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms).setMaxIntervalMs(maxInterval_ms).setValidityMs(validityMs);
+        subscriptionQos.setAlertAfterIntervalMs(alertAfterInterval_ms).setPublicationTtlMs(publicationTtl_ms);
 
         ProxyBuilder<RadioProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain, RadioProxy.class);
 
@@ -314,19 +309,18 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             // successive notifications, even if on-change notifications are enabled and the value changes
             // more often. This prevents the consumer from being flooded by updated values. The filtering
             // happens on the provider's side, thus also preventing excessive network traffic.
-            int wsbMinInterval = 1 * 1000;
+            int wsbMinIntervalMs = 1 * 1000;
             // The provider will send notifications until the end date is reached. The consumer will not receive any
             // notifications (neither value notifications nor missed publication notifications) after
             // this date.
-            long wsbExpiryDate = System.currentTimeMillis() + 60 * 1000;
+            long wsbValidityMs = 60 * 1000;
             // Notification messages will be sent with this time-to-live. If a notification message can not be
             // delivered within its TTL, it will be deleted from the system.
             // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
             // missed publication notification (depending on the value of the alert interval QoS).
-            int wsbPublicationTtl = 5 * 1000;
-            weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos(wsbMinInterval,
-                                                                             wsbExpiryDate,
-                                                                             wsbPublicationTtl);
+            int wsbPublicationTtlMs = 5 * 1000;
+            weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos();
+            weakSignalBroadcastSubscriptionQos.setMinIntervalMs(wsbMinIntervalMs).setValidityMs(wsbValidityMs).setPublicationTtlMs(wsbPublicationTtlMs);
             radioProxy.subscribeToWeakSignalBroadcast(new WeakSignalBroadcastAdapter() {
                 @Override
                 public void onReceive(RadioStation weakSignalStation) {
@@ -338,12 +332,11 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             // selective broadcast subscription
 
             OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
-            int nsdbMinInterval = 2 * 1000;
-            long nsdbExpiryDate = System.currentTimeMillis() + 180 * 1000;
-            int nsdbPublicationTtl = 5 * 1000;
-            newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos(nsdbMinInterval,
-                                                                                       nsdbExpiryDate,
-                                                                                       nsdbPublicationTtl);
+            int nsdbMinIntervalMs = 2 * 1000;
+            long nsdbValidityMs = 180 * 1000;
+            int nsdbPublicationTtlMs = 5 * 1000;
+            newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos();
+            newStationDiscoveredBroadcastSubscriptionQos.setMinIntervalMs(nsdbMinIntervalMs).setValidityMs(nsdbValidityMs).setPublicationTtlMs(nsdbPublicationTtlMs);
             NewStationDiscoveredBroadcastFilterParameters newStationDiscoveredBroadcastFilterParams = new NewStationDiscoveredBroadcastFilterParameters();
             newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
             GeoPosition positionOfInterest = new GeoPosition(48.1351250, 11.5819810); // Munich
@@ -442,7 +435,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 Boolean reply = future.get(timeoutInMilliseconds);
                 LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation + ": " + reply
                         + PRINT_BORDER);
-            } catch (InterruptedException|JoynrRuntimeException|ApplicationException e) {
+            } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
                 LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation
                         + ": " + e.getClass().getSimpleName() + "!");
             }
@@ -460,6 +453,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                     case 'm':
                         GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
                         LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country + ", location: " + locationOfCurrentStation.location);
+                        break;
                     default:
                         LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
                         break;

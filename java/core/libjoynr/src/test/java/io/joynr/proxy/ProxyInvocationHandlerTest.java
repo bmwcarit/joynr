@@ -32,7 +32,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.messaging.MessagingQos;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -45,7 +44,7 @@ public class ProxyInvocationHandlerTest {
 
     private final ExecutorService threadPool = new ScheduledThreadPoolExecutor(2);
 
-    public static interface TestSyncInterface extends JoynrSyncInterface {
+    public static interface TestSyncInterface {
         public void testMethod();
     }
 

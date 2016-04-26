@@ -30,6 +30,7 @@ public class RoutingTypesUtilTest {
     String mqttAddressString = "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://host:1234\",\"topic\":\"topic\"}";
 
     static final String BROKERURI = "tcp://host:1234";
+    private static final String MESSAGINGENDPOINTURL = "http://server:8080/bounceproxy/";
     static final String TOPIC = "topic";
     static final String CHANNELID = UUID.randomUUID().toString();
 
@@ -51,9 +52,11 @@ public class RoutingTypesUtilTest {
 
     @Test
     public void fromChannelAddressString() {
-        Address address = RoutingTypesUtil.fromAddressString(CHANNELID);
+        ChannelAddress channelAddress = new ChannelAddress(MESSAGINGENDPOINTURL, CHANNELID);
+        String addressString = RoutingTypesUtil.toAddressString(channelAddress);
+        Address address = RoutingTypesUtil.fromAddressString(addressString);
         assertTrue(address instanceof ChannelAddress);
-        ChannelAddress channelAddress = (ChannelAddress) address;
+        assertEquals(MESSAGINGENDPOINTURL, channelAddress.getMessagingEndpointUrl());
         assertEquals(CHANNELID, channelAddress.getChannelId());
     }
 }

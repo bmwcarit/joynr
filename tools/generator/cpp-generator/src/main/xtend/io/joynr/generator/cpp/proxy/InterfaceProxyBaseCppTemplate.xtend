@@ -73,7 +73,7 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 //tm todo: this could probably moved into async proxy, by setting the IArbitrationListener in the ProxyBase
 void «className»::handleArbitrationFinished(
 		const std::string &providerParticipantId,
-		const joynr::types::CommunicationMiddleware::Enum& connection
+		bool useInProcessConnector
 ) {
 	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«serviceName»Connector>(
 				domain,
@@ -82,10 +82,10 @@ void «className»::handleArbitrationFinished(
 				qosSettings,
 				cache,
 				cached,
-				connection
+				useInProcessConnector
 	);
 
-	joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, connection);
+	joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, useInProcessConnector);
 }
 
 «FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»

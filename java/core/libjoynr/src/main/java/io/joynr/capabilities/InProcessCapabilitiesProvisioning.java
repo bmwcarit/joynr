@@ -25,14 +25,17 @@ import com.google.inject.name.Named;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.Discovery;
 import joynr.system.RoutingTypes.Address;
+import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 import java.util.Collection;
 import java.util.List;
 
 public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvisioning {
 
+    private static final long NO_EXPIRY = Long.MAX_VALUE;
     private String discoveryProviderParticipantId;
     private String systemServicesDomain;
     private Address discoveryProviderAddress;
@@ -47,17 +50,19 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
     }
 
     @Override
-    public Collection<? extends CapabilityEntry> getCapabilityEntries() {
+    public Collection<DiscoveryEntry> getDiscoveryEntries() {
 
-        List<CapabilityEntry> provisionedList = Lists.newArrayList();
+        List<DiscoveryEntry> provisionedList = Lists.newArrayList();
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        provisionedList.add(new CapabilityEntryImpl(systemServicesDomain,
-                                                    Discovery.INTERFACE_NAME,
-                                                    providerQos,
-                                                    discoveryProviderParticipantId,
-                                                    System.currentTimeMillis(),
-                                                    discoveryProviderAddress));
+        provisionedList.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
+                                                                    systemServicesDomain,
+                                                                    Discovery.INTERFACE_NAME,
+                                                                    discoveryProviderParticipantId,
+                                                                    providerQos,
+                                                                    System.currentTimeMillis(),
+                                                                    NO_EXPIRY,
+                                                                    discoveryProviderAddress));
 
         return provisionedList;
     }

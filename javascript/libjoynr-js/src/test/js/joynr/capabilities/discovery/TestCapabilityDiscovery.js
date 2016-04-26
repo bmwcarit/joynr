@@ -31,7 +31,9 @@ joynrTestRequire(
             "joynr/types/ProviderScope",
             "joynr/types/DiscoveryScope",
             "joynr/types/DiscoveryEntry",
-            "joynr/types/CapabilityInformation",
+            "joynr/types/GlobalDiscoveryEntry",
+            "joynr/system/RoutingTypes/ChannelAddress",
+            "joynr/types/Version",
             "global/Promise"
         ],
         function(
@@ -43,13 +45,17 @@ joynrTestRequire(
                 ProviderScope,
                 DiscoveryScope,
                 DiscoveryEntry,
-                CapabilityInformation,
+                GlobalDiscoveryEntry,
+                ChannelAddress,
+                Version,
                 Promise) {
 
-            var domain, interfaceName, discoveryQos, discoveryEntries, globalCapInfos;
-            var capabilityDiscovery, messageRouterSpy, proxyBuilderSpy, channelId, localCapStoreSpy;
+            var domain, interfaceName, discoveryQos, discoveryEntries, globalDiscoveryEntries;
+            var capabilityDiscovery, messageRouterSpy, proxyBuilderSpy, address, localCapStoreSpy;
             var globalCapCacheSpy, globalCapDirSpy, capabilityInfo;
             var asyncTimeout = 5000;
+            var startDateMs;
+
 
             messageRouterSpy = jasmine.createSpyObj("routingTable", [
                 "addNextHop",
@@ -71,11 +77,13 @@ joynrTestRequire(
                 return spyObj;
             }
 
-            function getCapInfo(domain, interfaceName, newChannelId) {
-                return new CapabilityInformation({
+            function getGlobalDiscoveryEntry(domain, interfaceName, newGlobalAddress) {
+                return new GlobalDiscoveryEntry({
+                    providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                     domain : domain,
                     interfaceName : interfaceName,
-                    providerQos : new ProviderQos({
+                    lastSeenDateMs : Date.now(),
+                    qos : new ProviderQos({
                         customParameters : [ new CustomParameter({
                             name : "theName",
                             value : "theValue"
@@ -87,13 +95,22 @@ joynrTestRequire(
                                 : ProviderScope.GLOBAL,
                         onChangeSubscriptions : true
                     }),
-                    channelId : (newChannelId !== undefined ? newChannelId : channelId),
+                    address : JSON.stringify((newGlobalAddress !== undefined ? newGlobalAddress : address)),
                     participantId : "700"
                 });
             }
 
-            function getDiscoverEntry(domain, interfaceName) {
+            function assertDiscoveryEntryEquals(expected, actual) {
+                expect(actual.domain).toEqual(expected.domain);
+                expect(actual.interfaceName).toEqual(expected.interfaceName);
+                expect(actual.participantId).toEqual(expected.participantId);
+                expect(actual.qos).toEqual(expected.qos);
+                expect(actual.address).toEqual(expected.address);
+            }
+
+            function getDiscoveryEntry(domain, interfaceName) {
                 return new DiscoveryEntry({
+                    providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                     domain : domain,
                     interfaceName : interfaceName,
                     qos : new ProviderQos({
@@ -109,7 +126,7 @@ joynrTestRequire(
                         onChangeSubscriptions : true
                     }),
                     participantId : "700",
-                    connections : []
+                    lastSeenDateMs : Date.now()
                 });
             }
 
@@ -119,9 +136,13 @@ joynrTestRequire(
 
                         beforeEach(function() {
                             var i;
+                            startDateMs = Date.now();
                             domain = "myDomain";
                             interfaceName = "myInterfaceName";
-                            channelId = domain + "TestCapabilityDiscoveryChannel";
+                            address = new ChannelAddress({
+                                channelId: domain + "TestCapabilityDiscoveryChannel",
+                                messagingEndpointUrl: "http://testUrl"
+                            });
                             discoveryQos = new DiscoveryQos({
                                 cacheMaxAge : 0,
                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
@@ -129,15 +150,17 @@ joynrTestRequire(
 
                             discoveryEntries = [];
                             for (i = 0; i < 12; ++i) {
-                                discoveryEntries.push(getDiscoverEntry(
+                                discoveryEntries.push(getDiscoveryEntry(
                                         domain + i.toString(),
                                         interfaceName + i.toString()));
                             }
 
-                            globalCapInfos = [];
+                            globalDiscoveryEntries = [];
                             for (i = 0; i < 12; ++i) {
-                                globalCapInfos.push(getCapInfo(domain + i.toString(), interfaceName
-                                    + i.toString(), "globalCapInfo" + i.toString()));
+                                globalDiscoveryEntries.push(getGlobalDiscoveryEntry(domain + i.toString(), interfaceName  + i.toString(), new ChannelAddress({
+                                    channelId: "globalCapInfo" + i.toString(),
+                                    messagingEndpointUrl: "http://testurl"
+                                })));
                             }
 
                             localCapStoreSpy =
@@ -157,8 +180,8 @@ joynrTestRequire(
                                             globalCapCacheSpy,
                                             messageRouterSpy,
                                             proxyBuilderSpy,
-                                            channelId,
                                             "io.joynr");
+                            capabilityDiscovery.globalAddressReady(address);
                         });
 
                         it(
@@ -195,15 +218,6 @@ joynrTestRequire(
                                         var capDisc =
                                                 new CapabilityDiscovery(
                                                         localCapStoreSpy,
-                                                        messageRouterSpy,
-                                                        proxyBuilderSpy,
-                                                        channelId);
-                                    }).toThrow();
-                            expect(
-                                    function() {
-                                        var capDisc =
-                                                new CapabilityDiscovery(
-                                                        localCapStoreSpy,
                                                         globalCapCacheSpy,
                                                         messageRouterSpy,
                                                         proxyBuilderSpy);
@@ -213,8 +227,7 @@ joynrTestRequire(
                                         new CapabilityDiscovery(
                                                 localCapStoreSpy,
                                                 globalCapCacheSpy,
-                                                messageRouterSpy,
-                                                channelId);
+                                                messageRouterSpy);
                             }).toThrow();
                             expect(function() {
                                 var capDisc =
@@ -223,16 +236,6 @@ joynrTestRequire(
                                                 globalCapCacheSpy,
                                                 messageRouterSpy,
                                                 proxyBuilderSpy,
-                                                channelId);
-                            }).toThrow();
-                            expect(function() {
-                                var capDisc =
-                                        new CapabilityDiscovery(
-                                                localCapStoreSpy,
-                                                globalCapCacheSpy,
-                                                messageRouterSpy,
-                                                proxyBuilderSpy,
-                                                channelId,
                                                 "domain");
                             }).not.toThrow();
                         });
@@ -254,7 +257,6 @@ joynrTestRequire(
                                                     globalCapCacheSpy,
                                                     messageRouterSpy,
                                                     proxyBuilderSpy,
-                                                    channelId,
                                                     "io.joynr");
 
                                     capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
@@ -300,7 +302,7 @@ joynrTestRequire(
                         it(
                                 "calls local and not global cache and not global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store provides non-empty result",
                                 function() {
-                                    localCapStoreSpy.lookup.andReturn([ getDiscoverEntry(
+                                    localCapStoreSpy.lookup.andReturn([ getDiscoveryEntry(
                                             domain,
                                             interfaceName)
                                     ]);
@@ -388,7 +390,7 @@ joynrTestRequire(
                         it(
                                 "does not call global capabilities directory according to discoveryQos.discoveryScope GLOBAL_ONLY, if global cache is non-empty",
                                 function() {
-                                    globalCapCacheSpy.lookup.andReturn([ getDiscoverEntry(
+                                    globalCapCacheSpy.lookup.andReturn([ getDiscoveryEntry(
                                             domain,
                                             interfaceName)
                                     ]);
@@ -435,7 +437,6 @@ joynrTestRequire(
                                             globalCapCacheSpy,
                                             messageRouterSpy,
                                             proxyBuilderSpy,
-                                            channelId,
                                             "io.joynr");
                             var discoveryQos = new DiscoveryQos({
                                 cacheMaxAge : 0,
@@ -459,8 +460,15 @@ joynrTestRequire(
                                 if (expectedReturnValue === undefined) {
                                     expect(onFulfilledSpy).not.toHaveBeenCalled();
                                 } else {
-                                    expect(onFulfilledSpy)
-                                            .toHaveBeenCalledWith(expectedReturnValue);
+                                    var i;
+                                    var endDateMs = Date.now();
+                                    var fulfilledWith = onFulfilledSpy.calls[0].args[0];
+                                    expect(fulfilledWith.length).toEqual(expectedReturnValue.length);
+                                    for (i = 0; i<fulfilledWith.length; i++) {
+                                        assertDiscoveryEntryEquals(expectedReturnValue[i], fulfilledWith[i]);
+                                        expect(fulfilledWith[i].lastSeenDateMs >= startDateMs).toBeTruthy();
+                                        expect(fulfilledWith[i].lastSeenDateMs <= endDateMs).toBeTruthy();
+                                    }
                                 }
                             });
                         }
@@ -488,19 +496,19 @@ joynrTestRequire(
                                             "02",
                                             DiscoveryScope.LOCAL_THEN_GLOBAL,
                                             [],
-                                            [ globalCapInfos[1]
+                                            [ globalDiscoveryEntries[1]
                                             ],
                                             [],
-                                            [ discoveryEntries[1]
+                                            [ globalDiscoveryEntries[1]
                                             ]);
                                     testDiscoveryResult(
                                             "03",
                                             DiscoveryScope.LOCAL_THEN_GLOBAL,
                                             [],
                                             [],
-                                            [ globalCapInfos[2]
+                                            [ globalDiscoveryEntries[2]
                                             ],
-                                            [ discoveryEntries[2]
+                                            [ globalDiscoveryEntries[2]
                                             ]);
                                     testDiscoveryResult(
                                             "04",
@@ -508,7 +516,7 @@ joynrTestRequire(
                                             [ discoveryEntries[3]
                                             ],
                                             [],
-                                            [ globalCapInfos[3]
+                                            [ globalDiscoveryEntries[3]
                                             ],
                                             [ discoveryEntries[3]
                                             ]);
@@ -517,9 +525,9 @@ joynrTestRequire(
                                             DiscoveryScope.LOCAL_THEN_GLOBAL,
                                             [ discoveryEntries[3]
                                             ],
-                                            [ globalCapInfos[1]
+                                            [ globalDiscoveryEntries[1]
                                             ],
-                                            [ globalCapInfos[3]
+                                            [ globalDiscoveryEntries[3]
                                             ],
                                             [ discoveryEntries[3]
                                             ]);
@@ -544,14 +552,14 @@ joynrTestRequire(
                                             DiscoveryScope.LOCAL_ONLY,
                                             [],
                                             [],
-                                            [ globalCapInfos[6]
+                                            [ globalDiscoveryEntries[6]
                                             ],
                                             []);
                                     testDiscoveryResult(
                                             "09",
                                             DiscoveryScope.LOCAL_ONLY,
                                             [],
-                                            [ globalCapInfos[5]
+                                            [ globalDiscoveryEntries[5]
                                             ],
                                             [],
                                             []);
@@ -559,9 +567,9 @@ joynrTestRequire(
                                             "10",
                                             DiscoveryScope.LOCAL_ONLY,
                                             [],
-                                            [ globalCapInfos[5]
+                                            [ globalDiscoveryEntries[5]
                                             ],
-                                            [ globalCapInfos[6]
+                                            [ globalDiscoveryEntries[6]
                                             ],
                                             []);
                                     testDiscoveryResult(
@@ -570,7 +578,7 @@ joynrTestRequire(
                                             [ discoveryEntries[7]
                                             ],
                                             [],
-                                            [ globalCapInfos[7]
+                                            [ globalDiscoveryEntries[7]
                                             ],
                                             [ discoveryEntries[7]
                                             ]);
@@ -579,9 +587,9 @@ joynrTestRequire(
                                             DiscoveryScope.LOCAL_ONLY,
                                             [ discoveryEntries[7]
                                             ],
-                                            [ globalCapInfos[1]
+                                            [ globalDiscoveryEntries[1]
                                             ],
-                                            [ globalCapInfos[7]
+                                            [ globalDiscoveryEntries[7]
                                             ],
                                             [ discoveryEntries[7]
                                             ]);
@@ -596,10 +604,10 @@ joynrTestRequire(
                                             "14",
                                             DiscoveryScope.GLOBAL_ONLY,
                                             [],
-                                            [ globalCapInfos[9]
+                                            [ globalDiscoveryEntries[9]
                                             ],
                                             [],
-                                            [ discoveryEntries[9]
+                                            [ globalDiscoveryEntries[9]
                                             ]);
                                     testDiscoveryResult(
                                             "15",
@@ -613,41 +621,41 @@ joynrTestRequire(
                                             "16",
                                             DiscoveryScope.GLOBAL_ONLY,
                                             [],
-                                            [ globalCapInfos[10]
+                                            [ globalDiscoveryEntries[10]
                                             ],
-                                            [ globalCapInfos[10]
+                                            [ globalDiscoveryEntries[10]
                                             ],
-                                            [ discoveryEntries[10]
+                                            [ globalDiscoveryEntries[10]
                                             ]);
                                     testDiscoveryResult(
                                             "17",
                                             DiscoveryScope.GLOBAL_ONLY,
                                             [],
                                             [],
-                                            [ globalCapInfos[10]
+                                            [ globalDiscoveryEntries[10]
                                             ],
-                                            [ discoveryEntries[10]
+                                            [ globalDiscoveryEntries[10]
                                             ]);
                                     testDiscoveryResult(
                                             "18",
                                             DiscoveryScope.GLOBAL_ONLY,
                                             [],
-                                            [ globalCapInfos[11]
+                                            [ globalDiscoveryEntries[11]
                                             ],
-                                            [ globalCapInfos[11]
+                                            [ globalDiscoveryEntries[11]
                                             ],
-                                            [ discoveryEntries[11]
+                                            [ globalDiscoveryEntries[11]
                                             ]);
                                     testDiscoveryResult(
                                             "19",
                                             DiscoveryScope.GLOBAL_ONLY,
                                             [ discoveryEntries[10]
                                             ],
-                                            [ globalCapInfos[11]
+                                            [ globalDiscoveryEntries[11]
                                             ],
-                                            [ globalCapInfos[11]
+                                            [ globalDiscoveryEntries[11]
                                             ],
-                                            [ discoveryEntries[11]
+                                            [ globalDiscoveryEntries[11]
                                             ]);
                                     testDiscoveryResult(
                                             "20",
@@ -669,31 +677,31 @@ joynrTestRequire(
                                             "22",
                                             DiscoveryScope.LOCAL_AND_GLOBAL,
                                             [],
-                                            [ globalCapInfos[1]
+                                            [ globalDiscoveryEntries[1]
                                             ],
                                             [],
-                                            [ discoveryEntries[1]
+                                            [ globalDiscoveryEntries[1]
                                             ]);
                                     testDiscoveryResult(
                                             "23",
                                             DiscoveryScope.LOCAL_AND_GLOBAL,
                                             [],
                                             [],
-                                            [ globalCapInfos[2]
+                                            [ globalDiscoveryEntries[2]
                                             ],
-                                            [ discoveryEntries[2]
+                                            [ globalDiscoveryEntries[2]
                                             ]);
                                     testDiscoveryResult(
                                             "24",
                                             DiscoveryScope.LOCAL_AND_GLOBAL,
                                             [ discoveryEntries[3]
                                             ],
-                                            [ globalCapInfos[4]
+                                            [ globalDiscoveryEntries[4]
                                             ],
                                             [],
                                             [
                                                 discoveryEntries[3],
-                                                discoveryEntries[4]
+                                                globalDiscoveryEntries[4]
                                             ]);
                                     testDiscoveryResult(
                                             "25",
@@ -701,29 +709,30 @@ joynrTestRequire(
                                             [ discoveryEntries[3]
                                             ],
                                             [],
-                                            [ globalCapInfos[4]
+                                            [ globalDiscoveryEntries[4]
                                             ],
                                             [
                                                 discoveryEntries[3],
-                                                discoveryEntries[4]
+                                                globalDiscoveryEntries[4]
                                             ]);
                                     testDiscoveryResult(
                                             "26",
                                             DiscoveryScope.LOCAL_AND_GLOBAL,
                                             [ discoveryEntries[3]
                                             ],
-                                            [ globalCapInfos[1]
+                                            [ globalDiscoveryEntries[1]
                                             ],
-                                            [ globalCapInfos[3]
+                                            [ globalDiscoveryEntries[3]
                                             ],
                                             [
                                                 discoveryEntries[3],
-                                                discoveryEntries[1]
+                                                globalDiscoveryEntries[1]
                                             ]);
                                 });
 
                         function getDiscoveryEntryWithScope(scope) {
                             return new DiscoveryEntry({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                                 domain : "domain",
                                 interfaceName : "interfaceName",
                                 qos : new ProviderQos({
@@ -736,15 +745,18 @@ joynrTestRequire(
                                     scope : scope,
                                     onChangeSubscription : true
                                 }),
-                                participantId : "700"
+                                participantId : "700",
+                                lastSeenDateMs : 123
                             });
                         }
 
-                        function getCapInfoWithScope(scope) {
-                            return new CapabilityInformation({
+                        function getGlobalDiscoveryEntryWithScope(scope) {
+                            return new GlobalDiscoveryEntry({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                                 domain : "domain",
                                 interfaceName : "interfaceName",
-                                providerQos : new ProviderQos({
+                                lastSeenDateMs : Date.now(),
+                                qos : new ProviderQos({
                                     customParameters : [ new CustomParameter({
                                         name : "theName",
                                         value : "theValue"
@@ -754,7 +766,7 @@ joynrTestRequire(
                                     scope : scope,
                                     onChangeSubscription : true
                                 }),
-                                channelId : channelId,
+                                address : JSON.stringify(address),
                                 participantId : "700"
                             });
                         }
@@ -804,6 +816,7 @@ joynrTestRequire(
                         it(
                                 "calls global cap dir correctly",
                                 function() {
+                                    var actualDiscoveryEntry;
                                     var discoveryEntry =
                                             getDiscoveryEntryWithScope(ProviderScope.GLOBAL);
                                     var spy = jasmine.createSpyObj("spy", [
@@ -822,21 +835,10 @@ joynrTestRequire(
 
                                     runs(function() {
                                         expect(globalCapDirSpy.add).toHaveBeenCalled();
-                                        expect(
-                                                globalCapDirSpy.add.calls[0].args[0].capability.domain)
-                                                .toEqual(discoveryEntry.domain);
-                                        expect(
-                                                globalCapDirSpy.add.calls[0].args[0].capability.interfaceName)
-                                                .toEqual(discoveryEntry.interfaceName);
-                                        expect(
-                                                globalCapDirSpy.add.calls[0].args[0].capability.participantId)
-                                                .toEqual(discoveryEntry.participantId);
-                                        expect(
-                                                globalCapDirSpy.add.calls[0].args[0].capability.providerQos)
-                                                .toEqual(discoveryEntry.qos);
-                                        expect(
-                                                globalCapDirSpy.add.calls[0].args[0].capability.channelId)
-                                                .toEqual(channelId);
+                                        actualDiscoveryEntry = globalCapDirSpy.add.calls[0].args[0].globalDiscoveryEntry;
+                                        discoveryEntry.address = JSON.stringify(address);
+                                        assertDiscoveryEntryEquals(discoveryEntry, actualDiscoveryEntry);
+
                                         expect(localCapStoreSpy.add).not.toHaveBeenCalledWith();
                                         expect(spy.onFulfilled).toHaveBeenCalled();
                                         expect(spy.onRejected).not.toHaveBeenCalledWith();
@@ -846,6 +848,7 @@ joynrTestRequire(
                         it(
                                 "reports error from global cap dir",
                                 function() {
+                                    var actualDiscoveryEntry;
                                     var discoveryEntry =
                                             getDiscoveryEntryWithScope(ProviderScope.GLOBAL);
                                     var spy = jasmine.createSpyObj("spy", [
@@ -870,9 +873,8 @@ joynrTestRequire(
 
                                     runs(function() {
                                         expect(globalCapDirSpy.add).toHaveBeenCalled();
-                                        expect(globalCapDirSpy.add).toHaveBeenCalledWith({
-                                            capability : getCapInfoWithScope(ProviderScope.GLOBAL)
-                                        });
+                                        actualDiscoveryEntry = globalCapDirSpy.add.calls[0].args[0].globalDiscoveryEntry;
+                                        assertDiscoveryEntryEquals(getGlobalDiscoveryEntryWithScope(ProviderScope.GLOBAL), actualDiscoveryEntry);
                                         expect(localCapStoreSpy.add).not.toHaveBeenCalledWith();
                                         expect(spy.onRejected).toHaveBeenCalled();
                                         expect(

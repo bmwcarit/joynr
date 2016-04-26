@@ -60,8 +60,8 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 	FilterGenerator filterGenerator
 
 	@Inject extension JoynrJavaGeneratorExtensions
-
-	override getLanguageId() {
+	
+override getLanguageId() {
 		"java"
 	}
 
@@ -132,10 +132,12 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 	}
 
 	override setParameters(Map<String,String> parameter) {
-		// do nothing
+		if (parameter.keySet.contains("jee")) {
+			activateJeeExtension
+		}
 	}
 
 	override supportedParameters() {
-		Sets::newHashSet();
+		Sets::newHashSet("jee");
 	}
 }

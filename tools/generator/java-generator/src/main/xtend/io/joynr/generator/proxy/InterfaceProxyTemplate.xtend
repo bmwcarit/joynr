@@ -37,7 +37,7 @@ class InterfaceProxyTemplate extends InterfaceTemplate {
 
 	override generate() {
 		val interfaceName =  francaIntf.joynrName
-		val className = interfaceName + "Proxy"
+		val className = francaIntf.proxyClassName
 		val asyncClassName = interfaceName + "Async"
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"

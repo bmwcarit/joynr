@@ -87,12 +87,12 @@ MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "") {
 
 TEST_F(MqttMessagingSkeletonTest, transmitTest) {
     MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter);
-    std::string replyChannelId = message.getHeaderReplyChannelId();
+    std::string replyAddress = message.getHeaderReplyAddress();
     EXPECT_CALL(mockMessageRouter, addNextHop(
         _,
         AnyOf(
             Pointee(A<joynr::system::RoutingTypes::Address>()),
-            pointerToMqttAddressWithChannelId(replyChannelId)
+            pointerToMqttAddressWithChannelId(replyAddress)
         ),
         _)
     ).Times(1);

@@ -10,6 +10,7 @@
 	* [Building joynr C++](wiki/cpp_building_joynr.md) -- Building joynr C++ yourself
 	* [Building joynr JavaScript](wiki/javascript_building_joynr.md) -- Building joynr JavaScript yourself
 * [Java Developer Guide](wiki/java.md) -- Developing Java applications with joynr
+* [JEE Developer Guide](wiki/jee.md) -- Developing JEE applications with joynr
 * [C++ Developer Guide](wiki/cplusplus.md) -- Developing C++ applications with joynr
 * [JavaScript Developer Guide](wiki/javascript.md) -- Developing JavaScript applications with joynr
 * [JavaScript Tutorial](wiki/JavaScriptTutorial.md) -- Make your first joynr JavaScript application

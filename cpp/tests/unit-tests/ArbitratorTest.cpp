@@ -22,6 +22,7 @@
 #include "joynr/QosArbitrator.h"
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DefaultArbitrator.h"
+#include "joynr/types/Version.h"
 
 #include "tests/utils/MockObjects.h"
 
@@ -33,6 +34,8 @@ static const std::string interfaceName("unittest-interface");
 class ArbitratorTest : public ::testing::Test {
 public:
     ArbitratorTest() :
+        lastSeenDateMs(0),
+        expiryDateMs(0),
         mockDiscovery()
     {}
 
@@ -41,6 +44,8 @@ public:
     void TearDown(){
     }
 protected:
+    std::int64_t lastSeenDateMs;
+    std::int64_t expiryDateMs;
     MockDiscovery mockDiscovery;
 };
 
@@ -48,6 +53,7 @@ protected:
 TEST_F(ArbitratorTest, getHighestPriority) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    joynr::types::Version providerVersion(47, 11);
     QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
@@ -63,20 +69,17 @@ TEST_F(ArbitratorTest, getHighestPriority) {
         participantId.push_back(std::to_string(priority));
     }
 
-    // Create a list of fake connections
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
-            joynr::types::CommunicationMiddleware::JOYNR
-    };
-
     // Create a list of discovery entries
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     for (std::size_t i = 0; i < qosEntries.size(); i++) {
         discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+                                 providerVersion,
                                  domain,
                                  interfaceName,
                                  participantId[i],
                                  qosEntries[i],
-                                 connections
+                                 lastSeenDateMs,
+                                 expiryDateMs
         ));
     }
 
@@ -91,6 +94,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setProviderMustSupportOnChange(true);
+    joynr::types::Version providerVersion(47, 11);
     QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
@@ -105,20 +109,17 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
         participantId.push_back("onChange_%1" + std::to_string(priority));
     }
 
-    // Create a list of fake connections
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
-            joynr::types::CommunicationMiddleware::JOYNR
-    };
-
     // Create a list of discovery entries
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     for (std::size_t i = 0; i < qosEntries.size(); i++) {
         discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+                                 providerVersion,
                                  domain,
                                  interfaceName,
                                  participantId[i],
                                  qosEntries[i],
-                                 connections
+                                 lastSeenDateMs,
+                                 expiryDateMs
         ));
     }
 
@@ -136,6 +137,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     KeywordArbitrator keywordArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
+    joynr::types::Version providerVersion(47, 11);
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
@@ -162,20 +164,17 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     qosEntries.push_back(types::ProviderQos(parameterList, 1, types::ProviderScope::GLOBAL, false));
     participantId.push_back("correct_keyword");
 
-    // Create a list of fake connections
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
-            joynr::types::CommunicationMiddleware::JOYNR
-    };
-
     // Create a list of discovery entries
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     for (std::size_t i = 0; i < qosEntries.size(); i++) {
         discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+                                 providerVersion,
                                  domain,
                                  interfaceName,
                                  participantId[i],
                                  qosEntries[i],
-                                 connections
+                                 lastSeenDateMs,
+                                 expiryDateMs
         ));
     }
 
@@ -204,8 +203,8 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
             );
 
     DiscoveryQos discoveryQos;
-    discoveryQos.setRetryInterval(100);
-    discoveryQos.setDiscoveryTimeout(450);
+    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.setDiscoveryTimeoutMs(450);
     DefaultArbitrator arbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
 
     arbitrator.startArbitration();

@@ -59,8 +59,6 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
         const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
     std::string res = "";
-    joynr::types::CommunicationMiddleware::Enum preferredConnection(
-            joynr::types::CommunicationMiddleware::NONE);
 
     // Check for empty results
     if (discoveryEntries.size() == 0)
@@ -77,8 +75,6 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
         if (providerQos.getPriority() > highestPriority) {
             res = discoveryEntry.getParticipantId();
             JOYNR_LOG_TRACE(logger, "setting res to {}", res);
-            preferredConnection =
-                    selectPreferredCommunicationMiddleware(discoveryEntry.getConnections());
             highestPriority = providerQos.getPriority();
         }
     }
@@ -89,8 +85,7 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
         return;
     }
 
-    updateArbitrationStatusParticipantIdAndAddress(
-            ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);
+    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful, res);
 }
 
 } // namespace joynr

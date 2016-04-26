@@ -21,18 +21,15 @@ package io.joynr.messaging.http.operation;
 
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
 
 import java.io.IOException;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -40,8 +37,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 
 import javax.annotation.Nullable;
-
-import joynr.types.ChannelUrlInformation;
 
 import org.apache.http.Header;
 import org.apache.http.StatusLine;
@@ -76,8 +71,6 @@ public class LongPollingChannelLifecycle {
 
     @Inject
     private MessagingSettings settings;
-    @Inject
-    private LocalChannelUrlDirectoryClient channelUrlClient;
 
     ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.LongPoll-%d").build();
     private ExecutorService channelMonitorExecutorService = Executors.newFixedThreadPool(1, namedThreadFactory);
@@ -251,10 +244,6 @@ public class LongPollingChannelLifecycle {
 
                 longPolling.longPollLoop();
 
-                // register is here because the registration response needs an open channel to be received.
-                // Otherwise register fails.
-                registerChannelUrl();
-
                 return retries;
 
                 // A thrown ShutdownException is not caught here. Should be caught in MessageReceiver
@@ -398,52 +387,6 @@ public class LongPollingChannelLifecycle {
         }
 
         return created;
-    }
-
-    boolean registerChannelUrl() {
-        if (channelUrl == null) {
-            logger.error("REGISTER channelUrl, cannot be NULL");
-            return false;
-        }
-
-        final ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
-        channelUrlInformation.setUrls(new String[]{ channelUrl });
-
-        while (true) {
-            try {
-                channelUrlClient.registerChannelUrls(channelId, channelUrlInformation);
-                return true;
-            } catch (CancellationException e) {
-                return false;
-            } catch (IllegalStateException e) {
-                logger.error("REGISTER Channel " + channelId + " failed: ", e.getMessage() != null ? e.getMessage() : e);
-                return false;
-            } catch (JoynrShutdownException e) {
-                logger.error("REGISTER Channel " + channelId + " failed: Joyn is shutting down.");
-                return false;
-            } catch (Throwable e) {
-                try {
-                    String msg;
-                    if (e.getCause() instanceof UndeclaredThrowableException) {
-                        msg = ((UndeclaredThrowableException) e.getCause()).getUndeclaredThrowable()
-                                                                           .getCause()
-                                                                           .getMessage();
-                    } else if (e.getCause() != null) {
-                        msg = e.getCause().getMessage();
-                    } else {
-                        msg = e.toString();
-                    }
-                    logger.error("REGISTER channelUrl " + channelId + " failed: " + msg + " retrying in "
-                            + settings.getSendMsgRetryIntervalMs() + " ms", e);
-
-                    Thread.sleep(settings.getSendMsgRetryIntervalMs());
-                } catch (InterruptedException e1) {
-                    return false;
-                }
-
-            }
-        }
-
     }
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "SWL_SLEEP_WITH_LOCK_HELD", justification = "Other synchronized methods should block while deleting a channel")

@@ -32,9 +32,9 @@ import org.mockito.MockitoAnnotations;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import io.joynr.Async;
+import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.SubscriptionManager;
@@ -81,11 +81,13 @@ public class ConnectorTests {
 
     }
 
-    interface TestSyncInterface extends JoynrSyncInterface {
+    @Sync
+    interface TestSyncInterface {
 
     }
 
-    interface TestAsyncInterface extends JoynrAsyncInterface {
+    @Async
+    interface TestAsyncInterface {
         void someMethodwithoutAnnotations(Integer a, String b) throws JsonMappingException;
     }
 

@@ -19,12 +19,9 @@ package io.joynr.capabilities.directory;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilitiesProvisioning;
-import io.joynr.capabilities.CapabilitiesStore;
-import io.joynr.capabilities.CapabilitiesStorePersisted;
-import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.CapabilityEntryPersisted;
 import io.joynr.capabilities.CustomParameterPersisted;
+import io.joynr.capabilities.DiscoveryEntryStore;
+import io.joynr.capabilities.DiscoveryEntryStorePersisted;
 import io.joynr.capabilities.ProviderQosPersisted;
 import io.joynr.endpoints.AddressPersisted;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -44,13 +41,10 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);
-        bind(CapabilitiesStore.class).to(CapabilitiesStorePersisted.class);
-        bind(CapabilityEntry.class).to(CapabilityEntryPersisted.class);
+        bind(DiscoveryEntryStore.class).annotatedWith(Persisted.class).to(DiscoveryEntryStorePersisted.class);
         bind(CustomParameter.class).to(CustomParameterPersisted.class);
         bind(ProviderQos.class).to(ProviderQosPersisted.class);
         bind(Address.class).to(AddressPersisted.class);
-
-        bind(CapabilitiesProvisioning.class).to(DirectoryCapabilitiesProvisioning.class);
     }
 
     @Provides

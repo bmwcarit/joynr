@@ -31,6 +31,7 @@ joynrTestRequire(
             "joynr/types/ArbitrationStrategyCollection",
             "joynr/types/DiscoveryQos",
             "joynr/types/DiscoveryScope",
+            "joynr/types/Version",
             "global/Promise",
             "Date"
         ],
@@ -43,6 +44,7 @@ joynrTestRequire(
                 ArbitrationStrategyCollection,
                 DiscoveryQosGen,
                 DiscoveryScope,
+                Version,
                 Promise,
                 Date) {
             var capabilities, fakeTime, staticArbitrationSettings, staticArbitrationSpy, domain;
@@ -56,13 +58,15 @@ joynrTestRequire(
 
             function getDiscoveryEntry(domain, interfaceName, discoveryStrategy) {
                 return new DiscoveryEntry({
+                    providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                     domain : domain,
                     interfaceName : interfaceName,
                     qos : new ProviderQos([ new CustomParameter("theName", "theValue")
                     ], 123, 1234, discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
                             ? true
                             : false, true),
-                    participandId : "700"
+                    participandId : "700",
+                    lastSeenDateMs : Date.now()
                 });
             }
 

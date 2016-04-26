@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,9 @@ class InterfaceAbstractProviderTemplate extends InterfaceTemplate {
 package «packagePath»;
 
 import io.joynr.provider.AbstractJoynrProvider;
+«IF !francaIntf.broadcasts.empty»
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
+«ENDIF»
 
 «FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true)»
 	import «datatype»;
@@ -59,38 +62,40 @@ import io.joynr.provider.AbstractJoynrProvider;
 
 public abstract class «className» extends AbstractJoynrProvider implements «providerInterfaceName» {
 
-	@Override
-	public Class<?> getProvidedInterface() {
-		return «providerInterfaceName».class;
+	public «className»() {
+		super();
 	}
 
-	@Override
-	public String getInterfaceName() {
-		return «providerInterfaceName».INTERFACE_NAME;
-	}
+	«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
+		protected «interfaceName»SubscriptionPublisher «interfaceName.toFirstLower»SubscriptionPublisher;
 
-	«FOR attribute : getAttributes(francaIntf)»
-		«val attributeName = attribute.joynrName»
-		«val attributeType = attribute.typeName»
-		«IF isNotifiable(attribute)»
-			@Override
-			public final void «attributeName»Changed(«attributeType» «attributeName») {
-				onAttributeValueChanged("«attributeName»", «attributeName»);
+		@Override
+		public void setSubscriptionPublisher(«interfaceName»SubscriptionPublisher «interfaceName.toFirstLower»SubscriptionPublisher) {
+			this.«interfaceName.toFirstLower»SubscriptionPublisher = «interfaceName.toFirstLower»SubscriptionPublisher;
+		}
+
+		«IF !francaIntf.broadcasts.empty»
+			public void addBroadcastFilter(BroadcastFilterImpl filter) {
+				this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filter);
+			}
+			public void addBroadcastFilter(BroadcastFilterImpl... filters){
+				this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filters);
 			}
 		«ENDIF»
+	«ENDIF»
+
+	«FOR attribute : getAttributes(francaIntf).filter(a | a.isNotifiable)»
+		«val attributeName = attribute.joynrName»
+		«val attributeType = attribute.typeName»
+		public void «attributeName»Changed(«attributeType» «attributeName») {
+			«interfaceName.toFirstLower»SubscriptionPublisher.«attributeName»Changed(«attributeName»);
+		}
 	«ENDFOR»
 
 	«FOR broadcast : francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
-		@Override
 		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {
-			«IF broadcast.outArgs.length == 1 && (isArray(broadcast.outArgs.get(0)) || isByteBuffer(broadcast.outArgs.get(0).type))»
-				// passing array to varargs will cause array elements to be understood as multiple parameters.
-				// Cast to Object prevents this.
-				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), (Object) «broadcast.commaSeperatedUntypedOutputParameterList»);
-			«ELSE»
-				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), «broadcast.commaSeperatedUntypedOutputParameterList»);
-			«ENDIF»
+			«interfaceName.toFirstLower»SubscriptionPublisher.fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedUntypedOutputParameterList»);
 		}
 
 	«ENDFOR»

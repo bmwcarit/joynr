@@ -23,14 +23,13 @@ import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilderFactory;
 
 import javax.inject.Named;
@@ -46,7 +45,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
     @Inject
     public ServletJoynrRuntimeImpl(ObjectMapper objectMapper,
                                    ProxyBuilderFactory builderFactory,
-                                   RequestCallerDirectory requestCallerDirectory,
+                                   ProviderDirectory providerContainer,
                                    ReplyCallerDirectory replyCallerDirectory,
                                    Dispatcher dispatcher,
                                    MessagingStubFactory messagingStubFactory,
@@ -55,7 +54,6 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
                                    LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                    @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
                                    @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                    CapabilitiesRegistrar capabilitiesRegistrar,
@@ -64,7 +62,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
         // CHECKSTYLE:ON
         super(objectMapper,
               builderFactory,
-              requestCallerDirectory,
+              providerContainer,
               replyCallerDirectory,
               dispatcher,
               messagingStubFactory,
@@ -73,7 +71,6 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
               systemServicesDomain,
               dispatcherAddress,
               capabilitiesDirectoryAddress,
-              channelUrlDirectoryAddress,
               domainAccessControllerAddress,
               discoveryProviderAddress,
               capabilitiesRegistrar,
@@ -91,7 +88,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
      * but there is no obvious fix (other than create a long polling message receiver for the unregister)
      * since the servelet lifecycle does not consist of any further usful events.
      */
-    public void unregisterProvider(String domain, JoynrProvider provider) {
+    public void unregisterProvider(String domain, Object provider) {
         try {
             super.unregisterProvider(domain, provider);
         } catch (JoynrCommunicationException e) {

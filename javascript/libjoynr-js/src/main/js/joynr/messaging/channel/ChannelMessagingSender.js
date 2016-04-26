@@ -37,15 +37,12 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
      * @name ChannelMessagingSender
      * @param {Object}
      *            settings the settings object holding the dependencies
-     * @param {LocalChannelUrlDirectory}
-     *            settings.channelUrlDirectory
      */
     function ChannelMessagingSender(settings) {
         var log = LoggerFactory.getLogger("joynr.messaging.ChannelMessagingSender");
         var messageQueue = []; // use push to add at the back, and shift to take from the front
         var messageProcessors = settings.channelQos && settings.channelQos.messageProcessors ? settings.channelQos.messageProcessors : 4;
         var resendDelay_ms = settings.channelQos && settings.channelQos.resendDelay_ms ? settings.channelQos.resendDelay_ms : 1000;
-        var channelUrlDirectory = settings.channelUrlDirectory;
         var communicationModule = settings.communicationModule;
         var started = false;
 
@@ -165,24 +162,20 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
          * @param {JoynrMessage}
          *            joynrMessage - message to be sent. Must be an instanceof JoynrMessage.
          * @param {String}
-         *            toChannel - channel Id of recipient.
+         *            toChannelAddress - channel address of recipient.
          * @returns {Object} a promise object for async event handling
          */
         this.send =
-                function send(joynrMessage, toChannel) {
+                function send(joynrMessage, toChannelAddress) {
                     if (!joynrMessage instanceof JoynrMessage) {
                         return Promise.reject(new Error(
                                 "CANNOT SEND: invalid joynrMessage which is of type "
                                     + Typing.getObjectType(joynrMessage)));
                     }
-
-                    return channelUrlDirectory.getUrlsForChannel({
-                            channelId : toChannel
-                        }).then(function(channelUrlInformation) {
                             return new Promise(function(resolve, reject) {
                                 var queuedMessage = {
                                     message : joynrMessage,
-                                    to : channelUrlInformation.urls[0]
+                                    to : toChannelAddress.messagingEndpointUrl
                                         + "messageWithoutContentType/",
                                     resolve : resolve,
                                     reject : reject,
@@ -194,10 +187,6 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
                                 messageQueue.push(queuedMessage);
                                 LongTimer.setTimeout(notify, 0);
                             });
-                        }).catch(function(error) {
-                            throw new Error("Could not get URL for channel '"
-                                + toChannel + "': " + error);
-                        });
                 };
 
          /**

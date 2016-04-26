@@ -21,8 +21,7 @@ package io.joynr.messaging;
 
 public final class MessagingPropertyKeys {
     public static final String CHANNELID = "joynr.messaging.channelid"; //NOT USUALLY SET BY THE APPLICATION!
-    public static final String CAPABILITIESDIRECTORYURL = "joynr.messaging.capabilitiesdirectoryurl";
-    public static final String CHANNELURLDIRECTORYURL = "joynr.messaging.channelurldirectoryurl";
+    public static final String DISCOVERYDIRECTORYURL = "joynr.messaging.capabilitiesdirectoryurl";
     public static final String BOUNCE_PROXY_URL = "joynr.messaging.bounceproxyurl";
     public static final String RECEIVERID = "joynr.messaging.receiverid"; //NEVER SET BY THE APPLICATION!
     public static final String PERSISTENCE_FILE = "joynr.messaging.persistence_file";

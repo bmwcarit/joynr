@@ -19,6 +19,7 @@ package io.joynr.demo;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -105,9 +106,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // instance.
         // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
         // "http://localhost:8080/bounceproxy/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL,
-        // "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL,
+        // joynrConfig.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
         // "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
 
         // Each joynr instance has a local domain. It identifies the execution
@@ -130,12 +129,10 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // instance.
         // joynr.messaging.bounceproxyurl=http://localhost:8080/bounceproxy/
         // joynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // joynr.messaging.channelurldirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // 3) Or set them in Java System properties.
         // -Djoynr.messaging.bounceProxyUrl=http://localhost:8080/bounceproxy/
         // -Djoynr.messaging.capabilitiesDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // -Djoynr.messaging.channelUrlDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // NOTE:
         // Programmatically set configuration properties override properties set
@@ -273,7 +270,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
                                                                                             domain,
-                                                                                            MyRadioProvider.INTERFACE_NAME,
+                                                                                            ProviderAnnotations.getInterfaceName(MyRadioProvider.class),
                                                                                             TrustLevel.LOW,
                                                                                             new TrustLevel[]{ TrustLevel.LOW },
                                                                                             TrustLevel.LOW,

@@ -26,12 +26,11 @@ define(
             "joynr/capabilities/arbitration/Arbitrator",
             "joynr/provider/ProviderBuilder",
             "joynr/proxy/ProxyBuilder",
-            "joynr/types/CapabilityInformation",
+            "joynr/types/GlobalDiscoveryEntry",
             "joynr/capabilities/CapabilitiesRegistrar",
             "joynr/capabilities/ParticipantIdStorage",
             "joynr/capabilities/discovery/CapabilityDiscovery",
             "joynr/capabilities/CapabilitiesStore",
-            "joynr/messaging/routing/LocalChannelUrlDirectory",
             "joynr/dispatching/RequestReplyManager",
             "joynr/dispatching/subscription/PublicationManager",
             "joynr/dispatching/subscription/SubscriptionManager",
@@ -55,8 +54,6 @@ define(
             "joynr/messaging/MessagingQos",
             "joynr/proxy/DiscoveryQos",
             "joynr/types/DiscoveryScope",
-            "joynr/infrastructure/ChannelUrlDirectoryProxy",
-            "joynr/types/ChannelUrlInformation",
             "joynr/types/TypeRegistrySingleton",
             "joynr/util/UtilInternal",
             "joynr/util/CapabilitiesUtil",
@@ -68,6 +65,7 @@ define(
             "joynr/start/settings/defaultSettings",
             "joynr/start/settings/defaultLibjoynrSettings",
             "joynr/start/settings/defaultClusterControllerSettings",
+            "joynr/util/Typing",
             "global/LocalStorage"
         ],
         function(
@@ -75,12 +73,11 @@ define(
                 Arbitrator,
                 ProviderBuilder,
                 ProxyBuilder,
-                CapabilityInformation,
+                GlobalDiscoveryEntry,
                 CapabilitiesRegistrar,
                 ParticipantIdStorage,
                 CapabilityDiscovery,
                 CapabilitiesStore,
-                LocalChannelUrlDirectory,
                 RequestReplyManager,
                 PublicationManager,
                 SubscriptionManager,
@@ -104,8 +101,6 @@ define(
                 MessagingQos,
                 DiscoveryQos,
                 DiscoveryScope,
-                ChannelUrlDirectoryProxy,
-                ChannelUrlInformation,
                 TypeRegistrySingleton,
                 Util,
                 CapabilitiesUtil,
@@ -117,6 +112,7 @@ define(
                 defaultSettings,
                 defaultLibjoynrSettings,
                 defaultClusterControllerSettings,
+                Typing,
                 LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
@@ -126,6 +122,7 @@ define(
             };
 
             var TWO_DAYS_IN_MS = 172800000;
+            var clusterControllerSettings;
 
             /**
              * The InProcessRuntime is the version of the libjoynr-js runtime that hosts its own
@@ -141,9 +138,8 @@ define(
                 var initialRoutingTable;
                 var untypedCapabilities;
                 var typedCapabilities;
-                var channelUrlDirectoryStub;
-                var localChannelUrlDirectory;
                 var channelMessagingSender;
+                var channelMessagingStubFactory;
                 var messagingStubFactory;
                 var messageRouter;
                 var communicationModule;
@@ -321,64 +317,30 @@ define(
                             persistency.setItem("joynr.channels.channelId.1", channelId);
 
                             untypedCapabilities = provisioning.capabilities || [];
-                            var defaultClusterControllerCapabilities = defaultClusterControllerSettings.capabilities || [];
+                            clusterControllerSettings = defaultClusterControllerSettings({
+                                bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl
+                            });
+                            var defaultClusterControllerCapabilities = clusterControllerSettings.capabilities || [];
 
                             untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
-
+                            /*jslint nomen: true */// allow use of _typeName once
+                            typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
+                            /*jslint nomen: false */
                             typedCapabilities = [];
+                            var errorMessage;
                             for (i = 0; i < untypedCapabilities.length; i++) {
                                 var capability =
-                                        new CapabilityInformation(untypedCapabilities[i]);
-                                if (capability.channelId) {
-                                    initialRoutingTable[capability.participantId] =
-                                        new ChannelAddress({
-                                            channelId : capability.channelId
-                                        });
+                                        new GlobalDiscoveryEntry(untypedCapabilities[i]);
+                                if (!capability.address) {
+                                    throw new Error("provisioned capability is missing address: " + JSON.stringify(capability));
                                 }
+                                initialRoutingTable[capability.participantId] = Typing.augmentTypes(JSON.parse(capability.address), typeRegistry);
                                 typedCapabilities.push(capability);
                             }
-
-                            var channelUrlDirectoryStub = new InProcessStub();
-
-                            /**
-                             * Types all provisioned channelUrls using ChannelUrlInformation
-                             *
-                             * @param {Object}
-                             *            channelUrls the Array of ChannelUrls
-                             * @param {Array}
-                             *            channelUrls.CHANNELID the ChannelUrls
-                             * @param {String}
-                             *            channelUrls.CHANNELID.array the ChannelUrl
-                             * @returns the same structure, but with joynr typed
-                             *          ChannelUrlInformation objects
-                             */
-                            function typeChannelUrls(channelUrls) {
-                                channelUrls = channelUrls || {};
-                                var channelId, typedChannelUrls = {};
-                                for (channelId in channelUrls) {
-                                    if (channelUrls.hasOwnProperty(channelId)) {
-                                        typedChannelUrls[channelId] = new ChannelUrlInformation({
-                                            urls : channelUrls[channelId]
-                                        });
-                                    }
-                                }
-                                return typedChannelUrls;
-                            }
-
-                            var mergedChannelUrls = provisioning.channelUrls || {};
-                            mergedChannelUrls[defaultClusterControllerSettings.discoveryChannel] =
-                                mergedChannelUrls[defaultClusterControllerSettings.discoveryChannel] ||
-                                defaultClusterControllerSettings.getDefaultDiscoveryChannelUrls(
-                                        provisioning.bounceProxyBaseUrl);
-                            localChannelUrlDirectory = new LocalChannelUrlDirectory({
-                                channelUrlDirectoryProxy : channelUrlDirectoryStub,
-                                provisionedChannelUrls : typeChannelUrls(mergedChannelUrls)
-                            });
 
                             communicationModule = new CommunicationModule();
 
                             channelMessagingSender = new ChannelMessagingSender({
-                                channelUrlDirectory : localChannelUrlDirectory,
                                 communicationModule : communicationModule,
                                 channelQos : provisioning.channelQos
                             });
@@ -389,13 +351,15 @@ define(
                                 messageQueueSettings.maxQueueSizeInKBytes =
                                         provisioning.messaging.maxQueueSizeInKBytes;
                             }
+
+                            channelMessagingStubFactory = new ChannelMessagingStubFactory({
+                                myChannelId : channelId,
+                                channelMessagingSender : channelMessagingSender
+                            });
                             messagingStubFactory = new MessagingStubFactory({
                                 messagingStubFactories : {
                                     InProcessAddress : new InProcessMessagingStubFactory(),
-                                    ChannelAddress : new ChannelMessagingStubFactory({
-                                        myChannelId : channelId,
-                                        channelMessagingSender : channelMessagingSender
-                                    })
+                                    ChannelAddress : channelMessagingStubFactory
                                 }
                             });
                             messageRouter = new MessageRouter({
@@ -424,9 +388,15 @@ define(
 
                             var longPollingPromise = longPollingMessageReceiver.create(channelId).then(
                                     function(channelUrl) {
+                                        var channelAddress = new ChannelAddress({
+                                            channelId: channelId,
+                                            messagingEndpointUrl: channelUrl
+                                        });
+                                        channelMessagingStubFactory.globalAddressReady(channelAddress);
+                                        capabilityDiscovery.globalAddressReady(channelAddress);
                                         longPollingMessageReceiver
                                                 .start(clusterControllerChannelMessagingSkeleton.receiveMessage);
-                                        return channelUrl;
+                                        channelMessagingSender.start();
                                     });
 
                             // link up clustercontroller messaging to dispatcher
@@ -508,7 +478,6 @@ define(
                                             globalCapabilitiesCache,
                                             messageRouter,
                                             proxyBuilder,
-                                            channelId,
                                             defaultProxyBuildSettings.domain);
 
                             discoveryStub.setSkeleton(new InProcessSkeleton(capabilityDiscovery));
@@ -528,58 +497,11 @@ define(
                                 loggingManager.configure(provisioning.logging);
                             }
 
-                            var channelUrlPromise = (function() {
-                                    return proxyBuilder.build(ChannelUrlDirectoryProxy, defaultProxyBuildSettings)
-                                            .then(function(newChannelUrlDirectoryProxy) {
-                                                channelUrlDirectoryStub
-                                                        .setSkeleton(new InProcessSkeleton(
-                                                                newChannelUrlDirectoryProxy));
-                                                return;
-                                            }).catch(function(error) {
-                                                var errorString =
-                                                        "Failed to create channel url directory proxy: "
-                                                            + error;
-                                                log.error(errorString);
-                                                throw new Error(errorString);
-                                            });
-                            }());
-
-                            // if commmunication is there (longPollingPromise) and ChannelUrlProxy
-                            // exists => register ChannelUrl
-                            var channelUrlRegisteredPromise = Promise.all([longPollingPromise, channelUrlPromise])
-                                        .then(function(longPollParams) {
-                                            var channelUrl = longPollParams[0];
-                                            channelMessagingSender.start();
-                                            return localChannelUrlDirectory.registerChannelUrls(
-                                                        {
-                                                            channelId : channelId,
-                                                            channelUrlInformation : new ChannelUrlInformation(
-                                                                    {
-                                                                        urls : [ channelUrl
-                                                                        ]
-                                                                    })
-                                                        })
-                                                .catch(function(error) {
-                                                    throw new Error(
-                                                            "could not register ChannelUrl "
-                                                                + channelUrl
-                                                                + " for ChannelId "
-                                                                + channelId
-                                                                + ": "
-                                                                + error);
-                                                });
-                                        });
-
-                            // when everything's ready we can trigger the app
-                            return channelUrlPromise.then(function() {
-                                    joynrState = JoynrStates.STARTED;
-                                    publicationManager.restore();
-                                    log.debug("joynr initialized");
-                                    return;
-                                }).catch(function(error) {
-                                    log.error("error starting up joynr: " + error);
-                                    throw error;
-                                });
+                            return longPollingPromise.then(function() {
+                                joynrState = JoynrStates.STARTED;
+                                publicationManager.restore();
+                                log.debug("joynr initialized");
+                            });
                         };
 
                 /**
@@ -600,22 +522,12 @@ define(
                             }
                             joynrState = JoynrStates.SHUTTINGDOWN;
 
-                            // unregister channel @ ChannelUrlDir
-                            var channelUrlUnregisterPromise = localChannelUrlDirectory.unregisterChannelUrls(
-                                    {
-                                        channelId : channelId
-                                    }).catch(function(error) {
-                                        var errorString = "error unregistering ChannelId "
-                                                    + channelId + ": " + error;
-                                        log.error(errorString);
-                                        throw new Error(errorString);
-                                    });
-
-                            var longPollingReceiverStopFunction = function() {
                                 return longPollingMessageReceiver.clear(channelId)
                                 .then(function() {
                                     // stop LongPolling
                                     longPollingMessageReceiver.stop();
+                                    joynrState = JoynrStates.SHUTDOWN;
+                                    log.debug("joynr shut down");
                                     return;
                                 }).catch(function(error) {
                                     var errorString = "error clearing long poll channel: "
@@ -625,16 +537,6 @@ define(
                                     longPollingMessageReceiver.stop();
                                     throw new Error(errorString);
                                 });
-                            };
-
-                            // unregister channel @ BounceProxy
-                            var longPollingPromise = channelUrlUnregisterPromise
-                                .then(longPollingReceiverStopFunction)
-                                .catch(longPollingReceiverStopFunction);
-
-                            joynrState = JoynrStates.SHUTDOWN;
-                            log.debug("joynr shut down");
-                            return Promise.resolve();
                         };
 
                 // make every instance immutable

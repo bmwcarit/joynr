@@ -22,9 +22,8 @@ package io.joynr.runtime;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.PublicationManager;
@@ -33,7 +32,7 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -81,7 +80,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     private final ProxyBuilderFactory proxyBuilderFactory;
 
-    protected final RequestCallerDirectory requestCallerDirectory;
+    protected final ProviderDirectory requestCallerDirectory;
     protected final ReplyCallerDirectory replyCallerDirectory;
     protected final String discoveryProxyParticipantId;
 
@@ -92,7 +91,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     public JoynrRuntimeImpl(ObjectMapper objectMapper,
                             ProxyBuilderFactory proxyBuilderFactory,
-                            RequestCallerDirectory requestCallerDirectory,
+                            ProviderDirectory requestCallerDirectory,
                             ReplyCallerDirectory replyCallerDirectory,
                             Dispatcher dispatcher,
                             MessagingStubFactory messagingStubFactory,
@@ -101,7 +100,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
         // CHECKSTYLE:ON
@@ -123,9 +121,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         if (dispatcherAddress instanceof InProcessAddress) {
             ((InProcessAddress) dispatcherAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         }
-        if (channelUrlDirectoryAddress instanceof InProcessAddress) {
-            ((InProcessAddress) channelUrlDirectoryAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
-        }
         if (capabilitiesDirectoryAddress instanceof InProcessAddress) {
             ((InProcessAddress) capabilitiesDirectoryAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         }
@@ -145,7 +140,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     }
 
     @Override
-    public <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass) {
+    public <T> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass) {
 
         if (domain == null || domain.isEmpty()) {
             throw new IllegalArgumentException("Cannot create ProxyBuilder: domain was not set");
@@ -162,7 +157,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     /**
      * Registers a provider in the joynr framework
      *
-     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntimeImpl#registerProvider(String, JoynrProvider, ProviderQos)} instead.
+     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.runtime.JoynrRuntimeImpl#registerProvider(String, Object, ProviderQos)} instead.
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
@@ -172,17 +167,17 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
      */
     @Deprecated
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider) {
+    public Future<Void> registerProvider(String domain, AbstractJoynrProvider provider) {
         return capabilitiesRegistrar.registerProvider(domain, provider, provider.getProviderQos());
     }
 
     @Override
-    public Future<Void> registerProvider(String domain, JoynrProvider provider, ProviderQos providerQos) {
+    public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         return capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
     }
 
     @Override
-    public void unregisterProvider(String domain, JoynrProvider provider) {
+    public void unregisterProvider(String domain, Object provider) {
         capabilitiesRegistrar.unregisterProvider(domain, provider);
 
     }

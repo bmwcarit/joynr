@@ -25,9 +25,11 @@
 namespace joynr
 {
 
-HttpMessagingStubFactory::HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
-                                                   std::string receiveChannelId)
-        : messageSender(messageSender), receiveChannelId(receiveChannelId)
+HttpMessagingStubFactory::HttpMessagingStubFactory(
+        std::shared_ptr<IMessageSender> messageSender,
+        const std::string& globalClusterControllerAddress)
+        : messageSender(messageSender),
+          globalClusterControllerAddress(globalClusterControllerAddress)
 {
 }
 
@@ -42,7 +44,7 @@ std::shared_ptr<IMessaging> HttpMessagingStubFactory::create(
     const system::RoutingTypes::ChannelAddress* channelAddress =
             dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destAddress);
     return std::make_shared<HttpMessagingStub>(
-            messageSender, channelAddress->getChannelId(), receiveChannelId);
+            messageSender, *channelAddress, globalClusterControllerAddress);
 }
 
 } // namespace joynr

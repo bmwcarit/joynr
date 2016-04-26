@@ -63,10 +63,6 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_URL()));
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()));
-
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_URL()));
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
@@ -99,13 +95,8 @@ void checkBrokerSettings(
 
 void checkDiscoveryDirectorySettings(
         MessagingSettings messagingSettings,
-        std::string expectedChannelUrlDirectoryChannelId,
         std::string expectedCapabilitiesDirectoryChannelId) {
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
-
-    std::string channelUrlDirectoryChannelId = messagingSettings.getChannelUrlDirectoryChannelId();
-    EXPECT_EQ(expectedChannelUrlDirectoryChannelId, channelUrlDirectoryChannelId);
 
     std::string capabilitiesDirectoryChannelId = messagingSettings.getCapabilitiesDirectoryChannelId();
     EXPECT_EQ(expectedCapabilitiesDirectoryChannelId, capabilitiesDirectoryChannelId);
@@ -114,7 +105,6 @@ void checkDiscoveryDirectorySettings(
 TEST_F(MessagingSettingsTest, mqttWithHttpBackend) {
     std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
     std::string expectedBounceProxyUrl("http://custom-bounceproxy-host:8080/bounceproxy/");
-    std::string expectedChannelUrlDirectoryChannelId("discoverydirectory_channelid");
     std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
 
     Settings testSettings(testSettingsFileNameMqttWithHttpBackend);
@@ -124,7 +114,7 @@ TEST_F(MessagingSettingsTest, mqttWithHttpBackend) {
     // the file contains different settings for brokerUrl and bounceProxyUrl
     checkBrokerSettings(messagingSettings, expectedBrokerUrl, expectedBounceProxyUrl);
 
-    checkDiscoveryDirectorySettings(messagingSettings, expectedChannelUrlDirectoryChannelId, expectedCapabilitiesDirectoryChannelId);
+    checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }
 
 /*
@@ -133,7 +123,6 @@ TEST_F(MessagingSettingsTest, mqttWithHttpBackend) {
  */
 TEST_F(MessagingSettingsTest, DISABLED_httpOnly) {
     std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/");
-    std::string expectedChannelUrlDirectoryChannelId("discoverydirectory_channelid");
     std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
 
     Settings testSettings(testSettingsFileNameHttp);
@@ -143,7 +132,7 @@ TEST_F(MessagingSettingsTest, DISABLED_httpOnly) {
     // since only brokerUrl is present, bounceProxyUrl is setup identically
     checkBrokerSettings(messagingSettings, expectedBrokerUrl, expectedBrokerUrl);
 
-    checkDiscoveryDirectorySettings(messagingSettings, expectedChannelUrlDirectoryChannelId, expectedCapabilitiesDirectoryChannelId);
+    checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }
 
 /*
@@ -153,7 +142,6 @@ TEST_F(MessagingSettingsTest, DISABLED_httpOnly) {
 TEST_F(MessagingSettingsTest, DISABLED_mqttOnly) {
     std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
     std::string defaultBounceProxyUrl("http://localhost:8080/bounceproxy/");
-    std::string expectedChannelUrlDirectoryChannelId("mqtt_discoverydirectory_channelid");
     std::string expectedCapabilitiesDirectoryChannelId("mqtt_discoverydirectory_channelid");
 
     Settings testSettings(testSettingsFileNameMqtt);
@@ -163,5 +151,5 @@ TEST_F(MessagingSettingsTest, DISABLED_mqttOnly) {
     // since only brokerUrl is present, bounceProxyUrl is setup identically
     checkBrokerSettings(messagingSettings, expectedBrokerUrl, defaultBounceProxyUrl);
 
-    checkDiscoveryDirectorySettings(messagingSettings, expectedChannelUrlDirectoryChannelId, expectedCapabilitiesDirectoryChannelId);
+    checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }
