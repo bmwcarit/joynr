@@ -198,6 +198,11 @@ void JoynrMessage::setPayload(const std::string& payload)
     this->payload = payload;
 }
 
+void JoynrMessage::setPayload(std::string&& payload)
+{
+    this->payload = std::move(payload);
+}
+
 bool JoynrMessage::containsHeaderContentType() const
 {
     return containsHeader(HEADER_CONTENT_TYPE());

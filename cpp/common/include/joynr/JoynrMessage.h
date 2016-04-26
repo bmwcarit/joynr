@@ -126,6 +126,7 @@ public:
     void setHeader(const std::map<std::string, std::string>& newHeaders);
     std::string getPayload() const;
     void setPayload(const std::string& payload);
+    void setPayload(std::string&& payload);
 
     /**
      * @brief containsHeaderContentType Tests whether the "content type" header of the message is
