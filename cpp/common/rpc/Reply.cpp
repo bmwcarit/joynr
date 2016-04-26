@@ -28,7 +28,7 @@ bool isReplyRegistered = Variant::registerType<Reply>("joynr.Reply");
 
 const Reply Reply::NULL_RESPONSE = Reply();
 
-Reply::Reply() : requestReplyId(), response(), error(Variant::NULL_VARIANT())
+Reply::Reply() : requestReplyId(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
 {
 }
 
@@ -42,30 +42,30 @@ void Reply::setRequestReplyId(const std::string& requestReplyId)
     this->requestReplyId = requestReplyId;
 }
 
-const std::vector<Variant>& Reply::getResponse() const
+const std::vector<Variant>& Reply::getResponseVariant() const
 {
-    return response;
+    return responseVariant;
 }
 
-void Reply::setResponse(std::vector<Variant> response)
+void Reply::setResponseVariant(std::vector<Variant> response)
 {
-    this->response = std::move(response);
+    this->responseVariant = std::move(response);
 }
 
-const Variant& Reply::getError() const
+const Variant& Reply::getErrorVariant() const
 {
-    return this->error;
+    return this->errorVariant;
 }
 
-void Reply::setError(const Variant& error)
+void Reply::setErrorVariant(const Variant& errorVariant)
 {
-    this->error = error;
+    this->errorVariant = errorVariant;
 }
 
 bool Reply::operator==(const Reply& other) const
 {
-    return requestReplyId == other.getRequestReplyId() && response == other.getResponse() &&
-           error == other.getError();
+    return requestReplyId == other.getRequestReplyId() &&
+           responseVariant == other.getResponseVariant() && errorVariant == other.getErrorVariant();
 }
 
 bool Reply::operator!=(const Reply& other) const

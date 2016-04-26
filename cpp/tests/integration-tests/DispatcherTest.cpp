@@ -125,7 +125,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     Request request;
     request.setRequestReplyId(requestReplyId);
     request.setMethodName("getLocation");
-    request.setParams(std::vector<Variant>());
+    request.setParamsVariant(std::vector<Variant>());
     request.setParamDatatypes(std::vector<std::string>());
 
 
@@ -142,7 +142,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
 
     value.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     Reply reply;
-    reply.setResponse(std::move(value));
+    reply.setResponseVariant(std::move(value));
     reply.setRequestReplyId(requestReplyId);
     JoynrMessage expectedReply = messageFactory.createReply(
                 proxyParticipantId,
@@ -186,7 +186,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     reply.setRequestReplyId(requestReplyId);
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
-    reply.setResponse(std::move(response));
+    reply.setResponseVariant(std::move(response));
 
     JoynrMessage msg = messageFactory.createReply(
                 proxyParticipantId,

@@ -132,7 +132,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
-    subscriptionPublication.setResponse(response);
+    subscriptionPublication.setResponseVariant(response);
 
     auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(mockSubscriptionListenerOne);
 
@@ -184,7 +184,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     response.push_back(Variant::make<double>(speed1));
-    subscriptionPublication.setResponse(response);
+    subscriptionPublication.setResponseVariant(response);
 
     auto subscriptionCallback= std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation, double>>(mockSubscriptionListenerTwo);
 

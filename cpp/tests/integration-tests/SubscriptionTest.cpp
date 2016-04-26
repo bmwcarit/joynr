@@ -196,7 +196,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
-    subscriptionPublication.setResponse(response);
+    subscriptionPublication.setResponseVariant(response);
 
     auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(mockGpsLocationListener);
 
@@ -251,7 +251,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(Variant::make<joynr::tests::testTypes::TestEnum::Enum>(tests::testTypes::TestEnum::ZERO));
-    subscriptionPublication.setResponse(response);
+    subscriptionPublication.setResponseVariant(response);
 
     auto subscriptionCallback = std::make_shared<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>>(mockTestEnumSubscriptionListener);
 

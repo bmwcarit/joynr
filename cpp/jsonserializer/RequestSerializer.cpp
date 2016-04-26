@@ -48,7 +48,7 @@ void ClassDeserializerImpl<Request>::deserialize(Request& request, IObject& o)
         } else if (field.name() == "params") {
             IArray& array = field.value();
             auto&& converted = convertArray<Variant>(array, convertVariant);
-            request.setParams(std::forward<std::vector<Variant>>(converted));
+            request.setParamsVariant(std::forward<std::vector<Variant>>(converted));
         } else if (field.name() == "paramDatatypes") {
             IArray& array = field.value();
             auto&& converted = convertArray<std::string>(array, convertString);
@@ -66,7 +66,7 @@ void ClassSerializerImpl<Request>::serialize(const Request& request, std::ostrea
     stream << R"("paramDatatypes": )";
     ArraySerializer::serialize<std::string>(request.getParamDatatypes(), stream);
     stream << R"(,"params": )";
-    ArraySerializer::serialize<Variant>(request.getParams(), stream);
+    ArraySerializer::serialize<Variant>(request.getParamsVariant(), stream);
     stream << R"(,"requestReplyId": ")" << request.getRequestReplyId() << R"(")";
     stream << R"(})";
 }

@@ -52,7 +52,7 @@ public:
         std::vector<Variant> params;
         params.push_back(Variant::make<int>(42));
         params.push_back(Variant::make<std::string>("value"));
-        request.setParams(params);
+        request.setParamsVariant(params);
         std::vector<std::string> paramDatatypes;
         paramDatatypes.push_back("Integer");
         paramDatatypes.push_back("String");

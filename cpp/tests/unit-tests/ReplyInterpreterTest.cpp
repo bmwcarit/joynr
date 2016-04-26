@@ -57,7 +57,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
     std::vector<Variant> response;
     response.push_back(Variant::make<types::TestTypes::TEverythingMap>(responseValue));
     Reply reply;
-    reply.setResponse(std::move(response));
+    reply.setResponseVariant(std::move(response));
 
     // Interpret the reply
     icaller->execute(std::move(reply));
@@ -86,7 +86,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(location));
     Reply reply;
-    reply.setResponse(std::move(response));
+    reply.setResponseVariant(std::move(response));
 
     // Interpret the reply
     icaller->execute(std::move(reply));
@@ -119,7 +119,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
     // Create a reply
     exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeExeption");
     Reply reply;
-    reply.setError(Variant::make<exceptions::ProviderRuntimeException>(error));
+    reply.setErrorVariant(Variant::make<exceptions::ProviderRuntimeException>(error));
 
     // Create a mock callback
     auto callback = std::make_shared<MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
@@ -144,7 +144,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
     // Create a reply
     exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeExeption");
     Reply reply;
-    reply.setError(Variant::make<exceptions::ProviderRuntimeException>(error));
+    reply.setErrorVariant(Variant::make<exceptions::ProviderRuntimeException>(error));
 
     // Create a mock callback
     auto callback = std::make_shared<MockCallbackWithJoynrException<void>>();

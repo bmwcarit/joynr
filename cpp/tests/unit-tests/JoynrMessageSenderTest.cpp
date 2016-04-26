@@ -92,7 +92,7 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
     std::vector<Variant> params;
     params.push_back(Variant::make<int>(42));
     params.push_back(Variant::make<std::string>("value"));
-    request.setParams(params);
+    request.setParamsVariant(params);
     std::vector<std::string> paramDatatypes;
     paramDatatypes.push_back("java.lang.Integer");
     paramDatatypes.push_back("java.lang.String");
@@ -123,7 +123,7 @@ TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
     std::vector<Variant> params;
     params.push_back(Variant::make<int>(42));
     params.push_back(Variant::make<std::string>("value"));
-    oneWayRequest.setParams(params);
+    oneWayRequest.setParamsVariant(params);
     std::vector<std::string> paramDatatypes;
     paramDatatypes.push_back("java.lang.Integer");
     paramDatatypes.push_back("java.lang.String");
@@ -170,7 +170,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     reply.setRequestReplyId(util::createUuid());
     std::vector<Variant> response;
     response.push_back(Variant::make<std::string>("response"));
-    reply.setResponse(std::move(response));
+    reply.setResponseVariant(std::move(response));
 
     JoynrMessage message = messageFactory.createReply(
                 senderID,
@@ -278,7 +278,7 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     publication.setSubscriptionId("ignoresubscriptionid");
     std::vector<Variant> response;
     response.push_back(Variant::make<std::string>("publication"));
-    publication.setResponse(response);
+    publication.setResponseVariant(response);
     JoynrMessage message = messageFactory.createSubscriptionPublication(
                 senderID,
                 receiverID,

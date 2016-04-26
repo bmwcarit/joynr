@@ -45,8 +45,8 @@ public:
     const std::string& getMethodName() const;
     void setMethodName(const std::string& methodName);
 
-    std::vector<Variant> getParams() const;
-    void setParams(std::vector<Variant> params);
+    std::vector<Variant> getParamsVariant() const;
+    void setParamsVariant(std::vector<Variant> variantParams);
 
     void addParam(Variant value, std::string datatype);
 
@@ -55,7 +55,7 @@ public:
 
 private:
     std::string methodName;
-    std::vector<Variant> params;
+    std::vector<Variant> variantParams;
     std::vector<std::string> paramDatatypes;
 };
 

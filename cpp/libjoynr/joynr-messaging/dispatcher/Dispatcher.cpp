@@ -155,7 +155,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                         std::vector<Variant> returnValueVar) {
             Reply reply;
             reply.setRequestReplyId(requestReplyId);
-            reply.setResponse(std::move(returnValueVar));
+            reply.setResponseVariant(std::move(returnValueVar));
             // send reply back to the original sender (ie. sender and receiver ids are reversed
             // on
             // purpose)
@@ -177,7 +177,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                         const exceptions::JoynrException& exception) {
             Reply reply;
             reply.setRequestReplyId(requestReplyId);
-            reply.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(exception));
+            reply.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(exception));
             JOYNR_LOG_DEBUG(logger,
                             "Got error reply from RequestInterpreter for requestReplyId {}",
                             requestReplyId);
@@ -193,7 +193,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         // execute request
         requestInterpreter->execute(caller,
                                     request.getMethodName(),
-                                    request.getParams(),
+                                    request.getParamsVariant(),
                                     request.getParamDatatypes(),
                                     onSuccess,
                                     onError);
@@ -231,8 +231,10 @@ void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
     try {
         OneWayRequest request = JsonSerializer::deserialize<OneWayRequest>(jsonRequest);
         // execute request
-        requestInterpreter->execute(
-                caller, request.getMethodName(), request.getParams(), request.getParamDatatypes());
+        requestInterpreter->execute(caller,
+                                    request.getMethodName(),
+                                    request.getParamsVariant(),
+                                    request.getParamDatatypes());
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize request object from: {} - error: {}",

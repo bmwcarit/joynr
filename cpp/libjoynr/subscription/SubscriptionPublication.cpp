@@ -28,7 +28,7 @@ static bool isSubscriptionPublicationRegistered =
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
 SubscriptionPublication::SubscriptionPublication()
-        : subscriptionId(), response(), error(Variant::NULL_VARIANT())
+        : subscriptionId(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
 {
 }
 
@@ -42,24 +42,24 @@ void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionI
     this->subscriptionId = subscriptionId;
 }
 
-std::vector<Variant> SubscriptionPublication::getResponse() const
+std::vector<Variant> SubscriptionPublication::getResponseVariant() const
 {
-    return response;
+    return responseVariant;
 }
 
-void SubscriptionPublication::setResponse(const std::vector<Variant>& response)
+void SubscriptionPublication::setResponseVariant(const std::vector<Variant>& response)
 {
-    this->response = response;
+    this->responseVariant = response;
 }
 
-const Variant& SubscriptionPublication::getError() const
+const Variant& SubscriptionPublication::getErrorVariant() const
 {
-    return this->error;
+    return this->errorVariant;
 }
 
-void SubscriptionPublication::setError(const Variant& error)
+void SubscriptionPublication::setErrorVariant(const Variant& errorVariant)
 {
-    this->error = error;
+    this->errorVariant = errorVariant;
 }
 
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const

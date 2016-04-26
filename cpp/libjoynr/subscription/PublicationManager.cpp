@@ -775,7 +775,8 @@ void PublicationManager::sendPublicationError(
     JOYNR_LOG_DEBUG(logger, "sending subscription error");
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
-    subscriptionPublication.setError(exceptions::JoynrExceptionUtil::createVariant(exception));
+    subscriptionPublication.setErrorVariant(
+            exceptions::JoynrExceptionUtil::createVariant(exception));
     sendSubscriptionPublication(
             publication, subscriptionInformation, request, subscriptionPublication);
     JOYNR_LOG_DEBUG(logger, "sent subscription error");
@@ -822,7 +823,7 @@ void PublicationManager::sendPublication(
     JOYNR_LOG_DEBUG(logger, "sending subscription reply");
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
-    subscriptionPublication.setResponse(value);
+    subscriptionPublication.setResponseVariant(value);
     sendSubscriptionPublication(
             publication, subscriptionInformation, request, subscriptionPublication);
     JOYNR_LOG_TRACE(logger, "sent subscription reply");

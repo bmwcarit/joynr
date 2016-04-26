@@ -47,16 +47,16 @@ public:
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 
-    std::vector<Variant> getResponse() const;
-    void setResponse(const std::vector<Variant>& response);
+    std::vector<Variant> getResponseVariant() const;
+    void setResponseVariant(const std::vector<Variant>& response);
 
-    const Variant& getError() const;
-    void setError(const Variant& error);
+    const Variant& getErrorVariant() const;
+    void setErrorVariant(const Variant& errorVariant);
 
 private:
     std::string subscriptionId;
-    std::vector<Variant> response;
-    Variant error;
+    std::vector<Variant> responseVariant;
+    Variant errorVariant;
 };
 
 } // namespace joynr

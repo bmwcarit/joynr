@@ -42,14 +42,14 @@ public:
     {
         assert(callback);
 
-        const Variant& error = subscriptionPublication.getError();
+        const Variant& error = subscriptionPublication.getErrorVariant();
         if (!error.isEmpty()) {
             callback->onError(
                     joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
             return;
         }
 
-        std::vector<Variant> response = subscriptionPublication.getResponse();
+        std::vector<Variant> response = subscriptionPublication.getResponseVariant();
         if (response.empty()) {
             JOYNR_LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
@@ -82,7 +82,7 @@ public:
     {
         assert(callback);
 
-        const Variant& error = subscriptionPublication.getError();
+        const Variant& error = subscriptionPublication.getErrorVariant();
         if (!error.isEmpty()) {
             callback->onError(
                     joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
@@ -111,14 +111,14 @@ public:
     {
         assert(callback);
 
-        const Variant& error = subscriptionPublication.getError();
+        const Variant& error = subscriptionPublication.getErrorVariant();
         if (!error.isEmpty()) {
             callback->onError(
                     joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
             return;
         }
 
-        if (subscriptionPublication.getResponse().empty()) {
+        if (subscriptionPublication.getResponseVariant().empty()) {
             JOYNR_LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
@@ -127,7 +127,7 @@ public:
         }
 
         typename T::Enum value =
-                util::convertVariantToEnum<T>(subscriptionPublication.getResponse().front());
+                util::convertVariantToEnum<T>(subscriptionPublication.getResponseVariant().front());
 
         std::shared_ptr<SubscriptionCallback<typename T::Enum>> typedCallback =
                 std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
@@ -153,14 +153,14 @@ public:
     {
         assert(callback);
 
-        const Variant& error = subscriptionPublication.getError();
+        const Variant& error = subscriptionPublication.getErrorVariant();
         if (!error.isEmpty()) {
             callback->onError(
                     joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
             return;
         }
 
-        std::vector<Variant> qvList = subscriptionPublication.getResponse();
+        std::vector<Variant> qvList = subscriptionPublication.getResponseVariant();
         if (qvList.empty()) {
             JOYNR_LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(

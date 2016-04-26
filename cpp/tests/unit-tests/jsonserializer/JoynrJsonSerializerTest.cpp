@@ -214,20 +214,20 @@ void initializeRequestWithComplexValues(Request& request) {
 
 void compareRequestWithComplexValues(const Request& expectedRequest, const Request& actualRequest) {
     using namespace types::TestTypes;
-    std::vector<Variant> params = actualRequest.getParams();
-    EXPECT_EQ(expectedRequest.getParams().size(), params.size());
+    std::vector<Variant> params = actualRequest.getParamsVariant();
+    EXPECT_EQ(expectedRequest.getParamsVariant().size(), params.size());
     Variant param1 = params[0];
     EXPECT_TRUE(param1.is<TEverythingStruct>());
-    EXPECT_EQ(expectedRequest.getParams().at(0).get<TEverythingStruct>(), param1.get<TEverythingStruct>());
+    EXPECT_EQ(expectedRequest.getParamsVariant().at(0).get<TEverythingStruct>(), param1.get<TEverythingStruct>());
     Variant param2 = params[1];
     EXPECT_TRUE(param2.is<TEverythingExtendedStruct>());
-    EXPECT_EQ(expectedRequest.getParams().at(1).get<TEverythingExtendedStruct>(), param2.get<TEverythingExtendedStruct>());
+    EXPECT_EQ(expectedRequest.getParamsVariant().at(1).get<TEverythingExtendedStruct>(), param2.get<TEverythingExtendedStruct>());
     Variant param3 = params[2];
     EXPECT_TRUE(param3.is<TDoubleKeyMap>());
-    EXPECT_EQ(expectedRequest.getParams().at(2).get<TDoubleKeyMap>(), param3.get<TDoubleKeyMap>());
+    EXPECT_EQ(expectedRequest.getParamsVariant().at(2).get<TDoubleKeyMap>(), param3.get<TDoubleKeyMap>());
     Variant param4 = params[3];
     EXPECT_TRUE(param4.is<std::string>());
-    EXPECT_EQ(expectedRequest.getParams().at(3).get<TEnum::Enum>(), TEnum::getEnum(param4.get<std::string>()));
+    EXPECT_EQ(expectedRequest.getParamsVariant().at(3).get<TEnum::Enum>(), TEnum::getEnum(param4.get<std::string>()));
 }
 
 void initializeRequestWithPrimitiveValues(Request& request) {
@@ -253,24 +253,24 @@ void initializeRequestWithPrimitiveValues(Request& request) {
 }
 
 void compareRequestWithPrimitiveValues(const Request& expectedRequest, const Request& actualRequest) {
-    std::vector<Variant> params = actualRequest.getParams();
-    EXPECT_EQ(expectedRequest.getParams().size(), params.size());
+    std::vector<Variant> params = actualRequest.getParamsVariant();
+    EXPECT_EQ(expectedRequest.getParamsVariant().size(), params.size());
     Variant intParam = params[1];
     EXPECT_TRUE(intParam.is<std::uint64_t>());
     EXPECT_FALSE(intParam.is<std::int32_t>());
-    EXPECT_EQ(expectedRequest.getParams().at(1).get<int>(), static_cast<std::int32_t>(intParam.get<std::uint64_t>()));
+    EXPECT_EQ(expectedRequest.getParamsVariant().at(1).get<int>(), static_cast<std::int32_t>(intParam.get<std::uint64_t>()));
     Variant someOtherTypeParam = params[2];
     EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
-    EXPECT_EQ(expectedRequest.getParams().at(2).get<SomeOtherType>().getA(), someOtherTypeParam.get<SomeOtherType>().getA());
+    EXPECT_EQ(expectedRequest.getParamsVariant().at(2).get<SomeOtherType>().getA(), someOtherTypeParam.get<SomeOtherType>().getA());
     std::cout << "Deserialized value is " << someOtherTypeParam.get<SomeOtherType>().getA() << std::endl;
     Variant floatParam = params[3];
     EXPECT_TRUE(floatParam.is<double>());
     EXPECT_FALSE(floatParam.is<float>());
-    EXPECT_FLOAT_EQ(expectedRequest.getParams().at(3).get<float>(),
+    EXPECT_FLOAT_EQ(expectedRequest.getParamsVariant().at(3).get<float>(),
                     static_cast<float>(floatParam.get<double>()));
     Variant boolParam = params[4];
     EXPECT_TRUE(boolParam.is<bool>());
-    EXPECT_EQ(expectedRequest.getParams().at(4).get<bool>(), boolParam.get<bool>());
+    EXPECT_EQ(expectedRequest.getParamsVariant().at(4).get<bool>(), boolParam.get<bool>());
 }
 
 void checkRequest(const Request& expectedRequest, std::function<void(const Request&, const Request&)> compareFct, Logger& logger){
@@ -524,7 +524,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithProviderRuntime
     // Create a Reply
     Reply reply;
     exceptions::ProviderRuntimeException error("Message of ProviderRuntimeException");
-    reply.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
+    reply.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
 
     // Serialize into JSON
     std::stringstream stream;
@@ -539,8 +539,8 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithProviderRuntime
     if (tokenizer.hasNextObject()) {
         Reply t;
         ClassDeserializer<Reply>::deserialize(t, tokenizer.nextObject());
-        assert(!t.getError().isEmpty());
-        const joynr::exceptions::ProviderRuntimeException& deserializedError(t.getError().get<joynr::exceptions::ProviderRuntimeException>());
+        assert(!t.getErrorVariant().isEmpty());
+        const joynr::exceptions::ProviderRuntimeException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ProviderRuntimeException>());
         ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
     }
 }
@@ -558,7 +558,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithApplicationExce
                 Variant::make<test::MethodWithErrorEnumExtendedErrorEnum::Enum>(MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION),
                 literal,
                 test::MethodWithErrorEnumExtendedErrorEnum::getTypeName());
-    reply.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
+    reply.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
 
     // Serialize into JSON
     std::stringstream stream;
@@ -573,8 +573,8 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithApplicationExce
     if (tokenizer.hasNextObject()) {
         Reply t;
         ClassDeserializer<Reply>::deserialize(t, tokenizer.nextObject());
-        assert(!t.getError().isEmpty());
-        const joynr::exceptions::ApplicationException& deserializedError(t.getError().get<joynr::exceptions::ApplicationException>());
+        assert(!t.getErrorVariant().isEmpty());
+        const joynr::exceptions::ApplicationException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ApplicationException>());
         ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
         ASSERT_EQ(deserializedError.getError<test::MethodWithErrorEnumExtendedErrorEnum::Enum>(), error.getError<test::MethodWithErrorEnumExtendedErrorEnum::Enum>());
         ASSERT_EQ(deserializedError.getErrorTypeName(), error.getErrorTypeName());
@@ -600,7 +600,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
 
     std::vector<int32_t> expectedIntList {1,2,3,4};
     expectedResponse.push_back(joynr::TypeUtil::toVariant<int32_t>(expectedIntList));
-    expectedReply.setResponse(expectedResponse);
+    expectedReply.setResponseVariant(expectedResponse);
     expectedReply.setRequestReplyId("000-10000-01100");
 
     // Serialize into JSON
@@ -616,8 +616,8 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
     if (tokenizer.hasNextObject()) {
         Reply reply;
         ClassDeserializer<Reply>::deserialize(reply, tokenizer.nextObject());
-        std::vector<Variant> response = reply.getResponse();
-        EXPECT_EQ(expectedReply.getResponse().size(), response.size());
+        std::vector<Variant> response = reply.getResponseVariant();
+        EXPECT_EQ(expectedReply.getResponseVariant().size(), response.size());
         Variant first = response[0];
         EXPECT_TRUE(first.is<std::string>());
         EXPECT_EQ(someString, first.get<std::string>());
@@ -649,7 +649,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationW
     // Create a Publication
     SubscriptionPublication publication;
     exceptions::ProviderRuntimeException error("Message of ProviderRuntimeException");
-    publication.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
+    publication.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
 
     // Serialize into JSON
     std::stringstream stream;
@@ -664,8 +664,8 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationW
     if (tokenizer.hasNextObject()) {
         SubscriptionPublication t;
         ClassDeserializer<SubscriptionPublication>::deserialize(t, tokenizer.nextObject());
-        assert(!t.getError().isEmpty());
-        const joynr::exceptions::ProviderRuntimeException& deserializedError(t.getError().get<joynr::exceptions::ProviderRuntimeException>());
+        assert(!t.getErrorVariant().isEmpty());
+        const joynr::exceptions::ProviderRuntimeException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ProviderRuntimeException>());
         ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
     }
 }
@@ -683,7 +683,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationW
                 Variant::make<test::MethodWithErrorEnumExtendedErrorEnum::Enum>(MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION),
                 literal,
                 test::MethodWithErrorEnumExtendedErrorEnum::getTypeName());
-    publication.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
+    publication.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
 
     // Serialize into JSON
     std::stringstream stream;
@@ -698,8 +698,8 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationW
     if (tokenizer.hasNextObject()) {
         SubscriptionPublication t;
         ClassDeserializer<SubscriptionPublication>::deserialize(t, tokenizer.nextObject());
-        assert(!t.getError().isEmpty());
-        const joynr::exceptions::ApplicationException& deserializedError(t.getError().get<joynr::exceptions::ApplicationException>());
+        assert(!t.getErrorVariant().isEmpty());
+        const joynr::exceptions::ApplicationException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ApplicationException>());
         ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
         ASSERT_EQ(deserializedError.getError<test::MethodWithErrorEnumExtendedErrorEnum::Enum>(), error.getError<test::MethodWithErrorEnumExtendedErrorEnum::Enum>());
         ASSERT_EQ(deserializedError.getErrorTypeName(), error.getErrorTypeName());
@@ -723,7 +723,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
     bool expectedBool = true;
     expectedResponse.push_back(Variant::make<bool>(expectedBool));
 
-    expectedPublication.setResponse(expectedResponse);
+    expectedPublication.setResponseVariant(expectedResponse);
     expectedPublication.setSubscriptionId("000-10000-01101");
 
     // Serialize into JSON
@@ -739,8 +739,8 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
     if (tokenizer.hasNextObject()) {
         SubscriptionPublication publication;
         ClassDeserializer<SubscriptionPublication>::deserialize(publication, tokenizer.nextObject());
-        std::vector<Variant> response = publication.getResponse();
-        EXPECT_EQ(expectedPublication.getResponse().size(), response.size());
+        std::vector<Variant> response = publication.getResponseVariant();
+        EXPECT_EQ(expectedPublication.getResponseVariant().size(), response.size());
         Variant first = response[0];
         EXPECT_TRUE(first.is<std::string>());
         EXPECT_EQ(someString, first.get<std::string>());

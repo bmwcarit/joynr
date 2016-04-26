@@ -213,7 +213,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
-    expectedPublication.setResponse(response);
+    expectedPublication.setResponseVariant(response);
     // Expect an attribute change to send a publication as well as during registering subscription request
     EXPECT_CALL(
                 mockPublicationSender,
@@ -285,7 +285,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
-    expectedPublication.setResponse(response);
+    expectedPublication.setResponseVariant(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
@@ -358,7 +358,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
-    expectedPublication.setResponse(response);
+    expectedPublication.setResponseVariant(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
@@ -437,7 +437,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
-    expectedPublication.setResponse(response);
+    expectedPublication.setResponseVariant(response);
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -561,7 +561,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
-    expectedPublication.setResponse(response);
+    expectedPublication.setResponseVariant(response);
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -655,7 +655,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
-    expectedPublication.setResponse(response);
+    expectedPublication.setResponseVariant(response);
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -754,7 +754,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(broadcastValues);
+    expectedPublication.setResponseVariant(broadcastValues);
 
     EXPECT_CALL(
                 mockPublicationSender,
@@ -871,7 +871,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(broadcastValues);
+    expectedPublication.setResponseVariant(broadcastValues);
 
     EXPECT_CALL(
                 mockPublicationSender,
@@ -956,7 +956,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(broadcastValues);
+    expectedPublication.setResponseVariant(broadcastValues);
 
     EXPECT_CALL(
                 mockPublicationSender,
@@ -1106,7 +1106,7 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setError(expected);
+    expectedPublication.setErrorVariant(expected);
 
     EXPECT_CALL(
                 mockPublicationSender,
@@ -1159,7 +1159,7 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setError(expected);
+    expectedPublication.setErrorVariant(expected);
 
     EXPECT_CALL(
                 mockPublicationSender,

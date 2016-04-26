@@ -45,16 +45,16 @@ public:
     const std::string& getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
 
-    const std::vector<Variant>& getResponse() const;
-    void setResponse(std::vector<Variant> response);
+    const std::vector<Variant>& getResponseVariant() const;
+    void setResponseVariant(std::vector<Variant> response);
 
-    const Variant& getError() const;
-    void setError(const Variant& error);
+    const Variant& getErrorVariant() const;
+    void setErrorVariant(const Variant& errorVariant);
 
 private:
     std::string requestReplyId;
-    std::vector<Variant> response;
-    Variant error;
+    std::vector<Variant> responseVariant;
+    Variant errorVariant;
 };
 
 } // namespace joynr

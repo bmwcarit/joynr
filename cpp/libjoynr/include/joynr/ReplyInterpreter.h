@@ -36,13 +36,13 @@ public:
     template <typename Caller>
     static void execute(Caller& caller, const Reply& reply)
     {
-        const Variant& error = reply.getError();
+        const Variant& error = reply.getErrorVariant();
         if (!error.isEmpty()) {
             caller.returnError(error.get<exceptions::JoynrException>());
             return;
         }
 
-        const std::vector<Variant>& response = reply.getResponse();
+        const std::vector<Variant>& response = reply.getResponseVariant();
         if (response.empty()) {
             caller.returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
             return;
@@ -68,7 +68,7 @@ public:
     template <typename Caller>
     static void execute(Caller& caller, const Reply& reply)
     {
-        const Variant& error = reply.getError();
+        const Variant& error = reply.getErrorVariant();
         if (!error.isEmpty()) {
             caller.returnError(error.get<exceptions::JoynrException>());
             return;

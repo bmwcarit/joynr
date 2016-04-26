@@ -64,13 +64,13 @@ public:
         reply.setRequestReplyId(requestReplyID);
         std::vector<Variant> response;
         response.push_back(Variant::make<std::string>("response"));
-        reply.setResponse(std::move(response));
+        reply.setResponseVariant(std::move(response));
 
         std::string subscriptionId("subscriptionTestId");
         subscriptionPublication.setSubscriptionId(subscriptionId);
         response.clear();
         response.push_back(Variant::make<std::string>("publication"));
-        subscriptionPublication.setResponse(response);
+        subscriptionPublication.setResponseVariant(response);
     }
     void TearDown()
     {
@@ -247,7 +247,7 @@ TEST_F(JoynrMessageFactoryTest, testRequestContentType)
     std::vector<Variant> params;
     params.push_back(Variant::make<std::string>("test"));
     request.setMethodName("methodName");
-    request.setParams(params);
+    request.setParamsVariant(params);
 
     JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request);
     EXPECT_EQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON, message.getHeaderContentType());

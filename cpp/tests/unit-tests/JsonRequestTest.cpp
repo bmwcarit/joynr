@@ -74,7 +74,8 @@ public:
         valueOfArg1(),
         valueOfArg2(),
         valueOfArg3()
-    {};
+    {
+    }
 
     void SetUp(){
         list.push_back("1");
@@ -92,13 +93,9 @@ public:
         valueOfArg3 = "valueOfArg3";
     }
 
-    void TearDown(){
-
-    }
-
-    void checkJsonRequest(Request jsonRequest) {
+    void checkJsonRequest(const Request& jsonRequest) {
         ASSERT_EQ(operationName, jsonRequest.getMethodName());
-        std::vector<Variant> params = jsonRequest.getParams();
+        std::vector<Variant> params = jsonRequest.getParamsVariant();
         ASSERT_EQ(3, params.size());
 
         ASSERT_EQ(valueOfArg1, params.at(0).get<std::string>());
@@ -135,7 +132,7 @@ TEST_F(JsonRequestTest, buildJsonRequest)
     // Build the request
     Request jsonRequest;
     jsonRequest.setMethodName(operationName);
-    jsonRequest.setParams(args);
+    jsonRequest.setParamsVariant(args);
 
     checkJsonRequest(jsonRequest);
 }

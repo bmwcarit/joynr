@@ -71,7 +71,7 @@ protected:
         reply.setRequestReplyId("TEST-requestReplyId");
         std::vector<Variant> response;
         response.push_back(Variant::make<T>(value));
-        reply.setResponse(std::move(response));
+        reply.setResponseVariant(std::move(response));
 
         std::stringstream expectedReplyStringStream;
         expectedReplyStringStream << R"({"_typeName":"joynr.Reply","requestReplyId": )";
@@ -88,7 +88,7 @@ protected:
         EXPECT_EQ(expectedReplyString, jsonReply);
 
         Reply receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
-        Variant responseVariant = receivedReply.getResponse().at(0);
+        Variant responseVariant = receivedReply.getResponseVariant().at(0);
 
         T responseValue;
         if (responseVariant.is<std::int64_t>()) {
@@ -200,7 +200,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     // Deserialize the request
     Request deserializedRequest = JsonSerializer::deserialize<Request>(serializedRequestJson);
-    std::vector<Variant> deserializedParams = deserializedRequest.getParams();
+    std::vector<Variant> deserializedParams = deserializedRequest.getParamsVariant();
     std::vector<Variant> deserializedVariantVectorParam = deserializedParams.at(0).get<std::vector<Variant>>();
 
     EXPECT_EQ(expectedVariantVectorParam, deserializedVariantVectorParam);
@@ -335,7 +335,7 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
                                   R"("params": ["ONE",2.2]})");
 
     Request request = JsonSerializer::deserialize<Request>(serializedContent);
-    std::vector<Variant> params = request.getParams();
+    std::vector<Variant> params = request.getParamsVariant();
 
     // Check the deserialized values
     Variant enumParam = params.at(0);
@@ -556,7 +556,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     reply.setRequestReplyId("TEST-requestReplyId");
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gps1));
-    reply.setResponse(std::move(response));
+    reply.setResponseVariant(std::move(response));
 
     std::stringstream expectedReplyStringStream;
     expectedReplyStringStream << R"({)";
@@ -586,10 +586,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
 
     Reply receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
-    EXPECT_TRUE(receivedReply.getResponse().size() == 1);
-    EXPECT_TRUE(receivedReply.getResponse().at(0).is<types::Localisation::GpsLocation>());
+    EXPECT_TRUE(receivedReply.getResponseVariant().size() == 1);
+    EXPECT_TRUE(receivedReply.getResponseVariant().at(0).is<types::Localisation::GpsLocation>());
 
-    types::Localisation::GpsLocation gps2 = receivedReply.getResponse().at(0).get<types::Localisation::GpsLocation>();
+    types::Localisation::GpsLocation gps2 = receivedReply.getResponseVariant().at(0).get<types::Localisation::GpsLocation>();
 
     EXPECT_EQ(gps1, gps2)
             << "Gps locations gps1 " << gps1.toString()
@@ -602,7 +602,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
     std::vector<Variant> response;
     Reply reply;
     reply.setRequestReplyId("TEST-requestReplyId");
-    reply.setResponse(std::move(response));
+    reply.setResponseVariant(std::move(response));
 
     std::stringstream expectedStringStream;
     expectedStringStream << R"({"_typeName":"joynr.Reply",)";
@@ -632,9 +632,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     reply.setRequestReplyId("TEST-requestReplyId");
     std::vector<Variant> response;
     response.push_back(TypeUtil::toVariant(locList));
-    reply.setResponse(std::move(response));
+    reply.setResponseVariant(std::move(response));
 
-    EXPECT_EQ(reply.getResponse().size(), 1);
+    EXPECT_EQ(reply.getResponseVariant().size(), 1);
 
     // Expected literal
     std::stringstream expectedReplyStringStream;
@@ -678,11 +678,11 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
 
     Reply receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
-    EXPECT_TRUE(receivedReply.getResponse().at(0).is<std::vector<Variant>>());
-    std::vector<Variant> receivedReplyResponse = receivedReply.getResponse().at(0).get<std::vector<Variant>>();
+    EXPECT_TRUE(receivedReply.getResponseVariant().at(0).is<std::vector<Variant>>());
+    std::vector<Variant> receivedReplyResponse = receivedReply.getResponseVariant().at(0).get<std::vector<Variant>>();
     EXPECT_EQ(receivedReplyResponse.size(), 2);
     std::vector<Variant>::const_iterator i_received = receivedReplyResponse.begin();
-    std::vector<Variant> originalResponse = reply.getResponse();
+    std::vector<Variant> originalResponse = reply.getResponseVariant();
     EXPECT_EQ(originalResponse.size(), 1);
     Variant firstItem = originalResponse.at(0);
     EXPECT_TRUE(firstItem.is<std::vector<Variant>>());
@@ -780,14 +780,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     vector.push_back(Variant::make<int>(2));
     params.push_back(TypeUtil::toVariant(vector));
 
-    request1.setParams(params);
+    request1.setParamsVariant(params);
 
     std::string serializedContent = JsonSerializer::serialize(request1);
     JOYNR_LOG_DEBUG(logger, serializedContent);
 
     Request request2 = JsonSerializer::deserialize<Request>(serializedContent);
 
-    std::vector<Variant> paramsReceived = request2.getParams();
+    std::vector<Variant> paramsReceived = request2.getParamsVariant();
 
     EXPECT_EQ(paramsReceived.at(0).get<std::string>(), contentParam1);
     EXPECT_EQ(paramsReceived.at(1).get<types::Localisation::Trip>(), trip1);
@@ -820,13 +820,13 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     std::vector<Variant> response;
     reply.setRequestReplyId(requestReplyId);
     response.push_back(joynr::TypeUtil::toVariant(globalDiscoveryEntries));
-    reply.setResponse(std::move(response));
+    reply.setResponseVariant(std::move(response));
     std::string serializedContent = JsonSerializer::serialize<Reply>(reply);
     JOYNR_LOG_DEBUG(logger, serializedContent);
 
     Reply deserializedReply = JsonSerializer::deserialize<Reply>(serializedContent);
 
-    response = deserializedReply.getResponse();
+    response = deserializedReply.getResponseVariant();
 
     std::vector<Variant> receivedGlobalDiscoveryEntries = response.at(0).get<std::vector<Variant>>();
     types::GlobalDiscoveryEntry receivedGlobalEntry1 = receivedGlobalDiscoveryEntries.at(0).get<types::GlobalDiscoveryEntry>();
@@ -897,7 +897,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 
     //deserializing Request
     Request request2 = JsonSerializer::deserialize<Request>(serializedContent);
-    std::vector<Variant> paramsReceived = request2.getParams();
+    std::vector<Variant> paramsReceived = request2.getParamsVariant();
 
     JOYNR_LOG_DEBUG(logger, "x1 {}", paramsReceived.at(0).getTypeName());
     ASSERT_TRUE(paramsReceived.at(0).is<std::vector<Variant>>()) << "Cannot convert the field of the Param Map to a std::vector<Variant>";
@@ -929,7 +929,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     std::vector<Variant> params1;
     std::vector<Variant> inputvl = TypeUtil::toVectorOfVariants(inputLocationList);
     params1.push_back(Variant::make<std::vector<Variant>>(inputvl));
-    request1.setParams(params1);
+    request1.setParamsVariant(params1);
 
     //Time request serialization
     JoynrTimePoint start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
@@ -961,7 +961,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     // to silence unused-variable compiler warnings
     std::ignore = convertedElapsed;
     params2.push_back(Variant::make<std::vector<Variant>>(inputv2));
-    request2.setParams(params2);
+    request2.setParamsVariant(params2);
 
     //Time request serialization with new serializer
     start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());

@@ -40,9 +40,9 @@ void ClassDeserializerImpl<Reply>::deserialize(Reply& reply, IObject& o)
             reply.setRequestReplyId(field.value());
         } else if (field.name() == "response") {
             IArray& array = field.value();
-            reply.setResponse(convertArray<Variant>(array, convertVariant));
+            reply.setResponseVariant(convertArray<Variant>(array, convertVariant));
         } else if (field.name() == "error") {
-            reply.setError(convertVariant(field.value()));
+            reply.setErrorVariant(convertVariant(field.value()));
         }
     }
 }
@@ -53,13 +53,13 @@ void ClassSerializerImpl<Reply>::serialize(const Reply& reply, std::ostream& str
     stream << R"({)";
     stream << R"("_typeName":")" << JoynrTypeId<Reply>::getTypeName() << R"(",)";
     stream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
-    if (!reply.getError().isEmpty()) {
+    if (!reply.getErrorVariant().isEmpty()) {
         stream << R"("error": )";
         ClassSerializer<Variant> variantSerializer;
-        variantSerializer.serializeVariant(reply.getError(), stream);
+        variantSerializer.serializeVariant(reply.getErrorVariant(), stream);
     } else {
         stream << R"("response": )";
-        ArraySerializer::serialize<Variant>(reply.getResponse(), stream);
+        ArraySerializer::serialize<Variant>(reply.getResponseVariant(), stream);
     }
     stream << R"(})";
 }
