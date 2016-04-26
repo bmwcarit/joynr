@@ -15,6 +15,9 @@
 * **[C++, Java, JS]** The communication protocol between local directories on the cluster controller
   and global directories in the backend changed. Please make sure that clients and backend use
   compatible versions.
+* **[Java]** Renamed setting _joynr.messaging.capabilitiesdirectoryurl_ to
+  _joynr.messaging.discoverydirectoryurl_. The older setting will continue to work until the end of
+  2016.
 
 ##Other changes
 * **[C++]** The content of the message router and the local capabilities directory is now persisted

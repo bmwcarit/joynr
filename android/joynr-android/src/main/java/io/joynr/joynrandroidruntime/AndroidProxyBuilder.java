@@ -32,8 +32,7 @@ import java.util.concurrent.TimeoutException;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> implements
-        ProxyBuilder<T> {
+public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> implements ProxyBuilder<T> {
 
     private JoynrRuntime runtime;
     private String providerDomain;

@@ -147,8 +147,13 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS)
     Address getCapabilitiesDirectoryAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
+                                            @Named(MessagingPropertyKeys.CAPABILITYDIRECTORYURL) String deprecatedCapabilityDirectoryUrl,
                                             @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId) {
+        // deprecated: will be removed by 2016-12-31
+        if (deprecatedCapabilityDirectoryUrl != null && deprecatedCapabilityDirectoryUrl.length() > 0) {
+            return getAddress(deprecatedCapabilityDirectoryUrl, channelId, capabilitiesDirectoryChannelId);
+        }
         return getAddress(discoveryDirectoryUrl, channelId, capabilitiesDirectoryChannelId);
     }
 
@@ -156,8 +161,12 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS)
     Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
+                                             @Named(MessagingPropertyKeys.CAPABILITYDIRECTORYURL) String deprecatedCapabilityDirectoryUrl,
                                              @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                              @com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
+        if (deprecatedCapabilityDirectoryUrl != null && deprecatedCapabilityDirectoryUrl.length() > 0) {
+            return getAddress(deprecatedCapabilityDirectoryUrl, channelId, domainAccessControllerChannelId);
+        }
         return getAddress(discoveryDirectoryUrl, channelId, domainAccessControllerChannelId);
     }
 
