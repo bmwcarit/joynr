@@ -245,6 +245,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     // setup CC WebSocket interface
     auto wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
+    wsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
+        messagingStubFactory->remove(destinationAddress);
+    });
     system::RoutingTypes::WebSocketAddress wsAddress =
             wsSettings.createClusterControllerMessagingAddress();
     wsCcMessagingSkeleton =

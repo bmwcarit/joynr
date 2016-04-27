@@ -30,6 +30,8 @@ using namespace testing;
 struct MockMiddlewareMessagingStubFactory : public joynr::IMiddlewareMessagingStubFactory {
     MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const joynr::system::RoutingTypes::Address& destAddress));
     MOCK_METHOD1(canCreate, bool(const joynr::system::RoutingTypes::Address& destAddress));
+    MOCK_METHOD1(registerOnMessagingStubClosedCallback,
+                 void(std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)> onMessagingStubClosedCallback));
 };
 
 class MessagingStubFactoryTest : public Test {

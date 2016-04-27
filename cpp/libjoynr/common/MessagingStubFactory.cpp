@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,9 @@ std::shared_ptr<IMessaging> MessagingStubFactory::create(
 void MessagingStubFactory::remove(
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
 {
-    address2MessagingStubMap.remove(destinationAddress);
+    if (contains(destinationAddress)) {
+        address2MessagingStubMap.remove(destinationAddress);
+    }
 }
 
 bool MessagingStubFactory::contains(

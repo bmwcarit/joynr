@@ -41,6 +41,9 @@ public:
     virtual std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) = 0;
     virtual bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) = 0;
+    virtual void registerOnMessagingStubClosedCallback(std::function<void(
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)>
+                                                               onMessagingStubDisconnected) = 0;
 };
 
 } // namespace joynr
