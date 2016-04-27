@@ -49,8 +49,6 @@ import joynr.types.ProviderQos;
 
 /**
  * Unit tests for {@link ProviderWrapper}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ProviderWrapperTest {

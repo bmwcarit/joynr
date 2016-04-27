@@ -45,8 +45,6 @@ import static java.lang.String.format;
 /**
  * Implementation of a servlet message receiver which is used to register / unregister the channel and also pass on
  * messages and errors to the message listener of the runtime.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @Singleton
 public class JeeServletMessageReceiver implements ServletMessageReceiver {

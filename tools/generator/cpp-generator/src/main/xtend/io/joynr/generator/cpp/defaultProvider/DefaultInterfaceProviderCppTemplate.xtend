@@ -18,7 +18,6 @@ package io.joynr.generator.cpp.defaultProvider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -28,7 +27,6 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FBasicTypeId
-import org.franca.core.franca.FInterface
 
 class DefaultInterfaceProviderCppTemplate extends InterfaceTemplate{
 
@@ -41,11 +39,6 @@ class DefaultInterfaceProviderCppTemplate extends InterfaceTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate()
 '''

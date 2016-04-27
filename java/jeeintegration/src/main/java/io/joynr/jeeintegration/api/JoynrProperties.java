@@ -40,8 +40,6 @@ import javax.inject.Qualifier;
  * <p>
  * <b>Note</b> that if the EJB which contains the producer methods implements an interface, then the producer methods
  * also need to be declared in that interface, otherwise CDI won't recognise the method implementations as producers.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

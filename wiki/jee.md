@@ -1,6 +1,7 @@
 # joynr JEE Integration
 
-This project provides an integration layer for joynr in JEE Applications.
+The `io.joynr.jeeintegration` project provides an integration layer for
+joynr in JEE Applications.
 The features supported are:
 
 * Expose session beans as joynr providers via the `@ServiceProvider` annotation
@@ -62,7 +63,8 @@ reached, e.g. `https://myapp.mycompany.net`.
 * `MessagingpropertyKeys.CHANNELID` - this property should be set to the
 application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
 so that all nodes of the cluster are identified by the same channel ID.
-* `joynr.jeeintegration.endpointregistry.uri` - this property needs to
+* `JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI` -
+this property needs to
 point to the endpoint registration service's URL with which the
 JEE Integration will register itself for its channel's topic.
 E.g. `http://endpointregistry.mycompany.net:8080`.
@@ -93,9 +95,7 @@ An example of a configuration EJB is:
 			"http://endpointregistry:8080/registry/endpoint");
 		joynrProperties.setProperty("joynr.messaging.mqtt.brokeruri",
 			"tcp://mqttbroker.com:1883");
-		joynrProperties.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL,
-			"http://joynrbackend/discovery/channels/discoverydirectory_channelid/");
-		joynrProperties.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL,
+		joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
 			"http://joynrbackend/discovery/channels/discoverydirectory_channelid/");
 		joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
 			"http://joynrbackend/bounceproxy/");
@@ -123,6 +123,47 @@ For example for Glassfish/Payara:
 Note the `--corepoolsize=10` option. The default will only create one thread,
 which can lead to blocking.
 
+### Generating the interfaces
+
+When generating the interfaces for use in a JEE environment, you have to
+activate an additional parameter in the joynr generator (see also [the generator documentation](generator.md)).
+
+Here's an example of what the plugin configuration might look like:
+
+	<plugin>
+		<groupId>io.joynr.tools.generator</groupId>
+		<artifactId>joynr-generator-maven-plugin</artifactId>
+		<version>${joynrVersion}</version>
+		<executions>
+		  <execution>
+			<id>generate-code</id>
+			<phase>generate-sources</phase>
+			<goals>
+			  <goal>generate</goal>
+			</goals>
+			<configuration>
+			  <model>${basedir}/src/main/resources/fidl</model>
+			  <generationLanguage>java</generationLanguage>
+			  <outputPath>${project.build.directory}/generated-sources</outputPath>
+
+			  <!-- ACTIVATE THIS TO GENERATE JEE COMPATIBLE INTERFACES -->
+			  <parameter>
+				<jee>true</jee>
+			  </parameter>
+
+			</configuration>
+		  </execution>
+		</executions>
+		<dependencies>
+		  <dependency>
+			<groupId>io.joynr.tools.generator</groupId>
+			<artifactId>java-generator</artifactId>
+			<version>${joynrVersion}</version>
+		  </dependency>
+		</dependencies>
+	</plugin>
+
+
 ### Implementing services
 
 Annotate your business beans with `@ServiceProvider` additionally to the usual
@@ -131,9 +172,9 @@ JEE annotations (e.g. `@Stateless`).
 For example, if we have defined a `MyService` interface in Franca for which
 we want to provide an implementation, then:
 
-    @ServiceProvider(serviceInterface = MyServiceBCI.class)
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
     @Stateless
-    public class MyServiceImpl implements MyServiceBCI {
+    public class MyServiceImpl implements MyServiceSync {
     	...
     }
 
@@ -170,7 +211,7 @@ in the above example:
         }
 
 		public void performCall() {
-            MyServiceBCI myServiceProxy = serviceLocator.get(MyServiceBCI.class, "my.service.domain");
+            MyServiceSync myServiceProxy = serviceLocator.get(MyServiceSync.class, "my.service.domain");
             myServiceProxy.myMethod();
         }
 

@@ -46,8 +46,6 @@ import io.joynr.runtime.JoynrRuntime;
 
 /**
  * Unit tests for {@link JeeJoynrServiceLocator}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @RunWith(MockitoJUnitRunner.class)
 public class JeeJoynrServiceLocatorTest {

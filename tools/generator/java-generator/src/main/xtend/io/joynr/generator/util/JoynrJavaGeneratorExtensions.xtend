@@ -205,11 +205,6 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 		return dataType.buildPackagePath(".", true) + "." + dataType.joynrName;
 	}
 
-	override String getOneLineWarning() {
-		//return ""
-		return "/* Generated Code */  "
-	}
-
 	// Returns true if a class has to create lists in its constructor
 	def boolean hasArrayMembers(FCompoundType datatype){
 		for (member : datatype.members) {

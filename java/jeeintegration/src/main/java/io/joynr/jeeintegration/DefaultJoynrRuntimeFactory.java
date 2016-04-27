@@ -69,8 +69,6 @@ import joynr.infrastructure.DacTypes.TrustLevel;
  * <p>
  * <b>IMPORTANT</b>: This class requires the EE runtime to have been configured with a ManagedScheduledExecutorService
  * resource which has been given the name 'concurrent/joynrMessagingScheduledExecutor'.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @Singleton
 public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
@@ -153,14 +151,14 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         defaultJoynrProperties.setProperty("joynr.discovery.participantids_persistence_file",
                                            "build/provider/joynr_participantIds.properties");
         defaultJoynrProperties.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, joynrLocalDomain);
-        defaultJoynrProperties.setProperty("joynr.messaging.channelurldirectoryurl",
-                                           getEnvWithDefault("CHANNELURLDIRECTORYURL", LOCALHOST_URL
-                                                   + "discovery/channels/discoverydirectory_channelid/"));
         defaultJoynrProperties.setProperty("joynr.messaging.bounceproxyurl",
                                            getEnvWithDefault("BOUNCEPROXYURL", LOCALHOST_URL + "bounceproxy/"));
-        defaultJoynrProperties.setProperty("joynr.messaging.capabilitiesdirectoryurl",
-                                           getEnvWithDefault("CAPABILITIESDIRECTORYURL", LOCALHOST_URL
-                                                   + "discovery/channels/discoverydirectory_channelid/"));
+
+        // allow use of deprecated CAPABILITYDIRECTORYURL until 2016-12-31
+        String defaultDiscoveryDirectoryUrl = getEnvWithDefault("CAPABILITYDIRECTORYURL", LOCALHOST_URL
+                + "discovery/channels/discoverydirectory_channelid/");
+        defaultJoynrProperties.setProperty("joynr.messaging.discoverydirectoryurl",
+                                           getEnvWithDefault("DISCOVERYDIRECTORYURL", defaultDiscoveryDirectoryUrl));
         defaultJoynrProperties.putAll(joynrProperties);
         return defaultJoynrProperties;
     }

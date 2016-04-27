@@ -46,8 +46,6 @@ import joynr.system.RoutingTypes.Address;
 /**
  * Guice module for the JEE integration of joynr which is used to override certain bindings to provide JEE resources
  * where available (e.g. a managed execution service rather than the J2SE version).
- *
- * @author clive.jevons commissioned by MaibornWolff GmbH
  */
 public class JeeJoynrIntegrationModule extends AbstractModule {
 

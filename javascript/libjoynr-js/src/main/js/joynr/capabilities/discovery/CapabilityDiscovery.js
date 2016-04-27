@@ -166,22 +166,26 @@ define(
                         }).then(function(opArgs) {
                             var i, messageRouterPromises = [], globalCapabilities = opArgs.result;
                             var globalAddress;
-                            for (i = globalCapabilities.length - 1; i >= 0; i--) {
-                                var globalDiscoveryEntry = globalCapabilities[i];
-                                if (globalDiscoveryEntry.address === globalAddressSerialized) {
-                                    globalCapabilities.splice(i, 1);
-                                } else {
-                                    try {
-                                        globalAddress = Typing.augmentTypes(JSON.parse(globalDiscoveryEntry.address), typeRegistry);
-                                    } catch (e) {
-                                        log.error("unable to use global discoveryEntry with unknown address type: " + globalDiscoveryEntry.address);
-                                        continue;
+                            if (globalCapabilities === undefined) {
+                                log.error("globalCapabilitiesDirectoryProxy.lookup() returns with missing result");
+                            } else {
+                                for (i = globalCapabilities.length - 1; i >= 0; i--) {
+                                    var globalDiscoveryEntry = globalCapabilities[i];
+                                    if (globalDiscoveryEntry.address === globalAddressSerialized) {
+                                        globalCapabilities.splice(i, 1);
+                                    } else {
+                                        try {
+                                            globalAddress = Typing.augmentTypes(JSON.parse(globalDiscoveryEntry.address), typeRegistry);
+                                        } catch (e) {
+                                            log.error("unable to use global discoveryEntry with unknown address type: " + globalDiscoveryEntry.address);
+                                            continue;
+                                        }
+                                        // Update routing table
+                                        messageRouterPromises.push(messageRouter.addNextHop(
+                                                globalDiscoveryEntry.participantId,
+                                                globalAddress));
+                                        capabilities.push(globalDiscoveryEntry);
                                     }
-                                    // Update routing table
-                                    messageRouterPromises.push(messageRouter.addNextHop(
-                                            globalDiscoveryEntry.participantId,
-                                            globalAddress));
-                                    capabilities.push(globalDiscoveryEntry);
                                 }
                             }
                             return Promise.all(messageRouterPromises).then(function() {
@@ -230,7 +234,7 @@ define(
                     var i;
                     globalAddress = newGlobalAddress;
                     globalAddressSerialized = JSON.stringify(newGlobalAddress);
-                    for (i=0;i<queuedGlobalDiscoveryEntries.lengh;i++) {
+                    for (i=0;i<queuedGlobalDiscoveryEntries.length;i++) {
                         addGlobalQueued(queuedGlobalDiscoveryEntries[i]);
                     }
                     queuedGlobalDiscoveryEntries = [];

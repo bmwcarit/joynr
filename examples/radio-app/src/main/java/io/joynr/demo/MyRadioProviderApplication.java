@@ -128,7 +128,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // certain joynr server
         // instance.
         // joynr.messaging.bounceproxyurl=http://localhost:8080/bounceproxy/
-        // joynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
+        // joynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // 3) Or set them in Java System properties.
         // -Djoynr.messaging.bounceProxyUrl=http://localhost:8080/bounceproxy/

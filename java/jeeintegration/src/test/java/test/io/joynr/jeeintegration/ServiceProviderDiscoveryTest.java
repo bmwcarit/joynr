@@ -52,8 +52,6 @@ import io.joynr.jeeintegration.api.ServiceProvider;
 
 /**
  * Unit tests for {@link ServiceProviderDiscovery}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ServiceProviderDiscoveryTest {

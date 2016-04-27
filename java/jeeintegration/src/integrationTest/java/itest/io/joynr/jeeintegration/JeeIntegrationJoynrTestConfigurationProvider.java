@@ -36,8 +36,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 /**
  * A test provider of joynr configuration values for the integration tests of
  * the JEE Integration Bean.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @Singleton
 public class JeeIntegrationJoynrTestConfigurationProvider {

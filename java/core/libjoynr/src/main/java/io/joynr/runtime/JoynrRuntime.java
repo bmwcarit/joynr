@@ -53,7 +53,7 @@ public interface JoynrRuntime {
      * @param provider
      *            Instance of the provider implementation. It is assumed that the provided implementations offers
      *            the following annotations in its (inherited) class definition: {@link io.joynr.provider.JoynrInterface}
-     *            and {@link io.joynr.provider.JoynrVersion}.
+     *            and {@link io.joynr.JoynrVersion}.
      * @param providerQos
      *            The providers quality of service settings.
      * @return Returns a Future which can be used to check the registration status.

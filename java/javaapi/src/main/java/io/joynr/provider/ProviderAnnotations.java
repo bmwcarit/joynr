@@ -19,6 +19,7 @@ package io.joynr.provider;
  * #L%
  */
 
+import io.joynr.JoynrVersion;
 import io.joynr.util.AnnotationUtil;
 
 import java.lang.annotation.Annotation;

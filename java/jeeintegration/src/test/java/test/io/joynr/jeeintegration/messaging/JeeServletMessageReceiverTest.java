@@ -45,8 +45,6 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for the {@link JeeServletMessageReceiver}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @RunWith(MockitoJUnitRunner.class)
 public class JeeServletMessageReceiverTest {

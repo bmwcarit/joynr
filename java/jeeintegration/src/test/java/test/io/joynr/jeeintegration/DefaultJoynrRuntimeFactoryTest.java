@@ -41,8 +41,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 
 /**
  * Unit tests for the {@link DefaultJoynrApplicationFactory}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class DefaultJoynrRuntimeFactoryTest {
 

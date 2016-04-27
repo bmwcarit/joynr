@@ -45,8 +45,6 @@ import io.joynr.util.AnnotationUtil;
  * The service interface is mapped to its joynr proxy, by expecting a {@link io.joynr.UsedBy} annotation
  * is attached in the class hierarchy of the service interface. With this annotation, the proxy is found by
  * the JeeJoynrServiceLocator.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 @Singleton
 public class JeeJoynrServiceLocator implements ServiceLocator {

@@ -25,8 +25,6 @@ package io.joynr.jeeintegration.api;
 
 /**
  * The keys for the properties which can be set for the joynr JEE integration.
- * 
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class JeeIntegrationPropertyKeys {
 

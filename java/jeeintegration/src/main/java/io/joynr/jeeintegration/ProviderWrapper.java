@@ -46,8 +46,6 @@ import org.slf4j.LoggerFactory;
  * reference to the bean via the {@link JoynrIntegrationBean#beanManager} and will delegate to the corresponding method
  * on that bean (i.e. with the same name and parameters). The result is then wrapped in a deferred / promise and
  * returned.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class ProviderWrapper implements InvocationHandler {
 

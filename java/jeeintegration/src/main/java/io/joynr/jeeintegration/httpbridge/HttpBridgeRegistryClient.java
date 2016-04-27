@@ -27,8 +27,6 @@ import java.util.concurrent.CompletionStage;
 /**
  * Interface used for communicating with the HTTP bridge (which forwards messages received via MQTT at a broker to this
  * application via HTTP).
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public interface HttpBridgeRegistryClient {
 

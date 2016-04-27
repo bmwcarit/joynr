@@ -30,8 +30,6 @@ import io.joynr.messaging.http.operation.HttpClientProvider;
 
 /**
  * Module which sets up the bindings for the {@link HttpBridgeEndpointRegistryClient}.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public class HttpBridgeEndpointRegistryClientModule extends AbstractModule {
 

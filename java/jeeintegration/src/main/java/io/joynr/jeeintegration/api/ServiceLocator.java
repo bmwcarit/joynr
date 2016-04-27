@@ -28,8 +28,6 @@ import io.joynr.messaging.MessagingQos;
 /**
  * The container runtime will provide an instance of this which can be injected and then used in order to obtain client
  * proxies for services.
- *
- * @author clive.jevons commissioned by MaibornWolff
  */
 public interface ServiceLocator {
 
