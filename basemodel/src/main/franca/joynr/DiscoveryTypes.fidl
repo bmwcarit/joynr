@@ -124,6 +124,9 @@ typeCollection {
 		<** @description: the date in millis since epoch when this entry can be purged from the
       directory and caches **>
 		Int64 expiryDateMs
+		<** @description: the ID of the public key to be used to encrypt messages to
+		this provider **>
+		String publicKeyId
 	}
 
 	<**
