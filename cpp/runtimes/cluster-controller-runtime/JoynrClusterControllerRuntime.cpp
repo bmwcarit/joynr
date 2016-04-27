@@ -56,7 +56,6 @@
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 #include "joynr/Settings.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IDispatcher.h"
@@ -109,7 +108,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           joynrMessagingSendSkeleton(nullptr),
           joynrMessageSender(nullptr),
           app(app),
-          capabilitiesClient(nullptr),
           localCapabilitiesDirectory(nullptr),
           cache(),
           libJoynrMessagingSkeleton(nullptr),
@@ -354,19 +352,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                 mqttMessageSender, mqttSerializedGlobalClusterControllerAddress));
     }
 
-    capabilitiesClient = new CapabilitiesClient();
-
-    std::string localAddress;
-    if (doMqttMessaging) {
-        localAddress = mqttSerializedGlobalClusterControllerAddress;
-    } else {
-        localAddress = httpSerializedGlobalClusterControllerAddress;
-    }
-
-    localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
-            messagingSettings, capabilitiesClient, localAddress, *messageRouter);
-
-    importPersistedLocalCapabilitiesDirectory();
+    const std::string channelGlobalCapabilityDir =
+            doMqttMessaging ? mqttSerializedGlobalClusterControllerAddress
+                            : httpSerializedGlobalClusterControllerAddress;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     dbusSettings = new DbusSettings(*settings);
@@ -409,6 +397,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(systemServicesSettings);
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
+    std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
+            std::make_shared<CapabilitiesClient>(channelGlobalCapabilityDir);
+    localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
+            messagingSettings, capabilitiesClient, channelGlobalCapabilityDir, *messageRouter);
+
+    importPersistedLocalCapabilitiesDirectory();
+
     std::string discoveryProviderParticipantId(
             systemServicesSettings.getCcDiscoveryProviderParticipantId());
     auto discoveryRequestCaller =
@@ -437,24 +432,25 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    /**
-     * Finish initialising Capabilitiesclient by building a Proxy and passing it
-     */
-    std::int64_t discoveryMessagesTtl = messagingSettings.getDiscoveryMessagesTtl();
-
-    ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
-            createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                    messagingSettings.getDiscoveryDirectoriesDomain());
+    // ******************************************************************************************
+    // WARNING: Latent dependency in place!
+    //
+    // ProxyBuilder performs a discovery this is why discoveryProxy->setDiscoveryProxy must be
+    // called before any createProxyBuilder().
+    //
+    // ******************************************************************************************
     DiscoveryQos discoveryQos(10000);
-    discoveryQos.setArbitrationStrategy(
-            DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
-                                                                  // should be available
-    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy(
-            capabilitiesProxyBuilder->setMessagingQos(MessagingQos(discoveryMessagesTtl))
-                    ->setCached(true)
-                    ->setDiscoveryQos(discoveryQos)
-                    ->build());
-    ((CapabilitiesClient*)capabilitiesClient)->init(capabilitiesProxy);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    discoveryQos.addCustomParameter(
+            "fixedParticipantId", messagingSettings.getCapabilitiesDirectoryParticipantId());
+
+    std::unique_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+            capabilitiesProxyBuilder(
+                    createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                            messagingSettings.getDiscoveryDirectoriesDomain()));
+    capabilitiesProxyBuilder->setDiscoveryQos(discoveryQos);
+
+    capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
 }
 
 void JoynrClusterControllerRuntime::registerRoutingProvider()
@@ -507,8 +503,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 
     delete inProcessDispatcher;
     inProcessDispatcher = nullptr;
-    delete capabilitiesClient;
-    capabilitiesClient = nullptr;
 
     delete inProcessPublicationSender;
     inProcessPublicationSender = nullptr;

@@ -25,14 +25,13 @@
 #include <vector>
 
 #include "cluster-controller/mqtt/MqttSettings.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/ClientQCache.h"
-#include "joynr/Logger.h"
+#include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
-#include "joynr/MessagingSettings.h"
+#include "joynr/Logger.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "libjoynr/websocket/WebSocketSettings.h"
 
 #include "joynr/RuntimeConfig.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -50,7 +49,6 @@ class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class IMessageReceiver;
 class IMessageSender;
-class ICapabilitiesClient;
 class SubscriptionManager;
 class ConnectorFactory;
 class InProcessConnectorFactory;
@@ -111,7 +109,7 @@ protected:
     IMessaging* joynrMessagingSendSkeleton;
     JoynrMessageSender* joynrMessageSender;
     QCoreApplication* app;
-    ICapabilitiesClient* capabilitiesClient;
+
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     ClientQCache cache;
 

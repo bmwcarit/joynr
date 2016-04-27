@@ -16,21 +16,22 @@
  * limitations under the License.
  * #L%
  */
-#include <boost/algorithm/string/predicate.hpp>
-#include <chrono>
-#include <limits>
 
 #include "joynr/LocalCapabilitiesDirectory.h"
+
+#include <boost/algorithm/string/predicate.hpp>
+
+#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/CapabilityEntry.h"
+#include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/MessageRouter.h"
 #include "common/InterfaceAddress.h"
-#include "joynr/types/Version.h"
 
 #include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
@@ -41,10 +42,11 @@ namespace joynr
 
 INIT_LOGGER(LocalCapabilitiesDirectory);
 
-LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
-                                                       ICapabilitiesClient* capabilitiesClientPtr,
-                                                       const std::string& localAddress,
-                                                       MessageRouter& messageRouter)
+LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
+        MessagingSettings& messagingSettings,
+        std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
+        const std::string& localAddress,
+        MessageRouter& messageRouter)
         : joynr::system::DiscoveryAbstractProvider(),
           messagingSettings(messagingSettings),
           capabilitiesClient(capabilitiesClientPtr),
@@ -60,6 +62,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
           mqttSettings(),
           localCapabilitiesDirectoryFileName()
 {
+    // setting up the provisioned values for GlobalCapabilitiesClient
+    // The GlobalCapabilitiesServer is also provisioned in MessageRouter
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
     std::int64_t lastSeenDateMs = 0;
@@ -352,7 +356,8 @@ void LocalCapabilitiesDirectory::lookup(const std::string& domain,
                                        callback,
                                        discoveryQos.getDiscoveryScope());
         };
-        this->capabilitiesClient->lookup(domain, interfaceName, onSuccess);
+        this->capabilitiesClient->lookup(
+                domain, interfaceName, discoveryQos.getDiscoveryTimeout(), onSuccess);
     }
 }
 

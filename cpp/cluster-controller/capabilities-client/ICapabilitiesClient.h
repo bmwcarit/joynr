@@ -19,13 +19,16 @@
 #ifndef ICAPABILITIESCLIENT_H
 #define ICAPABILITIESCLIENT_H
 
-#include "joynr/types/GlobalDiscoveryEntry.h"
-
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
+
+#include "joynr/ProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 
 namespace joynr
 {
@@ -39,10 +42,12 @@ public:
     virtual void remove(const std::string& participantId) = 0;
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
     virtual std::vector<types::GlobalDiscoveryEntry> lookup(const std::string& domain,
-                                                            const std::string& interfaceName) = 0;
+                                                            const std::string& interfaceName,
+                                                            const std::int64_t messagingTtl) = 0;
     virtual void lookup(
             const std::string& domain,
             const std::string& interfaceName,
+            const std::int64_t messagingTtl,
             std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>
                     onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)>
@@ -53,6 +58,11 @@ public:
                     onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)>
                     onError = nullptr) = 0;
+    virtual std::string getLocalChannelId() const = 0;
+
+    virtual void setProxyBuilder(
+            std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+                    capabilitiesProxyBuilder) = 0;
 };
 
 } // namespace joynr

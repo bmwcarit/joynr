@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,14 +36,13 @@
 #include "joynr/TypedClientMultiCache.h"
 #include "joynr/Logger.h"
 #include "joynr/ClusterControllerDirectories.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/types/DiscoveryQos.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/Semaphore.h"
 #include "common/InterfaceAddress.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "cluster-controller/mqtt/MqttSettings.h"
 #include <vector>
 
@@ -57,18 +56,18 @@
 namespace joynr
 {
 
-class MessageRouter;
-class ICapabilitiesClient;
 class CapabilityEntry;
-
+class ICapabilitiesClient;
 class InterfaceAddress;
+class MessageRouter;
 
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
         : public joynr::system::DiscoveryAbstractProvider
 {
 public:
+    // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
     LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
-                               ICapabilitiesClient* capabilitiesClientPtr,
+                               std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
                                MessageRouter& messageRouter);
 
@@ -215,7 +214,7 @@ private:
     void cleanCaches();
 
     ADD_LOGGER(LocalCapabilitiesDirectory);
-    ICapabilitiesClient* capabilitiesClient;
+    std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
     std::string localAddress;
     std::mutex cacheLock;
 

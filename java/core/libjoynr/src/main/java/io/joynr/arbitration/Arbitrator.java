@@ -141,6 +141,7 @@ public class Arbitrator {
                                         domain,
                                         interfaceName,
                                         new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
+                                                                     discoveryQos.getDiscoveryTimeout(),
                                                                      joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
                                                                                                                     .name()),
                                                                      discoveryQos.getProviderMustSupportOnChange()));

@@ -49,7 +49,7 @@ public:
         settings(settingsFileName),
         messagingSettings(settings),
         libjoynrsettings(settings),
-        capabilitiesClient(new MockCapabilitiesClient()),
+        capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
         mockMessageRouter(),
         localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings,
                                                                   capabilitiesClient,
@@ -77,6 +77,7 @@ public:
         callback = std::make_shared<MockLocalCapabilitiesDirectoryCallback>();
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
+        EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).Times(0);
 
         // init a capentry recieved from the global capabilities directory
         types::ProviderQos qos;
@@ -94,12 +95,12 @@ public:
 
     void TearDown(){
         delete localCapabilitiesDirectory;
-        delete capabilitiesClient;
     }
 
     void fakeLookupZeroResultsForInterfaceAddress(
             const std::string& domain,
             const std::string& interfaceName,
+            const std::int64_t messagingTtl,
             std::function<void(const std::vector<types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
         std::ignore = domain;
@@ -120,10 +121,13 @@ public:
     void fakeLookupWithResults(
             const std::string& domain,
             const std::string& interfaceName,
+            const std::int64_t messagingTtl,
             std::function<void(const std::vector<types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
         std::ignore = domain;
         std::ignore = interfaceName;
+        std::ignore = messagingTtl;
+        std::ignore = onError;
         types::ProviderQos qos;
         std::vector<types::GlobalDiscoveryEntry> discoveryEntryList;
         joynr::types::Version providerVersion(47, 11);
@@ -152,6 +156,7 @@ public:
             const std::string& participantId,
             std::function<void(const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
+        std::ignore = onError;
         types::ProviderQos qos;
         std::vector<types::GlobalDiscoveryEntry> discoveryEntryList;
         joynr::types::Version providerVersion(47, 11);
@@ -181,6 +186,7 @@ public:
             std::function<void(const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError){
         std::ignore = participantId;
+        std::ignore = onError;
         types::ProviderQos qos;
         std::vector<types::GlobalDiscoveryEntry> discoveryEntryList;
         joynr::types::Version providerVersion(47, 11);
@@ -223,7 +229,7 @@ protected:
     Settings settings;
     MessagingSettings messagingSettings;
     LibjoynrSettings libjoynrsettings;
-    MockCapabilitiesClient* capabilitiesClient;
+    std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     MockMessageRouter mockMessageRouter;
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;
@@ -287,7 +293,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache) {
     EXPECT_CALL(*capabilitiesClient, lookup(
                     dummyParticipantId1,
                     A<std::function<void(
-                        const std::vector<joynr::types::GlobalDiscoveryEntry>& discoveryEntries)>>(),
+                        const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>>(),
                     A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
@@ -403,7 +409,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByInterfaceAddressDo
 TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressReturnsCachedValues) {
 
     //simulate global capability directory would store two entries.
-    EXPECT_CALL(*capabilitiesClient, lookup(DOMAIN_1_NAME ,INTERFACE_1_NAME,_,_))
+    EXPECT_CALL(*capabilitiesClient, lookup(DOMAIN_1_NAME ,INTERFACE_1_NAME,_,_,_))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
 
@@ -411,6 +417,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressReturnsCachedVal
     callback->clearResults();
     //enries are now in cache, capabilitiesClient should not be called.
     EXPECT_CALL(*capabilitiesClient, lookup(
+                    _,
                     _,
                     _,
                     A<std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& discoveryEntries)>>(),
@@ -425,6 +432,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapab
     EXPECT_CALL(*capabilitiesClient, lookup(
                     DOMAIN_1_NAME ,
                     INTERFACE_1_NAME,
+                    _,
                     _,
                     _))
             .Times(1)
@@ -675,7 +683,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal){
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_)).Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
@@ -710,7 +718,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_)).Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
@@ -724,7 +732,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
 
     // disable cache
     discoveryQos.setCacheMaxAge(0);
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_))
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
@@ -739,6 +747,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
 
     joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL);
 
     joynr::types::Version providerVersion(47, 11);
@@ -755,7 +764,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
     localCapabilitiesDirectory->add(entry);
     //localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_))
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
             .Times(2)
 //            .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
             .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupZeroResultsForInterfaceAddress));
@@ -772,14 +781,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
 
     // disable cache
     discoveryQos.setCacheMaxAge(0);
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_))
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(2, callback->getResults(10).size());
     callback->clearResults();
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_))
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
             .Times(0);
     localCapabilitiesDirectory->cleanCache(std::chrono::milliseconds::zero());
 
@@ -810,7 +819,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
     );
     localCapabilitiesDirectory->add(entry);
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_))
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     //JoynrTimeOutException timeoutException;
@@ -822,7 +831,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
     // register the external capability
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
     // get the global entry
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_)).Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
@@ -832,7 +841,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
 
     // disable cache
     discoveryQos.setCacheMaxAge(0);
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_))
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
@@ -863,7 +872,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal){
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_)).Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
@@ -895,7 +904,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
     // get the local entry
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_)).Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
@@ -904,7 +913,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     localCapabilitiesDirectory->remove(dummyParticipantId1);
 
     // get the global entry
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_)).Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
@@ -912,7 +921,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     // get the global, but timeout occured
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_))
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
@@ -943,14 +952,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupGlobalOnly
     );
     localCapabilitiesDirectory->add(entry);
 
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_)).Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
     //recieve a global entry
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
-    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_,_)).Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(2, callback->getResults(10).size());
 

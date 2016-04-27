@@ -97,6 +97,8 @@ typeCollection {
 	struct DiscoveryQos {
 		<** @description: The maximum age of a cached entry in milliseconds **>
 		Int64 cacheMaxAge
+		<** @description: Discovery TTL **>
+		Int64 discoveryTimeout
 		<** @description: The discovery scope **>
 		DiscoveryScope discoveryScope
 		<** @description: True, if the provider is required to support the OnChange publication **>

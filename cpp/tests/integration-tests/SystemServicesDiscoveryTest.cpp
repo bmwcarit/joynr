@@ -153,9 +153,10 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     joynr::types::DiscoveryQos discoveryQos(
-                5000,                                      // max cache age
+                5000,                                     // max cache age
+                5000,                                     // discovery ttl
                 joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
-                false                                      // provider must support on change subscriptions
+                false                                     // provider must support on change subscriptions
     );
 
     try {
@@ -180,9 +181,10 @@ TEST_F(SystemServicesDiscoveryTest, add)
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
     joynr::types::DiscoveryQos discoveryQos(
-                5000,                                      // max cache age
+                5000,                                     // max cache age
+                5000,                                     // discovery ttl
                 joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
-                false                                      // provider must support on change subscriptions
+                false                                     // provider must support on change subscriptions
     );
     joynr::types::ProviderQos providerQos(
                 std::vector<joynr::types::CustomParameter>(), // custom provider parameters
@@ -236,9 +238,10 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
     joynr::types::DiscoveryQos discoveryQos(
-                5000,                                      // max cache age
+                5000,                                     // max cache age
+                5000,                                     // discovery ttl
                 joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
-                false                                      // provider must support on change subscriptions
+                false                                     // provider must support on change subscriptions
     );
     joynr::types::ProviderQos providerQos(
                 std::vector<joynr::types::CustomParameter>(), // custom provider parameters
