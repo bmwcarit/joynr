@@ -81,6 +81,7 @@ public:
                         std::chrono::system_clock::now().time_since_epoch()).count();
         const std::int64_t lastSeenDateMs = now;
         const std::int64_t defaultExpiryDateMs = now + defaultExpiryIntervalMs;
+        const std::string defaultPublicKeyId("");
         joynr::types::Version providerVersion;
         joynr::types::DiscoveryEntry entry(providerVersion,
                                            domain,
@@ -88,7 +89,8 @@ public:
                                            participantId,
                                            providerQos,
                                            lastSeenDateMs,
-                                           defaultExpiryDateMs);
+                                           defaultExpiryDateMs,
+                                           defaultPublicKeyId);
         try {
             discoveryProxy.add(entry);
         } catch (const exceptions::JoynrException& e) {

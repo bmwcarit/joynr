@@ -64,6 +64,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
     providerQos.setPriority(1);
     std::int64_t lastSeenDateMs = 0;
     std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    std::string defaultPublicKeyId("");
     types::Version providerVersion;
     this->insertInCache(joynr::types::DiscoveryEntry(
                                 providerVersion,
@@ -72,7 +73,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
                                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
                                 providerQos,
                                 lastSeenDateMs,
-                                expiryDateMs),
+                                expiryDateMs,
+                                defaultPublicKeyId),
                         false,
                         true,
                         false);
@@ -112,6 +114,7 @@ void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discove
                                                          discoveryEntry.getQos(),
                                                          discoveryEntry.getLastSeenDateMs(),
                                                          discoveryEntry.getExpiryDateMs(),
+                                                         discoveryEntry.getPublicKeyId(),
                                                          localAddress);
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
@@ -144,7 +147,8 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
                     [&entry, &domain, &interfaceName, &qos](const types::GlobalDiscoveryEntry& it) {
                 return it.getProviderVersion() == entry.getProviderVersion() &&
                        it.getDomain() == domain && it.getInterfaceName() == interfaceName &&
-                       it.getQos() == qos && it.getParticipantId() == entry.getParticipantId();
+                       it.getQos() == qos && it.getParticipantId() == entry.getParticipantId() &&
+                       it.getPublicKeyId() == entry.getPublicKeyId();
             };
 
             while (registeredGlobalCapabilities.erase(
@@ -292,6 +296,7 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
                                  globalDiscoveryEntry.getInterfaceName(),
                                  globalDiscoveryEntry.getQos(),
                                  globalDiscoveryEntry.getParticipantId(),
+                                 globalDiscoveryEntry.getPublicKeyId(),
                                  true);
         capabilitiesMap.insertMulti(globalDiscoveryEntry.getAddress(), capEntry);
         mergedEntries.push_back(capEntry);
@@ -663,6 +668,7 @@ void LocalCapabilitiesDirectory::convertCapabilityEntryIntoDiscoveryEntry(
     discoveryEntry.setInterfaceName(capabilityEntry.getInterfaceName());
     discoveryEntry.setParticipantId(capabilityEntry.getParticipantId());
     discoveryEntry.setQos(capabilityEntry.getQos());
+    discoveryEntry.setPublicKeyId(capabilityEntry.getPublicKeyId());
 }
 
 void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
@@ -674,6 +680,7 @@ void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
     capabilityEntry.setInterfaceName(discoveryEntry.getInterfaceName());
     capabilityEntry.setParticipantId(discoveryEntry.getParticipantId());
     capabilityEntry.setQos(discoveryEntry.getQos());
+    capabilityEntry.setPublicKeyId(discoveryEntry.getPublicKeyId());
 }
 
 void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(

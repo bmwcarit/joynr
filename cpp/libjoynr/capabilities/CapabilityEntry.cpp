@@ -23,7 +23,13 @@ namespace joynr
 {
 
 CapabilityEntry::CapabilityEntry()
-        : providerVersion(), domain(), interfaceName(), qos(), participantId(), global(true)
+        : providerVersion(),
+          domain(),
+          interfaceName(),
+          qos(),
+          participantId(),
+          publicKeyId(),
+          global(true)
 {
 }
 
@@ -32,12 +38,14 @@ CapabilityEntry::CapabilityEntry(joynr::types::Version providerVersion,
                                  const std::string& interfaceName,
                                  joynr::types::ProviderQos qos,
                                  const std::string& participantId,
+                                 const std::string& publicKeyId,
                                  bool isGlobal)
         : providerVersion(providerVersion),
           domain(domain),
           interfaceName(interfaceName),
           qos(qos),
           participantId(participantId),
+          publicKeyId(publicKeyId),
           global(isGlobal)
 {
 }
@@ -49,6 +57,7 @@ CapabilityEntry& CapabilityEntry::operator=(const CapabilityEntry& other)
     this->domain = other.domain;
     this->qos = other.qos;
     this->participantId = other.participantId;
+    this->publicKeyId = other.publicKeyId;
     this->global = other.global;
     return *this;
 }
@@ -57,7 +66,8 @@ bool CapabilityEntry::operator==(const CapabilityEntry& other) const
 {
     return this->providerVersion == other.providerVersion &&
            this->interfaceName == other.interfaceName && this->domain == other.domain &&
-           this->participantId == other.participantId && this->global == other.global;
+           this->participantId == other.participantId && this->publicKeyId == other.publicKeyId &&
+           this->global == other.global;
 }
 
 std::string CapabilityEntry::getInterfaceName() const
@@ -108,6 +118,16 @@ void CapabilityEntry::setParticipantId(std::string participantId)
 std::string CapabilityEntry::getParticipantId() const
 {
     return participantId;
+}
+
+const std::string& CapabilityEntry::getPublicKeyId() const
+{
+    return publicKeyId;
+}
+
+void CapabilityEntry::setPublicKeyId(const std::string& publicKeyId)
+{
+    this->publicKeyId = publicKeyId;
 }
 
 bool CapabilityEntry::isGlobal() const
