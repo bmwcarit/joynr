@@ -25,7 +25,7 @@ importScripts("WorkerUtils.js");
 importScripts("../joynr/provisioning/provisioning_root.js");
 importScripts("LocalStorageSimulator.js");
 
-importScripts("../../classes/js/joynr.intertab.clustercontroller.js");
+importScripts("../../jar-classes/joynr.intertab.clustercontroller.js");
 importScripts("../joynr/provisioning/provisioning_cc.js");
 importScripts("../../classes/lib/bluebird.js");
 

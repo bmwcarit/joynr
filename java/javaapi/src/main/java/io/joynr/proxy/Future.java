@@ -45,7 +45,7 @@ public class Future<T> {
      * occurs/or times out. If the request finishes successfully, it retrieves the return
      * value for the request if one exists, otherwise a JoynrException is thrown.
      *
-     * @param timeout_ms 
+     * @param timeout_ms
      *            The maximum number of milliseconds to wait before this request times out
      * @return the result of the request
      * @throws InterruptedException if the thread is interrupted.

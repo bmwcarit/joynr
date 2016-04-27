@@ -25,9 +25,8 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
-class InterfaceAbstractProviderCppTemplate implements InterfaceTemplate {
+class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -36,20 +35,20 @@ class InterfaceAbstractProviderCppTemplate implements InterfaceTemplate {
 	@Inject private extension AttributeUtil
 	@Inject private extension BroadcastUtil
 
-	override generate(FInterface serviceInterface)
+	override generate()
 '''
 «warning()»
-«val interfaceName = serviceInterface.joynrName»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»AbstractProvider.h"
+«val interfaceName = francaIntf.joynrName»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»AbstractProvider.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
 #include "joynr/TypeUtil.h"
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 «interfaceName»AbstractProvider::«interfaceName»AbstractProvider()
 {
 	// Register a request interpreter to interpret requests to this interface
@@ -66,7 +65,7 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	return I«interfaceName»Base::INTERFACE_NAME();
 }
 
-«FOR attribute : serviceInterface.attributes»
+«FOR attribute : francaIntf.attributes»
 	«IF attribute.notifiable»
 		«var attributeType = attribute.type.resolveTypeDef»
 		«var attributeName = attribute.joynrName»
@@ -95,10 +94,12 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	«ENDIF»
 «ENDFOR»
 
-«FOR broadcast : serviceInterface.broadcasts»
+«FOR broadcast : francaIntf.broadcasts»
 	«var broadcastName = broadcast.joynrName»
 	void «interfaceName»AbstractProvider::fire«broadcastName.toFirstUpper»(
-			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
+			«IF !broadcast.outputParameters.empty»
+			«broadcast.commaSeperatedTypedConstOutputParameterList»
+			«ENDIF»
 	) {
 		std::vector<Variant> broadcastValues;
 		«FOR param: getOutputParameters(broadcast)»
@@ -125,6 +126,6 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 		fireBroadcast("«broadcastName»", broadcastValues);
 	}
 «ENDFOR»
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }

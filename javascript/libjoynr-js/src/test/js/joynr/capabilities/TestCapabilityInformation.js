@@ -20,32 +20,40 @@
  */
 
 joynrTestRequire("joynr/capabilities/TestCapabilityInformation", [
-    "joynr/types/CapabilityInformation",
+    "joynr/types/GlobalDiscoveryEntry",
     "joynr/types/ProviderQos",
-    "joynr/types/ProviderScope"
-], function(CapabilityInformation, ProviderQos, ProviderScope) {
+    "joynr/types/ProviderScope",
+    "joynr/types/Version"
+], function(GlobalDiscoveryEntry, ProviderQos, ProviderScope, Version) {
 
     var capInfo;
     beforeEach(function() {
-        capInfo = new CapabilityInformation({
+        capInfo = new GlobalDiscoveryEntry({
+            providerVersion : new Version({
+                majorVersion : 47,
+                minorVersion : 11
+            }),
             domain : "vehicleADomain",
             interfaceName : "vehicle/cdsnavigation",
-            providerQos : new ProviderQos({
+            qos : new ProviderQos({
                 customParameters : [],
-                providerVersion : 1,
                 priority : 1,
                 scope : ProviderScope.GLOBAL,
                 supportsOnChangeSubscriptions : true
             }),
-            channelId : "vehicleAChannelId",
+            address : "address",
             participantId : "CDSNavigationParticipantId_vehicleA"
         });
     });
 
-    describe("libjoynr-js.joynr.capabilities.CapabilityInformation", function() {
+    describe("libjoynr-js.joynr.capabilities.GlobalDiscoveryEntry", function() {
         it("is instantiable", function() {
             expect(capInfo).toBeDefined();
-            expect(capInfo instanceof CapabilityInformation).toBeTruthy();
+            expect(capInfo instanceof GlobalDiscoveryEntry).toBeTruthy();
+        });
+        it("providerVersion is set", function() {
+            expect(capInfo.providerVersion).toBeDefined();
+            expect(capInfo.providerVersion instanceof Version).toBeTruthy();
         });
     });
 

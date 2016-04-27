@@ -18,25 +18,27 @@
  */
 #ifndef PROXYBUILDER_H
 #define PROXYBUILDER_H
-#include "joynr/PrivateCopyAssign.h"
+
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "joynr/MessagingQos.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/IArbitrationListener.h"
+#include "joynr/IRequestCallerDirectory.h"
 #include "joynr/ProviderArbitrator.h"
 #include "joynr/ProviderArbitratorFactory.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
-#include "Future.h"
+#include "joynr/Future.h"
 #include "joynr/Semaphore.h"
-#include <string>
-#include <cstdint>
 #include <joynr/TypeUtil.h>
-#include <cassert>
-#include <memory>
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -65,9 +67,10 @@ public:
      * @param messageRouter A shared pointer to the message router object
      */
     ProxyBuilder(ProxyFactory* proxyFactory,
+                 IRequestCallerDirectory* requestCallerDirectory,
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
-                 std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress,
+                 std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
                  std::shared_ptr<MessageRouter> messageRouter,
                  std::uint64_t messagingMaximumTtlMs);
 
@@ -145,15 +148,6 @@ private:
      */
     void setParticipantId(const std::string& participantId) override;
 
-    /**
-     * @brief Sets the kind of connection
-     *
-     * Sets the end point address.
-     *
-     * @param connection The kind of connection.
-     */
-    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection) override;
-
     /*
      * arbitrationFinished is called when the arbitrationStatus is set to successful and the
      * channelId has been set to a non empty string. The implementation differs for
@@ -185,36 +179,38 @@ private:
     bool hasArbitrationStarted;
     MessagingQos messagingQos;
     ProxyFactory* proxyFactory;
+    IRequestCallerDirectory* requestCallerDirectory;
     joynr::system::IDiscoverySync& discoveryProxy;
     ProviderArbitrator* arbitrator;
     Semaphore arbitrationSemaphore;
     std::string participantId;
-    joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     std::int64_t discoveryTimeout;
 
-    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
 };
 
 template <class T>
-ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
-                              joynr::system::IDiscoverySync& discoveryProxy,
-                              const std::string& domain,
-                              std::shared_ptr<system::RoutingTypes::Address> dispatcherAddress,
-                              std::shared_ptr<MessageRouter> messageRouter,
-                              std::uint64_t messagingMaximumTtlMs)
+ProxyBuilder<T>::ProxyBuilder(
+        ProxyFactory* proxyFactory,
+        IRequestCallerDirectory* requestCallerDirectory,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const std::string& domain,
+        std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
+        std::shared_ptr<MessageRouter> messageRouter,
+        std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
           cached(false),
           hasArbitrationStarted(false),
           messagingQos(),
           proxyFactory(proxyFactory),
+          requestCallerDirectory(requestCallerDirectory),
           discoveryProxy(discoveryProxy),
           arbitrator(nullptr),
           arbitrationSemaphore(1),
           participantId(""),
-          connection(joynr::types::CommunicationMiddleware::NONE),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           discoveryTimeout(-1),
           dispatcherAddress(dispatcherAddress),
@@ -244,7 +240,10 @@ T* ProxyBuilder<T>::build()
 {
     T* proxy = proxyFactory->createProxy<T>(domain, messagingQos, cached);
     waitForArbitration(discoveryTimeout);
-    proxy->handleArbitrationFinished(participantId, connection);
+
+    bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
+
+    proxy->handleArbitrationFinished(participantId, useInProcessConnector);
     // add next hop to dispatcher
 
     /*
@@ -294,7 +293,7 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     // if DiscoveryQos is set, arbitration will be started. It shall be avoided that the
     // setDiscoveryQos method can be called twice
     assert(!hasArbitrationStarted);
-    discoveryTimeout = discoveryQos.getDiscoveryTimeout();
+    discoveryTimeout = discoveryQos.getDiscoveryTimeoutMs();
     arbitrator = ProviderArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), discoveryProxy, discoveryQos);
     arbitrationSemaphore.wait();
@@ -310,24 +309,17 @@ void ProxyBuilder<T>::setArbitrationStatus(
 {
     this->arbitrationStatus = arbitrationStatus;
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
-        if (!participantId.empty() && connection != joynr::types::CommunicationMiddleware::NONE) {
+        if (!participantId.empty()) {
             arbitrationSemaphore.notify();
         } else {
             throw exceptions::DiscoveryException("Arbitration was set to successfull by "
-                                                 "arbitrator, but either ParticipantId or "
-                                                 "MessagingEndpointAddress were empty");
+                                                 "arbitrator but ParticipantId is empty");
         }
     } else if (arbitrationStatus == ArbitrationStatus::ArbitrationCanceledForever) {
         throw exceptions::DiscoveryException("Arbitration canceled forever.");
     } else {
         throw exceptions::DiscoveryException("Arbitration finished without success.");
     }
-}
-
-template <class T>
-void ProxyBuilder<T>::setConnection(const joynr::types::CommunicationMiddleware::Enum& connection)
-{
-    this->connection = connection;
 }
 
 template <class T>

@@ -53,7 +53,6 @@ public class ProviderQosPersisted extends ProviderQos implements Serializable {
                                          }
 
                                      }).toArray(new CustomParameter[providerQos.getCustomParameters().length]),
-              providerQos.getProviderVersion(),
               providerQos.getPriority(),
               providerQos.getScope(),
               providerQos.getSupportsOnChangeSubscriptions());
@@ -88,16 +87,6 @@ public class ProviderQosPersisted extends ProviderQos implements Serializable {
     @Override
     public void setPriority(Long priority) {
         super.setPriority(priority);
-    }
-
-    @Override
-    public Integer getProviderVersion() {
-        return super.getProviderVersion();
-    }
-
-    @Override
-    public void setProviderVersion(Integer providerVersion) {
-        super.setProviderVersion(providerVersion);
     }
 
     @Override

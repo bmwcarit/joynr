@@ -1,5 +1,7 @@
 package io.joynr.discovery;
 
+import static org.junit.Assert.assertEquals;
+
 /*
  * #%L
  * %%
@@ -22,6 +24,7 @@ package io.joynr.discovery;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -30,19 +33,20 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
 import joynr.system.Discovery;
 import joynr.system.DiscoveryProxy;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryQos;
 import joynr.types.DiscoveryScope;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalDiscoveryAggregatorTest {
 
+    private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
+    private Long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
     private String systemServicesDomain;
     private String discoveryProviderParticipantId;
-    private CommunicationMiddleware clusterControllerConnection;
     private LocalDiscoveryAggregator localDiscoveryAggregator;
     private DiscoveryEntry discoveryProviderEntry;
 
@@ -61,29 +65,31 @@ public class LocalDiscoveryAggregatorTest {
     public void setUp() {
         systemServicesDomain = "test.system.service.domain";
         discoveryProviderParticipantId = "test.discovery.provider.participant";
-        clusterControllerConnection = CommunicationMiddleware.NONE;
         localDiscoveryAggregator = new LocalDiscoveryAggregator(systemServicesDomain,
                                                                 discoveryProviderParticipantId,
-                                                                "routingProviderParticipantId",
-                                                                clusterControllerConnection);
+                                                                "routingProviderParticipantId");
         localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyMock);
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        discoveryProviderEntry = new DiscoveryEntry(systemServicesDomain,
+        discoveryProviderEntry = new DiscoveryEntry(new Version(0, 0),
+                                                    systemServicesDomain,
                                                     Discovery.INTERFACE_NAME,
                                                     discoveryProviderParticipantId,
                                                     providerQos,
-                                                    new CommunicationMiddleware[]{ clusterControllerConnection });
+                                                    System.currentTimeMillis(),
+                                                    expiryDateMs);
 
     }
 
     @Test
     public void passesUnknownEntry() {
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry("anyDomain",
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(0, 0),
+                                                           "anyDomain",
                                                            "anyInterface",
                                                            "anyParticipant",
                                                            new ProviderQos(),
-                                                           new CommunicationMiddleware[]{ clusterControllerConnection });
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs);
         localDiscoveryAggregator.add(addCallback, discoveryEntry);
         Mockito.verify(discoveryProxyMock, Mockito.times(1)).add(Mockito.any(Callback.class),
                                                                  Mockito.eq(discoveryEntry));
@@ -94,7 +100,14 @@ public class LocalDiscoveryAggregatorTest {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
         localDiscoveryAggregator.lookup(lookupCallback, systemServicesDomain, Discovery.INTERFACE_NAME, discoveryQos);
-        Mockito.verify(lookupCallback).resolve(Mockito.eq(new DiscoveryEntry[]{ discoveryProviderEntry }));
+        ArgumentCaptor<DiscoveryEntry[]> discoveryEntriesCaptor = ArgumentCaptor.forClass(DiscoveryEntry[].class);
+        Mockito.verify(lookupCallback).resolve((Object) discoveryEntriesCaptor.capture());
+        DiscoveryEntry[] discoveryEntriesPassed = discoveryEntriesCaptor.getValue();
+        assertEquals(discoveryProviderEntry.getDomain(), discoveryEntriesPassed[0].getDomain());
+        assertEquals(discoveryProviderEntry.getInterfaceName(), discoveryEntriesPassed[0].getInterfaceName());
+        assertEquals(discoveryProviderEntry.getParticipantId(), discoveryEntriesPassed[0].getParticipantId());
+        assertEquals(discoveryProviderEntry.getQos(), discoveryEntriesPassed[0].getQos());
+        assertEquals(discoveryProviderEntry.getProviderVersion(), discoveryEntriesPassed[0].getProviderVersion());
     }
 
     @Test
@@ -113,11 +126,13 @@ public class LocalDiscoveryAggregatorTest {
     public void addThrowsIfProxyNotSet() {
         localDiscoveryAggregator.setDiscoveryProxy(null);
 
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry("anyDomain",
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(0, 0),
+                                                           "anyDomain",
                                                            "anyInterface",
                                                            "anyParticipant",
                                                            new ProviderQos(),
-                                                           new CommunicationMiddleware[]{ clusterControllerConnection });
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs);
         localDiscoveryAggregator.add(addCallback, discoveryEntry);
         Mockito.verify(addCallback, Mockito.never()).resolve();
 

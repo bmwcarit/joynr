@@ -20,9 +20,10 @@
 
 #include <algorithm>
 
+#include <boost/format.hpp>
+
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
-#include "joynr/FormatString.h"
 
 namespace joynr
 {
@@ -33,7 +34,7 @@ ParticipantIdStorage::ParticipantIdStorage(const std::string& filename) : filena
 
 const std::string& ParticipantIdStorage::STORAGE_FORMAT_STRING()
 {
-    static const std::string value("joynr.participant.%1.%2.%3");
+    static const std::string value("joynr.participant.%1%.%2%.%3%");
     return value;
 }
 
@@ -87,11 +88,8 @@ std::string ParticipantIdStorage::createProviderKey(const std::string& domain,
                                                     const std::string& interfaceName,
                                                     const std::string& authenticationToken)
 {
-    std::string key = FormatString(STORAGE_FORMAT_STRING())
-                              .arg(domain)
-                              .arg(interfaceName)
-                              .arg(authenticationToken)
-                              .str();
+    std::string key = (boost::format(STORAGE_FORMAT_STRING()) % domain % interfaceName %
+                       authenticationToken).str();
     std::replace(key.begin(), key.end(), '/', '.');
     return key;
 }

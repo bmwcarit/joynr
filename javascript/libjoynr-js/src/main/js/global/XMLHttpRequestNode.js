@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,6 @@
 define([ "xmlhttprequest"
 ], function(xmlhttprequest) {
     var XMLHttpRequest = xmlhttprequest.XMLHttpRequest;
-
-    //enable cors for ajax posts, so creating joynr channels succeeds.
-    XMLHttpRequest.prototype.withCredentials = true;// TODO: is this what we really want to have?
 
     global.XMLHttpRequest = XMLHttpRequest;
     return XMLHttpRequest;

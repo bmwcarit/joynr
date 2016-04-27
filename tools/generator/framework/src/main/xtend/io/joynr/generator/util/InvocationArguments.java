@@ -138,31 +138,34 @@ public class InvocationArguments {
             if (args[i].equalsIgnoreCase("-templatesDir")) {
                 setTemplatesDir(new File(args[i + 1]).getAbsolutePath());
                 i++;
+            } else if (args[i].equalsIgnoreCase("-clean")) {
+                setClean(true);
             } else if (args[i].equalsIgnoreCase("-modelPath")) {
                 setModelPath(args[i + 1]);
                 i++;
-            } else if (args[i].equalsIgnoreCase("-rootGenerator")) {
-                setRootGenerator(args[i + 1].replace("\"", ""));
-                i++;
-            } else if (args[i].equalsIgnoreCase("-generationLanguage")) {
-                setGenerationLanguage(args[i + 1].replace("\"", ""));
-                i++;
-            } else if (args[i].equalsIgnoreCase("-outputPath")) {
-                setOutputPath(new File(args[i + 1]).getAbsolutePath());
-                i++;
-            } else if (args[i].equalsIgnoreCase("-templatesEncoding")) {
-                setTemplatesEncoding(args[i + 1].replace("\"", ""));
+            } else if (args[i].equalsIgnoreCase("-generate")) {
+                setGenerate(args[i + 1].equalsIgnoreCase("true"));
                 i++;
             } else if (args[i].equalsIgnoreCase("-generationId")) {
                 setGenerationId(args[i + 1].replace("\"", ""));
                 i++;
+            } else if (args[i].equalsIgnoreCase("-generationLanguage")) {
+                setGenerationLanguage(args[i + 1].replace("\"", ""));
+                i++;
+            } else if (args[i].equalsIgnoreCase("-jee")) {
+                setParameterElement("jee", args[i + 1].replace("\"", ""));
+                i++;
             } else if (args[i].equalsIgnoreCase("-outputHeaderPath")) {
                 setParameterElement("outputHeaderPath", args[i + 1].replace("\"", ""));
                 i++;
-            } else if (args[i].equalsIgnoreCase("-clean")) {
-                setClean(true);
-            } else if (args[i].equalsIgnoreCase("-generate")) {
-                setGenerate(args[i + 1].equalsIgnoreCase("true"));
+            } else if (args[i].equalsIgnoreCase("-outputPath")) {
+                setOutputPath(new File(args[i + 1]).getAbsolutePath());
+                i++;
+            } else if (args[i].equalsIgnoreCase("-rootGenerator")) {
+                setRootGenerator(args[i + 1].replace("\"", ""));
+                i++;
+            } else if (args[i].equalsIgnoreCase("-templatesEncoding")) {
+                setTemplatesEncoding(args[i + 1].replace("\"", ""));
                 i++;
             }
         }

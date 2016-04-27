@@ -39,16 +39,16 @@ public class IltUtil {
 
     private static boolean useRestricted64BitRange = true;
 
-    static void setRestricted64BitRange(boolean value) {
+    public static void setRestricted64BitRange(boolean value) {
         useRestricted64BitRange = value;
     }
 
-    static boolean getUseRestricted64BitRange() {
+    public static boolean getUseRestricted64BitRange() {
         return useRestricted64BitRange;
     }
 
     // List of Strings
-    static String[] fillStringArray(String[] stringArray) {
+    public static String[] fillStringArray(String[] stringArray) {
         stringArray[0] = "Hello";
         stringArray[1] = "World";
         if (!checkStringArray(stringArray)) {
@@ -57,13 +57,13 @@ public class IltUtil {
         return stringArray;
     }
 
-    static String[] createStringArray() {
+    public static String[] createStringArray() {
         String[] stringArray = new String[2];
         fillStringArray(stringArray);
         return stringArray;
     }
 
-    static boolean checkStringArray(String[] stringArray) {
+    public static boolean checkStringArray(String[] stringArray) {
         if (stringArray.length != 2) {
             return false;
         }
@@ -75,7 +75,7 @@ public class IltUtil {
     }
 
     // List of Byte
-    static Byte[] fillByteArray(Byte[] byteArray) {
+    public static Byte[] fillByteArray(Byte[] byteArray) {
         byteArray[0] = (byte) 1;
         byteArray[1] = (byte) 127;
         if (!checkByteArray(byteArray)) {
@@ -84,13 +84,13 @@ public class IltUtil {
         return byteArray;
     }
 
-    static Byte[] createByteArray() {
+    public static Byte[] createByteArray() {
         Byte[] byteArray = new Byte[2];
         fillByteArray(byteArray);
         return byteArray;
     }
 
-    static boolean checkByteArray(Byte[] byteArray) {
+    public static boolean checkByteArray(Byte[] byteArray) {
         if (byteArray.length != 2) {
             return false;
         }
@@ -102,7 +102,7 @@ public class IltUtil {
     }
 
     // List of uInt64
-    static Long[] fillUInt64Array(Long[] uInt64Array) {
+    public static Long[] fillUInt64Array(Long[] uInt64Array) {
         uInt64Array[0] = 1L;
         uInt64Array[1] = 127L;
         if (!checkUInt64Array(uInt64Array)) {
@@ -111,13 +111,13 @@ public class IltUtil {
         return uInt64Array;
     }
 
-    static Long[] createUInt64Array() {
+    public static Long[] createUInt64Array() {
         Long[] uInt64Array = new Long[2];
         fillUInt64Array(uInt64Array);
         return uInt64Array;
     }
 
-    static boolean checkUInt64Array(Long[] uInt64Array) {
+    public static boolean checkUInt64Array(Long[] uInt64Array) {
         if (uInt64Array.length != 2) {
             return false;
         }
@@ -129,7 +129,7 @@ public class IltUtil {
     }
 
     // List of Double
-    static Double[] fillDoubleArray(Double[] doubleArray) {
+    public static Double[] fillDoubleArray(Double[] doubleArray) {
         doubleArray[0] = 1.1;
         doubleArray[1] = 2.2;
         doubleArray[2] = 3.3;
@@ -139,13 +139,13 @@ public class IltUtil {
         return doubleArray;
     }
 
-    static Double[] createDoubleArray() {
+    public static Double[] createDoubleArray() {
         Double[] doubleArray = new Double[3];
         fillDoubleArray(doubleArray);
         return doubleArray;
     }
 
-    static boolean checkDoubleArray(Double[] doubleArray) {
+    public static boolean checkDoubleArray(Double[] doubleArray) {
         if (doubleArray.length != 3) {
             return false;
         }
@@ -157,7 +157,7 @@ public class IltUtil {
     }
 
     // List of ExtendedInterfaceEnumerationInTypeCollection
-    static ExtendedInterfaceEnumerationInTypeCollection[] fillExtendedInterfaceEnumerationInTypeCollectionArray(ExtendedInterfaceEnumerationInTypeCollection[] extendedInterfaceEnumerationInTypeCollectionArray) {
+    public static ExtendedInterfaceEnumerationInTypeCollection[] fillExtendedInterfaceEnumerationInTypeCollectionArray(ExtendedInterfaceEnumerationInTypeCollection[] extendedInterfaceEnumerationInTypeCollectionArray) {
         extendedInterfaceEnumerationInTypeCollectionArray[0] = ExtendedInterfaceEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_INTERFACE;
         extendedInterfaceEnumerationInTypeCollectionArray[1] = ExtendedInterfaceEnumerationInTypeCollection.ENUM_I1_VALUE_3;
         if (!checkExtendedInterfaceEnumerationInTypeCollectionArray(extendedInterfaceEnumerationInTypeCollectionArray)) {
@@ -166,13 +166,13 @@ public class IltUtil {
         return extendedInterfaceEnumerationInTypeCollectionArray;
     }
 
-    static ExtendedInterfaceEnumerationInTypeCollection[] createExtendedInterfaceEnumerationInTypeCollectionArray() {
+    public static ExtendedInterfaceEnumerationInTypeCollection[] createExtendedInterfaceEnumerationInTypeCollectionArray() {
         ExtendedInterfaceEnumerationInTypeCollection[] extendedInterfaceEnumerationInTypeCollectionArray = new ExtendedInterfaceEnumerationInTypeCollection[2];
         fillExtendedInterfaceEnumerationInTypeCollectionArray(extendedInterfaceEnumerationInTypeCollectionArray);
         return extendedInterfaceEnumerationInTypeCollectionArray;
     }
 
-    static boolean checkExtendedInterfaceEnumerationInTypeCollectionArray(ExtendedInterfaceEnumerationInTypeCollection[] extendedInterfaceEnumerationInTypeCollectionArray) {
+    public static boolean checkExtendedInterfaceEnumerationInTypeCollectionArray(ExtendedInterfaceEnumerationInTypeCollection[] extendedInterfaceEnumerationInTypeCollectionArray) {
         if (extendedInterfaceEnumerationInTypeCollectionArray.length != 2) {
             return false;
         }
@@ -186,7 +186,7 @@ public class IltUtil {
     }
 
     // List of ExtendedExtendedEnumeration
-    static ExtendedExtendedEnumeration[] fillExtendedExtendedEnumerationArray(ExtendedExtendedEnumeration[] extendedExtendedEnumerationArray) {
+    public static ExtendedExtendedEnumeration[] fillExtendedExtendedEnumerationArray(ExtendedExtendedEnumeration[] extendedExtendedEnumerationArray) {
         extendedExtendedEnumerationArray[0] = ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_EXTENDED;
         extendedExtendedEnumerationArray[1] = ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
         if (!checkExtendedExtendedEnumerationArray(extendedExtendedEnumerationArray)) {
@@ -195,13 +195,13 @@ public class IltUtil {
         return extendedExtendedEnumerationArray;
     }
 
-    static ExtendedExtendedEnumeration[] createExtendedExtendedEnumerationArray() {
+    public static ExtendedExtendedEnumeration[] createExtendedExtendedEnumerationArray() {
         ExtendedExtendedEnumeration[] extendedExtendedEnumerationArray = new ExtendedExtendedEnumeration[2];
         fillExtendedExtendedEnumerationArray(extendedExtendedEnumerationArray);
         return extendedExtendedEnumerationArray;
     }
 
-    static boolean checkExtendedExtendedEnumerationArray(ExtendedExtendedEnumeration[] extendedExtendedEnumerationArray) {
+    public static boolean checkExtendedExtendedEnumerationArray(ExtendedExtendedEnumeration[] extendedExtendedEnumerationArray) {
         if (extendedExtendedEnumerationArray.length != 2) {
             return false;
         }
@@ -215,7 +215,7 @@ public class IltUtil {
     }
 
     // TYPE StructWithStringArray
-    static StructWithStringArray fillStructWithStringArray(StructWithStringArray structWithStringArray) {
+    public static StructWithStringArray fillStructWithStringArray(StructWithStringArray structWithStringArray) {
         String[] stringArray = new String[2];
         stringArray[0] = "Hello";
         stringArray[1] = "World";
@@ -227,13 +227,13 @@ public class IltUtil {
         return structWithStringArray;
     }
 
-    static StructWithStringArray createStructWithStringArray() {
+    public static StructWithStringArray createStructWithStringArray() {
         StructWithStringArray structWithStringArray = new StructWithStringArray();
         fillStructWithStringArray(structWithStringArray);
         return structWithStringArray;
     }
 
-    static boolean checkStructWithStringArray(StructWithStringArray structWithStringArray) {
+    public static boolean checkStructWithStringArray(StructWithStringArray structWithStringArray) {
         if (structWithStringArray == null) {
             return false;
         }
@@ -249,7 +249,7 @@ public class IltUtil {
     }
 
     // TYPE List<StructWithStringArray>
-    static StructWithStringArray[] fillStructWithStringArrayArray(StructWithStringArray[] structWithStringArrayArray) {
+    public static StructWithStringArray[] fillStructWithStringArrayArray(StructWithStringArray[] structWithStringArrayArray) {
         structWithStringArrayArray[0] = createStructWithStringArray();
         structWithStringArrayArray[1] = createStructWithStringArray();
         // will override existing list in any case
@@ -259,13 +259,13 @@ public class IltUtil {
         return structWithStringArrayArray;
     }
 
-    static StructWithStringArray[] createStructWithStringArrayArray() {
+    public static StructWithStringArray[] createStructWithStringArrayArray() {
         StructWithStringArray[] structWithStringArrayArray = new StructWithStringArray[2];
         fillStructWithStringArrayArray(structWithStringArrayArray);
         return structWithStringArrayArray;
     }
 
-    static boolean checkStructWithStringArrayArray(StructWithStringArray[] structWithStringArrayArray) {
+    public static boolean checkStructWithStringArrayArray(StructWithStringArray[] structWithStringArrayArray) {
         if (structWithStringArrayArray.length != 2) {
             return false;
         }
@@ -277,7 +277,7 @@ public class IltUtil {
     }
 
     // TYPE BaseStructWithoutElements
-    static BaseStructWithoutElements createBaseStructWithoutElements() {
+    public static BaseStructWithoutElements createBaseStructWithoutElements() {
         BaseStructWithoutElements baseStructWithoutElements = new BaseStructWithoutElements();
         // nothing required, since this is an empty struct
         //
@@ -286,13 +286,13 @@ public class IltUtil {
         return baseStructWithoutElements;
     }
 
-    static boolean checkBaseStructWithoutElements(BaseStructWithoutElements baseStructWithoutElements) {
+    public static boolean checkBaseStructWithoutElements(BaseStructWithoutElements baseStructWithoutElements) {
         // nothing required, since this is an empty struct
         return true;
     }
 
     // TYPE BaseStruct
-    static BaseStruct fillBaseStruct(BaseStruct baseStruct) {
+    public static BaseStruct fillBaseStruct(BaseStruct baseStruct) {
         baseStruct.setBaseStructString("Hiya");
         if (!checkBaseStruct(baseStruct)) {
             throw new RuntimeException("Internal error in fillBaseStruct");
@@ -300,13 +300,13 @@ public class IltUtil {
         return baseStruct;
     }
 
-    static BaseStruct createBaseStruct() {
+    public static BaseStruct createBaseStruct() {
         BaseStruct baseStruct = new BaseStruct();
         fillBaseStruct(baseStruct);
         return baseStruct;
     }
 
-    static boolean checkBaseStruct(BaseStruct baseStruct) {
+    public static boolean checkBaseStruct(BaseStruct baseStruct) {
         if (!baseStruct.getBaseStructString().equals("Hiya")) {
             return false;
         }
@@ -314,7 +314,7 @@ public class IltUtil {
     }
 
     // TYPE ExtendedBaseStruct extends BaseStruct
-    static ExtendedBaseStruct fillExtendedBaseStruct(ExtendedBaseStruct extendedBaseStruct) {
+    public static ExtendedBaseStruct fillExtendedBaseStruct(ExtendedBaseStruct extendedBaseStruct) {
         extendedBaseStruct.setEnumElement(Enumeration.ENUM_0_VALUE_3);
         fillBaseStruct(extendedBaseStruct);
         if (!checkExtendedBaseStruct(extendedBaseStruct)) {
@@ -323,13 +323,13 @@ public class IltUtil {
         return extendedBaseStruct;
     }
 
-    static ExtendedBaseStruct createExtendedBaseStruct() {
+    public static ExtendedBaseStruct createExtendedBaseStruct() {
         ExtendedBaseStruct extendedBaseStruct = new ExtendedBaseStruct();
         fillExtendedBaseStruct(extendedBaseStruct);
         return extendedBaseStruct;
     }
 
-    static boolean checkExtendedBaseStruct(ExtendedBaseStruct extendedBaseStruct) {
+    public static boolean checkExtendedBaseStruct(ExtendedBaseStruct extendedBaseStruct) {
         if (extendedBaseStruct.getEnumElement() != Enumeration.ENUM_0_VALUE_3) {
             LOG.error("invalid parameter extendedBaseStruct.enumElement");
             return false;
@@ -342,7 +342,7 @@ public class IltUtil {
     }
 
     // TYPE ExtendedBaseStruct extends ExtendedBaseStruct extends BaseStruct
-    static ExtendedExtendedBaseStruct fillExtendedExtendedBaseStruct(ExtendedExtendedBaseStruct extendedExtendedBaseStruct) {
+    public static ExtendedExtendedBaseStruct fillExtendedExtendedBaseStruct(ExtendedExtendedBaseStruct extendedExtendedBaseStruct) {
         extendedExtendedBaseStruct.setEnumWithoutDefinedValuesElement(EnumerationWithoutDefinedValues.ENUM_0_VALUE_1);
         // joynr.interlanguagetest.Enumeration
         fillExtendedBaseStruct(extendedExtendedBaseStruct);
@@ -352,13 +352,13 @@ public class IltUtil {
         return extendedExtendedBaseStruct;
     }
 
-    static ExtendedExtendedBaseStruct createExtendedExtendedBaseStruct() {
+    public static ExtendedExtendedBaseStruct createExtendedExtendedBaseStruct() {
         ExtendedExtendedBaseStruct extendedExtendedBaseStruct = new ExtendedExtendedBaseStruct();
         fillExtendedExtendedBaseStruct(extendedExtendedBaseStruct);
         return extendedExtendedBaseStruct;
     }
 
-    static boolean checkExtendedExtendedBaseStruct(ExtendedExtendedBaseStruct extendedExtendedBaseStruct) {
+    public static boolean checkExtendedExtendedBaseStruct(ExtendedExtendedBaseStruct extendedExtendedBaseStruct) {
         if (extendedExtendedBaseStruct.getEnumWithoutDefinedValuesElement() != EnumerationWithoutDefinedValues.ENUM_0_VALUE_1) {
             return false;
         }
@@ -370,7 +370,7 @@ public class IltUtil {
     }
 
     // TYPE StructOfPrimitives
-    static StructOfPrimitives fillStructOfPrimitives(StructOfPrimitives structOfPrimitives) {
+    public static StructOfPrimitives fillStructOfPrimitives(StructOfPrimitives structOfPrimitives) {
         structOfPrimitives.setBooleanElement(true);
         structOfPrimitives.setDoubleElement(1.1d);
         structOfPrimitives.setFloatElement(1.1f);
@@ -486,7 +486,7 @@ public class IltUtil {
         return structOfPrimitives;
     }
 
-    static StructOfPrimitives createStructOfPrimitives() {
+    public static StructOfPrimitives createStructOfPrimitives() {
         StructOfPrimitives structOfPrimitives = new StructOfPrimitives();
         fillStructOfPrimitives(structOfPrimitives);
         return structOfPrimitives;
@@ -512,7 +512,7 @@ public class IltUtil {
      * information for unsigned types.
      */
     @SuppressWarnings("checkstyle:methodlength")
-    static boolean checkStructOfPrimitives(StructOfPrimitives structOfPrimitives) {
+    public static boolean checkStructOfPrimitives(StructOfPrimitives structOfPrimitives) {
         if (structOfPrimitives.getBooleanElement() != true) {
             LOG.warn("methodWithMultipleStructParameters: invalid parameter booleanElement "
                     + structOfPrimitives.getBooleanElement());
@@ -746,7 +746,7 @@ public class IltUtil {
     }
 
     // TYPE ExtendedStructOfPrimitives extends StructOfPrimitives
-    static ExtendedStructOfPrimitives fillExtendedStructOfPrimitives(ExtendedStructOfPrimitives extendedStructOfPrimitives) {
+    public static ExtendedStructOfPrimitives fillExtendedStructOfPrimitives(ExtendedStructOfPrimitives extendedStructOfPrimitives) {
         // ExtendedTypeCollectionEnumerationInTypeCollection
         extendedStructOfPrimitives.setExtendedEnumElement(ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION);
         extendedStructOfPrimitives.setExtendedStructElement(createExtendedBaseStruct());
@@ -757,13 +757,13 @@ public class IltUtil {
         return extendedStructOfPrimitives;
     }
 
-    static ExtendedStructOfPrimitives createExtendedStructOfPrimitives() {
+    public static ExtendedStructOfPrimitives createExtendedStructOfPrimitives() {
         ExtendedStructOfPrimitives extendedStructOfPrimitives = new ExtendedStructOfPrimitives();
         fillExtendedStructOfPrimitives(extendedStructOfPrimitives);
         return extendedStructOfPrimitives;
     }
 
-    static boolean checkExtendedStructOfPrimitives(ExtendedStructOfPrimitives extendedStructOfPrimitives) {
+    public static boolean checkExtendedStructOfPrimitives(ExtendedStructOfPrimitives extendedStructOfPrimitives) {
         if (extendedStructOfPrimitives.getExtendedEnumElement() != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
             return false;
         }
@@ -779,11 +779,11 @@ public class IltUtil {
         return true;
     }
 
-    static boolean cmpFloat(float a, float b) {
+    public static boolean cmpFloat(float a, float b) {
         return Math.abs(a - b) < 0.001;
     }
 
-    static boolean cmpDouble(double a, double b) {
+    public static boolean cmpDouble(double a, double b) {
         return Math.abs(a - b) < 0.001;
     }
 }

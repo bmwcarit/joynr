@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,9 @@ joynrTestRequire(
             "joynr/provider/ProviderAttributeWrite",
             "joynr/provider/ProviderOperation",
             "joynr/provider/ProviderEvent",
-            "joynr/util/uuid"
+            "joynr/util/uuid",
+            "joynr/tests/TestWithVersionProvider",
+            "joynr/tests/TestWithoutVersionProvider"
         ],
         function(
                 RadioProvider,
@@ -51,7 +53,9 @@ joynrTestRequire(
                 ProviderAttributeWrite,
                 ProviderOperation,
                 ProviderEvent,
-                uuid) {
+                uuid,
+                TestWithVersionProvider,
+                TestWithoutVersionProvider) {
             describe(
                     "libjoynr-js.joynr.provider.Provider",
                     function() {
@@ -202,6 +206,20 @@ joynrTestRequire(
                                                 .createSpy("methodWithSingleArrayParameters"),
                                         broadcastWithEnum : jasmine.createSpy("broadcastWithEnum")
                                     };
+                        });
+
+                        it("version is set correctly", function() {
+                            expect(TestWithVersionProvider.MAJOR_VERSION).toBeDefined();
+                            expect(TestWithVersionProvider.MAJOR_VERSION).toEqual(47);
+                            expect(TestWithVersionProvider.MINOR_VERSION).toBeDefined();
+                            expect(TestWithVersionProvider.MINOR_VERSION).toEqual(11);
+                        });
+
+                        it("default version is set correctly", function() {
+                            expect(TestWithoutVersionProvider.MAJOR_VERSION).toBeDefined();
+                            expect(TestWithoutVersionProvider.MAJOR_VERSION).toEqual(0);
+                            expect(TestWithoutVersionProvider.MINOR_VERSION).toBeDefined();
+                            expect(TestWithoutVersionProvider.MINOR_VERSION).toEqual(0);
                         });
 
                         it(

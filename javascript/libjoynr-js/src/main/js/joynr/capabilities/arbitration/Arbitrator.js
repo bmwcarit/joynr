@@ -75,13 +75,13 @@ define(
                 // discover caps from local capabilities directory
                 capabilityDiscoveryStub.lookup(domain, interfaceName, new DiscoveryQos({
                     discoveryScope : applicationDiscoveryQos.discoveryScope,
-                    cacheMaxAge : applicationDiscoveryQos.cacheMaxAge
+                    cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs
                 })).then(
                         function(discoveredCaps) {
                             // filter caps according to chosen arbitration strategy
                             var arbitratedCaps =
                                     applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
-                            // if deferred is still pending => discoveryTimeout is not expired yet
+                            // if deferred is still pending => discoveryTimeoutMs is not expired yet
                             if (deferred.pending) {
                                 // if there are caps found
                                 if (arbitratedCaps.length > 0) {
@@ -89,7 +89,7 @@ define(
                                     deferred.pending = false;
                                     deferred.resolve(arbitratedCaps);
                                 } else {
-                                    // retry discovery in discoveryRetryDelay ms
+                                    // retry discovery in discoveryRetryDelayMs ms
                                     LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
                                         discoverCapabilities(
                                                 capabilityDiscoveryStub,
@@ -97,7 +97,7 @@ define(
                                                 interfaceName,
                                                 applicationDiscoveryQos,
                                                 deferred);
-                                    }, applicationDiscoveryQos.discoveryRetryDelay);
+                                    }, applicationDiscoveryQos.discoveryRetryDelayMs);
                                 }
                             }
                         }).catch(function(error) {
@@ -154,7 +154,7 @@ define(
                                                     settings.discoveryQos,
                                                     deferred);
                                         } else {
-                                            var discoveryTimeoutId =
+                                            var discoveryTimeoutMsId =
                                                     LongTimer
                                                             .setTimeout(
                                                                     function discoveryCapabilitiesTimeOut() {
@@ -169,9 +169,9 @@ define(
                                                                                             .stringify(settings.discoveryQos)
                                                                                     + "\""));
                                                                     },
-                                                                    settings.discoveryQos.discoveryTimeout);
+                                                                    settings.discoveryQos.discoveryTimeoutMs);
                                             var resolveWrapper = function(args) {
-                                                LongTimer.clearTimeout(discoveryTimeoutId);
+                                                LongTimer.clearTimeout(discoveryTimeoutMsId);
                                                 resolve(args);
                                             };
                                             deferred.resolve = resolveWrapper;

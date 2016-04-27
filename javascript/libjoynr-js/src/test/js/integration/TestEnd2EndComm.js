@@ -588,6 +588,16 @@ joynrTestRequire(
                             });
                         });
 
+                        it("subscribe to emptyBroadcast", function() {
+                            var spy = setupSubscriptionAndReturnSpy("emptyBroadcast", subscriptionQosOnChange);
+                            callOperation("triggerBroadcasts", {
+                                broadcastName: "emptyBroadcast",
+                                times: 1
+                            });
+                            expectPublication(spy, function(call) {
+                                //no expectation for call, as empty broadcast
+                            });
+                        });
 
                         it("subscribe to type def broadcast", function() {
                             var typeDefStructOutput = new RadioStation({

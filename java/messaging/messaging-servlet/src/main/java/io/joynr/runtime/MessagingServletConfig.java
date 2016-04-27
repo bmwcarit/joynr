@@ -95,14 +95,6 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         // properties from appProperties will extend and override the default
         // properties
         Properties properties = new LowerCaseProperties(PropertyLoader.loadProperties(DEFAULT_SERVLET_MESSAGING_PROPERTIES));
-
-        // TODO participantIds will be retrieved from auth certs later
-        // properties.setProperty(PropertiesFileParticipantIdStorage.getProviderParticipantIdKey(ChannelUrlDirectoryProvider.class),
-        // properties.getProperty(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID));
-        //
-        // properties.setProperty(PropertiesFileParticipantIdStorage.getProviderParticipantIdKey(GlobalCapabilitiesDirectoryProvider.class),
-        // properties.getProperty(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID));
-
         String appPropertiesFileName = servletContext.getInitParameter("properties");
         if (appPropertiesFileName != null) {
             Properties appProperties = ServletPropertyLoader.loadProperties(appPropertiesFileName, servletContext);

@@ -18,6 +18,9 @@
  */
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
+#include <cassert>
+#include <vector>
+
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
@@ -34,7 +37,6 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
-#include <vector>
 
 namespace joynr
 {
@@ -70,8 +72,8 @@ LibJoynrRuntime::~LibJoynrRuntime()
 
 void LibJoynrRuntime::init(
         std::unique_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
-        std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
-        std::shared_ptr<joynr::system::RoutingTypes::Address> ccMessagingAddress)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress)
 {
     // create messaging stub factory
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
@@ -122,19 +124,20 @@ void LibJoynrRuntime::init(
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(
-            *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
+    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(systemServicesSettings);
+    requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
+
     std::string systemServicesDomain = systemServicesSettings.getDomain();
     std::string routingProviderParticipantId =
             systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
-    routingProviderDiscoveryQos.setCacheMaxAge(1000);
+    routingProviderDiscoveryQos.setCacheMaxAgeMs(1000);
     routingProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     routingProviderDiscoveryQos.addCustomParameter(
             "fixedParticipantId", routingProviderParticipantId);
-    routingProviderDiscoveryQos.setDiscoveryTimeout(50);
+    routingProviderDiscoveryQos.setDiscoveryTimeoutMs(50);
 
     auto routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
@@ -151,12 +154,12 @@ void LibJoynrRuntime::init(
     std::string discoveryProviderParticipantId =
             systemServicesSettings.getCcDiscoveryProviderParticipantId();
     DiscoveryQos discoveryProviderDiscoveryQos;
-    discoveryProviderDiscoveryQos.setCacheMaxAge(1000);
+    discoveryProviderDiscoveryQos.setCacheMaxAgeMs(1000);
     discoveryProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryProviderDiscoveryQos.addCustomParameter(
             "fixedParticipantId", discoveryProviderParticipantId);
-    discoveryProviderDiscoveryQos.setDiscoveryTimeout(1000);
+    discoveryProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
 
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
@@ -166,12 +169,13 @@ void LibJoynrRuntime::init(
                     ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                     ->build();
     discoveryProxy->setDiscoveryProxy(std::unique_ptr<joynr::system::IDiscoverySync>(proxy));
-    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(dispatcherList,
-                                                                    *discoveryProxy,
-                                                                    libjoynrMessagingAddress,
-                                                                    participantIdStorage,
-                                                                    dispatcherAddress,
-                                                                    messageRouter);
+    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
+            dispatcherList,
+            *discoveryProxy,
+            participantIdStorage,
+            dispatcherAddress,
+            messageRouter,
+            messagingSettings.getDiscoveryEntryExpiryIntervalMs());
 }
 
 void LibJoynrRuntime::unregisterProvider(const std::string& participantId)

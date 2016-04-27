@@ -187,7 +187,11 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
 	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
 	void «IF className != null»«className»::«ENDIF»«method.joynrName»(
-	«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»)
+				«IF !method.outputParameters.empty»
+				«outputTypedParamList»«IF method.inputParameters.size > 0»,«ENDIF»
+				«ENDIF»
+				«inputTypedParamList»
+	)
 '''
 
     def produceSyncMethodSignature(FMethod method) {
@@ -233,7 +237,9 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«val returnValue = "std::shared_ptr<joynr::Future<" + outputParameters + ">>"»
 	«val defaultArg = if(className == null) " = nullptr" else ""»
 	«returnValue» «IF className != null»«className»::«ENDIF» «method.joynrName»Async(
-	«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
+				«IF !method.inputParameters.empty»
+					«method.commaSeperatedTypedConstInputParameterList»,
+				«ENDIF»
 				std::function<void(«outputTypedParamList»)> onSuccess«defaultArg»,
 				«IF method.hasErrorEnum»
 					std::function<void (const «getMethodErrorEnum(serviceInterface, method)»& errorEnum)> onApplicationError«defaultArg»,

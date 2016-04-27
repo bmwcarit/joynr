@@ -27,6 +27,7 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/types/Version.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -45,7 +46,6 @@ public:
     JoynrClusterControllerRuntime* runtime;
     Settings *settings;
     MessagingSettings messagingSettings;
-    std::string channelId;
 
     CapabilitiesClientTest() :
         runtime(nullptr),
@@ -54,7 +54,6 @@ public:
     {
         messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
         MessagingPropertiesPersistence storage(messagingSettings.getMessagingPropertiesPersistenceFilename());
-        channelId = storage.getChannelId();
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
@@ -68,6 +67,11 @@ public:
     void TearDown() {
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
     ~CapabilitiesClientTest(){
@@ -82,7 +86,7 @@ private:
 INIT_LOGGER(CapabilitiesClientTest);
 
 TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
-    auto capabilitiesClient = std::make_unique<CapabilitiesClient>(channelId);
+    auto capabilitiesClient = std::make_unique<CapabilitiesClient>();
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                 messagingSettings.getDiscoveryDirectoriesDomain()
@@ -98,32 +102,42 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
         );
     capabilitiesClient->init(cabilitiesProxy);
 
-    std::vector<types::CapabilityInformation> capabilitiesInformationList;
+    std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntryList;
     std::string capDomain("testDomain");
     std::string capInterface("testInterface");
     types::ProviderQos capProviderQos;
-    std::string capChannelId("testChannelId");
+    std::string capSerializedChannelAddress("testChannelId");
     std::string capParticipantId("testParticipantId");
+    joynr::types::Version providerVersion(47, 11);
+    std::int64_t capLastSeenMs = 0;
+    std::int64_t capExpiryDateMs = 1000;
 
-    capabilitiesInformationList.push_back(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
+    globalDiscoveryEntryList.push_back(types::GlobalDiscoveryEntry(
+                                           providerVersion,
+                                           capDomain,
+                                           capInterface,
+                                           capParticipantId,
+                                           capProviderQos,
+                                           capLastSeenMs,
+                                           capExpiryDateMs,
+                                           capSerializedChannelAddress));
+
     JOYNR_LOG_DEBUG(logger, "Registering capabilities");
-    capabilitiesClient->add(capabilitiesInformationList);
+    capabilitiesClient->add(globalDiscoveryEntryList);
     JOYNR_LOG_DEBUG(logger, "Registered capabilities");
-    //sync methods are not yet implemented
-//    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
-//    EXPECT_EQ(capResultList, capabilitiesInformationList);
+
     auto callback = std::make_shared<GlobalCapabilitiesMock>();
 
     // use a semaphore to wait for capabilities to be received
     Semaphore semaphore(0);
-    EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::CapabilityInformation>&>()))
+    EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::GlobalDiscoveryEntry>&>()))
            .WillRepeatedly(
                 DoAll(
                     ReleaseSemaphore(&semaphore),
                     Return()
                 ));
-    std::function<void(const std::vector<types::CapabilityInformation>&)> onSuccess =
-            [&](const std::vector<types::CapabilityInformation>& capabilities) {
+    std::function<void(const std::vector<types::GlobalDiscoveryEntry>&)> onSuccess =
+            [&](const std::vector<types::GlobalDiscoveryEntry>& capabilities) {
                 callback->capabilitiesReceived(capabilities);
             };
 

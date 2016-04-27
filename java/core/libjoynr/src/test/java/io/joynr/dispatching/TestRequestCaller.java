@@ -23,16 +23,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
-import io.joynr.pubsub.publication.AttributeListener;
-import io.joynr.pubsub.publication.BroadcastFilterImpl;
-import io.joynr.pubsub.publication.BroadcastListener;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import joynr.Request;
-import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,54 +80,4 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
         }
     }
 
-    @Override
-    public ProviderQos getProviderQos() {
-        return new ProviderQos();
-    }
-
-    @Override
-    public void registerAttributeListener(String attributeName, AttributeListener attributeListener) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void addBroadcastFilter(BroadcastFilterImpl filter) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void addBroadcastFilter(BroadcastFilterImpl... filters) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public Class<?> getProvidedInterface() {
-        return getClass();
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return "test";
-    }
 }

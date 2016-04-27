@@ -25,10 +25,10 @@ import com.google.inject.Inject;
 
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.GlobalAddressFactory;
-import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
-public class MqttGlobalAddressFactory implements GlobalAddressFactory {
+public class MqttGlobalAddressFactory extends GlobalAddressFactory<MqttAddress> {
+    private static final String SUPPORTED_TRANSPORT_MQTT = "mqtt";
     private String localChannelId;
     private String brokerUri;
 
@@ -40,8 +40,13 @@ public class MqttGlobalAddressFactory implements GlobalAddressFactory {
     }
 
     @Override
-    public Address create() {
+    public MqttAddress create() {
         return new MqttAddress(brokerUri, localChannelId);
+    }
+
+    @Override
+    public boolean supportsTransport(String transport) {
+        return SUPPORTED_TRANSPORT_MQTT.equals(transport);
     }
 
 }

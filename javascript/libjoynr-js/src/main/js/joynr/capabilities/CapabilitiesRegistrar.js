@@ -21,16 +21,9 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
     "global/Promise",
     "joynr/util/UtilInternal",
     "joynr/types/DiscoveryEntry",
-    "joynr/types/CapabilityInformation",
     "joynr/capabilities/ParticipantIdStorage",
-    "joynr/types/CommunicationMiddleware"
-], function(
-        Promise,
-        Util,
-        DiscoveryEntry,
-        CapabilityInformation,
-        ParticipantIdStorage,
-        CommunicationMiddleware) {
+    "joynr/types/Version"
+], function(Promise, Util, DiscoveryEntry, ParticipantIdStorage, Version) {
 
     /**
      * The Capabilities Registrar
@@ -149,12 +142,12 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     publicationManager.addPublicationProvider(participantId, provider);
 
                     var discoveryStubPromise = discoveryStub.add(new DiscoveryEntry({
+                        providerVersion : new Version(),
                         domain : domain,
                         interfaceName : provider.interfaceName,
                         participantId : participantId,
                         qos : providerQos,
-                        connections : [ CommunicationMiddleware.JOYNR
-                        ]
+                        lastSeenDateMs : Date.now()
                     }));
 
                     return Promise.all([

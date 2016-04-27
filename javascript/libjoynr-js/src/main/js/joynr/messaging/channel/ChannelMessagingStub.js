@@ -33,12 +33,21 @@ define("joynr/messaging/channel/ChannelMessagingStub", [
      * @param {String} settings.channelId the destination channelId
      */
     function ChannelMessagingStub(settings) {
+        var serializedChannelAddress;
         Util.checkProperty(settings.channelMessagingSender, [
             "Object",
             "ChannelMessagingSender"
         ], "settings.channelMessagingSender");
-        Util.checkProperty(settings.destChannelId, "String", "settings.destChannelId");
-        Util.checkProperty(settings.myChannelId, "String", "settings.myChannelId");
+        Util.checkProperty(
+                settings.destinationChannelAddress,
+                "ChannelAddress",
+                "settings.destinationChannelAddress");
+        Util
+                .checkProperty(
+                        settings.myChannelAddress,
+                        "ChannelAddress",
+                        "settings.myChannelAddress");
+        serializedChannelAddress = JSON.stringify(settings.myChannelAddress);
 
         /**
          * @name ChannelMessagingStub#transmit
@@ -48,20 +57,20 @@ define("joynr/messaging/channel/ChannelMessagingStub", [
          */
         this.transmit =
                 function transmit(joynrMessage) {
-                    if (settings.destChannelId === settings.myChannelId) {
+                    if (settings.destinationChannelAddress === settings.myChannelAddress) {
                         var errorMsg =
                                 "Discarding message "
                                     + joynrMessage.msgId
-                                    + ": message marked as outgoing, but channelId "
-                                    + settings.destChannelId
-                                    + " is the local channelId.";
+                                    + ": message marked as outgoing, but channel address "
+                                    + settings.destinationChannelAddress
+                                    + " is the local channel address.";
                         return Promise.reject(errorMsg);
                     }
-                    // if outgoing request => set my own channelId as replyChannelId
-                    joynrMessage.replyChannelId = settings.myChannelId;
+                    // if outgoing request => set my own channel address as replyChannelId
+                    joynrMessage.replyChannelId = serializedChannelAddress;
                     return settings.channelMessagingSender.send(
                             joynrMessage,
-                            settings.destChannelId);
+                            settings.destinationChannelAddress);
                 };
     }
 

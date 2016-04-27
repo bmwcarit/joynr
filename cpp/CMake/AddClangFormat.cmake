@@ -1,3 +1,18 @@
+option(
+    ENABLE_CLANG_FORMATTER
+    "Use clang-formatter to format source code?"
+    ON
+)
+message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
+
+if(ENABLE_CLANG_FORMATTER)
+    include(LocateProgram)
+    LocateProgram(clang-format CLANG_FORMAT_PATH)
+    if (NOT TARGET format)
+        add_custom_target(format)
+    endif (NOT TARGET format)
+endif(ENABLE_CLANG_FORMATTER)
+
 function(AddClangFormat TARGET)
     if(${ENABLE_CLANG_FORMATTER})
         get_property(TARGET_SOURCES TARGET ${TARGET} PROPERTY SOURCES)

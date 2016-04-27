@@ -21,8 +21,8 @@
 
 #include "JoynrTypeId.h"
 
-#include <memory>
 #include <cassert>
+#include <memory>
 #include <iostream>
 #include <vector>
 #include <tuple>

@@ -31,12 +31,11 @@ MqttReceiver::MqttReceiver(const MessagingSettings& settings)
         : channelCreatedSemaphore(new joynr::Semaphore(0)),
           isChannelCreated(false),
           channelIdForMqttTopic(),
-          channelIdForCapabilitiesDirectory(),
+          globalClusterControllerAddress(),
           receiverId(),
           settings(settings),
-          channelUrlDirectory(),
           mosquittoSubscriber(settings.getBrokerUrl(),
-                              channelIdForCapabilitiesDirectory,
+                              globalClusterControllerAddress,
                               channelCreatedSemaphore),
           mqttSettings()
 {
@@ -47,25 +46,15 @@ MqttReceiver::MqttReceiver(const MessagingSettings& settings)
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
             std::to_string(settings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
     system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, channelIdForMqttTopic);
-    channelIdForCapabilitiesDirectory = JsonSerializer::serialize(receiveMqttAddress);
+    globalClusterControllerAddress = JsonSerializer::serialize(receiveMqttAddress);
     receiverId = persist.getReceiverId();
 
-    init();
+    mosquittoSubscriber.registerChannelId(channelIdForMqttTopic);
 }
 
 MqttReceiver::~MqttReceiver()
 {
     mosquittoSubscriber.stop();
-}
-
-void MqttReceiver::init()
-{
-    mosquittoSubscriber.registerChannelId(channelIdForMqttTopic);
-}
-
-void MqttReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory)
-{
-    std::ignore = channelUrlDirectory;
 }
 
 void MqttReceiver::updateSettings()
@@ -96,9 +85,9 @@ void MqttReceiver::stopReceiveQueue()
     mosquittoSubscriber.stop();
 }
 
-const std::string& MqttReceiver::getReceiveChannelId() const
+const std::string& MqttReceiver::getGlobalClusterControllerAddress() const
 {
-    return channelIdForCapabilitiesDirectory;
+    return globalClusterControllerAddress;
 }
 
 bool MqttReceiver::tryToDeleteChannel()

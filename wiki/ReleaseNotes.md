@@ -1,3 +1,40 @@
+#joynr 0.17.0
+
+##API relevant changes
+* **[JEE]** Backend JEE applications are now supported natively with new joynr annotations
+  @ServiceProvider and @ServiceLocator, allowing applications to focus solely on business logic.
+  See [the JEE documentation](JEE.md) for more information.
+* **[C++, Java, JS]** Added suffix "Ms" to timing related discoveryQos parameters:
+  _discoveryTimeoutMs_, _cacheMaxAgeMs_, and _retryIntervalMs_. The original getters and setters
+  are now deprecated and will be removed by the end of 2016.
+* **[C++, Java, JS]** Provider and proxy interfaces as well as generated types (structs, enums and
+  maps) contain version constants (`MAJOR_VERSION` and `MINOR_VERSION`) that reflect the version set
+  in the Franca interface or type collection. Setters for provider version have been removed
+  from the API of the ProviderQos.
+* **[Java]** Restructured the class hierarchy of the generated providers. The application provider
+  now implements an interface free of joynr-internal details. <Interface>AbstractProvider has been
+  kept to maintain backwards compatibility, but implementations derived directly from
+  <Interace>Provider must change to the new API. Please have a look at the class diagram
+  in docs/diagrams for further details about the restructured class hierarchy.
+* **[C++, Java, JS]** The communication protocol between local directories on the cluster controller
+  and global directories in the backend changed. Please make sure that clients and backend use
+  the same versions.
+* **[Java]** Renamed setting _joynr.messaging.capabilitiesdirectoryurl_ to
+  _joynr.messaging.discoverydirectoryurl_. The older setting will continue to work until the end of
+  2016.
+* **[JS, C++, Java]** The provider version can no longer be set programmatically in ProviderQos.
+  Instead the value as modeled in Franca is generated into the provider interface.
+* **[C++, Java, JS]** Support for empty broadcast. Broadcast with no output parameter is now
+  supported in all three languages.
+
+##Other changes
+* **[C++]** The content of the message router and the local capabilities directory is now persisted
+  by default and automatically loaded at cluster-controller startup. Entries are being saved (in
+  JSON format) respectively to _MessageRouter.persist_ and to _LocalCapabilitiesDirectory.persist_.
+* **[C++, Java, JS]** The backend service ChannelUrlDirectory has been eliminated. Addressing is
+  now saved in the Discovery Directory.
+* **[JS]** Small fixes in the jsdoc of generated proxies and providers.
+
 #joynr 0.16.0
 
 ##API relevant changes
@@ -49,7 +86,7 @@
 
 ##Other changes
 * **[C++, Java]** Fix bug in code generation for typedef.
-* **[C++]** CMake integration of the joynr genearator now available. See
+* **[C++]** CMake integration of the joynr generator now available. See
   [\<RADIO_HOME\>/CMakeLists.txt](/examples/radio-app/CMakeLists.txt) on how to use it.
 
 #joynr 0.15.1

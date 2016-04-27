@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -235,6 +235,17 @@ struct TypeConverter
 };
 
 template <typename T>
+struct TypeConverter<T, std::enable_if_t<std::is_enum<T>::value>>
+{
+    static T convert(IValue& value)
+    {
+        T convertedValue;
+        PrimitiveDeserializer<T>::deserialize(convertedValue, value);
+        return convertedValue;
+    }
+};
+
+template <typename T>
 struct TypeConverter<T, std::enable_if_t<std::is_unsigned<T>::value>>
 {
     static T convert(IValue& value)
@@ -322,12 +333,35 @@ struct SelectedDeserializer<std::vector<T>>
     }
 };
 
+/**
+ * @brief partial specialization for std::vector
+ */
+template <typename T>
+struct ClassDeserializerImpl<T,
+        std::enable_if_t<util::IsDerivedFromTemplate<std::vector, T>::value>
+        >
+{
+    static void deserialize(T& vector, IObject& object)
+    {
+        if(!object.hasNextField()){
+            return;
+        }
+        IField& field = object.nextField();
+        SelectedDeserializer<T>::deserialize(vector, field.value());
+    }
+};
 
 /**
  * @brief partial specialization for map deserialization
  */
 template <typename T>
-struct ClassDeserializerImpl<T, std::enable_if_t<util::IsDerivedFromTemplate<std::map, T>::value>>
+struct ClassDeserializerImpl<T,
+        std::enable_if_t<
+            util::IsDerivedFromTemplate<std::map, T>::value
+            ||
+            util::IsDerivedFromTemplate<std::unordered_map, T>::value
+            >
+        >
 {
     static void deserialize(T& map, IObject& object)
     {

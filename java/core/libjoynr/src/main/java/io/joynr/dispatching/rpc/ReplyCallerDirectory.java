@@ -21,7 +21,7 @@ package io.joynr.dispatching.rpc;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatching.CallerDirectory;
+import io.joynr.dispatching.Directory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
@@ -42,7 +42,7 @@ import com.google.inject.name.Named;
  * 
  */
 @Singleton
-public class ReplyCallerDirectory extends CallerDirectory<ReplyCaller> {
+public class ReplyCallerDirectory extends Directory<ReplyCaller> {
 
     private boolean shutdown = false;
     private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
@@ -58,7 +58,7 @@ public class ReplyCallerDirectory extends CallerDirectory<ReplyCaller> {
                                final ReplyCaller replyCaller,
                                final ExpiryDate roundTripTtlExpirationDate) {
         logger.trace("putReplyCaller: " + requestReplyId + " expiryDate: " + roundTripTtlExpirationDate);
-        super.addCaller(requestReplyId, replyCaller);
+        super.add(requestReplyId, replyCaller);
 
         try {
             cleanupScheduler.schedule(new Runnable() {
@@ -76,7 +76,7 @@ public class ReplyCallerDirectory extends CallerDirectory<ReplyCaller> {
     }
 
     private void removeExpiredReplyCaller(String requestReplyId) {
-        ReplyCaller outstandingReplyCaller = removeCaller(requestReplyId);
+        ReplyCaller outstandingReplyCaller = remove(requestReplyId);
         if (outstandingReplyCaller == null) {
             // this happens, when a reply was already received and the replyCaller has been removed.
             return;

@@ -3,7 +3,7 @@ package io.joynr.generator.js.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,24 +242,32 @@ class JSTypeUtil extends AbstractTypeUtil {
 		«ENDIF»
 	'''
 
-	def writeJSDocForSignature(FMethod operation, String prefix)'''
-		«FOR param: operation.inputParameters»
-			«prefix»@param {«param.jsdocTypeName»} «param.joynrName» -
+	def writeJSDocForSignature(String interfaceName, FMethod operation, String prefix)'''
+		«IF operation.inputParameters.size > 0»
+			«prefix»@param {Object} settings the arguments object for this function call
+			«FOR param: operation.inputParameters»
+				«prefix»@param {«param.jsdocTypeName»} settings.«param.joynrName» -
+				«IF param.comment!=null»
+					«prefix»«FOR comment: param.comment.elements SEPARATOR "<br/>"»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+		«IF operation.outputParameters.size>0»
+			«prefix»@returns {«interfaceName»#«operation.joynrName.toFirstUpper»Returned}
+			«FOR param : operation.outputParameters SEPARATOR "<br/>"»
+				«prefix»	{«param.jsdocTypeName»} «param.joynrName»
+			«ENDFOR»
+		«ENDIF»
+	'''
+
+	def writeJSDocTypedefForSignature(String interfaceName, FMethod operation, String operationName, String prefix)'''
+		«prefix»@typedef {Object} «interfaceName»#«operationName.toFirstUpper»Returned
+		«FOR param : operation.outputParameters»
+			«prefix»@property {«param.jsdocTypeName»} «param.joynrName»
 			«IF param.comment!=null»
-			«prefix»«FOR comment: param.comment.elements»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
+			«prefix»«FOR comment: param.comment.elements SEPARATOR "<br/>"»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
 			«ENDIF»
 		«ENDFOR»
-		«IF operation.outputParameters.size==1»
-			«val returnParam = operation.outputParameters.iterator.next»
-			«prefix»@returns {«returnParam.jsdocTypeName»} «returnParam.joynrName» -
-			«IF returnParam.comment!=null»
-			«prefix»«FOR comment: returnParam.comment.elements»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
-			«ENDIF»
-		«ELSE»
-			«IF operation.outputParameters.size>1»
-				«prefix»@returns {the JS code generator does not support methods with multiple return values}
-			«ENDIF»
-		«ENDIF»
 	'''
 
 	def getDefaultValue(FTypedElement element) {

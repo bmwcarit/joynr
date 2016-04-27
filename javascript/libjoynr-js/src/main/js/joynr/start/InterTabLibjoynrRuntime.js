@@ -26,7 +26,7 @@ define(
             "joynr/capabilities/arbitration/Arbitrator",
             "joynr/provider/ProviderBuilder",
             "joynr/proxy/ProxyBuilder",
-            "joynr/types/CapabilityInformation",
+            "joynr/types/GlobalDiscoveryEntry",
             "joynr/capabilities/CapabilitiesRegistrar",
             "joynr/capabilities/ParticipantIdStorage",
             "joynr/dispatching/RequestReplyManager",
@@ -53,7 +53,6 @@ define(
             "joynr/system/DiscoveryProxy",
             "joynr/system/RoutingProxy",
             "joynr/types/TypeRegistrySingleton",
-            "joynr/types/DiscoveryQos",
             "joynr/types/DiscoveryScope",
             "joynr/types/DiscoveryEntry",
             "joynr/util/UtilInternal",
@@ -74,7 +73,7 @@ define(
                 Arbitrator,
                 ProviderBuilder,
                 ProxyBuilder,
-                CapabilityInformation,
+                GlobalDiscoveryEntry,
                 CapabilitiesRegistrar,
                 ParticipantIdStorage,
                 RequestReplyManager,
@@ -101,7 +100,6 @@ define(
                 DiscoveryProxy,
                 RoutingProxy,
                 TypeRegistrySingleton,
-                DiscoveryQosGenerated,
                 DiscoveryScope,
                 DiscoveryEntry,
                 Util,
@@ -254,7 +252,7 @@ define(
                 }
 
                 var loggingMessagingQos = new MessagingQos({
-                    ttl : Date.now() + relativeTtl
+                    ttl : relativeTtl
                 });
                 loggingManager = Object.freeze(new LoggingManager());
                 LoggerFactory.init(loggingManager);
@@ -329,7 +327,7 @@ define(
                             typedCapabilities = [];
                             for (i = 0; i < untypedCapabilities.length; i++) {
                                 var capability =
-                                        new CapabilityInformation(untypedCapabilities[i]);
+                                        new GlobalDiscoveryEntry(untypedCapabilities[i]);
                                 initialRoutingTable[capability.participantId] = ccAddress;
                                 typedCapabilities.push(capability);
                             }
@@ -456,7 +454,7 @@ define(
                                         domain,
                                         interfaceName,
                                         discoveryQos) {
-                                    return getDiscoveryProxy(discoveryQos.discoveryTimeout).then(function(newDiscoveryProxy) {
+                                    return getDiscoveryProxy(discoveryQos.discoveryTimeoutMs).then(function(newDiscoveryProxy) {
                                         return newDiscoveryProxy.lookup({
                                             domain : domain,
                                             interfaceName : interfaceName,
@@ -500,9 +498,7 @@ define(
                                 });
 
                             // when everything's ready we can trigger the app
-                            return  Promise.all([
-                                    routingProxyPromise
-                                ]).then(
+                            return  routingProxyPromise.then(
                             function() {
                                 joynrState = JoynrStates.STARTED;
                                 publicationManager.restore();

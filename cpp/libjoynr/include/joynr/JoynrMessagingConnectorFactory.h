@@ -20,10 +20,10 @@
 #define JOYNRMESSAGINGCONNECTORFACTORY_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/types/CommunicationMiddleware.h"
 
 #include <string>
 #include <tuple>
+#include <memory>
 
 namespace joynr
 {
@@ -44,8 +44,6 @@ class JOYNR_EXPORT JoynrMessagingConnectorFactory
 public:
     JoynrMessagingConnectorFactory(IJoynrMessageSender* messageSender,
                                    ISubscriptionManager* subscriptionManager);
-
-    bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
 
     template <class T>
     std::unique_ptr<T> create(const std::string& domain,

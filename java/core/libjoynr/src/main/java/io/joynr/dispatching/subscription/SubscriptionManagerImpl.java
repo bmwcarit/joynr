@@ -261,7 +261,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                 receive.setAccessible(true);
             }
             receive.invoke(broadcastSubscriptionListener, broadcastValues);
-            
+
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             logger.error("Broadcast publication could not be processed", e);
         }

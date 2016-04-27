@@ -12,3 +12,9 @@ log () {
 	echo "========================================"
 	echo ""
 }
+
+if hash nproc 2>/dev/null; then
+    JOBS=$(nproc)
+else
+    JOBS=1
+fi

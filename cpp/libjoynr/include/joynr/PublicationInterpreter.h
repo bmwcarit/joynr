@@ -19,16 +19,16 @@
 #ifndef PUBLICATIONINTERPRETER_H
 #define PUBLICATIONINTERPRETER_H
 
+#include <cassert>
+#include <memory>
+#include <functional>
+
 #include "joynr/IPublicationInterpreter.h"
 #include "joynr/Logger.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
-#include <functional>
-
-#include <cassert>
-#include <memory>
 
 namespace joynr
 {
@@ -37,8 +37,6 @@ template <class... Ts>
 class PublicationInterpreter : public IPublicationInterpreter
 {
 public:
-    PublicationInterpreter() = default;
-
     void execute(std::shared_ptr<ISubscriptionCallback> callback,
                  const SubscriptionPublication& subscriptionPublication) override
     {
@@ -75,6 +73,28 @@ private:
     ADD_LOGGER(PublicationInterpreter);
 };
 
+template <>
+class PublicationInterpreter<void> : public IPublicationInterpreter
+{
+public:
+    void execute(std::shared_ptr<ISubscriptionCallback> callback,
+                 const SubscriptionPublication& subscriptionPublication) override
+    {
+        assert(callback);
+
+        const Variant& error = subscriptionPublication.getError();
+        if (!error.isEmpty()) {
+            callback->onError(
+                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
+            return;
+        }
+
+        auto typedCallback = std::dynamic_pointer_cast<SubscriptionCallback<void>>(callback);
+        typedCallback->onSuccess();
+    }
+    ADD_LOGGER(PublicationInterpreter);
+};
+
 template <class... Ts>
 INIT_LOGGER(PublicationInterpreter<Ts...>);
 
@@ -86,8 +106,6 @@ template <class T>
 class EnumPublicationInterpreter : public IPublicationInterpreter
 {
 public:
-    EnumPublicationInterpreter() = default;
-
     void execute(std::shared_ptr<ISubscriptionCallback> callback,
                  const SubscriptionPublication& subscriptionPublication) override
     {
@@ -130,8 +148,6 @@ template <class T>
 class EnumPublicationInterpreter<std::vector<T>> : public IPublicationInterpreter
 {
 public:
-    EnumPublicationInterpreter() = default;
-
     void execute(std::shared_ptr<ISubscriptionCallback> callback,
                  const SubscriptionPublication& subscriptionPublication) override
     {

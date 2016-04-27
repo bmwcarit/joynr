@@ -17,6 +17,9 @@
  * #L%
  */
 #include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
+
+#include <cassert>
+
 #include "joynr/Dispatcher.h"
 #include "joynr/TypeUtil.h"
 

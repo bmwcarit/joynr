@@ -20,6 +20,7 @@
  */
 
 var log = require("./logging.js").log;
+var joynr = require("joynr");
 
 var runInteractiveConsole = function(radioProvider, onDone) {
     var readline = require('readline');
@@ -76,21 +77,25 @@ var runInteractiveConsole = function(radioProvider, onDone) {
     rl.prompt();
 };
 
-if (process.argv.length < 3) {
+if (process.env.domain === undefined) {
     log("please pass a domain as argument");
     process.exit(0);
 }
-var domain = process.argv[2];
+var domain = process.env.domain;
 log("domain: " + domain);
-var joynr = require("joynr");
+
 var provisioning = require("./provisioning_common.js");
 
-if (process.argv.length >= 4) {
-    provisioning.ccAddress.host = process.argv[3];
-}
-
-if (process.argv.length >= 5) {
-    provisioning.ccAddress.port = process.argv[4];
+if (process.env.runtime !== undefined) {
+    if (process.env.runtime === "inprocess") {
+        provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl;
+        provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
+        joynr.selectRuntime("inprocess");
+    } else if (process.env.runtime === "websocket") {
+        provisioning.ccAddress.host = process.env.cchost;
+        provisioning.ccAddress.port = process.env.ccport;
+        joynr.selectRuntime("websocket.libjoynr");
+    }
 }
 
 var RadioProvider = require("../generated/js/joynr/vehicle/RadioProvider.js");
@@ -101,7 +106,6 @@ joynr.load(provisioning).then(function(loadedJoynr) {
 
     var providerQos = new joynr.types.ProviderQos({
         customParameters : [],
-        providerVersion : 1,
         priority : Date.now(),
         scope : joynr.types.ProviderScope.GLOBAL,
         onChangeSubscriptions : true

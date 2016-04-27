@@ -27,6 +27,7 @@ joynrTestRequire(
             "joynr/types/ProviderScope",
             "joynr/types/ProviderQos",
             "joynr/types/CustomParameter",
+            "joynr/types/Version",
             "joynr/messaging/inprocess/InProcessAddress"
         ],
         function(
@@ -35,6 +36,7 @@ joynrTestRequire(
                 ProviderScope,
                 ProviderQos,
                 CustomParameter,
+                Version,
                 InProcessAddress) {
             describe(
                     "libjoynr-js.joynr.types.ArbitrationStrategyCollection",
@@ -59,11 +61,14 @@ joynrTestRequire(
                         function getDiscoveryEntryList() {
                             return [
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "KeywordmyDomain",
                                     interfaceName : "myInterfaceName",
                                     qos : new ProviderQos({
                                         customParameters : [],
-                                        providerVersion : 1,
                                         priority : 1,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -71,11 +76,14 @@ joynrTestRequire(
                                     participantId : "1"
                                 }),
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceName",
                                     qos : new ProviderQos({
                                         customParameters : [],
-                                        providerVersion : 1,
                                         priority : 4,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -83,8 +91,13 @@ joynrTestRequire(
                                     participantId : "1"
                                 }),
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "myWithKeywordDomain",
                                     interfaceName : "myInterfaceName",
+                                    lastSeenDateMs : 123,
                                     qos : new ProviderQos({
                                         customParameters : [
                                             new CustomParameter({
@@ -96,7 +109,6 @@ joynrTestRequire(
                                                 value : "theValue"
                                             })
                                         ],
-                                        providerVersion : 1,
                                         priority : 3,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -104,8 +116,13 @@ joynrTestRequire(
                                     participantId : "1"
                                 }),
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceNameKeyword",
+                                    lastSeenDateMs : 123,
                                     qos : new ProviderQos({
                                         customParameters : [
                                             new CustomParameter({
@@ -117,7 +134,6 @@ joynrTestRequire(
                                                 value : "theValue"
                                             })
                                         ],
-                                        providerVersion : 1,
                                         priority : 5,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
@@ -125,8 +141,13 @@ joynrTestRequire(
                                     participantId : "1"
                                 }),
                                 new DiscoveryEntry({
+                                    providerVersion : new Version({
+                                        majorVersion : 47,
+                                        minorVersion : 11
+                                    }),
                                     domain : "myDomain",
                                     interfaceName : "myInterfaceName",
+                                    lastSeenDateMs : 123,
                                     qos : new ProviderQos({
                                         customParameters : [
                                             new CustomParameter({
@@ -138,7 +159,6 @@ joynrTestRequire(
                                                 value : "theValue"
                                             })
                                         ],
-                                        providerVersion : 1,
                                         priority : 2,
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true

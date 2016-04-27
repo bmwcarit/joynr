@@ -18,6 +18,9 @@
  */
 
 #include "joynr/AbstractJoynrProvider.h"
+
+#include <cassert>
+
 #include "joynr/IAttributeListener.h"
 #include "joynr/IBroadcastListener.h"
 

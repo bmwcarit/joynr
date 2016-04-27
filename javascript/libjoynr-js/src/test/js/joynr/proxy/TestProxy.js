@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,9 @@ joynrTestRequire(
             "joynr/proxy/ProxyEvent",
             "joynr/types/TypeRegistrySingleton",
             "joynr/proxy/DiscoveryQos",
-            "joynr/messaging/MessagingQos"
+            "joynr/messaging/MessagingQos",
+            "joynr/tests/TestWithVersionProxy",
+            "joynr/tests/TestWithoutVersionProxy"
         ],
         function(
                 Promise,
@@ -53,7 +55,9 @@ joynrTestRequire(
                 ProxyEvent,
                 TypeRegistrySingleton,
                 DiscoveryQos,
-                MessagingQos) {
+                MessagingQos,
+                TestWithVersionProxy,
+                TestWithoutVersionProxy) {
 
             describe(
                     "libjoynr-js.joynr.proxy.Proxy",
@@ -84,6 +88,20 @@ joynrTestRequire(
                                 }
                             };
                             radioProxy = new RadioProxy(settings);
+                        });
+
+                        it("version is set correctly", function() {
+                            expect(TestWithVersionProxy.MAJOR_VERSION).toBeDefined();
+                            expect(TestWithVersionProxy.MAJOR_VERSION).toEqual(47);
+                            expect(TestWithVersionProxy.MINOR_VERSION).toBeDefined();
+                            expect(TestWithVersionProxy.MINOR_VERSION).toEqual(11);
+                        });
+
+                        it("default version is set correctly", function() {
+                            expect(TestWithoutVersionProxy.MAJOR_VERSION).toBeDefined();
+                            expect(TestWithoutVersionProxy.MAJOR_VERSION).toEqual(0);
+                            expect(TestWithoutVersionProxy.MINOR_VERSION).toBeDefined();
+                            expect(TestWithoutVersionProxy.MINOR_VERSION).toEqual(0);
                         });
 
                         it("RadioProxy is instantiable", function() {

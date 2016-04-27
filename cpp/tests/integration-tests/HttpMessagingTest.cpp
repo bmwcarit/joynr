@@ -26,25 +26,21 @@ using namespace joynr;
 class HttpMessagingTest : public AbstractMessagingTest {
 public:
     ADD_LOGGER(HttpMessagingTest);
-    HttpMessagingTest()
+    HttpMessagingTest() :
+        receiverChannelId("receiverChannelId")
     {
         // provision global capabilities directory
-        std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(
-            new system::RoutingTypes::ChannelAddress(
-                        messagingSettings.getCapabilitiesDirectoryChannelId())
-        );
+        auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
+                        messagingSettings.getCapabilitiesDirectoryUrl() + messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
+                        messagingSettings.getCapabilitiesDirectoryChannelId());
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
-        // provision channel url directory
-        std::shared_ptr<joynr::system::RoutingTypes::Address> addressChannelUrlDirectory(
-            new system::RoutingTypes::ChannelAddress(
-                        messagingSettings.getChannelUrlDirectoryChannelId())
-        );
-        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
-        messagingStubFactory->registerStubFactory(std::make_unique<HttpMessagingStubFactory>(mockMessageSender, senderChannelId));
+        messagingStubFactory->registerStubFactory(std::make_unique<HttpMessagingStubFactory>(mockMessageSender, globalClusterControllerAddress));
     }
 
     ~HttpMessagingTest(){
     }
+protected:
+    const std::string receiverChannelId;
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingTest);
 };
@@ -62,7 +58,7 @@ TEST_F(HttpMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessag
     // - MessageRunnable.run
     // - HttpMessagingStub.transmit (IMessaging)
     // - MessageSender.send
-    auto joynrMessagingEndpointAddr = std::make_shared<system::RoutingTypes::ChannelAddress>();
+    auto joynrMessagingEndpointAddr = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager(joynrMessagingEndpointAddr);
@@ -115,7 +111,7 @@ TEST_F(HttpMessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 
 TEST_F(HttpMessagingTest, routeMsgToHttpCommunicationMgr)
 {
-    auto joynrMessagingEndpointAddr = std::make_shared<system::RoutingTypes::ChannelAddress>();
+    auto joynrMessagingEndpointAddr = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     routeMsgToCommunicationManager(joynrMessagingEndpointAddr);
@@ -124,49 +120,8 @@ TEST_F(HttpMessagingTest, routeMsgToHttpCommunicationMgr)
 
 TEST_F(HttpMessagingTest, routeMultipleMessages)
 {
-    auto joynrMessagingEndpointAddr = std::make_shared<system::RoutingTypes::ChannelAddress>();
+    auto joynrMessagingEndpointAddr = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     routeMultipleMessages(joynrMessagingEndpointAddr);
-}
-
-// global function used for calls to the MockChannelUrlSelectorProxy
-void messagingTestPseudoGetChannelUrls(std::shared_ptr<Future<types::ChannelUrlInformation> > future , std::string channelId, int timeout) {
-    types::ChannelUrlInformation urlInformation;
-    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
-    urlInformation.setUrls(urls);
-    future->onSuccess(urlInformation);
-}
-
-TEST_F(HttpMessagingTest, DISABLED_messageSenderGetsAndUsesDifferentUrlsForOneChannel) {
-//    const QString settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
-//    MessagingSettings* settings = new MessagingSettings(new QSettings(settingsFileName, QSettings::IniFormat));
-//    int messageSendRetryInterval = 1000;
-
-//    BrokerUrl brokerUrl(settings->getBrokerUrl());
-//    MessageSender* messageSender = new MessageSender(brokerUrl, messageSendRetryInterval);
-//    MockLocalChannelUrlDirectory mockDirectory;
-//    messageSender->init(mockDirectory, *settings);
-
-//    EXPECT_CALL(*mockDirectory, getUrlsForChannel(A<std::shared_ptr<Future<types::ChannelUrlInformation> > >(), A<QString>(),A<int>()))
-//            .WillOnce(Invoke(messagingTestPseudoGetChannelUrls));
-
-
-//    infrastructure::IGlobalCapabilitiesDirectoryBase::INTERFACE_NAME;
-//    // try to reach capabilities directory - capabilities request
-
-//    JoynrMessage message = messageFactory.createRequest(
-//                        senderId,
-//                        receiverId,
-//                        request,
-//                        qos,
-//                        requestId);
-
-//    message.setHeader<QString>(JoynrMessage::HEADER_NAME_REPLY_TO, senderChannelId);
-//    //TODO unfinished test!
-//    //messageSender->sendMessage("channelId",11111, message);
-
-
-
-//    delete settings;
 }

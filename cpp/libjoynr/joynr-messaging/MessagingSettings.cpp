@@ -17,11 +17,12 @@
  * #L%
  */
 #include "joynr/MessagingSettings.h"
+
+#include <cassert>
+
 #include "joynr/BrokerUrl.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
-
-#include <cassert>
 
 namespace joynr
 {
@@ -54,24 +55,6 @@ const std::string& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
 const std::string& MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()
 {
     static const std::string value("messaging/discovery-directories-domain");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_URL()
-{
-    static const std::string value("messaging/channel-url-directory-url");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()
-{
-    static const std::string value("messaging/channel-url-directory-channelid");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()
-{
-    static const std::string value("messaging/channel-url-directory-participantid");
     return value;
 }
 
@@ -138,6 +121,12 @@ const std::string& MessagingSettings::SETTING_SEND_MSG_RETRY_INTERVAL()
 const std::string& MessagingSettings::SETTING_LONGPOLL_RETRY_INTERVAL()
 {
     static const std::string value("messaging/longpoll-retry-interval");
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS()
+{
+    static const std::string value("messaging/discovery-entry-expiry-interval-ms");
     return value;
 }
 
@@ -316,21 +305,6 @@ std::string MessagingSettings::getDiscoveryDirectoriesDomain() const
     return settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN());
 }
 
-std::string MessagingSettings::getChannelUrlDirectoryUrl() const
-{
-    return settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL());
-}
-
-std::string MessagingSettings::getChannelUrlDirectoryChannelId() const
-{
-    return settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID());
-}
-
-std::string MessagingSettings::getChannelUrlDirectoryParticipantId() const
-{
-    return settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID());
-}
-
 std::string MessagingSettings::getCapabilitiesDirectoryUrl() const
 {
     return settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL());
@@ -374,6 +348,16 @@ int MessagingSettings::getDeleteChannelRetryInterval() const
 void MessagingSettings::setDeleteChannelRetryInterval(const int& retryInterval)
 {
     settings.set(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), retryInterval);
+}
+
+int MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
+{
+    return settings.get<int>(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
+}
+
+void MessagingSettings::setDiscoveryEntryExpiryIntervalMs(int expiryIntervalMs)
+{
+    settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(), expiryIntervalMs);
 }
 
 int MessagingSettings::getSendMsgRetryInterval() const
@@ -523,16 +507,6 @@ void MessagingSettings::checkSettings()
 
     assert(settings.contains(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
-    assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_URL()));
-    std::string channelUrlDirectoryUrl =
-            settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL());
-    if (channelUrlDirectoryUrl.back() != '/') {
-        channelUrlDirectoryUrl.append("/");
-        settings.set(SETTING_CHANNEL_URL_DIRECTORY_URL(), channelUrlDirectoryUrl);
-    }
-    assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
-    assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()));
-
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_URL()));
     std::string capabilitiesDirectoryUrl =
             settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL());
@@ -583,18 +557,6 @@ void MessagingSettings::printSettings() const
                     "SETTING: {} = {})",
                     SETTING_DISCOVERY_DIRECTORIES_DOMAIN(),
                     settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
-    JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {}  = {})",
-                    SETTING_CHANNEL_URL_DIRECTORY_URL(),
-                    settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL()));
-    JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {}  = {})",
-                    SETTING_CHANNEL_URL_DIRECTORY_CHANNELID(),
-                    settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
-    JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {}  = {})",
-                    SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID(),
-                    settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {}  = {})",
                     SETTING_CAPABILITIES_DIRECTORY_URL(),

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,12 @@
 #ifndef JOYNRUNTIME_H
 #define JOYNRUNTIME_H
 
+#include <cassert>
+#include <string>
+#include <memory>
+
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
-
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/ProxyBuilder.h"
@@ -35,10 +37,6 @@
 #include "joynr/PublicationManager.h"
 #include "joynr/IBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
-
-#include <string>
-#include <cassert>
-#include <memory>
 
 namespace joynr
 {
@@ -62,7 +60,7 @@ public:
      * @param domain The domain to register the provider on. Has to be
      * identical at the client to be able to find the provider.
      * @param provider The provider instance to register.
-     * @return The globaly unique participant ID of the provider. It is assigned by the joynr
+     * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
     template <class TIntfProvider>
@@ -83,7 +81,7 @@ public:
      * identical at the client to be able to find the provider.
      * @param provider The provider instance to register.
      * @param providerQos The qos associated with the registered provider.
-     * @return The globaly unique participant ID of the provider. It is assigned by the joynr
+     * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
     template <class TIntfProvider>
@@ -99,7 +97,7 @@ public:
     /**
      * @brief Unregisters the provider from the joynr communication framework.
      *
-     * Unregister a provider identified by its globaly unique participant ID. The participant ID is
+     * Unregister a provider identified by its globally unique participant ID. The participant ID is
      * returned during the provider registration process.
      * @param participantId The participantId of the provider which shall be unregistered
      */
@@ -113,7 +111,7 @@ public:
      * @param domain The domain to unregister the provider from. It must match the domain used
      * during provider registration.
      * @param provider The provider instance to unregister the provider from.
-     * @return The globaly unique participant ID of the provider. It is assigned by the joynr
+     * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
     template <class TIntfProvider>
@@ -149,6 +147,7 @@ public:
         }
         ProxyBuilder<TIntfProxy>* builder =
                 new ProxyBuilder<TIntfProxy>(proxyFactory,
+                                             requestCallerDirectory,
                                              *discoveryProxy,
                                              domain,
                                              dispatcherAddress,
@@ -177,6 +176,7 @@ protected:
      */
     explicit JoynrRuntime(Settings& settings)
             : proxyFactory(nullptr),
+              requestCallerDirectory(nullptr),
               participantIdStorage(nullptr),
               capabilitiesRegistrar(nullptr),
               messagingSettings(settings),
@@ -192,6 +192,8 @@ protected:
 
     /** @brief Factory for creating proxy instances */
     ProxyFactory* proxyFactory;
+    /** Is forwarded to proxy builder objects. They use it to identify in-process providers **/
+    IRequestCallerDirectory* requestCallerDirectory;
     /** @brief Creates and persists participant id */
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */
@@ -203,7 +205,7 @@ protected:
     /** @brief System services settings */
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
-    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     /** @brief MessageRouter instance */
     std::shared_ptr<MessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */

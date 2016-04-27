@@ -1,7 +1,10 @@
 # Building joynr JavaScript
+The following scripts found within the joynr repository can be used
+to build joynr inside a docker container without having to install
+anything on the build machine.
 
 ## Prerequisites
-The joynr JavaScript repository has to be cloned.
+See [Building joynr Java and common components](java_building_joynr.md#Prerequisites).
 
 ## Building joynr JavaScript
 Joynr JavaScript can be built by executing the following command:

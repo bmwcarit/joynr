@@ -6,9 +6,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,7 +51,6 @@ TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/messaging/browser/TestB
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/messaging/browser/TestBrowserMessagingStubFactory.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/messaging/routing/TestMessageRouter.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/messaging/routing/TestMessageQueue.js"
-TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/messaging/routing/TestLocalChannelUrlDirectory.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/messaging/webmessaging/TestWebMessagingAddress.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/messaging/webmessaging/TestWebMessagingStub.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/messaging/webmessaging/TestWebMessagingSkeleton.js"
@@ -80,13 +79,14 @@ TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/proxy/TestProxyEvent.js
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/proxy/TestSubscriptionQos.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestUtil.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestJSONSerializer.js"
+TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestTypeGenerator.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestLongTimer.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestTyping.js"
 #We do not use cookies with node. Instead we are using localStorage
 #TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestCookiePersistency.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/util/TestInProcessStubAndSkeleton.js"
 
-cd ${project.build.outputDirectory}
+cd ${project.build.directory}/node-classes
 
 echo "preparing the node environment incl. required dependencies"
 
@@ -96,7 +96,7 @@ npm install
 
 #so far, only files located at the ${project.build.outputDirectory} can find the installed node_modules
 #make the installed node_modules available for the test-classes
-ln -sf ${project.build.outputDirectory}/node_modules ..
+ln -sf ${project.build.directory}/node-classes/node_modules ..
 
 #check if all defined test files really exist. Jasmine-node would return 0 without running the tests otherwise.
 for Test in $TESTS

@@ -19,6 +19,6 @@ package io.joynr.dispatcher.rpc;
  * #L%
  */
 
-public interface JoynrSubscriptionInterface extends JoynrInterface {
+public interface JoynrSubscriptionInterface {
 
 }

@@ -25,10 +25,10 @@
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Runnable.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 #include <string>
 #include <memory>
@@ -40,7 +40,6 @@ namespace joynr
 class JoynrMessage;
 class MessagingSettings;
 class HttpResult;
-class IChannelUrlSelector;
 
 class HttpSender : public IMessageSender
 {
@@ -55,16 +54,10 @@ public:
     /**
     * @brief Sends the message to the given channel.
     */
-    void sendMessage(const std::string& channelId,
+    void sendMessage(const joynr::system::RoutingTypes::Address& destinationAddress,
                      const JoynrMessage& message,
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
-    /**
-    * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
-    * the channelIds.
-    */
-    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-              const MessagingSettings& settings) override;
 
     void registerReceiveQueueStartedCallback(
             std::function<void(void)> waitForReceiveQueueStarted) override;
@@ -72,67 +65,24 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
     const BrokerUrl brokerUrl;
-    IChannelUrlSelector* channelUrlCache;
     const std::chrono::milliseconds maxAttemptTtl;
     const std::chrono::milliseconds messageSendRetryInterval;
     ADD_LOGGER(HttpSender);
 
-    /**
-     * @brief @ref ThreadPool used to send messages once an URL is known
-     * @todo Replace by @ref ThreadPool instead of @ref ThreadPoolDelayedScheduler
-     */
-    ThreadPoolDelayedScheduler delayedScheduler;
+    HttpResult buildRequestAndSend(const std::string& data,
+                                   const std::string& url,
+                                   std::chrono::milliseconds curlTimeout);
 
-    /**
-     * @brief ThreadPool to obtain an URL
-     * @note Obtaining an URL must be in a different ThreadPool
-     *
-     * Create a different scheduler for the ChannelURL directory. Ideally,
-     * this should not delay messages by default. However, a race condition
-     * exists that causes intermittent errors in the system integration tests
-     * when the default delay is 0.
-     */
-    ThreadPoolDelayedScheduler channelUrlContactorDelayedScheduler;
+    void handleCurlError(
+            const HttpResult& sendMessageResult,
+            const std::chrono::milliseconds& delay,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) const;
+    void handleHttpError(
+            const HttpResult& sendMessageResult,
+            const std::chrono::milliseconds& delay,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) const;
 
-    class SendMessageRunnable : public Runnable, public ObjectWithDecayTime
-    {
-    public:
-        SendMessageRunnable(HttpSender* messageSender,
-                            const std::string& channelId,
-                            const JoynrTimePoint& decayTime,
-                            std::string&& data,
-                            DelayedScheduler& delayedScheduler,
-                            std::chrono::milliseconds maxAttemptTtl);
-        ~SendMessageRunnable() override;
-
-        void shutdown() override;
-
-        /**
-         * @brief run
-         * 1) Obtains the 'best' Url for the channelId from the ChannelUrlSelector.
-         * 2)  Sets the curl timeout to a fraction of the messaging TTL
-         *     (yet always between MIN and MAX_CONNECTION_TTL()).
-         * 3) Tries a HTTP request on this URL. If the result is negative,
-         * feedback is provided to the ChannelUrlSelector (and back to 1). Otherwise: Done.
-         * During this procedure, the ChannelUrlSelector decides if it is appropriate
-         * to try an alternative Url (depending on the history of feedback).
-         */
-        void run() override;
-
-    private:
-        DISALLOW_COPY_AND_ASSIGN(SendMessageRunnable);
-        HttpResult buildRequestAndSend(const std::string& url,
-                                       std::chrono::milliseconds curlTimeout);
-        std::string resolveUrlForChannelId(std::chrono::milliseconds curlTimeout);
-        std::string channelId;
-        std::string data;
-        DelayedScheduler& delayedScheduler;
-        HttpSender* messageSender;
-        std::chrono::milliseconds maxAttemptTtl;
-
-        ADD_LOGGER(SendMessageRunnable);
-        static int messageRunnableCounter;
-    };
+    std::string toUrl(const system::RoutingTypes::ChannelAddress& channelAddress) const;
 };
 
 } // namespace joynr

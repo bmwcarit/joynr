@@ -3,7 +3,7 @@ package io.joynr.generator.js.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package io.joynr.generator.js.proxy
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.js.templates.InterfaceJsTemplate
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
@@ -29,10 +30,8 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
 
-class ProxyGenerator {
+class ProxyGenerator extends InterfaceJsTemplate {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension JSTypeUtil
@@ -52,56 +51,50 @@ class ProxyGenerator {
 		return relativePath
 	}
 
-	def generateProxy(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
-		var containerpath = File::separator //+ "generated" + File::separator
-
-		val packagePath = getPackagePathWithJoynrPrefix(fInterface, File::separator)
-		val path = containerpath + packagePath + File::separator
-		packagePathDepth = packagePath.split(File::separator).length
-
-		val fileName = path + "" + fInterface.proxyName + ".js"
+	def generateProxy(IFileSystemAccess fsa){
+		var fileName = path + "" + proxyName + ".js"
 		if (clean) {
 			fsa.deleteFile(fileName)
 		}
 		if (generate) {
 			fsa.generateFile(
 				fileName,
-				generate(fInterface, types).toString
+				generate().toString
 			)
 		}
 	}
 
-	def proxyName(FInterface fInterface){
-		fInterface.joynrName + "Proxy"
+	def proxyName(){
+		francaIntf.joynrName + "Proxy"
 	}
 
-	def generate(FInterface fInterface, Iterable<FType> types)'''
+	override generate()'''
 	«val generationDate = (new Date()).toString»
 	/**
 	 * PLEASE NOTE: THIS IS A GENERATED FILE!
 	 * Generation date: «generationDate»
 	 *
-	 * «fInterface.proxyName», generated from the corresponding interface description.
+	 * «proxyName», generated from the corresponding interface description.
 	 */
 	(function (undefined){
 		/**
-		 * @name «fInterface.proxyName»
+		 * @name «proxyName»
 		 * @constructor
 		 *
 		 * @classdesc
 		 * <br/>Generation date: «generationDate»
 		 * <br/><br/>
-		 * «fInterface.proxyName», generated from the corresponding interface description.
-		 «appendJSDocSummaryAndWriteSeeAndDescription(fInterface, "* ")»
+		 * «proxyName», generated from the corresponding interface description.
+		 «appendJSDocSummaryAndWriteSeeAndDescription(francaIntf, "* ")»
 		 *
 		 * @param {object} settings the settings object for this function call
 		 * @param {String} settings.domain the domain name //TODO: check do we need this?
 		 * @param {String} settings.joynrName the interface name //TODO: check do we need this?
 		 *
 		 * @param {Object} settings.discoveryQos the Quality of Service parameters for arbitration
-		 * @param {Number} settings.discoveryQos.discoveryTimeout for rpc calls to wait for arbitration to finish.
+		 * @param {Number} settings.discoveryQos.discoveryTimeoutMs for rpc calls to wait for arbitration to finish.
 		 * @param {String} settings.discoveryQos.arbitrationStrategy Strategy for choosing the appropriate provider from the list returned by the capabilities directory
-		 * @param {Number} settings.discoveryQos.cacheMaxAge Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+		 * @param {Number} settings.discoveryQos.cacheMaxAgeMs Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
 		 * @param {Boolean} settings.discoveryQos.discoveryScope If localOnly is set to true, only local providers will be considered.
 		 * @param {Object} settings.discoveryQos.additionalParameters a map holding additional parameters in the form of key value pairs in the javascript object, e.g.: {"myKey": "myValue", "myKey2": 5}
 		 *
@@ -111,45 +104,50 @@ class ProxyGenerator {
 		 * @param {Number} settings.dependencies instances of the internal objects needed by the proxy to interface with joynr
 		 * @param {Number} settings.proxyElementTypes constructors for attribute, method and broadcasts, used to create the proxy's elements
 		 *
-		 * @returns {«fInterface.proxyName»} a «fInterface.proxyName» object to access other providers
+		 * @returns {«proxyName»} a «proxyName» object to access other providers
 		 */
-		var «fInterface.proxyName» = function «fInterface.proxyName»(
+		var «proxyName» = function «proxyName»(
 			settings) {
-			if (!(this instanceof «fInterface.proxyName»)) {
+			if (!(this instanceof «proxyName»)) {
 				// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-				return new «fInterface.proxyName»(
+				return new «proxyName»(
 					settings);
 			}
 
 			// generated package name
 			this.settings = settings || {};
 
-	«FOR attribute : getAttributes(fInterface)»
+	«FOR attribute : getAttributes(francaIntf)»
 	«val attributeName = attribute.joynrName»
 			/**
-			 * @name «fInterface.proxyName»#«attributeName»
+			 * @name «proxyName»#«attributeName»
 			 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
 			 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 			*/
 			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute«getAttributeCaps(attribute)»(this, settings, "«attributeName»", "«attribute.joynrTypeName»");
 	«ENDFOR»
 
-	«FOR operationName : getMethodNames(fInterface)»
-	«val operations = getMethods(fInterface, operationName)»
+	«FOR operationName : getMethodNames(francaIntf)»
+	«val operations = getMethods(francaIntf, operationName)»
 			«FOR operation : operations»
 				/**
-				 * @function «fInterface.proxyName»#«operationName»
+				 * @function «proxyName»#«operationName»
 				 * @summary The «operationName» operation is GENERATED FROM THE INTERFACE DESCRIPTION
 				 «IF operations.size > 1»
 				 * <br/>method overloading: different call semantics possible
 				 «ENDIF»
 				 «appendJSDocSummaryAndWriteSeeAndDescription(operation, "* ")»
 				 *
-				 «writeJSDocForSignature(operation, "* ")»
+				 «writeJSDocForSignature(proxyName, operation, "* ")»
 				 */
+				«IF operation.outputParameters.size>0»
+					/**
+					 «writeJSDocTypedefForSignature(proxyName, operation, operationName, "* ")»
+					 */
+				«ENDIF»
 			«ENDFOR»
 			this.«operationName» = new settings.proxyElementTypes.ProxyOperation(this, settings, "«operationName»", [
-				«FOR operation: getMethods(fInterface, operationName) SEPARATOR ","»
+				«FOR operation: getMethods(francaIntf, operationName) SEPARATOR ","»
 				{
 					inputParameter: [
 					«FOR param: getInputParameters(operation) SEPARATOR ","»
@@ -171,11 +169,11 @@ class ProxyGenerator {
 			]).buildFunction();
 	«ENDFOR»
 
-	«FOR event: getEvents(fInterface)»
+	«FOR event: getEvents(francaIntf)»
 	«val eventName = event.joynrName»
 	«val filterParameters = getFilterParameters(event)»
 			/**
-			 * @name «fInterface.proxyName»#«eventName»
+			 * @name «proxyName»#«eventName»
 			 * @summary The «eventName» event is GENERATED FROM THE INTERFACE DESCRIPTION
 			 «appendJSDocSummaryAndWriteSeeAndDescription(event, "* ")»
 			 */
@@ -211,13 +209,40 @@ class ProxyGenerator {
 			Object.defineProperty(this, "interfaceName", {
 				writable: false,
 				readable: true,
-				value: "«getFQN(fInterface)»"
+				value: "«getFQN(francaIntf)»"
 			});
 		};
 
-		«fInterface.proxyName».getUsedDatatypes = function getUsedDatatypes(){
+		/**
+		 * @name «proxyName»#MAJOR_VERSION
+		 * @constant {Number}
+		 * @default «majorVersion»
+		 * @summary The MAJOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«proxyName», 'MAJOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «majorVersion»
+		});
+		/**
+		 * @name «proxyName»#MINOR_VERSION
+		 * @constant {Number}
+		 * @default «minorVersion»
+		 * @summary The MINOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«proxyName», 'MINOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «minorVersion»
+			});
+
+		«proxyName».getUsedDatatypes = function getUsedDatatypes(){
 			return [
-						«FOR datatype : fInterface.getAllComplexTypes SEPARATOR ','»
+						«FOR datatype : francaIntf.getAllComplexTypes SEPARATOR ','»
 						"«datatype.joynrTypeName»"
 						«ENDFOR»
 					];
@@ -226,29 +251,29 @@ class ProxyGenerator {
 		«IF requireJSSupport»
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
-			define(«fInterface.defineName(fInterface.proxyName)»[
-				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
+			define(«francaIntf.defineName(proxyName)»[
+				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
 						"«datatype.getDependencyPath»"
 				«ENDFOR»
 				], function () {
-					return «fInterface.proxyName»;
+					return «proxyName»;
 				});
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {
-				«FOR datatype : fInterface.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
+				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
 					require("«relativePathToBase() + datatype.getDependencyPath()»");
 				«ENDFOR»
-				exports = module.exports = «fInterface.proxyName»;
+				exports = module.exports = «proxyName»;
 			}
 			else {
 				// support CommonJS module 1.1.1 spec (`exports` cannot be a function)
-				exports.«fInterface.proxyName» = «fInterface.proxyName»;
+				exports.«proxyName» = «proxyName»;
 			}
 		} else {
-			window.«fInterface.proxyName» = «fInterface.proxyName»;
+			window.«proxyName» = «proxyName»;
 		}
 		«ELSE»
-		window.«fInterface.proxyName» = «fInterface.proxyName»;
+		window.«proxyName» = «proxyName»;
 		«ENDIF»
 	})();
 	'''

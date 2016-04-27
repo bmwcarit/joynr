@@ -134,9 +134,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
-    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation>> subscriptionCallback(
-            new SubscriptionCallback<types::Localisation::GpsLocation>(mockSubscriptionListenerOne));
-
+    auto subscriptionCallback = std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation>>(mockSubscriptionListenerOne);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -188,8 +186,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     response.push_back(Variant::make<double>(speed1));
     subscriptionPublication.setResponse(response);
 
-    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation, double>> subscriptionCallback(
-            new SubscriptionCallback<types::Localisation::GpsLocation, double>(mockSubscriptionListenerTwo));
+    auto subscriptionCallback= std::make_shared<SubscriptionCallback<types::Localisation::GpsLocation, double>>(mockSubscriptionListenerTwo);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

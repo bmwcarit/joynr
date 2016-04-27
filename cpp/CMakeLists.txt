@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.16.0)
+project(joynr-0.17.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 16)
+set(JOYNR_MINOR_VERSION 17)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -169,6 +169,7 @@ option(
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
 
 include(LocateProgram)
+include(AddClangFormat)
 
 #### BEGIN: Prevent install-target execution if platform dependencies are not used ####
 
@@ -183,25 +184,6 @@ if(NOT (USE_PLATFORM_SPDLOG AND USE_PLATFORM_JSMN AND (USE_PLATFORM_MOSQUITTO OR
 endif()
 
 #### END: Prevent install-target execution if platform dependencies are not used #####
-
-#### BEGIN clang-format ####
-
-option(
-    ENABLE_CLANG_FORMATTER
-    "Use clang-formatter to format source code?"
-    ON
-)
-
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
-
-if(${ENABLE_CLANG_FORMATTER})
-    LocateProgram(clang-format CLANG_FORMAT_PATH)
-    add_custom_target(format)
-endif(${ENABLE_CLANG_FORMATTER})
-
-include(AddClangFormat)
-#### END clang-format ####
-
 
 #### BEGIN include-what-you-use ####
 
@@ -221,7 +203,7 @@ if("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
     endif(${ENABLE_INCLUDE_WHAT_YOU_USE})
 
     set(INCLUDE_WHAT_YOU_USE_OPTIONS "" CACHE STRING "additional options for include-what-you-use")
-    
+
     set(INCLUDE_WHAT_YOU_USE_PATH_AND_OPTIONS
         ${INCLUDE_WHAT_YOU_USE_PATH}
         ${INCLUDE_WHAT_YOU_USE_OPTIONS}
@@ -369,7 +351,7 @@ IF(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
     message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
     message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
     message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
-    
+
 ELSE(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
 
     SET(BUILD_CLUSTER_CONTROLLER OFF)
@@ -520,18 +502,7 @@ add_definitions("-DJOYNR_MAX_LOG_LEVEL_${JOYNR_MAX_LOG_LEVEL}")
 
 ######## DEFAULT COMPILER FLAGS #############
 
-# The c++14 flag will be set automatically by CMake based on "CMAKE_CXX_STANDARD 14" starting with version 3.1.0.
-# However, as CMake 3.1.x does not recognize compiler flags correctly for OS X, we use CMAKE_CXX_STANDARD
-# from 3.2.0 upwards. For older versions, this flag is set manually for gcc and clang:
-if("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
-    if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-else()
-    # set required C++ standard
-    set(CMAKE_CXX_STANDARD 14)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
+include(SetCppStandard)
 
 #Other Warnings that could be turned on:
 #-Wpedantic
@@ -797,6 +768,31 @@ set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
 set(JoynrConfig_INSTALL_BIN_DIR "${JOYNR_BINARY_DIR}")
 set(JoynrConfig_RESOURCES_DIR "${JoynrConfig_INSTALL_BIN_DIR}/resources")
 
+get_target_property(JoynrConfig_MOSQUITTO_INCLUDE_DIRS mosquitto::mosquitto INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(JoynrConfig_MOSQUITTO_LIBRARIES mosquitto::mosquitto IMPORTED_LOCATION)
+
+set(JoynrConfig_RESOLVE_DEPENDENCIES)
+
+macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
+    file(READ "${CMAKE_CURRENT_LIST_DIR}/CMake/JoynrConfig/${DEPENDENCY_FILE}.cmake.in" FILE_CONTENTS)
+    string(CONFIGURE ${FILE_CONTENTS} FILE_CONTENTS @ONLY)
+    string(CONCAT JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES} "${FILE_CONTENTS}")
+endmacro(FillJoynrConfigDependencies)
+
+if(USE_PLATFORM_JSMN)
+    FillJoynrConfigDependencies("PlatformJsmn")
+endif(USE_PLATFORM_JSMN)
+
+if(USE_PLATFORM_MOSQUITTO)
+    FillJoynrConfigDependencies("PlatformMosquitto")
+else(USE_PLATFORM_MOSQUITTO)
+    FillJoynrConfigDependencies("ExternalProjectMosquitto")
+endif(USE_PLATFORM_MOSQUITTO)
+
+if(USE_PLATFORM_SPDLOG)
+    FillJoynrConfigDependencies("PlatformSpdlog")
+endif(USE_PLATFORM_SPDLOG)
+
 configure_file(
     JoynrConfig.cmake.in
     "JoynrConfig.cmake" @ONLY
@@ -864,9 +860,6 @@ install(
     FILES "${CMAKE_CURRENT_SOURCE_DIR}/NOTICE-CPP"
     DESTINATION "${CMAKE_INSTALL_DOCDIR}"
 )
-
-######### Documentation settings ########
-#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
 # cpack settings
 include(InstallRequiredSystemLibraries)

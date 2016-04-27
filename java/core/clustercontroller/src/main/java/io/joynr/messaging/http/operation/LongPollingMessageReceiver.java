@@ -25,6 +25,8 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
@@ -59,6 +61,8 @@ public class LongPollingMessageReceiver implements MessageReceiver {
 
     private Object shutdownSynchronizer = new Object();
 
+    private Set<ChannelCreatedListener> channelCreatedListeners = new HashSet<ChannelCreatedListener>(1);
+
     @Inject
     public LongPollingMessageReceiver(LongPollingChannelLifecycle channelMonitor, MessagingSettings settings) {
         this.channelMonitor = channelMonitor;
@@ -87,7 +91,9 @@ public class LongPollingMessageReceiver implements MessageReceiver {
             // Register the ChannelUrl once the receiver is started
             public void receiverStarted() {
                 if (channelMonitor.isChannelCreated()) {
-                    channelMonitor.registerChannelUrl();
+                    for (ChannelCreatedListener listener : channelCreatedListeners) {
+                        listener.channelCreated(channelMonitor.getChannelUrl());
+                    }
                     // Signal that the channel is now created for anyone blocking on the future
                     channelCreatedFuture.set(null);
                 }
@@ -153,5 +159,10 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     @Override
     public void resume() {
         channelMonitor.resume();
+    }
+
+    public void registerChannelCreatedListener(ChannelCreatedListener listener) {
+        channelCreatedListeners.add(listener);
+
     }
 }

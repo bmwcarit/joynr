@@ -16,18 +16,23 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <PrettyPrint.h>
 #include <limits>
+#include <memory>
+
+#include <gtest/gtest.h>
+#include <boost/algorithm/string/predicate.hpp>
+
+#include <PrettyPrint.h>
 #include "joynr/Util.h"
 #include "joynr/types/TestTypes/TEnum.h"
 #include "joynr/types/TestTypes/TStruct.h"
 #include "joynr/types/TestTypes/TStructExtended.h"
 #include "joynr/types/TestTypes/TStructComposition.h"
 #include "joynr/types/Localisation/Trip.h"
-#include "joynr/types/ChannelUrlInformation.h"
-#include "joynr/types/CapabilityInformation.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/types/ProviderQos.h"
+#include "joynr/types/Version.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/JoynrMessage.h"
@@ -37,11 +42,15 @@
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/MapSerializer.h"
+#include "joynr/RoutingTable.h"
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include <chrono>
@@ -775,16 +784,29 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
-    std::vector<types::CapabilityInformation> capabilityInformations;
-    types::CapabilityInformation cap1(types::CapabilityInformation("domain1", "interface1", types::ProviderQos(), "channel1", "participant1"));
-    capabilityInformations.push_back(cap1);
-    capabilityInformations.push_back(types::CapabilityInformation("domain2", "interface2", types::ProviderQos(), "channel2", "participant2"));
+    joynr::types::Version providerVersion(47, 11);
+    std::int64_t lastSeenMs = 3;
+    std::int64_t expiryDateMs = 7;
+
+    joynr::system::RoutingTypes::ChannelAddress channelAddress1("localhost", "channelId1");
+    std::string serializedAddress1 = JsonSerializer::serialize(channelAddress1);
+    joynr::system::RoutingTypes::ChannelAddress channelAddress2("localhost", "channelId2");
+    std::string serializedAddress2 = JsonSerializer::serialize(channelAddress2);
+
+    std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntries;
+    types::GlobalDiscoveryEntry globalDiscoveryEntry1(providerVersion,
+            "domain1", "interface1", "participant1", types::ProviderQos(), lastSeenMs, expiryDateMs, serializedAddress1);
+    globalDiscoveryEntries.push_back(globalDiscoveryEntry1);
+    globalDiscoveryEntries.push_back(types::GlobalDiscoveryEntry(providerVersion,
+        "domain2", "interface2", "participant2", types::ProviderQos(), lastSeenMs, expiryDateMs, serializedAddress2));
 
     Reply reply;
 
+    const std::string requestReplyId("serialize_deserialize_Reply_with_Array_as_Response");
+
     std::vector<Variant> response;
-    reply.setRequestReplyId("serialize_deserialize_Reply_with_Array_as_Response");
-    response.push_back(joynr::TypeUtil::toVariant(capabilityInformations));
+    reply.setRequestReplyId(requestReplyId);
+    response.push_back(joynr::TypeUtil::toVariant(globalDiscoveryEntries));
     reply.setResponse(std::move(response));
     std::string serializedContent = JsonSerializer::serialize<Reply>(reply);
     JOYNR_LOG_DEBUG(logger, serializedContent);
@@ -793,10 +815,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
 
     response = deserializedReply.getResponse();
 
-    std::vector<Variant> receivedCaps = response.at(0).get<std::vector<Variant>>();
-    types::CapabilityInformation receivedCap1 = receivedCaps.at(0).get<types::CapabilityInformation>();
-    EXPECT_EQ(receivedCap1, cap1);
-    EXPECT_EQ(deserializedReply.getRequestReplyId(), "serialize_deserialize_Reply_with_Array_as_Response");
+    std::vector<Variant> receivedGlobalDiscoveryEntries = response.at(0).get<std::vector<Variant>>();
+    types::GlobalDiscoveryEntry receivedGlobalEntry1 = receivedGlobalDiscoveryEntries.at(0).get<types::GlobalDiscoveryEntry>();
+    EXPECT_EQ(receivedGlobalEntry1, globalDiscoveryEntry1);
+    EXPECT_EQ(deserializedReply.getRequestReplyId(), requestReplyId);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
@@ -952,7 +974,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
-    joynr::system::RoutingTypes::ChannelAddress joynr("TEST_channelId");
+    joynr::system::RoutingTypes::ChannelAddress joynr("TEST_channelId", "TEST_messagingEndpointUrl");
     joynr::system::RoutingTypes::CommonApiDbusAddress dbus("domain", "interfacename", "id");
     joynr::system::RoutingTypes::WebSocketAddress wsServer(
                 joynr::system::RoutingTypes::WebSocketProtocol::WS,
@@ -985,79 +1007,55 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     EXPECT_EQ(wsClient, wsClientDeserialized);
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
+TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
 
     std::string expected(
-                R"({"_typeName":"joynr.types.CapabilityInformation",)"
+                R"({"_typeName":"joynr.types.GlobalDiscoveryEntry",)"
+                R"("providerVersion": {"_typeName":"joynr.types.Version","majorVersion": -1,"minorVersion": -1},)"
                 R"("domain": "domain",)"
-                R"("interfaceName": "",)"
-                R"("providerQos": {)"
+                R"("interfaceName": "testInterface",)"
+                R"("participantId": "someParticipant",)"
+                R"("qos": {)"
                 R"("_typeName":"joynr.types.ProviderQos",)"
                 R"("customParameters": [],)"
-                R"("providerVersion": 4,)"
                 R"("priority": 2,)"
                 R"("scope": "GLOBAL",)"
                 R"("supportsOnChangeSubscriptions": false},)"
-                R"("channelId": "channeldId",)"
-                R"("participantId": ""})"
+                R"("lastSeenDateMs": 123,)"
+                R"("expiryDateMs": 1234,)"
+                R"("address": "serialized_address"})"
                 );
-
-    // Expected literal is:
-    // { "_typeName" : "joynr.types.CapabilityInformation", "channelId" : "channeldId", "domain" : "domain", "interfaceName" : "", "participantId" : "", "providerQos" : { "_typeName" : "joynr.types.ProviderQos", "isLocalOnly" : false, "onChangeSubscriptions" : false, "priority" : 2, "qos" : [  ], "Version" : 4 }
 
     types::ProviderQos qos;
     qos.setPriority(2);
-    qos.setProviderVersion(4);
-    types::CapabilityInformation capabilityInformation;
-    capabilityInformation.setChannelId("channeldId");
-    capabilityInformation.setDomain("domain");
-    capabilityInformation.setProviderQos(qos);
-    JOYNR_LOG_DEBUG(logger, "capabilityInformation {}", capabilityInformation.toString());
+    types::GlobalDiscoveryEntry globalDiscoveryEntry;
+    globalDiscoveryEntry.setDomain("domain");
+    globalDiscoveryEntry.setQos(qos);
+    globalDiscoveryEntry.setLastSeenDateMs(123);
+    globalDiscoveryEntry.setExpiryDateMs(1234);
+    globalDiscoveryEntry.setParticipantId("someParticipant");
+    globalDiscoveryEntry.setAddress("serialized_address");
+    globalDiscoveryEntry.setInterfaceName("testInterface");
+    JOYNR_LOG_DEBUG(logger, "GlobalDiscoveryEntry {}", globalDiscoveryEntry.toString());
 
-    std::string serialized = JsonSerializer::serialize<types::CapabilityInformation>(capabilityInformation);
-    EXPECT_EQ(expected, serialized);
-    // deserialize
-    JOYNR_LOG_DEBUG(logger, "serialized capabilityInformation {}",serialized);
-
-    types::CapabilityInformation deserializedCI = JsonSerializer::deserialize<types::CapabilityInformation>(serialized);
-
-    EXPECT_EQ(capabilityInformation, deserializedCI);
-    JOYNR_LOG_DEBUG(logger, "deserialized capabilityInformation {}", deserializedCI.toString());
-}
-
-//// Test of ChannelURLInformation which is of type std::Vector<std::string>.
-TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
-    std::vector<std::string> urls;
-    urls.push_back("http://example1.com/");
-    urls.push_back("http://example2.com/");
-    types::ChannelUrlInformation urlInformation(urls);
-
-    // Serialize the URL Information
-    std::string serialized = JsonSerializer::serialize(Variant::make<types::ChannelUrlInformation>(urlInformation));
-    JOYNR_LOG_DEBUG(logger, "serialized ChannelUrlInformation {}", serialized);
-
-    // Expected JSON : { "_typeName" : "joynr.types.ChannelUrlInformation", "urls" : [ "http://example1.com/", "http://example2.com/" ] }
-    std::string expected("{\"_typeName\":\"joynr.types.ChannelUrlInformation\",\"urls\": [\"http://example1.com/\",\"http://example2.com/\"]}");
-
+    std::string serialized = JsonSerializer::serialize<types::GlobalDiscoveryEntry>(globalDiscoveryEntry);
+    JOYNR_LOG_DEBUG(logger, "serialized GlobalDiscoveryEntry {} ",serialized);
     EXPECT_EQ(expected, serialized);
 
-    // Deserialize
-    types::ChannelUrlInformation deserializedInfo = JsonSerializer::deserialize<types::ChannelUrlInformation>(serialized);
+    types::GlobalDiscoveryEntry deserializedGDE = JsonSerializer::deserialize<types::GlobalDiscoveryEntry>(serialized);
 
-    // Check the structure
-    std::vector<std::string> deserializedUrls = deserializedInfo.getUrls();
-    EXPECT_EQ(urls, deserializedUrls);
+    EXPECT_EQ(globalDiscoveryEntry, deserializedGDE);
+    JOYNR_LOG_DEBUG(logger, "deserialized GlobalDiscoveryEntry {}", deserializedGDE.toString());
 }
 
 TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
     joynr::types::ProviderQos qos;
 
-    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"providerVersion\":3,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
+    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
 
     joynr::types::ProviderQos providerQos = JsonSerializer::deserialize<joynr::types::ProviderQos>(jsonProviderQos);
 
     EXPECT_EQ(providerQos.getScope(), joynr::types::ProviderScope::LOCAL);
-    EXPECT_EQ(providerQos.getProviderVersion(), 3);
     EXPECT_EQ(providerQos.getPriority(), 5);
 }
 
@@ -1065,9 +1063,8 @@ TEST_F(JsonSerializerTest, serialize_ProviderQos) {
     joynr::types::ProviderQos qos;
     qos.setScope(joynr::types::ProviderScope::LOCAL);
     qos.setPriority(5);
-    qos.setProviderVersion(-1);
 
-    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\": [],\"providerVersion\": -1,\"priority\": 5,\"scope\": \"LOCAL\",\"supportsOnChangeSubscriptions\": false}");
+    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\": [],\"priority\": 5,\"scope\": \"LOCAL\",\"supportsOnChangeSubscriptions\": false}");
 
     std::string result = JsonSerializer::serialize<joynr::types::ProviderQos>(qos);
 
@@ -1109,4 +1106,26 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
     EXPECT_EQ(qos, desQos);
+}
+
+TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
+{
+    RoutingTable routingTable("routingTable");
+    routingTable.add("WebSocketAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>());
+    routingTable.add("ChannelAddress", std::make_shared<joynr::system::RoutingTypes::ChannelAddress>());
+    routingTable.add("MqttAddress", std::make_shared<joynr::system::RoutingTypes::MqttAddress>());
+    routingTable.add("BrowserAddress", std::make_shared<joynr::system::RoutingTypes::BrowserAddress>());
+    routingTable.add("CommonApiDbusAddress", std::make_shared<joynr::system::RoutingTypes::CommonApiDbusAddress>());
+    routingTable.add("WebSocketClientAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>());
+
+    const std::string serializedRoutingTable = routingTable.serializeToJson();
+    JOYNR_LOG_TRACE(logger, serializedRoutingTable);
+
+    routingTable.deserializeFromJson(serializedRoutingTable);
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("WebSocketAddress")->toString(), "WebSocketAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("ChannelAddress")->toString(), "ChannelAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("MqttAddress")->toString(), "MqttAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("BrowserAddress")->toString(), "BrowserAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("CommonApiDbusAddress")->toString(), "CommonApiDbusAddress"));
+    EXPECT_TRUE(boost::starts_with(routingTable.lookup("WebSocketClientAddress")->toString(), "WebSocketClientAddress"));
 }

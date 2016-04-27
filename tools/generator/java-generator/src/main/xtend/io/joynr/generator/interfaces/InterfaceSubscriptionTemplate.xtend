@@ -25,9 +25,8 @@ import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
-import org.franca.core.franca.FInterface
 
-class InterfaceSubscriptionTemplate implements InterfaceTemplate{
+class InterfaceSubscriptionTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension NamingUtil
@@ -35,10 +34,10 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.joynrName
+	override generate() {
+		val interfaceName =  francaIntf.joynrName
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
 		«warning()»
@@ -46,19 +45,19 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 
 		import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 
-		«IF getAttributes(serviceInterface).size > 0 && hasReadAttribute(serviceInterface)»
+		«IF getAttributes(francaIntf).size > 0 && hasReadAttribute(francaIntf)»
 		import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
 		import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 		import io.joynr.pubsub.SubscriptionQos;
 		«ENDIF»
 
-		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true, false)»
+		«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, true, false)»
 			import «datatype»;
 		«ENDFOR»
 
 		public interface «subscriptionClassName» extends JoynrSubscriptionInterface, «interfaceName» {
 
-		«FOR attribute: getAttributes(serviceInterface)»
+		«FOR attribute: getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 			«IF isNotifiable(attribute)»

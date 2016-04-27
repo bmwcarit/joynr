@@ -24,9 +24,8 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
-class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
+class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 
@@ -34,12 +33,12 @@ class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
 	@Inject extension CppInterfaceUtil
 	@Inject private extension NamingUtil
 
-	override generate(FInterface serviceInterface)
+	override generate()
 '''
-«val interfaceName =  serviceInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"SyncProxy_h").toUpperCase»
 «warning()»
 
@@ -48,16 +47,20 @@ class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
 
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 
-«getNamespaceStarter(serviceInterface)»
-/** @brief Synchronous proxy for interface «interfaceName» */
+«getNamespaceStarter(francaIntf)»
+/**
+ * @brief Synchronous proxy for interface «interfaceName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
 public:
 	/**
@@ -70,7 +73,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«syncClassName»(
-			std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
+			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,
@@ -78,16 +81,16 @@ public:
 			bool cached
 	);
 
-	«produceSyncGetterDeclarations(serviceInterface, false)»
-	«produceSyncSetterDeclarations(serviceInterface, false)»
-	«produceSyncMethodDeclarations(serviceInterface, false)»
+	«produceSyncGetterDeclarations(francaIntf, false)»
+	«produceSyncSetterDeclarations(francaIntf, false)»
+	«produceSyncMethodDeclarations(francaIntf, false)»
 
 	friend class «className»;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«syncClassName»);
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
 '''
 }

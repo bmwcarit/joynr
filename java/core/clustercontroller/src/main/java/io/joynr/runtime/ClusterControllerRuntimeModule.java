@@ -1,7 +1,5 @@
 package io.joynr.runtime;
 
-import java.util.Set;
-
 /*
  * #%L
  * %%
@@ -21,18 +19,13 @@ import java.util.Set;
  * #L%
  */
 
-import javax.inject.Named;
-
-import com.google.inject.Provides;
+import com.google.inject.name.Names;
 
 import io.joynr.discovery.DiscoveryClientModule;
 import io.joynr.messaging.NoBackendMessagingModule;
-import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.security.DummyPlatformSecurityManager;
 import io.joynr.security.PlatformSecurityManager;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.MqttAddress;
 
 public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModule {
     public static final String GLOBAL_ADDRESS = "clustercontroller_global_address";
@@ -44,31 +37,6 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
         install(new NoBackendMessagingModule());
 
         bind(PlatformSecurityManager.class).to(DummyPlatformSecurityManager.class);
-    }
-
-    @Provides
-    @Named(GLOBAL_ADDRESS)
-    public Address provideGlobalAddress(Set<GlobalAddressFactory> addressFactories) {
-        Address mqttAddress = null;
-        Address channelAddress = null;
-        Address otherAddress = null;
-        for (GlobalAddressFactory addressFactory : addressFactories) {
-            Address address = addressFactory.create();
-            if (address instanceof MqttAddress) {
-                mqttAddress = address;
-            } else if (address instanceof ChannelAddress) {
-                channelAddress = address;
-            } else {
-                otherAddress = address;
-            }
-        }
-
-        if (mqttAddress != null) {
-            return mqttAddress;
-        }
-        if (channelAddress != null) {
-            return channelAddress;
-        }
-        return otherAddress;
+        bind(Address.class).annotatedWith(Names.named(GLOBAL_ADDRESS)).toProvider(GlobalAddressProvider.class);
     }
 }

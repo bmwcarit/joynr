@@ -19,7 +19,11 @@
  * #L%
  */
 
-var log = require("./logging.js").log;
+
+var joynr = require("joynr");
+var testbase = require("test-base");
+var log = testbase.logging.log;
+var provisioning = testbase.provisioning_common;
 
 if (process.argv.length !== 3) {
     log("please pass a domain as argument");
@@ -28,15 +32,12 @@ if (process.argv.length !== 3) {
 var domain = process.argv[2];
 log("domain: " + domain);
 
-var joynr = require("joynr");
-var provisioning = require("./provisioning_common.js");
 joynr.load(provisioning).then(function(loadedJoynr) {
     log("joynr started");
     joynr = loadedJoynr;
 
     var providerQos = new joynr.types.ProviderQos({
         customParameters : [],
-        providerVersion : 1,
         priority : Date.now(),
         scope : joynr.types.ProviderScope.GLOBAL,
         onChangeSubscriptions : true
@@ -58,6 +59,7 @@ joynr.load(provisioning).then(function(loadedJoynr) {
     }).catch(function(error) {
         log("error registering provider: " + error.toString());
     });
+    return loadedJoynr;
 }).catch(function(error) {
     throw error;
 });

@@ -210,16 +210,12 @@ class JavaTypeUtil extends AbstractTypeUtil {
 		getObjectDataTypeForPlainType(datatype.typeName) + "[]";
 	}
 
-	def String getTypedParameterListJavaRpc(FMethod method) {
+	def String getTypedParameterList(Iterable<FArgument> params) {
 		var sb = new StringBuilder();
-		val params = getInputParameters(method)
 		var i = 0;
 		while (i < params.size) {
 			val param = params.get(i);
-			sb.append("@JoynrRpcParam")
-			sb.append("(\"" + param.joynrName + "\")")
-			sb.append(" "+ param.typeName)
-			sb.append(" "+ param.joynrName)
+			sb.append(param.typeName + " "+ param.joynrName)
 			if (i != params.size-1){
 				sb.append(",\n")
 			}

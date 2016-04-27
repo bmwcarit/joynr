@@ -22,7 +22,7 @@ package io.joynr.qos;
 public class QualityOfService {
 
     private static final long defaultCacheEntryTimeToLiveMs = 86400000; // 24 hours
-    private static final long defaultDataFreshnessMs = 600000; // 10 minutes 
+    private static final long defaultDataFreshnessMs = 600000; // 10 minutes
 
     private long cacheEntryTimeToLiveMs = defaultCacheEntryTimeToLiveMs;
     private long dataFreshnessMs = defaultDataFreshnessMs;

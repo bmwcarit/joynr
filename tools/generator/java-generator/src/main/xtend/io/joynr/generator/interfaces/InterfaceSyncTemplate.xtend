@@ -31,7 +31,7 @@ import java.util.HashMap
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
-class InterfaceSyncTemplate implements InterfaceTemplate{
+class InterfaceSyncTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension MethodUtil
@@ -39,6 +39,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 	@Inject extension InterfaceUtil
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
+
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToReturnTypeName, ArrayList<FMethod> uniqueMultioutMethods) {
 		var uniqueMultioutMethodSignatureToContainerNames = new HashMap<String, String>();
 		var methodCounts = overloadedMethodCounts(getMethods(serviceInterface));
@@ -79,47 +80,47 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 		}
 	}
 
-	override generate(FInterface serviceInterface) {
+	override generate() {
 		var methodToReturnTypeName = new HashMap<FMethod, String>();
 		var uniqueMultioutMethods = new ArrayList<FMethod>();
-		init(serviceInterface, methodToReturnTypeName, uniqueMultioutMethods);
-		val interfaceName =  serviceInterface.joynrName
+		init(francaIntf, methodToReturnTypeName, uniqueMultioutMethods);
+		val interfaceName =  francaIntf.joynrName
 		val syncClassName = interfaceName + "Sync"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
-		val hasMethodWithArguments = hasMethodWithArguments(serviceInterface);
-		val hasWriteAttribute = hasWriteAttribute(serviceInterface);
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 		'''
 «warning()»
 
 package «packagePath»;
 
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-
-«IF hasWriteAttribute || hasMethodWithArguments»
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.Sync;
+«IF jeeExtension»
+import io.joynr.ProvidedBy;
+import io.joynr.UsedBy;
 «ENDIF»
-
-import io.joynr.exceptions.JoynrRuntimeException;
-«IF hasMethodWithErrorEnum(serviceInterface)»
+«IF hasMethodWithErrorEnum(francaIntf)»
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
 	import «datatype»;
 «ENDFOR»
 
-public interface «syncClassName» extends «interfaceName», JoynrSyncInterface {
-
-«FOR attribute: getAttributes(serviceInterface) SEPARATOR "\n"»
+@Sync
+«IF jeeExtension»
+@ProvidedBy(«francaIntf.providerClassName».class)
+@UsedBy(«francaIntf.proxyClassName».class)
+«ENDIF»
+public interface «syncClassName» extends «interfaceName» {
+«FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
 	«var attributeName = attribute.joynrName»
 	«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
-			public «attributeType» «getAttribute»() throws JoynrRuntimeException;
+			public «attributeType» «getAttribute»();
 		«ENDIF»
 		«IF isWritable(attribute)»
-			void «setAttribute»(«attributeType» «attributeName») throws JoynrRuntimeException;
+			void «setAttribute»(«attributeType» «attributeName»);
 		«ENDIF»
 «ENDFOR»
 
@@ -142,25 +143,14 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 		}
 «ENDFOR»
 
-«FOR method: getMethods(serviceInterface) SEPARATOR "\n"»
+«FOR method: getMethods(francaIntf) SEPARATOR "\n"»
 	«var methodName = method.joynrName»
-	«var outputParameters = method.typeNamesForOutputParameter»
 		/*
 		* «methodName»
 		*/
-		«IF outputParameters.size > 1»
-			public «methodToReturnTypeName.get(method)» «methodName»(
-					«method.typedParameterListJavaRpc»
-		«ELSE»
-			«IF method.typeNamesForOutputParameter.iterator.next=="void"»
-				public «methodToReturnTypeName.get(method)» «methodName»(
-						«getTypedParameterListJavaRpc(method)»
-			«ELSE»
-				public «methodToReturnTypeName.get(method)» «methodName»(
-						«getTypedParameterListJavaRpc(method)»
-			«ENDIF»
-		«ENDIF»
-		) throws JoynrRuntimeException«IF method.hasErrorEnum», ApplicationException«ENDIF»;
+		public «methodToReturnTypeName.get(method)» «methodName»(
+				«method.inputParameters.typedParameterList»
+		) «IF method.hasErrorEnum»throws ApplicationException«ENDIF»;
 «ENDFOR»
 }
 		'''

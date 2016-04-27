@@ -17,27 +17,22 @@
  * #L%
  */
 #include "joynr/MessageQueue.h"
-#include "joynr/DispatcherUtils.h"
 
 #include <chrono>
+
+#include "joynr/DispatcherUtils.h"
 
 namespace joynr
 {
 
-MessageQueue::MessageQueue()
-        : queue(new std::multimap<std::string, MessageQueueItem*>()), queueMutex()
+MessageQueue::MessageQueue() : queue(), queueMutex()
 {
 }
 
-MessageQueue::~MessageQueue()
-{
-    delete queue;
-}
-
-std::size_t MessageQueue::getQueueLength()
+std::size_t MessageQueue::getQueueLength() const
 {
     std::lock_guard<std::mutex> lock(queueMutex);
-    return queue->size();
+    return queue.size();
 }
 
 std::size_t MessageQueue::queueMessage(const JoynrMessage& message)
@@ -46,18 +41,18 @@ std::size_t MessageQueue::queueMessage(const JoynrMessage& message)
     MessageQueueItem* item = new MessageQueueItem(message, absTtl);
 
     std::lock_guard<std::mutex> lock(queueMutex);
-    queue->insert(std::make_pair(message.getHeaderTo(), item));
+    queue.insert(std::make_pair(message.getHeaderTo(), item));
 
-    return queue->size();
+    return queue.size();
 }
 
 MessageQueueItem* MessageQueue::getNextMessageForParticipant(const std::string destinationPartId)
 {
     std::lock_guard<std::mutex> lock(queueMutex);
-    auto queueElement = queue->find(destinationPartId);
-    if (queueElement != queue->end()) {
+    auto queueElement = queue.find(destinationPartId);
+    if (queueElement != queue.end()) {
         MessageQueueItem* item = queueElement->second;
-        queue->erase(queueElement);
+        queue.erase(queueElement);
         return item;
     }
     return nullptr;
@@ -68,17 +63,17 @@ std::int64_t MessageQueue::removeOutdatedMessages()
     std::lock_guard<std::mutex> lock(queueMutex);
 
     std::int64_t counter = 0;
-    if (queue->empty()) {
+    if (queue.empty()) {
         return counter;
     }
 
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
 
-    for (auto queueIterator = queue->begin(); queueIterator != queue->end();) {
+    for (auto queueIterator = queue.begin(); queueIterator != queue.end();) {
         MessageQueueItem* value = queueIterator->second;
         if (value->getDecayTime() < now) {
-            queueIterator = queue->erase(queueIterator);
+            queueIterator = queue.erase(queueIterator);
             delete value;
             counter++;
         } else {

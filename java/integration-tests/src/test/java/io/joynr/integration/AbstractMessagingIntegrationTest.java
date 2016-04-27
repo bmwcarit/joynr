@@ -20,8 +20,6 @@ package io.joynr.integration;
  */
 
 import io.joynr.capabilities.DummyCapabilitiesDirectory;
-import io.joynr.capabilities.DummyDiscoveryModule;
-import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
@@ -29,7 +27,6 @@ import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.integration.util.TestMessageListener;
-import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
@@ -47,7 +44,6 @@ import java.util.UUID;
 
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.ChannelUrlInformation;
 
 import org.junit.After;
 import org.junit.Before;
@@ -85,7 +81,6 @@ public abstract class AbstractMessagingIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessagingIntegrationTest.class);
 
     private static final String STATIC_PERSISTENCE_FILE = "target/temp/persistence.properties";
-    private LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient;
     private DummyCapabilitiesDirectory localCapDir;
 
     private String bounceProxyUrl = Guice.createInjector(new JoynrPropertiesModule(new Properties()))
@@ -100,6 +95,8 @@ public abstract class AbstractMessagingIntegrationTest {
     private MessageRouter joynrMessageSender1;
     private MessageRouter joynrMessageSender2;
 
+    private String url;
+
     // To be provided by subclasses
     public abstract Injector createInjector(Properties joynrConfig, Module... modules);
 
@@ -110,19 +107,19 @@ public abstract class AbstractMessagingIntegrationTest {
 
         // use the same capabilities and channelUrl directory in all injectors
         localCapDir = new DummyCapabilitiesDirectory();
-        localChannelUrlDirectoryClient = new DummyLocalChannelUrlDirectoryClient();
 
+        url = "http://testurl";
         String channelId1 = "1_" + UUID.randomUUID().toString().substring(0, 2);
-        address1 = new ChannelAddress(channelId1);
-        Injector injector1 = setupMessageEndpoint(channelId1, localChannelUrlDirectoryClient, localCapDir);
+        address1 = new ChannelAddress(url, channelId1);
+        Injector injector1 = setupMessageEndpoint(channelId1, localCapDir);
         joynrMessageSender1 = injector1.getInstance(MessageRouter.class);
         messageReceiver1 = injector1.getInstance(MessageReceiver.class);
         //   IMessageReceivers messageReceivers = injector1.getInstance(IMessageReceivers.class);
         // messageReceivers.registerMessageReceiver(messageReceiver1, channelId1);
 
         String channelId2 = "2_" + UUID.randomUUID().toString();
-        address2 = new ChannelAddress(channelId2);
-        Injector injector2 = setupMessageEndpoint(channelId2, localChannelUrlDirectoryClient, localCapDir);
+        address2 = new ChannelAddress(url, channelId2);
+        Injector injector2 = setupMessageEndpoint(channelId2, localCapDir);
 
         RoutingTable routingTable1 = injector1.getInstance(RoutingTable.class);
         routingTable1.put(fromParticipantId, address1);
@@ -146,29 +143,19 @@ public abstract class AbstractMessagingIntegrationTest {
 
     }
 
-    public Injector setupMessageEndpoint(String channelId,
-                                         LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient,
-                                         LocalCapabilitiesDirectory localCapDir) {
-        RoutingTable routingTable = new RoutingTableImpl("channelurldirectory_participantid",
-                                                         new ChannelAddress("discoverydirectory_channelid"),
-                                                         "capabilitiesdirectory_participantid",
-                                                         new ChannelAddress("discoverydirectory_channelid"),
+    public Injector setupMessageEndpoint(String channelId, LocalCapabilitiesDirectory localCapDir) {
+        RoutingTable routingTable = new RoutingTableImpl("capabilitiesdirectory_participantid",
+                                                         new ChannelAddress(url, "discoverydirectory_channelid"),
                                                          "domainaccesscontroller_participantid",
-                                                         new ChannelAddress("domainaccesscontroller_channelid"),
+                                                         new ChannelAddress(url, "domainaccesscontroller_channelid"),
                                                          "discovery_participantid",
-                                                         new ChannelAddress("discovery_channelid"));
-
-        ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
-        channelUrlInformation.setUrls(new String[]{ getChannelUrl(channelId) });
-        localChannelUrlDirectoryClient.registerChannelUrls(channelId, channelUrlInformation);
+                                                         new ChannelAddress(url, "discovery_channelid"));
 
         Properties joynrConfig = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
         joynrConfig.put(MessagingPropertyKeys.CHANNELID, channelId);
         joynrConfig.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        Injector injector = createInjector(joynrConfig,
-                                           new DummyDiscoveryModule(localChannelUrlDirectoryClient, localCapDir),
-                                           new PreconfiguredEndpointDirectoryModule(routingTable));
+        Injector injector = createInjector(joynrConfig, new PreconfiguredEndpointDirectoryModule(routingTable));
 
         return injector;
 

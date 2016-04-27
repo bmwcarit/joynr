@@ -114,7 +114,7 @@ public:
     virtual ~AbstractSyncAsyncTest() = default;
     void SetUp(){
         qosSettings = MessagingQos(456000);
-        endPointAddress = std::make_shared<system::RoutingTypes::ChannelAddress>("endPointAddress");
+        endPointAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>("endPointUrl", "endPointAddress");
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
         mockJoynrMessageSender = new MockJoynrMessageSender();
@@ -751,7 +751,7 @@ protected:
     std::string proxyParticipantId;
     std::string providerParticipantId;
     MockClientCache mockClientCache;
-    std::shared_ptr<system::RoutingTypes::Address> endPointAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> endPointAddress;
     tests::Itest* asyncTestFixture;
     std::shared_ptr<exceptions::JoynrException> error;
 private:

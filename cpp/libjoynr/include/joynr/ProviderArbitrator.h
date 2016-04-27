@@ -64,8 +64,6 @@ public:
      */
     std::string getParticipantId();
 
-    joynr::types::CommunicationMiddleware::Enum getConnection();
-
     /*
      *  setArbitrationCallback expects a callback to a JoynrProviderProxy object which
      *  should be notified as soon as the arbitration is completed.
@@ -90,17 +88,8 @@ protected:
      */
     void updateArbitrationStatusParticipantIdAndAddress(
             ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
-            std::string participantId,
-            const joynr::types::CommunicationMiddleware::Enum& connection);
-    /**
-     * @brief selectPreferredCommunicationMiddleware Selects the preferred communication middleware
-     * from a list of available connections.
-     *
-     * @param connections List of available connections.
-     * @return The preferred connection.
-     */
-    virtual joynr::types::CommunicationMiddleware::Enum selectPreferredCommunicationMiddleware(
-            const std::vector<joynr::types::CommunicationMiddleware::Enum>& connections);
+            std::string participantId);
+
     joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
@@ -111,9 +100,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
     void setParticipantId(std::string participantId);
-    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection);
     std::string participantId;
-    joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
     Semaphore listenerSemaphore;

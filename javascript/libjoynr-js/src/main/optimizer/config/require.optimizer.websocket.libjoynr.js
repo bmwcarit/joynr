@@ -20,7 +20,7 @@
 ({
     name: "almond",
     include: ["joynr"],
-    out: "${project.build.outputDirectory}/js/joynr.websocket.js",
+    out: "${project.build.directory}/jar-classes/joynr.websocket.js",
     wrap: {
         startFile: "${project.build.outputDirectory}/libjoynrStartFrag.js",
         endFile: "${project.build.outputDirectory}/libjoynrEndFrag.js"

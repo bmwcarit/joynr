@@ -17,8 +17,10 @@
  * #L%
  */
 #include "common/in-process/InProcessMessagingStub.h"
-#include "common/in-process/InProcessMessagingSkeleton.h"
+
 #include <cassert>
+
+#include "common/in-process/InProcessMessagingSkeleton.h"
 
 namespace joynr
 {

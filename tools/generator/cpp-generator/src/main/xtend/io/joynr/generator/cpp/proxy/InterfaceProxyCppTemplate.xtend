@@ -22,26 +22,25 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
-class InterfaceProxyCppTemplate implements InterfaceTemplate{
+class InterfaceProxyCppTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject private extension NamingUtil
 
-	override generate(FInterface fInterface)
+	override generate()
 '''
-«val interfaceName =  fInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«className».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
 
-«getNamespaceStarter(fInterface)»
+«getNamespaceStarter(francaIntf)»
 «className»::«className»(
-		std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
+		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
 		const std::string &domain,
@@ -55,6 +54,6 @@ class InterfaceProxyCppTemplate implements InterfaceTemplate{
 {
 }
 
-«getNamespaceEnder(fInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }

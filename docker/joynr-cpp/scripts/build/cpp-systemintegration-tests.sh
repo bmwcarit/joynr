@@ -10,7 +10,7 @@ SUCCESS=0
 echo '####################################################'
 echo '# start services'
 echo '####################################################'
-mosquitto &
+mosquitto -c /etc/mosquitto/mosquitto.conf &
 MOSQUITTO_PID=$!
 (
     cd /data/src/cpp/tests

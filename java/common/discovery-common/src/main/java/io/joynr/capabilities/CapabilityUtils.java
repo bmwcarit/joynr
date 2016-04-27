@@ -18,15 +18,16 @@ package io.joynr.capabilities;
  * limitations under the License.
  * #L%
  */
-import java.util.Collection;
-import java.util.List;
-import javax.annotation.CheckForNull;
-import com.google.common.collect.Lists;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+
+import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
-import joynr.types.CapabilityInformation;
-import joynr.types.CommunicationMiddleware;
+import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.ProviderQos;
+import joynr.types.Version;
 import joynr.types.DiscoveryEntry;
 
 /**
@@ -34,71 +35,76 @@ import joynr.types.DiscoveryEntry;
  */
 public class CapabilityUtils {
 
-    public static DiscoveryEntry capabilityEntry2DiscoveryEntry(CapabilityEntry capabilityEntry) {
-        return new DiscoveryEntry(capabilityEntry.getDomain(),
-                                  capabilityEntry.getInterfaceName(),
-                                  capabilityEntry.getParticipantId(),
-                                  capabilityEntry.getProviderQos(),
-                                  new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+    @Inject
+    private static ObjectMapper objectMapper;
+
+    public static DiscoveryEntry globalDiscoveryEntry2DiscoveryEntry(GlobalDiscoveryEntry globalDiscoveryEntry) {
+        return new DiscoveryEntry(globalDiscoveryEntry.getProviderVersion(),
+                                  globalDiscoveryEntry.getDomain(),
+                                  globalDiscoveryEntry.getInterfaceName(),
+                                  globalDiscoveryEntry.getParticipantId(),
+                                  globalDiscoveryEntry.getQos(),
+                                  System.currentTimeMillis(),
+                                  globalDiscoveryEntry.getExpiryDateMs());
     }
 
-    @CheckForNull
-    public static CapabilityInformation capabilityEntry2Information(CapabilityEntry capabilityEntry) {
-        return capabilityEntry.toCapabilityInformation();
+    public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(String domain,
+                                                               String interfaceName,
+                                                               String participantId,
+                                                               ProviderQos qos,
+                                                               Long lastSeenDateMs,
+                                                               Long expiryDateMs,
+                                                               Address address) {
+        return newGlobalDiscoveryEntry(new Version(),
+                                       domain,
+                                       interfaceName,
+                                       participantId,
+                                       qos,
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       address);
     }
 
-    public static DiscoveryEntry capabilitiesInfo2DiscoveryEntry(CapabilityInformation capabilityInformation) {
-        return new DiscoveryEntry(capabilityInformation.getDomain(),
-                                  capabilityInformation.getInterfaceName(),
-                                  capabilityInformation.getParticipantId(),
-                                  capabilityInformation.getProviderQos(),
-                                  new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(Version providerVesion,
+                                                               String domain,
+                                                               String interfaceName,
+                                                               String participantId,
+                                                               ProviderQos qos,
+                                                               Long lastSeenDateMs,
+                                                               Long expiryDateMs,
+                                                               Address address) {
+        // CHECKSTYLE ON
+        return new GlobalDiscoveryEntry(providerVesion,
+                                        domain,
+                                        interfaceName,
+                                        participantId,
+                                        qos,
+                                        lastSeenDateMs,
+                                        expiryDateMs,
+                                        serializeAddress(address));
     }
 
-    public static CapabilityEntry capabilitiesInfo2CapabilityEntry(CapabilityInformation capabilityInformation) {
-        return new CapabilityEntryImpl(capabilityInformation.getDomain(),
-                                       capabilityInformation.getInterfaceName(),
-                                       capabilityInformation.getProviderQos(),
-                                       capabilityInformation.getParticipantId(),
-                                       System.currentTimeMillis(),
-                                       RoutingTypesUtil.fromAddressString(capabilityInformation.getChannelId()));
+    public static GlobalDiscoveryEntry discoveryEntry2GlobalDiscoveryEntry(DiscoveryEntry discoveryEntry,
+                                                                           Address globalAddress) {
+
+        return new GlobalDiscoveryEntry(discoveryEntry.getProviderVersion(),
+                                        discoveryEntry.getDomain(),
+                                        discoveryEntry.getInterfaceName(),
+                                        discoveryEntry.getParticipantId(),
+                                        discoveryEntry.getQos(),
+                                        System.currentTimeMillis(),
+                                        discoveryEntry.getExpiryDateMs(),
+                                        serializeAddress(globalAddress));
     }
 
-    public static Collection<CapabilityEntry> capabilityInformationList2Entries(List<CapabilityInformation> capInfoList) {
-        Collection<CapabilityEntry> capEntryCollection = Lists.newArrayList();
-        for (CapabilityInformation capInfo : capInfoList) {
-            capEntryCollection.add(capabilitiesInfo2CapabilityEntry(capInfo));
+    private static String serializeAddress(Address globalAddress) {
+        String serializedAddress;
+        try {
+            serializedAddress = objectMapper.writeValueAsString(globalAddress);
+        } catch (JsonProcessingException e) {
+            throw new JoynrRuntimeException(e);
         }
-        return capEntryCollection;
-    }
-
-    public static CapabilityInformation discoveryEntry2Information(DiscoveryEntry discoveryEntry, Address globalAddress) {
-        return new CapabilityInformation(discoveryEntry.getDomain(),
-                                         discoveryEntry.getInterfaceName(),
-                                         discoveryEntry.getQos(),
-                                         RoutingTypesUtil.toAddressString(globalAddress),
-                                         discoveryEntry.getParticipantId());
-    }
-
-    public static CapabilityEntry discoveryEntry2CapEntry(DiscoveryEntry discoveryEntry, String globalAddressString) {
-        return discoveryEntry2CapEntry(discoveryEntry, RoutingTypesUtil.fromAddressString(globalAddressString));
-    }
-
-    public static CapabilityEntry discoveryEntry2CapEntry(DiscoveryEntry discoveryEntry, Address globalAddress) {
-        return new CapabilityEntryImpl(discoveryEntry.getDomain(),
-                                       discoveryEntry.getInterfaceName(),
-                                       discoveryEntry.getQos(),
-                                       discoveryEntry.getParticipantId(),
-                                       System.currentTimeMillis(),
-                                       globalAddress);
-    }
-
-    public static Collection<DiscoveryEntry> capabilityEntries2DiscoveryEntries(Collection<CapabilityEntry> capEntryList) {
-        Collection<DiscoveryEntry> discoveryEntries = Lists.newArrayList();
-        for (CapabilityEntry capabilityEntry : capEntryList) {
-            discoveryEntries.add(capabilityEntry2DiscoveryEntry(capabilityEntry));
-        }
-
-        return discoveryEntries;
+        return serializedAddress;
     }
 }

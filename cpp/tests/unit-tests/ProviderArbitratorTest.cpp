@@ -34,6 +34,7 @@ using ::testing::AllOf;
 using ::testing::Property;
 using ::testing::Invoke;
 using ::testing::Unused;
+using ::testing::AtLeast;
 
 using namespace joynr;
 
@@ -58,7 +59,6 @@ class MockArbitrationListener : public IArbitrationListener {
 public:
     MOCK_METHOD1(setArbitrationStatus, void(ArbitrationStatus::ArbitrationStatusType arbitrationStatus));
     MOCK_METHOD1(setParticipantId, void(const std::string& participantId));
-    MOCK_METHOD1(setConnection, void(const joynr::types::CommunicationMiddleware::Enum& connection));
 };
 
 /**
@@ -79,8 +79,8 @@ public:
         mockArbitrationListener(new MockArbitrationListener()),
         semaphore(0)
     {
-        discoveryQos.setDiscoveryTimeout(discoveryTimeout);
-        discoveryQos.setRetryInterval(retryInterval);
+        discoveryQos.setDiscoveryTimeoutMs(discoveryTimeout);
+        discoveryQos.setRetryIntervalMs(retryInterval);
         mockProviderArbitrator = new MockProviderArbitrator("domain", "interfaceName", mockDiscovery, discoveryQos);
     }
     void SetUp() {
@@ -114,6 +114,7 @@ TEST_F(ProviderArbitratorTest, arbitrationTimeout) {
 
     auto start = std::chrono::system_clock::now();
 
+    EXPECT_CALL(*mockProviderArbitrator, attemptArbitration()).Times(AtLeast(1));
     mockProviderArbitrator->startArbitration();
 
     // Wait for timeout

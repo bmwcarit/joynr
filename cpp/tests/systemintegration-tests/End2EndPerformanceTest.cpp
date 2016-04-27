@@ -81,7 +81,10 @@ public:
         runtime1->stop(deleteChannel);
         runtime2->stop(deleteChannel);
 
-        // Remove participant id persistence file
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
@@ -111,7 +114,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 50000;
 
@@ -153,7 +156,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::ignore = stopTime;
     std::ignore = logger;
 }
-INSTANTIATE_TEST_CASE_P(Http,
+INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndPerformanceTest,
         testing::Values(
             std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings","test-resources/HttpSystemIntegrationTest2.settings")

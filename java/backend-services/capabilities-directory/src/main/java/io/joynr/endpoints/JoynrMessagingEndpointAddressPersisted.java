@@ -28,29 +28,29 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JoynrMessagingEndpointAddressPersisted extends AddressPersisted {
 
     private static final long serialVersionUID = 2258977417169018529L;
-    private String channelId;
+    private String address;
 
     protected JoynrMessagingEndpointAddressPersisted() {
     }
 
     @JsonCreator
-    public JoynrMessagingEndpointAddressPersisted(@JsonProperty("channelId") String channelId) {
-        this.setChannelId(channelId);
+    public JoynrMessagingEndpointAddressPersisted(@JsonProperty("address") String address) {
+        this.setAddress(address);
     }
 
-    public String getChannelId() {
-        return channelId;
+    public String getAddress() {
+        return address;
     }
 
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((channelId == null) ? 0 : channelId.hashCode());
+        result = prime * result + ((address == null) ? 0 : address.hashCode());
         return result;
     }
 
@@ -66,11 +66,11 @@ public class JoynrMessagingEndpointAddressPersisted extends AddressPersisted {
             return false;
         }
         JoynrMessagingEndpointAddressPersisted other = (JoynrMessagingEndpointAddressPersisted) obj;
-        if (channelId == null) {
-            if (other.channelId != null) {
+        if (address == null) {
+            if (other.address != null) {
                 return false;
             }
-        } else if (!channelId.equals(other.channelId)) {
+        } else if (!address.equals(other.address)) {
             return false;
         }
         return true;
@@ -80,8 +80,8 @@ public class JoynrMessagingEndpointAddressPersisted extends AddressPersisted {
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(this.getClass().getSimpleName());
-        stringBuilder.append(" channel:");
-        stringBuilder.append(channelId);
+        stringBuilder.append(" address:");
+        stringBuilder.append(address);
         return stringBuilder.toString();
     }
 

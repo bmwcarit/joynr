@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import java.util.HashMap
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
-class InterfaceProviderTemplate implements InterfaceTemplate{
+class InterfaceProviderTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension InterfaceUtil
@@ -75,48 +75,58 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 		}
 	}
 
-	override generate(FInterface serviceInterface) {
+	override generate() {
 		var methodToDeferredName = new HashMap<FMethod, String>();
-		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName
+		var methodToErrorEnumName = francaIntf.methodToErrorEnumName
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
-		init(serviceInterface, methodToDeferredName, uniqueMethodsToCreateDeferreds);
+		init(francaIntf, methodToDeferredName, uniqueMethodsToCreateDeferreds);
 
-		val interfaceName =  serviceInterface.joynrName
-		val className = interfaceName + "Provider"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+		val interfaceName = francaIntf.joynrName
+		val className = francaIntf.providerClassName
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
 «warning()»
 package «packagePath»;
 
-«IF getMethods(serviceInterface).size > 0 || hasReadAttribute(serviceInterface)»
+«IF getMethods(francaIntf).size > 0 || hasReadAttribute(francaIntf)»
 	import io.joynr.provider.Promise;
 «ENDIF»
-«IF hasReadAttribute(serviceInterface)»
+«IF hasReadAttribute(francaIntf)»
 	import io.joynr.provider.Deferred;
 «ENDIF»
 «IF !uniqueMethodsToCreateDeferreds.isEmpty»
 	import io.joynr.provider.AbstractDeferred;
 «ENDIF»
-«IF hasWriteAttribute(serviceInterface) || hasMethodWithArguments(serviceInterface)»
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-«ENDIF»
-«IF hasWriteAttribute(serviceInterface) || hasMethodWithoutReturnValue(serviceInterface)»
+«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
 	import io.joynr.provider.DeferredVoid;
 «ENDIF»
-«IF serviceInterface.hasMethodWithErrorEnum»
+«IF francaIntf.hasMethodWithErrorEnum»
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
-import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.JoynrInterface;
+import io.joynr.JoynrVersion;
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+«FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
+«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
 
-public interface «className» extends JoynrProvider {
-	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»";
-	«FOR attribute : getAttributes(serviceInterface)»
+import io.joynr.provider.SubscriptionPublisherInjection;
+
+interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPublisherInjection<«interfaceName»SubscriptionPublisher> {}
+«ENDIF»
+
+@JoynrInterface(provides=«className».class, name="«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»")
+@JoynrVersion(major=«majorVersion», minor=«minorVersion»)
+«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
+public interface «className» extends «interfaceName»SubscriptionPublisherInjection {
+«ELSE»
+public interface «className» {
+«ENDIF»
+
+	«FOR attribute : getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 
@@ -126,13 +136,10 @@ public interface «className» extends JoynrProvider {
 		«IF isWritable(attribute)»
 			Promise<DeferredVoid> set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
 		«ENDIF»
-		«IF isNotifiable(attribute)»
-			public void «attributeName»Changed(«attributeType» «attributeName»);
-		«ENDIF»
 	«ENDFOR»
-	«FOR method : getMethods(serviceInterface)»
+	«FOR method : getMethods(francaIntf)»
 		«var methodName = method.joynrName»
-		«var params = method.typedParameterListJavaRpc»
+		«var params = method.inputParameters.typedParameterList»
 		«var comments = method.javadocCommentsParameterListJavaRpc»
 
 		/**
@@ -173,11 +180,6 @@ public interface «className» extends JoynrProvider {
 				}
 			«ENDIF»
 		}
-	«ENDFOR»
-	«FOR broadcast : serviceInterface.broadcasts»
-		«val broadcastName = broadcast.joynrName»
-
-		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList»);
 	«ENDFOR»
 }
 		'''

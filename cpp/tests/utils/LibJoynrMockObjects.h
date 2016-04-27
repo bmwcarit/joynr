@@ -78,6 +78,12 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
+class MockSubscriptionListenerZeroTypes : public joynr::ISubscriptionListener<void> {
+public:
+    MOCK_METHOD0(onReceive, void());
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
+};
+
 class MockTestProvider : public joynr::tests::DefaulttestProvider
 {
 public:

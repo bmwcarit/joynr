@@ -23,24 +23,25 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
-class InterfaceProviderHTemplate implements InterfaceTemplate{
+class InterfaceProviderHTemplate extends InterfaceTemplate {
 	@Inject private extension TemplateBase
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
+	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
 	@Inject private extension MethodUtil
 
-	override generate(FInterface serviceInterface)
+	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"Provider_h").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -51,20 +52,24 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/IJoynrProvider.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include "joynr/RequestCallerFactory.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 «getDllExportIncludeStatement()»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
-/** @brief Provider class for interface «interfaceName» */
+/**
+ * @brief Provider class for interface «interfaceName»
+ *
+ * @version «majorVersion».«minorVersion»
+ */
 class «getDllExportMacro()» «interfaceName»Provider : public virtual IJoynrProvider
 {
 
@@ -79,11 +84,21 @@ public:
 	~«interfaceName»Provider() override;
 
 	static const std::string& INTERFACE_NAME();
+	/**
+	 * @brief MAJOR_VERSION The major version of this provider interface as specified in the
+	 * Franca model.
+	 */
+	static const std::uint32_t MAJOR_VERSION;
+	/**
+	 * @brief MINOR_VERSION The minor version of this provider interface as specified in the
+	 * Franca model.
+	 */
+	static const std::uint32_t MINOR_VERSION;
 
-	«IF !serviceInterface.attributes.empty»
+	«IF !francaIntf.attributes.empty»
 		// attributes
 	«ENDIF»
-	«FOR attribute : serviceInterface.attributes»
+	«FOR attribute : francaIntf.attributes»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
 			/**
@@ -127,11 +142,11 @@ public:
 		«ENDIF»
 
 	«ENDFOR»
-	«IF !serviceInterface.methods.empty»
+	«IF !francaIntf.methods.empty»
 		// methods
 	«ENDIF»
-	«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
-	«FOR method : serviceInterface.methods»
+	«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
+	«FOR method : francaIntf.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		/**
@@ -142,13 +157,13 @@ public:
 		 */
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»
-					«inputTypedParamList.substring(1)»,
+					«inputTypedParamList»,
 				«ENDIF»
 				«IF method.outputParameters.empty»
 					std::function<void()> onSuccess,
 				«ELSE»
 					std::function<void(
-							«outputTypedParamList.substring(1)»
+							«outputTypedParamList»
 					)> onSuccess,
 				«ENDIF»
 				«IF method.hasErrorEnum»
@@ -164,10 +179,10 @@ public:
 		) = 0;
 
 	«ENDFOR»
-	«IF !serviceInterface.broadcasts.empty»
+	«IF !francaIntf.broadcasts.empty»
 		// broadcasts
 	«ENDIF»
-	«FOR broadcast : serviceInterface.broadcasts»
+	«FOR broadcast : francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		/**
 		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete
@@ -176,16 +191,18 @@ public:
 		 * @param «broadcastName» the new broadcast value
 		 */
 		virtual void fire«broadcastName.toFirstUpper»(
-				«broadcast.commaSeperatedTypedConstOutputParameterList»
+				«IF !broadcast.outputParameters.empty»
+					«broadcast.commaSeperatedTypedConstOutputParameterList»
+				«ENDIF»
 		) = 0;
 
 	«ENDFOR»
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 
-«var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
+«var packagePrefix = getPackagePathWithJoynrPrefix(francaIntf, "::")»
 
 namespace joynr {
 

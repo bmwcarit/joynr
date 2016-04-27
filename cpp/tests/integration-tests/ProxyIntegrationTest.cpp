@@ -50,7 +50,7 @@ public:
         mockJoynrMessageSender(new MockJoynrMessageSender()),
         domain("cppProxyIntegrationTestDomain"),
         messagingQos(),
-        endPointAddress(new system::RoutingTypes::ChannelAddress("endPointAddress"))
+        endPointAddress(new system::RoutingTypes::ChannelAddress("http://endpoint:8080/bounceproxy", "endPointAddress"))
     {
     }
 
@@ -76,7 +76,7 @@ protected:
     MockJoynrMessageSender* mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
-    std::shared_ptr<system::RoutingTypes::ChannelAddress> endPointAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::ChannelAddress> endPointAddress;
 
 
 private:

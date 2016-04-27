@@ -29,7 +29,7 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
+class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -40,16 +40,17 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 	@Inject private extension BroadcastUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 
-	override  generate(FInterface serviceInterface)
+	override  generate()
 '''
-«var interfaceName = serviceInterface.joynrName»
+«var interfaceName = francaIntf.joynrName»
 «warning()»
+#include <cassert>
 #include <functional>
 #include <tuple>
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»InProcessConnector.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
-«FOR datatype: getAllComplexTypes(serviceInterface)»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»InProcessConnector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
+«FOR datatype: getAllComplexTypes(francaIntf)»
 	«IF isCompound(datatype) || isMap(datatype)»
 		#include «getIncludeOf(datatype)»
 	«ENDIF»
@@ -66,7 +67,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 «val className = interfaceName + "InProcessConnector"»
 INIT_LOGGER(«className»);
@@ -92,7 +93,7 @@ bool «className»::usesClusterController() const{
 	return false;
 }
 
-«FOR attribute : getAttributes(serviceInterface)»
+«FOR attribute : getAttributes(francaIntf)»
 	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
 	«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
@@ -103,8 +104,8 @@ bool «className»::usesClusterController() const{
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
-			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-			assert(«serviceInterface.interfaceCaller»);
+			std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+			assert(«francaIntf.interfaceCaller»);
 
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
@@ -119,7 +120,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccess, onError);
+			«francaIntf.interfaceCaller»->«getAttributeName»(onSuccess, onError);
 			future->get(«attributeName»);
 		}
 
@@ -128,8 +129,8 @@ bool «className»::usesClusterController() const{
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
-			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-			assert(«serviceInterface.interfaceCaller»);
+			std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+			assert(«francaIntf.interfaceCaller»);
 
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
@@ -150,7 +151,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccessWrapper, onErrorWrapper);
+			«francaIntf.interfaceCaller»->«getAttributeName»(onSuccessWrapper, onErrorWrapper);
 			return future;
 		}
 
@@ -161,8 +162,8 @@ bool «className»::usesClusterController() const{
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
-			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-			assert(«serviceInterface.interfaceCaller»);
+			std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+			assert(«francaIntf.interfaceCaller»);
 
 			auto future = std::make_shared<joynr::Future<void>>();
 			std::function<void()> onSuccessWrapper =
@@ -183,7 +184,7 @@ bool «className»::usesClusterController() const{
 
 			//see header for more information
 			JOYNR_LOG_ERROR(logger, "#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
-			«serviceInterface.interfaceCaller»->«setAttributeName»(«attributeName», onSuccessWrapper, onErrorWrapper);
+			«francaIntf.interfaceCaller»->«setAttributeName»(«attributeName», onSuccessWrapper, onErrorWrapper);
 			return future;
 		}
 
@@ -192,8 +193,8 @@ bool «className»::usesClusterController() const{
 			assert(address);
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
-			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-			assert(«serviceInterface.interfaceCaller»);
+			std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+			assert(«francaIntf.interfaceCaller»);
 
 			auto future = std::make_shared<joynr::Future<void>>();
 			std::function<void()> onSuccess =
@@ -207,7 +208,7 @@ bool «className»::usesClusterController() const{
 					};
 
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«setAttributeName»(«attributeName», onSuccess, onError);
+			«francaIntf.interfaceCaller»->«setAttributeName»(«attributeName», onSuccess, onError);
 			return future->get();
 		}
 
@@ -301,7 +302,7 @@ bool «className»::usesClusterController() const{
 	«ENDIF»
 «ENDFOR»
 
-«FOR method: getMethods(serviceInterface)»
+«FOR method: getMethods(francaIntf)»
 «var methodname = method.joynrName»
 «var outputParameters = method.commaSeparatedOutputParameterTypes»
 «var inputParamList = method.commaSeperatedUntypedInputParameterList»
@@ -313,8 +314,8 @@ bool «className»::usesClusterController() const{
 	assert(address);
 	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 	assert(caller);
-	std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-	assert(«serviceInterface.interfaceCaller»);
+	std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+	assert(«francaIntf.interfaceCaller»);
 	auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 	std::function<void(«outputTypedConstParamList»)> onSuccess =
@@ -329,17 +330,17 @@ bool «className»::usesClusterController() const{
 				future->onError(error);
 			};
 
-	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
+	«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
 	future->get(«method.commaSeperatedUntypedOutputParameterList»);
 }
 
-«produceAsyncMethodSignature(serviceInterface, method, className)»
+«produceAsyncMethodSignature(francaIntf, method, className)»
 {
 	assert(address);
 	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 	assert(caller);
-	std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-	assert(«serviceInterface.interfaceCaller»);
+	std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+	assert(«francaIntf.interfaceCaller»);
 	auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
 	std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
@@ -354,16 +355,16 @@ bool «className»::usesClusterController() const{
 	std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
 			[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
 				future->onError(error);
-				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(serviceInterface, method)»
+				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 			};
 
-	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper, onErrorWrapper);
+	«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper, onErrorWrapper);
 	return future;
 }
 
 «ENDFOR»
 
-«FOR broadcast: serviceInterface.broadcasts»
+«FOR broadcast: francaIntf.broadcasts»
 	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 	«val broadcastName = broadcast.joynrName»
 
@@ -470,7 +471,7 @@ bool «className»::usesClusterController() const{
 		subscriptionManager->unregisterSubscription(subscriptionId);
 	}
 «ENDFOR»
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 
 	def getInterfaceCaller(FInterface serviceInterface){

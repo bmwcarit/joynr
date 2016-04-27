@@ -31,9 +31,10 @@ joynrTestRequire(
             "joynr/messaging/MessagingQos",
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
-            "joynr/types/CapabilityInformation",
+            "joynr/types/GlobalDiscoveryEntry",
             "joynr/types/ArbitrationStrategyCollection",
             "joynr/types/DiscoveryScope",
+            "joynr/types/Version",
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/radiotypes/RadioStation",
@@ -48,9 +49,10 @@ joynrTestRequire(
                 MessagingQos,
                 ProviderQos,
                 ProviderScope,
-                CapabilityInformation,
+                GlobalDiscoveryEntry,
                 ArbitrationStrategyCollection,
                 DiscoveryScope,
+                Version,
                 InProcessAddress,
                 RadioProxy,
                 RadioStation,
@@ -79,10 +81,10 @@ joynrTestRequire(
                             domain = "myDomain";
                             interfaceName = "vehicle/Radio";
                             discoveryQos = new DiscoveryQos({
-                                discoveryTimeout : 5000,
-                                discoveryRetryDelay : 900,
+                                discoveryTimeoutMs : 5000,
+                                discoveryRetryDelayMs : 900,
                                 arbitrationStrategy : ArbitrationStrategyCollection.Nothing,
-                                maxAgeOfCachedProviders : 0,
+                                cacheMaxAgeMs : 0,
                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                                 additionalParameters : {}
                             });
@@ -94,17 +96,17 @@ joynrTestRequire(
                                 staticArbitration : false
                             };
 
-                            capInfo = new CapabilityInformation({
+                            capInfo = new GlobalDiscoveryEntry({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                                 domain : domain,
                                 interfaceName : interfaceName,
-                                providerQos : new ProviderQos({
+                                qos : new ProviderQos({
                                     customParameter : [],
-                                    providerVersion : 1,
                                     priority : 1,
                                     scope : ProviderScope.GLOBAL,
                                     supportsOnChangeSubscriptions : true
                                 }),
-                                channelId : "channelId",
+                                address : "channelId",
                                 participantId : "myParticipantId"
                             });
 

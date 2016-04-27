@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,7 @@ import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.pubsub.publication.AttributeListener;
-import io.joynr.pubsub.publication.BroadcastFilterImpl;
-import io.joynr.pubsub.publication.BroadcastListener;
+import io.joynr.provider.ProviderContainer;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
@@ -39,7 +37,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import joynr.Reply;
-import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,57 +80,6 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
 
         public Object respond(Object payload) {
             return "Reply to " + payload.toString();
-        }
-
-        @Override
-        public ProviderQos getProviderQos() {
-            return new ProviderQos();
-        }
-
-        @Override
-        public void registerAttributeListener(String attributeName, AttributeListener attributeListener) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void addBroadcastFilter(BroadcastFilterImpl filter) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void addBroadcastFilter(BroadcastFilterImpl... filters) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public Class<?> getProvidedInterface() {
-            return getClass();
-        }
-
-        @Override
-        public String getInterfaceName() {
-            return "chatmessagnerapp";
         }
 
     }
@@ -186,10 +132,12 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(factoryProperties)).getInjector();
 
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
-        RequestCallerDirectory requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
-        // TODO register EndpointAddresses for participantIds
+        ProviderDirectory providerDirectory = injector.getInstance(ProviderDirectory.class);
 
-        requestCallerDirectory.addCaller(ownParticipant, new ChatMessengerAppRequestCaller());
+        providerDirectory.add(ownParticipant, new ProviderContainer("interfaceName",
+                                                                    ChatMessengerApp.class,
+                                                                    new ChatMessengerAppRequestCaller(),
+                                                                    null));
 
         try {
             requestReplyManager.sendOneWay(ownParticipant,

@@ -3743,8 +3743,8 @@ int main(int argc, char* argv[])
 
     // Find the provider with the highest priority set in ProviderQos
     DiscoveryQos discoveryQos;
-    discoveryQos.setDiscoveryTimeout(40000);
-    discoveryQos.setCacheMaxAge(std::numeric_limits<std::int64_t>::max());
+    discoveryQos.setDiscoveryTimeoutMs(40000);
+    discoveryQos.setCacheMaxAgeMs(std::numeric_limits<std::int64_t>::max());
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // run the tests

@@ -69,6 +69,11 @@ public:
         tests::testAbstractProvider::fireLocationUpdate(location);
     }
 
+    void fireEmptyBroadcast(
+    ) override {
+        tests::testAbstractProvider::fireEmptyBroadcast();
+    }
+
     void fireLocationUpdateWithSpeed(
             const joynr::types::Localisation::GpsLocation& location,
             const float& currentSpeed
@@ -206,7 +211,10 @@ public:
         runtime1->stop(deleteChannel);
         runtime2->stop(deleteChannel);
 
-        // Delete the persisted participant ids so that each test uses different participant ids
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
@@ -314,8 +322,8 @@ protected:
                 = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeout(1000);
-        discoveryQos.setRetryInterval(250);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
+        discoveryQos.setRetryIntervalMs(250);
 
         std::int64_t qosRoundTripTTL = 500;
 
@@ -467,8 +475,8 @@ TEST_P(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
-    discoveryQos.setRetryInterval(250);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setRetryIntervalMs(250);
 
     std::int64_t qosRoundTripTTL = 500;
 
@@ -554,8 +562,8 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
-    discoveryQos.setRetryInterval(250);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setRetryIntervalMs(250);
 
     std::int64_t qosRoundTripTTL = 500;
 
@@ -622,8 +630,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
-    discoveryQos.setRetryInterval(250);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setRetryIntervalMs(250);
 
     std::int64_t qosRoundTripTTL = 500;
 
@@ -667,6 +675,73 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     delete testProxyBuilder;
 }
 
+TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
+
+    MockSubscriptionListenerZeroTypes* mockListener = new MockSubscriptionListenerZeroTypes();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    EXPECT_CALL(*mockListener, onReceive())
+            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+
+    std::shared_ptr<ISubscriptionListener<void> > subscriptionListener(
+                    mockListener);
+
+    auto testProvider = std::make_shared<MyTestProvider>();
+    runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
+
+    //This wait is necessary, because registerProvider is async, and a lookup could occur
+    // before the register has finished.
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
+
+    ProxyBuilder<tests::testProxy>* testProxyBuilder
+            = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setRetryIntervalMs(250);
+
+    std::int64_t qosRoundTripTTL = 500;
+
+    // Send a message and expect to get a result
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                                               ->setCached(false)
+                                               ->setDiscoveryQos(discoveryQos)
+                                               ->build());
+
+    std::int64_t minInterval_ms = 50;
+    OnChangeSubscriptionQos subscriptionQos(
+                500000,   // validity_ms
+                minInterval_ms);  // minInterval_ms
+
+    testProxy->subscribeToEmptyBroadcastBroadcast(subscriptionListener, subscriptionQos);
+
+    waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "emptyBroadcast");
+
+    testProvider->fireEmptyBroadcast();
+
+//     Wait for a subscription message to arrive
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+
+    testProvider->fireEmptyBroadcast();
+//     Wait for a subscription message to arrive
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted.
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+
+    testProvider->fireEmptyBroadcast();
+//     Wait for a subscription message to arrive
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+
+    delete testProxyBuilder;
+}
+
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     MockGpsFloatSubscriptionListener* mockListener = new MockGpsFloatSubscriptionListener();
@@ -695,8 +770,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
-    discoveryQos.setRetryInterval(250);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setRetryIntervalMs(250);
 
     std::int64_t qosRoundTripTTL = 500;
 
@@ -773,8 +848,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
-    discoveryQos.setRetryInterval(250);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setRetryIntervalMs(250);
 
     std::int64_t qosRoundTripTTL = 500;
 
@@ -850,8 +925,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
-    discoveryQos.setRetryInterval(250);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setRetryIntervalMs(250);
 
     std::int64_t qosRoundTripTTL = 500;
 
@@ -936,8 +1011,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
-    discoveryQos.setRetryInterval(250);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setRetryIntervalMs(250);
 
     std::int64_t qosRoundTripTTL = 500;
 

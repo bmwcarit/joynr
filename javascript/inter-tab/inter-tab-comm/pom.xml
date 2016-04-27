@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr.javascript</groupId>
 		<artifactId>inter-tab</artifactId>
-		<version>0.16.0</version>
+		<version>0.17.0</version>
 	</parent>
 
 	<properties>
@@ -112,7 +112,7 @@
 				</executions>
 			</plugin>
 
-			<!-- The require.js optimizer builds the single libjoynr.js that include
+			<!-- The require.js optimizer builds the single BrowserInterTabService that include
 				all exported require.js modules and their dependencies -->
 			<plugin>
 				<groupId>com.github.mcheely</groupId>

@@ -26,9 +26,8 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
-class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
+class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -38,10 +37,10 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 	@Inject private extension AttributeUtil
 	@Inject private extension InterfaceSubscriptionUtil
 
-	override  generate(FInterface serviceInterface)
+	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"InProcessConnector_h").toUpperCase»
 «warning()»
 
@@ -49,7 +48,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/SubscriptionRequest.h"
@@ -59,7 +58,7 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 #include "joynr/Logger.h"
 #include "joynr/TypeUtil.h"
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include <memory>
@@ -80,19 +79,19 @@ namespace exceptions
 
 } // namespace joynr
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 /** @brief InProcessConnector class for interface «interfaceName» */
 class «interfaceName»InProcessConnector : public I«interfaceName»Connector {
 private:
-«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+«FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 	«val returnType = attribute.typeName»
 	std::string subscribeTo«attribute.joynrName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				const joynr::SubscriptionQos& subscriptionQos,
 				SubscriptionRequest& subscriptionRequest);
 «ENDFOR»
-«FOR broadcast: serviceInterface.broadcasts»
+«FOR broadcast: francaIntf.broadcasts»
 «val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 «val broadcastName = broadcast.joynrName»
 	std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
@@ -127,14 +126,14 @@ public:
 	 */
 	bool usesClusterController() const override;
 
-	«produceSyncGetterDeclarations(serviceInterface, false)»
-	«produceSyncSetterDeclarations(serviceInterface, false)»
-	«produceSyncMethodDeclarations(serviceInterface, false)»
-	«produceAsyncGetterDeclarations(serviceInterface, false)»
-	«produceAsyncSetterDeclarations(serviceInterface, false)»
-	«produceAsyncMethodDeclarations(serviceInterface, false, true)»
+	«produceSyncGetterDeclarations(francaIntf, false)»
+	«produceSyncSetterDeclarations(francaIntf, false)»
+	«produceSyncMethodDeclarations(francaIntf, false)»
+	«produceAsyncGetterDeclarations(francaIntf, false)»
+	«produceAsyncSetterDeclarations(francaIntf, false)»
+	«produceAsyncMethodDeclarations(francaIntf, false, true)»
 
-	«produceSubscribeUnsubscribeMethods(serviceInterface, false)»
+	«produceSubscribeUnsubscribeMethods(francaIntf, false)»
 
 private:
 	ADD_LOGGER(«interfaceName»InProcessConnector);
@@ -147,9 +146,9 @@ private:
 	joynr::PublicationManager* publicationManager;
 	joynr::InProcessPublicationSender* inProcessPublicationSender;
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 
-«var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
+«var packagePrefix = getPackagePathWithJoynrPrefix(francaIntf, "::")»
 
 namespace joynr {
 

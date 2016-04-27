@@ -19,7 +19,7 @@
 #ifndef ICAPABILITIESCLIENT_H
 #define ICAPABILITIESCLIENT_H
 
-#include "joynr/types/CapabilityInformation.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 
 #include <functional>
 #include <string>
@@ -34,23 +34,25 @@ class ICapabilitiesClient
 {
 public:
     virtual ~ICapabilitiesClient() = default;
-    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList) = 0;
+    virtual void add(
+            const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList) = 0;
     virtual void remove(const std::string& participantId) = 0;
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
-    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
-                                                             const std::string& interfaceName) = 0;
-    virtual void lookup(const std::string& domain,
-                        const std::string& interfaceName,
-                        std::function<void(const std::vector<joynr::types::CapabilityInformation>&
-                                                   capabilities)> onSuccess,
-                        std::function<void(const exceptions::JoynrRuntimeException& error)>
-                                onError = nullptr) = 0;
-    virtual void lookup(const std::string& participantId,
-                        std::function<void(const std::vector<joynr::types::CapabilityInformation>&
-                                                   capabilities)> onSuccess,
-                        std::function<void(const exceptions::JoynrRuntimeException& error)>
-                                onError = nullptr) = 0;
-    virtual std::string getLocalChannelId() = 0;
+    virtual std::vector<types::GlobalDiscoveryEntry> lookup(const std::string& domain,
+                                                            const std::string& interfaceName) = 0;
+    virtual void lookup(
+            const std::string& domain,
+            const std::string& interfaceName,
+            std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>
+                    onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& error)>
+                    onError = nullptr) = 0;
+    virtual void lookup(
+            const std::string& participantId,
+            std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>
+                    onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& error)>
+                    onError = nullptr) = 0;
 };
 
 } // namespace joynr

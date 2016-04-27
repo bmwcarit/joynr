@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>0.16.0</version>
+		<version>0.17.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -184,6 +184,8 @@
 								<argument>${project.build.directory}/model/joynr/Routing.fidl</argument>
 								<argument>-generationLanguage</argument>
 								<argument>java</argument>
+								<argument>-jee</argument>
+								<argument>true</argument>
 							</arguments>
 	    				</configuration>
 					</execution>

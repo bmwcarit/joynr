@@ -26,6 +26,10 @@
 
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/Settings.h"
+#include "joynr/types/Version.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 using namespace joynr;
 
@@ -41,6 +45,8 @@ public:
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
     joynr::system::DiscoveryProxy* discoveryProxy;
+    std::int64_t lastSeenDateMs;
+    std::int64_t expiryDateMs;
 
     SystemServicesDiscoveryTest() :
         settingsFilename("test-resources/SystemServicesDiscoveryTest.settings"),
@@ -52,24 +58,35 @@ public:
         mockMessageReceiverMqtt(new MockMessageReceiver()),
         discoveryQos(),
         discoveryProxyBuilder(nullptr),
-        discoveryProxy(nullptr)
+        discoveryProxy(nullptr),
+        lastSeenDateMs(-1),
+        expiryDateMs(-1)
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
         discoveryDomain = systemSettings.getDomain();
         discoveryProviderParticipantId = systemSettings.getCcDiscoveryProviderParticipantId();
 
-        discoveryQos.setCacheMaxAge(1000);
+        discoveryQos.setCacheMaxAgeMs(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
         discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
-        discoveryQos.setDiscoveryTimeout(50);
+        discoveryQos.setDiscoveryTimeoutMs(50);
 
-        std::string channelIdHttp("SystemServicesDiscoveryTest.ChannelId");
-        std::string channelIdMqtt("mqtt_SystemServicesRoutingTest.ChannelId");
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdHttp));
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdMqtt));
+        std::string httpChannelId("http_SystemServicesDiscoveryTest.ChannelId");
+        std::string httpEndPointUrl("http_SystemServicesRoutingTest.endPointUrl");
+        std::string mqttTopic("mqtt_SystemServicesRoutingTest.topic");
+        std::string mqttBrokerUrl("mqtt_SystemServicesRoutingTest.brokerUrl");
+
+        using system::RoutingTypes::ChannelAddress;
+        using system::RoutingTypes::MqttAddress;
+
+        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
+
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getGlobalClusterControllerAddress())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
+        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
@@ -96,10 +113,11 @@ public:
     }
 
     void TearDown(){
-        std::remove(
-                    LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
-        std::remove(
-                    LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
         delete discoveryProxy;
         delete discoveryProxyBuilder;
     }
@@ -165,24 +183,22 @@ TEST_F(SystemServicesDiscoveryTest, add)
     );
     joynr::types::ProviderQos providerQos(
                 std::vector<joynr::types::CustomParameter>(), // custom provider parameters
-                1,                                      // provider version
                 1,                                      // priority
                 joynr::types::ProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions
     );
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
-            joynr::types::CommunicationMiddleware::JOYNR
-    };
+    joynr::types::Version providerVersion(47, 11);
     std::vector<joynr::types::DiscoveryEntry> expectedResult;
     joynr::types::DiscoveryEntry discoveryEntry(
+                providerVersion,
                 domain,
                 interfaceName,
                 participantId,
                 providerQos,
-                connections
+                lastSeenDateMs,
+                expiryDateMs
     );
     expectedResult.push_back(discoveryEntry);
-
 
     try {
         discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
@@ -223,21 +239,20 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     );
     joynr::types::ProviderQos providerQos(
                 std::vector<joynr::types::CustomParameter>(), // custom provider parameters
-                1,                                      // provider version
                 1,                                      // priority
                 joynr::types::ProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions
     );
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
-            joynr::types::CommunicationMiddleware::JOYNR
-    };
+    joynr::types::Version providerVersion(47, 11);
     std::vector<joynr::types::DiscoveryEntry> expectedResult;
     joynr::types::DiscoveryEntry discoveryEntry(
+                providerVersion,
                 domain,
                 interfaceName,
                 participantId,
                 providerQos,
-                connections
+                lastSeenDateMs,
+                expiryDateMs
     );
     expectedResult.push_back(discoveryEntry);
 

@@ -2,8 +2,6 @@
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
-JOBS=$(nproc)
-
 function usage
 {
     echo "usage: cpp-build-rpm-package.sh"

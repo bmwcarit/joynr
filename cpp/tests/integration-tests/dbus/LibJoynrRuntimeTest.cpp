@@ -35,6 +35,8 @@
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/types/CommunicationMiddleware.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/types/Version.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/Future.h"
@@ -228,7 +230,9 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
     std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
             joynr::types::CommunicationMiddleware::JOYNR
     };
+    joynr::types::Version providerVersion(47, 11);
     joynr::types::DiscoveryEntry expectedDiscoveryEntry(
+                providerVersion,
                 domain,
                 tests::testProvider::INTERFACE_NAME(),
                 participantId,
@@ -246,7 +250,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
 
 TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
     std::string domain("LibJoynrRuntimeTest.Domain.C");
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
 
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
@@ -273,7 +277,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
 
 TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     std::string domain("LibJoynrRuntimeTest.Domain.D");
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
 
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
@@ -317,7 +321,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
 
 TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     std::string domain("LibJoynrRuntimeTest.Domain.E");
-    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
 
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,

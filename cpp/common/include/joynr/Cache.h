@@ -19,9 +19,9 @@
 #ifndef CACHE_H
 #define CACHE_H
 
+#include <cassert>
 #include <map>
 #include <memory>
-#include <cassert>
 #include <vector>
 
 namespace joynr
@@ -55,9 +55,9 @@ public:
      * @param key
      * @return
      */
-    bool contains(const Key& key)
+    bool contains(const Key& key) const
     {
-        return cacheMap.find(key) != cacheMap.end();
+        return cacheMap.find(key) != cacheMap.cend();
     }
     /**
      * @brief object to lookup object in the cache

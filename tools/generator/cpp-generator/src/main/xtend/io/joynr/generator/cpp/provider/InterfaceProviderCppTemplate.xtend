@@ -23,11 +23,10 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.InterfaceUtil
-import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
+import io.joynr.generator.templates.util.NamingUtil
 
-class InterfaceProviderCppTemplate implements InterfaceTemplate{
+class InterfaceProviderCppTemplate extends InterfaceTemplate {
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -35,29 +34,29 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
 
-	override generate(FInterface serviceInterface) {
+	override generate() {
 		var selector = TypeSelector::defaultTypeSelector
 		selector.transitiveTypes(true)
 '''
 «warning()»
-«val interfaceName = serviceInterface.joynrName»
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
+«val interfaceName = francaIntf.joynrName»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/MetaTypeRegistrar.h"
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
 #include "joynr/TypeUtil.h"
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 «interfaceName»Provider::«interfaceName»Provider()
 {
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
 
-	«val typeObjs = getAllComplexTypes(serviceInterface, selector)»
+	«val typeObjs = getAllComplexTypes(francaIntf, selector)»
 
 	«IF !typeObjs.isEmpty()»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
@@ -88,11 +87,14 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
 const std::string& «interfaceName»Provider::INTERFACE_NAME()
 {
-	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»");
+	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»");
 	return INTERFACE_NAME;
 }
 
-«getNamespaceEnder(serviceInterface)»
+const std::uint32_t «interfaceName»Provider::MAJOR_VERSION = «majorVersion»;
+const std::uint32_t «interfaceName»Provider::MINOR_VERSION = «minorVersion»;
+
+«getNamespaceEnder(francaIntf)»
 '''
 }
 }

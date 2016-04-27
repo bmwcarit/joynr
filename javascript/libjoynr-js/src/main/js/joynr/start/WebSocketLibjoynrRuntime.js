@@ -25,7 +25,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/capabilities/arbitration/Arbitrator",
     "joynr/provider/ProviderBuilder",
     "joynr/proxy/ProxyBuilder",
-    "joynr/types/CapabilityInformation",
+    "joynr/types/GlobalDiscoveryEntry",
     "joynr/capabilities/CapabilitiesRegistrar",
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/dispatching/RequestReplyManager",
@@ -52,7 +52,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/system/DiscoveryProxy",
     "joynr/system/RoutingProxy",
     "joynr/types/TypeRegistrySingleton",
-    "joynr/types/DiscoveryQos",
     "joynr/types/DiscoveryScope",
     "joynr/types/DiscoveryEntry",
     "joynr/util/UtilInternal",
@@ -74,7 +73,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         Arbitrator,
         ProviderBuilder,
         ProxyBuilder,
-        CapabilityInformation,
+        GlobalDiscoveryEntry,
         CapabilitiesRegistrar,
         ParticipantIdStorage,
         RequestReplyManager,
@@ -101,7 +100,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         DiscoveryProxy,
         RoutingProxy,
         TypeRegistrySingleton,
-        DiscoveryQosGenerated,
         DiscoveryScope,
         DiscoveryEntry,
         Util,
@@ -252,7 +250,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         }
 
         var loggingMessagingQos = new MessagingQos({
-            ttl : Date.now() + relativeTtl
+            ttl : relativeTtl
         });
         loggingManager = Object.freeze(new LoggingManager());
         LoggerFactory.init(loggingManager);
@@ -320,7 +318,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     typedCapabilities = [];
                     for (i = 0; i < untypedCapabilities.length; i++) {
-                        var capability = new CapabilityInformation(untypedCapabilities[i]);
+                        var capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
                         initialRoutingTable[capability.participantId] = ccAddress;
                         typedCapabilities.push(capability);
                     }

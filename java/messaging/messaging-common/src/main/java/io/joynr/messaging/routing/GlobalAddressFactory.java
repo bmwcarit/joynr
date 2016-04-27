@@ -1,5 +1,7 @@
 package io.joynr.messaging.routing;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * %%
@@ -21,8 +23,29 @@ package io.joynr.messaging.routing;
 
 import joynr.system.RoutingTypes.Address;
 
-public interface GlobalAddressFactory {
+public abstract class GlobalAddressFactory<T extends Address> {
 
-    Address create();
+    /**
+     *
+     * @return a globally addressable address
+     */
+    public abstract T create();
+
+    /**
+     * @param transport
+     *          the transport, for which the support request is triggered
+     * @return the boolean representing the transport supported by this Address type.
+     */
+    public abstract boolean supportsTransport(@Nullable String transport);
+
+    /**
+     *
+     * @param listener is notified when the global address is ready. The default
+     * implementation assumes that the address is ready immediately. Override for
+     * Address types that must be discovered etc.
+     */
+    public void registerGlobalAddressReady(TransportReadyListener listener) {
+        listener.transportReady(create());
+    }
 
 }

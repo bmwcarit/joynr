@@ -19,7 +19,6 @@ package io.joynr.messaging.channel;
  * #L%
  */
 
-import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.FailureAction;
@@ -32,7 +31,8 @@ import io.joynr.messaging.routing.MessageRouter;
 import java.io.IOException;
 
 import joynr.JoynrMessage;
-import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ import com.google.inject.Inject;
 public class ChannelMessagingSkeleton implements IMessagingSkeleton {
     private final MessageRouter messageRouter;
 
-    private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChannelMessagingSkeleton.class);
 
     private MessageReceiver messageReceiver;
 
@@ -55,11 +55,11 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
         final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
-        addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
         try {
+            addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
             messageRouter.route(message);
         } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException exception) {
-            logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader());
+            logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader(), exception);
             failureAction.execute(exception);
         }
     }
@@ -70,9 +70,11 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
 
     }
 
-    private void addRequestorToMessageRouter(String requestorParticipantId, String replyToChannelId) {
-        if (replyToChannelId != null && !replyToChannelId.isEmpty()) {
-            messageRouter.addNextHop(requestorParticipantId, new ChannelAddress(replyToChannelId));
+    private void addRequestorToMessageRouter(String requestorParticipantId, String replyToSerializedAddress) {
+        if (replyToSerializedAddress != null && !replyToSerializedAddress.isEmpty()) {
+            Address address;
+            address = RoutingTypesUtil.fromAddressString(replyToSerializedAddress);
+            messageRouter.addNextHop(requestorParticipantId, address);
         } else {
             /*
              * TODO make sure that all requests (ie not one-way) also have replyTo

@@ -19,6 +19,7 @@ package io.joynr.generator.provider
 
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -31,40 +32,46 @@ class ProviderGenerator {
 
 	@Inject
 	extension NamingUtil
-
-	@Inject
-	InterfaceProviderTemplate interfaceProvider
-
-	@Inject
-	DefaultInterfaceProviderTemplate defaultInterfaceProvider
-
-	@Inject
-	InterfaceAbstractProviderTemplate interfaceAbstractProvider
+	@Inject JavaTemplateFactory templateFactory
 
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
 		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
 
 		var serviceName =  fInterface.joynrName
 
+		var interfaceProviderTemplate = templateFactory.createInterfaceProviderTemplate(fInterface)
 		generateFile(
 			fsa,
 			path + serviceName + "Provider.java",
-			interfaceProvider,
-			fInterface
+			interfaceProviderTemplate
 		);
 
+		var defaultInterfaceProviderTemplate = templateFactory.createDefaultInterfaceProviderTemplate(fInterface)
 		generateFile(
 			fsa,
 			path + "Default" + serviceName + "Provider.java",
-			defaultInterfaceProvider,
-			fInterface
+			defaultInterfaceProviderTemplate
 		);
 
+		var interfaceAbstractProviderTemplate = templateFactory.createInterfaceAbstractProviderTemplate(fInterface)
 		generateFile(
 			fsa,
 			path + serviceName + "AbstractProvider.java",
-			interfaceAbstractProvider,
-			fInterface
+			interfaceAbstractProviderTemplate
+		);
+
+		var subscriptionPublisherTemplate = templateFactory.createSubscriptionPublisherTemplate(fInterface)
+		generateFile(
+			fsa,
+			path + serviceName + "SubscriptionPublisher.java",
+			subscriptionPublisherTemplate
+		);
+
+		var subscriptionPublisherImplTemplate = templateFactory.createSubscriptionPublisherImplTemplate(fInterface)
+		generateFile(
+			fsa,
+			path + serviceName + "SubscriptionPublisherImpl.java",
+			subscriptionPublisherImplTemplate
 		);
 	}
 }

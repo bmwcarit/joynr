@@ -196,4 +196,8 @@ interface Radio {
 		  ByteBuffer byteBuffer
 		}
 	}
+
+	broadcast emptyBroadcast {
+	}
+
 }

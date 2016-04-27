@@ -31,6 +31,7 @@ joynrTestRequire(
             "joynr/types/ArbitrationStrategyCollection",
             "joynr/types/DiscoveryQos",
             "joynr/types/DiscoveryScope",
+            "joynr/types/Version",
             "global/Promise",
             "Date"
         ],
@@ -43,6 +44,7 @@ joynrTestRequire(
                 ArbitrationStrategyCollection,
                 DiscoveryQosGen,
                 DiscoveryScope,
+                Version,
                 Promise,
                 Date) {
             var capabilities, fakeTime, staticArbitrationSettings, staticArbitrationSpy, domain;
@@ -56,13 +58,15 @@ joynrTestRequire(
 
             function getDiscoveryEntry(domain, interfaceName, discoveryStrategy) {
                 return new DiscoveryEntry({
+                    providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                     domain : domain,
                     interfaceName : interfaceName,
                     qos : new ProviderQos([ new CustomParameter("theName", "theValue")
                     ], 123, 1234, discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
                             ? true
                             : false, true),
-                    participandId : "700"
+                    participandId : "700",
+                    lastSeenDateMs : Date.now()
                 });
             }
 
@@ -97,10 +101,10 @@ joynrTestRequire(
                             domain = "myDomain";
                             interfaceName = "myInterface";
                             discoveryQos = new DiscoveryQos({
-                                discoveryTimeout : 5000,
-                                discoveryRetryDelay : 900,
+                                discoveryTimeoutMs : 5000,
+                                discoveryRetryDelayMs : 900,
                                 arbitrationStrategy : ArbitrationStrategyCollection.Nothing,
-                                cacheMaxAge : 0,
+                                cacheMaxAgeMs : 0,
                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                                 additionalParameters : {}
                             });
@@ -162,7 +166,7 @@ joynrTestRequire(
                         it("calls capabilityDiscovery upon arbitration", function() {
 
                             // return some discoveryEntries so that arbitration is faster
-                            // (instantly instead of discoveryTimeout)
+                            // (instantly instead of discoveryTimeoutMs)
                             capDiscoverySpy.lookup.andReturn(Promise.resolve(discoveryEntries));
                             spyOn(discoveryQos, "arbitrationStrategy").andReturn(discoveryEntries);
                             arbitrator = new Arbitrator(capDiscoverySpy);
@@ -194,7 +198,7 @@ joynrTestRequire(
                                  */
                                 expect(capDiscoverySpy.lookup.mostRecentCall.args[0]).toBe(domain);
                                 expect(capDiscoverySpy.lookup.mostRecentCall.args[1]).toBe(interfaceName);
-                                expect(capDiscoverySpy.lookup.mostRecentCall.args[2].cacheMaxAge).toBe(discoveryQos.cacheMaxAge);
+                                expect(capDiscoverySpy.lookup.mostRecentCall.args[2].cacheMaxAge).toBe(discoveryQos.cacheMaxAgeMs);
                                 expect(capDiscoverySpy.lookup.mostRecentCall.args[2].discoveryScope.name).toBe(discoveryQos.discoveryScope.name);
                             });
                         });
@@ -238,7 +242,7 @@ joynrTestRequire(
                         });
 
                         it(
-                                "timeouts after the given discoveryTimeout on empty results",
+                                "timeouts after the given discoveryTimeoutMs on empty results",
                                 function() {
                                     var onFulfilledSpy, onRejectedSpy;
 
@@ -251,13 +255,13 @@ joynrTestRequire(
                                             interfaceName : interfaceName,
                                             discoveryQos : discoveryQos
                                         }).then(onFulfilledSpy).catch(onRejectedSpy);
-                                        // let discoveryTimeout - 1 pass
-                                        increaseFakeTime(discoveryQos.discoveryTimeout - 1);
+                                        // let discoveryTimeoutMs - 1 pass
+                                        increaseFakeTime(discoveryQos.discoveryTimeoutMs - 1);
 
                                         expect(onFulfilledSpy).not.toHaveBeenCalled();
                                         expect(onRejectedSpy).not.toHaveBeenCalled();
 
-                                        // let discoveryTimeout pass
+                                        // let discoveryTimeoutMs pass
                                         increaseFakeTime(1);
                                     });
 
@@ -276,7 +280,7 @@ joynrTestRequire(
                                 });
 
                         it(
-                                "reruns discovery for empty discovery results according to discoveryTimeout and discoveryRetryDelay",
+                                "reruns discovery for empty discovery results according to discoveryTimeoutMs and discoveryRetryDelayMs",
                                 function() {
                                     expect(capDiscoverySpy.lookup).not.toHaveBeenCalled();
                                     spyOn(discoveryQos, "arbitrationStrategy").andReturn([]);
@@ -301,7 +305,7 @@ joynrTestRequire(
                                     var internalCheck =
                                             function(i) {
                                                 runs(function() {
-                                                    increaseFakeTime(discoveryQos.discoveryRetryDelay - 2);
+                                                    increaseFakeTime(discoveryQos.discoveryRetryDelayMs - 2);
                                                 });
 
                                                 waitsFor(

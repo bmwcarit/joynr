@@ -24,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,10 +51,8 @@ import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RequestInterpreter;
@@ -76,10 +73,10 @@ import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderCallback;
-import io.joynr.provider.RequestCallerFactory;
 import io.joynr.runtime.PropertyLoader;
 import joynr.Reply;
 import joynr.Request;
@@ -113,22 +110,25 @@ public class RpcStubbingTest {
 
     private static final long DEFAULT_TTL = 2000L;
 
-    public static interface TestSync extends JoynrSyncInterface {
+    public static interface TestSync {
         public GpsLocation returnsGpsLocation();
 
         public List<GpsLocation> returnsGpsLocationList();
 
-        public void takesTwoSimpleParams(@JoynrRpcParam("a") Integer a, @JoynrRpcParam("b") String b);
+        public void takesTwoSimpleParams(Integer a, String b);
 
         public void noParamsNoReturnValue();
     }
 
-    public static interface TestProvider extends JoynrInterface, JoynrProvider {
+    @JoynrInterface(provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
+    public static interface TestProvider extends JoynrProvider {
+        public static final String INTERFACE_NAME = "rpcstubbing/test";
+
         public Promise<Deferred<GpsLocation>> returnsGpsLocation();
 
         public Promise<Deferred<List<GpsLocation>>> returnsGpsLocationList();
 
-        public Promise<DeferredVoid> takesTwoSimpleParams(@JoynrRpcParam("a") Integer a, @JoynrRpcParam("b") String b);
+        public Promise<DeferredVoid> takesTwoSimpleParams(Integer a, String b);
 
         public Promise<DeferredVoid> noParamsNoReturnValue();
     }
@@ -155,8 +155,6 @@ public class RpcStubbingTest {
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF", justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
                        JsonMappingException, IOException, JoynrMessageNotSentException {
-        doReturn(TestProvider.class).when(testMock).getProvidedInterface();
-
         Deferred<GpsLocation> deferredGpsLocation = new Deferred<GpsLocation>();
         deferredGpsLocation.resolve(gpsValue);
         when(testMock.returnsGpsLocation()).thenReturn(new Promise<Deferred<GpsLocation>>(deferredGpsLocation));

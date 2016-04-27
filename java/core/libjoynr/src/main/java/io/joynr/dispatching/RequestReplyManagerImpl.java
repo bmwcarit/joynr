@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
+import io.joynr.provider.ProviderContainer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirectoryListener<RequestCaller> {
+public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryListener<ProviderContainer> {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerImpl.class);
     private boolean running = true;
 
@@ -70,7 +71,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     private ConcurrentHashMap<Request, ProviderCallback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, ProviderCallback<Reply>>();
 
     private ReplyCallerDirectory replyCallerDirectory;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
     private RequestInterpreter requestInterpreter;
     private MessageRouter messageRouter;
     private JoynrMessageFactory joynrMessageFactory;
@@ -80,17 +81,17 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     @Inject
     public RequestReplyManagerImpl(JoynrMessageFactory joynrMessageFactory,
                                    ReplyCallerDirectory replyCallerDirectory,
-                                   RequestCallerDirectory requestCallerDirectory,
+                                   ProviderDirectory providerDirectory,
                                    MessageRouter messageRouter,
                                    RequestInterpreter requestInterpreter,
                                    @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         this.joynrMessageFactory = joynrMessageFactory;
         this.replyCallerDirectory = replyCallerDirectory;
-        this.requestCallerDirectory = requestCallerDirectory;
+        this.providerDirectory = providerDirectory;
         this.messageRouter = messageRouter;
         this.requestInterpreter = requestInterpreter;
         this.cleanupScheduler = cleanupScheduler;
-        requestCallerDirectory.addListener(this);
+        providerDirectory.addListener(this);
     }
 
     /*
@@ -235,20 +236,20 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     }
 
     @Override
-    public void callerAdded(String participantId, RequestCaller requestCaller) {
+    public void entryAdded(String participantId, ProviderContainer providerContainer) {
         ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> requestList = requestQueue.remove(participantId);
         if (requestList != null) {
             for (ContentWithExpiryDate<Request> requestItem : requestList) {
                 if (!requestItem.isExpired()) {
                     Request request = requestItem.getContent();
-                    handleRequest(replyCallbacks.remove(request), requestCaller, request);
+                    handleRequest(replyCallbacks.remove(request), providerContainer.getRequestCaller(), request);
                 }
             }
         }
     }
 
     @Override
-    public void callerRemoved(String participantId) {
+    public void entryRemoved(String participantId) {
         //TODO cleanup requestQueue?
     }
 
@@ -281,8 +282,8 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
                               String providerParticipant,
                               Request request,
                               long expiryDate) {
-        if (requestCallerDirectory.containsCaller(providerParticipant)) {
-            handleRequest(replyCallback, requestCallerDirectory.getCaller(providerParticipant), request);
+        if (providerDirectory.contains(providerParticipant)) {
+            handleRequest(replyCallback, providerDirectory.get(providerParticipant).getRequestCaller(), request);
         } else {
             queueRequest(replyCallback, providerParticipant, request, ExpiryDate.fromAbsolute(expiryDate));
             logger.info("No requestCaller found for participantId: {} queuing request message.", providerParticipant);
@@ -297,7 +298,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
 
     @Override
     public void handleReply(final Reply reply) {
-        final ReplyCaller callBack = replyCallerDirectory.removeCaller(reply.getRequestReplyId());
+        final ReplyCaller callBack = replyCallerDirectory.remove(reply.getRequestReplyId());
         if (callBack == null) {
             logger.warn("No reply caller found for id: " + reply.getRequestReplyId());
             return;
@@ -310,7 +311,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     public void handleError(Request request, Throwable error) {
         String requestReplyId = request.getRequestReplyId();
         if (requestReplyId != null) {
-            ReplyCaller replyCaller = replyCallerDirectory.removeCaller(requestReplyId);
+            ReplyCaller replyCaller = replyCallerDirectory.remove(requestReplyId);
             if (replyCaller != null) {
                 replyCaller.error(error);
             }
@@ -379,7 +380,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
             }
         }
         messageRouter.shutdown();
-        requestCallerDirectory.removeListener(this);
+        providerDirectory.removeListener(this);
         replyCallerDirectory.shutdown();
     }
 }

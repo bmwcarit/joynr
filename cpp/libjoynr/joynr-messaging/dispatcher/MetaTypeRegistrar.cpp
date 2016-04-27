@@ -18,6 +18,8 @@
  */
 #include "joynr/MetaTypeRegistrar.h"
 
+#include <cassert>
+
 namespace joynr
 {
 
@@ -44,8 +46,16 @@ MetaTypeRegistrar::MetaTypeRegistrar()
     registerMetaType<std::uint64_t>();
 
     // Register a reply interpreter for void type
-    std::lock_guard<std::mutex> lock(replyInterpretersMutex);
-    replyInterpreters.insert({util::getTypeId<void>(), new ReplyInterpreter<void>()});
+    {
+        std::lock_guard<std::mutex> lock(replyInterpretersMutex);
+        replyInterpreters.insert({util::getTypeId<void>(), new ReplyInterpreter<void>()});
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
+        publicationInterpreters.insert(
+                {util::getTypeId<void>(), new PublicationInterpreter<void>()});
+    }
 }
 
 MetaTypeRegistrar& MetaTypeRegistrar::instance()

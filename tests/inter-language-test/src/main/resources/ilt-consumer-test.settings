@@ -1,0 +1,8 @@
+#inter-language-test.provider.domain=joynr-inter-language-test-domain
+provider.domain=joynr-inter-language-test-domain
+transport=http:mqtt
+#transport=websocket
+#joynr.messaging.cc.host=localhost
+#joynr.messaging.cc.port=4242
+##joynr.messaging.cc.protocol=ws
+#joynr.messaging.cc.path=

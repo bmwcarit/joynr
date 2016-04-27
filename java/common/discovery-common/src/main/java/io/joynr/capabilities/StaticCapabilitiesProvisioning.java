@@ -19,13 +19,13 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.CapabilityInformation;
+import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,32 +37,26 @@ import com.google.inject.name.Named;
 
 public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning {
     public static final String STATIC_PROVISIONING_PROPERTIES = "static_capabilities_provisioning.properties";
-    private static final String provisioningEntry = "provisionedCapabilities";
-    private List<CapabilityEntry> capabilityEntries;
+    public static final String PROPERTY_PROVISIONED_CAPABILITIES = "joynr.capabilities.provisioned";
+    private Collection<DiscoveryEntry> discoveryEntries;
     private static Logger logger = LoggerFactory.getLogger(StaticCapabilitiesProvisioning.class);
 
     @Inject
     public StaticCapabilitiesProvisioning(@Named(STATIC_PROVISIONING_PROPERTIES) Properties properties,
                                           ObjectMapper objectMapper) {
-        loadCapabilityEntries(properties, objectMapper);
+        loadDiscoveryEntries(properties, objectMapper);
     }
 
     @SuppressWarnings("unchecked")
-    private void loadCapabilityEntries(Properties properties, ObjectMapper objectMapper) {
-        capabilityEntries = new ArrayList<CapabilityEntry>();
-        Object entries = properties.get(provisioningEntry);
-        Object newEntries = null;
+    private void loadDiscoveryEntries(Properties properties, ObjectMapper objectMapper) {
+        discoveryEntries = new HashSet<DiscoveryEntry>();
+        Object entries = properties.get(PROPERTY_PROVISIONED_CAPABILITIES);
+        List<GlobalDiscoveryEntry> newEntries = null;
         try {
-            newEntries = objectMapper.readValue((String) entries, new TypeReference<List<CapabilityInformation>>() {
+            newEntries = objectMapper.readValue((String) entries, new TypeReference<List<GlobalDiscoveryEntry>>() {
             });
-            List<CapabilityInformation> castedEntries = (List<CapabilityInformation>) newEntries;
-            for (CapabilityInformation capabilityInformation : castedEntries) {
-                capabilityEntries.add(new CapabilityEntryImpl(capabilityInformation.getDomain(),
-                                                              capabilityInformation.getInterfaceName(),
-                                                              capabilityInformation.getProviderQos(),
-                                                              capabilityInformation.getParticipantId(),
-                                                              System.currentTimeMillis(),
-                                                              new ChannelAddress(capabilityInformation.getChannelId())));
+            for (GlobalDiscoveryEntry globalDiscoveryEntry : newEntries) {
+                discoveryEntries.add(globalDiscoveryEntry);
             }
         } catch (Exception e) {
             logger.error("unable to load provisioned capabilities. "
@@ -71,7 +65,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     }
 
     @Override
-    public Collection<? extends CapabilityEntry> getCapabilityEntries() {
-        return capabilityEntries;
+    public Collection<DiscoveryEntry> getDiscoveryEntries() {
+        return discoveryEntries;
     }
 }

@@ -36,11 +36,11 @@
 #include "joynr/TypedClientMultiCache.h"
 #include "joynr/Logger.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/types/CapabilityInformation.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/Semaphore.h"
 #include "common/InterfaceAddress.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
@@ -69,6 +69,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
 public:
     LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                ICapabilitiesClient* capabilitiesClientPtr,
+                               const std::string& localAddress,
                                MessageRouter& messageRouter);
 
     ~LocalCapabilitiesDirectory() override;
@@ -163,10 +164,15 @@ public:
     void removeProviderRegistrationObserver(
             std::shared_ptr<IProviderRegistrationObserver> observer);
 
+    void saveToFile();
+    void loadFromFile(std::string fileName);
+    std::string serializeToJson() const;
+    void deserializeFromJson(const std::string& jsonString);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
-    void capabilitiesReceived(const std::vector<types::CapabilityInformation>& results,
+    void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
                               std::vector<CapabilityEntry> cachedLocalCapabilies,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
                               joynr::types::DiscoveryScope::Enum discoveryScope);
@@ -194,18 +200,23 @@ private:
                                              std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
 
-    static void convertDiscoveryEntryIntoCapabilityEntry(
+    void convertDiscoveryEntryIntoCapabilityEntry(
             const joynr::types::DiscoveryEntry& discoveryEntry,
             CapabilityEntry& capabilityEntry);
-    static void convertCapabilityEntryIntoDiscoveryEntry(
-            const CapabilityEntry& capabilityEntry,
-            joynr::types::DiscoveryEntry& discoveryEntry);
-    static void convertCapabilityEntriesIntoDiscoveryEntries(
+    void convertCapabilityEntryIntoDiscoveryEntry(const CapabilityEntry& capabilityEntry,
+                                                  joynr::types::DiscoveryEntry& discoveryEntry);
+    void convertCapabilityEntriesIntoDiscoveryEntries(
             const std::vector<CapabilityEntry>& capabilityEntries,
             std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+    void convertDiscoveryEntriesIntoCapabilityEntries(
+            const std::vector<types::DiscoveryEntry>& discoveryEntries,
+            std::vector<CapabilityEntry>& capabilityEntries);
+
+    void cleanCaches();
 
     ADD_LOGGER(LocalCapabilitiesDirectory);
     ICapabilitiesClient* capabilitiesClient;
+    std::string localAddress;
     std::mutex cacheLock;
 
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2GlobalCapabilities;
@@ -214,11 +225,13 @@ private:
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2LocalCapabilities;
     TypedClientMultiCache<std::string, CapabilityEntry> participantId2LocalCapability;
 
-    std::vector<types::CapabilityInformation> registeredGlobalCapabilities;
+    std::vector<types::GlobalDiscoveryEntry> registeredGlobalCapabilities;
     MessageRouter& messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
     MqttSettings mqttSettings;
+
+    std::string localCapabilitiesDirectoryFileName;
 
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);

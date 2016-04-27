@@ -3,7 +3,6 @@
 source /data/src/docker/joynr-base/scripts/global.sh
 
 START=$(date +%s)
-JOBS=$(nproc)
 
 function usage
 {

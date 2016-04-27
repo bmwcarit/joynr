@@ -30,7 +30,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.io.IOException;
 import java.util.UUID;
 
+import io.joynr.Async;
+import io.joynr.Sync;
 import io.joynr.runtime.SystemServicesSettings;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,9 +60,6 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.ExpiryDate;
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
-import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatching.Dispatcher;
@@ -84,15 +84,16 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastListener;
 import joynr.vehicle.NavigationProxy;
 
 public class ProxyTest {
+    private static final int ONE_MINUTE_IN_MS = 60 * 1000;
     private static final long MAX_TTL_MS = 2592000000L;
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
@@ -125,7 +126,8 @@ public class ProxyTest {
         ERROR_VALUE_1, ERROR_VALUE_2, ERROR_VALUE_3
     }
 
-    public interface SyncTestInterface extends JoynrSyncInterface {
+    @Sync
+    public interface SyncTestInterface {
         String method1();
 
         String methodWithApplicationError() throws ApplicationException;
@@ -134,7 +136,8 @@ public class ProxyTest {
     public static class StringTypeRef extends TypeReference<String> {
     }
 
-    public interface AsyncTestInterface extends JoynrAsyncInterface {
+    @Async
+    public interface AsyncTestInterface {
         Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
 
         Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
@@ -183,22 +186,22 @@ public class ProxyTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
+                DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                                   domain,
                                                                    TestInterface.INTERFACE_NAME,
                                                                    toParticipantId,
                                                                    new ProviderQos(),
-                                                                   new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                                   System.currentTimeMillis(),
+                                                                   System.currentTimeMillis() + ONE_MINUTE_IN_MS);
 
                 DiscoveryEntry[] fakeCapabilitiesResult = { discoveryEntry };
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);
                 return null;
             }
-        })
-               .when(localDiscoveryAggregator)
-               .lookup(Mockito.<Callback> any(),
-                       Mockito.<String> any(),
-                       Mockito.<String> any(),
-                       Mockito.<joynr.types.DiscoveryQos> any());
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<joynr.types.DiscoveryQos> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -234,7 +237,7 @@ public class ProxyTest {
         messagingQos = new MessagingQos();
     }
 
-    private <T extends JoynrInterface> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {
+    private <T> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {
         return (ProxyBuilderDefaultImpl<T>) proxyBuilderFactory.get(domain, interfaceClass);
     }
 

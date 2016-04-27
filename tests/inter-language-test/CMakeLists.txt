@@ -1,24 +1,15 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(inter-language-test-0.16.0)
+project(inter-language-test-0.17.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
-
-# The c++14 flag will be set automatically by CMake based on "CMAKE_CXX_STANDARD 14" starting with version 3.1.0.
-# However, as CMake 3.1.x does not recognize compiler flags correctly for OS X, we use CMAKE_CXX_STANDARD
-# from 3.2.0 upwards. For older versions, this flag is set manually for gcc and clang:
-if("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
-    if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-else()
-    # set required C++ standard
-    set(CMAKE_CXX_STANDARD 14)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
+include(SetCppStandard)
+include(AddClangFormat)
+include(Sanitizers)
 
 set(
     JOYNR_SERVER
@@ -28,25 +19,10 @@ set(
 
 message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 
-option(
-    ENABLE_CLANG_FORMATTER
-    "Use clang-formatter to format source code?"
-    ON
-)
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
-
-if(ENABLE_CLANG_FORMATTER)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cpp/CMake")
-    include(LocateProgram)
-    LocateProgram(clang-format CLANG_FORMAT_PATH)
-    include(AddClangFormat)
-    add_custom_target(format)
-endif(ENABLE_CLANG_FORMATTER)
-
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.16.0 REQUIRED)
+find_package(Joynr 0.17.0 REQUIRED)
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_DBUS_INCLUDE_DIRS=${Joynr_LIB_DBUS_INCLUDE_DIRS}")
@@ -191,8 +167,6 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
-
-
 # copy joynr executables
 file(
     COPY ${Joynr_EXECUTABLES}
@@ -270,19 +244,15 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
             RUNTIME DESTINATION bin COMPONENT bin
     )
 
-    if(ENABLE_CLANG_FORMATTER)
-        AddClangFormat(ilt-provider-dbus)
-        AddClangFormat(ilt-consumer-dbus)
-    endif(ENABLE_CLANG_FORMATTER)
+    AddClangFormat(ilt-provider-dbus)
+    AddClangFormat(ilt-consumer-dbus)
 
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-if(ENABLE_CLANG_FORMATTER)
-    AddClangFormat(ilt-provider-cc)
-    AddClangFormat(ilt-consumer-cc)
-    AddClangFormat(ilt-provider-ws)
-    AddClangFormat(ilt-consumer-ws)
-endif(ENABLE_CLANG_FORMATTER)
+AddClangFormat(ilt-provider-cc)
+AddClangFormat(ilt-consumer-cc)
+AddClangFormat(ilt-provider-ws)
+AddClangFormat(ilt-consumer-ws)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.dbus.settings)

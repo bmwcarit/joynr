@@ -3,7 +3,7 @@ package io.joynr.generator.js.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,10 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import org.franca.core.franca.FEnumerationType
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.EnumTemplate
+import com.google.inject.assistedinject.Assisted
 
-class EnumTypeGenerator {
+class EnumTypeGenerator extends EnumTemplate {
 
 	@Inject extension JSTypeUtil
 	@Inject private extension NamingUtil
@@ -35,7 +37,12 @@ class EnumTypeGenerator {
 	@Inject
 	extension GeneratorParameter
 
-	def generateEnumType(FEnumerationType type) '''
+	@Inject
+	new(@Assisted FEnumerationType type) {
+		super(type)
+	}
+
+	override generate() '''
 	«val generationDate = (new Date()).toString»
 	/**
 	 * This is the generated enum type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
@@ -49,11 +56,13 @@ class EnumTypeGenerator {
 		 * This is the generated enum type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
 		 * <br/>Generation date: «generationDate»
 		 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
+		 *
+		 * @returns {«type.joynrName»} a new instance of a «type.joynrName»
 		 */
 		var «type.joynrName» = function «type.joynrName»(settings){
 			if (!(this instanceof «type.joynrName»)) {
 				// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-				return new «type.joynrName»(members);
+				return new «type.joynrName»(settings);
 			}
 
 			/**
@@ -76,8 +85,35 @@ class EnumTypeGenerator {
 
 		};
 
+		/**
+		 * @name «type.joynrName»#MAJOR_VERSION
+		 * @constant {Number}
+		 * @default «majorVersion»
+		 * @summary The MAJOR_VERSION of the enum type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «majorVersion»
+		});
+		/**
+		 * @name «type.joynrName»#MINOR_VERSION
+		 * @constant {Number}
+		 * @default «minorVersion»
+		 * @summary The MINOR_VERSION of the enum type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		Object.defineProperty(«type.joynrName», 'MINOR_VERSION', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			readable: true,
+			value: «minorVersion»
+		});
+
 		var createLiterals = function() {
-			«getEnumerators(type)»
+			«getEnumerators()»
 		};
 
 		«IF requireJSSupport»
@@ -122,7 +158,7 @@ class EnumTypeGenerator {
 	})();
 	'''
 
-	def getEnumerators(FEnumerationType type)'''
+	def getEnumerators()'''
 	«FOR enumValue: getEnumElementsAndBaseEnumElements(type)»
 		/**
 		 * @name «type.joynrName».«enumValue.joynrName»

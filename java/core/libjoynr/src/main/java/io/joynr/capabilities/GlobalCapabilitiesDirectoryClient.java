@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
-import joynr.types.CapabilityInformation;
+import joynr.types.GlobalDiscoveryEntry;
 
 /*
  * #%L
@@ -54,8 +54,8 @@ public class GlobalCapabilitiesDirectoryClient {
         return capabilitiesProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();
     }
 
-    public void add(Callback<Void> callback, CapabilityInformation capabilityInformation) {
-        getProxy(TTL_30_DAYS_IN_MS).add(callback, capabilityInformation);
+    public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry) {
+        getProxy(TTL_30_DAYS_IN_MS).add(callback, globalDiscoveryEntry);
     }
 
     public void remove(Callback<Void> callback, String participantId) {
@@ -68,30 +68,30 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
-    public void lookup(Callback<CapabilityInformation> callback, String participantId, long timeout) {
+    public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long timeout) {
         getProxy(timeout).lookup(callback, participantId);
     }
 
-    public void lookup(final Callback<List<CapabilityInformation>> callback,
+    public void lookup(final Callback<List<GlobalDiscoveryEntry>> callback,
                        String domain,
                        String interfaceName,
                        long timeout) {
-        getProxy(timeout).lookup(new Callback<CapabilityInformation[]>() {
+        getProxy(timeout).lookup(new Callback<GlobalDiscoveryEntry[]>() {
             @Override
             public void onFailure(JoynrRuntimeException error) {
                 callback.onFailure(error);
             }
 
             @Override
-            public void onSuccess(CapabilityInformation[] result) {
-                List<CapabilityInformation> capabilityInformationList;
+            public void onSuccess(GlobalDiscoveryEntry[] result) {
+                List<GlobalDiscoveryEntry> globalDiscoveryEntryList;
 
                 if (result == null) {
-                    capabilityInformationList = new ArrayList<CapabilityInformation>();
+                    globalDiscoveryEntryList = new ArrayList<GlobalDiscoveryEntry>();
                 } else {
-                    capabilityInformationList = Arrays.asList(result);
+                    globalDiscoveryEntryList = Arrays.asList(result);
                 }
-                callback.onSuccess(capabilityInformationList);
+                callback.onSuccess(globalDiscoveryEntryList);
             }
 
         }, domain, interfaceName);

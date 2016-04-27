@@ -26,9 +26,8 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
-class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
+class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -38,10 +37,10 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 	@Inject private extension CppInterfaceUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface)
+	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"JoynrMessagingConnector_h").toUpperCase»
 «warning()»
 
@@ -49,13 +48,13 @@ class InterfaceJoynrMessagingConnectorHTemplate implements InterfaceTemplate{
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 #include <functional>
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
 #include "joynr/AbstractJoynrMessagingConnector.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/SubscriptionRequest.h"
@@ -77,13 +76,13 @@ namespace exceptions
 } // namespace exceptions
 }
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 
 /** @brief JoynrMessagingConnector for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
 private:
-	«FOR attribute: getAttributes(serviceInterface)»
+	«FOR attribute: getAttributes(francaIntf)»
 		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
@@ -101,7 +100,7 @@ private:
 					SubscriptionRequest& subscriptionRequest);
 		«ENDIF»
 	«ENDFOR»
-	«FOR broadcast: serviceInterface.broadcasts»
+	«FOR broadcast: francaIntf.broadcasts»
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«val broadcastName = broadcast.joynrName»
 		/**
@@ -147,11 +146,11 @@ public:
 	/** @brief Destructor */
 	~«interfaceName»JoynrMessagingConnector() override = default;
 
-	«produceSyncGetterDeclarations(serviceInterface, false)»
-	«produceAsyncGetterDeclarations(serviceInterface, false)»
-	«produceSyncSetterDeclarations(serviceInterface, false)»
-	«produceAsyncSetterDeclarations(serviceInterface, false)»
-	«FOR attribute: getAttributes(serviceInterface)»
+	«produceSyncGetterDeclarations(francaIntf, false)»
+	«produceAsyncGetterDeclarations(francaIntf, false)»
+	«produceSyncSetterDeclarations(francaIntf, false)»
+	«produceAsyncSetterDeclarations(francaIntf, false)»
+	«FOR attribute: getAttributes(francaIntf)»
 		«val returnType = attribute.typeName»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
@@ -186,10 +185,10 @@ public:
 		«ENDIF»
 	«ENDFOR»
 
-	«produceSyncMethodDeclarations(serviceInterface, false)»
-	«produceAsyncMethodDeclarations(serviceInterface, false, true)»
+	«produceSyncMethodDeclarations(francaIntf, false)»
+	«produceAsyncMethodDeclarations(francaIntf, false, true)»
 
-	«FOR broadcast: serviceInterface.broadcasts»
+	«FOR broadcast: francaIntf.broadcasts»
 
 		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 		«val broadcastName = broadcast.joynrName»
@@ -251,9 +250,9 @@ public:
 		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId) override;
 	«ENDFOR»
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 
-«var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
+«var packagePrefix = getPackagePathWithJoynrPrefix(francaIntf, "::")»
 
 namespace joynr {
 

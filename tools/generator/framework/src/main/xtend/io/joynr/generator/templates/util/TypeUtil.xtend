@@ -526,13 +526,23 @@ class TypeUtil {
 		return null
 	}
 
+	def FStructType getExtendedType(FStructType datatype) {
+		return datatype.base
+	}
+
+	def FUnionType getExtendedType(FUnionType datatype) {
+		return datatype.base
+	}
+
 	def FCompoundType getExtendedType(FCompoundType datatype) {
-		if (datatype instanceof FStructType && (datatype as FStructType).base!=null) {
-			return (datatype as FStructType).base
-		} else if (datatype instanceof FUnionType && (datatype as FUnionType).base!=null) {
-			return (datatype as FUnionType).base
+		if (datatype instanceof FStructType) {
+			return datatype.extendedType
+		} else if (datatype instanceof FUnionType) {
+			return datatype.extendedType
 		}
-		return null
+		throw new IllegalStateException("TypeUtil.getExtendedType: unknown type "
+										+ datatype.class.simpleName
+		);
 	}
 
 	def String getObjectDataTypeForPlainType(String plainType) {

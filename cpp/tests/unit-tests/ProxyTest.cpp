@@ -20,6 +20,7 @@
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/tests/testProxy.h"
+#include "joynr/tests/TestWithoutVersionProxy.h"
 #include "AbstractSyncAsyncTest.cpp"
 
 using ::testing::A;
@@ -93,7 +94,8 @@ public:
                     MessagingQos(),
                     cacheEnabled
                     );
-        proxy->handleArbitrationFinished(providerParticipantId, joynr::types::CommunicationMiddleware::JOYNR);
+        const bool useInProcessCommunication = false;
+        proxy->handleArbitrationFinished(providerParticipantId, useInProcessCommunication);
         return dynamic_cast<tests::Itest*>(proxy);
     }
 
@@ -209,4 +211,18 @@ TEST_F(ProxyTest, sync_OperationWithNoArguments) {
 
 TEST_F(ProxyTest, subscribeToAttribute) {
     testSubscribeToAttribute();
+}
+
+TEST_F(ProxyTest, versionIsSetCorrectly) {
+    std::uint32_t expectedMajorVersion = 47;
+    std::uint32_t expectedMinorVersion = 11;
+    EXPECT_EQ(expectedMajorVersion, tests::testProxy::MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion, tests::testProxy::MINOR_VERSION);
+}
+
+TEST_F(ProxyTest, defaultVersionIsSetCorrectly) {
+    std::uint32_t expectedDefaultMajorVersion = 0;
+    std::uint32_t expectedDefaultMinorVersion = 0;
+    EXPECT_EQ(expectedDefaultMajorVersion, tests::TestWithoutVersionProxy::MAJOR_VERSION);
+    EXPECT_EQ(expectedDefaultMinorVersion, tests::TestWithoutVersionProxy::MINOR_VERSION);
 }

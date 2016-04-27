@@ -31,6 +31,20 @@ define(
              * @param {ChannelMessagingSender|Object} settings.channelMessagingSender
              */
             function ChannelMessagingStubFactory(settings) {
+                var globalAddress;
+
+                /**
+                 * This method is called when the global address has been created
+                 *
+                 * @function
+                 * @name CapabilityDiscovery#globalAddressReady
+                 *
+                 * @param {Address}
+                 *            globalAddress the address used to register discovery entries globally
+                 */
+                this.globalAddressReady = function globalAddressReady(newGlobalAddress) {
+                    globalAddress = newGlobalAddress;
+                };
 
                 /**
                  * @name ChannelMessagingStubFactory#build
@@ -39,10 +53,15 @@ define(
                  * @param {ChannelAddress} address the address to generate a messaging stub for
                  */
                 this.build = function build(address) {
+                    if (!globalAddress) {
+                        var error = new Error("global channel address not yet set");
+                        error.delay = true;
+                        throw error;
+                    }
                     return new ChannelMessagingStub({
-                        destChannelId : address.channelId,
+                        destinationChannelAddress : address,
                         channelMessagingSender : settings.channelMessagingSender,
-                        myChannelId : settings.myChannelId
+                        myChannelAddress : globalAddress
                     });
                 };
             }

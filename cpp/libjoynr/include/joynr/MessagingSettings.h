@@ -41,9 +41,6 @@ public:
     static const std::string& SETTING_BROKER_URL();
     static const std::string& SETTING_BOUNCE_PROXY_URL();
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
-    static const std::string& SETTING_CHANNEL_URL_DIRECTORY_URL();
-    static const std::string& SETTING_CHANNEL_URL_DIRECTORY_CHANNELID();
-    static const std::string& SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
@@ -52,6 +49,7 @@ public:
     static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_SEND_MSG_RETRY_INTERVAL();
     static const std::string& SETTING_LONGPOLL_RETRY_INTERVAL();
+    static const std::string& SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
 
     static const std::string& SETTING_LOCAL_PROXY_HOST();
     static const std::string& SETTING_LOCAL_PROXY_PORT();
@@ -107,10 +105,6 @@ public:
 
     std::string getDiscoveryDirectoriesDomain() const;
 
-    std::string getChannelUrlDirectoryUrl() const;
-    std::string getChannelUrlDirectoryChannelId() const;
-    std::string getChannelUrlDirectoryParticipantId() const;
-
     std::string getCapabilitiesDirectoryUrl() const;
     std::string getCapabilitiesDirectoryChannelId() const;
     std::string getCapabilitiesDirectoryParticipantId() const;
@@ -121,6 +115,8 @@ public:
     void setCreateChannelRetryInterval(const int& retryInterval);
     int getDeleteChannelRetryInterval() const;
     void setDeleteChannelRetryInterval(const int& retryInterval);
+    int getDiscoveryEntryExpiryIntervalMs() const;
+    void setDiscoveryEntryExpiryIntervalMs(int expiryIntervalMs);
     int getSendMsgRetryInterval() const;
     void setSendMsgRetryInterval(const int& retryInterval);
     int getLongPollRetryInterval() const;

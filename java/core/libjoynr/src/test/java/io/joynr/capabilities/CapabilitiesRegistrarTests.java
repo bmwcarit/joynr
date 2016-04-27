@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package io.joynr.capabilities;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,30 +32,34 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.provider.AbstractSubscriptionPublisher;
+import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
-import io.joynr.provider.RequestCallerFactory;
+import io.joynr.provider.ProviderContainer;
+import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.proxy.Callback;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CapabilitiesRegistrarTests {
 
+    private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
+    private final long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
     CapabilitiesRegistrar registrar;
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
     @Mock
-    private RequestCallerFactory requestCallerFactory;
+    private ProviderDirectory providerDirectory;
     @Mock
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderContainerFactory providerContainerFactory;
 
     @Mock
     private MessageRouter messageRouter;
@@ -64,10 +68,16 @@ public class CapabilitiesRegistrarTests {
     private Dispatcher dispatcher;
 
     @Mock
-    private JoynrProvider provider;
+    private TestProvider provider;
 
     @Mock
     private RequestCaller requestCaller;
+
+    @Mock
+    private AbstractSubscriptionPublisher subscriptionPublisher;
+
+    @Mock
+    private ProviderContainer providerContainer;
 
     @Mock
     private ParticipantIdStorage participantIdStorage;
@@ -76,61 +86,54 @@ public class CapabilitiesRegistrarTests {
     private String participantId = "participantId";
     private ProviderQos providerQos = new ProviderQos();
 
-    private static String interfaceName = "interfaceName";
-
-    private interface ProvidedInterface extends JoynrInterface {
-        @SuppressWarnings("unused")
-        // this Field is read with a getField method, so it is indeed needed.
-        public static String INTERFACE_NAME = interfaceName;
-    }
-
-    interface TestInterface extends JoynrInterface {
-        public static String INTERFACE_NAME = interfaceName;
+    @JoynrInterface(provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
+    interface TestProvider extends JoynrProvider {
+        public static String INTERFACE_NAME = "interfaceName";
     }
 
     @Before
     public void setUp() {
 
         registrar = new CapabilitiesRegistrarImpl(localDiscoveryAggregator,
-                                                  requestCallerFactory,
+                                                  providerContainerFactory,
                                                   messageRouter,
-                                                  requestCallerDirectory,
+                                                  providerDirectory,
                                                   participantIdStorage,
+                                                  ONE_DAY_IN_MS,
                                                   new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
     }
 
     @Test
     public void registerWithCapRegistrar() {
 
-        when(provider.getProviderQos()).thenReturn(providerQos);
-        doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
-        when(provider.getInterfaceName()).thenReturn(TestInterface.INTERFACE_NAME);
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
-        when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
+        when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
+        RequestCaller requestCallerMock = mock(RequestCaller.class);
+        when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
+        when(providerContainerFactory.create(provider)).thenReturn(providerContainer);
 
         registrar.registerProvider(domain, provider, providerQos);
         verify(localDiscoveryAggregator).add(any(Callback.class),
-                                             eq(new DiscoveryEntry(domain,
-                                                                   TestInterface.INTERFACE_NAME,
+                                             eq(new DiscoveryEntry(new Version(47, 11),
+                                                                   domain,
+                                                                   TestProvider.INTERFACE_NAME,
                                                                    participantId,
                                                                    providerQos,
-                                                                   new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR })));
+                                                                   System.currentTimeMillis(),
+                                                                   expiryDateMs)));
 
-        verify(requestCallerFactory).create(provider);
-
-        verify(requestCallerDirectory).addCaller(participantId, requestCaller);
+        verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }
 
     @Test
     public void unregisterProvider() {
-        when(provider.getProviderQos()).thenReturn(providerQos);
-        doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
-        when(provider.getInterfaceName()).thenReturn(TestInterface.INTERFACE_NAME);
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
+        when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
         registrar.unregisterProvider(domain, provider);
 
         verify(localDiscoveryAggregator).remove(any(Callback.class), eq(participantId));
-        verify(requestCallerDirectory).removeCaller(eq(participantId));
+        verify(providerDirectory).remove(eq(participantId));
     }
 
 }

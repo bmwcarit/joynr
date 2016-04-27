@@ -25,9 +25,8 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
-class InterfaceAbstractProviderHTemplate implements InterfaceTemplate {
+class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 	@Inject private extension TemplateBase
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension CppStdTypeUtil
@@ -35,10 +34,10 @@ class InterfaceAbstractProviderHTemplate implements InterfaceTemplate {
 	@Inject private extension AttributeUtil
 	@Inject private extension BroadcastUtil
 
-	override generate(FInterface serviceInterface)
+	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+«val interfaceName = francaIntf.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
 	"_"+interfaceName+"AbstractProvider_h").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -48,19 +47,19 @@ class InterfaceAbstractProviderHTemplate implements InterfaceTemplate {
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/AbstractJoynrProvider.h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
 
-«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(francaIntf)»
 	#include «parameterType»
 «ENDFOR»
 
 «getDllExportIncludeStatement()»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 
 /** @brief Abstract provider class for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»AbstractProvider :
-		public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider,
+		public «getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider,
 		public joynr::AbstractJoynrProvider
 {
 
@@ -76,15 +75,15 @@ public:
 	 * @return The name of the interface
 	 */
 	std::string getInterfaceName() const override;
-«IF !serviceInterface.attributes.isNullOrEmpty || !serviceInterface.broadcasts.isNullOrEmpty»
+«IF !francaIntf.attributes.isNullOrEmpty || !francaIntf.broadcasts.isNullOrEmpty»
 
 	protected:
 «ENDIF»
-	«IF !serviceInterface.attributes.isNullOrEmpty»
+	«IF !francaIntf.attributes.isNullOrEmpty»
 
 		// attributes
 	«ENDIF»
-	«FOR attribute : serviceInterface.attributes»
+	«FOR attribute : francaIntf.attributes»
 		«IF attribute.notifiable»
 			«var attributeName = attribute.joynrName»
 			/**
@@ -97,11 +96,11 @@ public:
 			) override;
 		«ENDIF»
 	«ENDFOR»
-	«IF !serviceInterface.broadcasts.isNullOrEmpty»
+	«IF !francaIntf.broadcasts.isNullOrEmpty»
 
 		// broadcasts
 	«ENDIF»
-	«FOR broadcast: serviceInterface.broadcasts»
+	«FOR broadcast: francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		/**
 		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete provider to signal an occured
@@ -111,14 +110,16 @@ public:
 		 «ENDFOR»
 		 */
 		void fire«broadcastName.toFirstUpper»(
-				«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
+				«IF !broadcast.outputParameters.empty»
+					«broadcast.commaSeperatedTypedConstOutputParameterList»
+				«ENDIF»
 		) override;
 	«ENDFOR»
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»AbstractProvider);
 };
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 
 #endif // «headerGuard»
 '''

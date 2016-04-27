@@ -26,9 +26,8 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
-class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
+class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
@@ -37,15 +36,15 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	@Inject private extension MethodUtil
 	@Inject private extension CppInterfaceUtil
 
-	override generate(FInterface fInterface)
+	override generate()
 '''
-«val interfaceName =  fInterface.joynrName»
+«val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«asyncClassName».h"
-«FOR parameterType: getRequiredIncludesFor(fInterface).addElements(includeForString)»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«asyncClassName».h"
+«FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
@@ -53,11 +52,10 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/exceptions/JoynrException.h"
-#include <cassert>
 
-«getNamespaceStarter(fInterface)»
+«getNamespaceStarter(francaIntf)»
 «asyncClassName»::«asyncClassName»(
-		std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
+		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
 		const std::string &domain,
@@ -69,7 +67,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 {
 }
 
-«FOR attribute: getAttributes(fInterface)»
+«FOR attribute: getAttributes(francaIntf)»
 	«var attributeName = attribute.joynrName»
 	«var attributeType = attribute.typeName»
 	«IF attribute.readable»
@@ -122,14 +120,14 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 
 	«ENDIF»
 «ENDFOR»
-«FOR method: getMethods(fInterface)»
+«FOR method: getMethods(francaIntf)»
 	«var methodName = method.joynrName»
 	«var outputParameters = method.commaSeparatedOutputParameterTypes»
 	«var inputParamList = getCommaSeperatedUntypedInputParameterList(method)»
 	/*
 	 * «methodName»
 	 */
-	«produceAsyncMethodSignature(fInterface, method, asyncClassName)»
+	«produceAsyncMethodSignature(francaIntf, method, asyncClassName)»
 	{
 		if (connector==nullptr){
 			«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
@@ -148,6 +146,6 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	}
 
 «ENDFOR»
-«getNamespaceEnder(fInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }

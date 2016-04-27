@@ -67,8 +67,12 @@ public:
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
 
-        // Remove participant id persistence file
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+
         std::this_thread::sleep_for(std::chrono::milliseconds(550));
     }
 
@@ -80,7 +84,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(End2EndSSLTest);
 };
 
-TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
+TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
 {
 
     // Create a provider
@@ -92,7 +96,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeout(1000);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
     std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder

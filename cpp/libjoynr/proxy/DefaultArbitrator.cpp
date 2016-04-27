@@ -43,6 +43,7 @@ void DefaultArbitrator::attemptArbitration()
     std::vector<joynr::types::DiscoveryEntry> result;
     try {
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
+        receiveCapabilitiesLookupResults(result);
     } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "
@@ -62,11 +63,8 @@ void DefaultArbitrator::receiveCapabilitiesLookupResults(
 
     // default arbitrator picks first entry
     joynr::types::DiscoveryEntry discoveredProvider = discoveryEntries.front();
-    joynr::types::CommunicationMiddleware::Enum preferredConnection(
-            selectPreferredCommunicationMiddleware(discoveredProvider.getConnections()));
-    updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful,
-                                                   discoveredProvider.getParticipantId(),
-                                                   preferredConnection);
+    updateArbitrationStatusParticipantIdAndAddress(
+            ArbitrationStatus::ArbitrationSuccessful, discoveredProvider.getParticipantId());
 }
 
 } // namespace joynr

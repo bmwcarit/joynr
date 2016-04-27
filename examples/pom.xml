@@ -25,12 +25,11 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>0.16.0</version>
+		<version>0.17.0</version>
 	</parent>
 
 	<modules>
 		<module>radio-app</module>
-		<module>joynr-system-integration-test</module>
 		<module>location-tester</module>
 	</modules>
 	<profiles>

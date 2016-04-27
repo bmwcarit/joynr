@@ -94,13 +94,12 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // JoynInjectorFactory. E.g. uncomment the following lines to set a certain joynr server
         // instance.
         // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8080/bounceproxy/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
+        // joynrConfig.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "test_consumer_local_domain");
 
         // NOTE: When running this application to test the android-location-provider, you must use
         //       the concrete hostname (and _not_ localhost) in the bounceproxy URL, since this URL
-        //       is registered in the channel URL directory and must be resolvable by the Android
+        //       is registered in the global discovery directory and must be resolvable by the Android
         //       device.
         // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://<concrete host>:8080/bounceproxy/");
 
@@ -112,13 +111,11 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // Copy the following lines to the custom persistence file to set a certain joynr server
         // instance.
         // joynr.messaging.bounceproxyurl=http://localhost:8080/bounceproxy/
-        // joynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // joynr.messaging.channelurldirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
+        // joynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // 3) Or set them in Java System properties.
         // -Djoynr.messaging.bounceProxyUrl=http://localhost:8080/bounceproxy/
         // -Djoynr.messaging.capabilitiesDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-        // -Djoynr.messaging.channelUrlDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
 
         // NOTE:
         // Programmatically set configuration properties override properties set in the static persistence file.
@@ -168,7 +165,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // As soon as the arbitration QoS is set on the proxy builder, discovery of suitable providers
         // is triggered. If the discovery process does not find matching providers within the
         // arbitration timeout duration it will be terminated and you will get an arbitration exception.
-        discoveryQos.setDiscoveryTimeout(10000);
+        discoveryQos.setDiscoveryTimeoutMs(10000);
         // Provider entries in the global capabilities directory are cached locally. Discovery will
         // consider entries in this cache valid if they are younger as the max age of cached
         // providers as defined in the QoS. All valid entries will be processed by the arbitrator when searching
@@ -176,7 +173,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
         // directory. Therefore, not all providers registered with the global capabilities
         // directory might be taken into account during arbitration.
-        discoveryQos.setCacheMaxAge(Long.MAX_VALUE);
+        discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
         // The discovery process outputs a list of matching providers. The arbitration strategy then
         // chooses one or more of them to be used by the proxy.
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);

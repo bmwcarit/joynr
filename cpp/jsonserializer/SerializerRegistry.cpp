@@ -61,7 +61,7 @@ SerializerRegistry& SerializerRegistry::getInstance()
 IMetaObject* SerializerRegistry::getMetaObject(const std::string& typeName)
 {
     SerializerRegistry& registry = getInstance();
-    std::unique_lock<std::mutex> lock(registry.registryMutex);
+    std::lock_guard<std::mutex> lock(registry.registryMutex);
 
     auto entry = registry.metaObjects.find(typeName);
     if (entry == registry.metaObjects.end()) {

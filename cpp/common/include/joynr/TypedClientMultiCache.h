@@ -60,7 +60,7 @@ public:
     /*
      *  Returns the list of values stored for the attribute not considering their age.
       */
-    std::vector<T> lookUpAll(const Key& key);
+    std::vector<T> lookUpAll(const Key& key) const;
     /*
     * Inserts the key (e.g. attributeId) and object into the cache.  If the attributeId already
     * exists in the cache the value is added to a list (no overwrite).
@@ -91,13 +91,18 @@ public:
 
     int getMaxCost();
 
+    /*
+     * Return all entries in the cache as a vector.
+     */
+    std::vector<Key> getKeys() const;
+
 private:
     /*
      * Returns time since activation in ms (elapsed())
      */
     std::chrono::milliseconds elapsed(TimeStamp entryTime);
     Cache<Key, std::vector<CachedValue<T>>> cache;
-    std::mutex mutex;
+    mutable std::mutex mutex;
 };
 
 template <class Key, class T>
@@ -131,7 +136,7 @@ std::vector<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key,
 }
 
 template <class Key, class T>
-std::vector<T> TypedClientMultiCache<Key, T>::lookUpAll(const Key& key)
+std::vector<T> TypedClientMultiCache<Key, T>::lookUpAll(const Key& key) const
 {
     std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(key)) {
@@ -195,7 +200,7 @@ void TypedClientMultiCache<Key, T>::removeAll(const Key& key)
 template <class Key, class T>
 void TypedClientMultiCache<Key, T>::cleanup(std::chrono::milliseconds maxAcceptedAge)
 {
-    std::unique_lock<std::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     std::vector<Key> keyset = cache.keys();
     std::vector<CachedValue<T>>* entries;
     std::vector<int> attributesToBeRemoved;
@@ -267,6 +272,12 @@ template <class Key, class T>
 int TypedClientMultiCache<Key, T>::getMaxCost()
 {
     return cache.maxCost();
+}
+
+template <class Key, class T>
+std::vector<Key> TypedClientMultiCache<Key, T>::getKeys() const
+{
+    return cache.keys();
 }
 
 } // namespace joynr

@@ -19,8 +19,6 @@
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/JsonSerializer.h"
 
-#include <cassert>
-
 namespace joynr
 {
 

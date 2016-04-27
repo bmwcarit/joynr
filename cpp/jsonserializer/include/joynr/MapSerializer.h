@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,52 +21,52 @@
 
 #include <ostream>
 #include <string>
-#include <map>
+
 #include "joynr/ClassSerializer.h"
 
 namespace joynr
 {
 
-/**
- * @brief Helper class that serializes maps with std::string keys
+/*
+ * MapSerializer class used to serialize std::map and std::unordered_map to JSON.
  */
 class MapSerializer
 {
 public:
-    /**
-     * @brief Serialize map to stream
-     */
-    template <typename T, typename S>
-    static void serialize(const std::string& typeName, const std::map<T, S>& map, std::ostream& stream);
+    template <typename Map>
+    static void serialize(const std::string& typeName, const Map& map, std::ostream& stream);
 
-    template <typename T, typename S>
-    static void serialize(const std::map<T, S>& map, std::ostream& stream);
+    template <typename Map>
+    static void serialize(const Map& map, std::ostream& stream);
+
 private:
-    template <typename T, typename S>
-    static void serializeEntries(const std::map<T, S>& map, std::ostream& stream, bool needsComma);
+    template <typename Map>
+    static void serializeEntries(const Map& map, std::ostream& stream, bool needsComma);
 };
 
-
-template <typename T, typename S>
-void MapSerializer::serializeEntries(const std::map<T, S>& map,
+template <typename Map>
+void MapSerializer::serializeEntries(const Map& map,
                                      std::ostream& stream,
                                      bool needsInitialComma)
 {
+    using Key = typename Map::key_type;
+    using Value = typename Map::mapped_type;
+
     for (const auto& entry : map) {
         if (needsInitialComma) {
             stream << ",";
         } else {
             needsInitialComma = true;
         }
-        ClassSerializerImpl<T>::serialize(entry.first, stream);
+        ClassSerializerImpl<Key>::serialize(entry.first, stream);
         stream << R"(: )";
-        ClassSerializerImpl<S>::serialize(entry.second, stream);
+        ClassSerializerImpl<Value>::serialize(entry.second, stream);
     }
 }
 
-template <typename T, typename S>
+template <typename Map>
 void MapSerializer::serialize(const std::string& typeName,
-                              const std::map<T, S>& map,
+                              const Map& map,
                               std::ostream& stream)
 {
     stream << "{";
@@ -75,8 +75,8 @@ void MapSerializer::serialize(const std::string& typeName,
     stream << "}";
 }
 
-template <typename T, typename S>
-void MapSerializer::serialize(const std::map<T, S>& map,
+template <typename Map>
+void MapSerializer::serialize(const Map& map,
                               std::ostream& stream)
 {
     stream << "{";

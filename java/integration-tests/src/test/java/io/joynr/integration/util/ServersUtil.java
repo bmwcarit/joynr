@@ -77,19 +77,27 @@ public class ServersUtil {
     }
 
     private static void setDirectoriesUrl() {
-        if (System.getProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) != null
-                && System.getProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) != null) {
+        if (System.getProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) != null) {
             // use existing discovery
             return;
         }
+
+        // deprecated: will be removed by 2016-12-31
+        String deprecatedCapabilityUrl = System.getProperty(MessagingPropertyKeys.CAPABILITYDIRECTORYURL);
+        if (deprecatedCapabilityUrl != null && deprecatedCapabilityUrl.length() > 0) {
+            logger.warn("Deprecated setting: " + MessagingPropertyKeys.CAPABILITYDIRECTORYURL + ". Please use "
+                    + MessagingPropertyKeys.DISCOVERYDIRECTORYURL + " instead");
+            System.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, deprecatedCapabilityUrl);
+            return;
+        }
+
         String serverUrl = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
         if (serverUrl.endsWith("/")) {
             serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
         }
         String directoriesUrl = serverUrl + DISCOVERY_CONTEXT + "/channels/discoverydirectory_channelid/";
 
-        System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
-        System.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, directoriesUrl);
+        System.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, directoriesUrl);
     }
 
     public static Server startServers() throws Exception {

@@ -23,6 +23,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
+import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class DefaultInterfaceProviderGenerator {
 
@@ -32,11 +33,7 @@ class DefaultInterfaceProviderGenerator {
 	@Inject
 	private extension NamingUtil
 
-	@Inject
-	DefaultInterfaceProviderHTemplate defaultProviderHTemplate;
-
-	@Inject
-	DefaultInterfaceProviderCppTemplate defaultProviderCppTemplate;
+	@Inject CppTemplateFactory templateFactory;
 
 	def doGenerate(FModel fModel,
 		IFileSystemAccess sourceFileSystem,
@@ -50,18 +47,18 @@ class DefaultInterfaceProviderGenerator {
 			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
 			val serviceName = serviceInterface.joynrName;
 
+			var defaultInterfaceProviderHTemplate = templateFactory.createDefaultInterfaceProviderHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerpath + "Default" + serviceName + "Provider.h",
-				defaultProviderHTemplate,
-				serviceInterface
+				defaultInterfaceProviderHTemplate
 			);
 
+			var defaultInterfaceProviderCppTemplate = templateFactory.createDefaultInterfaceProviderCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + "Default" + serviceName + "Provider.cpp",
-				defaultProviderCppTemplate,
-				serviceInterface
+				defaultInterfaceProviderCppTemplate
 			);
 		}
 	}

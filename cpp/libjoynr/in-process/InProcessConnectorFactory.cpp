@@ -22,6 +22,8 @@
 namespace joynr
 {
 
+INIT_LOGGER(InProcessConnectorFactory);
+
 InProcessConnectorFactory::InProcessConnectorFactory(
         ISubscriptionManager* subscriptionManager,
         PublicationManager* publicationManager,
@@ -32,12 +34,6 @@ InProcessConnectorFactory::InProcessConnectorFactory(
           inProcessPublicationSender(inProcessPublicationSender),
           requestCallerDirectory(requestCallerDirectory)
 {
-}
-
-bool InProcessConnectorFactory::canBeCreated(
-        const joynr::types::CommunicationMiddleware::Enum& connection)
-{
-    return connection == joynr::types::CommunicationMiddleware::IN_PROCESS;
 }
 
 } // namespace joynr

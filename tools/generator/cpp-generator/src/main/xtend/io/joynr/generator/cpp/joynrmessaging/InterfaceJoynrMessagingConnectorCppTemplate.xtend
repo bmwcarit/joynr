@@ -28,10 +28,9 @@ import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
-import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
-class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
+class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
@@ -66,13 +65,13 @@ internalRequestObject.setMethodName("«method.joynrName»");
 «ENDFOR»
 '''
 
-	override generate(FInterface serviceInterface)
+	override generate()
 '''
-«val interfaceName = serviceInterface.joynrName»
-«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName()»
+«val interfaceName = francaIntf.joynrName»
+«val methodToErrorEnumName = francaIntf.methodToErrorEnumName()»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»JoynrMessagingConnector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»JoynrMessagingConnector.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/ISubscriptionManager.h"
@@ -86,7 +85,7 @@ internalRequestObject.setMethodName("«method.joynrName»");
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
 
-«FOR method : getMethods(serviceInterface)»
+«FOR method : getMethods(francaIntf)»
 	«IF method.hasErrorEnum»
 		«var enumType = method.errors»
 		«IF enumType != null»
@@ -98,13 +97,13 @@ internalRequestObject.setMethodName("«method.joynrName»");
 	«ENDIF»
 «ENDFOR»
 
-«FOR datatype: getAllComplexTypes(serviceInterface)»
+«FOR datatype: getAllComplexTypes(francaIntf)»
 	«IF isCompound(datatype) || isMap(datatype)»
 		#include «getIncludeOf(datatype)»
 	«ENDIF»
 «ENDFOR»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(francaIntf)»
 «val className = interfaceName + "JoynrMessagingConnector"»
 «className»::«className»(
 		joynr::IJoynrMessageSender* joynrMessageSender,
@@ -123,7 +122,7 @@ bool «className»::usesClusterController() const{
 	return joynr::AbstractJoynrMessagingConnector::usesClusterController();
 }
 
-«FOR attribute: getAttributes(serviceInterface)»
+«FOR attribute: getAttributes(francaIntf)»
 	«val returnType = getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»
 	«val attributeType = attribute.type.resolveTypeDef»
@@ -321,7 +320,7 @@ bool «className»::usesClusterController() const{
 	«ENDIF»
 «ENDFOR»
 
-«FOR method: getMethods(serviceInterface)»
+«FOR method: getMethods(francaIntf)»
 	«var outputTypedConstParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
 	«val outputParameters = getCommaSeparatedOutputParameterTypes(method)»
 	«var outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
@@ -346,7 +345,7 @@ bool «className»::usesClusterController() const{
 		future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
 	}
 
-	«produceAsyncMethodSignature(serviceInterface, method, className)»
+	«produceAsyncMethodSignature(francaIntf, method, className)»
 	{
 		«produceParameterSetters(method)»
 
@@ -363,7 +362,7 @@ bool «className»::usesClusterController() const{
 		std::function<void(const exceptions::JoynrException& error)> onErrorWrapper =
 				[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
 				future->onError(error);
-				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(serviceInterface, method)»
+				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 			};
 
 		auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccessWrapper, onErrorWrapper);
@@ -373,7 +372,7 @@ bool «className»::usesClusterController() const{
 
 «ENDFOR»
 
-«FOR broadcast: serviceInterface.broadcasts»
+«FOR broadcast: francaIntf.broadcasts»
 	«val returnTypes = getCommaSeparatedOutputParameterTypes(broadcast)»
 	«val broadcastName = broadcast.joynrName»
 	«IF isSelective(broadcast)»
@@ -425,8 +424,7 @@ bool «className»::usesClusterController() const{
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(subscriptionQos));
 
-		std::shared_ptr<joynr::SubscriptionCallback<«returnTypes»>> subscriptionCallback(
-					new joynr::SubscriptionCallback<«returnTypes»>(subscriptionListener));
+		auto subscriptionCallback = std::make_shared<joynr::SubscriptionCallback<«returnTypes»>>(subscriptionListener);
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
@@ -458,7 +456,7 @@ bool «className»::usesClusterController() const{
 	}
 
 «ENDFOR»
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(francaIntf)»
 '''
 }
 

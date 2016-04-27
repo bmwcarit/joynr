@@ -38,7 +38,6 @@ import javax.annotation.CheckForNull;
 
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.OnChangeSubscriptionQos;
-import joynr.infrastructure.ChannelUrlDirectory;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
@@ -181,7 +180,6 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         // Allow access to the global directories
         if (domain.equals(discoveryDirectoriesDomain) || domain.equals(systemServicesDomain)) {
             if (interfaceName.equals(GlobalCapabilitiesDirectory.INTERFACE_NAME)
-                    || interfaceName.equals(ChannelUrlDirectory.INTERFACE_NAME)
                     || interfaceName.equals(GlobalDomainAccessController.INTERFACE_NAME)
                     || interfaceName.equals(Discovery.INTERFACE_NAME) || interfaceName.equals(Routing.INTERFACE_NAME)) {
                 return Permission.YES;

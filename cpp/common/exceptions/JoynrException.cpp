@@ -101,7 +101,7 @@ const std::string JoynrException::getTypeName() const
 
 JoynrException* JoynrException::clone() const
 {
-    return new JoynrException(static_cast<JoynrException>(*this));
+    return new JoynrException(const_cast<JoynrException&>(*this));
 }
 
 bool JoynrException::operator==(const JoynrException& other) const
@@ -121,7 +121,7 @@ const std::string JoynrRuntimeException::getTypeName() const
 
 JoynrRuntimeException* JoynrRuntimeException::clone() const
 {
-    return new JoynrRuntimeException(static_cast<JoynrRuntimeException>(*this));
+    return new JoynrRuntimeException(const_cast<JoynrRuntimeException&>(*this));
 }
 
 JoynrTimeOutException::JoynrTimeOutException(const std::string& message) noexcept
@@ -136,7 +136,7 @@ const std::string JoynrTimeOutException::getTypeName() const
 
 JoynrTimeOutException* JoynrTimeOutException::clone() const
 {
-    return new JoynrTimeOutException(static_cast<JoynrTimeOutException>(*this));
+    return new JoynrTimeOutException(const_cast<JoynrTimeOutException&>(*this));
 }
 
 JoynrMessageNotSentException::JoynrMessageNotSentException(const std::string& message) noexcept
@@ -151,7 +151,7 @@ const std::string JoynrMessageNotSentException::getTypeName() const
 
 JoynrMessageNotSentException* JoynrMessageNotSentException::clone() const
 {
-    return new JoynrMessageNotSentException(static_cast<JoynrMessageNotSentException>(*this));
+    return new JoynrMessageNotSentException(const_cast<JoynrMessageNotSentException&>(*this));
 }
 
 const std::chrono::milliseconds JoynrDelayMessageException::DEFAULT_DELAY_MS(1000);
@@ -191,7 +191,7 @@ const std::string JoynrDelayMessageException::getTypeName() const
 
 JoynrDelayMessageException* JoynrDelayMessageException::clone() const
 {
-    return new JoynrDelayMessageException(static_cast<JoynrDelayMessageException>(*this));
+    return new JoynrDelayMessageException(const_cast<JoynrDelayMessageException&>(*this));
 }
 
 bool JoynrDelayMessageException::operator==(const JoynrDelayMessageException& other) const
@@ -216,7 +216,7 @@ const std::string DiscoveryException::getTypeName() const
 
 DiscoveryException* DiscoveryException::clone() const
 {
-    return new DiscoveryException(static_cast<DiscoveryException>(*this));
+    return new DiscoveryException(const_cast<DiscoveryException&>(*this));
 }
 
 MethodInvocationException::MethodInvocationException(const std::string& message) noexcept
@@ -231,7 +231,7 @@ const std::string MethodInvocationException::getTypeName() const
 
 MethodInvocationException* MethodInvocationException::clone() const
 {
-    return new MethodInvocationException(static_cast<MethodInvocationException>(*this));
+    return new MethodInvocationException(const_cast<MethodInvocationException&>(*this));
 }
 
 ProviderRuntimeException::ProviderRuntimeException(const std::string& message) noexcept
@@ -246,7 +246,7 @@ const std::string ProviderRuntimeException::getTypeName() const
 
 ProviderRuntimeException* ProviderRuntimeException::clone() const
 {
-    return new ProviderRuntimeException(static_cast<ProviderRuntimeException>(*this));
+    return new ProviderRuntimeException(const_cast<ProviderRuntimeException&>(*this));
 }
 
 PublicationMissedException::PublicationMissedException() noexcept : JoynrRuntimeException(),
@@ -278,7 +278,7 @@ void PublicationMissedException::setSubscriptionId(const std::string& newValue) 
 
 PublicationMissedException* PublicationMissedException::clone() const
 {
-    return new PublicationMissedException(static_cast<PublicationMissedException>(*this));
+    return new PublicationMissedException(const_cast<PublicationMissedException&>(*this));
 }
 
 bool PublicationMissedException::operator==(const PublicationMissedException& other) const
@@ -336,7 +336,7 @@ const std::string ApplicationException::getTypeName() const
 
 ApplicationException* ApplicationException::clone() const
 {
-    return new ApplicationException(static_cast<ApplicationException>(*this));
+    return new ApplicationException(const_cast<ApplicationException&>(*this));
 }
 
 bool ApplicationException::operator==(const ApplicationException& other) const

@@ -28,7 +28,6 @@ joynrTestRequire(
             "joynr/start/TypeRegistry",
             "joynr/types/TypeRegistrySingleton",
             "joynr/types/DiscoveryEntry",
-            "joynr/types/CommunicationMiddleware",
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
             "joynr/vehicle/radiotypes/RadioStation",
@@ -41,7 +40,6 @@ joynrTestRequire(
                 TypeRegistry,
                 TypeRegistrySingleton,
                 DiscoveryEntry,
-                CommunicationMiddleware,
                 ProviderQos,
                 ProviderScope,
                 RadioStation,
@@ -371,7 +369,6 @@ joynrTestRequire(
                                     providerQos = {
                                         _typeName : "joynr.types.ProviderQos",
                                         customParameters : [],
-                                        providerVersion : 123,
                                         priority : 234,
                                         scope : "GLOBAL",
                                         supportsOnChangeSubscriptions : false
@@ -383,10 +380,7 @@ joynrTestRequire(
                                         interfaceName : "interfaceName",
                                         participantId : "participantId",
                                         qos : providerQos,
-                                        connections : [
-                                            "COMMONAPI_DBUS",
-                                            "JOYNR"
-                                        ]
+                                        lastSeenDateMs : 123
                                     };
                                     /*jslint nomen: false */
 
@@ -396,18 +390,14 @@ joynrTestRequire(
                                                         domain : fixture.domain,
                                                         interfaceName : fixture.interfaceName,
                                                         participantId : fixture.participantId,
+                                                        lastSeenDateMs : 123,
                                                         qos : new ProviderQos(
                                                                 {
                                                                     customParameters : providerQos.customParameters,
-                                                                    providerVersion : providerQos.providerVersion,
                                                                     priority : providerQos.priority,
                                                                     scope : ProviderScope.GLOBAL,
                                                                     supportsOnChangeSubscriptions : providerQos.supportsOnChangeSubscriptions
-                                                                }),
-                                                        connections : [
-                                                            CommunicationMiddleware.COMMONAPI_DBUS,
-                                                            CommunicationMiddleware.JOYNR
-                                                        ]
+                                                                })
                                                     });
                                     expect(
                                             Typing.augmentTypes(fixture, TypeRegistrySingleton
