@@ -91,9 +91,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
      * with Guice bindings 3. Starting the application. 4. Ending the application so that the necessary clean up calls
      * are made.
      *
-     * @throws IOException
+     * @param args arguments give when calling the main method
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<provider-domain>"
         if (args.length < 1 || args.length > 3) {

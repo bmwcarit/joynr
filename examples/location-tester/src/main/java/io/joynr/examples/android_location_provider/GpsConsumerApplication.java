@@ -33,7 +33,6 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
-import java.io.IOException;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -68,9 +67,9 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
      * with Guice bindings 3. Starting the application. 4. Ending the application so that the necessary clean up calls
      * are made.
      *
-     * @throws IOException
+     * @param args arguments give when calling the main method
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.classpathScope="test" -Dexec.mainClass="io.joynr.public_examples.android_location_provider.GpsConsumerApplication" -Dexec.args="<provider-domain>"
         if (args.length != 1) {
