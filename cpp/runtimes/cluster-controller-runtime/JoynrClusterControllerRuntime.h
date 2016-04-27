@@ -76,10 +76,10 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : publi
 public:
     JoynrClusterControllerRuntime(QCoreApplication* app,
                                   Settings* settings,
-                                  IMessageReceiver* httpMessageReceiver = nullptr,
-                                  IMessageSender* = nullptr,
-                                  IMessageReceiver* mqttMessageReceiver = nullptr,
-                                  IMessageSender* = nullptr);
+                                  std::shared_ptr<IMessageReceiver> httpMessageReceiver = nullptr,
+                                  std::shared_ptr<IMessageSender> httpMessageSender = nullptr,
+                                  std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
+                                  std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
 
     static JoynrClusterControllerRuntime* create(Settings* settings);
 

@@ -93,12 +93,13 @@ namespace joynr
 
 INIT_LOGGER(JoynrClusterControllerRuntime);
 
-JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* app,
-                                                             Settings* settings,
-                                                             IMessageReceiver* httpMessageReceiver,
-                                                             IMessageSender* httpMessageSender,
-                                                             IMessageReceiver* mqttMessageReceiver,
-                                                             IMessageSender* mqttMessageSender)
+JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
+        QCoreApplication* app,
+        Settings* settings,
+        std::shared_ptr<IMessageReceiver> httpMessageReceiver,
+        std::shared_ptr<IMessageSender> httpMessageSender,
+        std::shared_ptr<IMessageReceiver> mqttMessageReceiver,
+        std::shared_ptr<IMessageSender> mqttMessageSender)
 
         : JoynrRuntime(*settings),
           joynrDispatcher(nullptr),
