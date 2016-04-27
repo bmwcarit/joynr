@@ -66,7 +66,8 @@ joynrTestRequire(
                             ? true
                             : false, true),
                     participandId : "700",
-                    lastSeenDateMs : Date.now()
+                    lastSeenDateMs : Date.now(),
+                    publicKeyId : ""
                 });
             }
 

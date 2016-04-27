@@ -96,7 +96,8 @@ joynrTestRequire(
                         onChangeSubscriptions : true
                     }),
                     address : JSON.stringify((newGlobalAddress !== undefined ? newGlobalAddress : address)),
-                    participantId : "700"
+                    participantId : "700",
+                    publicKeyId : ""
                 });
             }
 
@@ -106,6 +107,7 @@ joynrTestRequire(
                 expect(actual.participantId).toEqual(expected.participantId);
                 expect(actual.qos).toEqual(expected.qos);
                 expect(actual.address).toEqual(expected.address);
+                expect(actual.publicKeyId).toEqual(expected.publicKeyId);
             }
 
             function getDiscoveryEntry(domain, interfaceName) {
@@ -126,7 +128,8 @@ joynrTestRequire(
                         onChangeSubscriptions : true
                     }),
                     participantId : "700",
-                    lastSeenDateMs : Date.now()
+                    lastSeenDateMs : Date.now(),
+                    publicKeyId : ""
                 });
             }
 
@@ -746,7 +749,8 @@ joynrTestRequire(
                                     onChangeSubscription : true
                                 }),
                                 participantId : "700",
-                                lastSeenDateMs : 123
+                                lastSeenDateMs : 123,
+                                publicKeyId : ""
                             });
                         }
 
@@ -767,7 +771,8 @@ joynrTestRequire(
                                     onChangeSubscription : true
                                 }),
                                 address : JSON.stringify(address),
-                                participantId : "700"
+                                participantId : "700",
+                                publicKeyId : ""
                             });
                         }
 

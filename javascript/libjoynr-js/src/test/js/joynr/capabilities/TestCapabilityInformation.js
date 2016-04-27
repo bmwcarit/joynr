@@ -42,6 +42,7 @@ joynrTestRequire("joynr/capabilities/TestCapabilityInformation", [
                 supportsOnChangeSubscriptions : true
             }),
             address : "address",
+            publicKeyId : "",
             participantId : "CDSNavigationParticipantId_vehicleA"
         });
     });

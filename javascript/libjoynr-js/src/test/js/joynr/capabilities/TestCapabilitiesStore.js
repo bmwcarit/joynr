@@ -60,6 +60,7 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
                 onChangeSubscriptions : true
             }),
             channelId : "0001",
+            publicKeyId : "",
             participantId : "700"
         };
 

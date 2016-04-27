@@ -107,6 +107,7 @@ joynrTestRequire(
                                     supportsOnChangeSubscriptions : true
                                 }),
                                 address : "channelId",
+                                publicKeyId : "",
                                 participantId : "myParticipantId"
                             });
 
