@@ -53,6 +53,8 @@ package «packagePath»;
 
 import io.joynr.provider.AbstractJoynrProvider;
 «IF !francaIntf.broadcasts.empty»
+import java.util.Set;
+import java.util.HashSet;
 import io.joynr.pubsub.publication.BroadcastFilterImpl;
 «ENDIF»
 
@@ -67,19 +69,39 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 	}
 
 	«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
+		«IF !francaIntf.broadcasts.empty»
+			private Set<BroadcastFilterImpl> queuedBroadcastFilters = new HashSet<>();
+		«ENDIF»
+
 		protected «interfaceName»SubscriptionPublisher «interfaceName.toFirstLower»SubscriptionPublisher;
 
 		@Override
 		public void setSubscriptionPublisher(«interfaceName»SubscriptionPublisher «interfaceName.toFirstLower»SubscriptionPublisher) {
 			this.«interfaceName.toFirstLower»SubscriptionPublisher = «interfaceName.toFirstLower»SubscriptionPublisher;
+			«IF !francaIntf.broadcasts.empty»
+				for (BroadcastFilterImpl filter: queuedBroadcastFilters) {
+					this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filter);
+				}
+				queuedBroadcastFilters.clear();
+			«ENDIF»
 		}
 
 		«IF !francaIntf.broadcasts.empty»
 			public void addBroadcastFilter(BroadcastFilterImpl filter) {
-				this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filter);
+				if (this.«interfaceName.toFirstLower»SubscriptionPublisher != null) {
+					this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filter);
+				} else {
+					queuedBroadcastFilters.add(filter);
+				}
 			}
 			public void addBroadcastFilter(BroadcastFilterImpl... filters){
-				this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filters);
+				if (this.«interfaceName.toFirstLower»SubscriptionPublisher != null) {
+					this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filters);
+				} else {
+					for (BroadcastFilterImpl filter: filters) {
+						queuedBroadcastFilters.add(filter);
+					}
+				}
 			}
 		«ENDIF»
 	«ENDIF»
@@ -88,14 +110,18 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 		«val attributeName = attribute.joynrName»
 		«val attributeType = attribute.typeName»
 		public void «attributeName»Changed(«attributeType» «attributeName») {
-			«interfaceName.toFirstLower»SubscriptionPublisher.«attributeName»Changed(«attributeName»);
+			if («interfaceName.toFirstLower»SubscriptionPublisher != null) {
+				«interfaceName.toFirstLower»SubscriptionPublisher.«attributeName»Changed(«attributeName»);
+			}
 		}
 	«ENDFOR»
 
 	«FOR broadcast : francaIntf.broadcasts»
 		«var broadcastName = broadcast.joynrName»
 		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {
-			«interfaceName.toFirstLower»SubscriptionPublisher.fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedUntypedOutputParameterList»);
+			if («interfaceName.toFirstLower»SubscriptionPublisher != null) {
+				«interfaceName.toFirstLower»SubscriptionPublisher.fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedUntypedOutputParameterList»);
+			}
 		}
 
 	«ENDFOR»
