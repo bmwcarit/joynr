@@ -17,6 +17,8 @@ package io.joynr.generator.templates
  * limitations under the License.
  */
 
+import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import org.franca.core.franca.FInterface
 
 /*
@@ -27,12 +29,17 @@ abstract class InterfaceTemplate {
 	protected var majorVersion = 0
 	protected var minorVersion = 0
 
-	new(FInterface francaIntf) {
-		this.francaIntf = francaIntf
+	def init() {
 		if (francaIntf.version != null) {
 			majorVersion = francaIntf.version.major;
 			minorVersion = francaIntf.version.minor;
 		}
+	}
+
+	@Inject
+	def setFrancaInterface(@Assisted FInterface francaIntf) {
+		this.francaIntf = francaIntf
+		init()
 	}
 
 	def CharSequence generate()

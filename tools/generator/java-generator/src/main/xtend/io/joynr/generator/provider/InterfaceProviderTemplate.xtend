@@ -18,7 +18,6 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -40,11 +39,6 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 	@Inject extension AttributeUtil
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToDeferredName) {
 		init(serviceInterface, methodToDeferredName, new ArrayList<FMethod>());

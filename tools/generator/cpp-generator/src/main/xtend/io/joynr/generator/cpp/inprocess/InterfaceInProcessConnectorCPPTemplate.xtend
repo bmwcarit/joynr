@@ -18,7 +18,6 @@ package io.joynr.generator.cpp.inprocess
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
@@ -40,11 +39,6 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 	@Inject private extension MethodUtil
 	@Inject private extension BroadcastUtil
 	@Inject private extension JoynrCppGeneratorExtensions
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override  generate()
 '''

@@ -19,7 +19,6 @@ package io.joynr.generator.js.proxy
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
@@ -31,7 +30,6 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FInterface
 
 class ProxyGenerator extends InterfaceTemplate {
 
@@ -44,11 +42,6 @@ class ProxyGenerator extends InterfaceTemplate {
 	@Inject private extension InterfaceUtil
 
 	int packagePathDepth
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	def relativePathToBase() {
 		var relativePath = ""

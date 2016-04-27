@@ -22,6 +22,7 @@ import com.google.inject.Inject
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
@@ -29,10 +30,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
-import io.joynr.generator.templates.InterfaceTemplate
-import com.google.inject.assistedinject.Assisted
 
 class ProviderGenerator extends InterfaceTemplate {
 
@@ -45,11 +43,6 @@ class ProviderGenerator extends InterfaceTemplate {
 	@Inject private extension InterfaceUtil
 
 	int packagePathDepth
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	def relativePathToBase() {
 		var relativePath = ""

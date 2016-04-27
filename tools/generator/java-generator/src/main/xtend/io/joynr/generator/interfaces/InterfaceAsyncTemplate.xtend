@@ -18,7 +18,6 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -40,11 +39,6 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName,  HashMap<FMethod, String> methodToErrorEnumName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods) {
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
