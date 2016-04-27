@@ -109,6 +109,7 @@ public class SerializationTest {
     private Injector injector;
 
     private Long expiryDateMs = System.currentTimeMillis() + ONE_MINUTE_IN_MS;
+    private String publicKeyId = "publicKeyId";
 
     public static final String interfaceName = "interfaceName";
 
@@ -378,6 +379,7 @@ public class SerializationTest {
                                                                            qos,
                                                                            System.currentTimeMillis(),
                                                                            expiryDateMs,
+                                                                           publicKeyId,
                                                                            channelAddress) };
 
         String writeValueAsString = null;
@@ -396,6 +398,7 @@ public class SerializationTest {
                                                                              qos,
                                                                              System.currentTimeMillis(),
                                                                              expiryDateMs,
+                                                                             publicKeyId,
                                                                              channelAddress);
         writeValueAsString = objectMapper.writeValueAsString(globalDiscoveryEntry);
         System.err.println(writeValueAsString);
@@ -645,6 +648,7 @@ public class SerializationTest {
                                                                                new ProviderQos(),
                                                                                System.currentTimeMillis(),
                                                                                expiryDateMs,
+                                                                               publicKeyId,
                                                                                "channelId") };
         Reply reply = new Reply(UUID.randomUUID().toString(), response);
 
@@ -1208,6 +1212,7 @@ public class SerializationTest {
                                                                              new ProviderQos(),
                                                                              System.currentTimeMillis(),
                                                                              expiryDateMs,
+                                                                             publicKeyId,
                                                                              objectMapper.writeValueAsString(mqttAddress));
 
         String serializedGlobalDiscoveryEntry = objectMapper.writeValueAsString(globalDiscoveryEntry);

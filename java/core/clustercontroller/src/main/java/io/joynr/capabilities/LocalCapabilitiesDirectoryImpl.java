@@ -124,6 +124,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.objectMapper = objectMapper;
 
+        String defaultPublicKeyId = "";
+
         this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
                                                                                    discoveryDirectoriesDomain,
                                                                                    GlobalCapabilitiesDirectory.INTERFACE_NAME,
@@ -131,6 +133,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                    new ProviderQos(),
                                                                                    System.currentTimeMillis(),
                                                                                    NO_EXPIRY,
+                                                                                   defaultPublicKeyId,
                                                                                    capabiltitiesDirectoryAddress));
         this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
                                                                                    discoveryDirectoriesDomain,
@@ -139,6 +142,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                    new ProviderQos(),
                                                                                    System.currentTimeMillis(),
                                                                                    NO_EXPIRY,
+                                                                                   defaultPublicKeyId,
                                                                                    domainAccessControllerAddress));
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(proxyBuilderFactory,

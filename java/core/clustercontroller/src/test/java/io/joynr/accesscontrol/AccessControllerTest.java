@@ -75,6 +75,7 @@ public class AccessControllerTest {
     private String testDomain = "testDomain";
     private String testInterface = "testInterface";
     private String testOperation = "testOperation";
+    private String testPublicKeyId = "testPublicKeyId";
     private ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(1000);
 
     @BeforeClass
@@ -109,7 +110,8 @@ public class AccessControllerTest {
                                                            toParticipantId,
                                                            new ProviderQos(),
                                                            System.currentTimeMillis(),
-                                                           System.currentTimeMillis() + ONE_MINUTE_IN_MS);
+                                                           System.currentTimeMillis() + ONE_MINUTE_IN_MS,
+                                                           testPublicKeyId);
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(discoveryEntry);
     }
 

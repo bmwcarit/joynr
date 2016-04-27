@@ -49,6 +49,7 @@ public class LocalDiscoveryAggregatorTest {
     private String discoveryProviderParticipantId;
     private LocalDiscoveryAggregator localDiscoveryAggregator;
     private DiscoveryEntry discoveryProviderEntry;
+    private String publicKeyId = "publicKeyId";
 
     @Mock
     DiscoveryProxy discoveryProxyMock;
@@ -77,7 +78,8 @@ public class LocalDiscoveryAggregatorTest {
                                                     discoveryProviderParticipantId,
                                                     providerQos,
                                                     System.currentTimeMillis(),
-                                                    expiryDateMs);
+                                                    expiryDateMs,
+                                                    publicKeyId);
 
     }
 
@@ -89,7 +91,8 @@ public class LocalDiscoveryAggregatorTest {
                                                            "anyParticipant",
                                                            new ProviderQos(),
                                                            System.currentTimeMillis(),
-                                                           expiryDateMs);
+                                                           expiryDateMs,
+                                                           publicKeyId);
         localDiscoveryAggregator.add(addCallback, discoveryEntry);
         Mockito.verify(discoveryProxyMock, Mockito.times(1)).add(Mockito.any(Callback.class),
                                                                  Mockito.eq(discoveryEntry));
@@ -132,7 +135,8 @@ public class LocalDiscoveryAggregatorTest {
                                                            "anyParticipant",
                                                            new ProviderQos(),
                                                            System.currentTimeMillis(),
-                                                           expiryDateMs);
+                                                           expiryDateMs,
+                                                           publicKeyId);
         localDiscoveryAggregator.add(addCallback, discoveryEntry);
         Mockito.verify(addCallback, Mockito.never()).resolve();
 
