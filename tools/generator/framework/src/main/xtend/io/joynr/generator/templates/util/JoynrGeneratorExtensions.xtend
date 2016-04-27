@@ -26,9 +26,6 @@ import io.joynr.generator.templates.EnumTemplate
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.TypeDefTemplate
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.StringReader
 import java.util.HashSet
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -43,7 +40,7 @@ import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 
-abstract class JoynrGeneratorExtensions {
+class JoynrGeneratorExtensions {
 
 	public final static String JOYNR_GENERATOR_GENERATE = "JOYNR_GENERATOR_GENERATE";
 	public final static String JOYNR_GENERATOR_CLEAN = "JOYNR_GENERATOR_CLEAN";
@@ -157,25 +154,6 @@ abstract class JoynrGeneratorExtensions {
 			return input;
 		}
 		return ", " + input;
-	}
-
-	def String getOneLineWarning()
-
-	def addWarningsToEachLine(String input) {
-		val str = new StringBuilder();
-
-		val reader = new BufferedReader(new StringReader(input));
-		try {
-			var line = "";
-			while ((line = reader.readLine()) != null) {
-				val outputLine = getOneLineWarning() + line + "\n";
-				str.append(outputLine);
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return str.toString();
 	}
 
 	def escapeQuotes(String string) {
