@@ -105,12 +105,28 @@ public:
 	static const std::uint32_t MINOR_VERSION;
 };
 
+«IF hasFireAndForgetMethods(francaIntf)»
+/**
+ * @brief This is the «interfaceName» fireAndForget interface.
+ *
+ * @version «majorVersion».«minorVersion»
+ */
+class «getDllExportMacro()» I«interfaceName»FireAndForget : virtual public I«interfaceName»Base {
+public:
+	~I«interfaceName»FireAndForget() override = default;
+	«produceFireAndForgetMethodDeclarations(francaIntf,true)»
+};
+«ENDIF»
+
 /**
  * @brief This is the «interfaceName» synchronous interface.
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
+class «getDllExportMacro()» I«interfaceName»Sync :
+		virtual public I«interfaceName»Base«IF hasFireAndForgetMethods(francaIntf)»,
+		virtual public I«interfaceName»FireAndForget«ENDIF»
+{
 public:
 	~I«interfaceName»Sync() override = default;
 	«produceSyncGetterDeclarations(francaIntf,true)»
@@ -123,7 +139,10 @@ public:
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
+class «getDllExportMacro()» I«interfaceName»Async :
+		virtual public I«interfaceName»Base«IF hasFireAndForgetMethods(francaIntf)»,
+		virtual public I«interfaceName»FireAndForget«ENDIF»
+{
 public:
 	~I«interfaceName»Async() override = default;
 	«produceAsyncGetterDeclarations(francaIntf,true)»
@@ -150,9 +169,12 @@ public:
 			using I«interfaceName»Async::set«attributeName»Async;
 		«ENDIF»
 	«ENDFOR»
-	«FOR methodName: getUniqueMethodNames(francaIntf)»
-		using I«interfaceName»Sync::«methodName»;
-		using I«interfaceName»Async::«methodName»Async;
+	«FOR method: getUniqueMethodNames(getMethods(francaIntf).filter[!fireAndForget])»
+		using I«interfaceName»Sync::«method»;
+		using I«interfaceName»Async::«method»Async;
+	«ENDFOR»
+	«FOR method: getUniqueMethodNames(getMethods(francaIntf).filter[fireAndForget])»
+		using I«interfaceName»FireAndForget::«method»;
 	«ENDFOR»
 };
 

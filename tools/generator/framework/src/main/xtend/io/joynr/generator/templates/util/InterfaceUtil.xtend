@@ -77,8 +77,12 @@ public class InterfaceUtil {
 	}
 
 	def getUniqueMethodNames(FInterface fInterface) {
+		return getUniqueMethodNames(getMethods(fInterface));
+	}
+
+	def getUniqueMethodNames(Iterable<FMethod> methods) {
 		val set = new HashSet<String>()
-		for (method : getMethods(fInterface)) {
+		for (method : methods) {
 			set.add(method.joynrName);
 		}
 		return set;

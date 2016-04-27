@@ -48,6 +48,9 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
+«IF hasFireAndForgetMethods(francaIntf)»
+	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»FireAndForgetProxy.h"
+«ENDIF»
 
 «FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
@@ -61,7 +64,11 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
+class «getDllExportMacro()» «syncClassName» :
+		virtual public «className»Base,
+		virtual public I«interfaceName»Sync«IF hasFireAndForgetMethods(francaIntf)»,
+		virtual public «interfaceName»FireAndForgetProxy«ENDIF»
+{
 public:
 	/**
 	 * @brief Parameterized constructor

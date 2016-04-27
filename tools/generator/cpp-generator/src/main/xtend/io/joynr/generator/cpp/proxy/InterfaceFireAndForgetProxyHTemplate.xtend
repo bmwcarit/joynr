@@ -25,7 +25,7 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
 
-class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
+class InterfaceFireAndForgetProxyHTemplate extends InterfaceTemplate {
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
@@ -37,9 +37,9 @@ class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
-«val asyncClassName = interfaceName + "AsyncProxy"»
+«val fireAndForgetClassName = interfaceName + "FireAndForgetProxy"»
 «val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
-	"_"+interfaceName+"AsyncProxy_h").toUpperCase»
+	"_"+interfaceName+"FireAndForgetProxy_h").toUpperCase»
 «warning()»
 
 #ifndef «headerGuard»
@@ -48,20 +48,6 @@ class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
-«IF hasFireAndForgetMethods(francaIntf)»
-	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»FireAndForgetProxy.h"
-«ENDIF»
-
-namespace joynr
-{
-	template <class ... Ts> class Future;
-
-namespace exceptions
-{
-	class JoynrException;
-	class JoynrRuntimeException;
-} // namespace exceptions
-} // namespace joynr
 
 «FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
@@ -70,27 +56,23 @@ namespace exceptions
 #include <memory>
 
 «getNamespaceStarter(francaIntf)»
-/** @brief proxy class for asynchronous calls of interface «interfaceName»
+/**
+ * @brief FireAndForget proxy for interface «interfaceName»
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «asyncClassName» :
-		virtual public «className»Base,
-		virtual public I«interfaceName»Async«IF hasFireAndForgetMethods(francaIntf)»,
-		virtual public «interfaceName»FireAndForgetProxy«ENDIF»
-{
+class «getDllExportMacro()» «fireAndForgetClassName»: virtual public I«interfaceName»FireAndForget, virtual public «interfaceName»ProxyBase {
 public:
-
 	/**
 	 * @brief Parameterized constructor
-	 * @param messagingAddress The messaging address
+	 * @param messagingAddress The address
 	 * @param connectorFactory The connector factory
 	 * @param cache The client cache
 	 * @param domain The provider domain
 	 * @param qosSettings The quality of service settings
 	 * @param cached True, if cached, false otherwise
 	 */
-	«asyncClassName»(
+	«fireAndForgetClassName»(
 			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
@@ -99,17 +81,15 @@ public:
 			bool cached
 	);
 
-	«produceAsyncGetterDeclarations(francaIntf, false)»
-	«produceAsyncSetterDeclarations(francaIntf, false)»
-	«produceAsyncMethodDeclarations(francaIntf, false, true)»
+
+	«produceFireAndForgetMethodDeclarations(francaIntf, false)»
 
 	friend class «className»;
 
 private:
-	DISALLOW_COPY_AND_ASSIGN(«asyncClassName»);
+	DISALLOW_COPY_AND_ASSIGN(«fireAndForgetClassName»);
 };
 «getNamespaceEnder(francaIntf)»
 #endif // «headerGuard»
-
 '''
 }

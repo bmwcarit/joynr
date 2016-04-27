@@ -6,7 +6,8 @@ package io.joynr.generator.cpp.proxy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *
+ *  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -23,16 +24,14 @@ import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
-import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 
-class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
-	@Inject extension JoynrCppGeneratorExtensions
+class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
+	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
 	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
 	@Inject private extension CppInterfaceUtil
 
@@ -40,20 +39,18 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
-«val syncClassName = interfaceName + "SyncProxy"»
+«val fireAndForgetClassName = interfaceName + "FireAndForgetProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«syncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«fireAndForgetClassName».h"
 
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	#include «datatype»
 «ENDFOR»
 
-«getNamespaceStarter(francaIntf)»
-// The proxies will contain all arbitration checks
-// the connectors will contain the JSON related code
 
-«syncClassName»::«syncClassName»(
+«getNamespaceStarter(francaIntf)»
+«fireAndForgetClassName»::«fireAndForgetClassName»(
 		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
@@ -62,53 +59,18 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 		bool cached
 ) :
 		joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
-		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«IF hasFireAndForgetMethods(francaIntf)»,
-		«interfaceName»FireAndForgetProxy(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«ENDIF»
+		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
 {
 }
 
-«FOR attribute: getAttributes(francaIntf)»
-	«var attributeName = attribute.joynrName»
-	«var getAttribute = "get" + attributeName.toFirstUpper»
-	«var setAttribute = "set" + attributeName.toFirstUpper»
-	«IF attribute.readable»
-		«produceSyncGetterSignature(attribute, syncClassName)»
-		{
-			if (connector==nullptr){
-				«val errorMsg = "proxy cannot invoke " + getAttribute + " because the communication end partner is not (yet) known"»
-				JOYNR_LOG_WARN(logger, "«errorMsg»");
-				exceptions::JoynrRuntimeException error("«errorMsg»");
-				throw error;
-			}
-			else{
-				return connector->«getAttribute»(«attributeName»);
-			}
-		}
-	«ENDIF»
-	«IF attribute.writable»
-		«produceSyncSetterSignature(attribute, syncClassName)»
-		{
-			if (connector==nullptr){
-				«val errorMsg = "proxy cannot invoke " + setAttribute + " because the communication end partner is not (yet) known"»
-				JOYNR_LOG_WARN(logger, "«errorMsg»");
-				exceptions::JoynrRuntimeException error("«errorMsg»");
-				throw error;
-			}
-			else{
-				return connector->«setAttribute»(«attributeName»);
-			}
-		}
-	«ENDIF»
-
-«ENDFOR»
-«FOR method: getMethods(francaIntf).filter[!fireAndForget]»
+«FOR method: getMethods(francaIntf).filter[fireAndForget]»
 	«var methodName = method.name»
 	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 	«var params = getCommaSeperatedUntypedInputParameterList(method)»
 	/*
 	 * «methodName»
 	 */
-	«produceSyncMethodSignature(method, syncClassName)»
+	«produceFireAndForgetMethodSignature(method, fireAndForgetClassName)»
 	{
 		if (connector==nullptr){
 			«val errorMsg = "proxy cannot invoke " + methodName + " because the communication end partner is not (yet) known"»

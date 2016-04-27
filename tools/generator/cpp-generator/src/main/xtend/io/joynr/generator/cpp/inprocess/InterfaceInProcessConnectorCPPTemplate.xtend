@@ -336,20 +336,16 @@ bool «className»::usesClusterController() const{
 		future->get(«method.commaSeperatedUntypedOutputParameterList»);
 	«ENDIF»
 }
+«IF !method.fireAndForget»
+	«produceAsyncMethodSignature(francaIntf, method, className)»
+	{
+		assert(address);
+		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+		assert(caller);
+		std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+		assert(«francaIntf.interfaceCaller»);
+		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
-«produceAsyncMethodSignature(francaIntf, method, className)»
-{
-	assert(address);
-	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
-	assert(caller);
-	std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-	assert(«francaIntf.interfaceCaller»);
-	auto future = std::make_shared<joynr::Future<«outputParameters»>>();
-
-	«IF method.fireAndForget»
-		«francaIntf.interfaceCaller»->«methodname»(«inputParamList»);
-		future->onSuccess();
-	«ELSE»
 		std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
 				[future, onSuccess] («outputTypedConstParamList») {
 					future->onSuccess(«outputUntypedParamList»);
@@ -366,9 +362,9 @@ bool «className»::usesClusterController() const{
 				};
 
 		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper, onErrorWrapper);
-	«ENDIF»
-	return future;
-}
+		return future;
+	}
+«ENDIF»
 
 «ENDFOR»
 
