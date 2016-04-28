@@ -20,7 +20,7 @@ package io.joynr.generator.js
 
 import com.google.inject.AbstractModule
 import com.google.inject.assistedinject.FactoryModuleBuilder
-import io.joynr.generator.AbstractJoynrGenerator
+import io.joynr.generator.IJoynrGenerator
 import io.joynr.generator.js.communicationmodel.ErrorEnumTypesGenerator
 import io.joynr.generator.js.communicationmodel.TypesGenerator
 import io.joynr.generator.js.util.GeneratorParameter
@@ -37,7 +37,7 @@ import org.franca.core.franca.FType
 
 import static com.google.common.base.Preconditions.*
 
-class JoynrJSGenerator extends AbstractJoynrGenerator {
+class JoynrJSGenerator implements IJoynrGenerator {
 
 	//@Inject private FrancaPersistenceManager francaPersistenceManager
 	@Inject private GeneratorParameter parameters
