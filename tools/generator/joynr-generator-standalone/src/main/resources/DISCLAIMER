@@ -1,5 +1,8 @@
 The software listed below included in some products is licensed under the "Apache License, Version 2.0". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/Apache-2.txt" as well as the content of the NOTICE file if applicable.
 - com.google.guava:guava:11.0.2
+- com.google.inject.extensions:guice-assistedinject:3.0
+  Notice file: info/guice-assistedinject-3.0-jar/META-INF/NOTICE
+  License file: info/guice-assistedinject-3.0-jar/META-INF/LICENSE
 - com.google.inject:guice:3.0
   Notice file: info/guice-3.0-jar/META-INF/NOTICE
   License file: info/guice-3.0-jar/META-INF/LICENSE

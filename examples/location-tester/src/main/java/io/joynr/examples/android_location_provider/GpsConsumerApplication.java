@@ -33,7 +33,6 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
-import java.io.IOException;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -68,9 +67,9 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
      * with Guice bindings 3. Starting the application. 4. Ending the application so that the necessary clean up calls
      * are made.
      *
-     * @throws IOException
+     * @param args arguments give when calling the main method
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.classpathScope="test" -Dexec.mainClass="io.joynr.public_examples.android_location_provider.GpsConsumerApplication" -Dexec.args="<provider-domain>"
         if (args.length != 1) {
@@ -192,7 +191,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // The provider will send notifications until the end date is reached. The consumer will not receive any
         // notifications (neither value notifications nor missed publication notifications) after
         // this date.
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
+        long validity_ms = 60000;
         // If no notification was received within the last alert interval, a missed publication
         // notification will be raised.
         int alertAfterInterval_ms = 20000;
@@ -202,11 +201,9 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // missed publication notification (depending on the value of the alert interval QoS).
         int publicationTtl_ms = 5000;
 
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms).setMaxIntervalMs(maxInterval_ms).setValidityMs(validity_ms);
+        subscriptionQos.setAlertAfterIntervalMs(alertAfterInterval_ms).setPublicationTtlMs(publicationTtl_ms);
 
         ProxyBuilder<GpsProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain, GpsProxy.class);
 

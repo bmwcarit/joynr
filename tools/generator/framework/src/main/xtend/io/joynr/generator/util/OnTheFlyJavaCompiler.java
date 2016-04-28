@@ -222,11 +222,7 @@ public class OnTheFlyJavaCompiler {
             throw new IllegalArgumentException(resourceName + " not found");
         String pathToFolderOrJar = null;
         if (url.getProtocol().startsWith("bundleresource")) {
-            try {
-                url = resolveBundleResourceURL(url);
-            } catch (IOException e) {
-                throw new WrappedException(e);
-            }
+            throw new WrappedException(new UnsupportedOperationException());
         }
         if (url.getProtocol().startsWith("jar")) {
             try {
@@ -444,13 +440,6 @@ public class OnTheFlyJavaCompiler {
         } catch (Exception e) {
             throw new WrappedException(e);
         }
-    }
-
-    /**
-     * @throws IOException  
-     */
-    protected URL resolveBundleResourceURL(URL url) throws IOException {
-        throw new UnsupportedOperationException();
     }
 
     public void setParentClassLoader(ClassLoader parentClassLoader) {

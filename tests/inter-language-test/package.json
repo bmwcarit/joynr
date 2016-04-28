@@ -1,6 +1,6 @@
 {
   "name": "inter-language-test",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "description": "Inter-Language Tests",
   "main": "src/main/js/consumer.js",
   "private": true,
