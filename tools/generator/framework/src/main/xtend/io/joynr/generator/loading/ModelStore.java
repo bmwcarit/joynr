@@ -50,7 +50,6 @@ public class ModelStore implements Iterable<EObject> {
         resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
     }
 
-
     @Inject
     public ModelStore(IUriProvider uriProvider) {
         super();

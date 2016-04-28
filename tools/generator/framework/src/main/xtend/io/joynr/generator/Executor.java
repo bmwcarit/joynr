@@ -24,7 +24,6 @@ import io.joynr.generator.loading.ModelLoader;
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
 import io.joynr.generator.util.FrancaIDLFrameworkStandaloneSetup;
 import io.joynr.generator.util.InvocationArguments;
-import io.joynr.generator.util.TemplatesLoader;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,17 +76,6 @@ public class Executor {
     }
 
     protected IGenerator setup() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        String templatesDir = arguments.getTemplatesDir();
-        String templatesEncoding = arguments.getTemplatesEncoding();
-
-        if (templatesDir != null) {
-            try {
-                TemplatesLoader.load(templatesDir, templatesEncoding);
-            } catch (Exception e) {
-                logger.warning(e.getMessage());
-            }
-        }
-
         String rootGenerator = arguments.getRootGenerator();
         Class<?> rootGeneratorClass = Class.forName(rootGenerator, true, Thread.currentThread().getContextClassLoader());
         Object templateRootInstance = rootGeneratorClass.newInstance();
