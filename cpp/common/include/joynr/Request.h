@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,12 @@
 #include <string>
 #include <vector>
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/Variant.h"
+#include "joynr/OneWayRequest.h"
 
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT Request
+class JOYNRCOMMON_EXPORT Request : public OneWayRequest
 {
 public:
     Request();
@@ -44,22 +43,8 @@ public:
     const std::string& getRequestReplyId() const;
     void setRequestReplyId(std::string requestReplyId);
 
-    const std::string& getMethodName() const;
-    void setMethodName(const std::string& methodName);
-
-    std::vector<Variant> getParams() const;
-    void setParams(std::vector<Variant> params);
-
-    void addParam(Variant value, std::string datatype);
-
-    std::vector<std::string> getParamDatatypes() const;
-    void setParamDatatypes(std::vector<std::string> paramDatatypes);
-
 private:
     std::string requestReplyId;
-    std::string methodName;
-    std::vector<Variant> params;
-    std::vector<std::string> paramDatatypes;
 };
 
 } // namespace joynr

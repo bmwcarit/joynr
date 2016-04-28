@@ -1,5 +1,5 @@
 /*
-  * #%L
+ * #%L
  * %%
  * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
@@ -15,32 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * #L%
-  */
-#include "joynr/Request.h"
-#include "joynr/Util.h"
+ */
+#ifndef ONEWAYREQUESTSERIALIZER_H
+#define ONEWAYREQUESTSERIALIZER_H
+
+#include <iosfwd>
+
+#include "joynr/ClassDeserializer.h"
+#include "joynr/ClassSerializer.h"
+#include "joynr/OneWayRequest.h"
 
 namespace joynr
 {
 
-bool isRequestTypeRegistered = Variant::registerType<Request>("joynr.Request");
+class IObject;
 
-Request::Request() : OneWayRequest(), requestReplyId(util::createUuid())
-{
-}
+// Serializes a OneWayRequest
+template <>
+void ClassSerializerImpl<OneWayRequest>::serialize(const OneWayRequest& request, std::ostream& o);
 
-bool Request::operator==(const Request& other) const
-{
-    return getRequestReplyId() == other.getRequestReplyId() && OneWayRequest::operator==(other);
-}
-
-const std::string& Request::getRequestReplyId() const
-{
-    return requestReplyId;
-}
-
-void Request::setRequestReplyId(std::string requestReplyId)
-{
-    this->requestReplyId = std::move(requestReplyId);
-}
+// Deserializes a OneWayRequest
+template <>
+void ClassDeserializerImpl<OneWayRequest>::deserialize(OneWayRequest& t, IObject& o);
 
 } // namespace joynr
+#endif // ONEWAYREQUESTSERIALIZER_H
