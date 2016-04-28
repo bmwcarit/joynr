@@ -191,7 +191,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // The provider will send notifications until the end date is reached. The consumer will not receive any
         // notifications (neither value notifications nor missed publication notifications) after
         // this date.
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
+        long validity_ms = 60000;
         // If no notification was received within the last alert interval, a missed publication
         // notification will be raised.
         int alertAfterInterval_ms = 20000;
@@ -201,11 +201,9 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // missed publication notification (depending on the value of the alert interval QoS).
         int publicationTtl_ms = 5000;
 
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms).setMaxIntervalMs(maxInterval_ms).setValidityMs(validity_ms);
+        subscriptionQos.setAlertAfterIntervalMs(alertAfterInterval_ms).setPublicationTtlMs(publicationTtl_ms);
 
         ProxyBuilder<GpsProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain, GpsProxy.class);
 
