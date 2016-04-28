@@ -3,7 +3,7 @@ package io.joynr.generator.loading;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,19 +42,19 @@ import com.google.inject.Injector;
 
 public class ModelStore implements Iterable<EObject> {
 
-    private XtextResourceSet resourceSet;
+    private final IUriProvider uriProvider;
+    private final XtextResourceSet resourceSet;
     {
         Injector injector = new FrancaIDLStandaloneSetup().createInjectorAndDoEMFRegistration();
         resourceSet = injector.getInstance(XtextResourceSet.class);
         resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
     }
-    private IUriProvider uriProvider;
+
 
     @Inject
     public ModelStore(IUriProvider uriProvider) {
         super();
         this.uriProvider = uriProvider;
-        //		resourceSet.setClasspathURIContext(getClass().getClassLoader());
     }
 
     public Resource getResource(URI uri) {
@@ -64,14 +64,11 @@ public class ModelStore implements Iterable<EObject> {
     public List<Resource> load() {
         for (URI uri : uriProvider.allUris()) {
             try {
-                //            	System.out.println("resource: " + uri.path());
                 Resource resource = resourceSet.getResource(uri, false);
                 if (resource == null) {
-                    //            		System.out.println("- create");
                     resource = resourceSet.createResource(uri);
                 }
                 resource.load(null);
-                //            	System.out.println("- load");
                 EcoreUtil.resolveAll(resource);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -115,9 +112,6 @@ public class ModelStore implements Iterable<EObject> {
 
     public static ModelStore modelsIn(IUriProvider uriProvider) {
         ModelStore modelStore = new ModelStore(uriProvider);
-        //		if (uriProvider instanceof ClassPathUriProvider){
-        //			modelStore.resourceSet.setClasspathURIContext(Thread.currentThread().getContextClassLoader());
-        //		}
         modelStore.load();
         return modelStore;
     }
