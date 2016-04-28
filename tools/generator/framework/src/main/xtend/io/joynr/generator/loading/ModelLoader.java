@@ -74,7 +74,7 @@ public class ModelLoader {
             };
         }
 
-        modelStore = ModelStore.modelsIn(uriProvider);
+        modelStore = new ModelStore(uriProvider);
 
     }
 

@@ -19,8 +19,6 @@ package io.joynr.generator.loading;
  * #L%
  */
 
-import static java.util.Arrays.asList;
-
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +37,6 @@ import com.google.inject.Injector;
 
 public class ModelStore implements Iterable<EObject> {
 
-    private final IUriProvider uriProvider;
     private final XtextResourceSet resourceSet;
     {
         Injector injector = new FrancaIDLStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -50,14 +47,10 @@ public class ModelStore implements Iterable<EObject> {
     @Inject
     public ModelStore(IUriProvider uriProvider) {
         super();
-        this.uriProvider = uriProvider;
+        load(uriProvider);
     }
 
-    public Resource getResource(URI uri) {
-        return resourceSet.getResource(uri, true);
-    }
-
-    public List<Resource> load() {
+    private void load(IUriProvider uriProvider) {
         for (URI uri : uriProvider.allUris()) {
             try {
                 Resource resource = resourceSet.getResource(uri, false);
@@ -71,21 +64,14 @@ public class ModelStore implements Iterable<EObject> {
             }
         }
         EcoreUtil.resolveAll(resourceSet);
-        return resourceSet.getResources();
-    }
-
-    public void add(Resource... resources) {
-        resourceSet.getResources().addAll(asList(resources));
     }
 
     public Iterator<EObject> iterator() {
         return Iterators.filter(resourceSet.getAllContents(), EObject.class);
     }
 
-    public static ModelStore modelsIn(IUriProvider uriProvider) {
-        ModelStore modelStore = new ModelStore(uriProvider);
-        modelStore.load();
-        return modelStore;
+    public Resource getResource(URI uri) {
+        return resourceSet.getResource(uri, true);
     }
-
 }
+
