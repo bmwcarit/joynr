@@ -1,3 +1,12 @@
+#joynr 0.18.0
+
+##API relevant changes
+None.
+
+##Other changes
+ * **[Tools]** Refactored joynr generator framework to simplify the maintenance,
+   revised its required dependencies.
+
 #joynr 0.17.0
 
 ##API relevant changes
