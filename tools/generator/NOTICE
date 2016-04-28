@@ -25,7 +25,6 @@ This project has dependencies to:
   ASM Core under BSD
   ASM Tree under BSD
   Backport of JSR 166 under Public Domain
-  codegen under Eclipse Public License - v 1.0
   Common Eclipse Runtime under Eclipse Public License - v 1.0
   Common Types Runtime Library under Eclipse Public License - v 1.0
   dom4j under BSD License
