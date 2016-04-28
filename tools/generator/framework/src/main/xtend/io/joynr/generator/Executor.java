@@ -82,14 +82,19 @@ public class Executor {
         Class<?> rootGeneratorClass = Class.forName(rootGenerator, true, Thread.currentThread().getContextClassLoader());
         Object templateRootInstance = rootGeneratorClass.newInstance();
 
-        // Is this a generator that supports header files?
         if (templateRootInstance instanceof IGenerator) {
             // This is a standard generator
             IGenerator generator = (IGenerator) templateRootInstance;
-            if (generator instanceof IJoynrGenerator && ((IJoynrGenerator) generator).getGeneratorModule() != null) {
-                injector = injector.createChildInjector(((IJoynrGenerator) generator).getGeneratorModule());
+            if (generator instanceof IJoynrGenerator) {
+                IJoynrGenerator joynrGenerator = (IJoynrGenerator) generator;
+                if (joynrGenerator.getGeneratorModule() != null) {
+                    injector = injector.createChildInjector(joynrGenerator.getGeneratorModule());
+                }
+                injector.injectMembers(generator);
+                joynrGenerator.setParameters(arguments.getParameter());
+            } else {
+                injector.injectMembers(generator);
             }
-            injector.injectMembers(generator);
             return generator;
         } else {
             throw new IllegalStateException("Root generator \"" + "\" is not implementing interface \""
@@ -103,11 +108,6 @@ public class Executor {
         String modelPath = arguments.getModelPath();
 
         createFileSystemAccess(outputFileSystem, outputPath);
-
-        // This is a normal generator
-        if (generator instanceof IJoynrGenerator) {
-            ((IJoynrGenerator) generator).setParameters(arguments.getParameter());
-        }
 
         return new ModelLoader(modelPath);
     }
