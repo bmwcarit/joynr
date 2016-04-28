@@ -21,7 +21,6 @@ package io.joynr.generator.loading;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -70,8 +69,7 @@ public class ModelStore implements Iterable<EObject> {
         return Iterators.filter(resourceSet.getAllContents(), EObject.class);
     }
 
-    public Resource getResource(URI uri) {
-        return resourceSet.getResource(uri, true);
+    public Iterable<Resource> getResources() {
+        return resourceSet.getResources();
     }
 }
-

@@ -27,7 +27,6 @@ import io.joynr.generator.util.InvocationArguments;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.xtext.generator.IFileSystemAccess;
@@ -111,17 +110,17 @@ public class Executor {
 
     public void generate(IGenerator generator) {
         ModelLoader modelLoader = prepareGeneratorEnvironment(generator);
-        for (URI foundUri : modelLoader.getURIs()) {
-            final Resource r = modelLoader.getResource(foundUri);
-            if (r.getErrors().size() > 0) {
+        for (Resource resource : modelLoader.getResources()) {
+            if (resource.getErrors().size() > 0) {
                 StringBuilder errorMsg = new StringBuilder();
-                errorMsg.append("Error loading model " + foundUri.toString() + ". The following errors occured: \n");
-                for (Diagnostic error : r.getErrors()) {
+                errorMsg.append("Error loading model " + resource.getURI().toString()
+                        + ". The following errors occured: \n");
+                for (Diagnostic error : resource.getErrors()) {
                     errorMsg.append(error.getMessage());
                 }
                 logger.log(Level.SEVERE, errorMsg.toString());
             } else {
-                generator.doGenerate(r, outputFileSystem);
+                generator.doGenerate(resource, outputFileSystem);
             }
         }
     }

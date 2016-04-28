@@ -78,12 +78,8 @@ public class ModelLoader {
 
     }
 
-    public Iterable<URI> getURIs() {
-        return uriProvider.allUris();
-    }
-
-    public Resource getResource(URI uri) {
-        return modelStore.getResource(uri);
+    public Iterable<Resource> getResources() {
+        return modelStore.getResources();
     }
 
 }

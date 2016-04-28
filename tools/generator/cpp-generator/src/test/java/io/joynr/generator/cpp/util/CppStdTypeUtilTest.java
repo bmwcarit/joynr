@@ -47,7 +47,7 @@ public class CppStdTypeUtilTest extends TestCase {
     protected void setUp() throws Exception {
         URL fixtureURL = CppStdTypeUtilTest.class.getResource("CppStdTypeUtil.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
-        Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
+        Resource fixtureResource = loader.getResources().iterator().next();
         cppStdTypeUtil = Guice.createInjector(new AbstractModule() {
 
             @Override
