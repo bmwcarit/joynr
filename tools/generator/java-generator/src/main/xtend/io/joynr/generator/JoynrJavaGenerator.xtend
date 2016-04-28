@@ -26,11 +26,8 @@ import io.joynr.generator.filter.FilterGenerator
 import io.joynr.generator.interfaces.InterfaceGenerator
 import io.joynr.generator.provider.ProviderGenerator
 import io.joynr.generator.proxy.ProxyGenerator
-import io.joynr.generator.util.IgnoreSVNFileFilter
 import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
-import java.io.File
-import java.io.FileNotFoundException
 import java.util.HashSet
 import java.util.Map
 import org.eclipse.emf.ecore.resource.Resource
@@ -41,7 +38,6 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModel
 
 import static com.google.common.base.Preconditions.*
-import static org.eclipse.xtext.util.Files.*
 
 class JoynrJavaGenerator implements IJoynrGenerator {
 	@Inject
@@ -90,19 +86,6 @@ override getLanguageId() {
 		}
 		//cleanDirectory(containerpath)
 		communicationModelGenerator.doGenerate(fModel, fsa)
-	}
-
-	def void cleanDirectory(String path) {
-		val directory = new File(path);
-		if (!directory.exists()) {
-			directory.mkdirs();
-		} else {
-			try {
-				cleanFolder(directory, new IgnoreSVNFileFilter(), true, false);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	def Iterable<FInterface> findAllFInterfaces(Resource resource) {
