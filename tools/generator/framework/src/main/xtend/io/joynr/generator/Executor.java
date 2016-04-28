@@ -42,18 +42,20 @@ public class Executor {
 
     private final Logger logger = Logger.getLogger("io.joynr.generator.Executor");
     private final InvocationArguments arguments;
+    private final IGenerator generator;
     private final IFileSystemAccess outputFileSystem;
 
-    private Injector injector;
-
-    public Executor(final InvocationArguments arguments) {
+    public Executor(final InvocationArguments arguments) throws ClassNotFoundException,
+                                                        InstantiationException,
+                                                        IllegalAccessException {
+        arguments.checkArguments();
         this.arguments = arguments;
 
         // Get an injector and inject into the current instance
         Injector francaInjector = new FrancaIDLStandaloneSetup().createInjectorAndDoEMFRegistration();
 
         // Use a child injector that contains configuration parameters passed to this Executor
-        this.injector = francaInjector.createChildInjector(new AbstractModule() {
+        Injector injector = francaInjector.createChildInjector(new AbstractModule() {
             @Override
             protected void configure() {
                 bind(IFileSystemAccess.class).to(JavaIoFileSystemAccess.class);
@@ -70,10 +72,12 @@ public class Executor {
                                    .toInstance(arguments.clean());
             }
         });
-        this.outputFileSystem = this.injector.getInstance(IFileSystemAccess.class);
+        this.outputFileSystem = injector.getInstance(IFileSystemAccess.class);
+        this.generator = createGenerator(injector);
     }
 
-    protected IGenerator setup() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    private IGenerator createGenerator(Injector injector) throws ClassNotFoundException, InstantiationException,
+                                                         IllegalAccessException {
         String rootGenerator = arguments.getRootGenerator();
         Class<?> rootGeneratorClass = Class.forName(rootGenerator, true, Thread.currentThread().getContextClassLoader());
         Object templateRootInstance = rootGeneratorClass.newInstance();
@@ -81,12 +85,12 @@ public class Executor {
         // Is this a generator that supports header files?
         if (templateRootInstance instanceof IGenerator) {
             // This is a standard generator
-            IGenerator result = (IGenerator) templateRootInstance;
-            if (result instanceof IJoynrGenerator && ((IJoynrGenerator) result).getGeneratorModule() != null) {
-                injector = injector.createChildInjector(((IJoynrGenerator) result).getGeneratorModule());
+            IGenerator generator = (IGenerator) templateRootInstance;
+            if (generator instanceof IJoynrGenerator && ((IJoynrGenerator) generator).getGeneratorModule() != null) {
+                injector = injector.createChildInjector(((IJoynrGenerator) generator).getGeneratorModule());
             }
-            injector.injectMembers(result);
-            return result;
+            injector.injectMembers(generator);
+            return generator;
         } else {
             throw new IllegalStateException("Root generator \"" + "\" is not implementing interface \""
                     + IGenerator.class.getName() + "\"");
@@ -94,7 +98,7 @@ public class Executor {
 
     }
 
-    private ModelLoader prepareGeneratorEnvironment(IGenerator generator) {
+    private ModelLoader prepareGeneratorEnvironment() {
         String outputPath = arguments.getOutputPath();
         String modelPath = arguments.getModelPath();
 
@@ -108,8 +112,12 @@ public class Executor {
         return new ModelLoader(modelPath);
     }
 
-    public void generate(IGenerator generator) {
-        ModelLoader modelLoader = prepareGeneratorEnvironment(generator);
+    public IGenerator getGenerator() {
+        return generator;
+    }
+
+    public void generate() {
+        ModelLoader modelLoader = prepareGeneratorEnvironment();
         for (Resource resource : modelLoader.getResources()) {
             if (resource.getErrors().size() > 0) {
                 StringBuilder errorMsg = new StringBuilder();
@@ -134,7 +142,6 @@ public class Executor {
         // Parse the command line arguments
         InvocationArguments invocationArguments = new InvocationArguments(args);
         Executor executor = new Executor(invocationArguments);
-        IGenerator generator = executor.setup();
-        executor.generate(generator);
+        executor.generate();
     }
 }
