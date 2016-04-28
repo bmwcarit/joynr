@@ -22,19 +22,18 @@ package io.joynr.generator;
 import static io.joynr.generator.util.FileSystemAccessUtil.createFileSystemAccess;
 import io.joynr.generator.loading.ModelLoader;
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
-import io.joynr.generator.util.FrancaIDLFrameworkStandaloneSetup;
 import io.joynr.generator.util.InvocationArguments;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.IGenerator;
+import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
+import org.franca.core.dsl.FrancaIDLStandaloneSetup;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
@@ -42,24 +41,23 @@ import com.google.inject.name.Names;
 
 public class Executor {
 
-    private Logger logger = Logger.getLogger("io.joynr.generator.Executor");
-    private Injector injector;
-    private InvocationArguments arguments;
+    private final Logger logger = Logger.getLogger("io.joynr.generator.Executor");
+    private final InvocationArguments arguments;
+    private final IFileSystemAccess outputFileSystem;
 
-    @Inject
-    private IFileSystemAccess outputFileSystem;
+    private Injector injector;
 
     public Executor(final InvocationArguments arguments) {
         this.arguments = arguments;
 
         // Get an injector and inject into the current instance
-        Injector francaInjector = new FrancaIDLFrameworkStandaloneSetup().createInjectorAndDoEMFRegistration();
-        francaInjector.injectMembers(this);
+        Injector francaInjector = new FrancaIDLStandaloneSetup().createInjectorAndDoEMFRegistration();
 
         // Use a child injector that contains configuration parameters passed to this Executor
         this.injector = francaInjector.createChildInjector(new AbstractModule() {
             @Override
             protected void configure() {
+                bind(IFileSystemAccess.class).to(JavaIoFileSystemAccess.class);
                 String generationId = arguments.getGenerationId();
                 if (generationId != null) {
                     bindConstant().annotatedWith(Names.named("generationId")).to(generationId);
@@ -73,6 +71,7 @@ public class Executor {
                                    .toInstance(arguments.clean());
             }
         });
+        this.outputFileSystem = this.injector.getInstance(IFileSystemAccess.class);
     }
 
     protected IGenerator setup() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
