@@ -518,6 +518,9 @@
 										<exclude>joynr/system/LoggingManager.js</exclude>
 									</excludes>
 								</resource>
+								<resource>
+									<directory>${basedir}/wiki/npm</directory>
+								</resource>
 							</resources>
 						</configuration>
 					</execution>
