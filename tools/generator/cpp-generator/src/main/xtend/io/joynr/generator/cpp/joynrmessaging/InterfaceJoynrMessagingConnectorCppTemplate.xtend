@@ -104,6 +104,10 @@ internalRequestObject.setParams(
 	«ENDIF»
 «ENDFOR»
 
+«FOR broadcastFilterParameters: getBroadcastFilterParametersIncludes(francaIntf)»
+	#include «broadcastFilterParameters»
+«ENDFOR»
+
 «getNamespaceStarter(francaIntf)»
 «val className = interfaceName + "JoynrMessagingConnector"»
 «className»::«className»(

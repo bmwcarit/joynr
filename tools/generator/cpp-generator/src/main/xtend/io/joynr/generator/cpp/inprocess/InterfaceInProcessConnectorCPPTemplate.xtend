@@ -58,6 +58,10 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 	«ENDIF»
 «ENDFOR»
 
+«FOR broadcastFilterParameters: getBroadcastFilterParametersIncludes(francaIntf)»
+	#include «broadcastFilterParameters»
+«ENDFOR»
+
 #include "joynr/InProcessAddress.h"
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/PublicationManager.h"

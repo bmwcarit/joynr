@@ -274,6 +274,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		}
 		return super.getDatatype(type)
 	}
+
 	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
 		val selector = TypeSelector::defaultTypeSelector
@@ -287,14 +288,32 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		if (serviceInterface.hasArray && includeForArray != null){
 			includeSet.add(includeForArray)
 		}
+		return includeSet
+	}
 
+	def Set<String> getBroadcastFilterParametersClassNames(FInterface serviceInterface){
+		val classNameSet = new HashSet<String>();
+		for (broadcast: serviceInterface.broadcasts) {
+			if (isSelective(broadcast)) {
+				classNameSet.add(
+					serviceInterface.name.toFirstUpper +
+					broadcast.joynrName.toFirstUpper +
+					"BroadcastFilterParameters");
+			}
+		}
+		return classNameSet
+	}
+
+	def Set<String> getBroadcastFilterParametersIncludes(FInterface serviceInterface){
+		val includeSet = new HashSet<String>();
 		for (broadcast: serviceInterface.broadcasts) {
 			if (isSelective(broadcast)) {
 				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
 			}
 		}
-		return includeSet;
+		return includeSet
 	}
+
 
 	abstract def String getGenerationTypeName (FType datatype);
 

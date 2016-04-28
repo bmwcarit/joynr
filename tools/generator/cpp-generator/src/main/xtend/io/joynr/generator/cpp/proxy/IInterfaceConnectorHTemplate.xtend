@@ -62,6 +62,11 @@ namespace joynr {
 } // namespace joynr
 
 «getNamespaceStarter(francaIntf)»
+
+«FOR forwardDecl: cppStdTypeUtil.getBroadcastFilterParametersClassNames(francaIntf)»
+	class «forwardDecl»;
+«ENDFOR»
+
 class «getDllExportMacro()» I«interfaceName»Subscription{
 	/**
 	  * in  - subscriptionListener      std::shared_ptr to a SubscriptionListener which will receive the updates.
