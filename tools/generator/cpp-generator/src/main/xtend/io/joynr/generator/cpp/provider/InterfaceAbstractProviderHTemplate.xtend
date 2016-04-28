@@ -44,6 +44,8 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include <string>
+#include <vector>
+#include <memory>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/AbstractJoynrProvider.h"
@@ -56,6 +58,13 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(francaIntf)»
+
+// forward declare broadcast filter classes
+«FOR broadcast: francaIntf.broadcasts.filter[selective]»
+	«val broadcastName = broadcast.joynrName»
+	«val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
+	class «broadCastFilterClassName»;
+«ENDFOR»
 
 /** @brief Abstract provider class for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»AbstractProvider :
@@ -101,7 +110,7 @@ public:
 		// broadcasts
 	«ENDIF»
 	«FOR broadcast: francaIntf.broadcasts»
-		«var broadcastName = broadcast.joynrName»
+		«val broadcastName = broadcast.joynrName»
 		/**
 		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete provider to signal an occured
 		 * event. It is used to implement broadcast publications.
@@ -118,6 +127,14 @@ public:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»AbstractProvider);
+
+	«FOR broadcast: francaIntf.broadcasts»
+		«IF broadcast.selective»
+			«val broadcastName = broadcast.joynrName»
+			«val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
+			std::vector<std::shared_ptr<«broadCastFilterClassName»>> «broadcastName»Filters;
+		«ENDIF»
+	«ENDFOR»
 };
 «getNamespaceEnder(francaIntf)»
 

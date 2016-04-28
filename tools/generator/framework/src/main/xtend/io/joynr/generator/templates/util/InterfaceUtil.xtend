@@ -397,4 +397,7 @@ public class InterfaceUtil {
 		francaInterface.methods.exists[fireAndForget]
 	}
 
+	def hasSelectiveBroadcast(FInterface serviceInterface) {
+		serviceInterface.broadcasts.exists[selective]
+	}
 }
