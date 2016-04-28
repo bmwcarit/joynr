@@ -38,4 +38,9 @@ public class JeeIntegrationPropertyKeys {
      */
     public static final String JEE_INTEGRATION_ENDPOINTREGISTRY_URI = "joynr.jeeintegration.endpointregistry.uri";
 
+    /**
+     * This property holds the key used to lookup the managed scheduled executor service from the container.
+     */
+    public static final String JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE = "concurrent/joynrMessagingScheduledExecutor";
+
 }

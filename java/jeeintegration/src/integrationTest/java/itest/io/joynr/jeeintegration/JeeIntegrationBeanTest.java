@@ -22,8 +22,13 @@ package itest.io.joynr.jeeintegration;
  * #L%
  */
 
-import java.io.File;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
+import java.util.concurrent.ScheduledExecutorService;
+
+import javax.annotation.Resource;
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -35,9 +40,16 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
+
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
+import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.runtime.JoynrInjectionConstants;
 
 /**
  * Integration tests for the JEE integration bean.
@@ -49,12 +61,9 @@ public class JeeIntegrationBeanTest {
 	public static JavaArchive createTestArchive() {
 		// @formatter:off
 		return ShrinkWrap.create(JavaArchive.class)
-				.addClasses(ServiceProviderDiscovery.class,
-						DefaultJoynrRuntimeFactory.class,
-						JeeIntegrationJoynrTestConfigurationProvider.class,
-						JoynrIntegrationBean.class,
-						TestResult.class
-						)
+				.addClasses(ServiceProviderDiscovery.class, DefaultJoynrRuntimeFactory.class,
+						JeeIntegrationJoynrTestConfigurationProvider.class, JoynrIntegrationBean.class,
+						TestResult.class)
 				.addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
 		// @formatter:on
 	}
@@ -62,9 +71,24 @@ public class JeeIntegrationBeanTest {
 	@Inject
 	private JoynrIntegrationBean joynrIntegrationBean;
 
+	@Resource(name = JeeIntegrationPropertyKeys.JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE)
+	private ScheduledExecutorService scheduledExecutorService;
+
 	@Test
 	public void testJoynrRuntimeAvailable() {
 		Assert.assertNotNull(joynrIntegrationBean.getRuntime());
+	}
+
+	@Test
+	public void testManagedScheduledExecutorServiceUsed() {
+		assertNotNull(scheduledExecutorService);
+		assertNotNull(joynrIntegrationBean);
+		Injector joynrInjector = joynrIntegrationBean.getJoynrInjector();
+		assertNotNull(joynrInjector);
+		assertEquals(scheduledExecutorService, joynrInjector.getInstance(
+				Key.get(ScheduledExecutorService.class, Names.named(JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP))));
+		assertEquals(scheduledExecutorService, joynrInjector
+				.getInstance(Key.get(ScheduledExecutorService.class, Names.named(MessageRouter.SCHEDULEDTHREADPOOL))));
 	}
 
 }
