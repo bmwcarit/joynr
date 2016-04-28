@@ -1,22 +1,22 @@
 package io.joynr.generator
+
 /*
  * !!!
- *
+ * 
  * Copyright (C) 2011 - 2016 BMW Car IT GmbH
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *	  http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import com.google.common.collect.Sets
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
@@ -42,6 +42,7 @@ import org.franca.core.franca.FModel
 
 import static com.google.common.base.Preconditions.*
 import static org.eclipse.xtext.util.Files.*
+import io.joynr.generator.templates.util.SupportedFrancaFeatureChecker
 
 class JoynrJavaGenerator extends AbstractJoynrGenerator {
 	@Inject
@@ -60,8 +61,8 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 	FilterGenerator filterGenerator
 
 	@Inject extension JoynrJavaGeneratorExtensions
-	
-override getLanguageId() {
+
+	override getLanguageId() {
 		"java"
 	}
 
@@ -82,13 +83,15 @@ override getLanguageId() {
 
 		val fModel = input.contents.get(0) as FModel
 
-		for(fInterface: fModel.interfaces){
+		SupportedFrancaFeatureChecker.checkModel(fModel)
+
+		for (fInterface : fModel.interfaces) {
 			interfacesGenerator.doGenerate(fInterface, fsa)
 			proxyGenerator.doGenerate(fInterface, fsa)
 			providerGenerator.doGenerate(fInterface, fsa)
 			filterGenerator.doGenerate(fInterface, fsa)
 		}
-		//cleanDirectory(containerpath)
+		// cleanDirectory(containerpath)
 		communicationModelGenerator.doGenerate(fModel, fsa)
 	}
 
@@ -108,9 +111,9 @@ override getLanguageId() {
 	def Iterable<FInterface> findAllFInterfaces(Resource resource) {
 		val result = new HashSet<FInterface>()
 		val rs = resource.resourceSet
-		for (r : rs.resources){
-			for (c : r.contents){
-				if (c instanceof FModel){
+		for (r : rs.resources) {
+			for (c : r.contents) {
+				if (c instanceof FModel) {
 					result.addAll((c).interfaces)
 				}
 			}
@@ -121,9 +124,9 @@ override getLanguageId() {
 	def Iterable<FCompoundType> findAllComplexTypes(Resource resource) {
 		val result = new HashSet<FCompoundType>()
 		val rs = resource.resourceSet
-		for (r : rs.resources){
-			for (c : r.contents){
-				if (c instanceof FModel){
+		for (r : rs.resources) {
+			for (c : r.contents) {
+				if (c instanceof FModel) {
 					result.addAll(getCompoundDataTypes(c))
 				}
 			}
@@ -131,7 +134,7 @@ override getLanguageId() {
 		return result
 	}
 
-	override setParameters(Map<String,String> parameter) {
+	override setParameters(Map<String, String> parameter) {
 		if (parameter.keySet.contains("jee")) {
 			activateJeeExtension
 		}
