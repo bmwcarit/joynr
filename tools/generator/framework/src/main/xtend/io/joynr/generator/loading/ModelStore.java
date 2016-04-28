@@ -20,7 +20,6 @@ package io.joynr.generator.loading;
  */
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyMap;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -32,10 +31,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
-import org.eclipse.xtext.util.StringInputStream;
 import org.franca.core.dsl.FrancaIDLStandaloneSetup;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Iterators;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -79,30 +76,6 @@ public class ModelStore implements Iterable<EObject> {
 
     public void add(Resource... resources) {
         resourceSet.getResources().addAll(asList(resources));
-    }
-
-    public Resource parse(String name, String[] lines) {
-        Resource resource = createResource(name);
-        String inputString = Joiner.on("\n").join("\n", lines);
-        StringInputStream inputStream = new StringInputStream(inputString);
-        try {
-            resource.load(inputStream, emptyMap());
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            System.exit(0);
-        }
-        return resource;
-    }
-
-    private Resource createResource(String name) {
-        URI uri = URI.createURI(name);
-        Resource resource = resourceSet.getResource(uri, false);
-        if (resource != null) {
-            resource.unload();
-        } else {
-            resource = resourceSet.createResource(uri);
-        }
-        return resource;
     }
 
     public Iterator<EObject> iterator() {
