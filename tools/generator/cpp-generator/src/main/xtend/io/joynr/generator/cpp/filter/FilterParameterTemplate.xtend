@@ -54,6 +54,8 @@ class FilterParameterTemplate implements BroadcastTemplate {
 class «getDllExportMacro()» «className» : public BroadcastFilterParameters {
 public:
 
+	using BroadcastFilterParameters::BroadcastFilterParameters;
+
 	«IF (getFilterParameters(broadcast).isEmpty())»
 		/**
 		 * @brief Sets value for given key

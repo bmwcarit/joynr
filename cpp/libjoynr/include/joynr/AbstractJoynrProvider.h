@@ -19,23 +19,21 @@
 #ifndef ABSTRACTJOYNRPROVIDER_H
 #define ABSTRACTJOYNRPROVIDER_H
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
-#include "joynr/IJoynrProvider.h"
-#include "joynr/types/ProviderQos.h"
-#include "joynr/IBroadcastFilter.h"
-#include "joynr/ReadWriteLock.h"
-
 #include <string>
 #include <memory>
 #include <map>
 #include <vector>
 
+#include "joynr/IJoynrProvider.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/ReadWriteLock.h"
+#include "joynr/SubscriptionAttributeListener.h"
+#include "joynr/SubscriptionBroadcastListener.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
+
 namespace joynr
 {
-
-class IAttributeListener;
-class IBroadcastListener;
 
 /**
  * @brief Abstract class that specifies the interface providers need to implement
@@ -72,7 +70,7 @@ public:
      * failures
      */
     void registerAttributeListener(const std::string& attributeName,
-                                   IAttributeListener* attributeListener) override;
+                                   SubscriptionAttributeListener* attributeListener) override;
 
     /**
      * @brief Unregister and delete an attribute listener
@@ -80,7 +78,7 @@ public:
      * @param attributeListener The listener object to be unregisterd
      */
     void unregisterAttributeListener(const std::string& attributeName,
-                                     IAttributeListener* attributeListener) override;
+                                     SubscriptionAttributeListener* attributeListener) override;
 
     /**
      * @brief Register an object that will be informed when an event occurs
@@ -98,7 +96,7 @@ public:
      * failures
      */
     void unregisterBroadcastListener(const std::string& broadcastName,
-                                     IBroadcastListener* broadcastListener) override;
+                                     SubscriptionBroadcastListener* broadcastListener) override;
 
     /**
      * @brief Add a broadcast filter
@@ -112,14 +110,59 @@ protected:
      * @param attributeName The name of the attribute whose value changes
      * @param value The new value of the attribute
      */
-    void onAttributeValueChanged(const std::string& attributeName, const Variant& value);
+    template <typename T>
+    void onAttributeValueChanged(const std::string& attributeName, const T& value)
+    {
+        ReadLocker locker(lock);
+
+        if (attributeListeners.find(attributeName) != attributeListeners.cend()) {
+            std::vector<SubscriptionAttributeListener*>& listeners =
+                    attributeListeners[attributeName];
+
+            // Inform all the attribute listeners for this attribute
+            for (SubscriptionAttributeListener* listener : listeners) {
+                listener->attributeValueChanged(value);
+            }
+        }
+    }
 
     /**
-     * @brief Called by subclasses when a broadcast occurs
+     * @brief Called by subclasses when a selective broadcast occurs
+     * @param broadcastName The name of the broadcast that occurred
+     * @param filters vector containing the broadcast filters
+     * @param values The output values of the broadcast
+     */
+    template <typename BroadcastFilter, typename... Ts>
+    void fireSelectiveBroadcast(const std::string& broadcastName,
+                                const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
+                                const Ts&... values)
+    {
+
+        ReadLocker locker(lock);
+        const std::vector<SubscriptionBroadcastListener*>& listeners =
+                broadcastListeners[broadcastName];
+        // Inform all the broadcast listeners for this broadcast
+        for (SubscriptionBroadcastListener* listener : listeners) {
+            listener->selectiveBroadcastOccurred(filters, values...);
+        }
+    }
+
+    /**
+     * @brief Called by subclasses when a selective broadcast occurs
      * @param broadcastName The name of the broadcast that occurred
      * @param values The output values of the broadcast
      */
-    void fireBroadcast(const std::string& broadcastName, const std::vector<Variant>& values);
+    template <typename... Ts>
+    void fireBroadcast(const std::string& broadcastName, const Ts&... values)
+    {
+        ReadLocker locker(lock);
+        const std::vector<SubscriptionBroadcastListener*>& listeners =
+                broadcastListeners[broadcastName];
+        // Inform all the broadcast listeners for this broadcast
+        for (SubscriptionBroadcastListener* listener : listeners) {
+            listener->broadcastOccurred(values...);
+        }
+    }
 
     /**
      * @deprecated
@@ -134,8 +177,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
     ReadWriteLock lock;
-    std::map<std::string, std::vector<IAttributeListener*>> attributeListeners;
-    std::map<std::string, std::vector<IBroadcastListener*>> broadcastListeners;
+    std::map<std::string, std::vector<SubscriptionAttributeListener*>> attributeListeners;
+    std::map<std::string, std::vector<SubscriptionBroadcastListener*>> broadcastListeners;
     std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     friend class End2EndBroadcastTest;

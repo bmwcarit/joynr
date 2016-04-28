@@ -16,9 +16,10 @@
  * limitations under the License.
  * #L%
  */
+#include "joynr/BroadcastSubscriptionRequestInformation.h"
+
 #include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
-#include "libjoynr/subscription/BroadcastSubscriptionRequestInformation.h"
 
 namespace joynr
 {

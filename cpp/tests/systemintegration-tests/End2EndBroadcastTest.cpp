@@ -302,12 +302,12 @@ protected:
                                                       expectedValues...);
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename ...T>
+    template <typename FireBroadcast, typename SubscribeTo, typename BroadcastFilter, typename ...T>
     void testOneShotBroadcastSubscriptionWithFiltering(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
                                           SubscribeTo subscribeTo,
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName,
-                                          std::shared_ptr<IBroadcastFilter> filter,
+                                          std::shared_ptr<BroadcastFilter> filter,
                                           T... expectedValues) {
         auto testProvider = std::make_shared<MyTestProvider>();
         runtime1->registerProvider<tests::testProvider>(domainName, testProvider);

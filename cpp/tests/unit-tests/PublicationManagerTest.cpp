@@ -22,8 +22,8 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
-#include "joynr/IAttributeListener.h"
-#include "joynr/IBroadcastListener.h"
+#include "joynr/SubscriptionAttributeListener.h"
+#include "joynr/SubscriptionBroadcastListener.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
 #include "tests/utils/TimeUtils.h"
@@ -228,7 +228,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
 
     // Expect a call to set up the on change subscription
     std::string attributeName = "Location";
-    IAttributeListener* attributeListener;
+    SubscriptionAttributeListener* attributeListener;
     EXPECT_CALL(
                 *mockTestRequestCaller,
                 registerAttributeListener(attributeName,_)
@@ -300,7 +300,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    IAttributeListener* attributeListener;
+    SubscriptionAttributeListener* attributeListener;
 
     EXPECT_CALL(*mockTestRequestCaller,registerAttributeListener(attributeName, _))
             .Times(1)
@@ -373,7 +373,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    IAttributeListener* attributeListener;
+    SubscriptionAttributeListener* attributeListener;
 
     EXPECT_CALL(*mockTestRequestCaller,registerAttributeListener(attributeName, _))
             .Times(1)
@@ -429,7 +429,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    IAttributeListener* attributeListener;
+    SubscriptionAttributeListener* attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
@@ -553,7 +553,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    IAttributeListener* attributeListener;
+    SubscriptionAttributeListener* attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
@@ -647,7 +647,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    IAttributeListener* attributeListener;
+    SubscriptionAttributeListener* attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
@@ -742,8 +742,6 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     std::vector<Variant> broadcastValues;
     broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
-    std::vector<std::shared_ptr<IBroadcastFilter> > filters;
-
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
     IBroadcastListener* broadcastListener;
@@ -812,7 +810,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Fake broadcast
-    broadcastListener->broadcastOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(gpsLocation);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
@@ -820,7 +818,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     // Fake broadcast
-    broadcastListener->broadcastOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(gpsLocation);
 
     std::int64_t newMinInterval = minInterval_ms + 500;
     std::this_thread::sleep_for(std::chrono::milliseconds(50 + newMinInterval));
@@ -834,7 +832,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
     // Fake broadcast
-    broadcastListener->broadcastOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(gpsLocation);
 
     // sleep, waiting for the async publication (which shouldn't come)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -843,7 +841,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // Fake broadcast. This change shall not result in a new broadcast to the client
-    broadcastListener->broadcastOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(gpsLocation);
 
     // Wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -861,11 +859,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     std::vector<Variant> broadcastValues;
     broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
-    std::vector<std::shared_ptr<IBroadcastFilter> > filters;
-
     // Expect calls to register an unregister a broadcast listener
     std::string broadcastName("Location");
-    IBroadcastListener* broadcastListener;
+    SubscriptionBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
 
@@ -912,7 +908,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     JOYNR_LOG_DEBUG(logger, "add broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
-    broadcastListener->broadcastOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(gpsLocation);
     // exceed the minInterval
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms+50));
 
@@ -927,7 +923,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     //now, exceed the original expiryDate, and make a broadcast
     std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate));
-    broadcastListener->broadcastOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(gpsLocation);
 
     // wait for the async publication
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -946,11 +942,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     std::vector<Variant> broadcastValues;
     broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
-    std::vector<std::shared_ptr<IBroadcastFilter> > filters;
-
     // Expect calls to register an unregister a broadcast listener
     std::string broadcastName("Location");
-    IBroadcastListener* broadcastListener;
+    SubscriptionBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
 
@@ -998,7 +992,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     JOYNR_LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
-    broadcastListener->broadcastOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(gpsLocation);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // now, we expect that one publications have been performed
@@ -1014,7 +1008,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate - testExpiryDate_shift));
     // now, the subscription should be death
 
-    broadcastListener->broadcastOccurred(broadcastValues, filters);
+    broadcastListener->broadcastOccurred(gpsLocation);
 
     // wait for the async publication (which shouldn't arrive)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -1044,7 +1038,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    IAttributeListener* attributeListener;
+    SubscriptionAttributeListener* attributeListener;
 
     EXPECT_CALL(*mockTestRequestCaller,registerAttributeListener(attributeName, _))
             .Times(1)

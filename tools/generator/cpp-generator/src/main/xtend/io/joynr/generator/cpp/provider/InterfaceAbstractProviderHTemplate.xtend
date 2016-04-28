@@ -123,6 +123,11 @@ public:
 					«broadcast.commaSeperatedTypedConstOutputParameterList»
 				«ENDIF»
 		) override;
+
+		«IF broadcast.selective»
+			«val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
+			void addBroadcastFilter(std::shared_ptr<«broadCastFilterClassName»> filter);
+		«ENDIF»
 	«ENDFOR»
 
 private:

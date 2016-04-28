@@ -21,8 +21,7 @@
 
 #include <cassert>
 
-#include "joynr/IAttributeListener.h"
-#include "joynr/IBroadcastListener.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -41,8 +40,8 @@ AbstractJoynrProvider::~AbstractJoynrProvider()
 {
     // Delete all attribute listeners
     for (auto& mapEntry : attributeListeners) {
-        const std::vector<IAttributeListener*>& listeners(mapEntry.second);
-        for (IAttributeListener* listener : listeners) {
+        const std::vector<SubscriptionAttributeListener*>& listeners(mapEntry.second);
+        for (SubscriptionAttributeListener* listener : listeners) {
             delete listener;
         }
     }
@@ -57,18 +56,20 @@ types::ProviderQos AbstractJoynrProvider::getProviderQos() const
 }
 #pragma GCC diagnostic pop
 
-void AbstractJoynrProvider::registerAttributeListener(const std::string& attributeName,
-                                                      IAttributeListener* attributeListener)
+void AbstractJoynrProvider::registerAttributeListener(
+        const std::string& attributeName,
+        SubscriptionAttributeListener* attributeListener)
 {
     WriteLocker locker(lock);
     attributeListeners[attributeName].push_back(attributeListener);
 }
 
-void AbstractJoynrProvider::unregisterAttributeListener(const std::string& attributeName,
-                                                        IAttributeListener* attributeListener)
+void AbstractJoynrProvider::unregisterAttributeListener(
+        const std::string& attributeName,
+        SubscriptionAttributeListener* attributeListener)
 {
     WriteLocker locker(lock);
-    std::vector<IAttributeListener*>& listeners = attributeListeners[attributeName];
+    std::vector<SubscriptionAttributeListener*>& listeners = attributeListeners[attributeName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), attributeListener);
     assert(listenerIt != listeners.cend());
@@ -95,18 +96,20 @@ void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attribute
     }
 }
 
-void AbstractJoynrProvider::registerBroadcastListener(const std::string& broadcastName,
-                                                      IBroadcastListener* broadcastListener)
+void AbstractJoynrProvider::registerBroadcastListener(
+        const std::string& broadcastName,
+        SubscriptionBroadcastListener* broadcastListener)
 {
     WriteLocker locker(lock);
     broadcastListeners[broadcastName].push_back(broadcastListener);
 }
 
-void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broadcastName,
-                                                        IBroadcastListener* broadcastListener)
+void AbstractJoynrProvider::unregisterBroadcastListener(
+        const std::string& broadcastName,
+        SubscriptionBroadcastListener* broadcastListener)
 {
     WriteLocker locker(lock);
-    std::vector<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+    std::vector<SubscriptionBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), broadcastListener);
     assert(listenerIt != listeners.cend());

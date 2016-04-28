@@ -18,14 +18,6 @@
  */
 #ifndef PUBLICATIONMANAGER_H
 #define PUBLICATIONMANAGER_H
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
-#include "joynr/SubscriptionPublication.h"
-
-#include "joynr/Logger.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/ReadWriteLock.h"
-#include "joynr/ThreadSafeMap.h"
 
 #include <mutex>
 #include <memory>
@@ -33,19 +25,29 @@
 #include <map>
 #include <string>
 
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionRequestInformation.h"
+#include "joynr/BroadcastSubscriptionRequestInformation.h"
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/ReadWriteLock.h"
+#include "joynr/ThreadSafeMap.h"
 #include "joynr/Variant.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
 
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
-class BroadcastSubscriptionRequestInformation;
-class SubscriptionRequestInformation;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
 class IBroadcastFilter;
+class SubscriptionBroadcastListener;
 
 namespace exceptions
 {
@@ -139,11 +141,11 @@ public:
     /**
       * @brief Publishes an onChange message when an attribute value changes
       *
-      * This method is virtual so that it can be overridden by a mock object.
       * @param subscriptionId A subscription that was listening on the attribute
       * @param value The new attribute value
       */
-    virtual void attributeValueChanged(const std::string& subscriptionId, const Variant& value);
+    template <typename T>
+    void attributeValueChanged(const std::string& subscriptionId, const T& value);
 
     /**
       * @brief Publishes an broadcast publication message when a broadcast occurs
@@ -152,9 +154,13 @@ public:
       * @param subscriptionId A subscription that was listening on the broadcast
       * @param values The new broadcast values
       */
-    virtual void broadcastOccurred(const std::string& subscriptionId,
-                                   const std::vector<Variant>& values,
-                                   const std::vector<std::shared_ptr<IBroadcastFilter>>& filters);
+    template <typename... Ts>
+    void broadcastOccurred(const std::string& subscriptionId, const Ts&... values);
+
+    template <typename BroadcastFilter, typename... Ts>
+    void selectiveBroadcastOccurred(const std::string& subscriptionId,
+                                    const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
+                                    const Ts&... values);
 
     void loadSavedBroadcastSubscriptionRequestsMap(const std::string& fileName);
     void loadSavedAttributeSubscriptionRequestsMap(const std::string& fileName);
@@ -263,19 +269,23 @@ private:
     bool isShuttingDown();
     std::int64_t getPublicationTtlMs(
             std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
+
     void sendPublication(std::shared_ptr<Publication> publication,
                          std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                          std::shared_ptr<SubscriptionRequest> subscriptionRequest,
-                         const std::vector<Variant>& value);
+                         BaseReply&& value);
+
     void sendSubscriptionPublication(
             std::shared_ptr<Publication> publication,
             std::shared_ptr<SubscriptionInformation> subscriptionInformation,
             std::shared_ptr<SubscriptionRequest> request,
             SubscriptionPublication& subscriptionPublication);
+
     void sendPublicationError(std::shared_ptr<Publication> publication,
                               std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                               std::shared_ptr<SubscriptionRequest> subscriptionRequest,
                               const exceptions::JoynrException& exception);
+
     void handleAttributeSubscriptionRequest(
             std::shared_ptr<SubscriptionRequestInformation> requestInfo,
             std::shared_ptr<RequestCaller> requestCaller,
@@ -289,19 +299,204 @@ private:
     void addOnChangePublication(const std::string& subscriptionId,
                                 std::shared_ptr<SubscriptionRequestInformation> request,
                                 std::shared_ptr<Publication> publication);
+
     void addBroadcastPublication(const std::string& subscriptionId,
                                  std::shared_ptr<BroadcastSubscriptionRequestInformation> request,
                                  std::shared_ptr<Publication> publication);
+
     void removeOnChangePublication(const std::string& subscriptionId,
                                    std::shared_ptr<SubscriptionRequestInformation> request,
                                    std::shared_ptr<Publication> publication);
+
     void removePublicationEndRunnable(std::shared_ptr<Publication> publication);
 
+    template <typename BroadcastFilter, typename... Ts>
     bool processFilterChain(const std::string& subscriptionId,
-                            const std::vector<Variant>& broadcastValues,
-                            const std::vector<std::shared_ptr<IBroadcastFilter>>& filters);
+                            const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
+                            const Ts&... broadcastValues);
 };
 
 } // namespace joynr
 
+#include "joynr/SubscriptionAttributeListener.h"
+#include "joynr/SubscriptionBroadcastListener.h"
+
+namespace joynr
+{
+
+//------ HelperClasses ---------------------------------------------------------
+
+class PublicationManager::Publication
+{
+public:
+    Publication(IPublicationSender* publicationSender,
+                std::shared_ptr<RequestCaller> requestCaller);
+    // This class is not responsible for deleting the PublicationSender or AttributeListener
+    ~Publication() = default;
+
+    std::int64_t timeOfLastPublication;
+    IPublicationSender* sender;
+    std::shared_ptr<RequestCaller> requestCaller;
+    SubscriptionAttributeListener* attributeListener;
+    SubscriptionBroadcastListener* broadcastListener;
+    std::recursive_mutex mutex;
+    DelayedScheduler::RunnableHandle publicationEndRunnableHandle;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(Publication);
+};
+
+template <typename T>
+void PublicationManager::attributeValueChanged(const std::string& subscriptionId, const T& value)
+{
+    JOYNR_LOG_DEBUG(logger, "attributeValueChanged for onChange subscription {}", subscriptionId);
+
+    // See if the subscription is still valid
+    if (!publicationExists(subscriptionId)) {
+        JOYNR_LOG_ERROR(logger,
+                        "attributeValueChanged called for non-existing subscription {}",
+                        subscriptionId);
+        return;
+    }
+
+    std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest(
+            subscriptionId2SubscriptionRequest.value(subscriptionId));
+
+    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
+
+    {
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        if (!isPublicationAlreadyScheduled(subscriptionId)) {
+            std::int64_t timeUntilNextPublication =
+                    getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
+
+            if (timeUntilNextPublication == 0) {
+                // Send the publication
+                sendPublication(publication, subscriptionRequest, subscriptionRequest, value);
+            } else {
+                reschedulePublication(subscriptionId, timeUntilNextPublication);
+            }
+        }
+    }
+}
+
+template <typename... Ts>
+void PublicationManager::broadcastOccurred(const std::string& subscriptionId, const Ts&... values)
+{
+    JOYNR_LOG_DEBUG(logger,
+                    "broadcastOccurred for subscription {}.  Number of values: ",
+                    subscriptionId,
+                    sizeof...(Ts));
+
+    // See if the subscription is still valid
+    if (!publicationExists(subscriptionId)) {
+        JOYNR_LOG_ERROR(logger,
+                        "broadcastOccurred called for non-existing subscription {}",
+                        subscriptionId);
+        return;
+    }
+
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
+    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
+
+    {
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        // Only proceed if publication can immediately be sent
+        std::int64_t timeUntilNextPublication =
+                getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
+
+        if (timeUntilNextPublication == 0) {
+            // Send the publication
+            sendPublication(publication, subscriptionRequest, subscriptionRequest, values...);
+        } else {
+            if (timeUntilNextPublication > 0) {
+                JOYNR_LOG_DEBUG(logger,
+                                "Omitting broadcast publication for subscription {} because of too "
+                                "short interval. Next publication possible in {} ms",
+                                subscriptionId,
+                                timeUntilNextPublication);
+            } else {
+                JOYNR_LOG_DEBUG(
+                        logger,
+                        "Omitting broadcast publication for subscription {} because of error.",
+                        subscriptionId);
+            }
+        }
+    }
+}
+
+template <typename BroadcastFilter, typename... Ts>
+void PublicationManager::selectiveBroadcastOccurred(
+        const std::string& subscriptionId,
+        const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
+        const Ts&... values)
+{
+
+    JOYNR_LOG_DEBUG(logger,
+                    "selectiveBroadcastOccurred for subscription {}.  Number of values: ",
+                    subscriptionId,
+                    sizeof...(Ts));
+
+    // See if the subscription is still valid
+    if (!publicationExists(subscriptionId)) {
+        JOYNR_LOG_ERROR(logger,
+                        "broadcastOccurred called for non-existing subscription {}",
+                        subscriptionId);
+        return;
+    }
+
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
+    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
+
+    {
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        // Only proceed if publication can immediately be sent
+        std::int64_t timeUntilNextPublication =
+                getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
+
+        if (timeUntilNextPublication == 0) {
+            // Execute broadcast filters
+            if (processFilterChain(subscriptionId, filters, values...)) {
+                // Send the publication
+                sendPublication(publication, subscriptionRequest, subscriptionRequest, values...);
+            }
+        } else {
+            if (timeUntilNextPublication > 0) {
+                JOYNR_LOG_DEBUG(logger,
+                                "Omitting broadcast publication for subscription {} because of too "
+                                "short interval. Next publication possible in {} ms",
+                                subscriptionId,
+                                timeUntilNextPublication);
+            } else {
+                JOYNR_LOG_DEBUG(
+                        logger,
+                        "Omitting broadcast publication for subscription {} because of error.",
+                        subscriptionId);
+            }
+        }
+    }
+}
+
+template <typename BroadcastFilter, typename... Ts>
+bool PublicationManager::processFilterChain(
+        const std::string& subscriptionId,
+        const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
+        const Ts&... broadcastValues)
+{
+    bool success = true;
+
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
+
+    for (auto filterIt = filters.begin(); success && (filterIt != filters.cend()); ++filterIt) {
+        success = success &&
+                  (*filterIt)->filterForward(
+                          broadcastValues..., subscriptionRequest->getFilterParameters());
+    }
+    return success;
+}
+
+} // namespace joynr
 #endif // PUBLICATIONMANAGER_H

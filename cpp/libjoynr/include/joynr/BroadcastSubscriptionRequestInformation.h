@@ -19,10 +19,10 @@
 #ifndef BROADCASTSUBSCRIPTIONREQUESTINFORMATION_H
 #define BROADCASTSUBSCRIPTIONREQUESTINFORMATION_H
 
+#include <string>
+
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/SubscriptionInformation.h"
-
-#include <string>
 
 namespace joynr
 {

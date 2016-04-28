@@ -19,14 +19,12 @@
 #ifndef SUBSCRIPTIONBROADCASTLISTENER_H
 #define SUBSCRIPTIONBROADCASTLISTENER_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/IBroadcastListener.h"
-
 #include <string>
 #include <memory>
 #include <vector>
 
 #include "joynr/Variant.h"
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {
@@ -37,23 +35,49 @@ class IBroadcastFilter;
 /**
  * An attribute listener used for broadcast subscriptions
  */
-class JOYNR_EXPORT SubscriptionBroadcastListener : public IBroadcastListener
+class JOYNR_EXPORT SubscriptionBroadcastListener
 {
 public:
     /**
      * Create an broadcast listener linked to a subscription
      */
     SubscriptionBroadcastListener(const std::string& subscriptionId,
-                                  PublicationManager& publicationManager);
+                                  PublicationManager& publicationManager)
+            : subscriptionId(subscriptionId), publicationManager(publicationManager)
+    {
+    }
 
-    // Implementation of IBroadcastListener::receive
-    void broadcastOccurred(const std::vector<Variant>& values,
-                           const std::vector<std::shared_ptr<IBroadcastFilter>>& filters) override;
+    template <typename BroadcastFilter, typename... Ts>
+    void selectiveBroadcastOccurred(const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
+                                    const Ts&... values);
+
+    template <typename... Ts>
+    void broadcastOccurred(const Ts&... values);
 
 private:
     std::string subscriptionId;
     PublicationManager& publicationManager;
 };
+
+} // namespace joynr
+
+#include "joynr/PublicationManager.h"
+
+namespace joynr
+{
+template <typename BroadcastFilter, typename... Ts>
+void SubscriptionBroadcastListener::selectiveBroadcastOccurred(
+        const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
+        const Ts&... values)
+{
+    publicationManager.selectiveBroadcastOccurred(subscriptionId, filters, values...);
+}
+
+template <typename... Ts>
+void SubscriptionBroadcastListener::broadcastOccurred(const Ts&... values)
+{
+    publicationManager.broadcastOccurred(subscriptionId, values...);
+}
 
 } // namespace joynr
 

@@ -202,12 +202,12 @@ void «interfaceName»RequestCaller::unregisterAttributeListener(const std::stri
 	provider->unregisterAttributeListener(attributeName, attributeListener);
 }
 
-void «interfaceName»RequestCaller::registerBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener)
+void «interfaceName»RequestCaller::registerBroadcastListener(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener)
 {
 	provider->registerBroadcastListener(broadcastName, broadcastListener);
 }
 
-void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener)
+void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::string& broadcastName, joynr::SubscriptionBroadcastListener* broadcastListener)
 {
 	provider->unregisterBroadcastListener(broadcastName, broadcastListener);
 }

@@ -24,7 +24,7 @@
 
 namespace joynr
 {
-class IAttributeListener;
+class SubscriptionAttributeListener;
 class IBroadcastListener;
 class IBroadcastFilter;
 
@@ -53,14 +53,14 @@ public:
      * failures
      */
     virtual void registerAttributeListener(const std::string& attributeName,
-                                           IAttributeListener* attributeListener) = 0;
+                                           SubscriptionAttributeListener* attributeListener) = 0;
     /**
      * @brief Unregister and delete an attribute listener
      * @param attributeName The name of the attribute for which publications shall be stopped
      * @param attributeListener The listener object to be unregisterd
      */
     virtual void unregisterAttributeListener(const std::string& attributeName,
-                                             IAttributeListener* attributeListener) = 0;
+                                             SubscriptionAttributeListener* attributeListener) = 0;
 
     /**
      * @brief Register an object that will be informed when an event occurs
@@ -78,12 +78,12 @@ public:
      * failures
      */
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             IBroadcastListener* broadcastListener) = 0;
+                                             SubscriptionBroadcastListener* broadcastListener) = 0;
 
     /**
-     * @brief Add a broadcast filter
-     * @param filter The broadcast filter to be added
-     */
+         * @brief Add a broadcast filter
+         * @param filter The broadcast filter to be added
+         */
     virtual void addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter) = 0;
 
     /**

@@ -110,36 +110,37 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 «ENDFOR»
 
 «FOR broadcast : francaIntf.broadcasts»
-	«var broadcastName = broadcast.joynrName»
+	«val broadcastName = broadcast.joynrName»
 	void «interfaceName»AbstractProvider::fire«broadcastName.toFirstUpper»(
 			«IF !broadcast.outputParameters.empty»
 			«broadcast.commaSeperatedTypedConstOutputParameterList»
 			«ENDIF»
 	) {
-		std::vector<Variant> broadcastValues;
-		«FOR param: getOutputParameters(broadcast)»
-			«var paramType = param.type.resolveTypeDef»
-			«var paramName = param.joynrName»
-			broadcastValues.push_back(
-					«IF paramType.isEnum && param.isArray»
-						joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(paramType.derived)»>(«paramName»))
-					«ELSEIF paramType.isEnum»
-						Variant::make<«param.typeName»>(«paramName»)
-					«ELSEIF param.isArray»
-						joynr::TypeUtil::toVariant<«paramType.typeName»>(«paramName»)
-					«ELSEIF paramType.isCompound»
-						Variant::make<«param.typeName»>(«paramName»)
-					«ELSEIF paramType.isMap»
-						Variant::make<«param.typeName»>(«paramName»)
-					«ELSEIF paramType.isByteBuffer»
-						joynr::TypeUtil::toVariant(«paramName»)
-					«ELSE»
-						Variant::make<«param.typeName»>(«paramName»)
-					«ENDIF»
-			);
-		«ENDFOR»
-		fireBroadcast("«broadcastName»", broadcastValues);
+		«IF broadcast.selective»
+		fireSelectiveBroadcast
+		«ELSE»
+		fireBroadcast
+		«ENDIF»
+		("«broadcastName»"
+		«IF broadcast.selective»
+		, «broadcastName»Filters
+		«ENDIF»
+		«IF !broadcast.outputParameters.empty»
+			,
+			«FOR parameter : broadcast.outputParameters SEPARATOR ','»
+				«parameter.joynrName»
+			«ENDFOR»
+		«ENDIF»
+		);
 	}
+
+	«IF broadcast.selective»
+		«val broadCastFilterClassName = interfaceName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
+		void  «interfaceName»AbstractProvider::addBroadcastFilter(std::shared_ptr<«broadCastFilterClassName»> filter)
+		{
+			«broadcastName»Filters.push_back(std::move(filter));
+		}
+	«ENDIF»
 «ENDFOR»
 «getNamespaceEnder(francaIntf)»
 '''
