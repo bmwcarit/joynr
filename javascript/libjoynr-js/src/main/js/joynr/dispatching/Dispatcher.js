@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ define(
             "global/Promise",
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
-            "joynr/dispatching/types/OneWay",
+            "joynr/dispatching/types/OneWayRequest",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionStop",
@@ -39,7 +39,7 @@ define(
                 Promise,
                 Request,
                 Reply,
-                OneWay,
+                OneWayRequest,
                 SubscriptionRequest,
                 SubscriptionReply,
                 SubscriptionStop,
@@ -451,18 +451,18 @@ define(
 
                                             case JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY:
                                                 try {
-                                                    requestReplyManager.handleOneWay({
-                                                        payload : new OneWay(
+                                                    requestReplyManager.handleOneWayRequest({
+                                                        payload : new OneWayRequest(
                                                                 parsePayload(joynrMessage.payload))
                                                     });
                                                     resolve();
-                                                } catch (errorInOneWay) {
-                                                    // TODO do we have to do any erorr handling on a one way
+                                                } catch (errorInOneWayRequest) {
+                                                    // TODO do we have to do any error handling on a one way
                                                     // other than log it?
                                                     log.error("error handling one way: "
-                                                        + errorInOneWay);
+                                                        + errorInOneWayRequest);
                                                     reject(new Error("error handling one way: "
-                                                        + errorInOneWay));
+                                                        + errorInOneWayRequest));
                                                 }
                                                 break;
 

@@ -17,12 +17,11 @@
  * #L%
  */
 
-define("joynr/dispatching/types/Request", [
-    "joynr/dispatching/types/OneWayRequest",
+define("joynr/dispatching/types/OneWayRequest", [
     "joynr/util/UtilInternal",
     "joynr/util/Typing",
     "uuid"
-], function(OneWayRequest, Util, Typing, uuid) {
+], function(Util, Typing, uuid) {
 
     var defaultSettings = {
         paramDatatypes : [],
@@ -30,13 +29,11 @@ define("joynr/dispatching/types/Request", [
     };
 
     /**
-     * @name Request
+     * @name OneWayRequest
      * @constructor
      *
      * @param {Object}
      *            settings
-     * @param {String}
-     *            settings.requestReplyId
      * @param {String}
      *            settings.methodName
      * @param {Array}
@@ -48,44 +45,46 @@ define("joynr/dispatching/types/Request", [
      * @param {?}
      *            settings.params.array
      */
-    function Request(settings) {
-        if (!(this instanceof Request)) {
+    function OneWayRequest(settings) {
+        if (!(this instanceof OneWayRequest)) {
             // in case someone calls constructor without new keyword (e.g. var c
             // = Constructor({..}))
-            return new Request(settings);
+            return new OneWayRequest(settings);
         }
         var i;
-        var oneWayRequest = new OneWayRequest(settings);
-        settings.requestReplyId = settings.requestReplyId || uuid();
 
         Util.checkProperty(settings, [
-            "joynr.Request",
+            "joynr.OneWayRequest",
             "Object"
         ], "settings");
-        Util.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
+        Util.checkProperty(settings.methodName, "String", "settings.methodName");
+        Util.checkPropertyIfDefined(settings.paramDatatypes, "Array", "settings.paramDatatypes");
+        Util.checkPropertyIfDefined(settings.params, "Array", "settings.params");
+
+        if (settings.params) {
+            for (i = 0; i < settings.params.length; i++) {
+                settings.params[i] = Util.ensureTypedValues(settings.params[i]);
+            }
+        }
 
         /**
-         * @name Request#requestReplyId
+         * @name OneWayRequest#methodName
          * @type String
          */
         /**
-         * @name Request#methodName
-         * @type String
-         */
-        /**
-         * @name Request#paramDatatypes
+         * @name OneWayRequest#paramDatatypes
          * @type Array
          */
         /**
-         * @name Request#params
+         * @name OneWayRequest#params
          * @type Array
          */
-        Util.extend(this, defaultSettings, settings, oneWayRequest);
+        Util.extend(this, defaultSettings, settings);
 
         /**
          * The joynr type name
          *
-         * @name Request#_typeName
+         * @name OneWayRequest#_typeName
          * @type String
          */
         Typing.augmentTypeName(this, "joynr");
@@ -93,6 +92,6 @@ define("joynr/dispatching/types/Request", [
         return Object.freeze(this);
     }
 
-    return Request;
+    return OneWayRequest;
 
 });
