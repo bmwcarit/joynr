@@ -155,7 +155,7 @@
 					</excludes>
 					<archive>
 						<manifest>
-							<mainClass>io.joynr.generator.ExecutorCL</mainClass>
+							<mainClass>io.joynr.generator.Executor</mainClass>
 						</manifest>
 						<manifestEntries>
 							<mode>development</mode>
