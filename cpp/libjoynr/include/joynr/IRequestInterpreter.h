@@ -50,6 +50,15 @@ public:
             const std::vector<std::string>& paramTypes,
             std::function<void(std::vector<Variant>&& outParams)> onSuccess,
             std::function<void(const exceptions::JoynrException& exception)> onError) = 0;
+
+    /**
+      * Executes fire-and-forget method @param methodName with parameters @param methodParams
+      * on the @param requestCaller object.
+      */
+    virtual void execute(std::shared_ptr<RequestCaller> requestCaller,
+                         const std::string& methodName,
+                         const std::vector<Variant>& paramValues,
+                         const std::vector<std::string>& paramTypes) = 0;
 };
 
 } // namespace joynr

@@ -316,22 +316,25 @@ bool «className»::usesClusterController() const{
 	assert(caller);
 	std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 	assert(«francaIntf.interfaceCaller»);
-	auto future = std::make_shared<joynr::Future<«outputParameters»>>();
+	«IF method.fireAndForget»
+		«francaIntf.interfaceCaller»->«methodname»(«inputParamList»);
+	«ELSE»
+		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
-	std::function<void(«outputTypedConstParamList»)> onSuccess =
-			[future] («outputTypedConstParamList») {
-				future->onSuccess(
-						«outputUntypedParamList»
-				);
-			};
+		std::function<void(«outputTypedConstParamList»)> onSuccess =
+				[future] («outputTypedConstParamList») {
+					future->onSuccess(
+							«outputUntypedParamList»
+					);
+				};
 
-	std::function<void(const exceptions::JoynrException&)> onError =
-			[future] (const exceptions::JoynrException& error) {
-				future->onError(error);
-			};
-
-	«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
-	future->get(«method.commaSeperatedUntypedOutputParameterList»);
+		std::function<void(const exceptions::JoynrException&)> onError =
+				[future] (const exceptions::JoynrException& error) {
+					future->onError(error);
+				};
+		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
+		future->get(«method.commaSeperatedUntypedOutputParameterList»);
+	«ENDIF»
 }
 
 «produceAsyncMethodSignature(francaIntf, method, className)»
@@ -343,22 +346,27 @@ bool «className»::usesClusterController() const{
 	assert(«francaIntf.interfaceCaller»);
 	auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
-	std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
-			[future, onSuccess] («outputTypedConstParamList») {
-				future->onSuccess(«outputUntypedParamList»);
-				if (onSuccess)
-				{
-					onSuccess(«outputUntypedParamList»);
-				}
-			};
+	«IF method.fireAndForget»
+		«francaIntf.interfaceCaller»->«methodname»(«inputParamList»);
+		future->onSuccess();
+	«ELSE»
+		std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
+				[future, onSuccess] («outputTypedConstParamList») {
+					future->onSuccess(«outputUntypedParamList»);
+					if (onSuccess)
+					{
+						onSuccess(«outputUntypedParamList»);
+					}
+				};
 
-	std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-			[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
-				future->onError(error);
-				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
-			};
+		std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+				[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
+					future->onError(error);
+					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
+				};
 
-	«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper, onErrorWrapper);
+		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper, onErrorWrapper);
+	«ENDIF»
 	return future;
 }
 
