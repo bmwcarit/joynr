@@ -99,6 +99,28 @@ define(
                 };
 
                 /**
+                 * @name RequestReplyManager#sendOneWayRequest
+                 * @function
+                 *
+                 * @param {Object}
+                 *            settings
+                 * @param {String}
+                 *            settings.from participantId of the sender
+                 * @param {String}
+                 *            settings.to participantId of the receiver
+                 * @param {MessagingQos}
+                 *            settings.messagingQos quality-of-service parameters such as time-to-live
+                 * @param {OneWayRequest}
+                 *            settings.request the Request to send
+                 * @returns {Promise} the Promise for the Request
+                 */
+                this.sendOneWayRequest = function sendOneWayRequest(settings) {
+                    return new Promise(function(resolve, reject) {
+                        dispatcher.sendOneWayRequest(settings).then(resolve).catch(reject);
+                    });
+                };
+
+                /**
                  * The function addRequestCaller is called when a provider wishes to receive
                  * incoming requests for the given participantId
                  *

@@ -102,33 +102,43 @@ joynrTestRequire(
                             dispatcher.registerPublicationManager(publicationManager);
                         });
 
-                        it("is instantiable and of correct type", function() {
-                            expect(Dispatcher).toBeDefined();
-                            expect(typeof Dispatcher === "function").toBeTruthy();
-                            expect(dispatcher).toBeDefined();
-                            expect(dispatcher instanceof Dispatcher).toBeTruthy();
-                            expect(dispatcher.registerRequestReplyManager).toBeDefined();
-                            expect(typeof dispatcher.registerRequestReplyManager === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.registerSubscriptionManager).toBeDefined();
-                            expect(typeof dispatcher.registerSubscriptionManager === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.registerPublicationManager).toBeDefined();
-                            expect(typeof dispatcher.registerPublicationManager === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.sendRequest).toBeDefined();
-                            expect(typeof dispatcher.sendRequest === "function").toBeTruthy();
-                            expect(dispatcher.sendSubscriptionRequest).toBeDefined();
-                            expect(typeof dispatcher.sendSubscriptionRequest === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.sendSubscriptionStop).toBeDefined();
-                            expect(typeof dispatcher.sendSubscriptionStop === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.sendPublication).toBeDefined();
-                            expect(typeof dispatcher.sendPublication === "function").toBeTruthy();
-                            expect(dispatcher.receive).toBeDefined();
-                            expect(typeof dispatcher.receive === "function").toBeTruthy();
-                        });
+                        it(
+                                "is instantiable and of correct type",
+                                function() {
+                                    expect(Dispatcher).toBeDefined();
+                                    expect(typeof Dispatcher === "function").toBeTruthy();
+                                    expect(dispatcher).toBeDefined();
+                                    expect(dispatcher instanceof Dispatcher).toBeTruthy();
+                                    expect(dispatcher.registerRequestReplyManager).toBeDefined();
+                                    expect(
+                                            typeof dispatcher.registerRequestReplyManager === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.registerSubscriptionManager).toBeDefined();
+                                    expect(
+                                            typeof dispatcher.registerSubscriptionManager === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.registerPublicationManager).toBeDefined();
+                                    expect(
+                                            typeof dispatcher.registerPublicationManager === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendRequest).toBeDefined();
+                                    expect(typeof dispatcher.sendRequest === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendOneWayRequest).toBeDefined();
+                                    expect(typeof dispatcher.sendOneWayRequest === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendSubscriptionRequest).toBeDefined();
+                                    expect(typeof dispatcher.sendSubscriptionRequest === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendSubscriptionStop).toBeDefined();
+                                    expect(typeof dispatcher.sendSubscriptionStop === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendPublication).toBeDefined();
+                                    expect(typeof dispatcher.sendPublication === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.receive).toBeDefined();
+                                    expect(typeof dispatcher.receive === "function").toBeTruthy();
+                                });
 
                         it(
                                 "forwards subscription request to Publication Manager",

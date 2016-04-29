@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ joynrTestRequire(
             "joynr/proxy/ProxyEvent",
             "joynr/messaging/MessagingQos",
             "joynr/dispatching/types/Request",
+            "joynr/dispatching/types/OneWayRequest",
             "test/data/Operation",
             "global/Promise",
             "joynr/tests/testTypes/TestEnum",
@@ -39,6 +40,7 @@ joynrTestRequire(
                 ProxyEvent,
                 MessagingQos,
                 Request,
+                OneWayRequest,
                 testDataOperation,
                 Promise,
                 TestEnum,
@@ -77,7 +79,7 @@ joynrTestRequire(
 
                         beforeEach(function() {
                             requestReplyManagerSpy =
-                                    jasmine.createSpyObj("requestReplyManager", [ "sendRequest"
+                                    jasmine.createSpyObj("requestReplyManager", [ "sendRequest", "sendOneWayRequest"
                                     ]);
                             requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve({
                                 result : "resultValue"
@@ -531,6 +533,43 @@ joynrTestRequire(
                             });
                         }
 
+                        function checkRequestReplyManagerFireAndForgetCall(testData) {
+                            runs(function() {
+                                // construct new ProxyOperation
+                                var myOperation = new ProxyOperation(proxy, {
+                                    dependencies : {
+                                        requestReplyManager : requestReplyManagerSpy
+                                    }
+
+                                }, operationName, [ testData.signature
+                                ]).buildFunction();
+                                requestReplyManagerSpy.sendOneWayRequest.andReturn(Promise.resolve());
+                                requestReplyManagerSpy.sendOneWayRequest.reset();
+
+                                // do operation call
+                                myOperation(testData.namedArguments).catch(outputPromiseError);
+                            });
+
+                            waitsFor(function() {
+                                return requestReplyManagerSpy.sendOneWayRequest.callCount > 0;
+                            }, "requestReplyManagerSpy.sendOneWayRequest call", 100);
+
+                            runs(function() {
+                                // check if requestReplyManager has been called correctly
+                                expect(requestReplyManagerSpy.sendOneWayRequest).toHaveBeenCalled();
+                                expect(requestReplyManagerSpy.sendOneWayRequest).toHaveBeenCalledWith({
+                                    to : providerParticipantId,
+                                    from : proxyParticipantId,
+                                    messagingQos : new MessagingQos(),
+                                    request : new OneWayRequest({
+                                        methodName : operationName,
+                                        paramDatatypes : testData.paramDatatypes,
+                                        params : testData.params
+                                    })
+                                });
+                            });
+                        }
+
                         it("calls RequestReplyManager with correct request", function() {
                             var i;
                             var requestReplyManagerSpy =
@@ -538,7 +577,11 @@ joynrTestRequire(
                                     ]);
 
                             for (i = 0; i < testDataOperation.length; ++i) {
-                                checkRequestReplyManagerCall(testDataOperation[i]);
+                                if (testDataOperation[i].signature.fireAndForget) {
+                                    checkRequestReplyManagerFireAndForgetCall(testDataOperation[i]);
+                                } else {
+                                    checkRequestReplyManagerCall(testDataOperation[i]);
+                                }
                             }
                         });
                     });

@@ -38,7 +38,8 @@ define("test/data/Operation", [
                 error : {
                     type : "no error enumeration given"
                 },
-                outputParameter : []
+                outputParameter : [],
+                fireAndForget: false
             },
             namedArguments : {
                 parameter : "asdf"
@@ -58,7 +59,8 @@ define("test/data/Operation", [
                     type : "joynr.tests.testTypes.TestEnum"
                 }
                 ],
-                outputParameter : []
+                outputParameter : [],
+                fireAndForget: false
             },
             namedArguments : {
                 parameter : TestEnum.ZERO
@@ -81,7 +83,8 @@ define("test/data/Operation", [
                 error : {
                     type : ErrorList.EXAMPLE_ERROR_1._typeName
                 },
-                outputParameter : []
+                outputParameter : [],
+                fireAndForget: false
             },
             namedArguments : {
                 complex : radioStationVar
@@ -101,7 +104,8 @@ define("test/data/Operation", [
                     name : "bool",
                     type : "Boolean"
                 }
-                ]
+                ],
+                fireAndForget: false
             },
             namedArguments : {},
             paramDatatypes : [],
@@ -119,7 +123,8 @@ define("test/data/Operation", [
                     name : "int",
                     type : "Integer"
                 }
-                ]
+                ],
+                fireAndForget: false
             },
             namedArguments : {},
             paramDatatypes : [],
@@ -137,7 +142,8 @@ define("test/data/Operation", [
                     name : "radioStation",
                     type : "joynr.vehicle.radiotypes.RadioStation"
                 }
-                ]
+                ],
+                fireAndForget: false
             },
             namedArguments : {},
             paramDatatypes : [],
@@ -160,7 +166,8 @@ define("test/data/Operation", [
                         name : "secondOutputParameter",
                         type : "String"
                     }
-                ]
+                ],
+                fireAndForget: false
             },
             namedArguments : {},
             paramDatatypes : [],
@@ -197,7 +204,8 @@ define("test/data/Operation", [
                 error : {
                     type : "no error enumeration given"
                 },
-                outputParameter : []
+                outputParameter : [],
+                fireAndForget: false
             },
             namedArguments : {
                 bool : true,
@@ -226,6 +234,30 @@ define("test/data/Operation", [
                     3,
                     4
                 ]
+            ],
+            returnValue : undefined,
+            returnParams : [],
+            errorEnumType : "no error enumeration given"
+        },
+        {
+            signature : {
+                inputParameter : [ {
+                    name : "parameter",
+                    type : "String"
+                }
+                ],
+                error : {
+                    type : "no error enumeration given"
+                },
+                outputParameter : [],
+                fireAndForget: true
+            },
+            namedArguments : {
+                parameter : "asdf"
+            },
+            paramDatatypes : [ "String"
+            ],
+            params : [ "asdf"
             ],
             returnValue : undefined,
             returnParams : [],

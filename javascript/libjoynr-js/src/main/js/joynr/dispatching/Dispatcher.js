@@ -198,6 +198,42 @@ define(
                         };
 
                 /**
+                 * @name Dispatcher#sendOneWayRequest
+                 * @function
+                 *
+                 * @param {Object}
+                 *            settings
+                 * @param {String}
+                 *            settings.from participantId of the sender
+                 * @param {String}
+                 *            settings.to participantId of the receiver
+                 * @param {MessagingQos}
+                 *            settings.messagingQos the messaging Qos object for the ttl
+                 * @param {OneWayRequest}
+                 *            settings.request
+                 * @returns {Object} A+ promise object
+                 */
+                this.sendOneWayRequest =
+                        function sendOneWayRequest(settings) {
+                            // Create a JoynrMessage with the OneWayRequest
+                            var oneWayRequestMessage =
+                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
+                            oneWayRequestMessage.payload =
+                                    JSONSerializer.stringify(settings.request);
+
+                            log.info("calling "
+                                + settings.request.methodName
+                                + ". OneWayRequest: "
+                                + oneWayRequestMessage.payload, DiagnosticTags.forOneWayRequest({
+                                request : settings.request,
+                                to : settings.to,
+                                from : settings.from
+                            }));
+
+                            return sendJoynrMessage(oneWayRequestMessage, settings);
+                        };
+
+                /**
                  * @name Dispatcher#sendSubscriptionRequest
                  * @function
                  *
