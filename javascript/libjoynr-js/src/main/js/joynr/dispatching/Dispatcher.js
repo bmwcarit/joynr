@@ -451,14 +451,13 @@ define(
 
                                             case JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY:
                                                 try {
-                                                    requestReplyManager.handleOneWayRequest({
-                                                        payload : new OneWayRequest(
-                                                                parsePayload(joynrMessage.payload))
-                                                    });
+                                                    requestReplyManager
+                                                            .handleOneWayRequest(
+                                                                    joynrMessage.to,
+                                                                    new OneWayRequest(
+                                                                            parsePayload(joynrMessage.payload)));
                                                     resolve();
                                                 } catch (errorInOneWayRequest) {
-                                                    // TODO do we have to do any error handling on a one way
-                                                    // other than log it?
                                                     log.error("error handling one way: "
                                                         + errorInOneWayRequest);
                                                     reject(new Error("error handling one way: "

@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ joynrTestRequire(
             "joynr/messaging/inprocess/InProcessMessagingStub",
             "joynr/messaging/inprocess/InProcessMessagingSkeleton",
             "joynr/messaging/JoynrMessage",
+            "joynr/dispatching/types/OneWayRequest",
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
             "joynr/dispatching/types/SubscriptionRequest",
@@ -47,6 +48,7 @@ joynrTestRequire(
                 InProcessMessagingStub,
                 InProcessMessagingSkeleton,
                 JoynrMessage,
+                OneWayRequest,
                 Request,
                 Reply,
                 SubscriptionRequest,
@@ -70,6 +72,7 @@ joynrTestRequire(
                          */
                         beforeEach(function() {
                             requestReplyManager = jasmine.createSpyObj("RequestReplyManager", [
+                                "handleOneWayRequest",
                                 "handleRequest",
                                 "handleReply"
                             ]);
@@ -224,6 +227,27 @@ joynrTestRequire(
                                             typeof requestReplyManager.handleRequest.mostRecentCall.args[2] === "function")
                                             .toBeTruthy();
                                 });
+
+                        it("forwards one-way request to RequestReply Manager", function() {
+                            var joynrMessage =
+                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
+                            joynrMessage.setHeader(
+                                    JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
+                                    providerId);
+                            joynrMessage.setHeader(
+                                    JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
+                                    proxyId);
+                            var oneWayRequest = new OneWayRequest({
+                                methodName : "methodName"
+                            });
+                            joynrMessage.payload = JSON.stringify(oneWayRequest);
+                            dispatcher.receive(joynrMessage);
+                            expect(requestReplyManager.handleOneWayRequest).toHaveBeenCalled();
+                            expect(requestReplyManager.handleOneWayRequest.mostRecentCall.args[0])
+                                    .toEqual(providerId);
+                            expect(requestReplyManager.handleOneWayRequest.mostRecentCall.args[1])
+                                    .toEqual(oneWayRequest);
+                        });
 
                         it("forwards reply to RequestReply Manager", function() {
                             var joynrMessage =

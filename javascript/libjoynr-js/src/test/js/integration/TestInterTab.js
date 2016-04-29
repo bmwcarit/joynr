@@ -430,6 +430,18 @@ joynrTestRequire(
                                         };
                                     });
 
+
+                                    radioProvider.methodFireAndForgetWithoutParams.registerOperation(function(opArgs) {
+                                        //do nothing
+                                    });
+
+                                    radioProvider.methodFireAndForget.registerOperation(function(opArgs) {
+                                        var intIn = opArgs.intIn;
+                                        var stringIn = opArgs.stringIn;
+                                        var complexTestTypeIn = opArgs.complexTestTypeIn;
+                                        //do nothing
+                                    });
+
                                     // register operation function "operationWithEnumsAsInputAndOutput"
                                     radioProvider.operationWithEnumsAsInputAndOutput.registerOperation(function(opArgs) {
                                         /* the dummy implemenation returns the first element of the enumArrayInput.

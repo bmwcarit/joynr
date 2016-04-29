@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,13 @@ joynrTestRequire(
         "joynr/dispatching/TestRequestReplyManager",
         [
             "joynr/dispatching/RequestReplyManager",
+            "joynr/dispatching/types/OneWayRequest",
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
             "joynr/types/TypeRegistrySingleton",
             "joynr/util/Typing"
         ],
-        function(RequestReplyManager, Request, Reply, TypeRegistrySingleton, Typing) {
+        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing) {
 
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
@@ -541,6 +542,48 @@ joynrTestRequire(
                                     ],
                                     requestReplyId : test.request.requestReplyId
                                 }));
+                            });
+                        });
+
+                        it("calls operation function for one-way request correctly", function() {
+                            var providerParticipantId = "oneWayProviderParticipantId";
+                            var provider = {
+                                fireAndForgetMethod : {
+                                    callOperation : jasmine.createSpy("operationSpy")
+                                }
+                            };
+
+                            var callbackDispatcher = jasmine.createSpy("callbackDispatcher");
+
+                            var oneWayRequest = new OneWayRequest({
+                                methodName : "fireAndForgetMethod",
+                                paramDatatypes : [ testParamDatatype
+                                ],
+                                params : [ testParam
+                                ]
+                            });
+
+                            runs(function() {
+                                requestReplyManager.addRequestCaller(
+                                        providerParticipantId,
+                                        provider);
+
+                                requestReplyManager.handleOneWayRequest(
+                                        providerParticipantId,
+                                        oneWayRequest);
+                            });
+
+                            waitsFor(function() {
+                                return provider.fireAndForgetMethod.callOperation.calls.length > 0;
+                            }, "callOperation to be called", 1000);
+
+                            runs(function() {
+                                expect(provider.fireAndForgetMethod.callOperation)
+                                        .toHaveBeenCalled();
+                                expect(provider.fireAndForgetMethod.callOperation)
+                                        .toHaveBeenCalledWith([ testParam
+                                        ], [ testParamDatatype
+                                        ]);
                             });
                         });
 
