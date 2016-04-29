@@ -84,7 +84,7 @@ public:
         accessControllerCallback(new MockConsumerPermissionCallback()),
         settings(),
         messagingSettingsMock(settings),
-        localCapabilitiesDirectoryMock(messagingSettingsMock),
+        localCapabilitiesDirectoryMock(messagingSettingsMock, settings),
         accessController(
                 localCapabilitiesDirectoryMock,
                 localDomainAccessControllerMock

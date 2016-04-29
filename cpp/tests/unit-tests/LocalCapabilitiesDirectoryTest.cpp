@@ -47,6 +47,7 @@ public:
     LocalCapabilitiesDirectoryTest() :
         settingsFileName("LocalCapabilitiesDirectoryTest.settings"),
         settings(settingsFileName),
+        libjoynrSettings(settings),
         messagingSettings(settings),
         libjoynrsettings(settings),
         capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
@@ -54,7 +55,8 @@ public:
         localCapabilitiesDirectory(new LocalCapabilitiesDirectory(messagingSettings,
                                                                   capabilitiesClient,
                                                                   LOCAL_ADDRESS,
-                                                                  mockMessageRouter)),
+                                                                  mockMessageRouter,
+                                                                  libjoynrSettings)),
         lastSeenDateMs(0),
         expiryDateMs(0),
         dummyParticipantId1(),
@@ -234,6 +236,7 @@ public:
 protected:
     std::string settingsFileName;
     Settings settings;
+    LibjoynrSettings libjoynrSettings;
     MessagingSettings messagingSettings;
     LibjoynrSettings libjoynrsettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
@@ -1061,7 +1064,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,registerReceivedCapabilites_registerHttpAd
 TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
 {
     // Attempt loading (action usually performed by cluster-controller runtime)
-    localCapabilitiesDirectory->loadFromFile(libjoynrsettings.getLocalCapabilitiesDirectoryPersistenceFilename());
+    localCapabilitiesDirectory->loadPersistedFile();
 
     // add few entries
     const std::string DOMAIN_NAME = "LocalCapabilitiesDirectorySerializerTest_Domain";
@@ -1085,11 +1088,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     localCapabilitiesDirectory = nullptr;
 
     // create a new object
-    localCapabilitiesDirectory = new LocalCapabilitiesDirectory(messagingSettings, capabilitiesClient, LOCAL_ADDRESS, mockMessageRouter);
+    localCapabilitiesDirectory = new LocalCapabilitiesDirectory(messagingSettings, capabilitiesClient, LOCAL_ADDRESS, mockMessageRouter, libjoynrSettings);
 
     // load persistency
-    localCapabilitiesDirectory->loadFromFile(libjoynrsettings.getLocalCapabilitiesDirectoryPersistenceFilename());
-
+    localCapabilitiesDirectory->loadPersistedFile();
+    
     // check all entries are there
     for(auto& partecipantID : participantIds)
     {
@@ -1097,4 +1100,19 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
         EXPECT_EQ(1, callback->getResults(1000).size());
         callback->clearResults();
     }
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)
+{
+    const std::string fileName = "test-resources/ListOfCapabilitiesToInject.json";
+    localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(fileName);
+
+    // Verify that all entries present in the file have indeed been loaded
+    localCapabilitiesDirectory->lookup("notReachableInterface_Schroedinger", callback);
+    EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
+    callback->clearResults();
+
+    localCapabilitiesDirectory->lookup("notReachableInterface_Heisenberg", callback);
+    EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
+    callback->clearResults();
 }

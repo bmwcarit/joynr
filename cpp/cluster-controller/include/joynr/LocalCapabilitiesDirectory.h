@@ -36,13 +36,14 @@
 #include "joynr/TypedClientMultiCache.h"
 #include "joynr/Logger.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/Semaphore.h"
 #include "common/InterfaceAddress.h"
+#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "cluster-controller/mqtt/MqttSettings.h"
 #include <vector>
 
@@ -57,8 +58,9 @@ namespace joynr
 {
 
 class CapabilityEntry;
-class ICapabilitiesClient;
 class InterfaceAddress;
+class ICapabilitiesClient;
+class LibjoynrSettings;
 class MessageRouter;
 
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
@@ -69,7 +71,8 @@ public:
     LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
-                               MessageRouter& messageRouter);
+                               MessageRouter& messageRouter,
+                               LibjoynrSettings& libJoynrSettings);
 
     ~LocalCapabilitiesDirectory() override;
 
@@ -163,10 +166,25 @@ public:
     void removeProviderRegistrationObserver(
             std::shared_ptr<IProviderRegistrationObserver> observer);
 
-    void saveToFile();
-    void loadFromFile(std::string fileName);
-    std::string serializeToJson() const;
-    void deserializeFromJson(const std::string& jsonString);
+    /*
+     * Persist the content of the local capabilities directory to a file.
+     */
+    void updatePersistedFile();
+
+    /*
+     * Load persisted capabilities from the specified file.
+     */
+    void loadPersistedFile();
+
+    /*
+     * Save the content of the local capabilities directory to the specified file.
+     */
+    void saveLocalCapabilitiesToFile(const std::string& fileName);
+
+    /*
+     * Load capabilities from the the specified file.
+     */
+    void injectGlobalCapabilitiesFromFile(const std::string& fileName);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
@@ -199,6 +217,10 @@ private:
                                              std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
 
+    void cleanCaches();
+
+    std::string serializeLocalCapabilitiesToJson() const;
+
     void convertDiscoveryEntryIntoCapabilityEntry(
             const joynr::types::DiscoveryEntry& discoveryEntry,
             CapabilityEntry& capabilityEntry);
@@ -210,8 +232,6 @@ private:
     void convertDiscoveryEntriesIntoCapabilityEntries(
             const std::vector<types::DiscoveryEntry>& discoveryEntries,
             std::vector<CapabilityEntry>& capabilityEntries);
-
-    void cleanCaches();
 
     ADD_LOGGER(LocalCapabilitiesDirectory);
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
@@ -230,7 +250,7 @@ private:
 
     MqttSettings mqttSettings;
 
-    std::string localCapabilitiesDirectoryFileName;
+    LibjoynrSettings& libJoynrSettings; // to retrieve info about persistency
 
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);

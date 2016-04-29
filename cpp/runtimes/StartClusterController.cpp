@@ -25,25 +25,47 @@
 
 using namespace joynr;
 
+namespace
+{
+void printUsage(Logger& logger, const std::string& programName)
+{
+    JOYNR_LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
+    JOYNR_LOG_INFO(logger, "USAGE: {}  <file.settings>... -d <discoveryEntries.json>", programName);
+}
+}
+
 int main(int argc, char* argv[])
 {
     // init a logger
     Logger logger("Runtime");
 
     // Check the usage
-    std::string programName(argv[0]);
+    const std::string programName(argv[0]);
     if (argc == 1) {
-        JOYNR_LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
-        JOYNR_LOG_INFO(logger, "USAGE: {}  <file.settings>...", programName);
+        printUsage(logger, programName);
     }
 
     // Object that holds all the settings
     Settings settings;
 
-    // Merge all the settings files into the settings object
+    // Discovery entry file name
+    std::string discoveryEntriesFile;
+
+    // Walk the argument list and
+    //  - merge all the settings files into the settings object
+    //  - read in input file name to inject discovery entries
     for (int i = 1; i < argc; i++) {
 
-        std::string settingsFileName(argv[i]);
+        if (std::strcmp(argv[i], "-d") == 0) {
+            if (++i < argc) {
+                discoveryEntriesFile = argv[i];
+            } else {
+                printUsage(logger, programName);
+            }
+            break;
+        }
+
+        const std::string settingsFileName(argv[i]);
 
         // Read the settings file
         JOYNR_LOG_INFO(logger, "Loading settings file: {}", settingsFileName);
@@ -61,7 +83,7 @@ int main(int argc, char* argv[])
 
     // create the cluster controller runtime
     JoynrClusterControllerRuntime* clusterControllerRuntime =
-            JoynrClusterControllerRuntime::create(&settings);
+            JoynrClusterControllerRuntime::create(&settings, discoveryEntriesFile);
 
     // run the cluster controller forever
     clusterControllerRuntime->runForever();

@@ -79,7 +79,8 @@ public:
                                   std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
                                   std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
 
-    static JoynrClusterControllerRuntime* create(Settings* settings);
+    static JoynrClusterControllerRuntime* create(Settings* settings,
+                                                 const std::string& discoveryEntriesFile = "");
 
     ~JoynrClusterControllerRuntime() override;
 
@@ -96,6 +97,11 @@ public:
     void deleteChannel();
     void registerRoutingProvider();
     void registerDiscoveryProvider();
+
+    /*
+     * Inject predefined capabilities stored in a JSON file.
+     */
+    void injectGlobalCapabilitiesFromFile(const std::string& fileName);
 
 protected:
     void importMessageRouterFromFile();

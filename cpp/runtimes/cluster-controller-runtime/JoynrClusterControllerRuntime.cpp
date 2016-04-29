@@ -146,8 +146,13 @@ void JoynrClusterControllerRuntime::importMessageRouterFromFile()
 
 void JoynrClusterControllerRuntime::importPersistedLocalCapabilitiesDirectory()
 {
-    localCapabilitiesDirectory->loadFromFile(
-            libjoynrSettings.getLocalCapabilitiesDirectoryPersistenceFilename());
+    localCapabilitiesDirectory->loadPersistedFile();
+}
+
+void JoynrClusterControllerRuntime::injectGlobalCapabilitiesFromFile(const std::string& fileName)
+{
+    assert(localCapabilitiesDirectory);
+    localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(fileName);
 }
 
 void JoynrClusterControllerRuntime::initializeAllDependencies()
@@ -399,8 +404,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
             std::make_shared<CapabilitiesClient>();
-    localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
-            messagingSettings, capabilitiesClient, channelGlobalCapabilityDir, *messageRouter);
+    localCapabilitiesDirectory =
+            std::make_shared<LocalCapabilitiesDirectory>(messagingSettings,
+                                                         capabilitiesClient,
+                                                         channelGlobalCapabilityDir,
+                                                         *messageRouter,
+                                                         libjoynrSettings);
 
     importPersistedLocalCapabilitiesDirectory();
 
@@ -561,7 +570,9 @@ void JoynrClusterControllerRuntime::runForever()
     app->exec();
 }
 
-JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(Settings* settings)
+JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
+        Settings* settings,
+        const std::string& discoveryEntriesFile)
 {
     // Only allow one QCoreApplication instance
     static int argc = 0;
@@ -571,7 +582,10 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(Settings* s
 
     JoynrClusterControllerRuntime* runtime =
             new JoynrClusterControllerRuntime(coreApplication, settings);
+
+    runtime->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);
     runtime->start();
+
     return runtime;
 }
 

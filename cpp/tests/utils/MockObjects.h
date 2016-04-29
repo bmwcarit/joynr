@@ -95,6 +95,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IProxyBuilder.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
@@ -971,9 +972,10 @@ public:
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings):
+    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings):
         messageRouter(),
-        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter){}
+        libjoynrMockSettings(settings),
+        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter, libjoynrMockSettings){}
 
     MOCK_METHOD3(
             lookup,
@@ -985,6 +987,7 @@ public:
 
 private:
     MockMessageRouter messageRouter;
+    joynr::LibjoynrSettings libjoynrMockSettings;
 };
 
 class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback
