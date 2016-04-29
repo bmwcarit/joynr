@@ -24,6 +24,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/IPlatformSecurityManager.h"
+#include "joynr/OneWayRequest.h"
 #include <string>
 namespace joynr
 {
@@ -57,10 +58,10 @@ public:
                              const MessagingQos& qos,
                              const Reply& payload) const;
 
-    JoynrMessage createOneWay(const std::string& senderId,
-                              const std::string& receiverId,
-                              const MessagingQos& qos,
-                              const Reply& payload) const;
+    JoynrMessage createOneWayRequest(const std::string& senderId,
+                                     const std::string& receiverId,
+                                     const MessagingQos& qos,
+                                     const OneWayRequest& payload) const;
 
     JoynrMessage createSubscriptionPublication(const std::string& senderId,
                                                const std::string& receiverId,
