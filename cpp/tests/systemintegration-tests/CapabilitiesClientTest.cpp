@@ -111,6 +111,7 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::string capInterface("testInterface");
     types::ProviderQos capProviderQos;
     std::string capParticipantId("testParticipantId");
+    std::string capPublicKeyId("publicKeyId");
     joynr::types::Version providerVersion(47, 11);
     std::int64_t capLastSeenMs = 0;
     std::int64_t capExpiryDateMs = 1000;
@@ -123,6 +124,7 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
                                            capProviderQos,
                                            capLastSeenMs,
                                            capExpiryDateMs,
+                                           capPublicKeyId,
                                            capSerializedChannelAddress));
 
     JOYNR_LOG_DEBUG(logger, "Registering capabilities");

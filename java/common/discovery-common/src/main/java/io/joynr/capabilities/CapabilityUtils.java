@@ -45,7 +45,8 @@ public class CapabilityUtils {
                                   globalDiscoveryEntry.getParticipantId(),
                                   globalDiscoveryEntry.getQos(),
                                   System.currentTimeMillis(),
-                                  globalDiscoveryEntry.getExpiryDateMs());
+                                  globalDiscoveryEntry.getExpiryDateMs(),
+                                  globalDiscoveryEntry.getPublicKeyId());
     }
 
     public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(String domain,
@@ -54,6 +55,7 @@ public class CapabilityUtils {
                                                                ProviderQos qos,
                                                                Long lastSeenDateMs,
                                                                Long expiryDateMs,
+                                                               String publicKeyId,
                                                                Address address) {
         return newGlobalDiscoveryEntry(new Version(),
                                        domain,
@@ -62,6 +64,7 @@ public class CapabilityUtils {
                                        qos,
                                        lastSeenDateMs,
                                        expiryDateMs,
+                                       publicKeyId,
                                        address);
     }
 
@@ -73,6 +76,7 @@ public class CapabilityUtils {
                                                                ProviderQos qos,
                                                                Long lastSeenDateMs,
                                                                Long expiryDateMs,
+                                                               String publicKeyId,
                                                                Address address) {
         // CHECKSTYLE ON
         return new GlobalDiscoveryEntry(providerVesion,
@@ -82,6 +86,7 @@ public class CapabilityUtils {
                                         qos,
                                         lastSeenDateMs,
                                         expiryDateMs,
+                                        publicKeyId,
                                         serializeAddress(address));
     }
 
@@ -95,6 +100,7 @@ public class CapabilityUtils {
                                         discoveryEntry.getQos(),
                                         System.currentTimeMillis(),
                                         discoveryEntry.getExpiryDateMs(),
+                                        discoveryEntry.getPublicKeyId(),
                                         serializeAddress(globalAddress));
     }
 

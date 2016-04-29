@@ -1,3 +1,10 @@
+#joynr 0.18.0
+
+##API relevant changes
+* **[C++, Java, JS]** The communication protocol between local directories on the cluster controller
+  and global directories in the backend changed. Please make sure that clients and backend use
+  compatible versions.
+
 #joynr 0.17.0
 
 ##API relevant changes

@@ -57,6 +57,10 @@ void ClassDeserializerImpl<CapabilityEntry>::deserialize(CapabilityEntry& capabi
             std::string stringValue;
             PrimitiveDeserializer<std::string>::deserialize(stringValue, field.value());
             capabilityEntryVar.setParticipantId(stringValue);
+        } else if (field.name() == "publicKeyId") {
+            std::string publicKeyId;
+            PrimitiveDeserializer<std::string>::deserialize(publicKeyId, field.value());
+            capabilityEntryVar.setPublicKeyId(publicKeyId);
         } else if (field.name() == "isGlobal") {
             bool isGlobal = TypeConverter<bool>::convert(field.value());
             capabilityEntryVar.setGlobal(isGlobal);
@@ -82,6 +86,9 @@ void ClassSerializerImpl<CapabilityEntry>::serialize(const CapabilityEntry& capa
     stream << ",";
     stream << "\"participantId\": ";
     ClassSerializerImpl<std::string>::serialize(capabilityEntryVar.getParticipantId(), stream);
+    stream << ",";
+    stream << "\"publicKeyId\": ";
+    ClassSerializerImpl<std::string>::serialize(capabilityEntryVar.getPublicKeyId(), stream);
     stream << ",";
     stream << "\"isGlobal\": ";
     ClassSerializerImpl<bool>::serialize(capabilityEntryVar.isGlobal(), stream);

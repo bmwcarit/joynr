@@ -88,6 +88,7 @@ public:
                     INTERFACE_1_NAME,
                     qos,
                     dummyParticipantId3,
+                    PUBLIC_KEY_ID,
                     true
         );
         globalCapEntryMap.insert(EXTERNAL_ADDRESS, globalCapEntry);
@@ -139,6 +140,7 @@ public:
                                qos,
                                LASTSEEN_MS,
                                EXPIRYDATE_MS,
+                               PUBLIC_KEY_ID,
                                EXTERNAL_ADDRESS));
         discoveryEntryList.push_back(types::GlobalDiscoveryEntry(
                                providerVersion,
@@ -148,6 +150,7 @@ public:
                                qos,
                                LASTSEEN_MS,
                                EXPIRYDATE_MS,
+                               PUBLIC_KEY_ID,
                                EXTERNAL_ADDRESS));
         onSuccess(discoveryEntryList);
     }
@@ -168,6 +171,7 @@ public:
                                qos,
                                LASTSEEN_MS,
                                EXPIRYDATE_MS,
+                               PUBLIC_KEY_ID,
                                EXTERNAL_ADDRESS));
         discoveryEntryList.push_back(types::GlobalDiscoveryEntry(
                                providerVersion,
@@ -177,6 +181,7 @@ public:
                                qos,
                                LASTSEEN_MS,
                                EXPIRYDATE_MS,
+                               PUBLIC_KEY_ID,
                                EXTERNAL_ADDRESS));
         onSuccess(discoveryEntryList);
     }
@@ -198,6 +203,7 @@ public:
                                qos,
                                LASTSEEN_MS,
                                EXPIRYDATE_MS,
+                               PUBLIC_KEY_ID,
                                EXTERNAL_ADDRESS));
         discoveryEntryList.push_back(types::GlobalDiscoveryEntry(
                                providerVersion,
@@ -207,6 +213,7 @@ public:
                                qos,
                                LASTSEEN_MS,
                                EXPIRYDATE_MS,
+                               PUBLIC_KEY_ID,
                                EXTERNAL_ADDRESS));
         discoveryEntryList.push_back(types::GlobalDiscoveryEntry(
                                providerVersion,
@@ -216,6 +223,7 @@ public:
                                qos,
                                LASTSEEN_MS,
                                EXPIRYDATE_MS,
+                               PUBLIC_KEY_ID,
                                EXTERNAL_ADDRESS));
         onSuccess(discoveryEntryList);
     }
@@ -250,6 +258,7 @@ protected:
     static const std::string EXTERNAL_ADDRESS;
     static const std::int64_t LASTSEEN_MS;
     static const std::int64_t EXPIRYDATE_MS;
+    static const std::string PUBLIC_KEY_ID;
     static const int TIMEOUT;
     std::shared_ptr<MockLocalCapabilitiesDirectoryCallback> callback;
     void registerReceivedCapabilities(const std::string& addressType, const std::string& serializedAddress);
@@ -270,6 +279,7 @@ const std::string LocalCapabilitiesDirectoryTest::LOCAL_ADDRESS("localAddress");
 const std::string LocalCapabilitiesDirectoryTest::EXTERNAL_ADDRESS("externalAddress");
 const std::int64_t LocalCapabilitiesDirectoryTest::LASTSEEN_MS(1000);
 const std::int64_t LocalCapabilitiesDirectoryTest::EXPIRYDATE_MS(10000);
+const std::string LocalCapabilitiesDirectoryTest::PUBLIC_KEY_ID("publicKeyId");
 const int LocalCapabilitiesDirectoryTest::TIMEOUT(2000);
 
 
@@ -284,7 +294,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient)
         dummyParticipantId1,
         types::ProviderQos(),
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
 }
@@ -305,7 +316,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache) {
         dummyParticipantId1,
         types::ProviderQos(),
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
 
@@ -330,7 +342,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient) 
         dummyParticipantId1,
         providerQos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
 
@@ -352,7 +365,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeDelegatesToCapabilitiesClientIfGlob
         dummyParticipantId1,
         types::ProviderQos(),
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos());
@@ -378,7 +392,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeRemovesFromCache) {
         dummyParticipantId1,
         types::ProviderQos(),
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, types::ProviderQos());
@@ -400,7 +415,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByInterfaceAddressDo
         dummyParticipantId1,
         providerQos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->remove(DOMAIN_1_NAME ,INTERFACE_1_NAME, providerQos);
@@ -554,6 +570,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                              qos,
                                              lastSeenDateMs,
                                              expiryDateMs,
+                                             PUBLIC_KEY_ID,
                                              LOCAL_ADDRESS);
     firstDiscoveryEntryList.push_back(globalDiscoveryEntryInfo1);
     secondDiscoveryEntryList.push_back(globalDiscoveryEntryInfo1);
@@ -565,6 +582,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                  qos,
                                  lastSeenDateMs,
                                  expiryDateMs,
+                                 PUBLIC_KEY_ID,
                                  LOCAL_ADDRESS));
 
     {
@@ -580,7 +598,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
         dummyParticipantId1,
         qos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
     joynr::types::DiscoveryEntry entry2(
@@ -590,7 +609,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
         dummyParticipantId2,
         qos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry2);
 }
@@ -611,7 +631,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
                 dummyParticipantId1,
                 qos,
                 lastSeenDateMs,
-                expiryDateMs
+                expiryDateMs,
+                PUBLIC_KEY_ID
             );
             localCapabilitiesDirectory->add(entry);
         } catch (const exceptions::JoynrException& e){
@@ -640,7 +661,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
         dummyParticipantId1,
         qos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
@@ -678,7 +700,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal){
         dummyParticipantId1,
         providerQos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
@@ -712,7 +735,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
         dummyParticipantId1,
         providerQos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
     localCapabilitiesDirectory->add(entry);
@@ -758,7 +782,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
         dummyParticipantId1,
         providerQos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
     localCapabilitiesDirectory->add(entry);
@@ -815,7 +840,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
         dummyParticipantId1,
         providerQos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
 
@@ -867,7 +893,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal){
         dummyParticipantId1,
         providerQos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
@@ -898,7 +925,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
         dummyParticipantId1,
         providerQos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
     localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
@@ -948,7 +976,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupGlobalOnly
         dummyParticipantId1,
         providerQos,
         lastSeenDateMs,
-        expiryDateMs
+        expiryDateMs,
+        PUBLIC_KEY_ID
     );
     localCapabilitiesDirectory->add(entry);
 
@@ -1041,9 +1070,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
 
     std::vector<std::string> participantIds {util::createUuid(),util::createUuid(),util::createUuid()};
     joynr::types::Version providerVersion(47, 11);
-    joynr::types::DiscoveryEntry entry1 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[0],types::ProviderQos(), lastSeenDateMs, expiryDateMs);
-    joynr::types::DiscoveryEntry entry2 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[1],types::ProviderQos(), lastSeenDateMs, expiryDateMs);
-    joynr::types::DiscoveryEntry entry3 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[2],types::ProviderQos(), lastSeenDateMs, expiryDateMs);
+    joynr::types::DiscoveryEntry entry1 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[0],
+                                         types::ProviderQos(), lastSeenDateMs, expiryDateMs, PUBLIC_KEY_ID);
+    joynr::types::DiscoveryEntry entry2 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[1],
+                                         types::ProviderQos(), lastSeenDateMs, expiryDateMs, PUBLIC_KEY_ID);
+    joynr::types::DiscoveryEntry entry3 (providerVersion, DOMAIN_NAME,INTERFACE_NAME, participantIds[2],
+                                         types::ProviderQos(), lastSeenDateMs, expiryDateMs, PUBLIC_KEY_ID);
 
     localCapabilitiesDirectory->add(entry1);
     localCapabilitiesDirectory->add(entry2);

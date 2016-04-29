@@ -141,12 +141,16 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     // if provider has at least one attribute, add it as publication provider
                     publicationManager.addPublicationProvider(participantId, provider);
 
+                    // TODO: Must be later provided by the user or retrieved from somewhere
+                    var defaultPublicKeyId = "";
+
                     var discoveryStubPromise = discoveryStub.add(new DiscoveryEntry({
                         providerVersion : new Version(),
                         domain : domain,
                         interfaceName : provider.interfaceName,
                         participantId : participantId,
                         qos : providerQos,
+                        publicKeyId : defaultPublicKeyId,
                         lastSeenDateMs : Date.now()
                     }));
 

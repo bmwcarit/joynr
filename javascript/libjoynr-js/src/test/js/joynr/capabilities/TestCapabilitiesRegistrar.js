@@ -145,6 +145,7 @@ joynrTestRequire(
                                 qos : providerQos,
                                 channelId : localChannelId,
                                 participantId : participantId,
+                                publicKeyId: "",
                                 address : address
                             });
                         });
