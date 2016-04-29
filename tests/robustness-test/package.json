@@ -1,6 +1,6 @@
 {
   "name": "robustness-test",
-  "version": "0.17.1",
+  "version": "0.17.2-SNAPSHOT",
   "description": "Robustness Tests",
   "main": "src/main/js/consumer.js",
   "private": true,
