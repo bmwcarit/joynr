@@ -398,7 +398,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
-            std::make_shared<CapabilitiesClient>(channelGlobalCapabilityDir);
+            std::make_shared<CapabilitiesClient>();
     localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
             messagingSettings, capabilitiesClient, channelGlobalCapabilityDir, *messageRouter);
 

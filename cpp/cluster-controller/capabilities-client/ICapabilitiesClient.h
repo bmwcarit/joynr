@@ -58,7 +58,6 @@ public:
                     onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)>
                     onError = nullptr) = 0;
-    virtual std::string getLocalChannelId() const = 0;
 
     virtual void setProxyBuilder(
             std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>

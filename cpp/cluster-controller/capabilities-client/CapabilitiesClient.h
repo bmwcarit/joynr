@@ -59,7 +59,7 @@ public:
        ProxyBuilder must be provided. The Class will take ownership
        of the ProxyBuilder and will make sure it is deleted.
     */
-    explicit CapabilitiesClient(const std::string& localChannelId);
+    CapabilitiesClient();
 
     ~CapabilitiesClient() override = default;
 
@@ -103,8 +103,6 @@ public:
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                         nullptr) override;
 
-    std::string getLocalChannelId() const override;
-
     void setProxyBuilder(
             std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
                     capabilitiesProxyBuilder) override;
@@ -115,7 +113,6 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
 
-    std::string localChannelId;
     std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
     std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
     std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>

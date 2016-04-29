@@ -150,7 +150,6 @@ public:
                      const std::string& participantId,
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> callbackFct,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-    MOCK_CONST_METHOD0(getLocalChannelId, std::string());
 
     void setProxyBuilder(std::unique_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
         std::ignore = input;

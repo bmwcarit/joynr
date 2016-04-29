@@ -77,7 +77,6 @@ public:
         callback = std::make_shared<MockLocalCapabilitiesDirectoryCallback>();
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
-        EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).Times(0);
 
         // init a capentry recieved from the global capabilities directory
         types::ProviderQos qos;
