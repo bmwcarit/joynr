@@ -61,6 +61,8 @@ void ReceivedMessageRunnable::run()
         dispatcher.handleRequestReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY) {
         dispatcher.handleReplyReceived(message);
+    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY) {
+        dispatcher.handleOneWayRequestReceived(message);
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
         dispatcher.handleSubscriptionRequestReceived(message);
     } else if (message.getType() ==

@@ -206,6 +206,42 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     }
 }
 
+void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
+{
+    std::string receiverId = message.getHeaderTo();
+
+    // json request
+    // lookup necessary data
+    std::string jsonRequest = message.getPayload();
+    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
+    if (caller == nullptr) {
+        JOYNR_LOG_ERROR(
+                logger,
+                "caller not found in the RequestCallerDirectory for receiverId {}, ignoring",
+                receiverId);
+        return;
+    }
+    std::string interfaceName = caller->getInterfaceName();
+
+    // Get the request interpreter that has been registered with this interface name
+    std::shared_ptr<IRequestInterpreter> requestInterpreter =
+            InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
+
+    // deserialize json
+    try {
+        OneWayRequest request = JsonSerializer::deserialize<OneWayRequest>(jsonRequest);
+        // execute request
+        requestInterpreter->execute(
+                caller, request.getMethodName(), request.getParams(), request.getParamDatatypes());
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to deserialize request object from: {} - error: {}",
+                        jsonRequest,
+                        e.what());
+        return;
+    }
+}
+
 void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 {
     // json request
