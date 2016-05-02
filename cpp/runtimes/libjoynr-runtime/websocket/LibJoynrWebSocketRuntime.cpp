@@ -74,11 +74,11 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
 
     websocket->connect(*ccMessagingAddress);
 
-    auto factory = std::make_unique<WebSocketMessagingStubFactory>();
+    auto factory = std::make_shared<WebSocketMessagingStubFactory>();
     factory->addServer(*ccMessagingAddress, websocket);
 
     connectionEstablishedSemaphore->wait();
-    LibJoynrRuntime::init(std::move(factory), libjoynrMessagingAddress, ccMessagingAddress);
+    LibJoynrRuntime::init(factory, libjoynrMessagingAddress, ccMessagingAddress);
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()

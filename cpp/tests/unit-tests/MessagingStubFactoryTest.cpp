@@ -36,12 +36,12 @@ class MessagingStubFactoryTest : public Test {
 public:
     MessagingStubFactoryTest() : messagingStubFactory(), expectedStub(std::make_shared<MockMessagingStub>())
     {
-        auto mockMiddlewareMessagingStubFactory = std::make_unique<MockMiddlewareMessagingStubFactory>();
+        auto mockMiddlewareMessagingStubFactory = std::make_shared<MockMiddlewareMessagingStubFactory>();
         // retain a pointer for later use in EXPECT_CALL, unique_ptr will be moved when registering
         this->mockMiddlewareMessagingStubFactory = mockMiddlewareMessagingStubFactory.get();
         ON_CALL(*(this->mockMiddlewareMessagingStubFactory), create(_)).WillByDefault(Return(expectedStub));
         ON_CALL(*(this->mockMiddlewareMessagingStubFactory), canCreate(_)).WillByDefault(Return(true));
-        messagingStubFactory.registerStubFactory(std::move(mockMiddlewareMessagingStubFactory));
+        messagingStubFactory.registerStubFactory(mockMiddlewareMessagingStubFactory);
 
         address = std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>();
         address->setHost("test.domain");

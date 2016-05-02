@@ -174,9 +174,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // create the messaging stub factory
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-    messagingStubFactory->registerStubFactory(std::make_unique<DbusMessagingStubFactory>());
+    messagingStubFactory->registerStubFactory(std::make_shared<DbusMessagingStubFactory>());
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-    messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
+    messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
     // init message router
     messageRouter =
             std::make_shared<MessageRouter>(messagingStubFactory, std::move(securityManager));
@@ -244,12 +244,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     }
 
     // setup CC WebSocket interface
-    auto wsMessagingStubFactory = std::make_unique<WebSocketMessagingStubFactory>();
+    auto wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
     system::RoutingTypes::WebSocketAddress wsAddress =
             wsSettings.createClusterControllerMessagingAddress();
     wsCcMessagingSkeleton =
-            new WebSocketCcMessagingSkeleton(*messageRouter, *wsMessagingStubFactory, wsAddress);
-    messagingStubFactory->registerStubFactory(std::move(wsMessagingStubFactory));
+            new WebSocketCcMessagingSkeleton(*messageRouter, wsMessagingStubFactory, wsAddress);
+    messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
     /* LibJoynr */
     assert(messageRouter);
@@ -305,7 +305,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     std::chrono::milliseconds(messagingSettings.getSendMsgRetryInterval()));
         }
 
-        messagingStubFactory->registerStubFactory(std::make_unique<HttpMessagingStubFactory>(
+        messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(
                 httpMessageSender, httpSerializedGlobalClusterControllerAddress));
     }
 
@@ -352,7 +352,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     [&](void) { mqttMessageReceiver->waitForReceiveQueueStarted(); });
         }
 
-        messagingStubFactory->registerStubFactory(std::make_unique<MqttMessagingStubFactory>(
+        messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
                 mqttMessageSender, mqttSerializedGlobalClusterControllerAddress));
     }
 
