@@ -1,6 +1,6 @@
 {
   "name": "joynr",
-  "version": "0.17.1",
+  "version": "0.17.2",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
@@ -12,7 +12,7 @@
   "dependencies": {
     "log4js": "0.6.29",
     "node-localstorage": "1.1.2",
-    "atmosphere.js": "2.3.1",
+    "atmosphere.js": "2.3.2",
     "xmlhttprequest" : "1.8.0",
     "requirejs" : "2.1.22",
     "ws" : "1.0.1",
