@@ -46,19 +46,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.xtend</groupId>
-			<artifactId>org.eclipse.xtend.lib</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.xtend</groupId>
 			<artifactId>org.eclipse.xtend.core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.emf</groupId>
-			<artifactId>codegen</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.xtext</groupId>
-			<artifactId>org.eclipse.xtext</artifactId>
 			<exclusions>
 				<!--
 					icu4j is not needed in our case, thus avoiding unnecessary
@@ -71,19 +59,19 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-				<groupId>com.google.inject.extensions</groupId>
-				<artifactId>guice-assistedinject</artifactId>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-assistedinject</artifactId>
 		</dependency>
-	     <dependency>
-	         <groupId>org.reflections</groupId>
-	         <artifactId>reflections</artifactId>
-	     </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<sourceDirectory>src/main/xtend</sourceDirectory>

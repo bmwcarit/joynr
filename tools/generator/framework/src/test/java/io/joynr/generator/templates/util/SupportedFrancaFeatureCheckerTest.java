@@ -36,7 +36,7 @@ public class SupportedFrancaFeatureCheckerTest {
     public void testIntegerTypeIsUsed_ExceptionIsThrown() {
         URL fixtureURL = SupportedFrancaFeatureCheckerTest.class.getResource("IntegerTypeUsed.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
-        Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
+        Resource fixtureResource = loader.getResources().iterator().next();
 
         FModel model = (FModel) fixtureResource.getContents().get(0);
 

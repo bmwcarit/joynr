@@ -29,7 +29,6 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions;
 import java.util.Iterator;
 
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.franca.core.franca.FCompoundType;
 import org.franca.core.franca.FModel;
@@ -79,10 +78,9 @@ public class JoynrJavaGeneratorExtensionsTest {
         // this test shall check for correct import statements (avoiding
         // warnings) in case of hierachical structs
         ModelLoader modelLoader = new ModelLoader(model);
-        Iterator<URI> modelUrisIterator = modelLoader.getURIs().iterator();
-        URI modelUnderTest = modelUrisIterator.next();
-        assertFalse(modelUrisIterator.hasNext());
-        final Resource input = modelLoader.getResource(modelUnderTest);
+        Iterator<Resource> modelResourcesIterator = modelLoader.getResources().iterator();
+        Resource input = modelResourcesIterator.next();
+        assertFalse(modelResourcesIterator.hasNext());
 
         FModel fModel = (FModel) input.getContents().get(0);
 

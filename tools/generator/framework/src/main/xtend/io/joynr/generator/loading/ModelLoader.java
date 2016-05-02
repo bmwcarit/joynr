@@ -3,7 +3,7 @@ package io.joynr.generator.loading;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
@@ -35,27 +33,25 @@ import com.google.common.collect.Sets;
 
 public class ModelLoader {
 
-    IUriProvider uriProvider = null;
-    private ModelStore modelStore = null;
+    private final IUriProvider uriProvider;
+    private final ModelStore modelStore;
     private static Logger logger = Logger.getLogger(ModelLoader.class);
 
     public ModelLoader(final String modelpath) {
         File modelFile = new File(modelpath);
         if (modelFile.exists()) {
 
-            final URI uri = URI.createFileURI(modelFile.getAbsolutePath());
-            final Set<URI> uris = new HashSet<URI>();
-            uris.add(uri);
             File file = modelFile;
 
             if (file.isDirectory()) {
                 uriProvider = new FolderUriProvider(Sets.newHashSet("fidl"), file);
             } else {
+                final URI uri = URI.createFileURI(modelFile.getAbsolutePath());
                 uriProvider = new IUriProvider() {
 
                     @Override
                     public Iterable<URI> allUris() {
-                        return Lists.newArrayList(uris);
+                        return Lists.newArrayList(uri);
                     }
                 };
             }
@@ -78,21 +74,12 @@ public class ModelLoader {
             };
         }
 
-        modelStore = ModelStore.modelsIn(uriProvider);
-
-        //		for (URI foundUri : uriProvider.allUris()) {
-        //			final Resource r = modelStore.getResource(foundUri);
-        //			generator.doGenerate(r, fileSystemAccess);
-        //		}
+        modelStore = new ModelStore(uriProvider);
 
     }
 
-    public Iterable<URI> getURIs() {
-        return uriProvider.allUris();
-    }
-
-    public Resource getResource(URI uri) {
-        return modelStore.getResource(uri);
+    public Iterable<Resource> getResources() {
+        return modelStore.getResources();
     }
 
 }

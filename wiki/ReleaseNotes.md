@@ -5,6 +5,10 @@
   and global directories in the backend changed. Please make sure that clients and backend use
   compatible versions.
 
+##Other changes
+* **[Tools]** Refactored joynr generator framework to simplify the maintenance,
+   revised its required dependencies.
+
 #joynr 0.17.2
 This is a minor bug fix release.
 
