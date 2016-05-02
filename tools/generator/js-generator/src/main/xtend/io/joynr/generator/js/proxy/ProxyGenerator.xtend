@@ -41,8 +41,6 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
 
-	int packagePathDepth
-
 	def relativePathToBase() {
 		var relativePath = ""
 		for (var i=0; i<packagePathDepth; i++) {
