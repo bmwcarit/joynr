@@ -49,6 +49,7 @@ public class CapabilityUtils {
                                   globalDiscoveryEntry.getPublicKeyId());
     }
 
+    // CHECKSTYLE:OFF
     public static GlobalDiscoveryEntry newGlobalDiscoveryEntry(String domain,
                                                                String interfaceName,
                                                                String participantId,
@@ -57,6 +58,7 @@ public class CapabilityUtils {
                                                                Long expiryDateMs,
                                                                String publicKeyId,
                                                                Address address) {
+        // CHECKSTYLE:ON
         return newGlobalDiscoveryEntry(new Version(),
                                        domain,
                                        interfaceName,
