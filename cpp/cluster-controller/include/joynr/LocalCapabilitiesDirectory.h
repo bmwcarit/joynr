@@ -18,7 +18,40 @@
  */
 #ifndef LOCALCAPABILITIESDIRECTORY_H
 #define LOCALCAPABILITIESDIRECTORY_H
+
+#include <chrono>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
+
+#include <QMap>
+
+#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "cluster-controller/mqtt/MqttSettings.h"
+
+#include "common/InterfaceAddress.h"
+
+#include "joynr/ClusterControllerDirectories.h"
+#include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/Logger.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
+#include "joynr/system/DiscoveryAbstractProvider.h"
+#include "joynr/TypedClientMultiCache.h"
+#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
+
+namespace joynr
+{
+
+class CapabilityEntry;
+class InterfaceAddress;
+class ICapabilitiesClient;
+class LibjoynrSettings;
+class MessageRouter;
 
 /**
   * The local capabilities directory is the "first point of call" for accessing
@@ -31,38 +64,6 @@
   * Capabilities Client which will make the remote call to the backend to retrieve
   * the data.
   */
-
-#include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/TypedClientMultiCache.h"
-#include "joynr/Logger.h"
-#include "joynr/ClusterControllerDirectories.h"
-#include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/system/DiscoveryAbstractProvider.h"
-#include "joynr/types/DiscoveryQos.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
-#include "joynr/Semaphore.h"
-#include "common/InterfaceAddress.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "cluster-controller/mqtt/MqttSettings.h"
-#include <vector>
-
-#include <memory>
-#include <mutex>
-#include <string>
-#include <chrono>
-
-#include <QMap>
-
-namespace joynr
-{
-
-class CapabilityEntry;
-class InterfaceAddress;
-class ICapabilitiesClient;
-class LibjoynrSettings;
-class MessageRouter;
-
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
         : public joynr::system::DiscoveryAbstractProvider
 {

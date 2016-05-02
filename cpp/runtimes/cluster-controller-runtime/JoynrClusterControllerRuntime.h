@@ -25,15 +25,17 @@
 #include <vector>
 
 #include "cluster-controller/mqtt/MqttSettings.h"
+
 #include "joynr/ClientQCache.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
-#include "joynr/Logger.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/RuntimeConfig.h"
+
 #include "libjoynr/websocket/WebSocketSettings.h"
 
-#include "joynr/RuntimeConfig.h"
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"
 #include "common/dbus/DbusSettings.h"

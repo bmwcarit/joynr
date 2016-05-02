@@ -22,21 +22,22 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/CapabilityEntry.h"
-#include "joynr/DiscoveryQos.h"
-#include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/LibjoynrSettings.h"
-#include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/MessageRouter.h"
+
 #include "common/InterfaceAddress.h"
 
-#include "joynr/Util.h"
-#include "joynr/JsonSerializer.h"
+#include "joynr/CapabilityEntry.h"
 #include "joynr/CapabilityEntrySerializer.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/LibjoynrSettings.h"
+#include "joynr/MessageRouter.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
