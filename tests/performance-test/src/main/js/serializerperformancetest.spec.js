@@ -22,6 +22,7 @@
 var PerformanceUtilities = require("./performanceutilities.js");
 var btoa = require('btoa');
 var atob = require('atob');
+var uuid = require('uuid')
 var numWarmups = 1000
 var numRuns = 1000
 
@@ -131,5 +132,29 @@ describe("Serializer Performance Test", function() {
         runBase64_decode(10000, 1)
         runBase64_decode(100000, 123)
         runBase64_decode(100000, 1)
+    });
+
+    // Measure how passing a simple replacer function affects the performance.
+    it("Serialize With Replacement", function() {
+        replacerFunction = function replacerFunction(key, src) {
+            // Perform a simple operation on the data.
+            return src.testKey.trim();
+        };
+
+        var testProcedure = function() {
+            var testType = { testKey : uuid() };
+            JSON.stringify(testType, replacerFunction)
+        }
+
+        executeTest("Serializer with replacement", testProcedure);
+    });
+
+    it("Serialize Without Replacement", function() {
+        var testProcedure = function() {
+            var testType = { testKey : uuid() };
+            JSON.stringify(testType)
+        }
+
+        executeTest("Serializer without replacement", testProcedure);
     });
 });
