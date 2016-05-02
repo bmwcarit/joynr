@@ -85,10 +85,8 @@ void WebSocketMessagingStubFactory::addClient(
         const system::RoutingTypes::WebSocketClientAddress& clientAddress,
         IWebSocketSendInterface* webSocket)
 {
-
     if (clientStubMap.count(clientAddress) == 0) {
-        WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(
-                webSocket, [this, clientAddress]() { this->onMessagingStubClosed(clientAddress); });
+        WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(webSocket);
         std::shared_ptr<IMessaging> clientStub(wsClientStub);
         {
             std::lock_guard<std::mutex> lock(clientStubMapMutex);
@@ -112,9 +110,7 @@ void WebSocketMessagingStubFactory::addServer(
         const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
         IWebSocketSendInterface* webSocket)
 {
-
-    auto serverStub = std::make_shared<WebSocketMessagingStub>(
-            webSocket, [this, serverAddress]() { this->onMessagingStubClosed(serverAddress); });
+    auto serverStub = std::make_shared<WebSocketMessagingStub>(webSocket);
     {
         std::lock_guard<std::mutex> lock(serverStubMapMutex);
         serverStubMap[serverAddress] = serverStub;

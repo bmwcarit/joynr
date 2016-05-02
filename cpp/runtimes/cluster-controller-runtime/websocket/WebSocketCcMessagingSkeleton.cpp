@@ -117,6 +117,13 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
             IWebSocketSendInterface* clientWrapper = new QWebSocketSendWrapper(client);
             messagingStubFactory->addClient(clientAddress, clientWrapper);
 
+            std::weak_ptr<WebSocketMessagingStubFactory> weakFactoryRef(messagingStubFactory);
+            clientWrapper->registerDisconnectCallback([weakFactoryRef, clientAddress]() {
+                if (auto factory = weakFactoryRef.lock()) {
+                    factory->onMessagingStubClosed(clientAddress);
+                }
+            });
+
             // cleanup
             disconnect(client,
                        &QWebSocket::disconnected,

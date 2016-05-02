@@ -1028,14 +1028,11 @@ public:
     MockQWebSocketSendWrapper(QWebSocket* websocket)
         : QWebSocketSendWrapper(websocket)
     {
-        registerDisconnectCallback(std::bind(&MockQWebSocketSendWrapper::onConnectionClosed, this));
+
     }
 
     MOCK_METHOD1(send, void (const std::string& message));
-
     MOCK_CONST_METHOD0(isConnected, bool ());
-
-    MOCK_METHOD0(onConnectionClosed, void ());
 };
 
 #ifdef _MSC_VER

@@ -102,9 +102,13 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
     WebSocketMessagingStubFactory factory;
     Settings settings;
     WebSocketSettings wsSettings(settings);
-    MockWebSocketClient* websocket = new MockWebSocketClient(wsSettings);
+    auto addressCopy = joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress);
 
-    factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
+    MockWebSocketClient* websocket = new MockWebSocketClient(wsSettings);
+    websocket->registerDisconnectCallback([&factory,&addressCopy](){ factory.onMessagingStubClosed(addressCopy); });
+
+    factory.addClient(webSocketClientAddress, websocket);
+
     EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
     std::shared_ptr<IMessaging> messagingStub(factory.create(webSocketClientAddress));
     std::shared_ptr<WebSocketMessagingStub> wsMessagingStub(std::dynamic_pointer_cast<WebSocketMessagingStub>(messagingStub));
@@ -123,6 +127,8 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     Settings settings;
     WebSocketSettings wsSettings(settings);
     WebSocketPpClient* websocket = new MockWebSocketClient(wsSettings);
+
+    websocket->registerDisconnectCallback([](){});
 
     factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket);
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
