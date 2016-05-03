@@ -374,14 +374,9 @@ file(
     "gen/*.h"
 )
 
-add_library(JoynrTestGenerated SHARED
+add_library(JoynrTestGenerated OBJECT
     ${JoynrTest_GENSOURCES}
     ${JoynrTest_GENHEADERS}
-)
-
-target_link_libraries(
-    JoynrTestGenerated
-    ${test_TARGET_LIBRARIES}
 )
 
 target_include_directories(
@@ -531,6 +526,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_UNIT_TESTS})
         AddTest(
             g_UnitTests
+            $<TARGET_OBJECTS:JoynrTestGenerated>
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
             ${libjsonserializer_test_HEADERS}
@@ -540,7 +536,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
             Qt5::Test
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
@@ -575,6 +570,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_INTEGRATION_TESTS})
         AddTest(
            g_IntegrationTests
+           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${cluster_controller_test_HEADERS}
            ${cluster_controller_test_SOURCES}
            ${g_IntegrationTests_SOURCES}
@@ -582,7 +578,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_IntegrationTests
-            JoynrTestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -615,6 +610,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         AddTest(
            g_SystemIntegrationTests
+           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${cluster_controller_test_HEADERS}
            ${cluster_controller_test_SOURCES}
            ${g_SystemIntegrationTests_SOURCES}
@@ -622,7 +618,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -663,6 +658,7 @@ else()
     if(${BUILD_UNIT_TESTS})
         AddTest(
             g_UnitTests
+            $<TARGET_OBJECTS:JoynrTestGenerated>
             ${libjoynr_test_HEADERS}
             ${libjoynr_test_SOURCES}
             ${g_UnitTests_SOURCES}
@@ -670,7 +666,6 @@ else()
 
     target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
             Qt5::Test
             ${libjoynr_test_TARGET_LIBRARIES}
         )
@@ -700,6 +695,7 @@ else()
     if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         AddTest(
            g_SystemIntegrationTests
+           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${libjoynr_test_HEADERS}
            ${libjoynr_test_SOURCES}
            ${g_SystemIntegrationTests_SOURCES}
@@ -707,7 +703,6 @@ else()
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
         )
 
