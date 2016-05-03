@@ -5,6 +5,29 @@
   and global directories in the backend changed. Please make sure that clients and backend use
   compatible versions.
 
+##Other changes
+* **[Tools]** Refactored joynr generator framework to simplify the maintenance,
+   revised its required dependencies.
+
+#joynr 0.17.2
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Updated dependency for atmoshpere.js to version 2.3.2. This ensures that
+  joynr has no native dependencies in its npm package.
+
+#joynr 0.17.1
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* Updated disclaimers, added README for npm
+
 #joynr 0.17.0
 
 ##API relevant changes

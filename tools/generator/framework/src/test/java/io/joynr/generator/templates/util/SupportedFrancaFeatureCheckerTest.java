@@ -2,9 +2,8 @@ package io.joynr.generator.templates.util;
 
 /*
  * #%L
- * io.joynr.tools.generator:generator-framework
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,36 +19,32 @@ package io.joynr.generator.templates.util;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import io.joynr.generator.loading.ModelLoader;
-
 import java.net.URL;
-import java.util.ArrayList;
 
 import org.eclipse.emf.ecore.resource.Resource;
-import org.franca.core.franca.FBroadcast;
 import org.franca.core.franca.FModel;
 import org.junit.Test;
 
-import com.google.inject.Guice;
+import io.joynr.generator.loading.ModelLoader;
 
-public class BroadcastUtilTest {
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+public class SupportedFrancaFeatureCheckerTest {
 
     @Test
-    public void testFilterParameters() throws Exception {
-        URL fixtureURL = BroadcastUtilTest.class.getResource("FilterParameters.fidl");
+    public void testIntegerTypeIsUsed_ExceptionIsThrown() {
+        URL fixtureURL = SupportedFrancaFeatureCheckerTest.class.getResource("IntegerTypeUsed.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
         Resource fixtureResource = loader.getResources().iterator().next();
-        BroadcastUtil broadcastUtil = Guice.createInjector().getInstance(BroadcastUtil.class);
 
         FModel model = (FModel) fixtureResource.getContents().get(0);
-        FBroadcast fixture = model.getInterfaces().get(0).getBroadcasts().get(0);
 
-        ArrayList<String> result = broadcastUtil.getFilterParameters(fixture);
-        assertEquals(result.size(), 2);
-        assertTrue(result.contains("genre"));
-        assertTrue(result.contains("language"));
+        try {
+            SupportedFrancaFeatureChecker.checkModel(model);
+            fail("This line should not be reached, as an exception is expected when invoking checkModel");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("not supported"));
+        }
     }
-
 }

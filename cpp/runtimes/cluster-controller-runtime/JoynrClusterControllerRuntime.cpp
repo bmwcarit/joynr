@@ -16,72 +16,71 @@
  * limitations under the License.
  * #L%
  */
+#include "JoynrClusterControllerRuntime.h"
+
 #include <cassert>
 #include <cstdint>
 #include <chrono>
 #include <functional>
 
 #include <QCoreApplication>
-#include <QThread>
 #include <boost/algorithm/string/predicate.hpp>
 #include <mosquittopp.h>
+#include "websocket/WebSocketCcMessagingSkeleton.h"
 
-#include "JoynrClusterControllerRuntime.h"
-#include "joynr/Dispatcher.h"
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
+#include "cluster-controller/http-communication-manager/HttpMessagingSkeleton.h"
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 #include "cluster-controller/http-communication-manager/HttpSender.h"
-#include "cluster-controller/http-communication-manager/HttpMessagingSkeleton.h"
-#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
-#include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
-#include "joynr/InProcessDispatcher.h"
-#include "joynr/ConnectorFactory.h"
-#include "joynr/SubscriptionManager.h"
-#include "joynr/PublicationManager.h"
-#include "joynr/InProcessConnectorFactory.h"
-#include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/MessagingStubFactory.h"
-#include "joynr/InProcessMessagingAddress.h"
-#include "joynr/InProcessPublicationSender.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/JsonSerializer.h"
-#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "websocket/WebSocketCcMessagingSkeleton.h"
-#include "joynr/LocalDiscoveryAggregator.h"
-#include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
-#include "joynr/Settings.h"
+#include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
+#include "cluster-controller/mqtt/MqttReceiver.h"
+#include "cluster-controller/mqtt/MqttSender.h"
+
 #include "joynr/BrokerUrl.h"
+#include "joynr/CapabilitiesRegistrar.h"
+#include "joynr/ConnectorFactory.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/Dispatcher.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessageReceiver.h"
 #include "joynr/IMessageSender.h"
-#include "joynr/IRequestCallerDirectory.h"
+#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/InProcessAddress.h"
+#include "joynr/InProcessConnectorFactory.h"
+#include "joynr/InProcessDispatcher.h"
+#include "joynr/InProcessMessagingAddress.h"
+#include "joynr/InProcessPublicationSender.h"
+#include "joynr/IRequestCallerDirectory.h"
+#include "joynr/JoynrMessageSender.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/MessagingStubFactory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/ProxyFactory.h"
-#include "joynr/SystemServicesSettings.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/system/DiscoveryProvider.h"
-#include "joynr/system/RoutingProvider.h"
-
-#include "joynr/system/RoutingTypes/MqttProtocol.h"
-#include "cluster-controller/mqtt/MqttReceiver.h"
-#include "cluster-controller/mqtt/MqttSender.h"
-#include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
-
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-
-#include "joynr/system/DiscoveryRequestCaller.h"
+#include "joynr/PublicationManager.h"
+#include "joynr/Settings.h"
+#include "joynr/SubscriptionManager.h"
 #include "joynr/system/DiscoveryInProcessConnector.h"
+#include "joynr/system/DiscoveryProvider.h"
+#include "joynr/system/DiscoveryRequestCaller.h"
+#include "joynr/system/RoutingProvider.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttProtocol.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/SystemServicesSettings.h"
+
+#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+#include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"
@@ -146,8 +145,13 @@ void JoynrClusterControllerRuntime::importMessageRouterFromFile()
 
 void JoynrClusterControllerRuntime::importPersistedLocalCapabilitiesDirectory()
 {
-    localCapabilitiesDirectory->loadFromFile(
-            libjoynrSettings.getLocalCapabilitiesDirectoryPersistenceFilename());
+    localCapabilitiesDirectory->loadPersistedFile();
+}
+
+void JoynrClusterControllerRuntime::injectGlobalCapabilitiesFromFile(const std::string& fileName)
+{
+    assert(localCapabilitiesDirectory);
+    localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(fileName);
 }
 
 void JoynrClusterControllerRuntime::initializeAllDependencies()
@@ -398,9 +402,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
-            std::make_shared<CapabilitiesClient>(channelGlobalCapabilityDir);
-    localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
-            messagingSettings, capabilitiesClient, channelGlobalCapabilityDir, *messageRouter);
+            std::make_shared<CapabilitiesClient>();
+    localCapabilitiesDirectory =
+            std::make_shared<LocalCapabilitiesDirectory>(messagingSettings,
+                                                         capabilitiesClient,
+                                                         channelGlobalCapabilityDir,
+                                                         *messageRouter,
+                                                         libjoynrSettings);
 
     importPersistedLocalCapabilitiesDirectory();
 
@@ -561,7 +569,9 @@ void JoynrClusterControllerRuntime::runForever()
     app->exec();
 }
 
-JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(Settings* settings)
+JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(
+        Settings* settings,
+        const std::string& discoveryEntriesFile)
 {
     // Only allow one QCoreApplication instance
     static int argc = 0;
@@ -571,7 +581,10 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(Settings* s
 
     JoynrClusterControllerRuntime* runtime =
             new JoynrClusterControllerRuntime(coreApplication, settings);
+
+    runtime->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);
     runtime->start();
+
     return runtime;
 }
 

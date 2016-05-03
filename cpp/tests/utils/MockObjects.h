@@ -95,6 +95,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IProxyBuilder.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
@@ -150,7 +151,6 @@ public:
                      const std::string& participantId,
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> callbackFct,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-    MOCK_CONST_METHOD0(getLocalChannelId, std::string());
 
     void setProxyBuilder(std::unique_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
         std::ignore = input;
@@ -972,9 +972,10 @@ public:
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings):
+    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings):
         messageRouter(),
-        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter){}
+        libjoynrMockSettings(settings),
+        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter, libjoynrMockSettings){}
 
     MOCK_METHOD3(
             lookup,
@@ -986,6 +987,7 @@ public:
 
 private:
     MockMessageRouter messageRouter;
+    joynr::LibjoynrSettings libjoynrMockSettings;
 };
 
 class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback

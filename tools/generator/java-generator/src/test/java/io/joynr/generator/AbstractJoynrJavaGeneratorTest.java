@@ -36,17 +36,19 @@ import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.generator.IFileSystemAccess;
+import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
+import org.franca.core.dsl.FrancaIDLStandaloneSetup;
 import org.junit.Before;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 import io.joynr.generator.loading.IUriProvider;
 import io.joynr.generator.loading.ModelStore;
 import io.joynr.generator.util.FileSystemAccessUtil;
-import io.joynr.generator.util.FrancaIDLFrameworkStandaloneSetup;
 import io.joynr.generator.util.InvocationArguments;
 
 /**
@@ -76,7 +78,14 @@ public abstract class AbstractJoynrJavaGeneratorTest {
         arguments.setModelPath("src/test/resources");
         arguments.setOutputPath(temporaryOutputDirectory.getAbsolutePath());
 
-        Injector francaInjector = new FrancaIDLFrameworkStandaloneSetup().createInjectorAndDoEMFRegistration();
+        Injector francaInjector = new FrancaIDLStandaloneSetup().createInjectorAndDoEMFRegistration()
+                                                                .createChildInjector(new AbstractModule() {
+
+                                                                    @Override
+                                                                    protected void configure() {
+                                                                        bind(IFileSystemAccess.class).to(JavaIoFileSystemAccess.class);
+                                                                    }
+                                                                });
         francaInjector.injectMembers(this);
         generator = new JoynrJavaGenerator();
         Injector injector = francaInjector.createChildInjector(generator.getGeneratorModule());
@@ -101,14 +110,14 @@ public abstract class AbstractJoynrJavaGeneratorTest {
         URL resourceUrl = AbstractJoynrJavaGeneratorTest.class.getClassLoader().getResource(fidlFilename);
         try {
             final URI resourceUri = URI.createFileURI(new File(resourceUrl.toURI()).getAbsolutePath());
-            ModelStore modelStore = ModelStore.modelsIn(new IUriProvider() {
+            ModelStore modelStore = new ModelStore(new IUriProvider() {
 
                 @Override
                 public Iterable<URI> allUris() {
                     return Sets.newHashSet(resourceUri);
                 }
             });
-            generator.doGenerate(modelStore.getResource(resourceUri), outputFileSystem);
+            generator.doGenerate(modelStore.getResources().iterator().next(), outputFileSystem);
             result = readAllJavaFilesRecursively(temporaryOutputDirectory);
         } catch (URISyntaxException e) {
             logger.log(Level.SEVERE, "Problem loading file: " + fidlFilename, e);

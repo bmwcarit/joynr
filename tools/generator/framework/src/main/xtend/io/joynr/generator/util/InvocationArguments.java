@@ -48,11 +48,7 @@ public class InvocationArguments {
 
     private String modelPath = null;
 
-    private String templatesDir = null;
-
     private String rootGenerator = null;
-
-    private String templatesEncoding = null;
 
     private String outputPath = null;
 
@@ -135,10 +131,7 @@ public class InvocationArguments {
 
     public void parseArguments(String[] args) {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equalsIgnoreCase("-templatesDir")) {
-                setTemplatesDir(new File(args[i + 1]).getAbsolutePath());
-                i++;
-            } else if (args[i].equalsIgnoreCase("-clean")) {
+            if (args[i].equalsIgnoreCase("-clean")) {
                 setClean(true);
             } else if (args[i].equalsIgnoreCase("-modelPath")) {
                 setModelPath(args[i + 1]);
@@ -163,9 +156,6 @@ public class InvocationArguments {
                 i++;
             } else if (args[i].equalsIgnoreCase("-rootGenerator")) {
                 setRootGenerator(args[i + 1].replace("\"", ""));
-                i++;
-            } else if (args[i].equalsIgnoreCase("-templatesEncoding")) {
-                setTemplatesEncoding(args[i + 1].replace("\"", ""));
                 i++;
             }
         }
@@ -236,14 +226,6 @@ public class InvocationArguments {
         this.modelPath = modelPath;
     }
 
-    public String getTemplatesDir() {
-        return templatesDir;
-    }
-
-    public void setTemplatesDir(String templatesDir) {
-        this.templatesDir = templatesDir;
-    }
-
     public String getRootGenerator() {
         return rootGenerator;
     }
@@ -264,14 +246,6 @@ public class InvocationArguments {
                         + dumpCorrectInvocation());
             }
         }
-    }
-
-    public String getTemplatesEncoding() {
-        return templatesEncoding;
-    }
-
-    public void setTemplatesEncoding(String templatesEncoding) {
-        this.templatesEncoding = templatesEncoding;
     }
 
     public String getOutputPath() {

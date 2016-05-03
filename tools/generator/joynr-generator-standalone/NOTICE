@@ -23,7 +23,6 @@ This project has dependencies to:
   ASM Commons under BSD
   ASM Core under BSD
   ASM Tree under BSD
-  codegen under Eclipse Public License - v 1.0
   Common Eclipse Runtime under Eclipse Public License - v 1.0
   Common Types Runtime Library under Eclipse Public License - v 1.0
   dom4j under BSD License

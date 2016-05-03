@@ -45,7 +45,7 @@ public class AbstractTypeUtilTest {
     public void testMultipleOutParameters() throws Exception {
         URL fixtureURL = AbstractTypeUtilTest.class.getResource("MultipleOutParameters.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
-        Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
+        Resource fixtureResource = loader.getResources().iterator().next();
         class MyCallsRealMethods extends CallsRealMethods {
             private static final long serialVersionUID = 1L;
 

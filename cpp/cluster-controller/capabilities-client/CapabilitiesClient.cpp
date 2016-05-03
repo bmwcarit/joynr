@@ -46,18 +46,12 @@ INIT_LOGGER(CapabilitiesClient);
 // The configuration excpects that a discoveryQoS is set (see ProxyBuilder::setDiscoveryQos())
 // The capabilitiesClient should not be responsible to change the DiscoveryQoS.
 
-CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
-        : localChannelId(localChannelId),
-          defaultCapabilitiesProxy(nullptr),
+CapabilitiesClient::CapabilitiesClient()
+        : defaultCapabilitiesProxy(nullptr),
           capabilitiesProxy(nullptr),
           capabilitiesProxyBuilder(nullptr),
           capabilitiesProxyWorker(nullptr)
 {
-}
-
-std::string CapabilitiesClient::getLocalChannelId() const
-{
-    return localChannelId;
 }
 
 void CapabilitiesClient::setDefaultGlobalCapabilitiesDirectoryProxy()
@@ -78,19 +72,7 @@ void CapabilitiesClient::setGlobalCapabilitiesDirectoryProxy(std::int64_t messag
 void CapabilitiesClient::add(
         const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList)
 {
-    // "Assertion in CapabilitiesClient: Local channelId is empty. Tried to
-    // register capabilities before messaging was started(no queueing implemented
-    // yet;
-    assert(!localChannelId.empty());
-    if (localChannelId.empty() || capabilitiesInformationList.empty()) {
-        return;
-    }
-
     setDefaultGlobalCapabilitiesDirectoryProxy();
-
-    for (auto capabilityInfo : capabilitiesInformationList) {
-        capabilityInfo.setAddress(localChannelId);
-    }
 
     std::function<void(const exceptions::JoynrException&)> onError =
             [&](const exceptions::JoynrException& error) {

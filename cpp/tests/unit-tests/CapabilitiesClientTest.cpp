@@ -34,7 +34,7 @@ using namespace joynr;
 class CapabilitiesClientTestFixture : public ::testing::Test {
 public:
     CapabilitiesClientTestFixture():
-        capClient(std::make_unique<CapabilitiesClient>(std::string("DUMMY_LOCAL_CHANNEL_ID"))),
+        capClient(std::make_unique<CapabilitiesClient>()),
         proxyBuilder(std::make_unique<MockProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>())
     {}
 

@@ -20,7 +20,7 @@ package io.joynr.generator.util;
  * #L%
  */
 
-import io.joynr.generator.AbstractJoynrGenerator;
+import io.joynr.generator.IJoynrGenerator;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -29,17 +29,19 @@ import java.util.Set;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 
-public class TestJoynrGenerator extends AbstractJoynrGenerator {
+import com.google.inject.AbstractModule;
+import com.google.inject.Module;
+
+public class TestJoynrGenerator implements IJoynrGenerator {
 
     @Override
     public void doGenerate(Resource input, IFileSystemAccess fsa) {
-        // TODO Auto-generated method stub
+        // do nothing
     }
 
     @Override
     public String getLanguageId() {
-        // TODO Auto-generated method stub
-        return null;
+        return "test";
     }
 
     @Override
@@ -52,4 +54,8 @@ public class TestJoynrGenerator extends AbstractJoynrGenerator {
         return new HashSet<String>();
     }
 
+    @Override
+    public Module getGeneratorModule() {
+        return null;
+    }
 }

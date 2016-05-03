@@ -1,8 +1,7 @@
-package io.joynr.generator;
+package io.joynr.generator.templates.util
 
 /*
  * #%L
- * io.joynr.tools.generator:generator-framework
  * %%
  * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
@@ -19,19 +18,20 @@ package io.joynr.generator;
  * limitations under the License.
  * #L%
  */
+import org.franca.core.franca.FModel
+import org.eclipse.xtext.EcoreUtil2
+import org.franca.core.franca.FTypeRef
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
+class SupportedFrancaFeatureChecker {
+	def static checkModel(FModel model) {
+		checkIntegerDatatypeIsNotUsed(model)
+	}
 
-public abstract class AbstractJoynrGenerator implements IJoynrGenerator {
+	def private static checkIntegerDatatypeIsNotUsed(FModel model) {
+		val allTypeRefs = EcoreUtil2::getAllContentsOfType(model, typeof(FTypeRef))
 
-    @Override
-    public Module getGeneratorModule() {
-        return new Module() {
-            @Override
-            public void configure(Binder binder) {
-            }
-        };
-    }
-
+		if (allTypeRefs.exists[it.interval != null]) {
+			throw new Exception("Franca's datatype 'Integer' is not supported. Use Int8, Int16, Int32 or Int64 instead")
+		}
+	}
 }

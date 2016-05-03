@@ -64,6 +64,9 @@
 						<roots>
 							<root>.</root>
 						</roots>
+					<excludes>
+						<exclude>tests/resources/ListOfCapabilitiesToInject.json</exclude>
+					</excludes>
 					</configuration>
 				</plugin>
 			</plugins>

@@ -102,8 +102,8 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
             ->setDiscoveryQos(discoveryQos)
             ->build()
         );
-    std::string capSerializedChannelAddress("testChannelId");
-    std::unique_ptr<CapabilitiesClient> capabilitiesClient (std::make_unique<CapabilitiesClient>(capSerializedChannelAddress));
+
+    std::unique_ptr<CapabilitiesClient> capabilitiesClient (std::make_unique<CapabilitiesClient>());
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
 
     std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntryList;
@@ -115,7 +115,7 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     joynr::types::Version providerVersion(47, 11);
     std::int64_t capLastSeenMs = 0;
     std::int64_t capExpiryDateMs = 1000;
-
+    std::string capSerializedChannelAddress("testChannelId");
     globalDiscoveryEntryList.push_back(types::GlobalDiscoveryEntry(
                                            providerVersion,
                                            capDomain,
