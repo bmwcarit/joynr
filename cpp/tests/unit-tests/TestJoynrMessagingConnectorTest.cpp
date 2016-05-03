@@ -108,7 +108,7 @@ public:
                     cacheEnabled);
     }
 
-    tests::Itest* createFixture(bool cacheEnabled) {
+    tests::Itest* createFixture(bool cacheEnabled) override {
         return dynamic_cast<tests::Itest*>(createConnector(cacheEnabled));
     }
 
