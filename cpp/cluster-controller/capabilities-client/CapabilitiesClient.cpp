@@ -72,6 +72,10 @@ void CapabilitiesClient::setGlobalCapabilitiesDirectoryProxy(std::int64_t messag
 void CapabilitiesClient::add(
         const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList)
 {
+    if (capabilitiesInformationList.empty()) {
+        return;
+    }
+
     setDefaultGlobalCapabilitiesDirectoryProxy();
 
     std::function<void(const exceptions::JoynrException&)> onError =
