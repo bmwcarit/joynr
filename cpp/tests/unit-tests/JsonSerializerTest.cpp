@@ -217,6 +217,17 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     EXPECT_EQ(deserializedVariantVectorParam.end(), deserializedIt);
 }
 
+TEST_F(JsonSerializerTest, deserialize_byte_array_with_null_pointer) {
+    std::string jsonString =
+            "{\"_typeName\":\"joynr.Request\", \
+            \"methodName\": \"deserialize_byte_array_with_null_pointer\", \
+            \"paramDatatypes\": [\"List\"], \
+            \"params\": [[1,null,3,255,254,253]], \
+            \"requestReplyId\": \"789eaj21312390\" }";
+
+    EXPECT_THROW(JsonSerializer::deserialize<Request>(jsonString), std::invalid_argument);
+}
+
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt8) {
     // std::int8_t alias (signed) char
     std::int8_t int8MinValue = std::numeric_limits<std::int8_t>::min();
