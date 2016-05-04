@@ -43,7 +43,12 @@ class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 
 	def produceParameterSetters(FMethod method)
 '''
+«IF !method.fireAndForget»
 joynr::Request internalRequestObject;
+«ELSE»
+joynr::OneWayRequest internalRequestObject;
+«ENDIF»
+
 internalRequestObject.setMethodName("«method.joynrName»");
 «FOR param : getInputParameters(method)»
 	«val paramType = param.type.resolveTypeDef»
@@ -325,51 +330,59 @@ bool «className»::usesClusterController() const{
 	«val outputParameters = getCommaSeparatedOutputParameterTypes(method)»
 	«var outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 
-	«produceSyncMethodSignature(method, className)»
-	{
-		«produceParameterSetters(method)»
-		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
+	«IF !method.fireAndForget»
+		«produceSyncMethodSignature(method, className)»
+		{
+			«produceParameterSetters(method)»
+			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
-		std::function<void(«outputTypedConstParamList»)> onSuccess =
-				[future] («outputTypedConstParamList») {
-					future->onSuccess(«outputUntypedParamList»);
+			std::function<void(«outputTypedConstParamList»)> onSuccess =
+					[future] («outputTypedConstParamList») {
+						future->onSuccess(«outputUntypedParamList»);
+					};
+
+			std::function<void(const exceptions::JoynrException& error)> onError =
+				[future] (const exceptions::JoynrException& error) {
+					future->onError(error);
 				};
 
-		std::function<void(const exceptions::JoynrException& error)> onError =
-			[future] (const exceptions::JoynrException& error) {
-				future->onError(error);
-			};
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccess, onError);
+			operationRequest(replyCaller, internalRequestObject);
+			future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
+		}
 
-		auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccess, onError);
-		operationRequest(replyCaller, internalRequestObject);
-		future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
-	}
+		«produceAsyncMethodSignature(francaIntf, method, className)»
+		{
+			«produceParameterSetters(method)»
 
-	«produceAsyncMethodSignature(francaIntf, method, className)»
-	{
-		«produceParameterSetters(method)»
+			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
-		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
+			std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
+					[future, onSuccess] («outputTypedConstParamList») {
+						future->onSuccess(«outputUntypedParamList»);
+						if (onSuccess) {
+							onSuccess(«outputUntypedParamList»);
+						}
+					};
 
-		std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
-				[future, onSuccess] («outputTypedConstParamList») {
-					future->onSuccess(«outputUntypedParamList»);
-					if (onSuccess) {
-						onSuccess(«outputUntypedParamList»);
-					}
+			std::function<void(const exceptions::JoynrException& error)> onErrorWrapper =
+					[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
+					future->onError(error);
+					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 				};
 
-		std::function<void(const exceptions::JoynrException& error)> onErrorWrapper =
-				[future, onRuntimeError«IF method.hasErrorEnum», onApplicationError«ENDIF»] (const exceptions::JoynrException& error) {
-				future->onError(error);
-				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
-			};
+			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccessWrapper, onErrorWrapper);
+			operationRequest(replyCaller, internalRequestObject);
+			return future;
+		}
+	«ELSE»
+		«produceFireAndForgetMethodSignature(method, className)»
+			{
+				«produceParameterSetters(method)»
 
-		auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(onSuccessWrapper, onErrorWrapper);
-		operationRequest(replyCaller, internalRequestObject);
-		return future;
-	}
-
+				operationOneWayRequest(internalRequestObject);
+			}
+	«ENDIF»
 «ENDFOR»
 
 «FOR broadcast: francaIntf.broadcasts»

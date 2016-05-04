@@ -162,7 +162,8 @@ class ProxyGenerator extends InterfaceJsTemplate {
 							type : "«param.joynrTypeName»"
 						}
 						«ENDFOR»
-					]
+					],
+					fireAndForget: «IF operation.fireAndForget»true«ELSE»false«ENDIF»
 				}«ENDFOR»
 			]).buildFunction();
 	«ENDFOR»

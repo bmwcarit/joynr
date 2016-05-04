@@ -187,6 +187,7 @@ public:
 
 	«produceSyncMethodDeclarations(francaIntf, false)»
 	«produceAsyncMethodDeclarations(francaIntf, false, true)»
+	«produceFireAndForgetMethodDeclarations(francaIntf, false)»
 
 	«FOR broadcast: francaIntf.broadcasts»
 

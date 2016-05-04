@@ -236,13 +236,13 @@ public:
 		«ENDIF»
 	«ENDFOR»
 
-	// operations
-	«FOR methodName: getUniqueMethodNames(francaIntf)»
-		using «asyncClassName»::«methodName»Async;
-		using «syncClassName»::«methodName»;
-
+	«FOR methodName : getUniqueMethodNames(getMethods(francaIntf).filter[!fireAndForget])»
+		using I«interfaceName»Sync::«methodName»;
+		using I«interfaceName»Async::«methodName»Async;
 	«ENDFOR»
-private:
+	«FOR methodName : getUniqueMethodNames(getMethods(francaIntf).filter[fireAndForget])»
+		using I«interfaceName»FireAndForget::«methodName»;
+	«ENDFOR»private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 };
 

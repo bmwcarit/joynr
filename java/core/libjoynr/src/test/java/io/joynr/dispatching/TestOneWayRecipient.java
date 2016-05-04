@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.dispatching.PayloadListener;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class TestOneWayRecipient extends WaitTillCondition implements PayloadListener<Object> {
+public class TestOneWayRecipient extends WaitTillCondition implements RequestCaller {
 
     public TestOneWayRecipient(int numberOfMessagesExpected) {
         super(numberOfMessagesExpected);
@@ -32,15 +30,9 @@ public class TestOneWayRecipient extends WaitTillCondition implements PayloadLis
 
     private Collection<Object> receivedPayloads = new ArrayList<Object>();
 
-    @Override
-    public void receive(Object payload) {
-        receivedPayloads.add(payload);
+    public void receive(String message) {
+        receivedPayloads.add(message);
         releaseSemaphorePermit();
-    }
-
-    @Override
-    public Class<Object> getNotificationType() {
-        return Object.class;
     }
 
     @Override

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import joynr.JoynrMessage;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
@@ -49,49 +50,43 @@ public class JoynrMessageFactory {
         this.objectMapper = objectMapper;
     }
 
-    public JoynrMessage createOneWay(final String fromParticipantId,
-                                     final String toParticipantId,
-                                     Object payload,
-                                     ExpiryDate ttlExpirationDate) {
+    private JoynrMessage createMessage(String joynrMessageType,
+                                       String fromParticipantId,
+                                       String toParticipantId,
+                                       Object payload,
+                                       ExpiryDate ttlExpirationDate) {
         JoynrMessage message = new JoynrMessage();
-
-        message.setType(JoynrMessage.MESSAGE_TYPE_ONE_WAY);
+        message.setType(joynrMessageType);
         Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
         header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(ttlExpirationDate.getValue()));
         message.setHeader(header);
         message.setPayload(serializePayload(payload));
         return message;
+    }
 
+    public JoynrMessage createOneWayRequest(final String fromParticipantId,
+                                            final String toParticipantId,
+                                            OneWayRequest request,
+                                            ExpiryDate ttlExpirationDate) {
+        return createMessage(JoynrMessage.MESSAGE_TYPE_ONE_WAY,
+                             fromParticipantId,
+                             toParticipantId,
+                             request,
+                             ttlExpirationDate);
     }
 
     public JoynrMessage createRequest(final String fromParticipantId,
                                       final String toParticipantId,
                                       Request request,
                                       ExpiryDate expiryDate) {
-        JoynrMessage message = new JoynrMessage();
-        message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
-
-        Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
-        header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(expiryDate.getValue()));
-
-        message.setHeader(header);
-        message.setPayload(serializePayload(request));
-
-        return message;
+        return createMessage(JoynrMessage.MESSAGE_TYPE_REQUEST, fromParticipantId, toParticipantId, request, expiryDate);
     }
 
     public JoynrMessage createReply(final String fromParticipantId,
                                     final String toParticipantId,
-                                    Reply payload,
+                                    Reply reply,
                                     ExpiryDate expiryDate) {
-        JoynrMessage message = new JoynrMessage();
-        message.setType(JoynrMessage.MESSAGE_TYPE_REPLY);
-        Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
-        header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(expiryDate.getValue()));
-        message.setHeader(header);
-        message.setPayload(serializePayload(payload));
-        return message;
-
+        return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY, fromParticipantId, toParticipantId, reply, expiryDate);
     }
 
     public JoynrMessage createSubscriptionRequest(String fromParticipantId,
@@ -99,45 +94,35 @@ public class JoynrMessageFactory {
                                                   SubscriptionRequest subscriptionRequest,
                                                   ExpiryDate expiryDate,
                                                   boolean broadcast) {
-        JoynrMessage message = new JoynrMessage();
-
+        String messageType;
         if (broadcast) {
-            message.setType(JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+            messageType = JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
         } else {
-            message.setType(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
+            messageType = JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
         }
-
-        Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
-        header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(expiryDate.getValue()));
-        message.setHeader(header);
-        message.setPayload(serializePayload(subscriptionRequest));
-        return message;
+        return createMessage(messageType, fromParticipantId, toParticipantId, subscriptionRequest, expiryDate);
     }
 
     public JoynrMessage createPublication(String fromParticipantId,
                                           String toParticipantId,
                                           SubscriptionPublication publication,
                                           ExpiryDate expiryDate) {
-        JoynrMessage message = new JoynrMessage();
-        message.setType(JoynrMessage.MESSAGE_TYPE_PUBLICATION);
-        Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
-        header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(expiryDate.getValue()));
-        message.setHeader(header);
-        message.setPayload(serializePayload(publication));
-        return message;
+        return createMessage(JoynrMessage.MESSAGE_TYPE_PUBLICATION,
+                             fromParticipantId,
+                             toParticipantId,
+                             publication,
+                             expiryDate);
     }
 
     public JoynrMessage createSubscriptionStop(String fromParticipantId,
                                                String toParticipantId,
                                                SubscriptionStop subscriptionStop,
                                                ExpiryDate expiryDate) {
-        JoynrMessage message = new JoynrMessage();
-        message.setType(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP);
-        Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
-        header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(expiryDate.getValue()));
-        message.setHeader(header);
-        message.setPayload(serializePayload(subscriptionStop));
-        return message;
+        return createMessage(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP,
+                             fromParticipantId,
+                             toParticipantId,
+                             subscriptionStop,
+                             expiryDate);
     }
 
     private Map<String, String> createHeader(final String fromParticipantId, final String toParticipantId) {

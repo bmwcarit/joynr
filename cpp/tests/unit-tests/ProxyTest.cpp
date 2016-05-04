@@ -49,14 +49,14 @@ public:
         mockConnectorFactory(),
         mockInProcessConnectorFactory()
     {}
-    void SetUp() {
+    void SetUp() override {
         AbstractSyncAsyncTest::SetUp();
         mockInProcessConnectorFactory = new MockInProcessConnectorFactory();
         JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, (SubscriptionManager*) nullptr);
         mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     }
 
-    void TearDown(){
+    void TearDown() override {
         AbstractSyncAsyncTest::TearDown();
         delete mockConnectorFactory;
     }
@@ -81,7 +81,7 @@ public:
         );
     }
 
-    tests::Itest* createFixture(bool cacheEnabled) {
+    tests::Itest* createFixture(bool cacheEnabled) override {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
         tests::testProxy* proxy = new tests::testProxy(
                     endPointAddress,

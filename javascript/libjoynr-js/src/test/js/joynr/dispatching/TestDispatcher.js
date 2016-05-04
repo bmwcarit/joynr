@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ joynrTestRequire(
             "joynr/messaging/inprocess/InProcessMessagingStub",
             "joynr/messaging/inprocess/InProcessMessagingSkeleton",
             "joynr/messaging/JoynrMessage",
+            "joynr/dispatching/types/OneWayRequest",
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
             "joynr/dispatching/types/SubscriptionRequest",
@@ -47,6 +48,7 @@ joynrTestRequire(
                 InProcessMessagingStub,
                 InProcessMessagingSkeleton,
                 JoynrMessage,
+                OneWayRequest,
                 Request,
                 Reply,
                 SubscriptionRequest,
@@ -70,6 +72,7 @@ joynrTestRequire(
                          */
                         beforeEach(function() {
                             requestReplyManager = jasmine.createSpyObj("RequestReplyManager", [
+                                "handleOneWayRequest",
                                 "handleRequest",
                                 "handleReply"
                             ]);
@@ -99,33 +102,43 @@ joynrTestRequire(
                             dispatcher.registerPublicationManager(publicationManager);
                         });
 
-                        it("is instantiable and of correct type", function() {
-                            expect(Dispatcher).toBeDefined();
-                            expect(typeof Dispatcher === "function").toBeTruthy();
-                            expect(dispatcher).toBeDefined();
-                            expect(dispatcher instanceof Dispatcher).toBeTruthy();
-                            expect(dispatcher.registerRequestReplyManager).toBeDefined();
-                            expect(typeof dispatcher.registerRequestReplyManager === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.registerSubscriptionManager).toBeDefined();
-                            expect(typeof dispatcher.registerSubscriptionManager === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.registerPublicationManager).toBeDefined();
-                            expect(typeof dispatcher.registerPublicationManager === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.sendRequest).toBeDefined();
-                            expect(typeof dispatcher.sendRequest === "function").toBeTruthy();
-                            expect(dispatcher.sendSubscriptionRequest).toBeDefined();
-                            expect(typeof dispatcher.sendSubscriptionRequest === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.sendSubscriptionStop).toBeDefined();
-                            expect(typeof dispatcher.sendSubscriptionStop === "function")
-                                    .toBeTruthy();
-                            expect(dispatcher.sendPublication).toBeDefined();
-                            expect(typeof dispatcher.sendPublication === "function").toBeTruthy();
-                            expect(dispatcher.receive).toBeDefined();
-                            expect(typeof dispatcher.receive === "function").toBeTruthy();
-                        });
+                        it(
+                                "is instantiable and of correct type",
+                                function() {
+                                    expect(Dispatcher).toBeDefined();
+                                    expect(typeof Dispatcher === "function").toBeTruthy();
+                                    expect(dispatcher).toBeDefined();
+                                    expect(dispatcher instanceof Dispatcher).toBeTruthy();
+                                    expect(dispatcher.registerRequestReplyManager).toBeDefined();
+                                    expect(
+                                            typeof dispatcher.registerRequestReplyManager === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.registerSubscriptionManager).toBeDefined();
+                                    expect(
+                                            typeof dispatcher.registerSubscriptionManager === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.registerPublicationManager).toBeDefined();
+                                    expect(
+                                            typeof dispatcher.registerPublicationManager === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendRequest).toBeDefined();
+                                    expect(typeof dispatcher.sendRequest === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendOneWayRequest).toBeDefined();
+                                    expect(typeof dispatcher.sendOneWayRequest === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendSubscriptionRequest).toBeDefined();
+                                    expect(typeof dispatcher.sendSubscriptionRequest === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendSubscriptionStop).toBeDefined();
+                                    expect(typeof dispatcher.sendSubscriptionStop === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.sendPublication).toBeDefined();
+                                    expect(typeof dispatcher.sendPublication === "function")
+                                            .toBeTruthy();
+                                    expect(dispatcher.receive).toBeDefined();
+                                    expect(typeof dispatcher.receive === "function").toBeTruthy();
+                                });
 
                         it(
                                 "forwards subscription request to Publication Manager",
@@ -224,6 +237,27 @@ joynrTestRequire(
                                             typeof requestReplyManager.handleRequest.mostRecentCall.args[2] === "function")
                                             .toBeTruthy();
                                 });
+
+                        it("forwards one-way request to RequestReply Manager", function() {
+                            var joynrMessage =
+                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
+                            joynrMessage.setHeader(
+                                    JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
+                                    providerId);
+                            joynrMessage.setHeader(
+                                    JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
+                                    proxyId);
+                            var oneWayRequest = new OneWayRequest({
+                                methodName : "methodName"
+                            });
+                            joynrMessage.payload = JSON.stringify(oneWayRequest);
+                            dispatcher.receive(joynrMessage);
+                            expect(requestReplyManager.handleOneWayRequest).toHaveBeenCalled();
+                            expect(requestReplyManager.handleOneWayRequest.mostRecentCall.args[0])
+                                    .toEqual(providerId);
+                            expect(requestReplyManager.handleOneWayRequest.mostRecentCall.args[1])
+                                    .toEqual(oneWayRequest);
+                        });
 
                         it("forwards reply to RequestReply Manager", function() {
                             var joynrMessage =

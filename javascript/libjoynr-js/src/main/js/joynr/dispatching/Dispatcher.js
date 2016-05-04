@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ define(
             "global/Promise",
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/Reply",
-            "joynr/dispatching/types/OneWay",
+            "joynr/dispatching/types/OneWayRequest",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionStop",
@@ -39,7 +39,7 @@ define(
                 Promise,
                 Request,
                 Reply,
-                OneWay,
+                OneWayRequest,
                 SubscriptionRequest,
                 SubscriptionReply,
                 SubscriptionStop,
@@ -195,6 +195,42 @@ define(
                             }));
 
                             return sendJoynrMessage(requestMessage, settings);
+                        };
+
+                /**
+                 * @name Dispatcher#sendOneWayRequest
+                 * @function
+                 *
+                 * @param {Object}
+                 *            settings
+                 * @param {String}
+                 *            settings.from participantId of the sender
+                 * @param {String}
+                 *            settings.to participantId of the receiver
+                 * @param {MessagingQos}
+                 *            settings.messagingQos the messaging Qos object for the ttl
+                 * @param {OneWayRequest}
+                 *            settings.request
+                 * @returns {Object} A+ promise object
+                 */
+                this.sendOneWayRequest =
+                        function sendOneWayRequest(settings) {
+                            // Create a JoynrMessage with the OneWayRequest
+                            var oneWayRequestMessage =
+                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
+                            oneWayRequestMessage.payload =
+                                    JSONSerializer.stringify(settings.request);
+
+                            log.info("calling "
+                                + settings.request.methodName
+                                + ". OneWayRequest: "
+                                + oneWayRequestMessage.payload, DiagnosticTags.forOneWayRequest({
+                                request : settings.request,
+                                to : settings.to,
+                                from : settings.from
+                            }));
+
+                            return sendJoynrMessage(oneWayRequestMessage, settings);
                         };
 
                 /**
@@ -451,18 +487,17 @@ define(
 
                                             case JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY:
                                                 try {
-                                                    requestReplyManager.handleOneWay({
-                                                        payload : new OneWay(
-                                                                parsePayload(joynrMessage.payload))
-                                                    });
+                                                    requestReplyManager
+                                                            .handleOneWayRequest(
+                                                                    joynrMessage.to,
+                                                                    new OneWayRequest(
+                                                                            parsePayload(joynrMessage.payload)));
                                                     resolve();
-                                                } catch (errorInOneWay) {
-                                                    // TODO do we have to do any erorr handling on a one way
-                                                    // other than log it?
+                                                } catch (errorInOneWayRequest) {
                                                     log.error("error handling one way: "
-                                                        + errorInOneWay);
+                                                        + errorInOneWayRequest);
                                                     reject(new Error("error handling one way: "
-                                                        + errorInOneWay));
+                                                        + errorInOneWayRequest));
                                                 }
                                                 break;
 

@@ -96,7 +96,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»)
 '''
 
-    def produceAsyncGetterSignature(FAttribute attribute) {
+	def produceAsyncGetterSignature(FAttribute attribute) {
     	return produceAsyncGetterSignature(attribute, null);
     }
 
@@ -126,7 +126,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	void «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»(const «returnType»& «attributeName»)
 '''
 
-    def produceSyncSetterSignature(FAttribute attribute) {
+	def produceSyncSetterSignature(FAttribute attribute) {
     	return produceSyncSetterSignature(attribute, null);
     }
 
@@ -200,8 +200,8 @@ class CppInterfaceUtil extends InterfaceUtil {
 
 	def produceSyncMethodDeclarations(FInterface serviceInterface, boolean pure)
 '''
-	«FOR method: getMethods(serviceInterface)»
-		/**
+	«FOR method: getMethods(serviceInterface).filter[!fireAndForget]»
+        	/**
 		* @brief Synchronous operation «method.joynrName».
 		*
 		«FOR outputParam: method.outputParameters»
@@ -248,14 +248,14 @@ class CppInterfaceUtil extends InterfaceUtil {
 	)
 '''
 
-    def produceAsyncMethodSignature(FInterface serviceInterface, FMethod method) {
+	def produceAsyncMethodSignature(FInterface serviceInterface, FMethod method) {
     	return produceAsyncMethodSignature(serviceInterface, method, null);
     }
 
 
 	def produceAsyncMethodDeclarations(FInterface serviceInterface, boolean pure, boolean useDefaultParam)
 '''
-	«FOR method: getMethods(serviceInterface)»
+	«FOR method: getMethods(serviceInterface).filter[!fireAndForget]»
 		/**
 		* @brief Asynchronous operation «method.joynrName».
 		*
@@ -271,6 +271,33 @@ class CppInterfaceUtil extends InterfaceUtil {
 		«IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
+
+	def produceFireAndForgetMethodDeclarations(FInterface serviceInterface, boolean pure)
+'''
+	«FOR method: getMethods(serviceInterface).filter[fireAndForget]»
+		/**
+		* @brief FireAndForget operation «method.joynrName».
+		*
+		«FOR inputParam: method.inputParameters»
+		* @param «inputParam.typeName» «inputParam.joynrName»
+		«ENDFOR»
+		*/
+		«IF pure»virtual «ENDIF»
+		«produceFireAndForgetMethodSignature(method)»
+		«IF pure»= 0«ELSE»override«ENDIF»;
+	«ENDFOR»
+'''
+
+	def produceFireAndForgetMethodSignature(FMethod method, String className)
+'''
+	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
+	void «IF className != null»«className»::«ENDIF»«method.joynrName»(
+	«inputTypedParamList»)
+'''
+
+	def produceFireAndForgetMethodSignature(FMethod method) {
+		return produceSyncMethodSignature(method, null);
+	}
 
 	def produceApplicationRuntimeErrorSplitForOnErrorWrapper(FInterface serviceInterface, FMethod method)
 '''
@@ -303,7 +330,6 @@ class CppInterfaceUtil extends InterfaceUtil {
 				JOYNR_LOG_ERROR(logger, errorMessage);
 			}
 		}
-		
 	«ELSE»
 		if (onRuntimeError) {
 			onRuntimeError(static_cast<const exceptions::JoynrRuntimeException&>(error));

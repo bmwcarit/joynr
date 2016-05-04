@@ -1,7 +1,7 @@
 /*
   * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,13 @@ namespace joynr
 
 bool isRequestTypeRegistered = Variant::registerType<Request>("joynr.Request");
 
-Request::Request() : requestReplyId(util::createUuid()), methodName(), params(), paramDatatypes()
+Request::Request() : OneWayRequest(), requestReplyId(util::createUuid())
 {
 }
 
 bool Request::operator==(const Request& other) const
 {
-    return requestReplyId == other.getRequestReplyId() && methodName == other.getMethodName() &&
-           params == other.getParams() && paramDatatypes == other.paramDatatypes;
+    return getRequestReplyId() == other.getRequestReplyId() && OneWayRequest::operator==(other);
 }
 
 const std::string& Request::getRequestReplyId() const
@@ -42,44 +41,6 @@ const std::string& Request::getRequestReplyId() const
 void Request::setRequestReplyId(std::string requestReplyId)
 {
     this->requestReplyId = std::move(requestReplyId);
-}
-
-const std::string& Request::getMethodName() const
-{
-    return methodName;
-}
-
-void Request::setMethodName(const std::string& methodName)
-{
-    this->methodName = methodName;
-}
-
-std::vector<Variant> Request::getParams() const
-{
-    return params;
-}
-
-// Set the parameters - called by the json deserializer
-void Request::setParams(std::vector<Variant> params)
-{
-    this->params = std::move(params);
-}
-
-void Request::addParam(Variant value, std::string datatype)
-{
-    this->params.push_back(std::move(value));
-    this->paramDatatypes.push_back(std::move(datatype));
-}
-
-std::vector<std::string> Request::getParamDatatypes() const
-{
-    return paramDatatypes;
-}
-
-// Set the parameter datatypes - called by the json deserializer
-void Request::setParamDatatypes(std::vector<std::string> paramDatatypes)
-{
-    this->paramDatatypes = std::move(paramDatatypes);
 }
 
 } // namespace joynr

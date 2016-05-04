@@ -19,12 +19,13 @@ package io.joynr.dispatching;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,20 +97,35 @@ public class JoynrMessageFactoryTest {
 
     @Test
     public void createRequest() {
-
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
                                                                  toParticipantId,
                                                                  request,
                                                                  expiryDate);
-        Assert.assertEquals(JoynrMessage.MESSAGE_TYPE_REQUEST, message.getType());
+        assertEquals(JoynrMessage.MESSAGE_TYPE_REQUEST, message.getType());
 
-        Assert.assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
-        Assert.assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
+        assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
 
-        Assert.assertEquals(String.valueOf(expiryDate.getValue()),
-                            message.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
-        Assert.assertTrue(message.getPayload() != null);
+        assertEquals(String.valueOf(expiryDate.getValue()),
+                     message.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
+        assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
+    }
+
+    @Test
+    public void testCreateOneWayRequest() {
+        JoynrMessage joynrMessage = joynrMessageFactory.createOneWayRequest(fromParticipantId,
+                                                                            toParticipantId,
+                                                                            request,
+                                                                            expiryDate);
+        assertNotNull(joynrMessage);
+        assertEquals(JoynrMessage.MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
+        assertEquals(fromParticipantId, joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
+        assertEquals(toParticipantId, joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        assertEquals(String.valueOf(expiryDate.getValue()),
+                     joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
+        assertNotNull(joynrMessage.getPayload());
+        assertNotNull(joynrMessage.getCreatorUserId());
     }
 
     @Test
@@ -119,13 +135,13 @@ public class JoynrMessageFactoryTest {
                                                                reply,
                                                                ExpiryDate.fromRelativeTtl(TTL));
 
-        Assert.assertEquals(JoynrMessage.MESSAGE_TYPE_REPLY, message.getType());
-        Assert.assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
-        Assert.assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
-        Assert.assertEquals(JoynrMessage.CONTENT_TYPE_APPLICATION_JSON,
-                            message.getHeaderValue(JoynrMessage.HEADER_NAME_CONTENT_TYPE));
+        assertEquals(JoynrMessage.MESSAGE_TYPE_REPLY, message.getType());
+        assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
+        assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        assertEquals(JoynrMessage.CONTENT_TYPE_APPLICATION_JSON,
+                     message.getHeaderValue(JoynrMessage.HEADER_NAME_CONTENT_TYPE));
 
-        Assert.assertTrue(message.getPayload() != null);
+        assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
     }
 
@@ -136,11 +152,11 @@ public class JoynrMessageFactoryTest {
                                                                              subscriptionRequest,
                                                                              ExpiryDate.fromRelativeTtl(TTL),
                                                                              false);
-        Assert.assertEquals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
-        Assert.assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
-        Assert.assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        assertEquals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
+        assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
+        assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
 
-        Assert.assertTrue(message.getPayload() != null);
+        assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
     }
 
@@ -150,11 +166,11 @@ public class JoynrMessageFactoryTest {
                                                                      toParticipantId,
                                                                      publication,
                                                                      ExpiryDate.fromRelativeTtl(TTL));
-        Assert.assertEquals(JoynrMessage.MESSAGE_TYPE_PUBLICATION, message.getType());
-        Assert.assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
-        Assert.assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        assertEquals(JoynrMessage.MESSAGE_TYPE_PUBLICATION, message.getType());
+        assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
+        assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
 
-        Assert.assertTrue(message.getPayload() != null);
+        assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());
     }
 }

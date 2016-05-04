@@ -80,6 +80,19 @@ public:
 					 std::function<void (std::vector<Variant>&& outParams)> onSuccess,
 					 std::function<void (const exceptions::JoynrException& exception)> onError) override;
 
+	/**
+	 * @brief Implements IRequestInterpreter.execute().
+	 * Executes fire-and-forget method methodName with given parameters on the requestCaller object.
+	 * @param requestCaller Object on which the method is to be executed
+	 * @param methodName The name of the method to be executed
+	 * @param paramValues The list of parameter values
+	 * @param paramTypes The list of parameter types
+	 */
+	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
+					 const std::string& methodName,
+					 const std::vector<Variant>& paramValues,
+					 const std::vector<std::string>& paramTypes) override;
+
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);
 	ADD_LOGGER(«interfaceName»RequestInterpreter);

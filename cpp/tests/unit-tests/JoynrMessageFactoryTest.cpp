@@ -40,6 +40,7 @@ public:
           requestReplyID(),
           qos(),
           request(),
+          oneWayRequest(),
           reply(),
           subscriptionPublication()
     {
@@ -52,9 +53,11 @@ public:
         qos = MessagingQos(456000);
         request.setMethodName("methodName");
         request.setRequestReplyId(requestReplyID);
-        ;
         request.addParam(Variant::make<int>(42), "java.lang.Integer");
         request.addParam(Variant::make<std::string>("value"), "java.lang.String");
+        oneWayRequest.setMethodName("methodName");
+        oneWayRequest.addParam(Variant::make<int>(42), "java.lang.Integer");
+        oneWayRequest.addParam(Variant::make<std::string>("value"), "java.lang.String");
         reply.setRequestReplyId(requestReplyID);
         std::vector<Variant> response;
         response.push_back(Variant::make<std::string>("response"));
@@ -87,6 +90,18 @@ public:
         EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
 
+    void checkOneWayRequest(const JoynrMessage& joynrMessage){
+        //TODO create expected string from params and methodName
+        std::stringstream expectedPayloadStream;
+        expectedPayloadStream << R"({"_typeName":"joynr.OneWayRequest",)";
+        expectedPayloadStream << R"("methodName": "methodName",)";
+        expectedPayloadStream << R"("paramDatatypes": ["java.lang.Integer","java.lang.String"],)";
+        expectedPayloadStream << R"("params": [42,"value"])";
+        expectedPayloadStream << R"(})";
+        std::string expectedPayload = expectedPayloadStream.str();
+        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
+    }
+
     void checkReply(const JoynrMessage& joynrMessage){
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Reply",)";
@@ -113,6 +128,7 @@ protected:
     std::string requestReplyID;
     MessagingQos qos;
     Request request;
+    OneWayRequest oneWayRequest;
     Reply reply;
     SubscriptionPublication subscriptionPublication;
 };
@@ -161,15 +177,15 @@ TEST_F(JoynrMessageFactoryTest, createReply){
     EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY, joynrMessage.getType());
 }
 
-TEST_F(JoynrMessageFactoryTest, createOneWay){
-    JoynrMessage joynrMessage = messageFactory.createOneWay(
+TEST_F(JoynrMessageFactoryTest, createOneWayRequest){
+    JoynrMessage joynrMessage = messageFactory.createOneWayRequest(
                 senderID,
                 receiverID,
                 qos,
-                reply
+                oneWayRequest
     );
     checkHeaderCreatorFromTo(joynrMessage);
-    checkReply(joynrMessage);
+    checkOneWayRequest(joynrMessage);
     EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
 }
 

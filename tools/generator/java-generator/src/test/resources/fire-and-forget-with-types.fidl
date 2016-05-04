@@ -1,9 +1,7 @@
-package io.joynr.dispatching;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +16,40 @@ package io.joynr.dispatching;
  * limitations under the License.
  * #L%
  */
+package fireandforget
 
-public interface PayloadListener<T> {
+typeCollection {
+	version {
+		major 1
+		minor 1
+	}
 
-    public void receive(T payload);
+	struct MyStruct {
+		String myMember
+	}
 
-    /**
-     * @return the class of the type expected in the payload
-     */
-    Class<T> getNotificationType();
+	struct MyOtherStruct {
+		String myOtherMember
+	}
+}
+
+interface FireAndForgetWithTypesTest {
+
+	version {major 0 minor 1}
+
+	method callMe fireAndForget {
+		in {
+			MyStruct message
+		}
+	}
+
+	method otherCallMe {
+		in {
+			MyOtherStruct otherMessage
+		}
+		out {
+			String reply
+		}
+	}
+
 }

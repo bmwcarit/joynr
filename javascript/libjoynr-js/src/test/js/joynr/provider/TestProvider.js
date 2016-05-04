@@ -189,6 +189,10 @@ joynrTestRequire(
                                         },
                                         addFavoriteStation : jasmine
                                                 .createSpy("addFavoriteStation"),
+                                        methodFireAndForgetWithoutParams : jasmine
+                                                .createSpy("methodFireAndForgetWithoutParams"),
+                                        methodFireAndForget : jasmine
+                                                .createSpy("methodFireAndForget"),
                                         weakSignal : jasmine.createSpy("weakSignal"),
                                         triggerBroadcasts : jasmine.createSpy("triggerBroadcasts"),
                                         methodProvidedImpl : jasmine

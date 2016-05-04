@@ -149,6 +149,14 @@ public:
                     std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
             )
     );
+    MOCK_METHOD3(
+            methodFireAndForget,
+            void(
+                    const std::int32_t& intIn,
+                    const std::string& stringIn,
+                    const joynr::tests::testTypes::ComplexTestType& complexTestTypeIn
+            )
+    );
 
     void sumInts(
             const std::vector<std::int32_t>& ints,

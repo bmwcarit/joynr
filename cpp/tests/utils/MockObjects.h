@@ -350,6 +350,16 @@ public:
                 std::shared_ptr<joynr::IReplyCaller> callback
             )
     );
+    
+    MOCK_METHOD4(
+            sendOneWayRequest,
+            void(
+                const std::string& senderParticipantId,
+                const std::string& receiverParticipantId,
+                const joynr::MessagingQos& qos,
+                const joynr::OneWayRequest& request
+            )
+    );
 
     MOCK_METHOD4(
             sendReply,

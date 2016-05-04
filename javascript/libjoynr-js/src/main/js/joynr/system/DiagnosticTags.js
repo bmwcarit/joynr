@@ -71,6 +71,18 @@ define("joynr/system/DiagnosticTags", [], function() {
     };
 
     /**
+     * @param {Object} requestInfo
+     */
+    DiagnosticTags.forOneWayRequest = function forRequest(requestInfo) {
+        return {
+            diagnosticTag : "OneWayRequest",
+            params : requestInfo.request.params,
+            to : requestInfo.to,
+            from : requestInfo.from
+        };
+    };
+
+    /**
      * @param {Object} replyInfo
      */
     DiagnosticTags.forReply = function forReply(replyInfo) {

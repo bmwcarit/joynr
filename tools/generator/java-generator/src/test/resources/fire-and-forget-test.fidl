@@ -16,17 +16,22 @@
  * limitations under the License.
  * #L%
  */
+package fireandforget
 
-define("joynr/dispatching/types/OneWay", [], function() {
+interface FireAndForgetTest {
 
-    /**
-     * @name OneWay
-     * @constructor
-     */
-    function OneWay() {
+	version {major 0 minor 1}
 
-    }
-
-    return OneWay;
-
-});
+	method callMe fireAndForget {
+		in {
+			String message
+		}
+	}
+	
+	method callMeTwo fireAndForget {
+		in {
+			String first
+			String second
+		}
+	}
+}

@@ -63,6 +63,23 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
     }
 }
 
+void JoynrMessageSender::sendOneWayRequest(const std::string& senderParticipantId,
+                                           const std::string& receiverParticipantId,
+                                           const MessagingQos& qos,
+                                           const OneWayRequest& request)
+{
+    assert(dispatcher != nullptr);
+
+    try {
+        JoynrMessage message = messageFactory.createOneWayRequest(
+                senderParticipantId, receiverParticipantId, qos, request);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (const std::invalid_argument& exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
+}
+
 void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
                                    const std::string& receiverParticipantId,
                                    const MessagingQos& qos,

@@ -1,16 +1,5 @@
 package io.joynr.proxy;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
 /*
  * #%L
  * %%
@@ -30,8 +19,30 @@ import org.mockito.runners.MockitoJUnitRunner;
  * #L%
  */
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.common.collect.Sets;
+
+import io.joynr.Sync;
+
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.dispatcher.rpc.annotation.FireAndForget;
 import io.joynr.messaging.MessagingQos;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -42,26 +53,39 @@ public class ProxyInvocationHandlerTest {
     private String interfaceName = "interfaceName";
     private String domain = "domain";
 
+    @Mock
+    private ConnectorFactory connectorFactory;
+
+    private ProxyInvocationHandlerImpl proxyInvocationHandler;
+
     private final ExecutorService threadPool = new ScheduledThreadPoolExecutor(2);
 
     public static interface TestSyncInterface {
         public void testMethod();
     }
 
+    @FireAndForget
+    private static interface TestServiceFireAndForget {
+        void callMe(String message);
+    }
+
+    @Sync
+    private static interface TestServiceSync extends TestServiceFireAndForget {
+    }
+
     @Before
-    public void setUp() throws Exception {
+    public void setup() {
+        connectorFactory = Mockito.mock(ConnectorFactory.class);
+        proxyInvocationHandler = new ProxyInvocationHandlerImpl(domain,
+                                                                interfaceName,
+                                                                proxyParticipantId,
+                                                                discoveryQos,
+                                                                messagingQos,
+                                                                connectorFactory);
     }
 
     @Test(timeout = 3000)
     public void callProxyInvocationHandlerSyncFromMultipleThreadsTest() throws Throwable {
-
-        ConnectorFactory connectorFactory = Mockito.mock(ConnectorFactory.class);
-        final ProxyInvocationHandlerImpl proxyInvocationHandler = new ProxyInvocationHandlerImpl(domain,
-                                                                                                 interfaceName,
-                                                                                                 proxyParticipantId,
-                                                                                                 discoveryQos,
-                                                                                                 messagingQos,
-                                                                                                 connectorFactory);
 
         Future<?> call1 = threadPool.submit(new Callable<Object>() {
             @Override
@@ -100,4 +124,18 @@ public class ProxyInvocationHandlerTest {
         call2.get();
 
     }
+
+    @Test
+    public void testCallFireAndForgetMethod() throws Throwable {
+        ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
+        when(connectorFactory.create(Mockito.anyString(), Mockito.<ArbitrationResult> any(), Mockito.eq(messagingQos))).thenReturn(connectorInvocationHandler);
+        Method fireAndForgetMethod = TestServiceSync.class.getMethod("callMe", new Class<?>[]{ String.class });
+        Object[] args = new Object[]{ "test" };
+
+        proxyInvocationHandler.createConnector(new ArbitrationResult("participantId"));
+        proxyInvocationHandler.invoke(fireAndForgetMethod, args);
+
+        verify(connectorInvocationHandler).executeOneWayMethod(fireAndForgetMethod, args);
+    }
+
 }
