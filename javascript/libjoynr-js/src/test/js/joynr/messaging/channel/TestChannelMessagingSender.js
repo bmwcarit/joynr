@@ -127,7 +127,7 @@ joynrTestRequire(
                                 });
 
                         it(
-                                "if channelMessageSender.send fails after expiryDate, if ChannelMessagingSender is not started",
+                                "channelMessageSender.send fails after expiryDate, if ChannelMessagingSender is not started",
                                 function() {
                                     var spy = jasmine.createSpyObj("spy", [
                                         "onFulfilled",
