@@ -58,6 +58,11 @@ void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCal
     sendRequest(request, replyCaller);
 }
 
+void AbstractJoynrMessagingConnector::operationOneWayRequest(const OneWayRequest& request)
+{
+    sendOneWayRequest(request);
+}
+
 void AbstractJoynrMessagingConnector::sendRequest(const Request& request,
                                                   std::shared_ptr<IReplyCaller> replyCaller)
 {
@@ -65,4 +70,9 @@ void AbstractJoynrMessagingConnector::sendRequest(const Request& request,
             proxyParticipantId, providerParticipantId, qosSettings, request, replyCaller);
 }
 
+void AbstractJoynrMessagingConnector::sendOneWayRequest(const OneWayRequest& request)
+{
+    joynrMessageSender->sendOneWayRequest(
+            proxyParticipantId, providerParticipantId, qosSettings, request);
+}
 } // namespace joynr

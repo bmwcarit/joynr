@@ -18,7 +18,6 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -26,7 +25,6 @@ import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
-import org.franca.core.franca.FInterface
 
 class InterfaceSubscriptionPublisherTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
@@ -35,11 +33,6 @@ class InterfaceSubscriptionPublisherTemplate extends InterfaceTemplate {
 	@Inject extension InterfaceUtil
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate() {
 		val interfaceName =  francaIntf.joynrName
@@ -52,7 +45,7 @@ package «packagePath»;
 
 import io.joynr.provider.SubscriptionPublisher;
 
-«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true)»
+«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true, false)»
 	import «datatype»;
 «ENDFOR»
 

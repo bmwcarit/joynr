@@ -190,6 +190,7 @@ define(
                 var registerDiscoveryProviderPromise;
                 var registerRoutingProviderPromise;
                 var persistency;
+                var longPollingCreatePromise;
 
                 // this is required at load time of libjoynr
                 typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -442,7 +443,7 @@ define(
                                     });
                             // clusterControllerChannelMessagingSkeleton.registerListener(messageRouter.route);
 
-                            var longPollingPromise = longPollingMessageReceiver.create(channelId).then(
+                            longPollingCreatePromise = longPollingMessageReceiver.create(channelId).then(
                                     function(channelUrl) {
                                         var channelAddress = new ChannelAddress({
                                             channelId: channelId,
@@ -498,7 +499,6 @@ define(
                                         libjoynrMessagingAddress : new InProcessAddress(
                                                 libjoynrMessagingSkeleton),
                                         participantIdStorage : participantIdStorage,
-                                        localChannelId : channelId,
                                         loggingManager : loggingManager
                                     }));
 
@@ -664,14 +664,11 @@ define(
                                             + "\"");
                             }
                             joynrState = JoynrStates.SHUTTINGDOWN;
-
-                                return longPollingMessageReceiver.clear(channelId)
+                            longPollingCreatePromise.then(function() {
+                                longPollingMessageReceiver.clear(channelId)
                                 .then(function() {
                                     // stop LongPolling
                                     longPollingMessageReceiver.stop();
-                                    joynrState = JoynrStates.SHUTDOWN;
-                                    log.debug("joynr cluster controller shut down");
-                                    return;
                                 }).catch(function(error) {
                                     var errorString = "error clearing long poll channel: "
                                         + error;
@@ -680,7 +677,11 @@ define(
                                     longPollingMessageReceiver.stop();
                                     throw new Error(errorString);
                                 });
-                        };
+                            });
+                            log.debug("joynr cluster controller shut down");
+                            joynrState = JoynrStates.SHUTDOWN;
+                            return Promise.resolve();
+                };
 
                 // make every instance immutable
                 return Object.freeze(this);

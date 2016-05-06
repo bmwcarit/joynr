@@ -20,6 +20,7 @@ package io.joynr.dispatching;
  */
 
 import java.io.IOException;
+import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -30,7 +31,7 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.provider.ProviderCallback;
-import joynr.OneWay;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 
@@ -124,12 +125,17 @@ public interface RequestReplyManager {
      *            in case send buffer is full
      */
 
-    public void sendOneWay(final String fromParticipantId, final String toParticipantId, Object payload, long ttl_ms)
-                                                                                                                     throws JoynrSendBufferFullException,
-                                                                                                                     JoynrMessageNotSentException,
-                                                                                                                     JsonGenerationException,
-                                                                                                                     JsonMappingException,
-                                                                                                                     IOException;
+    public void sendOneWayRequest(final String fromParticipantId,
+                                  final String toParticipantId,
+                                  OneWayRequest oneWayRequest,
+                                  long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
+                                              JsonGenerationException, JsonMappingException, IOException;
+
+    public void sendOneWayRequest(final String fromParticipantId,
+                                  final Set<String> toParticipantIds,
+                                  OneWayRequest oneWayRequest,
+                                  long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
+                                              JsonGenerationException, JsonMappingException, IOException;
 
     public void sendReply(final String fromParticipantId, final String toParticipantId, Reply payload, ExpiryDate ttl_ms)
                                                                                                                          throws JoynrSendBufferFullException,
@@ -138,14 +144,6 @@ public interface RequestReplyManager {
                                                                                                                          JsonMappingException,
                                                                                                                          IOException;
 
-    /**
-     * Removes the listener registered for the interface address.
-     * @param participantId participant id
-     */
-    public void removeListener(final String participantId);
-
-    void addOneWayRecipient(String participantId, PayloadListener<?> listener);
-
     public void handleReply(Reply reply);
 
     public void handleRequest(ProviderCallback<Reply> replyCallback,
@@ -153,7 +151,7 @@ public interface RequestReplyManager {
                               Request request,
                               long expiryDate);
 
-    public void handleOneWayRequest(String providerParticipantId, OneWay request, long expiryDate);
+    public void handleOneWayRequest(String providerParticipantId, OneWayRequest request, long expiryDate);
 
     public void handleError(Request request, Throwable error);
 

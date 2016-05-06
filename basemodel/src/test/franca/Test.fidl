@@ -232,9 +232,13 @@ interface test {
 		}
 	}
 
+	method methodFireAndForgetWithoutParams fireAndForget {}
+
 	method methodFireAndForget fireAndForget {
 		in {
-			Int32 inputParam
+			Int32 intIn
+			String stringIn
+			testTypes.ComplexTestType complexTestTypeIn
 		}
 	}
 

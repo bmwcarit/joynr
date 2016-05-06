@@ -380,7 +380,8 @@ joynrTestRequire(
                                         interfaceName : "interfaceName",
                                         participantId : "participantId",
                                         qos : providerQos,
-                                        lastSeenDateMs : 123
+                                        lastSeenDateMs : 123,
+                                        publicKeyId : "publicKeyId"
                                     };
                                     /*jslint nomen: false */
 
@@ -397,7 +398,8 @@ joynrTestRequire(
                                                                     priority : providerQos.priority,
                                                                     scope : ProviderScope.GLOBAL,
                                                                     supportsOnChangeSubscriptions : providerQos.supportsOnChangeSubscriptions
-                                                                })
+                                                                }),
+                                                        publicKeyId : "publicKeyId"
                                                     });
                                     expect(
                                             Typing.augmentTypes(fixture, TypeRegistrySingleton

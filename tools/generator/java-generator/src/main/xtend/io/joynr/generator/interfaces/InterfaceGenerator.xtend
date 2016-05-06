@@ -60,6 +60,13 @@ class InterfaceGenerator {
 			interfaceAsyncTemplate
 		);
 
+		var interfaceFireAndForgetTemplate = templateFactory.createInterfaceFireAndForgetTemplate(serviceInterface)
+		generateFile(
+			fsa,
+			path + serviceName + "FireAndForget.java",
+			interfaceFireAndForgetTemplate
+		);
+
 		if (serviceInterface.attributes.size>0){
 			var interfaceSubscriptionTemplate = templateFactory.createInterfaceSubscriptionTemplate(serviceInterface)
 			generateFile(
@@ -68,7 +75,7 @@ class InterfaceGenerator {
 				interfaceSubscriptionTemplate
 			);
 		}
-		
+
 		if (serviceInterface.broadcasts.size>0){
 			var interfaceBroadcastTemplate = templateFactory.createInterfaceBroadcastTemplate(serviceInterface)
 			generateFile(

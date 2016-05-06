@@ -19,15 +19,42 @@
 #ifndef REPLYCALLER_H
 #define REPLYCALLER_H
 
-#include "joynr/IReplyCaller.h"
-
-#include <typeinfo>
-#include "joynr/StatusCode.h"
 #include <functional>
+
+#include "joynr/IReplyCaller.h"
+#include "joynr/ReplyInterpreter.h"
+#include "joynr/StatusCode.h"
 #include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
+
+class BaseReplyCaller : public IReplyCaller
+{
+public:
+    BaseReplyCaller(std::function<void(const exceptions::JoynrException& error)>&& errorFct)
+            : errorFct(std::move(errorFct)), hasTimeOutOccurred(false)
+    {
+    }
+
+    ~BaseReplyCaller() override = default;
+
+    void returnError(const exceptions::JoynrException& error) override
+    {
+        errorFct(error);
+    }
+
+    void timeOut() override
+    {
+        hasTimeOutOccurred = true;
+        errorFct(exceptions::JoynrTimeOutException("timeout waiting for the response"));
+    }
+
+protected:
+    std::function<void(const exceptions::JoynrException& error)> errorFct;
+    bool hasTimeOutOccurred;
+};
 
 template <class... Ts>
 /**
@@ -35,12 +62,12 @@ template <class... Ts>
  * T is the desired type that the response should be converted to.
  *
  */
-class ReplyCaller : public IReplyCaller
+class ReplyCaller : public BaseReplyCaller
 {
 public:
     ReplyCaller(std::function<void(const Ts&...)> callbackFct,
                 std::function<void(const exceptions::JoynrException& error)> errorFct)
-            : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
+            : BaseReplyCaller(std::move(errorFct)), callbackFct(callbackFct)
     {
     }
 
@@ -53,27 +80,13 @@ public:
         }
     }
 
-    void returnError(const exceptions::JoynrException& error) override
+    void execute(const Reply& reply) override
     {
-        errorFct(error);
-    }
-
-    void timeOut() override
-    {
-        hasTimeOutOccurred = true;
-
-        errorFct(exceptions::JoynrTimeOutException("timeout waiting for the response"));
-    }
-
-    int getTypeId() const override
-    {
-        return util::getTypeId<Ts...>();
+        ReplyInterpreter<Ts...>::execute(*this, reply);
     }
 
 private:
     std::function<void(const Ts&... returnValue)> callbackFct;
-    std::function<void(const exceptions::JoynrException& error)> errorFct;
-    bool hasTimeOutOccurred;
 };
 
 template <>
@@ -81,12 +94,12 @@ template <>
  * @brief Template specialisation for the void type.
  *
  */
-class ReplyCaller<void> : public IReplyCaller
+class ReplyCaller<void> : public BaseReplyCaller
 {
 public:
     ReplyCaller(std::function<void()> callbackFct,
                 std::function<void(const exceptions::JoynrException& error)> errorFct)
-            : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
+            : BaseReplyCaller(std::move(errorFct)), callbackFct(callbackFct)
     {
     }
 
@@ -99,26 +112,13 @@ public:
         }
     }
 
-    void returnError(const exceptions::JoynrException& error) override
+    void execute(const Reply& reply) override
     {
-        errorFct(error);
-    }
-
-    void timeOut() override
-    {
-        hasTimeOutOccurred = true;
-        errorFct(exceptions::JoynrTimeOutException("timeout waiting for the response"));
-    }
-
-    int getTypeId() const override
-    {
-        return util::getTypeId<void>();
+        ReplyInterpreter<void>::execute(*this, reply);
     }
 
 private:
     std::function<void()> callbackFct;
-    std::function<void(const exceptions::JoynrException& error)> errorFct;
-    bool hasTimeOutOccurred;
 };
 
 } // namespace joynr

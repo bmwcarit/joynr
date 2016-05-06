@@ -41,6 +41,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
 import io.joynr.messaging.serialize.MessageSerializerFactory;
+import io.joynr.runtime.JoynrInjectionConstants;
 import joynr.system.RoutingTypes.Address;
 
 /**
@@ -65,6 +66,8 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
+                                            .toInstance(scheduledExecutorService);
+        bind(ScheduledExecutorService.class).annotatedWith(Names.named(JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(scheduledExecutorService);
         bind(ExecutorService.class).toInstance(scheduledExecutorService);
 

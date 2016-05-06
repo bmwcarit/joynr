@@ -50,9 +50,18 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
                                   ProviderQos qos,
                                   long lastSeenDateMs,
                                   long expiryDateMs,
+                                  String publicKeyId,
                                   String address) {
         // CHECKSTYLE ON
-        super(providerVersion, domain, interfaceName, participantId, qos, lastSeenDateMs, expiryDateMs, address);
+        super(providerVersion,
+              domain,
+              interfaceName,
+              participantId,
+              qos,
+              lastSeenDateMs,
+              expiryDateMs,
+              publicKeyId,
+              address);
     }
 
     @Override

@@ -392,7 +392,7 @@ define(
                                     new PublicationManager(
                                             dispatcher,
                                             persistency,
-                                            "localchannelId"); //TODO: set joynrInstanceId
+                                            "joynrInstanceId"); //TODO: set joynrInstanceId
 
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
@@ -410,7 +410,6 @@ define(
                                         libjoynrMessagingAddress : new InProcessAddress(
                                                 libjoynrMessagingSkeleton),
                                         participantIdStorage : participantIdStorage,
-                                        localChannelId : "localchannelId", //TODO: set joynrInstanceId
                                         loggingManager : loggingManager
                                     }));
 

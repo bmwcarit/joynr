@@ -40,7 +40,7 @@ public class BroadcastUtilTest {
     public void testFilterParameters() throws Exception {
         URL fixtureURL = BroadcastUtilTest.class.getResource("FilterParameters.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
-        Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
+        Resource fixtureResource = loader.getResources().iterator().next();
         BroadcastUtil broadcastUtil = Guice.createInjector().getInstance(BroadcastUtil.class);
 
         FModel model = (FModel) fixtureResource.getContents().get(0);

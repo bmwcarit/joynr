@@ -317,6 +317,8 @@ else()
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
+file(COPY "resources/ListOfCapabilitiesToInject.json"
+     DESTINATION "${JOYNR_BINARY_DIR}/test-resources/")
 
 ### set up stuff common for all test targets ##################################
 

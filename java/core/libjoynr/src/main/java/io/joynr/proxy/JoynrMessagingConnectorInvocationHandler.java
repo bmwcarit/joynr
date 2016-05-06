@@ -48,6 +48,7 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import joynr.MethodMetaInformation;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
@@ -186,6 +187,14 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw (JoynrRuntimeException) reply.getError();
         }
 
+    }
+
+    public void executeOneWayMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
+                                                                 JoynrMessageNotSentException, JsonGenerationException,
+                                                                 JsonMappingException, IOException {
+        long ttl_ms = qosSettings.getRoundTripTtl_ms();
+        OneWayRequest request = new OneWayRequest(method.getName(), args, method.getParameterTypes());
+        requestReplyManager.sendOneWayRequest(fromParticipantId, toParticipantIds, request, ttl_ms);
     }
 
     @Override

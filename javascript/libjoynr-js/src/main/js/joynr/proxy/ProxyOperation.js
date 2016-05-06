@@ -29,6 +29,7 @@ define(
             "joynr/util/MethodUtil",
             "joynr/types/TypeRegistrySingleton",
             "joynr/dispatching/types/Request",
+            "joynr/dispatching/types/OneWayRequest",
             "joynr/messaging/MessagingQos"
         ],
         function(
@@ -39,6 +40,7 @@ define(
                 MethodUtil,
                 TypeRegistrySingleton,
                 Request,
+                OneWayRequest,
                 MessagingQos) {
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
@@ -85,7 +87,8 @@ define(
                                 inputParameter : MethodUtil.transformParameterMapToArray(
                                         operationArguments,
                                         operationSignature.inputParameter),
-                                outputParameter : operationSignature.outputParameter || []
+                                outputParameter : operationSignature.outputParameter || [],
+                                fireAndForget : operationSignature.fireAndForget
                             };
                 } catch (error) {
                     result.errorMessage = error.message;
@@ -258,51 +261,70 @@ define(
                                         proxyOperation.parent.messagingQos,
                                         settings.messagingQos));
 
-                        // build outgoing request
-                        var request =
-                                new Request(
-                                        {
-                                            methodName : proxyOperation.operationName,
-                                            paramDatatypes : foundValidOperationSignature.inputParameter.paramDatatypes,
-                                            params : foundValidOperationSignature.inputParameter.params
-                                        });
-
                         // send it through request reply manager
-                        return settings.dependencies.requestReplyManager
-                                .sendRequest({
-                                    to : proxyOperation.parent.providerParticipantId,
-                                    from : proxyOperation.parent.proxyParticipantId,
-                                    messagingQos : messagingQos,
-                                    request : request
-                                })
-                                .then(
-                                        function(response) {
-                                            var responseKey, argumentValue;
-                                            if (foundValidOperationSignature.outputParameter
-                                                && foundValidOperationSignature.outputParameter.length > 0) {
-                                                argumentValue = {};
-                                                for (responseKey in response) {
-                                                    if (response.hasOwnProperty(responseKey)) {
-                                                        if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
-                                                            argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] =
-                                                                    Typing
-                                                                            .augmentTypes(
-                                                                                    response[responseKey],
-                                                                                    typeRegistry,
-                                                                                    foundValidOperationSignature.outputParameter[responseKey].type);
-                                                        } else {
-                                                            return Promise
-                                                                    .reject(new Error(
-                                                                            "Unexpected response: "
-                                                                                + JSONSerializer
-                                                                                        .stringify(response[responseKey])));
+                        if (foundValidOperationSignature.fireAndForget === true) {
+                            // build outgoing request
+                            var oneWayRequest =
+                                    new OneWayRequest(
+                                            {
+                                                methodName : proxyOperation.operationName,
+                                                paramDatatypes : foundValidOperationSignature.inputParameter.paramDatatypes,
+                                                params : foundValidOperationSignature.inputParameter.params
+                                            });
+
+                            return settings.dependencies.requestReplyManager.sendOneWayRequest({
+                                to : proxyOperation.parent.providerParticipantId,
+                                from : proxyOperation.parent.proxyParticipantId,
+                                messagingQos : messagingQos,
+                                request : oneWayRequest
+                            });
+                        }
+                        if (foundValidOperationSignature.fireAndForget !== true) {
+                            // build outgoing request
+                            var request =
+                                    new Request(
+                                            {
+                                                methodName : proxyOperation.operationName,
+                                                paramDatatypes : foundValidOperationSignature.inputParameter.paramDatatypes,
+                                                params : foundValidOperationSignature.inputParameter.params
+                                            });
+
+                            return settings.dependencies.requestReplyManager
+                                    .sendRequest({
+                                        to : proxyOperation.parent.providerParticipantId,
+                                        from : proxyOperation.parent.proxyParticipantId,
+                                        messagingQos : messagingQos,
+                                        request : request
+                                    })
+                                    .then(
+                                            function(response) {
+                                                var responseKey, argumentValue;
+                                                if (foundValidOperationSignature.outputParameter
+                                                    && foundValidOperationSignature.outputParameter.length > 0) {
+                                                    argumentValue = {};
+                                                    for (responseKey in response) {
+                                                        if (response.hasOwnProperty(responseKey)) {
+                                                            if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
+                                                                argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] =
+                                                                        Typing
+                                                                                .augmentTypes(
+                                                                                        response[responseKey],
+                                                                                        typeRegistry,
+                                                                                        foundValidOperationSignature.outputParameter[responseKey].type);
+                                                            } else {
+                                                                return Promise
+                                                                        .reject(new Error(
+                                                                                "Unexpected response: "
+                                                                                    + JSONSerializer
+                                                                                            .stringify(response[responseKey])));
+                                                            }
                                                         }
                                                     }
                                                 }
-                                            }
 
-                                            return argumentValue;
-                                        });
+                                                return argumentValue;
+                                            });
+                        }
                     } catch (e) {
                         return Promise
                                 .reject(new Error("error calling operation: " + e.toString()));

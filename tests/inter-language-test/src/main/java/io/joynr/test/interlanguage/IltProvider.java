@@ -63,9 +63,6 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(IltProvider.class);
 
     public IltProvider() {
-        // default uses a priority that is the current time,
-        // causing arbitration to the last started instance
-        providerQos.setPriority(System.currentTimeMillis());
     }
 
     @Override

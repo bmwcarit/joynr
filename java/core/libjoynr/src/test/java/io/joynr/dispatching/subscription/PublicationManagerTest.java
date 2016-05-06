@@ -151,10 +151,12 @@ public class PublicationManagerTest {
     @Test(timeout = 4000)
     public void doNotDelayBroadcastPublicationBurstsForOnChangeSubscriptionsWithoutMinInterval() throws Exception {
         int subscriptionLength = 500;
-        long expiryDate = System.currentTimeMillis() + subscriptionLength;
-        int minInterval = 0;
-        int publicationTtl = 400;
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval, expiryDate, publicationTtl);
+
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(0);
+        qos.setValidityMs(subscriptionLength);
+        qos.setPublicationTtlMs(400);
+
         String subscriptionId = "subscriptionId";
         String proxyId = "proxyId";
         String providerId = "providerId";
@@ -196,10 +198,13 @@ public class PublicationManagerTest {
     @Test(timeout = 4000)
     public void delayBroadcastPublicationBurstsForOnChangeSubscriptions() throws Exception {
         int subscriptionLength = 500;
-        long expiryDate = System.currentTimeMillis() + subscriptionLength;
-        int minInterval = 100;
-        int publicationTtl = 400;
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval, expiryDate, publicationTtl);
+        int minIntervalMs = 100;
+
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(minIntervalMs);
+        qos.setValidityMs(subscriptionLength);
+        qos.setPublicationTtlMs(400);
+
         String subscriptionId = "subscriptionId";
         String proxyId = "proxyId";
         String providerId = "providerId";
@@ -228,7 +233,7 @@ public class PublicationManagerTest {
             publicationManager.broadcastOccurred(subscriptionId, noFilters, i);
         }
 
-        Thread.sleep(minInterval);
+        Thread.sleep(minIntervalMs);
 
         publicationManager.broadcastOccurred(subscriptionId, noFilters, nrIterations + 1);
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
@@ -246,10 +251,11 @@ public class PublicationManagerTest {
     @Test(timeout = 4000)
     public void delayAttributePublicationBurstsForOnChangeSubscriptions() throws Exception {
         int subscriptionLength = 500;
-        long expiryDate = System.currentTimeMillis() + subscriptionLength;
-        int minInterval = 400;
-        int publicationTtl = 400;
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval, expiryDate, publicationTtl);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(400);
+        qos.setValidityMs(subscriptionLength);
+        qos.setPublicationTtlMs(400);
+
         String subscriptionId = "subscriptionId";
         String proxyId = "proxyId";
         String providerId = "providerId";
@@ -285,18 +291,19 @@ public class PublicationManagerTest {
 
         assertTrue(onReceiveSemaphore.tryAcquire(2, subscriptionLength + 1000, TimeUnit.MILLISECONDS));
 
-        assertFalse(onReceiveSemaphore.tryAcquire(1,
-                                                  Math.max(expiryDate - System.currentTimeMillis(), 200),
-                                                  TimeUnit.MILLISECONDS));
+        assertFalse(onReceiveSemaphore.tryAcquire(1, Math.max(subscriptionLength, 200), TimeUnit.MILLISECONDS));
     }
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void addPublicationWithExpiryDate() throws Exception {
         long pubicationActiveForMs = 300;
-        long expiryDate = System.currentTimeMillis() + pubicationActiveForMs;
-        long publicationTtl = 1000;
-        SubscriptionQos qos = new OnChangeSubscriptionQos(0, expiryDate, publicationTtl);
+
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(0);
+        qos.setValidityMs(pubicationActiveForMs);
+        qos.setPublicationTtlMs(1000);
+
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
@@ -327,7 +334,10 @@ public class PublicationManagerTest {
     @Test(timeout = 3000)
     public void addPublicationWithoutExpiryDate() throws Exception {
         int period = 200;
-        SubscriptionQos qos = new PeriodicSubscriptionQos(100, SubscriptionQos.NO_EXPIRY_DATE, 500, 1000);
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();
+        qos.setPeriodMs(period).setValidityMs(SubscriptionQos.IGNORE_VALUE);
+        qos.setAlertAfterIntervalMs(500).setPublicationTtlMs(1000);
+
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
@@ -354,9 +364,8 @@ public class PublicationManagerTest {
     public void startAndStopPeriodicPublication() throws Exception {
         int period = 200;
         int testLengthMax = 3000;
-        long expiryDate = System.currentTimeMillis() + testLengthMax;
-        long publicationTtl = testLengthMax;
-        SubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, publicationTtl);
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();
+        qos.setPeriodMs(200).setValidityMs(testLengthMax).setPublicationTtlMs(testLengthMax);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
@@ -381,11 +390,10 @@ public class PublicationManagerTest {
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void stopAllPublicationsFromProvider() throws Exception {
-        long expiryDate = System.currentTimeMillis() + 3000;
-        long publicationTtl = 1000;
         String subscriptionId1 = "subscriptionid1";
         String subscriptionId2 = "subscriptionid2";
-        SubscriptionQos qos = new OnChangeSubscriptionQos(0, expiryDate, publicationTtl);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(0).setValidityMs(3000).setPublicationTtlMs(1000);
         SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1, "location", qos);
         SubscriptionRequest subscriptionRequest2 = new SubscriptionRequest(subscriptionId2, "location", qos);
 

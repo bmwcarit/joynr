@@ -19,11 +19,10 @@ package io.joynr.generator.js.proxy
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
+import io.joynr.generator.js.templates.InterfaceJsTemplate
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
-import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
@@ -31,9 +30,8 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FInterface
 
-class ProxyGenerator extends InterfaceTemplate {
+class ProxyGenerator extends InterfaceJsTemplate {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension JSTypeUtil
@@ -42,13 +40,6 @@ class ProxyGenerator extends InterfaceTemplate {
 	@Inject private extension MethodUtil
 	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
-
-	int packagePathDepth
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	def relativePathToBase() {
 		var relativePath = ""
@@ -59,13 +50,7 @@ class ProxyGenerator extends InterfaceTemplate {
 	}
 
 	def generateProxy(IFileSystemAccess fsa){
-		var containerpath = File::separator //+ "generated" + File::separator
-
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, File::separator)
-		val path = containerpath + packagePath + File::separator
-		packagePathDepth = packagePath.split(File::separator).length
-
-		val fileName = path + "" + proxyName + ".js"
+		var fileName = path + "" + proxyName + ".js"
 		if (clean) {
 			fsa.deleteFile(fileName)
 		}
@@ -177,7 +162,8 @@ class ProxyGenerator extends InterfaceTemplate {
 							type : "«param.joynrTypeName»"
 						}
 						«ENDFOR»
-					]
+					],
+					fireAndForget: «IF operation.fireAndForget»true«ELSE»false«ENDIF»
 				}«ENDFOR»
 			]).buildFunction();
 	«ENDFOR»

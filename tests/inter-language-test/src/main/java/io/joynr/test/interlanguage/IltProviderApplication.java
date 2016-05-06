@@ -40,6 +40,7 @@ import java.util.Properties;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,7 +132,10 @@ public class IltProviderApplication extends AbstractJoynrApplication {
     public void run() {
         provider = new IltProvider();
         provider.addBroadcastFilter(new IltStringBroadcastFilter(jsonSerializer));
-        runtime.registerProvider(localDomain, provider);
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setPriority(System.currentTimeMillis());
+
+        runtime.registerProvider(localDomain, provider, providerQos);
 
         while (!shutDownRequested) {
             try {

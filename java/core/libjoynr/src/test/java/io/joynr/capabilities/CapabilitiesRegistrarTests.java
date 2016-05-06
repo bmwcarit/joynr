@@ -84,6 +84,7 @@ public class CapabilitiesRegistrarTests {
 
     private String domain = "domain";
     private String participantId = "participantId";
+    private String publicKeyId = "";
     private ProviderQos providerQos = new ProviderQos();
 
     @JoynrInterface(provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
@@ -121,7 +122,8 @@ public class CapabilitiesRegistrarTests {
                                                                    participantId,
                                                                    providerQos,
                                                                    System.currentTimeMillis(),
-                                                                   expiryDateMs)));
+                                                                   expiryDateMs,
+                                                                   publicKeyId)));
 
         verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }

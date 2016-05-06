@@ -92,6 +92,10 @@
 #include "joynr/Variant.h"
 #include "joynr/Settings.h"
 #include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/IProxyBuilder.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
@@ -102,6 +106,7 @@ using ::testing::A;
 using ::testing::Eq;
 using ::testing::AllOf;
 using ::testing::Property;
+using ::testing::Return;
 
 // Disable VC++ warnings due to google mock
 // http://code.google.com/p/googlemock/wiki/FrequentlyAskedQuestions#MSVC_gives_me_warning_C4301_or_C4373_when_I_define_a_mock_method
@@ -114,16 +119,32 @@ using ::testing::Property;
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #pragma GCC diagnostic ignored "-Wreorder"
 
+template<typename T>
+class MockProxyBuilder : public joynr::IProxyBuilder<T>
+{
+public:
+    MockProxyBuilder(){
+        ON_CALL(*this, setCached(_)).WillByDefault(Return(this));
+        ON_CALL(*this, setMessagingQos(_)).WillByDefault(Return(this));
+        ON_CALL(*this, setDiscoveryQos(_)).WillByDefault(Return(this));
+    }
+
+    MOCK_METHOD1_T(setCached, joynr::IProxyBuilder<T>*(const bool cached));
+    MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
+    MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
+    MOCK_METHOD0_T(build, T*());
+};
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
     MOCK_METHOD1(add, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilitiesInformationList));
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
-    MOCK_METHOD2(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::string& domain, const std::string& interfaceName));
-    MOCK_METHOD4(lookup, void(
+    MOCK_METHOD3(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::string& domain, const std::string& interfaceName, const std::int64_t messagingTtl));
+    MOCK_METHOD5(lookup, void(
                      const std::string& domain,
                      const std::string& interfaceName,
+                     const std::int64_t messagingTtl,
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
     MOCK_METHOD3(lookup, void(
@@ -131,6 +152,9 @@ public:
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> callbackFct,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 
+    void setProxyBuilder(std::unique_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
+        std::ignore = input;
+    }
 };
 
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
@@ -324,6 +348,16 @@ public:
                 const joynr::MessagingQos& qos,
                 const joynr::Request& request,
                 std::shared_ptr<joynr::IReplyCaller> callback
+            )
+    );
+    
+    MOCK_METHOD4(
+            sendOneWayRequest,
+            void(
+                const std::string& senderParticipantId,
+                const std::string& receiverParticipantId,
+                const joynr::MessagingQos& qos,
+                const joynr::OneWayRequest& request
             )
     );
 
@@ -948,9 +982,10 @@ public:
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings):
+    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings):
         messageRouter(),
-        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter){}
+        libjoynrMockSettings(settings),
+        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter, libjoynrMockSettings){}
 
     MOCK_METHOD3(
             lookup,
@@ -962,6 +997,7 @@ public:
 
 private:
     MockMessageRouter messageRouter;
+    joynr::LibjoynrSettings libjoynrMockSettings;
 };
 
 class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback
@@ -1002,14 +1038,11 @@ public:
     MockQWebSocketSendWrapper(QWebSocket* websocket)
         : QWebSocketSendWrapper(websocket)
     {
-        registerDisconnectCallback(std::bind(&MockQWebSocketSendWrapper::onConnectionClosed, this));
+
     }
 
     MOCK_METHOD1(send, void (const std::string& message));
-
     MOCK_CONST_METHOD0(isConnected, bool ());
-
-    MOCK_METHOD0(onConnectionClosed, void ());
 };
 
 #ifdef _MSC_VER

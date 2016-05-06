@@ -84,6 +84,7 @@ public class ApplicationException extends Exception implements JoynrException {
     }
 
     /**
+     * @param <T> the concrete error enum type
      * @return the reported error enum
      */
     @SuppressWarnings("unchecked")

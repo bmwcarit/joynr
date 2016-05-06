@@ -45,7 +45,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import joynr.JoynrMessage;
-import joynr.OneWay;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
@@ -172,7 +172,7 @@ public class DispatcherImpl implements Dispatcher {
                     logger.debug("Parsed request from message payload :" + message.getPayload());
                     handle(request, message.getFrom(), message.getTo(), expiryDate);
                 } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
-                    OneWay oneWayRequest = objectMapper.readValue(message.getPayload(), OneWay.class);
+                    OneWayRequest oneWayRequest = objectMapper.readValue(message.getPayload(), OneWayRequest.class);
                     logger.debug("Parsed one way request from message payload :" + message.getPayload());
                     handle(oneWayRequest, message.getTo(), expiryDate);
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
@@ -240,7 +240,7 @@ public class DispatcherImpl implements Dispatcher {
         requestReplyManager.handleReply(reply);
     }
 
-    private void handle(OneWay oneWayRequest, String toParticipantId, final long expiryDate) {
+    private void handle(OneWayRequest oneWayRequest, String toParticipantId, final long expiryDate) {
         requestReplyManager.handleOneWayRequest(toParticipantId, oneWayRequest, expiryDate);
     }
 

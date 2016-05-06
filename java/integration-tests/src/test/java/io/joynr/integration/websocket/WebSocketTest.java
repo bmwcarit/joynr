@@ -48,6 +48,7 @@ import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientFactory;
 import io.joynr.messaging.websocket.server.WebSocketJettyServerFactory;
 import io.joynr.servlet.ServletUtil;
 import joynr.JoynrMessage;
+import joynr.OneWayRequest;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
@@ -145,10 +146,11 @@ public class WebSocketTest {
     }
 
     private void sendMessage() throws Throwable {
-        JoynrMessage msg = joynrMessageFactory.createOneWay("fromID",
-                                                            "toID",
-                                                            "Test Payload",
-                                                            ExpiryDate.fromRelativeTtl(100000));
+        OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
+        JoynrMessage msg = joynrMessageFactory.createOneWayRequest("fromID",
+                                                                   "toID",
+                                                                   request,
+                                                                   ExpiryDate.fromRelativeTtl(100000));
 
         webSocketMessagingStub.transmit(msg, new FailureAction() {
 

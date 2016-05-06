@@ -18,14 +18,12 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
 class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
@@ -34,11 +32,6 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 	@Inject private extension NamingUtil
 
 	@Inject extension InterfaceSubscriptionUtil
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
-
 	override generate()
 '''
 «val interfaceName = francaIntf.joynrName»

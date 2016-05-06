@@ -47,6 +47,7 @@ public:
                     const std::string& interfaceName,
                     joynr::types::ProviderQos qos,
                     const std::string& participantId,
+                    const std::string& publicKeyId,
                     bool isGlobal);
 
     CapabilityEntry& operator=(const CapabilityEntry& other);
@@ -67,6 +68,9 @@ public:
     std::string getParticipantId() const;
     void setParticipantId(std::string participantId);
 
+    const std::string& getPublicKeyId() const;
+    void setPublicKeyId(const std::string& publicKeyId);
+
     bool isGlobal() const;
     void setGlobal(bool global);
 
@@ -78,6 +82,7 @@ private:
     std::string interfaceName;
     types::ProviderQos qos;
     std::string participantId;
+    std::string publicKeyId;
     bool global;
 };
 

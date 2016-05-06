@@ -18,7 +18,6 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -40,11 +39,6 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 	@Inject extension AttributeUtil
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToDeferredName) {
 		init(serviceInterface, methodToDeferredName, new ArrayList<FMethod>());
@@ -95,17 +89,19 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 «warning()»
 package «packagePath»;
 
-«IF getMethods(francaIntf).size > 0 || hasReadAttribute(francaIntf)»
-	import io.joynr.provider.Promise;
-«ENDIF»
-«IF hasReadAttribute(francaIntf)»
-	import io.joynr.provider.Deferred;
-«ENDIF»
-«IF !uniqueMethodsToCreateDeferreds.isEmpty»
-	import io.joynr.provider.AbstractDeferred;
-«ENDIF»
-«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
-	import io.joynr.provider.DeferredVoid;
+«IF hasNonFireAndForgetMethods(francaIntf) || hasReadAttribute(francaIntf) || hasWriteAttribute(francaIntf)»
+	«IF getMethods(francaIntf).size > 0 || hasReadAttribute(francaIntf)»
+		import io.joynr.provider.Promise;
+	«ENDIF»
+	«IF hasReadAttribute(francaIntf)»
+		import io.joynr.provider.Deferred;
+	«ENDIF»
+	«IF !uniqueMethodsToCreateDeferreds.isEmpty»
+		import io.joynr.provider.AbstractDeferred;
+	«ENDIF»
+	«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
+		import io.joynr.provider.DeferredVoid;
+	«ENDIF»
 «ENDIF»
 «IF francaIntf.hasMethodWithErrorEnum»
 	import joynr.exceptions.ApplicationException;
@@ -153,7 +149,11 @@ public interface «className» {
 		«IF !comments.equals("")»«comments»«ENDIF»
 		 * @return promise for asynchronous handling
 		 */
-		public Promise<«methodToDeferredName.get(method)»> «methodName»(
+		«IF method.fireAndForget»
+		public void «methodName» (
+		«ELSE»
+		public Promise<«methodToDeferredName.get(method)»> «methodName» (
+		«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF»
 		);
 	«ENDFOR»

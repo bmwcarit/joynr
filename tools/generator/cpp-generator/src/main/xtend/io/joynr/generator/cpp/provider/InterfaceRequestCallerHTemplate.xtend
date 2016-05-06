@@ -18,7 +18,6 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -26,7 +25,6 @@ import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
 class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 
@@ -36,11 +34,6 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate()
 '''
@@ -63,6 +56,7 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 «FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
+#include "joynr/Logger.h"
 
 «getNamespaceStarter(francaIntf)»
 
@@ -132,24 +126,28 @@ public:
 		 * @param «iparam.joynrName» Method input parameter «iparam.joynrName»
 		 «ENDFOR»
 		 «ENDIF»
+		 «IF !method.fireAndForget»
 		 * @param onSuccess A callback function to be called once the asynchronous computation has
 		 * finished with success. It must expect the output parameter list, if parameters are present.
 		 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
+		 «ENDIF»
 		 */
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»
-					«inputTypedParamList»,
+					«inputTypedParamList»«IF !method.fireAndForget»,«ENDIF»
 				«ENDIF»
-				«IF method.outputParameters.empty»
-					std::function<void()> onSuccess,
-				«ELSE»
+				«IF !method.fireAndForget»
+					«IF method.outputParameters.empty»
+						std::function<void()> onSuccess,
+					«ELSE»
+						std::function<void(
+								«outputTypedParamList»
+						)> onSuccess,
+					«ENDIF»
 					std::function<void(
-							«outputTypedParamList»
-					)> onSuccess,
+							const exceptions::JoynrException&
+					)> onError
 				«ENDIF»
-				std::function<void(
-						const exceptions::JoynrException&
-				)> onError
 		);
 
 	«ENDFOR»
@@ -184,6 +182,7 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
 	std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider;
+	ADD_LOGGER(«interfaceName»RequestCaller);
 };
 
 «getNamespaceEnder(francaIntf)»

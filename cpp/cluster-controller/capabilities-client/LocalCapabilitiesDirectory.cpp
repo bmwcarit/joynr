@@ -16,35 +16,40 @@
  * limitations under the License.
  * #L%
  */
-#include <boost/algorithm/string/predicate.hpp>
-#include <chrono>
-#include <limits>
 
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/CapabilityEntry.h"
-#include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/MessageRouter.h"
-#include "common/InterfaceAddress.h"
-#include "joynr/types/Version.h"
 
-#include "joynr/Util.h"
-#include "joynr/JsonSerializer.h"
+#include <boost/algorithm/string/predicate.hpp>
+
+#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+
+#include "common/InterfaceAddress.h"
+
+#include "joynr/CapabilityEntry.h"
 #include "joynr/CapabilityEntrySerializer.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/LibjoynrSettings.h"
+#include "joynr/MessageRouter.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(LocalCapabilitiesDirectory);
 
-LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
-                                                       ICapabilitiesClient* capabilitiesClientPtr,
-                                                       const std::string& localAddress,
-                                                       MessageRouter& messageRouter)
+LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
+        MessagingSettings& messagingSettings,
+        std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
+        const std::string& localAddress,
+        MessageRouter& messageRouter,
+        LibjoynrSettings& libjoynrSettings)
         : joynr::system::DiscoveryAbstractProvider(),
           messagingSettings(messagingSettings),
           capabilitiesClient(capabilitiesClientPtr),
@@ -58,12 +63,15 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
           messageRouter(messageRouter),
           observers(),
           mqttSettings(),
-          localCapabilitiesDirectoryFileName()
+          libJoynrSettings(libjoynrSettings)
 {
+    // setting up the provisioned values for GlobalCapabilitiesClient
+    // The GlobalCapabilitiesServer is also provisioned in MessageRouter
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
     std::int64_t lastSeenDateMs = 0;
     std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    std::string defaultPublicKeyId("");
     types::Version providerVersion;
     this->insertInCache(joynr::types::DiscoveryEntry(
                                 providerVersion,
@@ -72,7 +80,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
                                 messagingSettings.getCapabilitiesDirectoryParticipantId(),
                                 providerQos,
                                 lastSeenDateMs,
-                                expiryDateMs),
+                                expiryDateMs,
+                                defaultPublicKeyId),
                         false,
                         true,
                         false);
@@ -86,11 +95,7 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 void LocalCapabilitiesDirectory::cleanCaches()
 {
     const auto zero = std::chrono::milliseconds::zero();
-    interfaceAddress2GlobalCapabilities.cleanup(zero);
-    participantId2GlobalCapabilities.cleanup(zero);
-
-    interfaceAddress2LocalCapabilities.cleanup(zero);
-    participantId2LocalCapability.cleanup(zero);
+    cleanCache(zero);
 }
 
 void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discoveryEntry)
@@ -112,6 +117,7 @@ void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discove
                                                          discoveryEntry.getQos(),
                                                          discoveryEntry.getLastSeenDateMs(),
                                                          discoveryEntry.getExpiryDateMs(),
+                                                         discoveryEntry.getPublicKeyId(),
                                                          localAddress);
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
@@ -121,7 +127,7 @@ void LocalCapabilitiesDirectory::add(const joynr::types::DiscoveryEntry& discove
         this->capabilitiesClient->add(registeredGlobalCapabilities);
     }
 
-    saveToFile();
+    updatePersistedFile();
 }
 
 void LocalCapabilitiesDirectory::remove(const std::string& domain,
@@ -144,7 +150,8 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
                     [&entry, &domain, &interfaceName, &qos](const types::GlobalDiscoveryEntry& it) {
                 return it.getProviderVersion() == entry.getProviderVersion() &&
                        it.getDomain() == domain && it.getInterfaceName() == interfaceName &&
-                       it.getQos() == qos && it.getParticipantId() == entry.getParticipantId();
+                       it.getQos() == qos && it.getParticipantId() == entry.getParticipantId() &&
+                       it.getPublicKeyId() == entry.getPublicKeyId();
             };
 
             while (registeredGlobalCapabilities.erase(
@@ -169,7 +176,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
         capabilitiesClient->remove(participantIdsToRemove);
     }
 
-    saveToFile();
+    updatePersistedFile();
 }
 
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
@@ -189,7 +196,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
     convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
     informObserversOnRemove(discoveryEntry);
 
-    saveToFile();
+    updatePersistedFile();
 }
 
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
@@ -292,6 +299,7 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
                                  globalDiscoveryEntry.getInterfaceName(),
                                  globalDiscoveryEntry.getQos(),
                                  globalDiscoveryEntry.getParticipantId(),
+                                 globalDiscoveryEntry.getPublicKeyId(),
                                  true);
         capabilitiesMap.insertMulti(globalDiscoveryEntry.getAddress(), capEntry);
         mergedEntries.push_back(capEntry);
@@ -352,7 +360,8 @@ void LocalCapabilitiesDirectory::lookup(const std::string& domain,
                                        callback,
                                        discoveryQos.getDiscoveryScope());
         };
-        this->capabilitiesClient->lookup(domain, interfaceName, onSuccess);
+        this->capabilitiesClient->lookup(
+                domain, interfaceName, discoveryQos.getDiscoveryTimeout(), onSuccess);
     }
 }
 
@@ -503,16 +512,22 @@ void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
     util::removeAll(observers, observer);
 }
 
-void LocalCapabilitiesDirectory::saveToFile()
+void LocalCapabilitiesDirectory::updatePersistedFile()
+{
+    saveLocalCapabilitiesToFile(
+            libJoynrSettings.getLocalCapabilitiesDirectoryPersistenceFilename());
+}
+
+void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& fileName)
 {
     try {
-        joynr::util::saveStringToFile(localCapabilitiesDirectoryFileName, serializeToJson());
+        joynr::util::saveStringToFile(fileName, serializeLocalCapabilitiesToJson());
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }
 }
 
-std::string LocalCapabilitiesDirectory::serializeToJson() const
+std::string LocalCapabilitiesDirectory::serializeLocalCapabilitiesToJson() const
 {
     const std::vector<std::string>& capEntriesKeys = participantId2LocalCapability.getKeys();
 
@@ -534,37 +549,79 @@ std::string LocalCapabilitiesDirectory::serializeToJson() const
     return outputJson.str();
 }
 
-void LocalCapabilitiesDirectory::deserializeFromJson(const std::string& jsonString)
+void LocalCapabilitiesDirectory::loadPersistedFile()
 {
+    const std::string persistencyFile =
+            libJoynrSettings.getLocalCapabilitiesDirectoryPersistenceFilename();
+    std::string jsonString;
+    try {
+        jsonString = joynr::util::loadStringFromFile(persistencyFile);
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+    }
+
     if (jsonString.empty()) {
         return;
     }
 
-    std::vector<CapabilityEntry> vectorOfCapEntries =
+    std::vector<CapabilityEntry> persistedCapabilities =
             JsonSerializer::deserialize<std::vector<CapabilityEntry>>(jsonString);
 
-    if (vectorOfCapEntries.empty()) {
+    if (persistedCapabilities.empty()) {
         return;
     }
 
-    cleanCaches();
-
-    // move all capability entries into local cache
-    for (const auto& entry : vectorOfCapEntries) {
-        insertInCache(entry, true, entry.isGlobal());
+    // move all capability entries into local cache and avoid duplicates
+    for (const auto& entry : persistedCapabilities) {
+        joynr::types::DiscoveryEntry convDiscEntry;
+        convertCapabilityEntryIntoDiscoveryEntry(entry, convDiscEntry);
+        insertInCache(convDiscEntry, false, true, false);
     }
 }
 
-void LocalCapabilitiesDirectory::loadFromFile(std::string fileName)
+void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::string& fileName)
 {
-    // update reference file
-    localCapabilitiesDirectoryFileName = std::move(fileName);
+    if (fileName.empty()) {
+        JOYNR_LOG_WARN(
+                logger, "Empty file name provided in input: cannot load global capabilities.");
+        return;
+    }
 
+    std::string jsonString;
     try {
-        deserializeFromJson(joynr::util::loadStringFromFile(localCapabilitiesDirectoryFileName));
+        jsonString = joynr::util::loadStringFromFile(fileName);
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }
+
+    if (jsonString.empty()) {
+        return;
+    }
+
+    std::vector<joynr::types::GlobalDiscoveryEntry> injectedGlobalCapabilities =
+            JsonSerializer::deserialize<std::vector<joynr::types::GlobalDiscoveryEntry>>(
+                    jsonString);
+
+    if (injectedGlobalCapabilities.empty()) {
+        return;
+    }
+
+    QMap<std::string, CapabilityEntry> capabilitiesMap;
+    for (const auto& globalDiscoveryEntry : injectedGlobalCapabilities) {
+        CapabilityEntry capEntry(globalDiscoveryEntry.getProviderVersion(),
+                                 globalDiscoveryEntry.getDomain(),
+                                 globalDiscoveryEntry.getInterfaceName(),
+                                 globalDiscoveryEntry.getQos(),
+                                 globalDiscoveryEntry.getParticipantId(),
+                                 globalDiscoveryEntry.getPublicKeyId(),
+                                 true);
+
+        // insert in map for messagerouter
+        capabilitiesMap.insertMulti(globalDiscoveryEntry.getAddress(), capEntry);
+    }
+
+    // insert found capabilities in messageRouter
+    registerReceivedCapabilities(capabilitiesMap);
 }
 
 /**
@@ -595,9 +652,9 @@ void LocalCapabilitiesDirectory::insertInCache(const joynr::types::DiscoveryEntr
                                                bool localCache,
                                                bool globalCache)
 {
-    CapabilityEntry entry;
-    convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, entry);
-    entry.setGlobal(isGlobal);
+    CapabilityEntry newEntry;
+    convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, newEntry);
+    newEntry.setGlobal(isGlobal);
 
     // do not dublicate entries:
     // the combination participantId is unique for [domain, interfaceName, authtoken]
@@ -606,10 +663,7 @@ void LocalCapabilitiesDirectory::insertInCache(const joynr::types::DiscoveryEntr
     bool foundMatch = false;
     if (localCache) {
         std::vector<CapabilityEntry> entryList =
-                searchCache(discoveryEntry.getParticipantId(), std::chrono::milliseconds(-1), true);
-        CapabilityEntry newEntry;
-        convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, newEntry);
-        entry.setGlobal(isGlobal);
+                searchCache(newEntry.getParticipantId(), std::chrono::milliseconds(-1), true);
         for (CapabilityEntry oldEntry : entryList) {
             if (oldEntry == newEntry) {
                 foundMatch = true;
@@ -621,7 +675,7 @@ void LocalCapabilitiesDirectory::insertInCache(const joynr::types::DiscoveryEntr
     // after logic about duplicate entries stated in comment above
     // TypedClientMultiCache updates the age as stated in comment above
     bool allowInsertInLocalCache = !foundMatch && localCache;
-    insertInCache(entry, allowInsertInLocalCache, globalCache);
+    insertInCache(newEntry, allowInsertInLocalCache, globalCache);
 }
 
 std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
@@ -663,6 +717,7 @@ void LocalCapabilitiesDirectory::convertCapabilityEntryIntoDiscoveryEntry(
     discoveryEntry.setInterfaceName(capabilityEntry.getInterfaceName());
     discoveryEntry.setParticipantId(capabilityEntry.getParticipantId());
     discoveryEntry.setQos(capabilityEntry.getQos());
+    discoveryEntry.setPublicKeyId(capabilityEntry.getPublicKeyId());
 }
 
 void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
@@ -674,6 +729,7 @@ void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
     capabilityEntry.setInterfaceName(discoveryEntry.getInterfaceName());
     capabilityEntry.setParticipantId(discoveryEntry.getParticipantId());
     capabilityEntry.setQos(discoveryEntry.getQos());
+    capabilityEntry.setPublicKeyId(discoveryEntry.getPublicKeyId());
 }
 
 void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(

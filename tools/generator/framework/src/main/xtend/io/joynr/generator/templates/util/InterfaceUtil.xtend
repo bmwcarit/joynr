@@ -23,12 +23,12 @@ import com.google.inject.Singleton
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.HashSet
+import java.util.Set
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FMethod
 import org.franca.core.franca.FMapType
-import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
+import org.franca.core.franca.FMethod
 
 @Singleton
 public class InterfaceUtil {
@@ -77,8 +77,12 @@ public class InterfaceUtil {
 	}
 
 	def getUniqueMethodNames(FInterface fInterface) {
+		return getUniqueMethodNames(getMethods(fInterface));
+	}
+
+	def getUniqueMethodNames(Iterable<FMethod> methods) {
 		val set = new HashSet<String>()
-		for (method : getMethods(fInterface)) {
+		for (method : methods) {
 			set.add(method.joynrName);
 		}
 		return set;
@@ -161,16 +165,27 @@ public class InterfaceUtil {
 		fInterface.getAllRequiredTypes(TypeSelector::defaultTypeSelector)
 	}
 
+	def addTypesFromMethod(FInterface fInterface,
+		boolean fireAndForget,
+		boolean errorTypes,
+		Set<Object> typeList
+	) {
+		val methodToErrorEnumName = fInterface.methodToErrorEnumName
+		for (method : fInterface.methods.filter[method | method.fireAndForget == fireAndForget]) {
+			typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), errorTypes))
+		}
+	}
+
 	def getAllRequiredTypes(
 			FInterface fInterface,
 			TypeSelector selector
 	) {
 		val typeList = new HashSet<Object>();
 		if (selector.methods){
-			val methodToErrorEnumName = fInterface.methodToErrorEnumName
-			for (method : fInterface.methods) {
-				typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), selector.errorTypes))
-			}
+			addTypesFromMethod(fInterface, false, selector.errorTypes, typeList)
+		}
+		if (selector.fireAndForget) {
+			addTypesFromMethod(fInterface, true, selector.errorTypes, typeList)
 		}
 
 		for (attribute : getAttributes(fInterface)) {
@@ -227,6 +242,7 @@ public class InterfaceUtil {
 
 	static class TypeSelector {
 		var methods = true
+		var fireAndForget = true
 		var readAttributes = true
 		var writeAttributes = true
 		var notifyAttributes = true
@@ -240,6 +256,10 @@ public class InterfaceUtil {
 
 		def methods(boolean methods) {
 			this.methods = methods
+		}
+
+		def fireAndForget(boolean fireAndForget) {
+		    this.fireAndForget = fireAndForget
 		}
 
 		def readAttributes(boolean readAttributes) {
@@ -368,4 +388,13 @@ public class InterfaceUtil {
 		}
 		return methodToErrorEnumName
 	}
+
+	def hasNonFireAndForgetMethods(FInterface francaInterface) {
+		francaInterface.methods.exists[!fireAndForget]
+	}
+
+	def hasFireAndForgetMethods(FInterface francaInterface) {
+		francaInterface.methods.exists[fireAndForget]
+	}
+
 }

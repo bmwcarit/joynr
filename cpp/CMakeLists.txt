@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.17.0-SNAPSHOT)
+project(joynr-0.18.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 17)
+set(JOYNR_MINOR_VERSION 18)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -776,7 +776,7 @@ set(JoynrConfig_RESOLVE_DEPENDENCIES)
 macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
     file(READ "${CMAKE_CURRENT_LIST_DIR}/CMake/JoynrConfig/${DEPENDENCY_FILE}.cmake.in" FILE_CONTENTS)
     string(CONFIGURE ${FILE_CONTENTS} FILE_CONTENTS @ONLY)
-    string(CONCAT JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES} "${FILE_CONTENTS}")
+    set(JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES}${FILE_CONTENTS})
 endmacro(FillJoynrConfigDependencies)
 
 if(USE_PLATFORM_JSMN)

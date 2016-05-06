@@ -21,11 +21,17 @@
 
 #include <memory>
 
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/ITimeoutListener.h"
 
 namespace joynr
 {
+
+class Reply;
+
+namespace exceptions
+{
+class JoynrException;
+} // namespace exceptions
 
 /**
  * @brief This interface is required by the JoynrMessageSender to initiate the
@@ -49,6 +55,8 @@ public:
 
     virtual void returnError(const exceptions::JoynrException& error) = 0;
 
+    virtual void execute(const Reply& reply) = 0;
+
     /**
      * @brief This method will be called by the directory when
      * a time out occurs.
@@ -56,8 +64,6 @@ public:
      * this object from its directory.
      */
     void timeOut() override = 0;
-
-    virtual int getTypeId() const = 0;
 };
 
 } // namespace joynr

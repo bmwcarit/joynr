@@ -39,7 +39,7 @@ INIT_LOGGER(WebSocketCcMessagingSkeleton);
 
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
         MessageRouter& messageRouter,
-        WebSocketMessagingStubFactory& messagingStubFactory,
+        std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
         const system::RoutingTypes::WebSocketAddress& serverAddress)
         : webSocketServer(nullptr),
           clients(),
@@ -115,7 +115,14 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
             WebSocketClientAddress clientAddress =
                     JsonSerializer::deserialize<WebSocketClientAddress>(message.toStdString());
             IWebSocketSendInterface* clientWrapper = new QWebSocketSendWrapper(client);
-            messagingStubFactory.addClient(clientAddress, clientWrapper);
+            messagingStubFactory->addClient(clientAddress, clientWrapper);
+
+            std::weak_ptr<WebSocketMessagingStubFactory> weakFactoryRef(messagingStubFactory);
+            clientWrapper->registerDisconnectCallback([weakFactoryRef, clientAddress]() {
+                if (auto factory = weakFactoryRef.lock()) {
+                    factory->onMessagingStubClosed(clientAddress);
+                }
+            });
 
             // cleanup
             disconnect(client,

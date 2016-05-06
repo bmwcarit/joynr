@@ -1,9 +1,14 @@
 #!/bin/bash
 
+if hash nproc 2>/dev/null; then
+    JOBS=$(nproc)
+else
+    JOBS=1
+fi
+
 error () {
 [ "$1" != "0" ] &&  exit 1 || :
 }
-
 
 log () {
 echo ""
@@ -13,6 +18,22 @@ echo "========================================"
 echo ""
 }
 
+function usage
+{
+    echo "usage: joynr-build-cpp.sh [--jobs X]"
+    echo "default jobs is $JOBS"
+}
+
+while [ "$1" != "" ]; do
+    case $1 in
+        --jobs )                 shift
+                                 JOBS=$1
+                                 ;;
+        * )                      usage
+                                 exit 1
+    esac
+    shift
+done
 
 START=$(date +%s)
 
@@ -31,17 +52,19 @@ cd build
 
 log "RUN CMAKE"
 
-cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
-      -DENABLE_GCOV=$GCOV \
+cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=OFF \
+      -DENABLE_GCOV=OFF \
       -DENABLE_DOXYGEN=OFF \
       -DENABLE_CLANG_FORMATTER=OFF \
-      -DPYTHON_EXECUTABLE=/usr/bin/python \
-      -DJOYNR_SERVER=localhost:8080 \
+      -DBUILD_TESTS=OFF \
+      -DJOYNR_SERVER_HOST=localhost \
+      -DJOYNR_SERVER_HTTP_PORT=8080 \
+      -DJOYNR_SERVER_MQTT_PORT=1883 \
       -DCMAKE_BUILD_TYPE=Debug ../cpp
 
 
 log "BUILD C++ JOYNR"
-make -j 20
+make -j $JOBS
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))

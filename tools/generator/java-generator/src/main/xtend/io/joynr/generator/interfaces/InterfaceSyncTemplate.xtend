@@ -18,7 +18,6 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -40,11 +39,6 @@ class InterfaceSyncTemplate extends InterfaceTemplate {
 	@Inject extension InterfaceUtil
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToReturnTypeName, ArrayList<FMethod> uniqueMultioutMethods) {
 		var uniqueMultioutMethodSignatureToContainerNames = new HashMap<String, String>();
@@ -107,7 +101,7 @@ import io.joynr.UsedBy;
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, false)»
 	import «datatype»;
 «ENDFOR»
 
@@ -116,7 +110,8 @@ import io.joynr.UsedBy;
 @ProvidedBy(«francaIntf.providerClassName».class)
 @UsedBy(«francaIntf.proxyClassName».class)
 «ENDIF»
-public interface «syncClassName» extends «interfaceName» {
+public interface «syncClassName» extends «interfaceName»«IF hasFireAndForgetMethods(francaIntf)», «interfaceName»FireAndForget«ENDIF» {
+
 «FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
 	«var attributeName = attribute.joynrName»
 	«var attributeType = attribute.typeName.objectDataTypeForPlainType»
@@ -149,7 +144,7 @@ public interface «syncClassName» extends «interfaceName» {
 		}
 «ENDFOR»
 
-«FOR method: getMethods(francaIntf) SEPARATOR "\n"»
+«FOR method: getMethods(francaIntf).filter[!fireAndForget] SEPARATOR "\n"»
 	«var methodName = method.joynrName»
 		/*
 		* «methodName»

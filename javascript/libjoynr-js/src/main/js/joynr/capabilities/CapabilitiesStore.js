@@ -38,7 +38,8 @@ define(
                 return discoveryEntry.domain
                     + discoveryEntry.interfaceName
                     + discoveryEntry.participantId
-                    + discoveryEntry.providerVersion;
+                    + discoveryEntry.providerVersion
+                    + discoveryEntry.publicKeyId;
             }
 
             /**

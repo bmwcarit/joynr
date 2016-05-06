@@ -16,9 +16,12 @@
  * limitations under the License.
  * #L%
  */
+#include <string>
+#include <memory>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <string>
+
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/TypeUtil.h"
@@ -40,13 +43,14 @@ public:
     std::string discoveryDomain;
     std::string discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
-    IMessageReceiver* mockMessageReceiverHttp;
-    IMessageReceiver* mockMessageReceiverMqtt;
+    std::shared_ptr<IMessageReceiver> mockMessageReceiverHttp;
+    std::shared_ptr<IMessageReceiver> mockMessageReceiverMqtt;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder;
     joynr::system::DiscoveryProxy* discoveryProxy;
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
+    std::string publicKeyId;
 
     SystemServicesDiscoveryTest() :
         settingsFilename("test-resources/SystemServicesDiscoveryTest.settings"),
@@ -54,13 +58,14 @@ public:
         discoveryDomain(),
         discoveryProviderParticipantId(),
         runtime(nullptr),
-        mockMessageReceiverHttp(new MockMessageReceiver()),
-        mockMessageReceiverMqtt(new MockMessageReceiver()),
+        mockMessageReceiverHttp(std::make_shared<MockMessageReceiver>()),
+        mockMessageReceiverMqtt(std::make_shared<MockMessageReceiver>()),
         discoveryQos(),
         discoveryProxyBuilder(nullptr),
         discoveryProxy(nullptr),
         lastSeenDateMs(-1),
-        expiryDateMs(-1)
+        expiryDateMs(-1),
+        publicKeyId("")
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
@@ -82,10 +87,10 @@ public:
 
         std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
         std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
-
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getGlobalClusterControllerAddress())
+        
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockCommunicationManager has been told to return
@@ -150,9 +155,10 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     joynr::types::DiscoveryQos discoveryQos(
-                5000,                                      // max cache age
+                5000,                                     // max cache age
+                5000,                                     // discovery ttl
                 joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
-                false                                      // provider must support on change subscriptions
+                false                                     // provider must support on change subscriptions
     );
 
     try {
@@ -162,7 +168,6 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
     }
     EXPECT_TRUE(result.empty());
 }
-
 
 TEST_F(SystemServicesDiscoveryTest, add)
 {
@@ -177,9 +182,10 @@ TEST_F(SystemServicesDiscoveryTest, add)
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
     joynr::types::DiscoveryQos discoveryQos(
-                5000,                                      // max cache age
+                5000,                                     // max cache age
+                5000,                                     // discovery ttl
                 joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
-                false                                      // provider must support on change subscriptions
+                false                                     // provider must support on change subscriptions
     );
     joynr::types::ProviderQos providerQos(
                 std::vector<joynr::types::CustomParameter>(), // custom provider parameters
@@ -196,7 +202,8 @@ TEST_F(SystemServicesDiscoveryTest, add)
                 participantId,
                 providerQos,
                 lastSeenDateMs,
-                expiryDateMs
+                expiryDateMs,
+                publicKeyId
     );
     expectedResult.push_back(discoveryEntry);
 
@@ -233,9 +240,10 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
     joynr::types::DiscoveryQos discoveryQos(
-                5000,                                      // max cache age
+                5000,                                     // max cache age
+                5000,                                     // discovery ttl
                 joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
-                false                                      // provider must support on change subscriptions
+                false                                     // provider must support on change subscriptions
     );
     joynr::types::ProviderQos providerQos(
                 std::vector<joynr::types::CustomParameter>(), // custom provider parameters
@@ -252,7 +260,8 @@ TEST_F(SystemServicesDiscoveryTest, remove)
                 participantId,
                 providerQos,
                 lastSeenDateMs,
-                expiryDateMs
+                expiryDateMs,
+                publicKeyId
     );
     expectedResult.push_back(discoveryEntry);
 

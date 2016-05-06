@@ -55,6 +55,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                     @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
+        String defaultPublicKeyId = "";
         provisionedDiscoveryEntries.put(systemServicesDomain + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                         new DiscoveryEntry(new Version(),
                                                            systemServicesDomain,
@@ -62,7 +63,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                            discoveryProviderParticipantId,
                                                            providerQos,
                                                            System.currentTimeMillis(),
-                                                           NO_EXPIRY));
+                                                           NO_EXPIRY,
+                                                           defaultPublicKeyId));
         //provision routing provider to prevent lookup via discovery proxy during startup.
         provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
                                         new DiscoveryEntry(new Version(),
@@ -71,7 +73,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                            routingProviderParticipantId,
                                                            providerQos,
                                                            System.currentTimeMillis(),
-                                                           NO_EXPIRY));
+                                                           NO_EXPIRY,
+                                                           defaultPublicKeyId));
     }
 
     public void setDiscoveryProxy(DiscoveryProxy discoveryProxy) {

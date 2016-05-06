@@ -83,8 +83,9 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     /**
      * Registers an Android provider in the joynr framework
      *
-     * @deprecated Will be removed by end of the year 2016. Use {@link io.joynr.joynrandroidruntime.JoynrAndroidRuntime#
-     * registerProvider(String, JoynrProvider, ProviderQos)} instead.
+     * @deprecated Will be removed by end of the year 2016. Use
+     *      {@link io.joynr.joynrandroidruntime.JoynrAndroidRuntime#registerProvider(String, Object, ProviderQos)}
+     *      instead.
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.

@@ -75,7 +75,8 @@ joynrTestRequire(
                         supportsOnChangeSubscriptions : true
                     }),
                     address : "InProcessAddress",
-                    participantId : "1"
+                    participantId : "1",
+                    publicKeyId : ""
                 })
             };
 
@@ -99,7 +100,8 @@ joynrTestRequire(
                             supportsOnChangeSubscriptions : true
                         }),
                         address : "InProcessAddress",
-                        participantId : "1"
+                        participantId : "1",
+                        publicKeyId : ""
                     }),
                     new GlobalDiscoveryEntry({
                         providerVersion : new Version({
@@ -119,7 +121,8 @@ joynrTestRequire(
                             supportsOnChangeSubscriptions : true
                         }),
                         address : "InProcessAddress",
-                        participantId : "1"
+                        participantId : "1",
+                        publicKeyId : ""
                     }),
                     new GlobalDiscoveryEntry({
                         providerVersion : new Version({
@@ -139,7 +142,8 @@ joynrTestRequire(
                             supportsOnChangeSubscriptions : true
                         }),
                         address : "InProcessAddress",
-                        participantId : "1"
+                        participantId : "1",
+                        publicKeyId : ""
                     }),
                     new GlobalDiscoveryEntry({
                         providerVersion : new Version({
@@ -159,7 +163,8 @@ joynrTestRequire(
                             supportsOnChangeSubscriptions : true
                         }),
                         address : "InProcessAddress",
-                        participantId : "1"
+                        participantId : "1",
+                        publicKeyID : ""
                     }),
                     new GlobalDiscoveryEntry({
                         providerVersion : new Version({
@@ -179,7 +184,8 @@ joynrTestRequire(
                             supportsOnChangeSubscriptions : true
                         }),
                         address : "InProcessAddress",
-                        participantId : "1"
+                        participantId : "1",
+                        publicKeyId : ""
                     })
                 ]
             };

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,29 @@
  */
 #ifndef CAPABILITIESCLIENT_H
 #define CAPABILITIESCLIENT_H
-#include "joynr/PrivateCopyAssign.h"
+
+#include <string>
+#include <memory>
+#include <vector>
 
 #include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyBuilder.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/Logger.h"
 
 /*
-*   Client for the capabilities directory. Registration and lookup
+*   Client for the global capabilities directory. Registration and lookup
 *   requests are sent in serialized JsonFunctionCalls. The capabilities directory
 *   executes the function call and responds with a JsonFunctionResponse.
-*
 */
 
-#include <string>
-#include <memory>
-#include <vector>
-#include <QObject>
 namespace joynr
 {
 
@@ -50,22 +55,17 @@ public:
     /*
        Default constructor for the capabilities client.
        This will create a CapabilitiesClient that is not capable of doing actual lookups.
-       To upgrade to a complete CapabilitiesClient the init method must be called, and a
-       ProxyBuilder
-        must be provided. No lookups may be performed before the proxyBuilder is passed in.
-       To create the GlobalCapabilitiesDirectoryProxy the provisioned data in the
-       LocalCapabilitiesDirectory
-        has to be used.
+       To upgrade to a complete CapabilitiesClient the setProxyBuilder method must be called, and a
+       ProxyBuilder must be provided. The Class will take ownership
+       of the ProxyBuilder and will make sure it is deleted.
     */
     CapabilitiesClient();
 
-    /*
-      * The init method has to be caleld before any calls to the CapabilitiesClient are made.
-      */
-    void init(std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy);
+    ~CapabilitiesClient() override = default;
 
     /*
-       Add a capabilities record to the directory containing a list of capabilities
+       Add a capabilities record to the directory containing a list of capabilities and the
+       channelId of the provider(the client's channelId)
       */
     void add(const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList) override;
 
@@ -83,13 +83,15 @@ public:
       Synchronous lookup of capabilities for domain and interface.
       */
     std::vector<types::GlobalDiscoveryEntry> lookup(const std::string& domain,
-                                                    const std::string& interfaceName) override;
+                                                    const std::string& interfaceName,
+                                                    const std::int64_t messagingTtl) override;
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
       */
     void lookup(const std::string& domain,
                 const std::string& interfaceName,
+                const std::int64_t messagingTtl,
                 std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
                         onSuccess,
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
@@ -101,15 +103,21 @@ public:
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
                         nullptr) override;
 
-    ~CapabilitiesClient() override = default;
+    void setProxyBuilder(
+            std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+                    capabilitiesProxyBuilder) override;
 
 private:
+    void setDefaultGlobalCapabilitiesDirectoryProxy();
+    void setGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl);
+
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
 
-    // capabilitiesProxy is a shared_ptr, because ownership is shared between CapabilitiesClient and
-    // Joynr
-    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
-
+    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
+    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
+    std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+            capabilitiesProxyBuilder;
+    infrastructure::GlobalCapabilitiesDirectoryProxy* capabilitiesProxyWorker;
     ADD_LOGGER(CapabilitiesClient);
 };
 

@@ -27,10 +27,6 @@ import org.franca.core.franca.FInterface
 class JoynrJSGeneratorExtensions extends JoynrGeneratorExtensions {
 	@Inject private extension AttributeUtil
 
-	override getOneLineWarning() {
-		throw new UnsupportedOperationException("Auto-generated function stub")
-	}
-
 	def getAttributeCaps(FAttribute attribute)
 	'''«IF isNotifiable(attribute)»Notify«ENDIF»«IF isReadable(attribute)»Read«ENDIF»«IF isWritable(attribute)»Write«ENDIF»'''
 

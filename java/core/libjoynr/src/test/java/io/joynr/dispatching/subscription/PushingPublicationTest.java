@@ -96,7 +96,6 @@ public class PushingPublicationTest {
     private String proxyId;
     private String providerId;
     private String attributeName;
-    private SubscriptionQos qos;
     int testAttribute = 123;
     SubscriptionPublication publication;
 
@@ -123,26 +122,18 @@ public class PushingPublicationTest {
     }
 
     void setupPureOnChangedQos() {
-        long maxInterval_ms = SubscriptionQos.IGNORE_VALUE;
-
-        long endDate = System.currentTimeMillis() + 19000;
-        long publicationTtl_ms = 1000;
-        qos = new OnChangeSubscriptionQos(maxInterval_ms, endDate, publicationTtl_ms);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(SubscriptionQos.IGNORE_VALUE).setValidityMs(19000).setPublicationTtlMs(1000);
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
     }
 
     void setupMixedQos() {
-        long minInterval_ms = 10;
-        long maxInterval_ms = 3000; // TODO Also write this test with -1
-
-        long endDate = System.currentTimeMillis() + 19000;
-        long alertInterval_ms = 500;
-        long publicationTtl_ms = 1000;
-        qos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                       maxInterval_ms,
-                                                       endDate,
-                                                       alertInterval_ms,
-                                                       publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos qos = new OnChangeWithKeepAliveSubscriptionQos();
+        qos.setMinIntervalMs(10);
+        qos.setMaxIntervalMs(3000); // TODO Also write this test with -1
+        qos.setValidityMs(19000);
+        qos.setAlertAfterIntervalMs(500);
+        qos.setPublicationTtlMs(1000);
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
     }
 

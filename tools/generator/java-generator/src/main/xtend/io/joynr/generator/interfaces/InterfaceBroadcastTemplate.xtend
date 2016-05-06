@@ -19,14 +19,12 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
-import org.franca.core.franca.FInterface
 
 class InterfaceBroadcastTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
@@ -34,11 +32,6 @@ class InterfaceBroadcastTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension BroadcastUtil
 	@Inject extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate() {
 		val interfaceName = francaIntf.joynrName
@@ -55,7 +48,7 @@ import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 import joynr.BroadcastFilterParameters;
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, true)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, true, false)»
 	import «datatype»;
 «ENDFOR»
 

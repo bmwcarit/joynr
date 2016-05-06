@@ -3,7 +3,7 @@ package io.joynr.generator.loading;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +30,12 @@ import org.eclipse.emf.common.util.URI;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
 public class FolderUriProvider implements IUriProvider {
 
-    private static final String SEPARATOR = "/";
-
     private final File folder;
 
-    private Set<String> allowedExtension = Sets.newHashSet("xml", "xtend");
+    private final Set<String> allowedExtension;
 
     public static IUriProvider folder(Set<String> allowedExtension, String folder) {
         return new FolderUriProvider(allowedExtension, new File(folder));
@@ -60,15 +57,14 @@ public class FolderUriProvider implements IUriProvider {
         Iterable<URI> result = getFilesUris(myFolder);
 
         // subfolder
-        File[] subfolders = getSubfolders(myFolder);
-        for (File subfolder : subfolders) {
+        for (File subfolder : getSubfolders(myFolder)) {
             result = Iterables.concat(getFilenamesOfFolder(subfolder), result);
         }
         return result;
     }
 
-    private Iterable<URI> getFilesUris(final File myFolder) {
-        String[] filenames = myFolder.list(new FilenameFilter() {
+    private Iterable<URI> getFilesUris(final File folder) {
+        String[] filenames = folder.list(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 int extPosition = name.lastIndexOf('.');
                 String extension = name.substring(extPosition + 1);
@@ -77,13 +73,13 @@ public class FolderUriProvider implements IUriProvider {
         });
         return Iterables.transform(asList(filenames), new Function<String, URI>() {
             public URI apply(String from) {
-                return URI.createFileURI(new File(myFolder + SEPARATOR + from).getAbsolutePath());
+                return URI.createFileURI(new File(folder + File.separator + from).getAbsolutePath());
             }
         });
     }
 
-    private File[] getSubfolders(File myFolder) {
-        File[] subfolders = myFolder.listFiles(new FileFilter() {
+    private File[] getSubfolders(File folder) {
+        File[] subfolders = folder.listFiles(new FileFilter() {
             public boolean accept(File file) {
                 return file.isDirectory();
             }

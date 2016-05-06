@@ -1,3 +1,33 @@
+#joynr 0.18.0
+
+##API relevant changes
+* **[C++, Java, JS]** The communication protocol between local directories on the cluster controller
+  and global directories in the backend changed. Please make sure that clients and backend use
+  compatible versions.
+
+##Other changes
+* **[Tools]** Refactored joynr generator framework to simplify the maintenance,
+   revised its required dependencies.
+
+#joynr 0.17.2
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Updated dependency for atmoshpere.js to version 2.3.2. This ensures that
+  joynr has no native dependencies in its npm package.
+
+#joynr 0.17.1
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* Updated disclaimers, added README for npm
+
 #joynr 0.17.0
 
 ##API relevant changes
@@ -24,6 +54,8 @@
   2016.
 * **[JS, C++, Java]** The provider version can no longer be set programmatically in ProviderQos.
   Instead the value as modeled in Franca is generated into the provider interface.
+* **[C++, Java, JS]** Support for empty broadcast. Broadcast with no output parameter is now
+  supported in all three languages.
 
 ##Other changes
 * **[C++]** The content of the message router and the local capabilities directory is now persisted
@@ -31,6 +63,7 @@
   JSON format) respectively to _MessageRouter.persist_ and to _LocalCapabilitiesDirectory.persist_.
 * **[C++, Java, JS]** The backend service ChannelUrlDirectory has been eliminated. Addressing is
   now saved in the Discovery Directory.
+* **[JS]** Small fixes in the jsdoc of generated proxies and providers.
 
 #joynr 0.16.0
 

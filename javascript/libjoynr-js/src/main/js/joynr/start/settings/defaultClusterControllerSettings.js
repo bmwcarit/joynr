@@ -47,6 +47,7 @@
                         channelId : defaultSettings.discoveryChannel,
                         messagingEndpointUrl : defaultSettings.getDefaultDiscoveryChannelUrl()
                     }),
+                    publicKeyId : "",
                     participantId : "capabilitiesdirectory_participantid"
                 };
 

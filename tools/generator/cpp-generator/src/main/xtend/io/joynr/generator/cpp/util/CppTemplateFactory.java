@@ -55,6 +55,8 @@ import io.joynr.generator.cpp.provider.InterfaceRequestInterpreterHTemplate;
 import io.joynr.generator.cpp.proxy.IInterfaceConnectorHTemplate;
 import io.joynr.generator.cpp.proxy.InterfaceAsyncProxyCppTemplate;
 import io.joynr.generator.cpp.proxy.InterfaceAsyncProxyHTemplate;
+import io.joynr.generator.cpp.proxy.InterfaceFireAndForgetProxyCppTemplate;
+import io.joynr.generator.cpp.proxy.InterfaceFireAndForgetProxyHTemplate;
 import io.joynr.generator.cpp.proxy.InterfaceProxyBaseCppTemplate;
 import io.joynr.generator.cpp.proxy.InterfaceProxyBaseHTemplate;
 import io.joynr.generator.cpp.proxy.InterfaceProxyCppTemplate;
@@ -112,6 +114,10 @@ public interface CppTemplateFactory {
     InterfaceAsyncProxyHTemplate createInterfaceAsyncProxyHTemplate(FInterface francaIntf);
 
     InterfaceAsyncProxyCppTemplate createInterfaceAsyncProxyCppTemplate(FInterface francaIntf);
+
+    InterfaceFireAndForgetProxyHTemplate createInterfaceFireAndForgetProxyHTemplate(FInterface francaIntf);
+
+    InterfaceFireAndForgetProxyCppTemplate createInterfaceFireAndForgetProxyCppTemplate(FInterface francaIntf);
 
     TypeHTemplate createTypeHTemplate(FCompoundType type);
 

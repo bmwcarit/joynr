@@ -198,7 +198,8 @@ public class ProxyTest {
                                                                    toParticipantId,
                                                                    new ProviderQos(),
                                                                    System.currentTimeMillis(),
-                                                                   System.currentTimeMillis() + ONE_MINUTE_IN_MS);
+                                                                   System.currentTimeMillis() + ONE_MINUTE_IN_MS,
+                                                                   "publicKeyId");
 
                 DiscoveryEntry[] fakeCapabilitiesResult = { discoveryEntry };
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);

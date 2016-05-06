@@ -31,6 +31,8 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
 )
 
+include(GenerateJoynrExports)
+
 if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
     set(
@@ -109,7 +111,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         AUTOMOC TRUE
     )
 
-    generate_export_header(
+    GenerateJoynrExports(
         JoynrClusterControllerRuntime
         EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrClusterControllerRuntime_EXPORT_HEADER}"
     )
@@ -203,7 +205,7 @@ target_link_libraries(
     JoynrJsonSerializer
 )
 
-generate_export_header(
+GenerateJoynrExports(
     JoynrWsRuntime
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrRuntime_EXPORT_HEADER}"
 )
@@ -282,7 +284,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         Joynr
     )
 
-    generate_export_header(
+    GenerateJoynrExports(
         JoynrDbusRuntime
         EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrRuntime_EXPORT_HEADER}"
     )

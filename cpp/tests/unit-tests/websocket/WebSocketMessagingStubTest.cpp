@@ -159,23 +159,6 @@ ACTION_P(ReleaseSemaphore, semaphore)
     semaphore->notify();
 }
 
-TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
-    JOYNR_LOG_TRACE(logger, "emits closed signal");
-
-    // create messaging stub
-    joynr::WebSocketMessagingStub messagingStub(
-        webSocket,
-        [this](){ this->onWebSocketConnectionClosed(this->serverAddress); });
-
-    // close websocket
-    joynr::Semaphore sem(0);
-    ON_CALL(*this, onWebSocketConnectionClosed(Ref(serverAddress))).WillByDefault(ReleaseSemaphore(&sem));
-    EXPECT_CALL(*this, onWebSocketConnectionClosed(Ref(serverAddress))).Times(1);
-    webSocket->close();
-
-    sem.wait();
-}
-
 TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
     JOYNR_LOG_TRACE(logger, "transmit message");
 
@@ -189,9 +172,7 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
     server.registerTextMessageReceivedCallback(callback);
 
     // send message using messaging stub
-    joynr::WebSocketMessagingStub messagingStub(
-        webSocket,
-        [](){});
+    joynr::WebSocketMessagingStub messagingStub(webSocket);
     joynr::JoynrMessage joynrMsg;
 
     const std::size_t payloadSize = GetParam();

@@ -73,7 +73,8 @@ joynrTestRequire(
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
                                     }),
-                                    participantId : "1"
+                                    participantId : "1",
+                                    publicKeyId : ""
                                 }),
                                 new DiscoveryEntry({
                                     providerVersion : new Version({
@@ -88,7 +89,8 @@ joynrTestRequire(
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
                                     }),
-                                    participantId : "1"
+                                    participantId : "1",
+                                    publicKeyId : ""
                                 }),
                                 new DiscoveryEntry({
                                     providerVersion : new Version({
@@ -113,7 +115,8 @@ joynrTestRequire(
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
                                     }),
-                                    participantId : "1"
+                                    participantId : "1",
+                                    publicKeyId : ""
                                 }),
                                 new DiscoveryEntry({
                                     providerVersion : new Version({
@@ -138,7 +141,8 @@ joynrTestRequire(
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
                                     }),
-                                    participantId : "1"
+                                    participantId : "1",
+                                    publicKeyId : ""
                                 }),
                                 new DiscoveryEntry({
                                     providerVersion : new Version({
@@ -163,7 +167,8 @@ joynrTestRequire(
                                         scope : ProviderScope.GLOBAL,
                                         onChangeSubscriptions : true
                                     }),
-                                    participantId : "1"
+                                    participantId : "1",
+                                    publicKeyId : ""
                                 })
                             ];
                         }

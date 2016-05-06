@@ -183,7 +183,8 @@ set_target_properties(
     PUBLIC_INCLUDE_DIRECTORY "${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}"
 )
 
-generate_export_header(
+include(GenerateJoynrExports)
+GenerateJoynrExports(
     Joynr
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrLib_EXPORT_HEADER}"
 )

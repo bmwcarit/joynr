@@ -18,7 +18,6 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -28,7 +27,6 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Map
-import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
 class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
@@ -40,11 +38,6 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	@Inject private extension AttributeUtil
 	@Inject private extension InterfaceUtil
 	@Inject private extension MethodUtil
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate()
 '''
@@ -67,6 +60,8 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	  provider(provider)
 {
 }
+
+INIT_LOGGER(«interfaceName»RequestCaller);
 
 «IF !francaIntf.attributes.empty»
 	// attributes
@@ -132,38 +127,44 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	«val methodName = method.joynrName»
 	void «interfaceName»RequestCaller::«methodName»(
 			«IF !method.inputParameters.empty»
-				«inputTypedParamList»,
+				«inputTypedParamList»«IF !method.fireAndForget»,«ENDIF»
 			«ENDIF»
-			«IF method.outputParameters.empty»
-				std::function<void()> onSuccess,
-			«ELSE»
+			«IF !method.fireAndForget»
+				«IF method.outputParameters.empty»
+					std::function<void()> onSuccess,
+				«ELSE»
+					std::function<void(
+							«outputTypedParamList»
+					)> onSuccess,
+				«ENDIF»
 				std::function<void(
-						«outputTypedParamList»
-				)> onSuccess,
+						const exceptions::JoynrException&
+				)> onError
 			«ENDIF»
-			std::function<void(
-					const exceptions::JoynrException&
-			)> onError
 	) {
-		«IF method.hasErrorEnum»
-			«val errorTypeName = getErrorTypeName(method, methodToErrorEnumName)»
-			std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
-					[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
-						std::string typeName = «errorTypeName»::getTypeName();
-						std::string name = «errorTypeName»::getLiteral(errorEnum);
-						onError(exceptions::ApplicationException(typeName + "::" + name, Variant::make<«errorTypeName»::«nestedEnumName»>(errorEnum), name, typeName));
-				};
-		«ELSE»
-		std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorWrapper =
-				[onError] (const joynr::exceptions::ProviderRuntimeException& error) {
-					onError(error);
-				};
+		«IF !method.fireAndForget»
+			«IF method.hasErrorEnum»
+				«val errorTypeName = getErrorTypeName(method, methodToErrorEnumName)»
+				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
+						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
+							std::string typeName = «errorTypeName»::getTypeName();
+							std::string name = «errorTypeName»::getLiteral(errorEnum);
+							onError(exceptions::ApplicationException(typeName + "::" + name, Variant::make<«errorTypeName»::«nestedEnumName»>(errorEnum), name, typeName));
+					};
+			«ELSE»
+			std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorWrapper =
+					[onError] (const joynr::exceptions::ProviderRuntimeException& error) {
+						onError(error);
+					};
+			«ENDIF»
 		«ENDIF»
 		try {
 			provider->«methodName»(
-					«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-					onSuccess,
-					onErrorWrapper
+					«IF !method.inputParameters.empty»«inputUntypedParamList»«IF !method.fireAndForget»,«ENDIF»«ENDIF»
+					«IF !method.fireAndForget»
+						onSuccess,
+						onErrorWrapper
+					«ENDIF»
 			);
 		// ApplicationExceptions should not be created by the application itself to ensure
 		// serializability. They are treated as JoynrExceptions. They can only be handled correctly
@@ -172,12 +173,20 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 		} catch (const exceptions::ProviderRuntimeException& e) {
 			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
 								e.getTypeName() + ":" + e.getMessage();
-			onError(e);
+			«IF method.fireAndForget»
+				JOYNR_LOG_ERROR(logger, message);
+			«ELSE»
+				onError(e);
+			«ENDIF»
 		} catch (const exceptions::JoynrException& e) {
 			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
 								e.getTypeName() + ":" + e.getMessage();
-			onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
-														e.getMessage()));
+			«IF method.fireAndForget»
+				JOYNR_LOG_ERROR(logger, message);
+			«ELSE»
+				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
+															e.getMessage()));
+			«ENDIF»
 		}
 	}
 

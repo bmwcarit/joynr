@@ -18,7 +18,6 @@ package io.joynr.generator.cpp.inprocess
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
@@ -27,7 +26,6 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
 class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 
@@ -38,11 +36,6 @@ class InterfaceInProcessConnectorHTemplate extends InterfaceTemplate{
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension InterfaceSubscriptionUtil
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate()
 '''
@@ -139,7 +132,7 @@ public:
 	«produceAsyncGetterDeclarations(francaIntf, false)»
 	«produceAsyncSetterDeclarations(francaIntf, false)»
 	«produceAsyncMethodDeclarations(francaIntf, false, true)»
-
+	«produceFireAndForgetMethodDeclarations(francaIntf, false)»
 	«produceSubscribeUnsubscribeMethods(francaIntf, false)»
 
 private:

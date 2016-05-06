@@ -75,6 +75,7 @@ public class CapabilitiesDirectoryTest {
         String participantId1 = "testParticipantId1_" + UUID.randomUUID().toString();
         String participantId2 = "testParticipantId2_" + UUID.randomUUID().toString();
         String participantId3 = "testParticipantId3_" + UUID.randomUUID().toString();
+        String publicKeyId = "publicKeyId";
 
         long lastSeenDateMs = System.currentTimeMillis();
         long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
@@ -85,6 +86,7 @@ public class CapabilitiesDirectoryTest {
                                                   providerQos,
                                                   lastSeenDateMs,
                                                   expiryDateMs,
+                                                  publicKeyId,
                                                   channelAddresSerialized);
         discoveryEntry2 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                    domain,
@@ -93,6 +95,7 @@ public class CapabilitiesDirectoryTest {
                                                    providerQos,
                                                    lastSeenDateMs,
                                                    expiryDateMs,
+                                                   publicKeyId,
                                                    channelAddresSerialized);
         dicoveryEntry3 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                   domain,
@@ -101,6 +104,7 @@ public class CapabilitiesDirectoryTest {
                                                   providerQos,
                                                   lastSeenDateMs,
                                                   expiryDateMs,
+                                                  publicKeyId,
                                                   channelAddresSerialized);
 
     }

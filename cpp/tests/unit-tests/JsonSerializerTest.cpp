@@ -788,6 +788,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     std::int64_t lastSeenMs = 3;
     std::int64_t expiryDateMs = 7;
 
+    std::string publicKeyId("publicKeyId");
     joynr::system::RoutingTypes::ChannelAddress channelAddress1("localhost", "channelId1");
     std::string serializedAddress1 = JsonSerializer::serialize(channelAddress1);
     joynr::system::RoutingTypes::ChannelAddress channelAddress2("localhost", "channelId2");
@@ -795,10 +796,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
 
     std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntries;
     types::GlobalDiscoveryEntry globalDiscoveryEntry1(providerVersion,
-            "domain1", "interface1", "participant1", types::ProviderQos(), lastSeenMs, expiryDateMs, serializedAddress1);
+            "domain1", "interface1", "participant1", types::ProviderQos(), lastSeenMs, expiryDateMs, publicKeyId, serializedAddress1);
     globalDiscoveryEntries.push_back(globalDiscoveryEntry1);
     globalDiscoveryEntries.push_back(types::GlobalDiscoveryEntry(providerVersion,
-        "domain2", "interface2", "participant2", types::ProviderQos(), lastSeenMs, expiryDateMs, serializedAddress2));
+        "domain2", "interface2", "participant2", types::ProviderQos(), lastSeenMs, expiryDateMs, publicKeyId, serializedAddress2));
 
     Reply reply;
 
@@ -1023,6 +1024,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
                 R"("supportsOnChangeSubscriptions": false},)"
                 R"("lastSeenDateMs": 123,)"
                 R"("expiryDateMs": 1234,)"
+                R"("publicKeyId": "publicKeyId",)"
                 R"("address": "serialized_address"})"
                 );
 
@@ -1036,6 +1038,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
     globalDiscoveryEntry.setParticipantId("someParticipant");
     globalDiscoveryEntry.setAddress("serialized_address");
     globalDiscoveryEntry.setInterfaceName("testInterface");
+    globalDiscoveryEntry.setPublicKeyId("publicKeyId");
     JOYNR_LOG_DEBUG(logger, "GlobalDiscoveryEntry {}", globalDiscoveryEntry.toString());
 
     std::string serialized = JsonSerializer::serialize<types::GlobalDiscoveryEntry>(globalDiscoveryEntry);

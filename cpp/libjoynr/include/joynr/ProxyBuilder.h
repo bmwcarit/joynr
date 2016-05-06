@@ -37,8 +37,9 @@
 #include "joynr/system/IDiscovery.h"
 #include "joynr/Future.h"
 #include "joynr/Semaphore.h"
-#include <joynr/TypeUtil.h>
+#include "joynr/TypeUtil.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/IProxyBuilder.h"
 
 namespace joynr
 {
@@ -55,7 +56,7 @@ class ICapabilities;
  * arbitration is done.
  */
 template <class T>
-class ProxyBuilder : public IArbitrationListener
+class ProxyBuilder : public IArbitrationListener, public IProxyBuilder<T>
 {
 public:
     /**
@@ -84,28 +85,28 @@ public:
      * is responsible for deletion.
      * @return The proxy object
      */
-    T* build();
+    T* build() override;
 
     /**
      * @brief Sets whether the object is to be cached
      * @param cached True, if the object is to be cached, false otherwise
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setCached(const bool cached);
+    ProxyBuilder* setCached(const bool cached) override;
 
     /**
      * @brief Sets the messaging qos settings
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setMessagingQos(const MessagingQos& messagingQos);
+    ProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) override;
 
     /**
      * @brief Sets the discovery qos settings
      * @param discoveryQos The discovery quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos);
+    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);

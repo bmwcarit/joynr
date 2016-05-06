@@ -98,7 +98,7 @@ public class SubscriptionQosTest {
                                                                                                                               .setAlertAfterIntervalMs(alertAfterIntervalMs);
         assertEquals(expiryDateMs, onChangeWithKeepAliveSubscriptionQos.getExpiryDateMs());
         assertEquals(publicationTtlMs, onChangeWithKeepAliveSubscriptionQos.getPublicationTtlMs());
-        assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxInterval());
+        assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs());
         assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMinIntervalMs());
         assertEquals(alertAfterIntervalMs, onChangeWithKeepAliveSubscriptionQos.getAlertAfterIntervalMs());
 
@@ -120,7 +120,7 @@ public class SubscriptionQosTest {
         long maxIntervalMs = 5000;
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMaxIntervalMs(maxIntervalMs)
                                                                                                                               .setAlertAfterIntervalMs(alertAfterIntervalMs);
-        assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxInterval());
+        assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs());
         assertEquals(maxIntervalMs, onChangeWithKeepAliveSubscriptionQos.getAlertAfterIntervalMs());
     }
 
@@ -131,6 +131,6 @@ public class SubscriptionQosTest {
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMaxIntervalMs(maxIntervalMs)
                                                                                                                               .setMinIntervalMs(minIntervalMs);
         assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMinIntervalMs());
-        assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxInterval());
+        assertEquals(minIntervalMs, onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs());
     }
 }

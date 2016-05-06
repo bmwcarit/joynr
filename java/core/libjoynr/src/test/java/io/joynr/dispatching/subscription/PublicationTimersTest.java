@@ -110,9 +110,8 @@ public class PublicationTimersTest {
         LOG.debug("Starting PublicationTimersTest.timerIsStoppedWhenEnddateIsReached test");
         int period = 500;
         int subscriptionLength = 1100;
-        long expiryDate = System.currentTimeMillis() + subscriptionLength;
-        int publicationTtl = 1000;
-        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, publicationTtl);
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();
+        qos.setPeriodMs(period).setValidityMs(subscriptionLength).setPublicationTtlMs(1000);
         String subscriptionId = "subscriptionId";
         String proxyId = "proxyId";
         String providerId = "providerId";

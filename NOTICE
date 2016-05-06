@@ -76,7 +76,6 @@ This project has dependencies to:
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-standalone under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
-  codegen under Eclipse Public License - v 1.0
   Common Annotations 1.1 API under lgpl
   Common Eclipse Runtime under Eclipse Public License - v 1.0
   Common Types Runtime Library under Eclipse Public License - v 1.0

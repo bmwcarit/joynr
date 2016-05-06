@@ -99,6 +99,7 @@ public:
      * @param request
      */
     void operationRequest(std::shared_ptr<IReplyCaller> replyCaller, const Request& request);
+    void operationOneWayRequest(const OneWayRequest& request);
 
 protected:
     IJoynrMessageSender* joynrMessageSender;
@@ -117,6 +118,7 @@ private:
 
     // Request jsonRequest;
     void sendRequest(const Request& request, std::shared_ptr<IReplyCaller> replyCaller);
+    void sendOneWayRequest(const OneWayRequest& request);
 };
 
 } // namespace joynr

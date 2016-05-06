@@ -85,13 +85,15 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         ProviderContainer providerContainer = providerContainerFactory.create(provider);
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              providerContainer.getInterfaceName());
+        String defaultPublicKeyId = "";
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(),
                                                            domain,
                                                            providerContainer.getInterfaceName(),
                                                            participantId,
                                                            providerQos,
                                                            System.currentTimeMillis(),
-                                                           System.currentTimeMillis() + defaultExpiryTimeMs);
+                                                           System.currentTimeMillis() + defaultExpiryTimeMs,
+                                                           defaultPublicKeyId);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
         providerDirectory.add(participantId, providerContainer);

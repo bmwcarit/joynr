@@ -1,8 +1,5 @@
-package io.joynr.generator;
-
 /*
  * #%L
- * io.joynr.tools.generator:generator-framework
  * %%
  * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
@@ -19,19 +16,27 @@ package io.joynr.generator;
  * limitations under the License.
  * #L%
  */
+#ifndef ONEWAYREQUESTSERIALIZER_H
+#define ONEWAYREQUESTSERIALIZER_H
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
+#include <iosfwd>
 
-public abstract class AbstractJoynrGenerator implements IJoynrGenerator {
+#include "joynr/ClassDeserializer.h"
+#include "joynr/ClassSerializer.h"
+#include "joynr/OneWayRequest.h"
 
-    @Override
-    public Module getGeneratorModule() {
-        return new Module() {
-            @Override
-            public void configure(Binder binder) {
-            }
-        };
-    }
+namespace joynr
+{
 
-}
+class IObject;
+
+// Serializes a OneWayRequest
+template <>
+void ClassSerializerImpl<OneWayRequest>::serialize(const OneWayRequest& request, std::ostream& o);
+
+// Deserializes a OneWayRequest
+template <>
+void ClassDeserializerImpl<OneWayRequest>::deserialize(OneWayRequest& t, IObject& o);
+
+} // namespace joynr
+#endif // ONEWAYREQUESTSERIALIZER_H
