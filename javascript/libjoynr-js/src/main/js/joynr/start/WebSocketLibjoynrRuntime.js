@@ -424,9 +424,9 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                             staticArbitration : true
                         }).then(function(newDiscoveryProxy) {
                             discovery.setSkeleton(new InProcessSkeleton({
-                                lookup : function lookup(domain, interfaceName, discoveryQos) {
+                                lookup : function lookup(domains, interfaceName, discoveryQos) {
                                     return newDiscoveryProxy.lookup({
-                                        domain : domain,
+                                        domains : domains,
                                         interfaceName : interfaceName,
                                         discoveryQos : discoveryQos
                                     }).then(function(opArgs){

@@ -30,7 +30,7 @@ define(
         function(Promise, DiscoveryQos, Util, LongTimer) {
             function discoverStaticCapabilities(
                     capabilities,
-                    domain,
+                    domains,
                     interfaceName,
                     discoveryQos,
                     deferred) {
@@ -43,7 +43,7 @@ define(
                     } else {
                         for (i = 0; i < capabilities.length; ++i) {
                             capability = capabilities[i];
-                            if (domain === capability.domain
+                            if (domains.indexOf(capability.domain) !== -1
                                     && interfaceName === capability.interfaceName) {
                                 arbitratedCaps.push(capability);
                             }
@@ -57,23 +57,23 @@ define(
             }
 
             /**
-             * Tries to discover capabilities with given domain, interfaceName and discoveryQos within the localCapDir as long as the deferred's state is pending
+             * Tries to discover capabilities with given domains, interfaceName and discoveryQos within the localCapDir as long as the deferred's state is pending
              * @private
              *
              * @param {CapabilityDiscovery} capabilityDiscoveryStub - the capabilites discovery module
-             * @param {String} domain - the domain
+             * @param {String} domains - the domains
              * @param {String} interfaceName - the interfaceName
              * @param {joynr.capabilities.discovery.DiscoveryQos} discoveryQos - the discoveryQos object determining the arbitration strategy and timeouts
              * @returns {Object} a Promise/A+ object, that will provide an array of discovered capabilities
              */
             function discoverCapabilities(
                     capabilityDiscoveryStub,
-                    domain,
+                    domains,
                     interfaceName,
                     applicationDiscoveryQos,
                     deferred) {
                 // discover caps from local capabilities directory
-                capabilityDiscoveryStub.lookup(domain, interfaceName, new DiscoveryQos({
+                capabilityDiscoveryStub.lookup(domains, interfaceName, new DiscoveryQos({
                     discoveryScope : applicationDiscoveryQos.discoveryScope,
                     cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs
                 })).then(
@@ -93,7 +93,7 @@ define(
                                     LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
                                         discoverCapabilities(
                                                 capabilityDiscoveryStub,
-                                                domain,
+                                                domains,
                                                 interfaceName,
                                                 applicationDiscoveryQos,
                                                 deferred);
@@ -107,7 +107,7 @@ define(
             }
 
             /**
-             * An arbitrator looks up all capabilities for a given domain and interface and uses the provides arbitraionStrategy passed in the
+             * An arbitrator looks up all capabilities for given domains and an interface and uses the provides arbitraionStrategy passed in the
              * discoveryQos to choose one or more for the calling proxy
              *
              * @name Arbitrator
@@ -130,7 +130,7 @@ define(
                  * @function
                  *
                  * @param {Object} settings the settings object
-                 * @param {String} settings.domain the domain to discover the provider
+                 * @param {String} settings.domains the domains to discover the provider
                  * @param {String} settings.interfaceName the interfaceName to discover the provider
                  * @param {DiscoveryQos} settings.discoveryQos
                  * @param {Boolean} [settings.staticArbitration] shall the arbitrator use staticCapabilities or contact the discovery provider
@@ -149,7 +149,7 @@ define(
                                         if (settings.staticArbitration && staticCapabilities) {
                                             discoverStaticCapabilities(
                                                     staticCapabilities,
-                                                    settings.domain,
+                                                    settings.domains,
                                                     settings.interfaceName,
                                                     settings.discoveryQos,
                                                     deferred);
@@ -160,8 +160,8 @@ define(
                                                                     function discoveryCapabilitiesTimeOut() {
                                                                         deferred.pending = false;
                                                                         reject(new Error(
-                                                                                "no provider found within discovery timeout for domain \""
-                                                                                    + settings.domain
+                                                                                "no provider found within discovery timeout for domains \""
+                                                                                    + JSON.stringify(settings.domains)
                                                                                     + "\", interface \""
                                                                                     + settings.interfaceName
                                                                                     + "\" with discoveryQos \""
@@ -177,7 +177,7 @@ define(
                                             deferred.resolve = resolveWrapper;
                                             discoverCapabilities(
                                                     capabilityDiscoveryStub,
-                                                    settings.domain,
+                                                    settings.domains,
                                                     settings.interfaceName,
                                                     settings.discoveryQos,
                                                     deferred);

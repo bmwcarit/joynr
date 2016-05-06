@@ -151,17 +151,17 @@ define(
                  * @function
                  * @name CapabilityDiscovery#lookupGlobalCapabilities
                  *
-                 * @param {String} domain - the domain
+                 * @param {String} domains - the domains
                  * @param {String} interfaceName - the interface name
                  * @param {Number} ttl - time to live of joynr messages triggered by the returning proxy
                  * @param {Array} capabilities - the capabilities array to be filled
                  *
                  * @returns {Array} - the capabilities array filled with the capabilities found in the global capabilities directory
                  */
-                function lookupGlobalCapabilities(domain, interfaceName, ttl, capabilities) {
+                function lookupGlobalCapabilities(domains, interfaceName, ttl, capabilities) {
                     return getGlobalCapabilitiesDirectoryProxy(ttl).then(function(globalCapabilitiesDirectoryProxy){
                         return globalCapabilitiesDirectoryProxy.lookup({
-                            domain : domain,
+                            domains : domains,
                             interfaceName : interfaceName
                         }).then(function(opArgs) {
                             var i, messageRouterPromises = [], globalCapabilities = opArgs.result;
@@ -248,7 +248,7 @@ define(
                  * @name CapabilityDiscovery#lookup
                  *
                  * @param {String}
-                 *            domain the domain
+                 *            domains the domains
                  * @param {String}
                  *            interfaceName the interface name
                  * @param {DiscoveryQos}
@@ -259,7 +259,7 @@ define(
                  *          then({Array[GlobalDiscoveryEntry]} discoveredCaps).catch({Error} error)
                  */
                 this.lookup =
-                        function lookup(domain, interfaceName, discoveryQos) {
+                        function lookup(domains, interfaceName, discoveryQos) {
                             var localCapabilities, globalCapabilities;
 
                             switch (discoveryQos.discoveryScope.value) {
@@ -267,21 +267,21 @@ define(
                                 // only interested in local results
                                 case DiscoveryScope.LOCAL_ONLY.value:
                                     return Promise.resolve(localCapabilitiesStore.lookup({
-                                        domain : domain,
+                                        domains : domains,
                                         interfaceName : interfaceName
                                     }));
 
                                     // if anything local use it. Otherwise lookup global.
                                 case DiscoveryScope.LOCAL_THEN_GLOBAL.value:
                                     localCapabilities = localCapabilitiesStore.lookup({
-                                        domain : domain,
+                                        domains : domains,
                                         interfaceName : interfaceName
                                     });
                                     if (localCapabilities.length > 0) {
                                         return Promise.resolve(localCapabilities);
                                     }
                                     globalCapabilities = globalCapabilitiesCache.lookup({
-                                        domain : domain,
+                                        domains : domains,
                                         interfaceName : interfaceName,
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
@@ -289,7 +289,7 @@ define(
                                         return Promise.resolve(globalCapabilities);
                                     }
                                     return lookupGlobalCapabilities(
-                                            domain,
+                                            domains,
                                             interfaceName,
                                             TTL_30DAYS_IN_MS,
                                             localCapabilities);
@@ -297,17 +297,17 @@ define(
                                     // Use local results, but then lookup global
                                 case DiscoveryScope.LOCAL_AND_GLOBAL.value:
                                     localCapabilities = localCapabilitiesStore.lookup({
-                                        domain : domain,
+                                        domains : domains,
                                         interfaceName : interfaceName
                                     });
                                     globalCapabilities = globalCapabilitiesCache.lookup({
-                                        domain : domain,
+                                        domains : domains,
                                         interfaceName : interfaceName,
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
                                     if (globalCapabilities.length === 0) {
                                         return lookupGlobalCapabilities(
-                                                domain,
+                                                domains,
                                                 interfaceName,
                                                 TTL_30DAYS_IN_MS,
                                                 localCapabilities);
@@ -317,7 +317,7 @@ define(
 
                                 case DiscoveryScope.GLOBAL_ONLY.value:
                                     globalCapabilities = globalCapabilitiesCache.lookup({
-                                        domain : domain,
+                                        domains : domains,
                                         interfaceName : interfaceName,
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
@@ -325,7 +325,7 @@ define(
                                         return Promise.resolve(globalCapabilities);
                                     }
                                     return lookupGlobalCapabilities(
-                                            domain,
+                                            domains,
                                             interfaceName,
                                             TTL_30DAYS_IN_MS,
                                             globalCapabilities);

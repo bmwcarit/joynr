@@ -276,7 +276,7 @@ define(
                  * @param {Object}
                  *            settings - an object containing the required parameters
                  * @param {String}
-                 *            settings.domain - the name of the domain
+                 *            settings.domains - the name of the domains
                  * @param {String}
                  *            settings.interfaceName - the interface name of the capability
                  * @param {String}
@@ -288,15 +288,21 @@ define(
                  */
                 this.lookup =
                         function lookup(settings) {
-                            var key, returnValue, storedEntries;
-                            if (settings.domain !== undefined
+                            var i, key, returnValue = [], storedEntries;
+                            if (settings.domains !== undefined
                                 && settings.interfaceName !== undefined) {
-                                key =
-                                        getDomainInterfaceNameKey(
-                                                settings.domain,
-                                                settings.interfaceName);
-                                storedEntries = discoveryEntryStoreByDomainInterfaceName[key] || [];
-                                returnValue = filterEntries(storedEntries, settings.cacheMaxAge);
+                                for (i = 0; i < settings.domains.length; ++i) {
+                                    key =
+                                            getDomainInterfaceNameKey(
+                                                    settings.domains[i],
+                                                    settings.interfaceName);
+                                    storedEntries =
+                                            discoveryEntryStoreByDomainInterfaceName[key] || [];
+                                    returnValue =
+                                            returnValue.concat(filterEntries(
+                                                    storedEntries,
+                                                    settings.cacheMaxAge));
+                                }
                             } else if (settings.participantId !== undefined) {
                                 storedEntries =
                                         discoveryEntryStoreByParticipantId[settings.participantId];

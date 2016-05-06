@@ -262,9 +262,9 @@ joynrTestRequire(
                                                     proxyBuilderSpy,
                                                     "io.joynr");
 
-                                    capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                    capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                        domain : domain,
+                                        domains : [domain],
                                         interfaceName : interfaceName
                                     });
                                     expect(globalCapDirSpy.lookup).not.toHaveBeenCalled();
@@ -276,7 +276,7 @@ joynrTestRequire(
                                 function() {
                                     runs(function(){
                                         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
-                                        capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     });
 
                                     waitsFor(function(){
@@ -287,16 +287,16 @@ joynrTestRequire(
 
                                     runs(function(){
                                         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                         expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName,
                                             cacheMaxAge : discoveryQos.cacheMaxAge
                                         });
                                         expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                     });
@@ -309,9 +309,9 @@ joynrTestRequire(
                                             domain,
                                             interfaceName)
                                     ]);
-                                    capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                    capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                        domain : domain,
+                                        domains : [domain],
                                         interfaceName : interfaceName
                                     });
                                     expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
@@ -323,7 +323,7 @@ joynrTestRequire(
                                 function() {
                                     runs(function(){
                                         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
-                                        capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     });
 
                                     waitsFor(function(){
@@ -334,16 +334,16 @@ joynrTestRequire(
 
                                     runs(function(){
                                         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                         expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName,
                                             cacheMaxAge : discoveryQos.cacheMaxAge
                                         });
                                         expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                     });
@@ -353,9 +353,9 @@ joynrTestRequire(
                                 "calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_ONLY",
                                 function() {
                                     discoveryQos.discoveryScope = DiscoveryScope.LOCAL_ONLY;
-                                    capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                    capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                        domain : domain,
+                                        domains : [domain],
                                         interfaceName : interfaceName
                                     });
                                     expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
@@ -367,7 +367,7 @@ joynrTestRequire(
                                 function() {
                                     runs(function(){
                                         discoveryQos.discoveryScope = DiscoveryScope.GLOBAL_ONLY;
-                                        capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     });
 
                                     waitsFor(function(){
@@ -379,12 +379,12 @@ joynrTestRequire(
                                     runs(function(){
                                         expect(localCapStoreSpy.lookup).not.toHaveBeenCalled();
                                         expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName,
                                             cacheMaxAge : discoveryQos.cacheMaxAge
                                         });
                                         expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                     });
@@ -398,10 +398,10 @@ joynrTestRequire(
                                             interfaceName)
                                     ]);
                                     discoveryQos.discoveryScope = DiscoveryScope.GLOBAL_ONLY;
-                                    capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                    capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     expect(localCapStoreSpy.lookup).not.toHaveBeenCalled();
                                     expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
-                                        domain : domain,
+                                        domains : [domain],
                                         interfaceName : interfaceName,
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
@@ -447,7 +447,7 @@ joynrTestRequire(
                             });
 
                             runs(function() {
-                                capabilityDiscovery.lookup(domain, interfaceName, discoveryQos)
+                                capabilityDiscovery.lookup([domain], interfaceName, discoveryQos)
                                         .then(onFulfilledSpy).catch(onRejectedSpy);
                             });
 
