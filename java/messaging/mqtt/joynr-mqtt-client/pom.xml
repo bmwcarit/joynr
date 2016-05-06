@@ -40,8 +40,8 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.paho</groupId>
-			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+			<groupId>io.joynr.mqtt</groupId>
+			<artifactId>mqtt-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>

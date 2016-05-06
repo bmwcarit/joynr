@@ -481,9 +481,9 @@
 				<version>${jetty.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.eclipse.paho</groupId>
-				<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-				<version>1.0.2</version>
+				<groupId>io.joynr.mqtt</groupId>
+				<artifactId>mqtt-client</artifactId>
+				<version>0.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject</groupId>
