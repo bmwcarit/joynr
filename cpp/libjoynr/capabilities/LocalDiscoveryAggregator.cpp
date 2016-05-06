@@ -88,7 +88,7 @@ void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discovery
 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>& result,
-                                      const std::string& domain,
+                                      const std::vector<std::string>& domains,
                                       const std::string& interfaceName,
                                       const joynr::types::DiscoveryQos& discoveryQos)
 {
@@ -97,7 +97,7 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
     }
-    discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+    discoveryProxy->lookup(result, domains, interfaceName, discoveryQos);
 }
 
 // inherited from joynr::system::IDiscoverySync

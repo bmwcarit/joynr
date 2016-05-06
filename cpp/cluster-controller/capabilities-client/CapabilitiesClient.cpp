@@ -99,25 +99,25 @@ void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 }
 
 std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
-        const std::string& domain,
+        const std::vector<std::string>& domains,
         const std::string& interfaceName,
         const std::int64_t messagingTtl)
 {
     setGlobalCapabilitiesDirectoryProxy(messagingTtl);
     std::vector<types::GlobalDiscoveryEntry> result;
-    capabilitiesProxyWorker->lookup(result, domain, interfaceName);
+    capabilitiesProxyWorker->lookup(result, domains, interfaceName);
     return result;
 }
 
 void CapabilitiesClient::lookup(
-        const std::string& domain,
+        const std::vector<std::string>& domains,
         const std::string& interfaceName,
         const std::int64_t messagingTtl,
         std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
     setGlobalCapabilitiesDirectoryProxy(messagingTtl);
-    capabilitiesProxyWorker->lookupAsync(domain, interfaceName, onSuccess, onError);
+    capabilitiesProxyWorker->lookupAsync(domains, interfaceName, onSuccess, onError);
 }
 
 void CapabilitiesClient::lookup(

@@ -95,7 +95,7 @@ public:
      * Returns a list of capabilitiess matching the given domain and interfaceName,
      * this is an asynchronous request, must supply a callback.
      */
-    virtual void lookup(const std::string& domain,
+    virtual void lookup(const std::vector<std::string>& domains,
                         const std::string& interfaceName,
                         std::shared_ptr<ILocalCapabilitiesCallback> callback,
                         const joynr::types::DiscoveryQos& discoveryQos);
@@ -114,7 +114,7 @@ public:
       */
     std::vector<CapabilityEntry> getCachedLocalCapabilities(const std::string& participantId);
     std::vector<CapabilityEntry> getCachedLocalCapabilities(
-            const InterfaceAddress& interfaceAddress);
+            const std::vector<InterfaceAddress>& interfaceAddress);
     /*
      * Performs maintenance on the cache and removes old entries
      */
@@ -134,7 +134,7 @@ public:
             override;
     // inherited method from joynr::system::DiscoveryProvider
     void lookup(
-            const std::string& domain,
+            const std::vector<std::string>& domains,
             const std::string& interfaceName,
             const joynr::types::DiscoveryQos& discoveryQos,
             std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess,
@@ -195,7 +195,7 @@ private:
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
                               joynr::types::DiscoveryScope::Enum discoveryScope);
 
-    bool getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress,
+    bool getLocalAndCachedCapabilities(const std::vector<InterfaceAddress>& interfaceAddress,
                                        const joynr::types::DiscoveryQos& discoveryQos,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool getLocalAndCachedCapabilities(const std::string& participantId,
@@ -211,7 +211,7 @@ private:
                        bool isGlobal,
                        bool localCache,
                        bool globalCache);
-    std::vector<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress,
+    std::vector<CapabilityEntry> searchCache(const std::vector<InterfaceAddress>& interfaceAddress,
                                              std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
     std::vector<CapabilityEntry> searchCache(const std::string& participantId,
