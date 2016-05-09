@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,8 +69,15 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
 
-    using AddressPtr = std::shared_ptr<const joynr::system::RoutingTypes::Address>;
-    using AddressPtrHash = boost::hash<AddressPtr>;
+    using Address = joynr::system::RoutingTypes::Address;
+    using AddressPtr = std::shared_ptr<const Address>;
+    struct AddressPtrHash
+    {
+        std::size_t operator()(const AddressPtr& addressPtr) const
+        {
+            return addressPtr->hashCode();
+        }
+    };
     struct AddressPtrCompare
     {
         bool operator()(const AddressPtr& p1, const AddressPtr& p2) const
