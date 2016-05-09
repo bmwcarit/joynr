@@ -38,7 +38,9 @@ std::shared_ptr<IMessaging> MessagingStubFactory::create(
              ++it) {
             if ((*it)->canCreate(*destinationAddress)) {
                 std::shared_ptr<IMessaging> stub = (*it)->create(*destinationAddress);
-                address2MessagingStubMap.insert(destinationAddress, stub);
+                if (stub != nullptr) {
+                    address2MessagingStubMap.insert(destinationAddress, stub);
+                }
                 return stub;
             }
         }

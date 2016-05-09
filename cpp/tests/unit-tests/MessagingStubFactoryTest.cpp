@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,14 @@ TEST_F(MessagingStubFactoryTest, containsFindsStub)
     messagingStubFactory.create(address);
     EXPECT_TRUE(messagingStubFactory.contains(address));
     EXPECT_TRUE(messagingStubFactory.contains(addressCopy));
+}
+
+TEST_F(MessagingStubFactoryTest, nullptrIsNotInsertedIntoCache)
+{
+    EXPECT_CALL(*(this->mockMiddlewareMessagingStubFactory), create(_)).WillOnce(Return(std::shared_ptr<IMessaging>()));
+    messagingStubFactory.create(address);
+    EXPECT_FALSE(messagingStubFactory.contains(address));
+    EXPECT_FALSE(messagingStubFactory.contains(addressCopy));
 }
 
 TEST_F(MessagingStubFactoryTest, emptyAfterRemove)
