@@ -356,10 +356,14 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_INCLUDE_DIRS}
     ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_INCLUDE_DIR}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
+)
+
+set(
+    JoynrTest_SYSTEM_INCLUDE_DIRECTORIES
+    ${spdlog_INCLUDE_DIRS}
+    ${jsmn_INCLUDE_DIR}
 )
 
 file(
@@ -379,9 +383,19 @@ add_library(JoynrTestGenerated OBJECT
     ${JoynrTest_GENHEADERS}
 )
 
+if(NOT USE_PLATFORM_SPDLOG)
+    add_dependencies(JoynrTestGenerated spdlog)
+endif(NOT USE_PLATFORM_SPDLOG)
+
 target_include_directories(
     JoynrTestGenerated
     PUBLIC ${JoynrTest_INCLUDE_DIRECTORIES}
+)
+
+target_include_directories(
+    JoynrTestGenerated
+    SYSTEM PUBLIC
+    ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
