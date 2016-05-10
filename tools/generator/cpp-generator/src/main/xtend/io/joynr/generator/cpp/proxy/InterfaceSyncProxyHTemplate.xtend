@@ -18,14 +18,12 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
 class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 	@Inject extension JoynrCppGeneratorExtensions
@@ -34,11 +32,6 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 	@Inject extension CppStdTypeUtil
 	@Inject extension CppInterfaceUtil
 	@Inject private extension NamingUtil
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate()
 '''
@@ -55,6 +48,9 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
+«IF hasFireAndForgetMethods(francaIntf)»
+	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»FireAndForgetProxy.h"
+«ENDIF»
 
 «FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
@@ -68,7 +64,11 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
+class «getDllExportMacro()» «syncClassName» :
+		virtual public «className»Base,
+		virtual public I«interfaceName»Sync«IF hasFireAndForgetMethods(francaIntf)»,
+		virtual public «interfaceName»FireAndForgetProxy«ENDIF»
+{
 public:
 	/**
 	 * @brief Parameterized constructor

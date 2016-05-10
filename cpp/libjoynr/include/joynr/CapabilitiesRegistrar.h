@@ -20,6 +20,7 @@
 #define CAPABILITIESREGISTRAR_H
 
 #include <cassert>
+#include <chrono>
 #include <string>
 #include <vector>
 #include <memory>
@@ -35,6 +36,7 @@
 #include "joynr/Future.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {
@@ -48,10 +50,10 @@ public:
     CapabilitiesRegistrar(
             std::vector<IDispatcher*> dispatcherList,
             joynr::system::IDiscoverySync& discoveryProxy,
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingStubAddress,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-            std::shared_ptr<MessageRouter> messageRouter);
+            std::shared_ptr<MessageRouter> messageRouter,
+            std::int64_t defaultExpiryIntervalMs);
 
     template <class T>
     std::string add(const std::string& domain,
@@ -74,10 +76,21 @@ public:
             currentDispatcher->addRequestCaller(participantId, caller);
         }
 
-        std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {
-                joynr::types::CommunicationMiddleware::JOYNR};
-        joynr::types::DiscoveryEntry entry(
-                domain, interfaceName, participantId, providerQos, connections);
+        const std::int64_t now =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch()).count();
+        const std::int64_t lastSeenDateMs = now;
+        const std::int64_t defaultExpiryDateMs = now + defaultExpiryIntervalMs;
+        const std::string defaultPublicKeyId("");
+        joynr::types::Version providerVersion;
+        joynr::types::DiscoveryEntry entry(providerVersion,
+                                           domain,
+                                           interfaceName,
+                                           participantId,
+                                           providerQos,
+                                           lastSeenDateMs,
+                                           defaultExpiryDateMs,
+                                           defaultPublicKeyId);
         try {
             discoveryProxy.add(entry);
         } catch (const exceptions::JoynrException& e) {
@@ -119,10 +132,10 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     std::vector<IDispatcher*> dispatcherList;
     joynr::system::IDiscoverySync& discoveryProxy;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingStubAddress;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
+    std::int64_t defaultExpiryIntervalMs;
     ADD_LOGGER(CapabilitiesRegistrar);
 };
 

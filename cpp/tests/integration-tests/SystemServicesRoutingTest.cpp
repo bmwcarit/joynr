@@ -37,9 +37,9 @@ public:
             routingDomain(),
             routingProviderParticipantId(),
             runtime(nullptr),
-            mockMessageReceiverHttp(new MockMessageReceiver()),
-            mockMessageReceiverMqtt(new MockMessageReceiver()),
-            mockMessageSender(new MockMessageSender()),
+            mockMessageReceiverHttp(std::make_shared<MockMessageReceiver>()),
+            mockMessageReceiverMqtt(std::make_shared<MockMessageReceiver>()),
+            mockMessageSender(std::make_shared<MockMessageSender>()),
             discoveryQos(),
             routingProxyBuilder(nullptr),
             routingProxy(nullptr)
@@ -49,17 +49,27 @@ public:
         routingDomain = systemSettings.getDomain();
         routingProviderParticipantId = systemSettings.getCcRoutingProviderParticipantId();
 
-        discoveryQos.setCacheMaxAge(1000);
+        discoveryQos.setCacheMaxAgeMs(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
         discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
-        discoveryQos.setDiscoveryTimeout(50);
+        discoveryQos.setDiscoveryTimeoutMs(50);
 
-        std::string channelIdHttp("SystemServicesRoutingTest.ChannelId");
-        std::string channelIdMqtt("mqtt_SystemServicesRoutingTest.ChannelId");
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverHttp)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdHttp));
-        EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiverMqtt)), getReceiveChannelId())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(channelIdMqtt));
+        std::string httpChannelId("http_SystemServicesRoutingTest.ChannelId");
+        std::string httpEndPointUrl("http_SystemServicesRoutingTest.endPointUrl");
+        std::string mqttTopic("mqtt_SystemServicesRoutingTest.topic");
+        std::string mqttBrokerUrl("mqtt_SystemServicesRoutingTest.brokerUrl");
+
+        using system::RoutingTypes::ChannelAddress;
+        using system::RoutingTypes::MqttAddress;
+
+        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
+
+        
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
@@ -88,6 +98,9 @@ public:
     }
 
     void TearDown(){
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
         delete routingProxy;
@@ -100,9 +113,9 @@ protected:
     std::string routingDomain;
     std::string routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
-    IMessageReceiver* mockMessageReceiverHttp;
-    IMessageReceiver* mockMessageReceiverMqtt;
-    MockMessageSender* mockMessageSender;
+    std::shared_ptr<IMessageReceiver> mockMessageReceiverHttp;
+    std::shared_ptr<IMessageReceiver> mockMessageReceiverMqtt;
+    std::shared_ptr<MockMessageSender> mockMessageSender;
     DiscoveryQos discoveryQos;
     ProxyBuilder<joynr::system::RoutingProxy>* routingProxyBuilder;
     joynr::system::RoutingProxy* routingProxy;
@@ -150,7 +163,7 @@ TEST_F(SystemServicesRoutingTest, addNextHopHttp)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
     bool isResolvable = false;
 
     try {
@@ -181,7 +194,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
     bool isResolvable = false;
 
     try {

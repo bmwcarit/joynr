@@ -25,8 +25,8 @@ joynrTestRequire("integration/TestHttpMessaging", [
     "joynr/messaging/CommunicationModule",
     "joynr/messaging/channel/LongPollingChannelMessageReceiver",
     "joynr/messaging/JoynrMessage",
-    "joynr/types/ChannelUrlInformation",
     "joynr/messaging/channel/ChannelMessagingSender",
+    "joynr/system/RoutingTypes/ChannelAddress",
     "joynr/system/LoggerFactory",
     "global/LocalStorage",
     "joynr/provisioning/provisioning_cc"
@@ -36,8 +36,8 @@ joynrTestRequire("integration/TestHttpMessaging", [
         CommunicationModule,
         LongPollingChannelMessageReceiver,
         JoynrMessage,
-        ChannelUrlInformation,
         ChannelMessagingSender,
+        ChannelAddress,
         LoggerFactory,
         LocalStorage,
         provisioning) {
@@ -45,100 +45,90 @@ joynrTestRequire("integration/TestHttpMessaging", [
     var localStorage = new LocalStorage();
 
     describe("libjoynr-js.joynr.messaging.TestHttpMessaging", function() {
-        it(
-                "sends and receives messages",
-                function() {
-                    var channel = "js_testOpenChannelSendMessage" + Date.now();
-                    var url = provisioning.bounceProxyUrl + "channels/" + channel + "/";
-                    var channelUrlInformation = new ChannelUrlInformation({
-                        urls : [ url
-                        ]
-                    });
-                    var channelUrlDirectory =
-                            jasmine.createSpyObj("channelUrlDirectory", [ "getUrlsForChannel"
-                            ]);
-                    channelUrlDirectory.getUrlsForChannel.andReturn(Promise
-                            .resolve(channelUrlInformation));
+        it("sends and receives messages", function() {
+            var channelId = "js_testOpenChannelSendMessage" + Date.now();
+            var url = provisioning.bounceProxyUrl + "channels/" + channelId + "/";
+            var channelAddress = new ChannelAddress({
+                channelId : channelId,
+                messagingEndpointUrl : url
+            });
 
-                    var communicationModule = new CommunicationModule();
+            var communicationModule = new CommunicationModule();
 
-                    var mr = new LongPollingChannelMessageReceiver({
-                        persistency : localStorage,
-                        bounceProxyUrl : provisioning.bounceProxyUrl,
-                        communicationModule : communicationModule
-                    });
-                    var numberOfMessages = 10;
+            var mr = new LongPollingChannelMessageReceiver({
+                persistency : localStorage,
+                bounceProxyUrl : provisioning.bounceProxyUrl,
+                communicationModule : communicationModule
+            });
+            var numberOfMessages = 10;
 
-                    /*
-                     * Set up a JoynrMessage to send
-                     */
-                    var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
-                    joynrMessage.setHeader(
-                            JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE,
-                            9360686108031);
-                    joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID, "me");
-                    joynrMessage.payload = "hello";
+            /*
+             * Set up a JoynrMessage to send
+             */
+            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, 9360686108031);
+            joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID, "me");
+            joynrMessage.payload = "hello";
 
-                    var fulfilledSpy = jasmine.createSpy("fulfilledSpy");
+            var fulfilledSpy = jasmine.createSpy("fulfilledSpy");
 
-                    runs(function() {
-                        mr.create(channel).then(fulfilledSpy);
-                    });
+            runs(function() {
+                mr.create(channelId).then(fulfilledSpy);
+            });
 
-                    waitsFor(function() {
-                        return fulfilledSpy.callCount > 0;
-                    }, "channel to be created", provisioning.ttl);
+            waitsFor(function() {
+                return fulfilledSpy.callCount > 0;
+            }, "channel to be created", provisioning.ttl);
 
-                    var receivedMessages = 0;
-                    runs(function() {
-                        expect(fulfilledSpy).toHaveBeenCalled();
+            var receivedMessages = 0;
+            runs(function() {
+                expect(fulfilledSpy).toHaveBeenCalled();
 
-                        mr.start(function() {
-                            ++receivedMessages;
-                        });
-                        var messageSender = new ChannelMessagingSender({
-                            channelUrlDirectory : channelUrlDirectory,
-                            communicationModule : communicationModule
-                        });
-
-                        messageSender.start();
-                        var msgPromises = [];
-                        var i;
-                        for (i = 0; i < numberOfMessages; i++) {
-                            msgPromises.push(messageSender.send(joynrMessage, channel));
-                        }
-
-                        fulfilledSpy.reset();
-                        Promise.all(msgPromises).then(fulfilledSpy);
-                    });
-
-                    waitsFor(function() {
-                        return fulfilledSpy.callCount > 0;
-                    }, "all messages to be sent", provisioning.ttl);
-
-                    waitsFor(function() {
-                        return receivedMessages === numberOfMessages;
-                    }, "all messages are received", provisioning.ttl);
-
-                    runs(function() {
-                        expect(fulfilledSpy).toHaveBeenCalled();
-                        expect(receivedMessages).toBe(numberOfMessages);
-
-                        fulfilledSpy.reset();
-
-                        mr.clear(channel).then(fulfilledSpy);
-                    });
-
-                    waitsFor(function() {
-                        return fulfilledSpy.callCount > 0;
-                    }, "channel to be removed", provisioning.ttl);
-
-                    runs(function() {
-                        expect(fulfilledSpy).toHaveBeenCalled();
-
-                        mr.stop();
-                    });
+                mr.start(function() {
+                    ++receivedMessages;
                 });
+                var messageSender = new ChannelMessagingSender({
+                    communicationModule : communicationModule
+                });
+
+                messageSender.start();
+                var msgPromises = [];
+                var i;
+                for (i = 0; i < numberOfMessages; i++) {
+                    msgPromises.push(messageSender.send(joynrMessage, channelAddress));
+                }
+
+                fulfilledSpy.reset();
+                Promise.all(msgPromises).then(fulfilledSpy);
+            });
+
+            waitsFor(function() {
+                return fulfilledSpy.callCount > 0;
+            }, "all messages to be sent", provisioning.ttl);
+
+            waitsFor(function() {
+                return receivedMessages === numberOfMessages;
+            }, "all messages are received", provisioning.ttl);
+
+            runs(function() {
+                expect(fulfilledSpy).toHaveBeenCalled();
+                expect(receivedMessages).toBe(numberOfMessages);
+
+                fulfilledSpy.reset();
+
+                mr.clear().then(fulfilledSpy);
+            });
+
+            waitsFor(function() {
+                return fulfilledSpy.callCount > 0;
+            }, "channel to be removed", provisioning.ttl);
+
+            runs(function() {
+                expect(fulfilledSpy).toHaveBeenCalled();
+
+                mr.stop();
+            });
+        });
     });
 
 });

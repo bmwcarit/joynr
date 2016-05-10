@@ -27,27 +27,10 @@ namespace exceptions
 class JoynrRuntimeException;
 } // namespace exceptions
 
-/**
- * @brief Class interface to be extended by attribute or broadcast subscription listeners
- */
-template <typename... Ts>
-class ISubscriptionListener
+class ISubscriptionListenerBase
 {
 public:
-    /** @brief Constructor */
-    ISubscriptionListener() = default;
-
-    /** @brief Destructor */
-    virtual ~ISubscriptionListener() = default;
-
-    /**
-     * @brief onReceive Gets called on every received publication
-     *
-     * Since the onReceive callback is called by a communication middleware thread, it should not
-     * be blocked, wait for user interaction, or do larger computation.
-     * @param values associated with the subscription this listener is listen to
-     */
-    virtual void onReceive(const Ts&... values) = 0;
+    virtual ~ISubscriptionListenerBase() = default;
 
     /**
      * @brief onError Gets called on every error that is detected on the subscription
@@ -56,6 +39,30 @@ public:
      * be blocked, wait for user interaction, or do larger computation.
      */
     virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
+};
+
+/**
+ * @brief Class interface to be extended by attribute or broadcast subscription listeners
+ */
+template <typename... Ts>
+class ISubscriptionListener : public ISubscriptionListenerBase
+{
+public:
+    /**
+     * @brief onReceive Gets called on every received publication
+     *
+     * Since the onReceive callback is called by a communication middleware thread, it should not
+     * be blocked, wait for user interaction, or do larger computation.
+     * @param values associated with the subscription this listener is listen to
+     */
+    virtual void onReceive(const Ts&... values) = 0;
+};
+
+template <>
+class ISubscriptionListener<void> : public ISubscriptionListenerBase
+{
+public:
+    virtual void onReceive() = 0;
 };
 
 } // namespace joynr

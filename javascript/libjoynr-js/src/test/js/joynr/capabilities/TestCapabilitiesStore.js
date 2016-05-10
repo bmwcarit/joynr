@@ -27,6 +27,7 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
     "joynr/types/ProviderScope",
     "joynr/types/ProviderQos",
     "joynr/types/CustomParameter",
+    "joynr/types/Version",
     "Date"
 ], function(
         CapabilitiesStore,
@@ -36,11 +37,16 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
         ProviderScope,
         ProviderQos,
         CustomParameter,
+        Version,
         Date) {
     describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         var fakeTime = 0, cacheMaxAge, directory, discoveryQos, discoveryEntry1;
         var discoveryEntry2, discoveryEntry3, discoveryEntry4;
         var settings = {
+            providerVersion : new Version({
+                majorVersion : 47,
+                minorVersion : 11
+            }),
             domain : "myDomain",
             interfaceName : "radio",
             qos : new ProviderQos({
@@ -54,6 +60,7 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
                 onChangeSubscriptions : true
             }),
             channelId : "0001",
+            publicKeyId : "",
             participantId : "700"
         };
 

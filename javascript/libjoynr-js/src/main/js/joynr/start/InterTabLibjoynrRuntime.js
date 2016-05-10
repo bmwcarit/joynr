@@ -26,7 +26,7 @@ define(
             "joynr/capabilities/arbitration/Arbitrator",
             "joynr/provider/ProviderBuilder",
             "joynr/proxy/ProxyBuilder",
-            "joynr/types/CapabilityInformation",
+            "joynr/types/GlobalDiscoveryEntry",
             "joynr/capabilities/CapabilitiesRegistrar",
             "joynr/capabilities/ParticipantIdStorage",
             "joynr/dispatching/RequestReplyManager",
@@ -73,7 +73,7 @@ define(
                 Arbitrator,
                 ProviderBuilder,
                 ProxyBuilder,
-                CapabilityInformation,
+                GlobalDiscoveryEntry,
                 CapabilitiesRegistrar,
                 ParticipantIdStorage,
                 RequestReplyManager,
@@ -327,7 +327,7 @@ define(
                             typedCapabilities = [];
                             for (i = 0; i < untypedCapabilities.length; i++) {
                                 var capability =
-                                        new CapabilityInformation(untypedCapabilities[i]);
+                                        new GlobalDiscoveryEntry(untypedCapabilities[i]);
                                 initialRoutingTable[capability.participantId] = ccAddress;
                                 typedCapabilities.push(capability);
                             }
@@ -392,7 +392,7 @@ define(
                                     new PublicationManager(
                                             dispatcher,
                                             persistency,
-                                            "localchannelId"); //TODO: set joynrInstanceId
+                                            "joynrInstanceId"); //TODO: set joynrInstanceId
 
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
@@ -410,7 +410,6 @@ define(
                                         libjoynrMessagingAddress : new InProcessAddress(
                                                 libjoynrMessagingSkeleton),
                                         participantIdStorage : participantIdStorage,
-                                        localChannelId : "localchannelId", //TODO: set joynrInstanceId
                                         loggingManager : loggingManager
                                     }));
 
@@ -498,9 +497,7 @@ define(
                                 });
 
                             // when everything's ready we can trigger the app
-                            return  Promise.all([
-                                    routingProxyPromise
-                                ]).then(
+                            return  routingProxyPromise.then(
                             function() {
                                 joynrState = JoynrStates.STARTED;
                                 publicationManager.restore();

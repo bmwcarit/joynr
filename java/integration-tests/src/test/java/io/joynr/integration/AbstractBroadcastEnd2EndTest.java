@@ -27,6 +27,7 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -106,7 +107,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
         String methodName = name.getMethodName();
         domain = "ProviderDomain-BroadcastEnd2End-" + methodName + "-" + System.currentTimeMillis();
-        provisionPermissiveAccessControlEntry(domain, DefaulttestProvider.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domain, ProviderAnnotations.getInterfaceName(DefaulttestProvider.class));
         setupProviderRuntime(methodName);
         setupConsumerRuntime(methodName);
         logger.info("Starting {} ...", methodName);
@@ -128,7 +129,9 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
-        providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
+        providerRuntime = getRuntime(factoryPropertiesProvider,
+                                     getSubscriptionPublisherFactoryModule(),
+                                     new StaticDomainAccessControlProvisioningModule());
 
         provider = new DefaulttestProvider();
         Future<Void> voidFuture = providerRuntime.registerProvider(domain, provider, providerQos);//.waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
@@ -146,7 +149,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "ClientDomain-" + methodName + "-"
                 + UUID.randomUUID().toString());
 
-        consumerRuntime = getRuntime(factoryPropertiesB);
+        consumerRuntime = getRuntime(factoryPropertiesB, getSubscriptionPublisherFactoryModule());
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
 
@@ -164,10 +167,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
         final Semaphore broadcastReceived = new Semaphore(0);
 
-        long minInterval = 0;
-        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
-        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToLocationUpdateBroadcast(new testBroadcastInterface.LocationUpdateBroadcastAdapter() {
 
             @Override
@@ -187,10 +187,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     public void subscribeToBroadcastMultipleOutputs() throws InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
 
-        long minInterval = 0;
-        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
-        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
 
                                                               @Override
@@ -213,10 +210,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         final Semaphore broadcastReceived = new Semaphore(0);
         final TestEnum expectedTestEnum = TestEnum.TWO;
 
-        long minInterval = 0;
-        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
-        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToBroadcastWithEnumOutputBroadcast(new testBroadcastInterface.BroadcastWithEnumOutputBroadcastListener() {
 
                                                               @Override
@@ -242,10 +236,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         final Semaphore broadcastReceived = new Semaphore(0);
         final Byte[] expectedByteBuffer = { 1, 2, 3 };
 
-        long minInterval = 0;
-        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
-        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToBroadcastWithByteBufferParameterBroadcast(new testBroadcastInterface.BroadcastWithByteBufferParameterBroadcastListener() {
 
                                                                        @Override
@@ -267,15 +258,53 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         broadcastReceived.acquire();
     }
 
+    private OnChangeSubscriptionQos createDefaultOnChangeSubscriptionQos() {
+        OnChangeSubscriptionQos onChangeSubscriptionQos = new OnChangeSubscriptionQos();
+        onChangeSubscriptionQos.setMinIntervalMs(0)
+                               .setValidityMs(CONST_DEFAULT_TEST_TIMEOUT)
+                               .setPublicationTtlMs(CONST_DEFAULT_TEST_TIMEOUT);
+        return onChangeSubscriptionQos;
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void subscribeAndUnsubscribeFromEmptyBroadcast() throws InterruptedException {
+
+        final Semaphore broadcastReceived = new Semaphore(0);
+
+        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
+
+        String subscriptionId = proxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+
+                                                                             @Override
+                                                                             public void onReceive() {
+                                                                                 broadcastReceived.release();
+                                                                             }
+                                                                         },
+                                                                         subscriptionQos);
+
+        Thread.sleep(300);
+
+        provider.fireEmptyBroadcast();
+        broadcastReceived.acquire();
+
+        //unsubscribe incorrect subscription -> now, a firing broadcast shall still be received
+        proxy.unsubscribeFromEmptyBroadcastBroadcast(UUID.randomUUID().toString());
+        provider.fireEmptyBroadcast();
+        broadcastReceived.acquire();
+
+        //unsubscribe correct subscription -> now, no more broadcast shall be received
+        proxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionId);
+        Thread.sleep(300);
+        provider.fireEmptyBroadcast();
+        assertFalse(broadcastReceived.tryAcquire(300, TimeUnit.MILLISECONDS));
+    }
+
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeAndUnsubscribeFromBroadcast() throws InterruptedException {
 
         final Semaphore broadcastReceived = new Semaphore(0);
 
-        long minInterval = 0;
-        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
-        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         String subscriptionId = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
 
                                                                                       @Override
@@ -336,13 +365,10 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
             }
         };
 
-        provider.addBroadcastFilter(filter1);
-        provider.addBroadcastFilter(filter2);
+        getSubscriptionTestsPublisher().addBroadcastFilter(filter1);
+        getSubscriptionTestsPublisher().addBroadcastFilter(filter2);
 
-        long minInterval = 0;
-        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
-        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastAdapter() {
 
                                                               @Override
@@ -388,13 +414,10 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
             }
         };
 
-        provider.addBroadcastFilter(filter1);
-        provider.addBroadcastFilter(filter2);
+        getSubscriptionTestsPublisher().addBroadcastFilter(filter1);
+        getSubscriptionTestsPublisher().addBroadcastFilter(filter2);
 
-        long minInterval = 0;
-        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
-        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToLocationUpdateSelectiveBroadcast(new testBroadcastInterface.LocationUpdateSelectiveBroadcastAdapter() {
 
                                                               @Override

@@ -1,22 +1,22 @@
 package io.joynr.generator
+
 /*
  * !!!
- *
+ * 
  * Copyright (C) 2011 - 2016 BMW Car IT GmbH
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *	  http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import com.google.common.collect.Sets
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
@@ -26,11 +26,8 @@ import io.joynr.generator.filter.FilterGenerator
 import io.joynr.generator.interfaces.InterfaceGenerator
 import io.joynr.generator.provider.ProviderGenerator
 import io.joynr.generator.proxy.ProxyGenerator
-import io.joynr.generator.util.IgnoreSVNFileFilter
 import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
-import java.io.File
-import java.io.FileNotFoundException
 import java.util.HashSet
 import java.util.Map
 import org.eclipse.emf.ecore.resource.Resource
@@ -41,9 +38,9 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModel
 
 import static com.google.common.base.Preconditions.*
-import static org.eclipse.xtext.util.Files.*
+import io.joynr.generator.templates.util.SupportedFrancaFeatureChecker
 
-class JoynrJavaGenerator extends AbstractJoynrGenerator {
+class JoynrJavaGenerator implements IJoynrGenerator {
 	@Inject
 	InterfaceGenerator interfacesGenerator
 
@@ -82,35 +79,24 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 
 		val fModel = input.contents.get(0) as FModel
 
-		for(fInterface: fModel.interfaces){
+		SupportedFrancaFeatureChecker.checkModel(fModel)
+
+		for (fInterface : fModel.interfaces) {
 			interfacesGenerator.doGenerate(fInterface, fsa)
 			proxyGenerator.doGenerate(fInterface, fsa)
 			providerGenerator.doGenerate(fInterface, fsa)
 			filterGenerator.doGenerate(fInterface, fsa)
 		}
-		//cleanDirectory(containerpath)
+		// cleanDirectory(containerpath)
 		communicationModelGenerator.doGenerate(fModel, fsa)
-	}
-
-	def void cleanDirectory(String path) {
-		val directory = new File(path);
-		if (!directory.exists()) {
-			directory.mkdirs();
-		} else {
-			try {
-				cleanFolder(directory, new IgnoreSVNFileFilter(), true, false);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	def Iterable<FInterface> findAllFInterfaces(Resource resource) {
 		val result = new HashSet<FInterface>()
 		val rs = resource.resourceSet
-		for (r : rs.resources){
-			for (c : r.contents){
-				if (c instanceof FModel){
+		for (r : rs.resources) {
+			for (c : r.contents) {
+				if (c instanceof FModel) {
 					result.addAll((c).interfaces)
 				}
 			}
@@ -121,9 +107,9 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 	def Iterable<FCompoundType> findAllComplexTypes(Resource resource) {
 		val result = new HashSet<FCompoundType>()
 		val rs = resource.resourceSet
-		for (r : rs.resources){
-			for (c : r.contents){
-				if (c instanceof FModel){
+		for (r : rs.resources) {
+			for (c : r.contents) {
+				if (c instanceof FModel) {
 					result.addAll(getCompoundDataTypes(c))
 				}
 			}
@@ -131,11 +117,13 @@ class JoynrJavaGenerator extends AbstractJoynrGenerator {
 		return result
 	}
 
-	override setParameters(Map<String,String> parameter) {
-		// do nothing
+	override setParameters(Map<String, String> parameter) {
+		if (parameter.keySet.contains("jee")) {
+			activateJeeExtension
+		}
 	}
 
 	override supportedParameters() {
-		Sets::newHashSet();
+		Sets::newHashSet("jee");
 	}
 }

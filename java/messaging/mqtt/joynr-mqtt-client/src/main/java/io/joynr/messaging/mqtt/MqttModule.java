@@ -72,8 +72,10 @@ public class MqttModule extends AbstractModule {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
         messagingSkeletonFactory.addBinding(MqttAddress.class).to(MqttMessagingSkeleton.class);
 
-        Multibinder<GlobalAddressFactory> globalAddresses = Multibinder.newSetBinder(binder(),
-                                                                                     GlobalAddressFactory.class);
+        Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
+        globalAddresses = Multibinder.newSetBinder(binder(),
+                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+                                                   });
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
 
     }

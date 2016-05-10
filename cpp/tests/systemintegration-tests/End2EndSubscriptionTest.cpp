@@ -89,7 +89,10 @@ public:
         runtime1->stop(deleteChannel);
         runtime2->stop(deleteChannel);
 
-        // Delete the persisted participant ids so that each test uses different participant ids
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
@@ -150,8 +153,8 @@ protected:
                 = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeout(1000);
-        discoveryQos.setRetryInterval(250);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
+        discoveryQos.setRetryIntervalMs(250);
 
         std::int64_t qosRoundTripTTL = 500;
 

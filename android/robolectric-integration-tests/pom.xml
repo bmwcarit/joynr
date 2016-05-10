@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>0.17.0-SNAPSHOT</version>
+		<version>0.18.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -131,100 +131,6 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-integration-test-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>single-bounceproxy</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>discovery-directory-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>discovery.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>domain-access-controller-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>accesscontrol.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>bounceproxy-controller-nonclustered</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy-controller-nonclustered.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>bounceproxy-controller-clustered</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy-controller-clustered.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>controlled-bounceproxy</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>controlled-bounceproxy.war</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<configuration>
-					<daemon>true</daemon>
-					<stopWait>5</stopWait>
-				</configuration>
-				<executions>
-					<execution>
-						<id>start-jetty</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>start</goal>
-						</goals>
-						<configuration>
-							<useTestScope>false</useTestScope>
-						</configuration>
-					</execution>
-					<execution>
-						<id>stop-jetty</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<executions>
 					<!-- disable the default execution for unit tests -->
@@ -269,5 +175,92 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>my-test-plugins</id>
 
+			<activation>
+				<property>
+					<name>skipTests</name>
+					<value>false</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-integration-test-dependencies</id>
+								<phase>package</phase>
+								<goals>
+									<goal>copy</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+											<artifactId>single-bounceproxy</artifactId>
+											<version>${project.version}</version>
+											<type>war</type>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>bounceproxy.war</destFileName>
+										</artifactItem>
+										<artifactItem>
+												<groupId>io.joynr.java.backend-services</groupId>
+											<artifactId>discovery-directory-servlet</artifactId>
+											<version>${project.version}</version>
+											<type>war</type>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>discovery.war</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>io.joynr.java.backend-services</groupId>
+											<artifactId>domain-access-controller-servlet</artifactId>
+											<version>${project.version}</version>
+											<type>war</type>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>accesscontrol.war</destFileName>
+										</artifactItem>
+									</artifactItems>
+									<overWriteReleases>false</overWriteReleases>
+									<overWriteSnapshots>true</overWriteSnapshots>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<!-- jetty only needs to run in case of test execution -->
+					<plugin>
+						<groupId>org.eclipse.jetty</groupId>
+						<artifactId>jetty-maven-plugin</artifactId>
+						<configuration>
+							<daemon>true</daemon>
+							<stopWait>5</stopWait>
+						</configuration>
+						<executions>
+							<execution>
+								<id>start-jetty</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>start</goal>
+								</goals>
+								<configuration>
+									<useTestScope>false</useTestScope>
+								</configuration>
+							</execution>
+							<execution>
+								<id>stop-jetty</id>
+								<phase>post-integration-test</phase>
+								<goals>
+									<goal>stop</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

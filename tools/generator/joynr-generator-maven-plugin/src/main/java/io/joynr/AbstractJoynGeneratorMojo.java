@@ -52,18 +52,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected String model;
 
     /**
-     * Properties path to the generation templates.
-     * @parameter expression="${joynr.generator.templatesDir}"
-     */
-    protected String templatesDir;
-
-    /**
-     * Properties encoding of the templates.
-     * @parameter expression="${joynr.generator.templatesEncoding}"
-     */
-    protected String templatesEncoding;
-
-    /**
      * Properties full name of the root generator.
      * @parameter expression="${joynr.generator.rootGenerator}"
      */
@@ -116,8 +104,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected int getParameterHashCode() {
         StringBuilder sb = new StringBuilder();
         sb.append(model);
-        sb.append(templatesDir);
-        sb.append(templatesEncoding);
         sb.append(rootGenerator);
         sb.append(generationLanguage);
         sb.append(generationId);
@@ -137,10 +123,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         int executionHashCode = getParameterHashCode();
         String generationDonePropertyName = "generation.done.id[" + executionHashCode + "]";
 
-        if (templatesEncoding == null) {
-            templatesEncoding = defaultEncoding;
-        }
-
         getLog().info("----------------------------------------------------------------------");
         getLog().info("JOYNR GENERATOR execution for parameter hash \"" + executionHashCode + "\".");
         getLog().info("----------------------------------------------------------------------");
@@ -149,8 +131,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
             return;
         }
         getLog().info("model: " + (model == null ? "not specified" : model));
-        getLog().info("templatesDir " + (templatesDir == null ? "not specified" : templatesDir));
-        getLog().info("templatesEncoding " + (templatesEncoding == null ? "not specified" : templatesEncoding));
         getLog().info("generationLanguage " + (generationLanguage == null ? "not specified" : generationLanguage));
         getLog().info("rootGenerator " + (rootGenerator == null ? "not specified" : rootGenerator));
         getLog().info("generationId " + (generationId == null ? "not specified" : generationId));
@@ -181,8 +161,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected InvocationArguments createInvocationArguments() {
         InvocationArguments arguments = new InvocationArguments();
         arguments.setModelPath(model);
-        arguments.setTemplatesDir(templatesDir);
-        arguments.setTemplatesEncoding(templatesEncoding);
         arguments.setRootGenerator(rootGenerator);
         arguments.setGenerationLanguage(generationLanguage);
         arguments.setGenerationId(generationId);

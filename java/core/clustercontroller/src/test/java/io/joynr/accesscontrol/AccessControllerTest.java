@@ -33,9 +33,9 @@ import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -55,6 +55,8 @@ import com.google.inject.Injector;
 @RunWith(MockitoJUnitRunner.class)
 public class AccessControllerTest {
 
+    private static final int ONE_MINUTE_IN_MS = 60 * 1000;
+
     @Mock
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
 
@@ -73,6 +75,7 @@ public class AccessControllerTest {
     private String testDomain = "testDomain";
     private String testInterface = "testInterface";
     private String testOperation = "testOperation";
+    private String testPublicKeyId = "testPublicKeyId";
     private ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(1000);
 
     @BeforeClass
@@ -101,11 +104,14 @@ public class AccessControllerTest {
         message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, expiryDate);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(testDomain,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           testDomain,
                                                            testInterface,
                                                            toParticipantId,
                                                            new ProviderQos(),
-                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                           System.currentTimeMillis(),
+                                                           System.currentTimeMillis() + ONE_MINUTE_IN_MS,
+                                                           testPublicKeyId);
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(discoveryEntry);
     }
 

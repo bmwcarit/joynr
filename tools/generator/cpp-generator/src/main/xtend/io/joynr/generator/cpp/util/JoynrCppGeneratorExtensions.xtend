@@ -130,11 +130,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		«ENDIF»
 	'''
 
-	override String getOneLineWarning() {
-		//return ""
-		return "/* Generated Code */  "
-	}
-
 	// Get the name of enum types that are nested in an Enum wrapper class
 	def String getNestedEnumName() {
 		return "Enum";

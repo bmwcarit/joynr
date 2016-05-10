@@ -59,7 +59,7 @@ fi
 
 # Expand the PATH in order to let the test consumers find
 # the tools to kill / restart cluster-controller or provider
-export PATH=$PATH:$JOYNR_SOURCE_DIR/tests/robustness
+export PATH=$PATH:$JOYNR_SOURCE_DIR/tests/robustness-test
 
 # process ids for background stuff
 JETTY_PID=""
@@ -194,7 +194,7 @@ function start_java_provider {
 	echo '####################################################'
 	echo '# starting Java provider'
 	echo '####################################################'
-	cd $JOYNR_SOURCE_DIR/tests/robustness
+	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -f java-provider.persistence_file
 	rm -f java-consumer.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ROBUSTNESS_RESULTS_DIR/provider_java.log 2>&1 &
@@ -259,7 +259,7 @@ function start_javascript_provider {
 	echo '####################################################'
 	echo '# starting Javascript provider'
 	echo '####################################################'
-	cd $JOYNR_SOURCE_DIR/tests/robustness
+	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	nohup npm run-script startprovider --robustnessTest:domain=$DOMAIN > $ROBUSTNESS_RESULTS_DIR/provider_javascript.log 2>&1 &
 	PROVIDER_PID=$!
 	disown $PROVIDER_PID
@@ -272,7 +272,7 @@ function start_java_consumer {
 	echo '####################################################'
 	echo '# starting Java consumer'
 	echo '####################################################'
-	cd $JOYNR_SOURCE_DIR/tests/robustness
+	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -f java-consumer.persistence_file
 	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessConsumerApplication" -Dexec.args="$DOMAIN http:mqtt" >> $ROBUSTNESS_RESULTS_DIR/consumer_java_$1.log 2>&1
 	SUCCESS=$?
@@ -322,7 +322,7 @@ function start_javascript_consumer {
 	echo '####################################################'
 	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -fr localStorageStorage
-	npm run-script startjasmine --robustness-test:domain=$DOMAIN --robustness-test:cmdPath=$JOYNR_SOURCE_DIR/tests/robustness > $ROBUSTNESS_RESULTS_DIR/consumer_javascript_$1.log 2>&1
+	npm run-script startjasmine --robustness-test:domain=$DOMAIN --robustness-test:testcase=$TESTCASE --robustness-test:cmdPath=$JOYNR_SOURCE_DIR/tests/robustness-test > $ROBUSTNESS_RESULTS_DIR/consumer_javascript_$1.log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]
@@ -407,6 +407,18 @@ then
 	echo '####################################################'
 	echo '####################################################'
 	TESTCASE="js_tests"
+	start_services $TESTCASE
+	start_cluster_controller $TESTCASE
+	start_javascript_provider
+	start_javascript_consumer $TESTCASE
+	stop_any_provider
+	stop_any_cluster_controller
+	echo '####################################################'
+	echo '####################################################'
+	echo '# RUN CHECKS WITH JAVASCRIPT and C++ PROVIDER'
+	echo '####################################################'
+	echo '####################################################'
+	TESTCASE="js_cpp_tests"
 	start_services $TESTCASE
 	start_cluster_controller $TESTCASE
 	start_cpp_provider

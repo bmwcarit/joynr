@@ -68,6 +68,7 @@ public:
 
 private:
     void handleRequestReceived(const JoynrMessage& message);
+    void handleOneWayRequestReceived(const JoynrMessage& message);
     void handleReplyReceived(const JoynrMessage& message);
     void handlePublicationReceived(const JoynrMessage& message);
     void handleSubscriptionRequestReceived(const JoynrMessage& message);

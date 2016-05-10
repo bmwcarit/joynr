@@ -19,14 +19,16 @@
 #include "joynr/LocalDiscoveryAggregator.h"
 
 #include <utility>
+#include <chrono>
+#include <limits>
 
-#include "joynr/types/CommunicationMiddleware.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/SystemServicesSettings.h"
 
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/Version.h"
 #include "joynr/system/IRouting.h"
 #include "joynr/system/IDiscovery.h"
 
@@ -34,29 +36,34 @@ namespace joynr
 {
 
 LocalDiscoveryAggregator::LocalDiscoveryAggregator(
-        IRequestCallerDirectory& requestCallerDirectory,
         const SystemServicesSettings& systemServicesSettings)
-        : discoveryProxy(),
-          requestCallerDirectory(requestCallerDirectory),
-          provisionedDiscoveryEntries(),
-          systemServicesSettings(systemServicesSettings)
+        : discoveryProxy(), provisionedDiscoveryEntries()
 {
-    std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
-    connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
+    std::int64_t lastSeenDateMs = 0;
+    std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    std::string defaultPublicKeyId("");
+
+    joynr::types::Version providerVersion;
     joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
+            providerVersion,
             systemServicesSettings.getDomain(),
             joynr::system::IRouting::INTERFACE_NAME(),
             systemServicesSettings.getCcRoutingProviderParticipantId(),
             joynr::types::ProviderQos(),
-            connections);
+            lastSeenDateMs,
+            expiryDateMs,
+            defaultPublicKeyId);
     provisionedDiscoveryEntries.insert(std::make_pair(
             routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
     joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
+            providerVersion,
             systemServicesSettings.getDomain(),
             joynr::system::IDiscovery::INTERFACE_NAME(),
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),
             joynr::types::ProviderQos(),
-            connections);
+            lastSeenDateMs,
+            expiryDateMs,
+            defaultPublicKeyId);
     provisionedDiscoveryEntries.insert(std::make_pair(
             discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
 }
@@ -79,18 +86,6 @@ void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discovery
     discoveryProxy->add(discoveryEntry);
 }
 
-void LocalDiscoveryAggregator::checkForLocalAvailabilityAndAddInProcessConnection(
-        joynr::types::DiscoveryEntry& discoveryEntry)
-{
-    std::string participantId(discoveryEntry.getParticipantId());
-    if (requestCallerDirectory.containsRequestCaller(participantId)) {
-        std::vector<joynr::types::CommunicationMiddleware::Enum> connections(
-                discoveryEntry.getConnections());
-        connections.insert(connections.begin(), joynr::types::CommunicationMiddleware::IN_PROCESS);
-        discoveryEntry.setConnections(connections);
-    }
-}
-
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>& result,
                                       const std::string& domain,
@@ -103,10 +98,6 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
                 "local capabilitites directory.");
     }
     discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-
-    for (joynr::types::DiscoveryEntry& discoveryEntry : result) {
-        checkForLocalAvailabilityAndAddInProcessConnection(discoveryEntry);
-    }
 }
 
 // inherited from joynr::system::IDiscoverySync
@@ -124,7 +115,6 @@ void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
         }
         discoveryProxy->lookup(result, participantId);
     }
-    checkForLocalAvailabilityAndAddInProcessConnection(result);
 }
 
 // inherited from joynr::system::IDiscoverySync

@@ -28,7 +28,6 @@ joynrTestRequire(
             "joynr/start/TypeRegistry",
             "joynr/types/TypeRegistrySingleton",
             "joynr/types/DiscoveryEntry",
-            "joynr/types/CommunicationMiddleware",
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
             "joynr/vehicle/radiotypes/RadioStation",
@@ -41,7 +40,6 @@ joynrTestRequire(
                 TypeRegistry,
                 TypeRegistrySingleton,
                 DiscoveryEntry,
-                CommunicationMiddleware,
                 ProviderQos,
                 ProviderScope,
                 RadioStation,
@@ -382,10 +380,8 @@ joynrTestRequire(
                                         interfaceName : "interfaceName",
                                         participantId : "participantId",
                                         qos : providerQos,
-                                        connections : [
-                                            "COMMONAPI_DBUS",
-                                            "JOYNR"
-                                        ]
+                                        lastSeenDateMs : 123,
+                                        publicKeyId : "publicKeyId"
                                     };
                                     /*jslint nomen: false */
 
@@ -395,6 +391,7 @@ joynrTestRequire(
                                                         domain : fixture.domain,
                                                         interfaceName : fixture.interfaceName,
                                                         participantId : fixture.participantId,
+                                                        lastSeenDateMs : 123,
                                                         qos : new ProviderQos(
                                                                 {
                                                                     customParameters : providerQos.customParameters,
@@ -402,10 +399,7 @@ joynrTestRequire(
                                                                     scope : ProviderScope.GLOBAL,
                                                                     supportsOnChangeSubscriptions : providerQos.supportsOnChangeSubscriptions
                                                                 }),
-                                                        connections : [
-                                                            CommunicationMiddleware.COMMONAPI_DBUS,
-                                                            CommunicationMiddleware.JOYNR
-                                                        ]
+                                                        publicKeyId : "publicKeyId"
                                                     });
                                     expect(
                                             Typing.augmentTypes(fixture, TypeRegistrySingleton

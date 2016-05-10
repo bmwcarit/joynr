@@ -12,7 +12,7 @@ fi
 
 if [ -z "$ROBUSTNESS_BUILD_DIR" ]
 then
-    ROBUSTNESS_BUILD_DIR=$JOYNR_SOURCE_DIR/tests/robustness/build
+    ROBUSTNESS_BUILD_DIR=$JOYNR_SOURCE_DIR/tests/robustness-test/build
 fi
 
 # if CI environment, source global settings
@@ -23,7 +23,7 @@ fi
 
 if [ -z "$ROBUSTNESS_RESULTS_DIR" ]
 then
-    ROBUSTNESS_RESULTS_DIR=$JOYNR_SOURCE_DIR/tests/robustness/robustness-results-$(date "+%Y-%m-%d-%H:%M:%S")
+    ROBUSTNESS_RESULTS_DIR=$JOYNR_SOURCE_DIR/tests/robustness-test/robustness-results-$(date "+%Y-%m-%d-%H:%M:%S")
 fi
 mkdir -p $ROBUSTNESS_RESULTS_DIR
 
@@ -31,7 +31,7 @@ function start_java_provider {
     echo '####################################################'
     echo '# starting Java provider'
     echo '####################################################'
-    cd $JOYNR_SOURCE_DIR/tests/robustness
+    cd $JOYNR_SOURCE_DIR/tests/robustness-test
     # leave any persistence files instact, since this is a restart
     mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ROBUSTNESS_RESULTS_DIR/provider_java.log 2>&1 &
     PROVIDER_PID=$!
@@ -58,7 +58,7 @@ function start_javascript_provider {
     echo '####################################################'
     echo '# starting Javascript provider'
     echo '####################################################'
-    cd $JOYNR_SOURCE_DIR/tests/robustness
+    cd $JOYNR_SOURCE_DIR/tests/robustness-test
     nohup npm run-script startprovider --robustnessTest:domain=$DOMAIN > $ROBUSTNESS_RESULTS_DIR/provider_javascript.log 2>&1 &
     PROVIDER_PID=$!
     echo "Started Javascript provider with PID $PROVIDER_PID"

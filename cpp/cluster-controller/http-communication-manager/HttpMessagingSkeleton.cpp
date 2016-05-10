@@ -21,6 +21,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/JsonSerializer.h"
 
 namespace joynr
 {
@@ -40,10 +41,22 @@ void HttpMessagingSkeleton::transmit(
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
-        std::string replyChannelId = message.getHeaderReplyChannelId();
-        auto address =
-                std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(replyChannelId);
-        messageRouter.addNextHop(message.getHeaderFrom(), address);
+        try {
+            using system::RoutingTypes::ChannelAddress;
+
+            ChannelAddress channelAddress =
+                    JsonSerializer::deserialize<ChannelAddress>(message.getHeaderReplyAddress());
+
+            auto address = std::make_shared<const ChannelAddress>(channelAddress);
+            messageRouter.addNextHop(message.getHeaderFrom(), address);
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_FATAL(logger,
+                            "could not deserialize ChannelAddress from {} - error: {}",
+                            message.getHeaderReplyAddress(),
+                            e.what());
+            // do not try to route the message if address is not valid
+            return;
+        }
     }
 
     try {

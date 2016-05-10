@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
@@ -28,7 +27,6 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import java.util.ArrayList
 import java.util.HashMap
-import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
 class DefaultInterfaceProviderTemplate extends InterfaceProviderTemplate {
@@ -39,11 +37,6 @@ class DefaultInterfaceProviderTemplate extends InterfaceProviderTemplate {
 	@Inject extension MethodUtil
 	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate() {
 		var methodToDeferredName = new HashMap<FMethod, String>();
@@ -62,18 +55,17 @@ package «packagePath»;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.joynr.provider.Promise;
-«IF hasReadAttribute(francaIntf)»
-	import io.joynr.provider.Deferred;
-«ENDIF»
-«IF hasWriteAttribute(francaIntf) || hasMethodWithArguments(francaIntf)»
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-«ENDIF»
-«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
-	import io.joynr.provider.DeferredVoid;
+«IF hasNonFireAndForgetMethods(francaIntf) || hasReadAttribute(francaIntf) || hasWriteAttribute(francaIntf)»
+	import io.joynr.provider.Promise;
+	«IF hasReadAttribute(francaIntf)»
+		import io.joynr.provider.Deferred;
+	«ENDIF»
+	«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
+		import io.joynr.provider.DeferredVoid;
+	«ENDIF»
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, true)»
 	import «datatype»;
 «ENDFOR»
 
@@ -124,24 +116,30 @@ public class «className» extends «abstractProviderName» {
 	«FOR method : getMethods(francaIntf)»
 		«var methodName = method.joynrName»
 		«var deferredName = methodToDeferredName.get(method)»
-		«var params = method.typedParameterListJavaRpc»
+		«var params = method.inputParameters.typedParameterList»
 		«val outputParameters = getOutputParameters(method)»
 
 		/*
 		* «methodName»
 		*/
 		@Override
-		public Promise<«deferredName»> «methodName»(
+		«IF method.fireAndForget»
+		public void «methodName» (
+		«ELSE»
+		public Promise<«deferredName»> «methodName» (
+		«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF») {
 			logger.warn("**********************************************");
 			logger.warn("* «className».«methodName» called");
 			logger.warn("**********************************************");
+			«IF !method.fireAndForget»
 			«deferredName» deferred = new «deferredName»();
 			«FOR outputParameter : outputParameters»
 				«outputParameter.typeName» «outputParameter.name» = «outputParameter.defaultValue»;
 			«ENDFOR»
 			deferred.resolve(«method.commaSeperatedUntypedOutputParameterList»);
 			return new Promise<«deferredName»>(deferred);
+			«ENDIF»
 		}
 	«ENDFOR»
 }

@@ -23,10 +23,10 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -34,19 +34,22 @@ import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
+import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrRuntime;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.CapabilityInformation;
-import joynr.types.CommunicationMiddleware;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -62,9 +65,21 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
+
 @Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryTest {
+    private static final String TEST_URL = "http://testUrl";
+    private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
+    private Long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
+    private String publicKeyId = "publicKeyId";
+
     @Mock
     JoynrRuntime runtime;
     @Mock
@@ -76,24 +91,27 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     private ProxyBuilderFactory proxyBuilderFactoryMock;
     @Mock
-    protected CapabilitiesStore localCapabilitiesStoreMock;
+    protected DiscoveryEntryStore localDiscoveryEntryStoreMock;
     @Mock
-    protected CapabilitiesCache globalCapabilitiesCacheMock;
+    protected DiscoveryEntryStore globalDiscoveryEntryCacheMock;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
-    private String channelId;
+    private ChannelAddress channelAddress;
+    private String channelAddressSerialized;
     private DiscoveryEntry discoveryEntry;
-    private CapabilityInformation capabilityInformation;
+    private GlobalDiscoveryEntry globalDiscoveryEntry;
 
-    public interface TestInterface extends JoynrInterface {
+    public interface TestInterface {
         public static final String INTERFACE_NAME = "interfaceName";
     }
 
     @SuppressWarnings("unchecked")
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
 
-        channelId = "testChannelId";
+        channelAddress = new ChannelAddress(TEST_URL, "testChannelId");
+        ObjectMapper objectMapper = new ObjectMapper();
+        channelAddressSerialized = objectMapper.writeValueAsString(channelAddress);
 
         Answer<Void> answer = new Answer<Void>() {
 
@@ -106,28 +124,36 @@ public class LocalCapabilitiesDirectoryTest {
 
         };
         Mockito.doAnswer(answer).when(globalCapabilitiesClient).add(Mockito.any(Callback.class),
-                                                                    Mockito.any(CapabilityInformation.class));
+                                                                    Mockito.any(GlobalDiscoveryEntry.class));
 
         String discoveryDirectoriesDomain = "io.joynr";
-        String channelUrlDirectoryParticipantId = "channelUrlDir_participantId";
-        String channelUrlDirectoryChannelId = "dirchannelId";
         String capabilitiesDirectoryParticipantId = "capDir_participantId";
         String capabiltitiesDirectoryChannelId = "dirchannelId";
         String domainAccessControllerParticipantId = "domainAccessControllerParticipantId";
         String domainAccessControllerChannelId = "domainAccessControllerChannelId";
 
+        Injector injector = Guice.createInjector(new JsonMessageSerializerModule(), new AbstractModule() {
+            @Override
+            protected void configure() {
+                requestStaticInjection(CapabilityUtils.class);
+                bind(Address.class).annotatedWith(Names.named(ClusterControllerRuntimeModule.GLOBAL_ADDRESS))
+                                   .toInstance(channelAddress);
+            }
+        });
+
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(discoveryDirectoriesDomain,
-                                                                        channelUrlDirectoryParticipantId,
-                                                                        channelUrlDirectoryChannelId,
                                                                         capabilitiesDirectoryParticipantId,
-                                                                        capabiltitiesDirectoryChannelId,
+                                                                        new ChannelAddress(TEST_URL,
+                                                                                           capabiltitiesDirectoryChannelId),
                                                                         domainAccessControllerParticipantId,
-                                                                        domainAccessControllerChannelId,
-                                                                        new ChannelAddress(channelId),
-                                                                        localCapabilitiesStoreMock,
-                                                                        globalCapabilitiesCacheMock,
+                                                                        new ChannelAddress(TEST_URL,
+                                                                                           domainAccessControllerChannelId),
+                                                                        injector.getInstance(GlobalAddressProvider.class),
+                                                                        localDiscoveryEntryStoreMock,
+                                                                        globalDiscoveryEntryCacheMock,
                                                                         messageRouter,
-                                                                        proxyBuilderFactoryMock);
+                                                                        proxyBuilderFactoryMock,
+                                                                        new ObjectMapper());
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] parameterList = { new CustomParameter("key1", "value1"),
@@ -136,16 +162,23 @@ public class LocalCapabilitiesDirectoryTest {
 
         String participantId = "testParticipantId";
         String domain = "domain";
-        discoveryEntry = new DiscoveryEntry(domain,
+        discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                            domain,
                                             TestInterface.INTERFACE_NAME,
                                             participantId,
                                             providerQos,
-                                            new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
-        capabilityInformation = new CapabilityInformation(domain,
-                                                          TestInterface.INTERFACE_NAME,
-                                                          providerQos,
-                                                          channelId,
-                                                          participantId);
+                                            System.currentTimeMillis(),
+                                            expiryDateMs,
+                                            publicKeyId);
+        globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                        domain,
+                                                        TestInterface.INTERFACE_NAME,
+                                                        participantId,
+                                                        providerQos,
+                                                        System.currentTimeMillis(),
+                                                        expiryDateMs,
+                                                        publicKeyId,
+                                                        channelAddressSerialized);
     }
 
     @SuppressWarnings("unchecked")
@@ -155,7 +188,7 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.add(discoveryEntry);
 
         Mockito.verify(globalCapabilitiesClient, Mockito.timeout(200)).add(Mockito.any(Callback.class),
-                                                                           Mockito.eq(capabilityInformation));
+                                                                           Mockito.eq(globalDiscoveryEntry));
     }
 
     @SuppressWarnings("unchecked")
@@ -165,15 +198,19 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        capabilityInformation = new CapabilityInformation("test",
-                                                          TestInterface.INTERFACE_NAME,
-                                                          providerQos,
-                                                          "chan",
-                                                          "participantId");
+        globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                        "test",
+                                                        TestInterface.INTERFACE_NAME,
+                                                        "participantId",
+                                                        providerQos,
+                                                        System.currentTimeMillis(),
+                                                        expiryDateMs,
+                                                        publicKeyId,
+                                                        channelAddressSerialized);
 
         localCapabilitiesDirectory.add(discoveryEntry);
         Mockito.verify(globalCapabilitiesClient, Mockito.timeout(10000).never()).add(any(Callback.class),
-                                                                                     any(CapabilityInformation.class));
+                                                                                     any(GlobalDiscoveryEntry.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -186,21 +223,23 @@ public class LocalCapabilitiesDirectoryTest {
         String participantId = LocalCapabilitiesDirectoryTest.class.getName()
                 + ".addGlobalCapSucceeds_NextAddShallNotAddGlobalAgain";
         String domain = "testDomain";
-        final DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
+        final DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                                 domain,
                                                                  TestInterface.INTERFACE_NAME,
                                                                  participantId,
                                                                  providerQos,
-                                                                 new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
-        final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
-                                                                        TestInterface.INTERFACE_NAME,
-                                                                        providerQos,
-                                                                        participantId,
-                                                                        System.currentTimeMillis());
-        capabilityInformation = new CapabilityInformation(domain,
-                                                          TestInterface.INTERFACE_NAME,
-                                                          providerQos,
-                                                          channelId,
-                                                          participantId);
+                                                                 System.currentTimeMillis(),
+                                                                 expiryDateMs,
+                                                                 publicKeyId);
+        globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                        domain,
+                                                        TestInterface.INTERFACE_NAME,
+                                                        participantId,
+                                                        providerQos,
+                                                        System.currentTimeMillis(),
+                                                        expiryDateMs,
+                                                        publicKeyId,
+                                                        channelAddressSerialized);
 
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
         promise.then(new PromiseListener() {
@@ -208,15 +247,15 @@ public class LocalCapabilitiesDirectoryTest {
             public void onFulfillment(Object... values) {
                 Mockito.doAnswer(createAddAnswerWithSuccess())
                        .when(globalCapabilitiesClient)
-                       .add(Mockito.any(Callback.class), Mockito.eq(capabilityInformation));
+                       .add(Mockito.any(Callback.class), Mockito.eq(globalDiscoveryEntry));
 
-                Mockito.verify(globalCapabilitiesCacheMock).add(Mockito.eq(capabilityEntry));
+                Mockito.verify(globalDiscoveryEntryCacheMock).add(Mockito.eq(globalDiscoveryEntry));
                 Mockito.verify(globalCapabilitiesClient).add(Mockito.any(Callback.class),
-                                                             Mockito.eq(capabilityInformation));
+                                                             Mockito.eq(globalDiscoveryEntry));
                 Mockito.reset(globalCapabilitiesClient);
                 localCapabilitiesDirectory.add(discoveryEntry);
                 Mockito.verify(globalCapabilitiesClient, Mockito.timeout(200).never())
-                       .add(Mockito.any(Callback.class), Mockito.eq(capabilityInformation));
+                       .add(Mockito.any(Callback.class), Mockito.eq(globalDiscoveryEntry));
             }
 
             @Override
@@ -236,37 +275,39 @@ public class LocalCapabilitiesDirectoryTest {
 
         String participantId = LocalCapabilitiesDirectoryTest.class.getName() + ".addLocalAndThanGlobalShallWork";
         String domain = "testDomain";
-        final DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
+        final DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                                 domain,
                                                                  TestInterface.INTERFACE_NAME,
                                                                  participantId,
                                                                  providerQos,
-                                                                 new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
-        final CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
-                                                                        TestInterface.INTERFACE_NAME,
-                                                                        providerQos,
-                                                                        participantId,
-                                                                        System.currentTimeMillis());
-        capabilityInformation = new CapabilityInformation(domain,
-                                                          TestInterface.INTERFACE_NAME,
-                                                          providerQos,
-                                                          channelId,
-                                                          participantId);
+                                                                 System.currentTimeMillis(),
+                                                                 expiryDateMs,
+                                                                 publicKeyId);
+        globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                        domain,
+                                                        TestInterface.INTERFACE_NAME,
+                                                        participantId,
+                                                        providerQos,
+                                                        System.currentTimeMillis(),
+                                                        expiryDateMs,
+                                                        publicKeyId,
+                                                        channelAddressSerialized);
 
         Mockito.doAnswer(createAddAnswerWithError())
                .when(globalCapabilitiesClient)
-               .add(Mockito.any(Callback.class), Mockito.eq(capabilityInformation));
+               .add(Mockito.any(Callback.class), Mockito.eq(globalDiscoveryEntry));
 
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
         promise.then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
-                Mockito.verify(globalCapabilitiesCacheMock, Mockito.never()).add(Mockito.eq(capabilityEntry));
+                Mockito.verify(globalDiscoveryEntryCacheMock, Mockito.never()).add(Mockito.eq(globalDiscoveryEntry));
                 Mockito.verify(globalCapabilitiesClient).add(Mockito.any(Callback.class),
-                                                             Mockito.eq(capabilityInformation));
+                                                             Mockito.eq(globalDiscoveryEntry));
                 Mockito.reset(globalCapabilitiesClient);
                 localCapabilitiesDirectory.add(discoveryEntry);
                 Mockito.verify(globalCapabilitiesClient, Mockito.timeout(200)).add(Mockito.any(Callback.class),
-                                                                                   Mockito.eq(capabilityInformation));
+                                                                                   Mockito.eq(globalDiscoveryEntry));
 
             }
 
@@ -278,15 +319,15 @@ public class LocalCapabilitiesDirectoryTest {
 
     }
 
-    private Answer<Future<List<CapabilityInformation>>> createAnswer(final List<CapabilityInformation> caps) {
-        return new Answer<Future<List<CapabilityInformation>>>() {
+    private Answer<Future<List<GlobalDiscoveryEntry>>> createAnswer(final List<GlobalDiscoveryEntry> caps) {
+        return new Answer<Future<List<GlobalDiscoveryEntry>>>() {
 
             @SuppressWarnings("unchecked")
             @Override
-            public Future<List<CapabilityInformation>> answer(InvocationOnMock invocation) throws Throwable {
-                Future<List<CapabilityInformation>> result = new Future<List<CapabilityInformation>>();
+            public Future<List<GlobalDiscoveryEntry>> answer(InvocationOnMock invocation) throws Throwable {
+                Future<List<GlobalDiscoveryEntry>> result = new Future<List<GlobalDiscoveryEntry>>();
                 Object[] args = invocation.getArguments();
-                ((Callback<List<CapabilityInformation>>) args[0]).onSuccess(caps);
+                ((Callback<List<GlobalDiscoveryEntry>>) args[0]).onSuccess(caps);
                 result.onSuccess(caps);
                 return result;
             }
@@ -326,7 +367,7 @@ public class LocalCapabilitiesDirectoryTest {
     @SuppressWarnings("unchecked")
     @Test(timeout = 1000)
     public void lookupWithScopeGlobalOnly() throws InterruptedException {
-        List<CapabilityInformation> caps = new ArrayList<CapabilityInformation>();
+        List<GlobalDiscoveryEntry> caps = new ArrayList<GlobalDiscoveryEntry>();
         String domain1 = "domain1";
         String interfaceName1 = "interfaceName1";
         DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.GLOBAL_ONLY, 1000);
@@ -337,12 +378,12 @@ public class LocalCapabilitiesDirectoryTest {
                .lookup(Mockito.any(Callback.class),
                        Mockito.eq(domain1),
                        Mockito.eq(interfaceName1),
-                       eq(discoveryQos.getDiscoveryTimeout()));
+                       eq(discoveryQos.getDiscoveryTimeoutMs()));
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.any(String.class),
                                                                           Mockito.any(String.class),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
@@ -352,17 +393,20 @@ public class LocalCapabilitiesDirectoryTest {
         // add local entry
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain1,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           domain1,
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
-                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs,
+                                                           publicKeyId);
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
@@ -375,7 +419,7 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.verify(globalCapabilitiesClient, Mockito.times(3)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
@@ -383,23 +427,27 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.reset(capabilitiesCallback);
 
         // add global entry
-        CapabilityInformation capInfo = new CapabilityInformation(domain1,
-                                                                  interfaceName1,
-                                                                  new ProviderQos(),
-                                                                  "channelId",
-                                                                  "globalParticipant");
+        GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                domain1,
+                                                                interfaceName1,
+                                                                "globalParticipant",
+                                                                new ProviderQos(),
+                                                                System.currentTimeMillis(),
+                                                                expiryDateMs,
+                                                                publicKeyId,
+                                                                channelAddressSerialized);
         caps.add(capInfo);
         Mockito.doAnswer(createAnswer(caps))
                .when(globalCapabilitiesClient)
                .lookup(Mockito.any(Callback.class),
                        Mockito.eq(domain1),
                        Mockito.eq(interfaceName1),
-                       eq(discoveryQos.getDiscoveryTimeout()));
+                       eq(discoveryQos.getDiscoveryTimeoutMs()));
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(4)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -412,7 +460,7 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.verify(globalCapabilitiesClient, Mockito.times(4)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -420,7 +468,7 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.reset(capabilitiesCallback);
 
         // and now, invalidate the existing cached global values, resulting in another call to glocalcapclient
-        discoveryQos.setCacheMaxAge(0);
+        discoveryQos.setCacheMaxAgeMs(0);
         Thread.sleep(1);
 
         // now, another lookup call shall call the globalCapabilitiesClient, as the global cap dir is expired
@@ -428,7 +476,7 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.verify(globalCapabilitiesClient, Mockito.times(5)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
@@ -440,7 +488,7 @@ public class LocalCapabilitiesDirectoryTest {
     @SuppressWarnings("unchecked")
     @Test(timeout = 1000)
     public void lookupWithScopeLocalThenGlobal() throws InterruptedException {
-        List<CapabilityInformation> caps = new ArrayList<CapabilityInformation>();
+        List<GlobalDiscoveryEntry> caps = new ArrayList<GlobalDiscoveryEntry>();
         String domain1 = "domain1";
         String interfaceName1 = "interfaceName1";
         DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.LOCAL_THEN_GLOBAL, 10000);
@@ -451,12 +499,12 @@ public class LocalCapabilitiesDirectoryTest {
                .lookup(Mockito.any(Callback.class),
                        Mockito.eq(domain1),
                        Mockito.eq(interfaceName1),
-                       eq(discoveryQos.getDiscoveryTimeout()));
+                       eq(discoveryQos.getDiscoveryTimeoutMs()));
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
@@ -466,40 +514,47 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain1,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           domain1,
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
-                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs,
+                                                           publicKeyId);
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(1)));
 
         // add global entry
-        CapabilityInformation capInfo = new CapabilityInformation(domain1,
-                                                                  interfaceName1,
-                                                                  new ProviderQos(),
-                                                                  "channelId",
-                                                                  "globalParticipant");
+        GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                domain1,
+                                                                interfaceName1,
+                                                                "globalParticipant",
+                                                                new ProviderQos(),
+                                                                System.currentTimeMillis(),
+                                                                expiryDateMs,
+                                                                publicKeyId,
+                                                                channelAddressSerialized);
         caps.add(capInfo);
         Mockito.doAnswer(createAnswer(caps))
                .when(globalCapabilitiesClient)
                .lookup(Mockito.any(Callback.class),
                        Mockito.eq(domain1),
                        Mockito.eq(interfaceName1),
-                       eq(discoveryQos.getDiscoveryTimeout()));
+                       eq(discoveryQos.getDiscoveryTimeoutMs()));
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
@@ -508,7 +563,7 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
@@ -516,10 +571,10 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
 
         // and now, invalidate the existing cached global values, resulting in another call to glocalcapclient
-        discoveryQos.setCacheMaxAge(0);
+        discoveryQos.setCacheMaxAgeMs(0);
         Thread.sleep(1);
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
@@ -528,7 +583,7 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.verify(globalCapabilitiesClient, Mockito.times(3)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.reset(globalCapabilitiesClient);
         Mockito.reset(capabilitiesCallback);
     }
@@ -544,11 +599,14 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        DiscoveryEntry expectedDiscoveryEntry = new DiscoveryEntry(domain1,
+        DiscoveryEntry expectedDiscoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                                   domain1,
                                                                    interfaceName1,
                                                                    participantId1,
                                                                    providerQos,
-                                                                   new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                                   System.currentTimeMillis(),
+                                                                   expiryDateMs,
+                                                                   publicKeyId);
         localCapabilitiesDirectory.add(expectedDiscoveryEntry);
         DiscoveryEntry retrievedCapabilityEntry = localCapabilitiesDirectory.lookup(participantId1, discoveryQos);
         Assert.assertEquals(expectedDiscoveryEntry, retrievedCapabilityEntry);
@@ -557,7 +615,7 @@ public class LocalCapabilitiesDirectoryTest {
     @SuppressWarnings("unchecked")
     @Test(timeout = 1000)
     public void lookupWithScopeLocalAndGlobal() throws InterruptedException {
-        List<CapabilityInformation> caps = new ArrayList<CapabilityInformation>();
+        List<GlobalDiscoveryEntry> caps = new ArrayList<GlobalDiscoveryEntry>();
         String domain1 = "domain1";
         String interfaceName1 = "interfaceName1";
         DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.LOCAL_AND_GLOBAL, 500);
@@ -568,12 +626,12 @@ public class LocalCapabilitiesDirectoryTest {
                .lookup(Mockito.any(Callback.class),
                        Mockito.eq(domain1),
                        Mockito.eq(interfaceName1),
-                       eq(discoveryQos.getDiscoveryTimeout()));
+                       eq(discoveryQos.getDiscoveryTimeoutMs()));
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(1)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(0))
@@ -582,40 +640,47 @@ public class LocalCapabilitiesDirectoryTest {
         // add local entry
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain1,
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           domain1,
                                                            interfaceName1,
                                                            "localParticipant",
                                                            providerQos,
-                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs,
+                                                           publicKeyId);
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(2)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(0)));
         Mockito.verify(capabilitiesCallback, Mockito.times(1))
                .processCapabilitiesReceived(Mockito.argThat(hasNEntries(1)));
 
         // add global entry
-        CapabilityInformation capInfo = new CapabilityInformation(domain1,
-                                                                  interfaceName1,
-                                                                  new ProviderQos(),
-                                                                  "channelId",
-                                                                  "globalParticipant");
+        GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                domain1,
+                                                                interfaceName1,
+                                                                "globalParticipant",
+                                                                new ProviderQos(),
+                                                                System.currentTimeMillis(),
+                                                                expiryDateMs,
+                                                                publicKeyId,
+                                                                channelAddressSerialized);
         caps.add(capInfo);
         Mockito.doAnswer(createAnswer(caps))
                .when(globalCapabilitiesClient)
                .lookup(Mockito.any(Callback.class),
                        Mockito.eq(domain1),
                        Mockito.eq(interfaceName1),
-                       eq(discoveryQos.getDiscoveryTimeout()));
+                       eq(discoveryQos.getDiscoveryTimeoutMs()));
         localCapabilitiesDirectory.lookup(domain1, interfaceName1, discoveryQos, capabilitiesCallback);
         Mockito.verify(globalCapabilitiesClient, Mockito.times(3)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
@@ -623,10 +688,10 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.verify(globalCapabilitiesClient, Mockito.times(3)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
 
         // and now, invalidate the existing cached global values, resulting in another call to glocalcapclient
-        discoveryQos.setCacheMaxAge(0);
+        discoveryQos.setCacheMaxAgeMs(0);
         Thread.sleep(1);
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
@@ -635,7 +700,7 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.verify(globalCapabilitiesClient, Mockito.times(4)).lookup(Mockito.any(Callback.class),
                                                                           Mockito.eq(domain1),
                                                                           Mockito.eq(interfaceName1),
-                                                                          eq(discoveryQos.getDiscoveryTimeout()));
+                                                                          eq(discoveryQos.getDiscoveryTimeoutMs()));
         Mockito.reset(globalCapabilitiesClient);
         Mockito.reset(capabilitiesCallback);
     }
@@ -670,7 +735,7 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.remove(discoveryEntry);
         Mockito.verify(globalCapabilitiesClient, Mockito.timeout(1000))
-               .remove(Mockito.any(Callback.class), Mockito.eq(capabilityInformation.getParticipantId()));
+               .remove(Mockito.any(Callback.class), Mockito.eq(globalDiscoveryEntry.getParticipantId()));
     }
 
 }

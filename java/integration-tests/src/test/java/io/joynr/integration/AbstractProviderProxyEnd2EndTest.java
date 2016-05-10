@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -46,8 +47,6 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.publication.BroadcastFilter;
-import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
@@ -60,6 +59,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.exceptions.ApplicationException;
@@ -82,7 +82,6 @@ import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.Trip;
-import joynr.types.ProviderQos;
 
 import org.junit.After;
 import org.junit.Before;
@@ -108,6 +107,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     // cannot be too short.
     private static final int CONST_DEFAULT_TEST_TIMEOUT = 8000;
 
+    public static final Semaphore FIRE_AND_FORGET_SEMAPHORE = new Semaphore(1);
+    public static final Semaphore FIRE_AND_FORGET_WITHOUT_PARAMS_SEMAPHORE = new Semaphore(1);
+
     TestProvider provider;
     protected ProviderQos testProviderQos = new ProviderQos();
     String domain;
@@ -129,6 +131,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                                                                        7L,
                                                                        89L,
                                                                        Integer.MAX_VALUE);
+
+    private static final Integer FIRE_AND_FORGET_INT_PARAMETER = 1;
+    private static final String FIRE_AND_FORGET_STRING_PARAMETER = "test";
+    private static final ComplexTestType FIRE_AND_FORGET_COMPLEX_PARAMETER = new ComplexTestType();
 
     long timeTookToRegisterProvider;
 
@@ -176,8 +182,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
         domainAsync = domain + "Async";
-        provisionPermissiveAccessControlEntry(domain, TestProvider.INTERFACE_NAME);
-        provisionPermissiveAccessControlEntry(domainAsync, TestProvider.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domain, ProviderAnnotations.getInterfaceName(TestProvider.class));
+        provisionPermissiveAccessControlEntry(domainAsync, ProviderAnnotations.getInterfaceName(TestProvider.class));
 
         // use channelNames = test name
         String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
@@ -192,7 +198,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         joynrConfigProvider.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
-        providerRuntime = getRuntime(joynrConfigProvider, new StaticDomainAccessControlProvisioningModule());
+        providerRuntime = getRuntime(joynrConfigProvider,
+                                     getSubscriptionPublisherFactoryModule(),
+                                     new StaticDomainAccessControlProvisioningModule());
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
@@ -201,7 +209,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         joynrConfigConsumer.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
-        consumerRuntime = getRuntime(joynrConfigConsumer);
+        consumerRuntime = getRuntime(joynrConfigConsumer, getSubscriptionPublisherFactoryModule());
 
         provider = new TestProvider();
         ProviderQos testProviderQos = new ProviderQos();
@@ -249,12 +257,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         @Override
         public Promise<DeferredVoid> setAttributeWithProviderRuntimeException(Integer attributeWithProviderRuntimeException) {
             throw new IllegalArgumentException("thrownException");
-        }
-
-        // change visibility from protected to public for testing purposes
-        @Override
-        public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
-            super.fireBroadcast(broadcastName, broadcastFilters, values);
         }
 
         @Override
@@ -398,19 +400,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             throw new IllegalArgumentException("thrownException");
         }
 
-        boolean broadcastSubscriptionArrived = false;
-
-        public void waitForBroadcastSubscription() {
-            synchronized (this) {
-                while (!broadcastSubscriptionArrived) {
-                    try {
-                        this.wait();
-                    } catch (InterruptedException e) {
-                    }
-                }
-            }
-        }
-
         @Override
         public Promise<MethodWithByteBufferDeferred> methodWithByteBuffer(Byte[] input) {
             MethodWithByteBufferDeferred deferred = new MethodWithByteBufferDeferred();
@@ -419,15 +408,27 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
 
         @Override
-        public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-            super.registerBroadcastListener(broadcastName, broadcastListener);
-            if (!broadcastSubscriptionArrived) {
-                synchronized (this) {
-                    broadcastSubscriptionArrived = true;
-                    this.notify();
-                }
-            }
+        public void methodFireAndForgetWithoutParams() {
+            AbstractProviderProxyEnd2EndTest.FIRE_AND_FORGET_WITHOUT_PARAMS_SEMAPHORE.release();
         }
+
+        @Override
+        public void methodFireAndForget(Integer intIn, String stringIn, ComplexTestType complexTestTypeIn) {
+            if (intIn != 1) {
+                throw new IllegalArgumentException("Didn't receive expected int value: "
+                        + FIRE_AND_FORGET_INT_PARAMETER + ", instead: " + intIn);
+            }
+            if (!FIRE_AND_FORGET_STRING_PARAMETER.equals(stringIn)) {
+                throw new IllegalArgumentException("Didn't receive expected string value: "
+                        + FIRE_AND_FORGET_STRING_PARAMETER + ", instead: " + stringIn);
+            }
+            if (!FIRE_AND_FORGET_COMPLEX_PARAMETER.equals(complexTestTypeIn)) {
+                throw new IllegalArgumentException("Didn't receive expected complex value: "
+                        + FIRE_AND_FORGET_COMPLEX_PARAMETER + ", instead: " + complexTestTypeIn);
+            }
+            AbstractProviderProxyEnd2EndTest.FIRE_AND_FORGET_SEMAPHORE.release();
+        }
+
     }
 
     protected static class TestAsyncProviderImpl extends DefaulttestProvider {
@@ -744,12 +745,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
-        long expiryDate = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        long publicationTtl_ms = CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
-                                                                              expiryDate,
-                                                                              publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(0)
+                       .setValidityMs(CONST_DEFAULT_TEST_TIMEOUT)
+                       .setPublicationTtlMs(CONST_DEFAULT_TEST_TIMEOUT);
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastAdapter() {
 
             @Override
@@ -762,8 +761,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }, subscriptionQos);
 
         // wait to allow the subscription request to arrive at the provider
-        provider.waitForBroadcastSubscription();
-        provider.fireBroadcast("locationUpdateWithSpeed", null, gpsLocation, currentSpeed);
+        getSubscriptionTestsPublisher().waitForBroadcastSubscription();
+        provider.fireLocationUpdateWithSpeed(gpsLocation, currentSpeed);
         broadcastReceived.acquire();
 
     }
@@ -775,12 +774,11 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
-        long expiryDate = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
-        long publicationTtl_ms = CONST_DEFAULT_TEST_TIMEOUT;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
-                                                                              expiryDate,
-                                                                              publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(0)
+                       .setValidityMs(CONST_DEFAULT_TEST_TIMEOUT)
+                       .setPublicationTtlMs(CONST_DEFAULT_TEST_TIMEOUT);
+
         final TStringKeyMap mapParam = new TStringKeyMap();
         mapParam.put("key", "value");
         proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastListener() {
@@ -796,7 +794,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }, subscriptionQos);
 
         // wait to allow the subscription request to arrive at the provider
-        provider.waitForBroadcastSubscription();
+        getSubscriptionTestsPublisher().waitForBroadcastSubscription();
         provider.fireBroadcastWithMapParameters(mapParam);
         broadcastReceived.acquire();
 
@@ -1205,4 +1203,26 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         assertEquals(value, result1.get(key));
         assertEquals(OUT_VALUE, result1.get(OUT_KEY));
     }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void methodWithFireAndForget() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        FIRE_AND_FORGET_SEMAPHORE.acquire();
+        proxy.methodFireAndForget(FIRE_AND_FORGET_INT_PARAMETER,
+                                  FIRE_AND_FORGET_STRING_PARAMETER,
+                                  FIRE_AND_FORGET_COMPLEX_PARAMETER);
+        assertTrue(FIRE_AND_FORGET_SEMAPHORE.tryAcquire(CONST_DEFAULT_TEST_TIMEOUT, TimeUnit.MILLISECONDS));
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void methodWithFireAndForgetWithoutParams() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        FIRE_AND_FORGET_WITHOUT_PARAMS_SEMAPHORE.acquire();
+        proxy.methodFireAndForgetWithoutParams();
+        assertTrue(FIRE_AND_FORGET_WITHOUT_PARAMS_SEMAPHORE.tryAcquire(CONST_DEFAULT_TEST_TIMEOUT,
+                                                                       TimeUnit.MILLISECONDS));
+    }
+
 }

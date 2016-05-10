@@ -28,20 +28,20 @@ import org.eclipse.xtext.generator.IGenerator;
 
 public class GeneratorTask {
 
-    InvocationArguments arguments;
-    private Executor executor;
+    private final Executor executor;
 
-    public GeneratorTask(InvocationArguments arguments) {
-        this.arguments = arguments;
+    public GeneratorTask(InvocationArguments arguments) throws ClassNotFoundException,
+                                                       InstantiationException,
+                                                       IllegalAccessException {
         this.executor = new Executor(arguments);
     }
 
-    public void generate(Log log) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        executor.generate(prepareGenerator());
+    public void generate(Log log) {
+        executor.generate();
     }
 
-    public void printHelp(Log log) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        IGenerator generator = prepareGenerator();
+    public void printHelp(Log log) {
+        IGenerator generator = executor.getGenerator();
         if (generator instanceof IJoynrGenerator) {
             IJoynrGenerator joynrGenerator = (IJoynrGenerator) generator;
             Set<String> parameters = joynrGenerator.supportedParameters();
@@ -61,8 +61,4 @@ public class GeneratorTask {
         }
     }
 
-    public IGenerator prepareGenerator() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        arguments.checkArguments();
-        return executor.setup();
-    }
 }

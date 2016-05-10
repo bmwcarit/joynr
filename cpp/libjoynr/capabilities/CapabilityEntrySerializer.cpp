@@ -27,8 +27,6 @@
 #include "joynr/PrimitiveDeserializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/Variant.h"
-#include "joynr/types/CommunicationMiddleware.h"
-#include "joynr/types/CommunicationMiddlewareSerializer.h"
 
 namespace joynr
 {
@@ -59,11 +57,10 @@ void ClassDeserializerImpl<CapabilityEntry>::deserialize(CapabilityEntry& capabi
             std::string stringValue;
             PrimitiveDeserializer<std::string>::deserialize(stringValue, field.value());
             capabilityEntryVar.setParticipantId(stringValue);
-        } else if (field.name() == "middlewareConnections") {
-            std::vector<types::CommunicationMiddleware::Enum> middlewareConnections;
-            SelectedDeserializer<std::vector<types::CommunicationMiddleware::Enum>>::deserialize(
-                    middlewareConnections, field.value());
-            capabilityEntryVar.setMiddlewareConnections(middlewareConnections);
+        } else if (field.name() == "publicKeyId") {
+            std::string publicKeyId;
+            PrimitiveDeserializer<std::string>::deserialize(publicKeyId, field.value());
+            capabilityEntryVar.setPublicKeyId(publicKeyId);
         } else if (field.name() == "isGlobal") {
             bool isGlobal = TypeConverter<bool>::convert(field.value());
             capabilityEntryVar.setGlobal(isGlobal);
@@ -90,9 +87,8 @@ void ClassSerializerImpl<CapabilityEntry>::serialize(const CapabilityEntry& capa
     stream << "\"participantId\": ";
     ClassSerializerImpl<std::string>::serialize(capabilityEntryVar.getParticipantId(), stream);
     stream << ",";
-    stream << "\"middlewareConnections\": ";
-    ClassSerializerImpl<std::vector<types::CommunicationMiddleware::Enum>>::serialize(
-            capabilityEntryVar.getMiddlewareConnections(), stream);
+    stream << "\"publicKeyId\": ";
+    ClassSerializerImpl<std::string>::serialize(capabilityEntryVar.getPublicKeyId(), stream);
     stream << ",";
     stream << "\"isGlobal\": ";
     ClassSerializerImpl<bool>::serialize(capabilityEntryVar.isGlobal(), stream);

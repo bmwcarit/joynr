@@ -18,9 +18,12 @@
  */
 
 define("joynr/messaging/channel/ChannelMessagingSkeleton", [
+    "joynr/util/Typing",
+    "joynr/types/TypeRegistrySingleton",
     "joynr/util/Util",
+    "joynr/system/LoggerFactory",
     "joynr/system/RoutingTypes/ChannelAddress"
-], function(Util, ChannelAddress) {
+], function(Typing, TypeRegistrySingleton, Util, LoggerFactory, ChannelAddress) {
 
     /**
      * @name ChannelMessagingSkeleton
@@ -30,6 +33,7 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
      *            receiveFunction
      */
     function ChannelMessagingSkeleton(settings) {
+        var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
 
         Util.checkProperty(settings, "Object", "settings");
         if (settings.messageRouter === undefined) {
@@ -37,6 +41,7 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
         }
 
         var messageRouter = settings.messageRouter;
+        var typeRegistry = TypeRegistrySingleton.getInstance();
 
         /**
          * Lets all listeners receive a message
@@ -46,14 +51,25 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
          *
          * @param {JoynrMessage} joynrMessage
          */
-        this.receiveMessage = function receiveMessage(joynrMessage) {
-            if (joynrMessage.replyChannelId !== undefined) {
-                messageRouter.addNextHop(joynrMessage.from, new ChannelAddress({
-                    channelId : joynrMessage.replyChannelId
-                }));
-            }
-            messageRouter.route(joynrMessage);
-        };
+        this.receiveMessage =
+                function receiveMessage(joynrMessage) {
+                    var replyToAddress;
+                    if (joynrMessage.replyChannelId !== undefined) {
+                        try {
+                            replyToAddress =
+                                    Typing.augmentTypes(
+                                            JSON.parse(joynrMessage.replyChannelId),
+                                            typeRegistry);
+                            messageRouter.addNextHop(joynrMessage.from, replyToAddress);
+                        } catch (e) {
+                            // message dropped if unknown replyTo address type
+                            log.error("unable to process message: replyTo address type unknown: "
+                                + joynrMessage.replyChannelId);
+                            return;
+                        }
+                    }
+                    messageRouter.route(joynrMessage);
+                };
 
     }
 

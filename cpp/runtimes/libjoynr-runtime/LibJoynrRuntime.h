@@ -76,7 +76,7 @@ protected:
 
     virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter) = 0;
 
-    void init(std::unique_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
+    void init(std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress);
 

@@ -66,14 +66,18 @@ JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createOneWay(const std::string& senderId,
-                                               const std::string& receiverId,
-                                               const MessagingQos& qos,
-                                               const Reply& payload) const
+JoynrMessage JoynrMessageFactory::createOneWayRequest(const std::string& senderId,
+                                                      const std::string& receiverId,
+                                                      const MessagingQos& qos,
+                                                      const OneWayRequest& payload) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), JsonSerializer::serialize<Reply>(payload));
+    initMsg(msg,
+            senderId,
+            receiverId,
+            qos.getTtl(),
+            JsonSerializer::serialize<OneWayRequest>(payload));
     return msg;
 }
 

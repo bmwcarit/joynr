@@ -20,6 +20,7 @@
 package vehicle
 
 import datatypes.exampleTypes.* from  "datatypes.fidl"
+import tests.* from "classpath:/Test.fidl"
 
 typeCollection radiotypes {
 	struct RadioStation {
@@ -194,6 +195,25 @@ interface Radio {
 		out {
 		  String radioStation
 		  ByteBuffer byteBuffer
+		}
+	}
+
+	broadcast emptyBroadcast {
+	}
+
+	broadcast fireAndForgetCallArrived {
+		out {
+			String methodName
+		}
+	}
+
+	method methodFireAndForgetWithoutParams fireAndForget {}
+
+	method methodFireAndForget fireAndForget {
+		in {
+			Int32 intIn
+			String stringIn
+			testTypes.ComplexTestType complexTestTypeIn
 		}
 	}
 }

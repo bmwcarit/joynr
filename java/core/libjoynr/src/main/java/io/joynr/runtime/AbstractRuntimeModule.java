@@ -41,6 +41,7 @@ import com.google.inject.name.Names;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.CapabilitiesRegistrarImpl;
+import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -109,15 +110,9 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
         messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessLibjoynrMessagingSkeleton.class);
 
-        // default implementation with a dummy address holder: no global communication. other address types must be
-        // added to the multibinder to support global addressing
-        Multibinder<GlobalAddressFactory> globalAddresses;
-        globalAddresses = Multibinder.newSetBinder(binder(), GlobalAddressFactory.class);
-        globalAddresses.addBinding().toInstance(new GlobalAddressFactory() {
-            @Override
-            public Address create() {
-                return new Address();
-            }
+        // other address types must be added to the Multibinder to support global addressing. Created here to make
+        // sure the Set exists, even if empty.
+        Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
         });
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
@@ -132,7 +127,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
 
-        requestStaticInjection(RpcUtils.class, JoynrAppenderManagerFactory.class);
+        requestStaticInjection(CapabilityUtils.class, RpcUtils.class, JoynrAppenderManagerFactory.class);
 
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
@@ -151,25 +146,28 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     @Provides
     @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS)
-    Address getCapabilitiesDirectoryAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
+    Address getCapabilitiesDirectoryAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
+                                            @Named(MessagingPropertyKeys.CAPABILITYDIRECTORYURL) String deprecatedCapabilityDirectoryUrl,
+                                            @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId) {
-        return getAddress(channelId, capabilitiesDirectoryChannelId);
-    }
-
-    @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS)
-    Address getChannelUrlDirectoryAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId) {
-        return getAddress(channelId, channelUrlDirectoryChannelId);
+        // deprecated: will be removed by 2016-12-31
+        if (deprecatedCapabilityDirectoryUrl != null && deprecatedCapabilityDirectoryUrl.length() > 0) {
+            return getAddress(deprecatedCapabilityDirectoryUrl, channelId, capabilitiesDirectoryChannelId);
+        }
+        return getAddress(discoveryDirectoryUrl, channelId, capabilitiesDirectoryChannelId);
     }
 
     @Provides
     @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS)
-    Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
+    Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
+                                             @Named(MessagingPropertyKeys.CAPABILITYDIRECTORYURL) String deprecatedCapabilityDirectoryUrl,
+                                             @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                              @com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
-        return getAddress(channelId, domainAccessControllerChannelId);
+        if (deprecatedCapabilityDirectoryUrl != null && deprecatedCapabilityDirectoryUrl.length() > 0) {
+            return getAddress(deprecatedCapabilityDirectoryUrl, channelId, domainAccessControllerChannelId);
+        }
+        return getAddress(discoveryDirectoryUrl, channelId, domainAccessControllerChannelId);
     }
 
     @Provides
@@ -184,11 +182,11 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         return scheduler;
     }
 
-    private Address getAddress(String localChannelId, String targetChannelId) {
+    private Address getAddress(String serverUrl, String localChannelId, String targetChannelId) {
         if (localChannelId.equals(targetChannelId)) {
             return new InProcessAddress();
         } else {
-            return new ChannelAddress(targetChannelId);
+            return new ChannelAddress(serverUrl, targetChannelId);
         }
     }
 }

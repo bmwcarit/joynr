@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,15 @@ package io.joynr.dispatching;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import io.joynr.provider.AbstractSubscriptionPublisher;
+import io.joynr.provider.ProviderContainer;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -40,7 +46,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -63,7 +68,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 import joynr.JoynrMessage;
-import joynr.OneWay;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 
@@ -75,9 +80,9 @@ public class RequestReplyManagerTest {
     private static final long TIME_TO_LIVE = 10000L;
     private RequestReplyManager requestReplyManager;
     private ReplyCallerDirectory replyCallerDirectory;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
     private String testSenderParticipantId;
-    private String testMessageListenerParticipantId;
+    private String testOneWayRecipientParticipantId;
     private String testMessageResponderParticipantId;
     private String testResponderUnregisteredParticipantId;
 
@@ -86,17 +91,23 @@ public class RequestReplyManagerTest {
 
     private Request request1;
     private Request request2;
-    private OneWay oneWay1;
+    private OneWayRequest oneWay1;
 
     private ObjectMapper objectMapper;
 
     @Mock
     private MessageRouter messageRouterMock;
 
+    @Mock
+    private AbstractSubscriptionPublisher subscriptionPublisherMock;
+
+    @Mock
+    private ProviderContainer providerContainer;
+
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException, JsonGenerationException, IOException {
 
-        testMessageListenerParticipantId = "testMessageListenerParticipantId";
+        testOneWayRecipientParticipantId = "testOneWayRecipientParticipantId";
         testMessageResponderParticipantId = "testMessageResponderParticipantId";
         testSenderParticipantId = "testSenderParticipantId";
         testResponderUnregisteredParticipantId = "testResponderUnregisteredParticipantId";
@@ -106,7 +117,6 @@ public class RequestReplyManagerTest {
             @Override
             protected void configure() {
                 bind(MessageRouter.class).toInstance(messageRouterMock);
-                bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 
@@ -118,14 +128,14 @@ public class RequestReplyManagerTest {
         });
 
         objectMapper = injector.getInstance(ObjectMapper.class);
-        objectMapper.registerSubtypes(Request.class, OneWay.class);
+        objectMapper.registerSubtypes(Request.class, OneWayRequest.class);
 
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
-        requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
+        providerDirectory = injector.getInstance(ProviderDirectory.class);
         replyCallerDirectory = injector.getInstance(ReplyCallerDirectory.class);
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
 
-        // dispatcher.addListener(testMessageListenerParticipantId, testListener);
+        // dispatcher.addListener(testOneWayRecipientParticipantId, testListener);
 
         // jsonRequestString1 = "{\"_typeName\":\"Request\", \"methodName\":\"respond\",\"params\":{\"payload\": \""
         // + payload1 + "\"}}";
@@ -141,7 +151,10 @@ public class RequestReplyManagerTest {
         request1 = new Request(method.getName(), params1, method.getParameterTypes());
         request2 = new Request(method.getName(), params2, method.getParameterTypes());
 
-        oneWay1 = new OneWay(payload1);
+        Method fireAndForgetMethod = TestOneWayRecipient.class.getMethod("receive", new Class[]{ String.class });
+        oneWay1 = new OneWayRequest(fireAndForgetMethod.getName(),
+                                    new Object[]{ payload1 },
+                                    fireAndForgetMethod.getParameterTypes());
         Map<String, String> headerToResponder = Maps.newHashMap();
         headerToResponder.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, testSenderParticipantId);
         headerToResponder.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID, testMessageResponderParticipantId);
@@ -157,25 +170,25 @@ public class RequestReplyManagerTest {
 
     @After
     public void tearDown() {
-        requestReplyManager.removeListener(testMessageListenerParticipantId);
-        requestCallerDirectory.removeCaller(testMessageResponderParticipantId);
+        providerDirectory.remove(testMessageResponderParticipantId);
+        providerDirectory.remove(testOneWayRecipientParticipantId);
     }
 
     @Test
     public void oneWayMessagesAreSentToTheCommunicationManager() throws Exception {
-        requestReplyManager.sendOneWay(testSenderParticipantId,
-                                       testMessageListenerParticipantId,
-                                       payload1,
-                                       TIME_TO_LIVE);
+        requestReplyManager.sendOneWayRequest(testSenderParticipantId,
+                                              testOneWayRecipientParticipantId,
+                                              oneWay1,
+                                              TIME_TO_LIVE);
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
-        verify(messageRouterMock, Mockito.times(1)).route(messageCapture.capture());
+        verify(messageRouterMock, times(1)).route(messageCapture.capture());
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                      testSenderParticipantId);
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                     testMessageListenerParticipantId);
+                     testOneWayRecipientParticipantId);
 
-        assertEquals(messageCapture.getValue().getPayload(), payload1);
+        assertEquals(oneWay1, objectMapper.readValue(messageCapture.getValue().getPayload(), OneWayRequest.class));
     }
 
     @Test
@@ -186,7 +199,7 @@ public class RequestReplyManagerTest {
                                         TIME_TO_LIVE);
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
-        verify(messageRouterMock, Mockito.times(1)).route(messageCapture.capture());
+        verify(messageRouterMock, times(1)).route(messageCapture.capture());
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                      testSenderParticipantId);
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
@@ -200,16 +213,18 @@ public class RequestReplyManagerTest {
 
     @Test
     public void requestCallerInvokedForIncomingRequest() throws Exception {
-        TestRequestCaller testRequestCallerSpy = Mockito.spy(new TestRequestCaller(1));
+        TestRequestCaller testRequestCallerSpy = spy(new TestRequestCaller(1));
 
-        requestCallerDirectory.addCaller(testMessageResponderParticipantId, testRequestCallerSpy);
+        when(providerContainer.getRequestCaller()).thenReturn(testRequestCallerSpy);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
+        providerDirectory.add(testMessageResponderParticipantId, providerContainer);
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
         requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request1, TIME_TO_LIVE);
 
         String reply = (String) testRequestCallerSpy.getSentPayloadFor(request1);
 
         ArgumentCaptor<Reply> replyCapture = ArgumentCaptor.forClass(Reply.class);
-        verify(testRequestCallerSpy).respond(Mockito.eq(payload1));
+        verify(testRequestCallerSpy).respond(eq(payload1));
         verify(replyCallbackMock).onSuccess(replyCapture.capture());
         assertEquals(reply, replyCapture.getValue().getResponse()[0]);
     }
@@ -244,7 +259,9 @@ public class RequestReplyManagerTest {
         TestRequestCaller testResponderUnregistered = new TestRequestCaller(1);
 
         testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.05));
-        requestCallerDirectory.addCaller(testResponderUnregisteredParticipantId, testResponderUnregistered);
+        when(providerContainer.getRequestCaller()).thenReturn(testResponderUnregistered);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
+        providerDirectory.add(testResponderUnregisteredParticipantId, providerContainer);
 
         testResponderUnregistered.assertAllPayloadsReceived((int) (TIME_TO_LIVE));
         testResponderUnregistered.assertReceivedPayloadsContainsNot(payload1);
@@ -269,11 +286,23 @@ public class RequestReplyManagerTest {
     @Test
     public void sendOneWayTtl() throws JoynrMessageNotSentException, JoynrSendBufferFullException,
                                JsonGenerationException, JsonMappingException, IOException {
+        testOneWay(1, TIME_TO_LIVE);
+    }
 
-        TestOneWayRecipient oneWayRecipient = new TestOneWayRecipient(1);
-        requestReplyManager.addOneWayRecipient(testMessageListenerParticipantId, oneWayRecipient);
+    @Test
+    public void sendExpiredOneWay() {
+        testOneWay(0, -1L);
+    }
 
-        requestReplyManager.handleOneWayRequest(testMessageListenerParticipantId, oneWay1, TIME_TO_LIVE);
+    private void testOneWay(int expectedCalls, long forTtl) {
+        TestOneWayRecipient oneWayRecipient = spy(new TestOneWayRecipient(expectedCalls));
+        when(providerContainer.getRequestCaller()).thenReturn(oneWayRecipient);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
+        providerDirectory.add(testOneWayRecipientParticipantId, providerContainer);
+
+        requestReplyManager.handleOneWayRequest(testOneWayRecipientParticipantId,
+                                                oneWay1,
+                                                ExpiryDate.fromRelativeTtl(forTtl).getValue());
 
         oneWayRecipient.assertAllPayloadsReceived(TIME_TO_LIVE);
     }

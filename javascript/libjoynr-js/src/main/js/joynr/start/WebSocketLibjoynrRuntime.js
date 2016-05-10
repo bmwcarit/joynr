@@ -25,7 +25,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/capabilities/arbitration/Arbitrator",
     "joynr/provider/ProviderBuilder",
     "joynr/proxy/ProxyBuilder",
-    "joynr/types/CapabilityInformation",
+    "joynr/types/GlobalDiscoveryEntry",
     "joynr/capabilities/CapabilitiesRegistrar",
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/dispatching/RequestReplyManager",
@@ -73,7 +73,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         Arbitrator,
         ProviderBuilder,
         ProxyBuilder,
-        CapabilityInformation,
+        GlobalDiscoveryEntry,
         CapabilitiesRegistrar,
         ParticipantIdStorage,
         RequestReplyManager,
@@ -318,7 +318,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     typedCapabilities = [];
                     for (i = 0; i < untypedCapabilities.length; i++) {
-                        var capability = new CapabilityInformation(untypedCapabilities[i]);
+                        var capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
                         initialRoutingTable[capability.participantId] = ccAddress;
                         typedCapabilities.push(capability);
                     }
@@ -378,7 +378,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                     subscriptionManager = new SubscriptionManager(dispatcher);
                     publicationManager =
-                            new PublicationManager(dispatcher, persistency, "localchannelId");//TODO: create joynrInstanceId
+                            new PublicationManager(dispatcher, persistency, "joynrInstanceId");//TODO: create joynrInstanceId
 
                     dispatcher.registerRequestReplyManager(requestReplyManager);
                     dispatcher.registerSubscriptionManager(subscriptionManager);
@@ -394,7 +394,6 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                         publicationManager : publicationManager,
                         libjoynrMessagingAddress : new InProcessAddress(libjoynrMessagingSkeleton),
                         participantIdStorage : participantIdStorage,
-                        localChannelId : "localchannelId", //TODO: create joynrInstanceId
                         loggingManager : loggingManager
                     }));
 

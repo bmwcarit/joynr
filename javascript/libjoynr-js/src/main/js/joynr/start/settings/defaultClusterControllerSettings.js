@@ -1,3 +1,4 @@
+/*jslint nomen: true */
 /*
  * #%L
  * %%
@@ -19,16 +20,16 @@
 
 (function() {
     var setupDefaultClusterControllerSettings =
-            function(defaultSettings) {
+            function(settings) {
+                var defaultSettings = {};
                 defaultSettings.discoveryChannel = "discoverydirectory_channelid";
 
-                defaultSettings.getDefaultDiscoveryChannelUrls =
-                        function(bounceProxyBaseUrl) {
-                            return [ bounceProxyBaseUrl
+                defaultSettings.getDefaultDiscoveryChannelUrl =
+                        function() {
+                            return settings.bounceProxyBaseUrl
                                 + "/discovery/channels/"
                                 + defaultSettings.discoveryChannel
-                                + "/"
-                            ];
+                                + "/";
                         };
 
                 var globalCapDirCapability = {
@@ -41,27 +42,16 @@
                         isLocalOnly : false,
                         onChangeSubscriptions : true
                     },
-                    channelId : defaultSettings.discoveryChannel,
+                    address : JSON.stringify({
+                        _typeName : "joynr.system.RoutingTypes.ChannelAddress",
+                        channelId : defaultSettings.discoveryChannel,
+                        messagingEndpointUrl : defaultSettings.getDefaultDiscoveryChannelUrl()
+                    }),
+                    publicKeyId : "",
                     participantId : "capabilitiesdirectory_participantid"
                 };
 
-                var channelUrlDirCapability = {
-                    domain : "io.joynr",
-                    interfaceName : "infrastructure/ChannelUrlDirectory",
-                    providerQos : {
-                        qos : [],
-                        version : 0,
-                        priority : 1,
-                        isLocalOnly : false,
-                        onChangeSubscriptions : true
-                    },
-                    channelId : defaultSettings.discoveryChannel,
-                    participantId : "channelurldirectory_participantid"
-                };
-
-                defaultSettings.capabilities = [
-                    globalCapDirCapability,
-                    channelUrlDirCapability
+                defaultSettings.capabilities = [ globalCapDirCapability
                 ];
                 return defaultSettings;
             };
@@ -69,13 +59,11 @@
     // AMD support
     if (typeof define === 'function' && define.amd) {
         define("joynr/start/settings/defaultClusterControllerSettings", [], function() {
-            return setupDefaultClusterControllerSettings({});
+            return setupDefaultClusterControllerSettings;
         });
     } else {
         window.joynr = window.joynr || {};
         window.joynr.start = window.joynr.start || {};
-        window.joynr.start.defaultClusterControllerSettings =
-                window.joynr.start.defaultClusterControllerSettings || {};
-        setupDefaultClusterControllerSettings(window.joynr.start.defaultClusterControllerSettings);
+        window.joynr.start.defaultClusterControllerSettings = setupDefaultClusterControllerSettings;
     }
 }());

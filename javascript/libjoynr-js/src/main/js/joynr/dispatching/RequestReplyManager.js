@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,6 +95,28 @@ define(
                         }, settings.messagingQos.ttl);
                         // resolve will be called upon successful response
                         dispatcher.sendRequest(settings).catch(reject);
+                    });
+                };
+
+                /**
+                 * @name RequestReplyManager#sendOneWayRequest
+                 * @function
+                 *
+                 * @param {Object}
+                 *            settings
+                 * @param {String}
+                 *            settings.from participantId of the sender
+                 * @param {String}
+                 *            settings.to participantId of the receiver
+                 * @param {MessagingQos}
+                 *            settings.messagingQos quality-of-service parameters such as time-to-live
+                 * @param {OneWayRequest}
+                 *            settings.request the Request to send
+                 * @returns {Promise} the Promise for the Request
+                 */
+                this.sendOneWayRequest = function sendOneWayRequest(settings) {
+                    return new Promise(function(resolve, reject) {
+                        dispatcher.sendOneWayRequest(settings).then(resolve).catch(reject);
                     });
                 };
 
@@ -307,6 +329,44 @@ define(
                                 }
                             }
                         };
+
+                        /**
+                         * @name RequestReplyManager#handleOneWayRequest
+                         * @function
+                         *
+                         * @param {String}
+                         *            providerParticipantId
+                         * @param {OneWayRequest}
+                         *            request
+                         */
+                        this.handleOneWayRequest =
+                                function handleOneWayRequest(providerParticipantId, request) {
+                                    var provider = providers[providerParticipantId];
+                                    if (!provider) {
+                                        throw new MethodInvocationException({
+                                            detailMessage: "error handling one-way request: "
+                                                + JSONSerializer.stringify(request)
+                                                + " for providerParticipantId "
+                                                + providerParticipantId
+                                        });
+                                    }
+
+                                    // if there's an operation available to call
+                                    if (provider[request.methodName]
+                                        && provider[request.methodName].callOperation) {
+                                        // If final customer provided method implementation gets called,
+                                        // that one may return either promise (preferred) or direct result
+                                        // and may possibly also throw exception in the latter case.
+                                        provider[request.methodName].callOperation(
+                                            request.params,
+                                            request.paramDatatypes);
+                                    } else {
+                                        throw new MethodInvocationException({
+                                            detailMessage: "Could not find an operation \""
+                                                + request.methodName + "\" in the provider"
+                                        });
+                                    }
+                                };
 
                 /**
                  * @name RequestReplyManager#handleReply

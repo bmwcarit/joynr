@@ -23,10 +23,12 @@ This project has dependencies to:
   Antlr 3 Runtime under BSD License
   AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
+  aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
   Apache Commons CLI under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
+  Apache Groovy under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License
   Apache HttpClient Mime under Apache License
   Apache HttpCore under Apache License
@@ -36,6 +38,27 @@ This project has dependencies to:
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   Apache XBean :: ASM 4 shaded (repackaged) under Apache License, Version 2.0
   Apache XBean :: Reflect under The Apache Software License, Version 2.0
+  Arquillian Config API under Apache License, Version 2.0
+  Arquillian Config Implementation Base under Apache License, Version 2.0
+  Arquillian Container GlassFish Embedded 3.1 under Public Domain
+  Arquillian Container Implementation Base under Apache License, Version 2.0
+  Arquillian Container SPI under Apache License, Version 2.0
+  Arquillian Container Test API under Apache License, Version 2.0
+  Arquillian Container Test Implementation Base under Apache License, Version 2.0
+  Arquillian Container Test SPI under Apache License, Version 2.0
+  Arquillian Core API under Apache License, Version 2.0
+  Arquillian Core Implementation Base under Apache License, Version 2.0
+  Arquillian Core SPI under Apache License, Version 2.0
+  Arquillian Protocol Servlet 2.5/3.x under Apache License, Version 2.0
+  Arquillian Test API under Apache License, Version 2.0
+  Arquillian Test Implementation Base under Apache License, Version 2.0
+  Arquillian Test SPI under Apache License, Version 2.0
+  Arquillian TestEnricher CDI under Apache License, Version 2.0
+  Arquillian TestEnricher EJB under Apache License, Version 2.0
+  Arquillian TestEnricher InitialContext under Apache License, Version 2.0
+  Arquillian TestEnricher Resource under Apache License, Version 2.0
+  Arquillian TestRunner JUnit Container under Apache License, Version 2.0
+  Arquillian TestRunner JUnit Core under Apache License, Version 2.0
   ASM Analysis under BSD
   ASM Commons under BSD
   ASM Core under BSD License
@@ -53,7 +76,6 @@ This project has dependencies to:
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-standalone under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
-  codegen under Eclipse Public License - v 1.0
   Common Annotations 1.1 API under lgpl
   Common Eclipse Runtime under Eclipse Public License - v 1.0
   Common Types Runtime Library under Eclipse Public License - v 1.0
@@ -75,6 +97,7 @@ This project has dependencies to:
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
+  Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
   Expression Language 2.2 API under lgpl
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -96,6 +119,8 @@ This project has dependencies to:
   Hamcrest library under New BSD License
   Hibernate Commons Annotations under GNU Lesser General Public License
   Hibernate JPA Support under GNU Lesser General Public License
+  HK2 API module under CDDL + GPLv2 with classpath exception
+  HK2 Implementation Utilities under CDDL + GPLv2 with classpath exception
   HtmlUnit under Apache License, Version 2.0
   HtmlUnit Core JS under Mozilla Public License version 2.0
   ICU4J under ICU License
@@ -115,7 +140,6 @@ This project has dependencies to:
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:channel-url-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
@@ -204,26 +228,36 @@ This project has dependencies to:
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
   Java(TM) EE 6 Specification APIs under CDDL + GPLv2 with classpath exception
+  Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaEE Application Deployment 1.2 API under lgpl
   JavaMail API under CDDL or GPLv2+CE
   Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
+  javax.annotation API under CDDL + GPLv2 with classpath exception
   javax.inject under The Apache Software License, Version 2.0
+  javax.inject:1 as OSGi bundle under CDDL + GPLv2 with classpath exception
   javax.interceptor API under CDDL + GPLv2 with classpath exception
   javax.servlet API v.3.0 under CDDL + GPLv2 with classpath exception
+  javax.ws.rs-api under CDDL 1.1 or GPL2 w/ CPE
   JAX-RS Core API under Apache License, Version 2.0
   JBoss Java Authentication SPI for Containers 1.0 API under lgpl
   JBoss Java EE 6.0 API Aggregate under lgpl
   JBoss Java Server Pages 2.2 API under lgpl
   JBoss Logging 3 under Apache License, version 2.0
+  jeeintegration under The Apache Software License, Version 2.0
   Jersey Test Framework - Core under CDDL 1.1 or GPL2 w/ CPE
   Jersey Test Framework - Grizzly 2 Module under CDDL 1.1 or GPL2 w/ CPE
   jersey-client under CDDL 1.1 or GPL2 w/ CPE
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
+  jersey-core-client under CDDL+GPL License
+  jersey-core-common under CDDL+GPL License
+  jersey-core-server under CDDL+GPL License
   jersey-grizzly2 under CDDL 1.1 or GPL2 w/ CPE
   jersey-grizzly2-servlet under CDDL 1.1 or GPL2 w/ CPE
   jersey-guice under CDDL 1.1 or GPL2 w/ CPE
+  jersey-media-jaxb under CDDL+GPL License
   jersey-multipart under CDDL 1.1 or GPL2 w/ CPE
+  jersey-repackaged-guava under CDDL+GPL License
   jersey-server under CDDL 1.1 or GPL2 w/ CPE
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
   Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
@@ -253,6 +287,8 @@ This project has dependencies to:
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
+  Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
+  Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logging under The Apache Software License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0
   Maven Artifact under The Apache Software License, Version 2.0
@@ -287,6 +323,7 @@ This project has dependencies to:
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
+  OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
   Plexus :: Default Container under The Apache Software License, Version 2.0
   Plexus Classworlds under The Apache Software License, Version 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
@@ -299,7 +336,13 @@ This project has dependencies to:
   robolectric-resources under MIT license
   robolectric-utils under MIT license
   Serp under BSD
+  ServiceLocator Default Implementation under CDDL + GPLv2 with classpath exception
   shadows-core under MIT license
+  ShrinkWrap API under Apache License, Version 2.0
+  ShrinkWrap Descriptors API Base under Apache License, Version 2.0
+  ShrinkWrap Descriptors SPI under Apache License, Version 2.0
+  ShrinkWrap Implementation Base under Apache License, Version 2.0
+  ShrinkWrap SPI under Apache License, Version 2.0
   Simple API for CSS under The W3C Software License
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License

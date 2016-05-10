@@ -1,8 +1,8 @@
 [messaging]
 broker-url=https://localhost:8443/bounceproxy
 discovery-directories-domain=io.joynr
-channel-url-directory-url=https://localhost:8443/discovery/channels/discoverydirectory_channelid/
-capabilities-directory-url=https://localhost:8443/discovery/channels/discoverydirectory_channelid/
+capabilities-directory-url=https://localhost:8443/discovery/channels/
+capabilities-directory-channelid=discoverydirectory_channelid
 
 certificate-authority=test-resources/ca.crt
 client-certificate=test-resources/testclient.pem

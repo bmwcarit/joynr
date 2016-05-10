@@ -78,6 +78,12 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
+class MockSubscriptionListenerZeroTypes : public joynr::ISubscriptionListener<void> {
+public:
+    MOCK_METHOD0(onReceive, void());
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
+};
+
 class MockTestProvider : public joynr::tests::DefaulttestProvider
 {
 public:
@@ -141,6 +147,14 @@ public:
                     const joynr::types::Localisation::GpsLocation& gpsLocation,
                     std::function<void()> onSuccess,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
+            )
+    );
+    MOCK_METHOD3(
+            methodFireAndForget,
+            void(
+                    const std::int32_t& intIn,
+                    const std::string& stringIn,
+                    const joynr::tests::testTypes::ComplexTestType& complexTestTypeIn
             )
     );
 

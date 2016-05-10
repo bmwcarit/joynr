@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,45 +32,47 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
+import io.joynr.provider.ProviderContainer;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import joynr.JoynrMessage;
-import joynr.OneWay;
-import joynr.Reply;
-import joynr.Request;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import joynr.JoynrMessage;
+import joynr.OneWayRequest;
+import joynr.Reply;
+import joynr.Request;
+
 @Singleton
-public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirectoryListener<RequestCaller> {
+public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryListener<ProviderContainer> {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerImpl.class);
     private boolean running = true;
 
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
-    private Map<String, PayloadListener<?>> oneWayRecipients = Maps.newHashMap();
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>>();
-    private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<OneWay>>> oneWayRequestQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<OneWay>>>();
+    private ConcurrentHashMap<String, ConcurrentLinkedQueue<OneWayCallable>> oneWayRequestQueue =
+    		new ConcurrentHashMap<>();
     private ConcurrentHashMap<Request, ProviderCallback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, ProviderCallback<Reply>>();
 
     private ReplyCallerDirectory replyCallerDirectory;
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
     private RequestInterpreter requestInterpreter;
     private MessageRouter messageRouter;
     private JoynrMessageFactory joynrMessageFactory;
@@ -80,17 +82,17 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     @Inject
     public RequestReplyManagerImpl(JoynrMessageFactory joynrMessageFactory,
                                    ReplyCallerDirectory replyCallerDirectory,
-                                   RequestCallerDirectory requestCallerDirectory,
+                                   ProviderDirectory providerDirectory,
                                    MessageRouter messageRouter,
                                    RequestInterpreter requestInterpreter,
                                    @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         this.joynrMessageFactory = joynrMessageFactory;
         this.replyCallerDirectory = replyCallerDirectory;
-        this.requestCallerDirectory = requestCallerDirectory;
+        this.providerDirectory = providerDirectory;
         this.messageRouter = messageRouter;
         this.requestInterpreter = requestInterpreter;
         this.cleanupScheduler = cleanupScheduler;
-        requestCallerDirectory.addListener(this);
+        providerDirectory.addListener(this);
     }
 
     /*
@@ -120,13 +122,6 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
         messageRouter.route(message);
 
     }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see io.joynr.dispatcher.MessageSender#sendSyncRequest(java .lang.String, java.lang.String,
-     * java.lang.Object, long, long)
-     */
 
     @Override
     public Object sendSyncRequest(final String fromParticipantId,
@@ -183,28 +178,28 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
 
         return response;
     }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see io.joynr.dispatcher.MessageSender#sendOneWay(java.lang .String, java.lang.String,
-     * java.lang.Object, long)
-     */
-
+    
     @Override
-    public void sendOneWay(final String fromParticipantId, final String toParticipantId, Object payload, long ttl_ms)
+    public void sendOneWayRequest(final String fromParticipantId, final String toParticipantId, OneWayRequest oneWayRequest, long ttl_ms)
                                                                                                                      throws JoynrSendBufferFullException,
                                                                                                                      JoynrMessageNotSentException,
                                                                                                                      JsonGenerationException,
                                                                                                                      JsonMappingException,
                                                                                                                      IOException {
-        JoynrMessage message = joynrMessageFactory.createOneWay(fromParticipantId,
-                                                                toParticipantId,
-                                                                payload,
-                                                                DispatcherUtils.convertTtlToExpirationDate(ttl_ms));
+    	sendOneWayRequest(fromParticipantId, Sets.newHashSet(toParticipantId), oneWayRequest, ttl_ms);
+    }
 
-        messageRouter.route(message);
-
+    @Override
+    public void sendOneWayRequest(String fromParticipantId, Set<String> toParticipantIds, OneWayRequest oneWayRequest,
+    		long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException, JsonGenerationException,
+    		JsonMappingException, IOException {
+    	for (String toParticipantId : toParticipantIds) {
+			JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
+																	toParticipantId,
+																	oneWayRequest,
+																	DispatcherUtils.convertTtlToExpirationDate(ttl_ms));
+			messageRouter.route(message);
+		}
     }
 
     @Override
@@ -219,70 +214,56 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     }
 
     @Override
-    public void addOneWayRecipient(final String participantId, PayloadListener<?> listener) {
-        synchronized (oneWayRecipients) {
-            oneWayRecipients.put(participantId, listener);
-        }
-
-        ConcurrentLinkedQueue<ContentWithExpiryDate<OneWay>> oneWayRequestList = oneWayRequestQueue.remove(participantId);
-        if (oneWayRequestList != null) {
-            for (ContentWithExpiryDate<OneWay> oneWayRequestItem : oneWayRequestList) {
-                if (!oneWayRequestItem.isExpired()) {
-                    handleOneWayRequest(listener, oneWayRequestItem.getContent());
-                }
-            }
-        }
-    }
-
-    @Override
-    public void callerAdded(String participantId, RequestCaller requestCaller) {
+    public void entryAdded(String participantId, ProviderContainer providerContainer) {
         ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> requestList = requestQueue.remove(participantId);
         if (requestList != null) {
             for (ContentWithExpiryDate<Request> requestItem : requestList) {
                 if (!requestItem.isExpired()) {
                     Request request = requestItem.getContent();
-                    handleRequest(replyCallbacks.remove(request), requestCaller, request);
+                    handleRequest(replyCallbacks.remove(request), providerContainer.getRequestCaller(), request);
                 }
             }
+        }
+        ConcurrentLinkedQueue<OneWayCallable> oneWayCallables = oneWayRequestQueue.remove(participantId);
+        if (oneWayCallables != null) {
+        	for (OneWayCallable oneWayCallable : oneWayCallables) {
+				oneWayCallable.call();
+			}
         }
     }
 
     @Override
-    public void callerRemoved(String participantId) {
+    public void entryRemoved(String participantId) {
         //TODO cleanup requestQueue?
     }
 
     @Override
-    public void removeListener(final String participantId) {
-        synchronized (oneWayRecipients) {
-            oneWayRecipients.remove(participantId);
-        }
+    public void handleOneWayRequest(final String providerParticipantId, final OneWayRequest request, long expiryDate) {
+    	Callable<Void> requestHandler = new Callable<Void>() {
+			@Override
+			public Void call() {
+				requestInterpreter.invokeMethod(providerDirectory.get(providerParticipantId).getRequestCaller(), request);
+				return null;
+			}
+		};
+		OneWayCallable oneWayCallable = new OneWayCallable(requestHandler, ExpiryDate.fromAbsolute(expiryDate), String.valueOf(request));
+    	if (providerDirectory.contains(providerParticipantId)) {
+    		oneWayCallable.call();
+    	} else {
+    		if (!oneWayRequestQueue.containsKey(providerParticipantId)) {
+				oneWayRequestQueue.putIfAbsent(providerParticipantId, new ConcurrentLinkedQueue<OneWayCallable>());
+    		}
+			oneWayRequestQueue.get(providerParticipantId).add(oneWayCallable);
+    	}
     }
-
-    @Override
-    public void handleOneWayRequest(String providerParticipantId, OneWay requestPayload, long expiryDate) {
-        synchronized (oneWayRecipients) {
-            final PayloadListener<?> listener = oneWayRecipients.get(providerParticipantId);
-            if (listener != null) {
-                handleOneWayRequest(listener, requestPayload);
-            } else {
-                queueOneWayRequest(providerParticipantId, requestPayload, ExpiryDate.fromAbsolute(expiryDate));
-            }
-        }
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void handleOneWayRequest(final PayloadListener listener, final OneWay requestPayload) {
-        listener.receive(requestPayload.getPayload());
-    }
-
+    
     @Override
     public void handleRequest(ProviderCallback<Reply> replyCallback,
                               String providerParticipant,
                               Request request,
                               long expiryDate) {
-        if (requestCallerDirectory.containsCaller(providerParticipant)) {
-            handleRequest(replyCallback, requestCallerDirectory.getCaller(providerParticipant), request);
+        if (providerDirectory.contains(providerParticipant)) {
+            handleRequest(replyCallback, providerDirectory.get(providerParticipant).getRequestCaller(), request);
         } else {
             queueRequest(replyCallback, providerParticipant, request, ExpiryDate.fromAbsolute(expiryDate));
             logger.info("No requestCaller found for participantId: {} queuing request message.", providerParticipant);
@@ -290,19 +271,17 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     }
 
     private void handleRequest(ProviderCallback<Reply> replyCallback, RequestCaller requestCaller, Request request) {
-        // TODO shall be moved to request manager and not handled by dispatcher
         logger.debug("executing request {}", request.getRequestReplyId());
         requestInterpreter.execute(replyCallback, requestCaller, request);
     }
 
     @Override
     public void handleReply(final Reply reply) {
-        final ReplyCaller callBack = replyCallerDirectory.removeCaller(reply.getRequestReplyId());
+        final ReplyCaller callBack = replyCallerDirectory.remove(reply.getRequestReplyId());
         if (callBack == null) {
             logger.warn("No reply caller found for id: " + reply.getRequestReplyId());
             return;
         }
-
         callBack.messageCallBack(reply);
     }
 
@@ -310,7 +289,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
     public void handleError(Request request, Throwable error) {
         String requestReplyId = request.getRequestReplyId();
         if (requestReplyId != null) {
-            ReplyCaller replyCaller = replyCallerDirectory.removeCaller(requestReplyId);
+            ReplyCaller replyCaller = replyCallerDirectory.remove(requestReplyId);
             if (replyCaller != null) {
                 replyCaller.error(error);
             }
@@ -344,31 +323,6 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
         }, incomingTtlExpirationDate_ms.getRelativeTtl(), TimeUnit.MILLISECONDS);
     }
 
-    private void queueOneWayRequest(final String providerParticipantId,
-                                    OneWay request,
-                                    ExpiryDate incomingTtlExpirationDate_ms) {
-
-        if (!oneWayRequestQueue.containsKey(providerParticipantId)) {
-            ConcurrentLinkedQueue<ContentWithExpiryDate<OneWay>> newOneWayRequestList = new ConcurrentLinkedQueue<ContentWithExpiryDate<OneWay>>();
-            oneWayRequestQueue.putIfAbsent(providerParticipantId, newOneWayRequestList);
-        }
-        final ContentWithExpiryDate<OneWay> oneWayRequestItem = new ContentWithExpiryDate<OneWay>(request,
-                                                                                                  incomingTtlExpirationDate_ms);
-        oneWayRequestQueue.get(providerParticipantId).add(oneWayRequestItem);
-        cleanupScheduler.schedule(new Runnable() {
-
-            @Override
-            public void run() {
-                oneWayRequestQueue.get(providerParticipantId).remove(oneWayRequestItem);
-                logger.warn("TTL DISCARD. providerParticipantId: {} one way request with payload: {} because it has expired. ",
-                            new String[]{ providerParticipantId, oneWayRequestItem.getContent().toString() });
-
-            }
-        },
-                                  incomingTtlExpirationDate_ms.getRelativeTtl(),
-                                  TimeUnit.MILLISECONDS);
-    }
-
     @Override
     public void shutdown() {
         running = false;
@@ -379,7 +333,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, CallerDirec
             }
         }
         messageRouter.shutdown();
-        requestCallerDirectory.removeListener(this);
+        providerDirectory.removeListener(this);
         replyCallerDirectory.shutdown();
     }
 }

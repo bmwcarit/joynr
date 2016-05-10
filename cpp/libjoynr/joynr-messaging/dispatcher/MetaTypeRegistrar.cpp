@@ -25,11 +25,7 @@ namespace joynr
 
 MetaTypeRegistrar* MetaTypeRegistrar::registrarInstance = nullptr;
 
-MetaTypeRegistrar::MetaTypeRegistrar()
-        : publicationInterpreters(),
-          publicationInterpretersMutex(),
-          replyInterpreters(),
-          replyInterpretersMutex()
+MetaTypeRegistrar::MetaTypeRegistrar() : publicationInterpreters(), publicationInterpretersMutex()
 {
     // Register known types
     registerMetaType<std::string>();
@@ -45,9 +41,11 @@ MetaTypeRegistrar::MetaTypeRegistrar()
     registerMetaType<std::int64_t>();
     registerMetaType<std::uint64_t>();
 
-    // Register a reply interpreter for void type
-    std::lock_guard<std::mutex> lock(replyInterpretersMutex);
-    replyInterpreters.insert({util::getTypeId<void>(), new ReplyInterpreter<void>()});
+    {
+        std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
+        publicationInterpreters.insert(
+                {util::getTypeId<void>(), new PublicationInterpreter<void>()});
+    }
 }
 
 MetaTypeRegistrar& MetaTypeRegistrar::instance()
@@ -73,21 +71,6 @@ IPublicationInterpreter& MetaTypeRegistrar::getPublicationInterpreter(int typeId
     IPublicationInterpreter* ret = nullptr;
     auto search = publicationInterpreters.find(typeId);
     if (search != publicationInterpreters.end()) {
-        ret = search->second;
-    }
-
-    // It is a programming error if the interpreter does not exist
-    assert(ret);
-    return *ret;
-}
-
-IReplyInterpreter& MetaTypeRegistrar::getReplyInterpreter(int typeId)
-{
-    std::lock_guard<std::mutex> lock(replyInterpretersMutex);
-
-    IReplyInterpreter* ret = nullptr;
-    auto search = replyInterpreters.find(typeId);
-    if (search != replyInterpreters.end()) {
         ret = search->second;
     }
 

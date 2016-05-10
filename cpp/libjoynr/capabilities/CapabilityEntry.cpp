@@ -17,47 +17,56 @@
  * #L%
  */
 #include "joynr/CapabilityEntry.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {
 
 CapabilityEntry::CapabilityEntry()
-        : domain(), interfaceName(), qos(), participantId(), middlewareConnections(), global(true)
+        : providerVersion(),
+          domain(),
+          interfaceName(),
+          qos(),
+          participantId(),
+          publicKeyId(),
+          global(true)
 {
 }
 
-CapabilityEntry::CapabilityEntry(
-        const std::string& domain,
-        const std::string& interfaceName,
-        joynr::types::ProviderQos qos,
-        const std::string& participantId,
-        std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
-        bool isGlobal)
-        : domain(domain),
+CapabilityEntry::CapabilityEntry(joynr::types::Version providerVersion,
+                                 const std::string& domain,
+                                 const std::string& interfaceName,
+                                 joynr::types::ProviderQos qos,
+                                 const std::string& participantId,
+                                 const std::string& publicKeyId,
+                                 bool isGlobal)
+        : providerVersion(providerVersion),
+          domain(domain),
           interfaceName(interfaceName),
           qos(qos),
           participantId(participantId),
-          middlewareConnections(middlewareConnections),
+          publicKeyId(publicKeyId),
           global(isGlobal)
 {
 }
 
 CapabilityEntry& CapabilityEntry::operator=(const CapabilityEntry& other)
 {
+    this->providerVersion = other.providerVersion;
     this->interfaceName = other.interfaceName;
     this->domain = other.domain;
     this->qos = other.qos;
     this->participantId = other.participantId;
-    this->middlewareConnections = middlewareConnections;
+    this->publicKeyId = other.publicKeyId;
     this->global = other.global;
     return *this;
 }
 
 bool CapabilityEntry::operator==(const CapabilityEntry& other) const
 {
-    return this->interfaceName == other.interfaceName && this->domain == other.domain &&
-           this->participantId == other.participantId &&
-           this->middlewareConnections == other.middlewareConnections &&
+    return this->providerVersion == other.providerVersion &&
+           this->interfaceName == other.interfaceName && this->domain == other.domain &&
+           this->participantId == other.participantId && this->publicKeyId == other.publicKeyId &&
            this->global == other.global;
 }
 
@@ -91,6 +100,16 @@ void CapabilityEntry::setQos(joynr::types::ProviderQos qos)
     this->qos = qos;
 }
 
+joynr::types::Version CapabilityEntry::getProviderVersion() const
+{
+    return providerVersion;
+}
+
+void CapabilityEntry::setProviderVersion(joynr::types::Version providerVersion)
+{
+    this->providerVersion = providerVersion;
+}
+
 void CapabilityEntry::setParticipantId(std::string participantId)
 {
     this->participantId = participantId;
@@ -101,22 +120,14 @@ std::string CapabilityEntry::getParticipantId() const
     return participantId;
 }
 
-void CapabilityEntry::setMiddlewareConnections(
-        std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections)
+const std::string& CapabilityEntry::getPublicKeyId() const
 {
-    this->middlewareConnections = middlewareConnections;
+    return publicKeyId;
 }
 
-std::vector<joynr::types::CommunicationMiddleware::Enum> CapabilityEntry::getMiddlewareConnections()
-        const
+void CapabilityEntry::setPublicKeyId(const std::string& publicKeyId)
 {
-    return middlewareConnections;
-}
-
-void CapabilityEntry::prependMiddlewareConnection(
-        joynr::types::CommunicationMiddleware::Enum middlewareConnection)
-{
-    middlewareConnections.insert(middlewareConnections.begin(), middlewareConnection);
+    this->publicKeyId = publicKeyId;
 }
 
 bool CapabilityEntry::isGlobal() const

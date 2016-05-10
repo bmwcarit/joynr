@@ -29,12 +29,15 @@ import io.joynr.generator.communicationmodel.EnumTypeTemplate;
 import io.joynr.generator.communicationmodel.MapTypeTemplate;
 import io.joynr.generator.interfaces.InterfaceAsyncTemplate;
 import io.joynr.generator.interfaces.InterfaceBroadcastTemplate;
+import io.joynr.generator.interfaces.InterfaceFireAndForgetTemplate;
 import io.joynr.generator.interfaces.InterfaceSubscriptionTemplate;
 import io.joynr.generator.interfaces.InterfaceSyncTemplate;
 import io.joynr.generator.interfaces.InterfacesTemplate;
 import io.joynr.generator.provider.DefaultInterfaceProviderTemplate;
 import io.joynr.generator.provider.InterfaceAbstractProviderTemplate;
 import io.joynr.generator.provider.InterfaceProviderTemplate;
+import io.joynr.generator.provider.InterfaceSubscriptionPublisherImplTemplate;
+import io.joynr.generator.provider.InterfaceSubscriptionPublisherTemplate;
 import io.joynr.generator.proxy.InterfaceProxyTemplate;
 
 public interface JavaTemplateFactory {
@@ -43,6 +46,8 @@ public interface JavaTemplateFactory {
     InterfaceSyncTemplate createInterfaceSyncTemplate(FInterface francaIntf);
 
     InterfaceAsyncTemplate createInterfaceAsyncTemplate(FInterface francaIntf);
+
+    InterfaceFireAndForgetTemplate createInterfaceFireAndForgetTemplate(FInterface francaIntf);
 
     InterfaceSubscriptionTemplate createInterfaceSubscriptionTemplate(FInterface francaIntf);
 
@@ -53,6 +58,10 @@ public interface JavaTemplateFactory {
     DefaultInterfaceProviderTemplate createDefaultInterfaceProviderTemplate(FInterface francaIntf);
 
     InterfaceAbstractProviderTemplate createInterfaceAbstractProviderTemplate(FInterface francaIntf);
+
+    InterfaceSubscriptionPublisherTemplate createSubscriptionPublisherTemplate(FInterface francaIntf);
+
+    InterfaceSubscriptionPublisherImplTemplate createSubscriptionPublisherImplTemplate(FInterface francaIntf);
 
     InterfaceProxyTemplate createInterfaceProxyTemplate(FInterface francaIntf);
 

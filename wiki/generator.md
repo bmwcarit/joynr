@@ -7,6 +7,7 @@ build process. See also the Demo App tutorial and sample code.
 ## Maven configuration
 The **output path** for the generated code, the **model files**, and the **target language**
 have to be provided in the Maven configuration:
+
 ```xml
 <plugin>
     <groupId>io.joynr.tools.generator</groupId>

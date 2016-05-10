@@ -18,7 +18,6 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
@@ -27,7 +26,6 @@ import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
 class InterfaceProxyHTemplate extends InterfaceTemplate {
 	@Inject extension JoynrCppGeneratorExtensions
@@ -37,11 +35,6 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 	@Inject private extension AttributeUtil
 	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate()
 '''
@@ -243,13 +236,13 @@ public:
 		«ENDIF»
 	«ENDFOR»
 
-	// operations
-	«FOR methodName: getUniqueMethodNames(francaIntf)»
-		using «asyncClassName»::«methodName»Async;
-		using «syncClassName»::«methodName»;
-
+	«FOR methodName : getUniqueMethodNames(getMethods(francaIntf).filter[!fireAndForget])»
+		using I«interfaceName»Sync::«methodName»;
+		using I«interfaceName»Async::«methodName»Async;
 	«ENDFOR»
-private:
+	«FOR methodName : getUniqueMethodNames(getMethods(francaIntf).filter[fireAndForget])»
+		using I«interfaceName»FireAndForget::«methodName»;
+	«ENDFOR»private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 };
 

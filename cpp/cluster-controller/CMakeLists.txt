@@ -210,7 +210,8 @@ set_target_properties(
     AUTOMOC TRUE
 )
 
-generate_export_header(
+include(GenerateJoynrExports)
+GenerateJoynrExports(
     JoynrClusterController
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrClusterController_EXPORT_HEADER}"
 )

@@ -19,6 +19,7 @@ package io.joynr.test.interlanguage;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -39,6 +40,7 @@ import java.util.Properties;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,7 +132,10 @@ public class IltProviderApplication extends AbstractJoynrApplication {
     public void run() {
         provider = new IltProvider();
         provider.addBroadcastFilter(new IltStringBroadcastFilter(jsonSerializer));
-        runtime.registerProvider(localDomain, provider);
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setPriority(System.currentTimeMillis());
+
+        runtime.registerProvider(localDomain, provider, providerQos);
 
         while (!shutDownRequested) {
             try {
@@ -168,7 +173,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
                                                                                             domain,
-                                                                                            IltProvider.INTERFACE_NAME,
+                                                                                            ProviderAnnotations.getInterfaceName(IltProvider.class),
                                                                                             TrustLevel.LOW,
                                                                                             new TrustLevel[]{ TrustLevel.LOW },
                                                                                             TrustLevel.LOW,

@@ -25,10 +25,10 @@
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Runnable.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 #include <string>
 #include <memory>
@@ -40,7 +40,6 @@ namespace joynr
 class JoynrMessage;
 class MessagingSettings;
 class HttpResult;
-class IChannelUrlSelector;
 
 class HttpSender : public IMessageSender
 {
@@ -55,16 +54,10 @@ public:
     /**
     * @brief Sends the message to the given channel.
     */
-    void sendMessage(const std::string& channelId,
+    void sendMessage(const joynr::system::RoutingTypes::Address& destinationAddress,
                      const JoynrMessage& message,
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
-    /**
-    * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
-    * the channelIds.
-    */
-    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-              const MessagingSettings& settings) override;
 
     void registerReceiveQueueStartedCallback(
             std::function<void(void)> waitForReceiveQueueStarted) override;
@@ -72,7 +65,6 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
     const BrokerUrl brokerUrl;
-    IChannelUrlSelector* channelUrlCache;
     const std::chrono::milliseconds maxAttemptTtl;
     const std::chrono::milliseconds messageSendRetryInterval;
     ADD_LOGGER(HttpSender);
@@ -80,8 +72,6 @@ private:
     HttpResult buildRequestAndSend(const std::string& data,
                                    const std::string& url,
                                    std::chrono::milliseconds curlTimeout);
-    std::string resolveUrlForChannelId(const std::string& channelId,
-                                       std::chrono::milliseconds curlTimeout);
 
     void handleCurlError(
             const HttpResult& sendMessageResult,
@@ -91,6 +81,8 @@ private:
             const HttpResult& sendMessageResult,
             const std::chrono::milliseconds& delay,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) const;
+
+    std::string toUrl(const system::RoutingTypes::ChannelAddress& channelAddress) const;
 };
 
 } // namespace joynr

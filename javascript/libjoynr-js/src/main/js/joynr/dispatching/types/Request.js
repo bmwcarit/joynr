@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@
  */
 
 define("joynr/dispatching/types/Request", [
+    "joynr/dispatching/types/OneWayRequest",
     "joynr/util/UtilInternal",
     "joynr/util/Typing",
     "uuid"
-], function(Util, Typing, uuid) {
+], function(OneWayRequest, Util, Typing, uuid) {
 
     var defaultSettings = {
         paramDatatypes : [],
@@ -48,7 +49,13 @@ define("joynr/dispatching/types/Request", [
      *            settings.params.array
      */
     function Request(settings) {
+        if (!(this instanceof Request)) {
+            // in case someone calls constructor without new keyword (e.g. var c
+            // = Constructor({..}))
+            return new Request(settings);
+        }
         var i;
+        var oneWayRequest = new OneWayRequest(settings);
         settings.requestReplyId = settings.requestReplyId || uuid();
 
         Util.checkProperty(settings, [
@@ -56,15 +63,6 @@ define("joynr/dispatching/types/Request", [
             "Object"
         ], "settings");
         Util.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
-        Util.checkProperty(settings.methodName, "String", "settings.methodName");
-        Util.checkPropertyIfDefined(settings.paramDatatypes, "Array", "settings.paramDatatypes");
-        Util.checkPropertyIfDefined(settings.params, "Array", "settings.params");
-
-        if (settings.params) {
-            for (i = 0; i < settings.params.length; i++) {
-                settings.params[i] = Util.ensureTypedValues(settings.params[i]);
-            }
-        }
 
         /**
          * @name Request#requestReplyId
@@ -82,7 +80,7 @@ define("joynr/dispatching/types/Request", [
          * @name Request#params
          * @type Array
          */
-        Util.extend(this, defaultSettings, settings);
+        Util.extend(this, defaultSettings, settings, oneWayRequest);
 
         /**
          * The joynr type name

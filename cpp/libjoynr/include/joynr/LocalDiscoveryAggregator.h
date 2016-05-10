@@ -39,22 +39,15 @@ class DiscoveryQos;
 } // namespace types
 
 /**
- * @brief The LocalDiscoveryAggregator class is a wrapper for discovery proxies. On
- * lookup operations it checks whether the retrieved providers are available locally.
- * If yes, it adds an in-process connection to the provider's connection list.
+ * @brief The LocalDiscoveryAggregator class is a wrapper for discovery proxies. It holds a list
+ * of provisioned discovery entries (for example for the discovery and routing provider). If a
+ * lookup is performed by using a participant ID, these entries are checked and returned first
+ * before the request is forwarded to the wrapped discovery provider.
  */
 class JOYNR_EXPORT LocalDiscoveryAggregator : public joynr::system::IDiscoverySync
 {
 public:
-    // discoveryProxy pointer doesn't hold ownership
-    /**
-     * @brief LocalDiscoveryAggregator Constructs a local discovery aggregator needed
-     * on cluster-controller side that holds a pointer to the local capabilities
-     * directory. NOTE: it doesn't take ownership of the local capabilties directory
-     * (discovery proxy) pointer.
-     */
-    LocalDiscoveryAggregator(IRequestCallerDirectory& requestCallerDirectory,
-                             const SystemServicesSettings& systemServicesSettings);
+    LocalDiscoveryAggregator(const SystemServicesSettings& systemServicesSettings);
 
     void setDiscoveryProxy(std::unique_ptr<IDiscoverySync> discoveryProxy);
 
@@ -76,20 +69,8 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);
 
-    /**
-     * @brief checkForLocalAvailabilityAndAddInProcessConnection Checks whether the provider
-     * in the discovery entry is locally available. If yes, adds a in-process connection to
-     * the discovery entry's connection list.
-     *
-     * @param discoveryEntry Discovery entry to check for local availability.
-     */
-    void checkForLocalAvailabilityAndAddInProcessConnection(
-            joynr::types::DiscoveryEntry& discoveryEntry);
-
     std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy;
-    IRequestCallerDirectory& requestCallerDirectory;
     std::map<std::string, joynr::types::DiscoveryEntry> provisionedDiscoveryEntries;
-    const SystemServicesSettings& systemServicesSettings;
 };
 } // namespace joynr
 #endif // LOCALDISCOVERYAGGREGATOR_H

@@ -48,6 +48,10 @@ public interface ConnectorInvocationHandler {
                                                           InstantiationException, IllegalAccessException,
                                                           ApplicationException, JoynrRuntimeException;
 
+    void executeOneWayMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
+                                                          JoynrMessageNotSentException, JsonGenerationException,
+                                                          JsonMappingException, IOException;
+
     void executeSubscriptionMethod(BroadcastSubscribeInvocation broadcastSubscription)
                                                                                       throws JoynrSendBufferFullException,
                                                                                       JoynrMessageNotSentException,

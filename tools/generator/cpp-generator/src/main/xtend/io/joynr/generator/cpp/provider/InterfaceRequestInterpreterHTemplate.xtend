@@ -18,23 +18,16 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
 class InterfaceRequestInterpreterHTemplate extends InterfaceTemplate {
 
 	@Inject private extension TemplateBase
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate()
 '''
@@ -86,6 +79,19 @@ public:
 					 const std::vector<std::string>& paramTypes,
 					 std::function<void (std::vector<Variant>&& outParams)> onSuccess,
 					 std::function<void (const exceptions::JoynrException& exception)> onError) override;
+
+	/**
+	 * @brief Implements IRequestInterpreter.execute().
+	 * Executes fire-and-forget method methodName with given parameters on the requestCaller object.
+	 * @param requestCaller Object on which the method is to be executed
+	 * @param methodName The name of the method to be executed
+	 * @param paramValues The list of parameter values
+	 * @param paramTypes The list of parameter types
+	 */
+	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
+					 const std::string& methodName,
+					 const std::vector<Variant>& paramValues,
+					 const std::vector<std::string>& paramTypes) override;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);

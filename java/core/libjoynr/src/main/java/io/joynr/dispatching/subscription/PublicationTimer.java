@@ -19,7 +19,6 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
-import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -27,6 +26,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
+import io.joynr.provider.ProviderContainer;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.SubscriptionQos;
 
@@ -53,7 +53,7 @@ public class PublicationTimer extends PubSubTimerBase {
 
     private static final Logger logger = LoggerFactory.getLogger(PublicationTimer.class);
     private final PublicationInformation publicationInformation;
-    private final RequestCaller requestCaller;
+    private final ProviderContainer providerContainer;
     private final AttributePollInterpreter attributePollInterpreter;
     public Method method;
 
@@ -67,13 +67,13 @@ public class PublicationTimer extends PubSubTimerBase {
      * Constructor for PublicationTimer object, see (@link PublicationTimer)
      * @param publicationInformation information about the requested subscription, see {@link io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation}
      * @param method method to be invoked to retrieve the requested information
-     * @param requestCaller request caller
+     * @param providerContainer request caller
      * @param publicationManager publication manager to send publication messages
      * @param attributePollInterpreter attribute poll interpreter to execute method
      */
     public PublicationTimer(PublicationInformation publicationInformation,
                             Method method,
-                            RequestCaller requestCaller,
+                            ProviderContainer providerContainer,
                             PublicationManager publicationManager,
                             AttributePollInterpreter attributePollInterpreter) {
         super(publicationInformation.getQos().getExpiryDateMs(), publicationInformation.getState());
@@ -90,7 +90,7 @@ public class PublicationTimer extends PubSubTimerBase {
         this.period = hasSubscriptionHeartBeat ? ((HeartbeatSubscriptionInformation) qos).getPeriodMs() : 0;
         this.minInterval = isOnChangeSubscription ? ((OnChangeSubscriptionQos) qos).getMinIntervalMs() : 0;
 
-        this.requestCaller = requestCaller;
+        this.providerContainer = providerContainer;
         this.attributePollInterpreter = attributePollInterpreter;
         this.method = method;
         this.pendingPublication = false;
@@ -115,7 +115,7 @@ public class PublicationTimer extends PubSubTimerBase {
                     logger.debug("run: executing attributePollInterpreter for attribute "
                             + publicationInformation.getSubscribedToName());
                     try {
-                        Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
+                        Promise<?> attributeGetterPromise = attributePollInterpreter.execute(providerContainer, method);
                         attributeGetterPromise.then(new PromiseListener() {
 
                             @Override

@@ -37,7 +37,9 @@ define(
             function hashCode(discoveryEntry) {
                 return discoveryEntry.domain
                     + discoveryEntry.interfaceName
-                    + discoveryEntry.participantId;
+                    + discoveryEntry.participantId
+                    + discoveryEntry.providerVersion
+                    + discoveryEntry.publicKeyId;
             }
 
             /**
@@ -68,16 +70,14 @@ define(
              * entry for that provider in the capabilities directory. These <code>{@link DiscoveryEntry}</code> entries contain access
              * information as well as supported Qos. The information is later used in the arbitration process to pick a provider for a proxy.
              *
-             * @param {Array}
+             * @param {GlobalDiscoveryEntry[]}
              *            initialCapabilities
-             * @param {CapabilityInformation}
-             *            initialCapabilities.array
              */
             function CapabilitiesStore(initialCapabilities) {
                 // participantId -> Array of Capability Information
                 var discoveryEntryStoreByParticipantId = {};
 
-                // domain + interface -> Array of Capability Information
+                // domain + interface -> Array of GlobalDiscoveryEntry
                 var discoveryEntryStoreByDomainInterfaceName = {};
 
                 // discovery entry hashCode -> Array of Capability Information

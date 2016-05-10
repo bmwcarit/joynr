@@ -1,16 +1,5 @@
 package io.joynr.proxy;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-
-import javax.annotation.CheckForNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 /*
  * #%L
  * %%
@@ -30,6 +19,17 @@ import com.fasterxml.jackson.databind.JsonMappingException;
  * #L%
  */
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+
+import javax.annotation.CheckForNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.DispatcherUtils;
 import io.joynr.dispatching.RequestReplyManager;
@@ -47,6 +47,7 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import joynr.MethodMetaInformation;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
@@ -170,6 +171,14 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw (JoynrRuntimeException) reply.getError();
         }
 
+    }
+
+    public void executeOneWayMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
+                                                                 JoynrMessageNotSentException, JsonGenerationException,
+                                                                 JsonMappingException, IOException {
+        long ttl_ms = qosSettings.getRoundTripTtl_ms();
+        OneWayRequest request = new OneWayRequest(method.getName(), args, method.getParameterTypes());
+        requestReplyManager.sendOneWayRequest(fromParticipantId, toParticipantId, request, ttl_ms);
     }
 
     @Override

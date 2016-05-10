@@ -1,0 +1,170 @@
+/**
+ *
+ */
+package io.joynr.jeeintegration;
+
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import static java.lang.String.format;
+
+import java.lang.reflect.Proxy;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.inject.Inject;
+
+import joynr.types.ProviderQos;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
+
+import io.joynr.jeeintegration.api.ProviderQosFactory;
+import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.provider.JoynrProvider;
+import io.joynr.runtime.JoynrRuntime;
+
+/**
+ * Singleton EJB which will create and keep the Joynr runtime and also shut it down when the app server shuts down as
+ * well as scan the system for all CDI beans present which are annotated with {@link ServiceProvider} and register those
+ * as joynr providers with the joynr runtime.
+ */
+@Singleton
+@Startup
+public class JoynrIntegrationBean {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JoynrIntegrationBean.class);
+
+    @Inject
+    private BeanManager beanManager;
+
+    @Inject
+    private JoynrRuntimeFactory joynrRuntimeFactory;
+
+    @Inject
+    private ServiceProviderDiscovery serviceProviderDiscovery;
+
+    private Set<Object> registeredProviders = new HashSet<>();
+
+    private JoynrRuntime joynrRuntime;
+
+    public JoynrIntegrationBean() {
+    }
+
+    public JoynrIntegrationBean(BeanManager beanManager,
+                                JoynrRuntimeFactory joynrRuntimeFactory,
+                                ServiceProviderDiscovery serviceProviderDiscovery) {
+        this.beanManager = beanManager;
+        this.joynrRuntimeFactory = joynrRuntimeFactory;
+        this.serviceProviderDiscovery = serviceProviderDiscovery;
+    }
+
+    @PostConstruct
+    public void initialise() {
+        Set<Bean<?>> serviceProviderBeans = serviceProviderDiscovery.findServiceProviderBeans();
+        joynrRuntime = joynrRuntimeFactory.create(getServiceProviderInterfaceClasses(serviceProviderBeans));
+        registerProviders(serviceProviderBeans, joynrRuntime);
+    }
+
+	private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {
+		Set<ProviderQosFactory> providerQosFactories = getProviderQosFactories();
+        for (Bean<?> bean : serviceProviderBeans) {
+            ServiceProvider providerService = bean.getBeanClass().getAnnotation(ServiceProvider.class);
+            Class<?> serviceInterface = serviceProviderDiscovery.getProviderInterfaceFor(providerService.serviceInterface());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(format("Registering %s as provider with joynr runtime for service interface %s.",
+                                 bean,
+                                 serviceInterface));
+            }
+            Object provider = Proxy.newProxyInstance(bean.getBeanClass().getClassLoader(),
+                                                                            new Class<?>[]{ serviceInterface },
+                                                                            new ProviderWrapper(bean,
+                                                                                                beanManager));
+            ProviderQos providerQos = null;
+            for (ProviderQosFactory factory : providerQosFactories) {
+                if (factory.providesFor(serviceInterface)) {
+                    providerQos = factory.create();
+                    break;
+                }
+            }
+            runtime.registerProvider(joynrRuntimeFactory.getLocalDomain(), provider, providerQos);
+            registeredProviders.add(provider);
+        }
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked", "serial" })
+	private Set<ProviderQosFactory> getProviderQosFactories() {
+		Set<Bean<?>> providerQosFactoryBeans = beanManager.getBeans(ProviderQosFactory.class,
+																	new AnnotationLiteral<Any>() {
+																	});
+		Set<ProviderQosFactory> providerQosFactories = new HashSet<>();
+		for (Bean providerQosFactoryBean : providerQosFactoryBeans) {
+			ProviderQosFactory factory = (ProviderQosFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
+			providerQosFactories.add(factory);
+		}
+		return providerQosFactories;
+	}
+
+    @PreDestroy
+    public void destroy() {
+        for (Object provider : registeredProviders) {
+            try {
+                joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
+            } catch (Exception e) {
+                LOG.error("Error unregistering provider", e);
+            }
+        }
+    }
+
+    /**
+     * Can be used to get access to the Guice Injector used in the joynr application / runtime.
+     *
+     * @return the Guice Injector used by the joynr application if the application has already been
+     *         {@link #initialise() started}, or <code>null</code> if not.
+     */
+    public Injector getJoynrInjector() {
+        return joynrRuntimeFactory.getInjector();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<Class<? extends JoynrProvider>> getServiceProviderInterfaceClasses(Set<Bean<?>> serviceProviderBeans) {
+        Set<Class<? extends JoynrProvider>> result = new HashSet<>();
+        for (Bean<?> bean : serviceProviderBeans) {
+            result.add((Class<? extends JoynrProvider>) bean.getBeanClass()
+                                                            .getAnnotation(ServiceProvider.class)
+                                                            .serviceInterface());
+        }
+        return result;
+    }
+
+    public JoynrRuntime getRuntime() {
+        return joynrRuntime;
+    }
+
+}

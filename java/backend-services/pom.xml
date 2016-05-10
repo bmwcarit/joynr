@@ -27,14 +27,13 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.17.0-SNAPSHOT</version>
+		<version>0.18.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modules>
 		<module>discovery-directory-servlet</module>
 		<module>capabilities-directory</module>
-		<module>channel-url-directory</module>
 		<module>domain-access-controller</module>
 		<module>domain-access-controller-servlet</module>
 	</modules>

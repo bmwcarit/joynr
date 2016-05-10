@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
  */
 #include <memory>
 #include <string>
+#include <limits>
 
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
@@ -34,7 +35,7 @@ class CapabilitiesRegistrarTest : public ::testing::Test {
 public:
     CapabilitiesRegistrarTest() :
             mockDispatcher(nullptr),
-            messagingStubAddress(),
+            dispatcherAddress(),
             mockParticipantIdStorage(new MockParticipantIdStorage()),
             mockDiscovery(),
             capabilitiesRegistrar(nullptr),
@@ -53,10 +54,10 @@ public:
         capabilitiesRegistrar = new CapabilitiesRegistrar(
                     dispatcherList,
                     mockDiscovery,
-                    messagingStubAddress,
                     mockParticipantIdStorage,
-                    messagingStubAddress,
-                    mockMessageRouter
+                    dispatcherAddress,
+                    mockMessageRouter,
+                    std::numeric_limits<std::int64_t>::max()
         );
     }
     void TearDown(){
@@ -67,7 +68,7 @@ public:
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingStubAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;

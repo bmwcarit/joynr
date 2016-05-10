@@ -30,7 +30,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {
@@ -42,11 +42,12 @@ public:
 
     CapabilityEntry(const CapabilityEntry& other) = default;
 
-    CapabilityEntry(const std::string& domain,
+    CapabilityEntry(joynr::types::Version providerVersion,
+                    const std::string& domain,
                     const std::string& interfaceName,
                     joynr::types::ProviderQos qos,
                     const std::string& participantId,
-                    std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
+                    const std::string& publicKeyId,
                     bool isGlobal);
 
     CapabilityEntry& operator=(const CapabilityEntry& other);
@@ -61,15 +62,14 @@ public:
     types::ProviderQos getQos() const;
     void setQos(joynr::types::ProviderQos qos);
 
+    types::Version getProviderVersion() const;
+    void setProviderVersion(joynr::types::Version providerVersion);
+
     std::string getParticipantId() const;
     void setParticipantId(std::string participantId);
 
-    void setMiddlewareConnections(
-            std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections);
-    std::vector<joynr::types::CommunicationMiddleware::Enum> getMiddlewareConnections() const;
-
-    void prependMiddlewareConnection(
-            joynr::types::CommunicationMiddleware::Enum middlewareConnection);
+    const std::string& getPublicKeyId() const;
+    void setPublicKeyId(const std::string& publicKeyId);
 
     bool isGlobal() const;
     void setGlobal(bool global);
@@ -77,11 +77,12 @@ public:
     std::string toString() const;
 
 private:
+    types::Version providerVersion;
     std::string domain;
     std::string interfaceName;
     types::ProviderQos qos;
     std::string participantId;
-    std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections;
+    std::string publicKeyId;
     bool global;
 };
 

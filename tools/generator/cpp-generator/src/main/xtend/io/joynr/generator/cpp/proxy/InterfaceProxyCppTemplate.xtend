@@ -18,22 +18,17 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
+import io.joynr.generator.templates.util.InterfaceUtil
 
 class InterfaceProxyCppTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject private extension NamingUtil
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
+	@Inject private extension InterfaceUtil
 
 	override generate()
 '''
@@ -41,6 +36,7 @@ class InterfaceProxyCppTemplate extends InterfaceTemplate {
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
+«val fireAndForgetClassName = interfaceName + "FireAndForgetProxy"»
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
@@ -56,6 +52,7 @@ class InterfaceProxyCppTemplate extends InterfaceTemplate {
 ) :
 		joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
 		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
+		«IF hasFireAndForgetMethods(francaIntf)»«fireAndForgetClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),«ENDIF»
 		«syncClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
 		«asyncClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
 {

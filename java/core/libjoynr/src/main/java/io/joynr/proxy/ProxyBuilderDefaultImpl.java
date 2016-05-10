@@ -25,7 +25,6 @@ import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
@@ -39,7 +38,7 @@ import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyBuilder<T> {
+public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private static final Logger logger = LoggerFactory.getLogger(ProxyBuilderDefaultImpl.class);
 
     private DiscoveryQos discoveryQos;

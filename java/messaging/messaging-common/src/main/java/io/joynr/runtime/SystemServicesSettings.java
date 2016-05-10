@@ -25,7 +25,7 @@ package io.joynr.runtime;
 public class SystemServicesSettings {
 
     public static final String PROPERTY_DISPATCHER_ADDRESS = "joynr.messaging.dispatcheraddress";
-    public static final String PROPERTY_CC_MESSAGING_ADDRESS = "joynr.messaging.discoveryprovideraddress";
+    public static final String PROPERTY_CC_MESSAGING_ADDRESS = "joynr.messaging.ccmessagingaddress";
 
     public static final String PROPERTY_SYSTEM_SERVICES_DOMAIN = "joynr.messaging.systemservicesdomain";
     public static final String PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID = "joynr.messaging.discoveryproviderparticipantid";

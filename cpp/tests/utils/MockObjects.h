@@ -75,19 +75,16 @@
 #include "joynr/InProcessConnectorFactory.h"
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 
-#include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 
 #include "joynr/MessageRouter.h"
 
-#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Directory.h"
@@ -95,6 +92,10 @@
 #include "joynr/Variant.h"
 #include "joynr/Settings.h"
 #include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/IProxyBuilder.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
@@ -105,6 +106,7 @@ using ::testing::A;
 using ::testing::Eq;
 using ::testing::AllOf;
 using ::testing::Property;
+using ::testing::Return;
 
 // Disable VC++ warnings due to google mock
 // http://code.google.com/p/googlemock/wiki/FrequentlyAskedQuestions#MSVC_gives_me_warning_C4301_or_C4373_when_I_define_a_mock_method
@@ -117,24 +119,42 @@ using ::testing::Property;
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #pragma GCC diagnostic ignored "-Wreorder"
 
+template<typename T>
+class MockProxyBuilder : public joynr::IProxyBuilder<T>
+{
+public:
+    MockProxyBuilder(){
+        ON_CALL(*this, setCached(_)).WillByDefault(Return(this));
+        ON_CALL(*this, setMessagingQos(_)).WillByDefault(Return(this));
+        ON_CALL(*this, setDiscoveryQos(_)).WillByDefault(Return(this));
+    }
+
+    MOCK_METHOD1_T(setCached, joynr::IProxyBuilder<T>*(const bool cached));
+    MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
+    MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
+    MOCK_METHOD0_T(build, T*());
+};
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
-    MOCK_METHOD1(add, void(std::vector<joynr::types::CapabilityInformation> capabilitiesInformationList));
+    MOCK_METHOD1(add, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilitiesInformationList));
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
-    MOCK_METHOD2(lookup, std::vector<joynr::types::CapabilityInformation>(const std::string& domain, const std::string& interfaceName));
-    MOCK_METHOD4(lookup, void(
+    MOCK_METHOD3(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::string& domain, const std::string& interfaceName, const std::int64_t messagingTtl));
+    MOCK_METHOD5(lookup, void(
                      const std::string& domain,
                      const std::string& interfaceName,
-                     std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)> onSuccess,
+                     const std::int64_t messagingTtl,
+                     std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
     MOCK_METHOD3(lookup, void(
                      const std::string& participantId,
-                     std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)> callbackFct,
+                     std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> callbackFct,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-    MOCK_METHOD0(getLocalChannelId, std::string());
 
+    void setProxyBuilder(std::unique_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
+        std::ignore = input;
+    }
 };
 
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
@@ -328,6 +348,16 @@ public:
                 const joynr::MessagingQos& qos,
                 const joynr::Request& request,
                 std::shared_ptr<joynr::IReplyCaller> callback
+            )
+    );
+    
+    MOCK_METHOD4(
+            sendOneWayRequest,
+            void(
+                const std::string& senderParticipantId,
+                const std::string& receiverParticipantId,
+                const joynr::MessagingQos& qos,
+                const joynr::OneWayRequest& request
             )
     );
 
@@ -526,8 +556,8 @@ class MockMessageReceiver : public joynr::IMessageReceiver
 {
 public:
     MockMessageReceiver() = default;
-    MOCK_METHOD1(init, void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory));
-    MOCK_CONST_METHOD0(getReceiveChannelId, std::string&());
+    MOCK_METHOD0(init, void());
+    MOCK_CONST_METHOD0(getGlobalClusterControllerAddress, std::string&());
     MOCK_METHOD0(startReceiveQueue, void());
     MOCK_METHOD0(stopReceiveQueue, void());
     MOCK_METHOD0(waitForReceiveQueueStarted, void());
@@ -539,8 +569,8 @@ public:
 class MockMessageSender : public joynr::IMessageSender
 {
 public:
-    MOCK_METHOD3(sendMessage,void(const std::string&, const joynr::JoynrMessage&, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
-    MOCK_METHOD2(init,void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
+    MOCK_METHOD3(sendMessage,void(const joynr::system::RoutingTypes::Address&, const joynr::JoynrMessage&, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
+    MOCK_METHOD1(init,void(const joynr::MessagingSettings& settings));
     MOCK_METHOD1(registerReceiveQueueStartedCallback, void(std::function<void(void)> waitForReceiveQueueStarted));
 };
 
@@ -606,7 +636,7 @@ public:
 
 class GlobalCapabilitiesMock {
 public:
-    MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::CapabilityInformation>& results));
+    MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
 };
 
 class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
@@ -786,71 +816,6 @@ public:
     MOCK_METHOD2(attributeValueChanged, void(const std::string& subscriptionId, const joynr::Variant& value));
 };
 
-class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::ChannelUrlDirectoryProxy {
-public:
-    MockChannelUrlDirectoryProxy() :
-        ChannelUrlDirectoryProxy(std::make_shared<const joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        ProxyBase(nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectoryProxyBase(std::make_shared<const joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectorySyncProxy(std::make_shared<const joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectoryAsyncProxy(std::make_shared<const joynr::system::RoutingTypes::Address>(), nullptr, nullptr, "domain", joynr::MessagingQos(), false){}
-
-    MOCK_METHOD3(getUrlsForChannelAsync,
-                 std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> (
-                     const std::string& channelId,
-                     std::function<void(const joynr::types::ChannelUrlInformation& urls)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
-                 )
-    );
-
-    MOCK_METHOD4(registerChannelUrlsAsync,
-                 std::shared_ptr<joynr::Future<void> >(
-                     const std::string& channelId,
-                     const joynr::types::ChannelUrlInformation& channelUrlInformation,
-                     std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
-                 )
-    );
-
-    MOCK_METHOD3(unregisterChannelUrlsAsync,
-                 std::shared_ptr<joynr::Future<void>>(
-                     const std::string& channelId,
-                     std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
-                 )
-    );
-};
-
-
-class MockLocalChannelUrlDirectory : public joynr::ILocalChannelUrlDirectory {
-public:
-    MOCK_METHOD4(registerChannelUrlsAsync,
-                 std::shared_ptr<joynr::Future<void>>(
-                     const std::string& channelId,
-                     joynr::types::ChannelUrlInformation channelUrlInformation,
-                     std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError
-                 )
-    );
-
-    MOCK_METHOD3(unregisterChannelUrlsAsync,
-                 std::shared_ptr<joynr::Future<void>>(
-                     const std::string& channelId,
-                     std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError
-                 )
-    );
-
-    MOCK_METHOD4(getUrlsForChannelAsync,
-                 std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>(
-                     const std::string& channelId,
-                     const std::chrono::milliseconds timeout,
-                     std::function<void(const joynr::types::ChannelUrlInformation&)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError
-                 )
-    );
-};
-
 class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
 public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
@@ -1017,9 +982,10 @@ public:
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings):
+    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings):
         messageRouter(),
-        LocalCapabilitiesDirectory(messagingSettings,nullptr, messageRouter){}
+        libjoynrMockSettings(settings),
+        LocalCapabilitiesDirectory(messagingSettings,nullptr, "localAddress", messageRouter, libjoynrMockSettings){}
 
     MOCK_METHOD3(
             lookup,
@@ -1031,6 +997,7 @@ public:
 
 private:
     MockMessageRouter messageRouter;
+    joynr::LibjoynrSettings libjoynrMockSettings;
 };
 
 class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback
@@ -1071,14 +1038,11 @@ public:
     MockQWebSocketSendWrapper(QWebSocket* websocket)
         : QWebSocketSendWrapper(websocket)
     {
-        registerDisconnectCallback(std::bind(&MockQWebSocketSendWrapper::onConnectionClosed, this));
+
     }
 
     MOCK_METHOD1(send, void (const std::string& message));
-
     MOCK_CONST_METHOD0(isConnected, bool ());
-
-    MOCK_METHOD0(onConnectionClosed, void ());
 };
 
 #ifdef _MSC_VER

@@ -33,14 +33,14 @@ class HttpMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
-                             std::string receiveChannelId);
+                             const std::string& globalClusterControllerAddress);
     std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
 
 private:
     std::shared_ptr<IMessageSender> messageSender;
-    std::string receiveChannelId;
+    std::string globalClusterControllerAddress;
 };
 
 } // namespace joynr

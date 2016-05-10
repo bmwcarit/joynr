@@ -32,10 +32,10 @@ tests/performance-test/CMakeLists.txt \
 tests/robustness-test/CMakeLists.txt \
 tests/system-integration-test/CMakeLists.txt
 
-echo mvn versions:set -o -P android,javascript -DnewVersion=$2
-mvn versions:set -o -P android,javascript -DnewVersion=$2
-echo mvn versions:commit -o -P android,javascript
-mvn versions:commit -o -P android,javascript
+echo mvn versions:set -P android,javascript -DnewVersion=$2
+mvn versions:set -P android,javascript -DnewVersion=$2
+echo mvn versions:commit -P android,javascript
+mvn versions:commit -P android,javascript
 
 echo "sed files..."
 

@@ -19,7 +19,6 @@ package io.joynr.android.test;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.joynrandroidruntime.AndroidProxyBuilder;
 import io.joynr.joynrandroidruntime.InitRuntimeTask;
 import io.joynr.joynrandroidruntime.UILogger;
@@ -29,7 +28,7 @@ import java.util.concurrent.TimeoutException;
 
 import android.util.Log;
 
-public class AndroidRobolectricProxyBuilder<T extends JoynrInterface> extends AndroidProxyBuilder<T> {
+public class AndroidRobolectricProxyBuilder<T> extends AndroidProxyBuilder<T> {
 
     public AndroidRobolectricProxyBuilder(InitRuntimeTask runtimeInitTask,
                                           String providerDomain,

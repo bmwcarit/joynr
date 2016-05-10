@@ -19,83 +19,61 @@
 #ifndef REPLYINTERPRETER_H
 #define REPLYINTERPRETER_H
 
-#include <cassert>
 #include <memory>
 #include <utility>
-#include <tuple>
 
-#include "joynr/IReplyInterpreter.h"
-#include "joynr/ReplyCaller.h"
 #include "joynr/Reply.h"
-#include "joynr/Logger.h"
 #include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
 
 template <class... Ts>
-class ReplyInterpreter : public IReplyInterpreter
+class ReplyInterpreter
 {
 public:
-    ReplyInterpreter() = default;
-
-    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply) override
+    template <typename Caller>
+    static void execute(Caller& caller, const Reply& reply)
     {
-        assert(caller);
-
-        std::shared_ptr<ReplyCaller<Ts...>> typedCaller =
-                std::dynamic_pointer_cast<ReplyCaller<Ts...>>(caller);
-
         const Variant& error = reply.getError();
         if (!error.isEmpty()) {
-            caller->returnError(error.get<exceptions::JoynrException>());
+            caller.returnError(error.get<exceptions::JoynrException>());
             return;
         }
 
         const std::vector<Variant>& response = reply.getResponse();
         if (response.empty()) {
-            JOYNR_LOG_ERROR(logger, "Unexpected empty reply object. Calling error callback");
-            caller->returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
+            caller.returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
             return;
         }
 
-        callReturnValue(response, typedCaller, std::index_sequence_for<Ts...>{});
+        callReturnValue(response, caller, std::index_sequence_for<Ts...>{});
     }
 
 private:
-    template <std::size_t... Indices>
-    void callReturnValue(const std::vector<Variant>& response,
-                         const std::shared_ptr<ReplyCaller<Ts...>>& typedCaller,
-                         std::index_sequence<Indices...>)
+    template <std::size_t... Indices, typename Caller>
+    static void callReturnValue(const std::vector<Variant>& response,
+                                Caller& caller,
+                                std::index_sequence<Indices...>)
     {
-        typedCaller->returnValue(util::valueOf<Ts>(response[Indices])...);
+        caller.returnValue(util::valueOf<Ts>(response[Indices])...);
     }
-
-    ADD_LOGGER(ReplyInterpreter);
 };
 
-template <class... Ts>
-INIT_LOGGER(ReplyInterpreter<Ts...>);
-
 template <>
-class ReplyInterpreter<void> : public IReplyInterpreter
+class ReplyInterpreter<void>
 {
 public:
-    ReplyInterpreter() = default;
-
-    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply) override
+    template <typename Caller>
+    static void execute(Caller& caller, const Reply& reply)
     {
-        assert(caller);
-
         const Variant& error = reply.getError();
         if (!error.isEmpty()) {
-            caller->returnError(error.get<exceptions::JoynrException>());
+            caller.returnError(error.get<exceptions::JoynrException>());
             return;
         }
-
-        std::shared_ptr<ReplyCaller<void>> typedCaller =
-                std::dynamic_pointer_cast<ReplyCaller<void>>(caller);
-        typedCaller->returnValue();
+        caller.returnValue();
     }
 };
 

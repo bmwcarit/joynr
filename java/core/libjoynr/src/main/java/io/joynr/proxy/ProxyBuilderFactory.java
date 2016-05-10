@@ -19,9 +19,7 @@ package io.joynr.proxy;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
-
 public interface ProxyBuilderFactory {
 
-    public <T extends JoynrInterface> ProxyBuilder<T> get(String domain, Class<T> interfaceClass);
+    public <T> ProxyBuilder<T> get(String domain, Class<T> interfaceClass);
 }

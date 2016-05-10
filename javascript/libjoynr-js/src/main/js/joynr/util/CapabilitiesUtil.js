@@ -43,11 +43,13 @@ define("joynr/util/CapabilitiesUtil", [ "joynr/types/DiscoveryEntry"
      */
     CapabilitiesUtil.toDiscoveryEntry = function toDiscoveryEntry(capabilityInformation) {
         return new DiscoveryEntry({
+            providerVersion : capabilityInformation.providerVersion,
             domain : capabilityInformation.domain,
             interfaceName : capabilityInformation.interfaceName,
             qos : capabilityInformation.providerQos,
             participantId : capabilityInformation.participantId,
-            connections : []
+            publicKeyId : capabilityInformation.publicKeyId,
+            lastSeenDateMs : Date.now()
         });
     };
 

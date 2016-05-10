@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>0.17.0-SNAPSHOT</version>
+		<version>0.18.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -46,6 +46,9 @@
 	</properties>
 	<build>
 		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
 			<resource>
 				<directory>src/main/scripts</directory>
 				<includes>
@@ -73,7 +76,7 @@
 					<!-- unpack all non-runnable files into info -->
 					<execution>
 						<id>unpack-dependency-info</id>
-						<phase>process-resources</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>unpack-dependencies</goal>
 						</goals>
@@ -90,7 +93,7 @@
 					<!-- unpack runnable files into classes -->
 					<execution>
 						<id>unpack-dependency-classes</id>
-						<phase>process-classes</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>unpack-dependencies</goal>
 						</goals>
@@ -152,7 +155,7 @@
 					</excludes>
 					<archive>
 						<manifest>
-							<mainClass>io.joynr.generator.ExecutorCL</mainClass>
+							<mainClass>io.joynr.generator.Executor</mainClass>
 						</manifest>
 						<manifestEntries>
 							<mode>development</mode>
@@ -184,6 +187,8 @@
 								<argument>${project.build.directory}/model/joynr/Routing.fidl</argument>
 								<argument>-generationLanguage</argument>
 								<argument>java</argument>
+								<argument>-jee</argument>
+								<argument>true</argument>
 							</arguments>
 	    				</configuration>
 					</execution>

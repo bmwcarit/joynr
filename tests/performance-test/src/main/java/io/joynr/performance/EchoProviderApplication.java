@@ -19,6 +19,8 @@
 
 package io.joynr.performance;
 
+import io.joynr.provider.ProviderAnnotations;
+
 import java.util.Properties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +34,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
-import io.joynr.performance.EchoProviderInvocationParameters.BACKEND_CONFIG;
+import io.joynr.performance.EchoProviderInvocationParameters.BackendConfig;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
@@ -121,7 +123,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
     private static Properties createJoynrConfig() throws Exception {
         Properties joynrConfig = new Properties();
 
-        if (invocationParams.getBackendTransportMode() == BACKEND_CONFIG.MQTT) {
+        if (invocationParams.getBackendTransportMode() == BackendConfig.MQTT) {
             joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParams.getMqttBrokerUri());
         }
 
@@ -138,7 +140,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
                                                                                             invocationParams.getDomain(),
-                                                                                            EchoProviderImpl.INTERFACE_NAME,
+                                                                                            ProviderAnnotations.getInterfaceName(EchoProviderImpl.class),
                                                                                             TrustLevel.LOW,
                                                                                             new TrustLevel[]{ TrustLevel.LOW },
                                                                                             TrustLevel.LOW,

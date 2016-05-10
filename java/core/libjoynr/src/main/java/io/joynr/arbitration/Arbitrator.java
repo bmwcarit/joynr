@@ -37,11 +37,12 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 
 /**
- * Base class for provider arbitrators. Concrete arbitrators have to provide implementations for startArbitration() and
- * {@literal selectProvider(ArrayList<CapabilityEntry> capabilities)} which set the ArbitrationStatus and call
- * notifyArbitrationStatusChanged() or set the ArbitrationResult and call updateArbitrationResultAtListener(). The base
- * class offers a CapabilitiesCallback which is used for async requests.
  *
+ * The Arbitrator controls the discovery process:
+ * <ul>
+ * <li> search for matching {@link DiscoveryEntry} elements locally and/or globally depending on the DiscoveryQos
+ * <li> call the {@link ArbitrationStrategyFunction} to select a discoveryEntry to be used for the proxy being created
+ * </ul>
  */
 public class Arbitrator {
     private static final Logger logger = LoggerFactory.getLogger(Arbitrator.class);
@@ -70,7 +71,7 @@ public class Arbitrator {
         this.discoveryQos = discoveryQos;
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
-        arbitrationDeadline = System.currentTimeMillis() + discoveryQos.getDiscoveryTimeout();
+        arbitrationDeadline = System.currentTimeMillis() + discoveryQos.getDiscoveryTimeoutMs();
     }
 
     // TODO JOYN-911 make sure we are shutting down correctly onError
@@ -139,7 +140,8 @@ public class Arbitrator {
         },
                                         domain,
                                         interfaceName,
-                                        new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAge(),
+                                        new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
+                                                                     discoveryQos.getDiscoveryTimeout(),
                                                                      joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
                                                                                                                     .name()),
                                                                      discoveryQos.getProviderMustSupportOnChange()));
@@ -201,7 +203,7 @@ public class Arbitrator {
     protected void restartArbitrationIfNotExpired() {
         if (isArbitrationInTime()) {
             logger.info("Restarting Arbitration");
-            long backoff = Math.max(discoveryQos.getRetryInterval(), MINIMUM_ARBITRATION_RETRY_DELAY);
+            long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
             try {
                 if (backoff > 0) {
                     Thread.sleep(backoff);

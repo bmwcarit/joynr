@@ -69,12 +69,6 @@ public:
     void registerEnumMetaType();
 
     /**
-     * Register a composite reply metatype
-     */
-    template <class... Ts>
-    void registerReplyMetaType();
-
-    /**
      * Get the publication interpreter with the given type id.
      * Returns a reference to enforce that the caller does not have ownership.
      * Publication interpreters are created and registered with the metatype registrar
@@ -85,18 +79,6 @@ public:
      * @return a reference to the publication interpreter
      */
     IPublicationInterpreter& getPublicationInterpreter(int typeId);
-
-    /**
-     * Get the reply interpreter with the given type id.
-     * Returns a reference to enforce that the caller does not have ownership.
-     * Reply interpreters are created and registered with the metatype registrar
-     * in the I&lt;Interface&gt; constructor when a &lt;Interface&gt;Proxy is created.
-     * They are valid for the whole lifetime of the application and get deleted when
-     * the process shuts down.
-     *
-     * @return a reference to the reply interpreter
-     */
-    IReplyInterpreter& getReplyInterpreter(int typeId);
 
 private:
     MetaTypeRegistrar();
@@ -117,10 +99,6 @@ private:
     // A threadsafe hash holding PublicationInterpreters
     std::unordered_map<int, IPublicationInterpreter*> publicationInterpreters;
     std::mutex publicationInterpretersMutex;
-
-    // A threadsafe hash holding ReplyInterpreters
-    std::unordered_map<int, IReplyInterpreter*> replyInterpreters;
-    std::mutex replyInterpretersMutex;
 };
 
 template <class T>
@@ -170,19 +148,6 @@ void MetaTypeRegistrar::addPublicationInterpreter()
 
     if (publicationInterpreters.find(typeId) == publicationInterpreters.end()) {
         publicationInterpreters.insert({typeId, new PublicationInterpreter<Ts...>()});
-    }
-}
-
-template <class... Ts>
-void MetaTypeRegistrar::registerReplyMetaType()
-{
-    {
-        std::lock_guard<std::mutex> lock(replyInterpretersMutex);
-        int typeId = util::getTypeId<Ts...>();
-
-        if (replyInterpreters.find(typeId) == replyInterpreters.end()) {
-            replyInterpreters.insert({typeId, new ReplyInterpreter<Ts...>()});
-        }
     }
 }
 

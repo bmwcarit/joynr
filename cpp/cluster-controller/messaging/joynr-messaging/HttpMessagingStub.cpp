@@ -26,11 +26,11 @@ namespace joynr
 {
 
 HttpMessagingStub::HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                                     const std::string& destinationChannelId,
-                                     const std::string& receiveChannelId)
+                                     const system::RoutingTypes::ChannelAddress& destinationAddress,
+                                     const std::string& globalClusterControllerAddress)
         : messageSender(messageSender),
-          destinationChannelId(destinationChannelId),
-          receiveChannelId(receiveChannelId)
+          destinationAddress(destinationAddress),
+          globalClusterControllerAddress(globalClusterControllerAddress)
 {
 }
 
@@ -41,9 +41,9 @@ void HttpMessagingStub::transmit(
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        message.setHeaderReplyChannelId(receiveChannelId);
+        message.setHeaderReplyAddress(globalClusterControllerAddress);
     }
-    messageSender->sendMessage(destinationChannelId, message, onFailure);
+    messageSender->sendMessage(destinationAddress, message, onFailure);
 }
 
 } // namespace joynr

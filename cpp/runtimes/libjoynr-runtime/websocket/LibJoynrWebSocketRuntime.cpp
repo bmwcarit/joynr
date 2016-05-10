@@ -74,11 +74,18 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
 
     websocket->connect(*ccMessagingAddress);
 
-    auto factory = std::make_unique<WebSocketMessagingStubFactory>();
+    auto factory = std::make_shared<WebSocketMessagingStubFactory>();
     factory->addServer(*ccMessagingAddress, websocket);
 
+    std::weak_ptr<WebSocketMessagingStubFactory> weakFactoryRef(factory);
+    websocket->registerDisconnectCallback([weakFactoryRef, ccMessagingAddress]() {
+        if (auto factory = weakFactoryRef.lock()) {
+            factory->onMessagingStubClosed(*ccMessagingAddress);
+        }
+    });
+
     connectionEstablishedSemaphore->wait();
-    LibJoynrRuntime::init(std::move(factory), libjoynrMessagingAddress, ccMessagingAddress);
+    LibJoynrRuntime::init(factory, libjoynrMessagingAddress, ccMessagingAddress);
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()

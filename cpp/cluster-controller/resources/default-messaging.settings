@@ -3,6 +3,15 @@
 # 2592000000 = 30 days in milliseconds
 max-ttl-ms=2592000000
 
+# When a new provider is registered, an appropriate discovery entry is added
+# to the capabilities directory in order to make the new provider discoverable.
+# If no expiry information is given during provider registration, this setting
+# is used to determine a default expiry date. The expiry date will be
+# 'now' + discovery-entry-expiry-interval-ms. After this date the capabilities
+# directory might delete the discovery information and the provider is not
+# discoverable anymore. # 86400000 = 1 day in millisecond.
+discovery-entry-expiry-interval-ms=86400000
+
 broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
 bounceproxy-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/bounceproxy/
 
@@ -15,11 +24,7 @@ discovery-directories-domain=io.joynr
 # 1814400 = 21 days
 discovery-messages-ttl=1814400
 
-channel-url-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/discovery/channels/discoverydirectory_channelid/
-channel-url-directory-channelid=discoverydirectory_channelid
-channel-url-directory-participantid=channelurldirectory_participantid
-
-capabilities-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/discovery/channels/discoverydirectory_channelid/
+capabilities-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/discovery/channels/
 capabilities-directory-channelid=discoverydirectory_channelid
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 

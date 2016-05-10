@@ -42,7 +42,7 @@ public:
     /**
       * Gets the channel ID of the receive channel for incoming messages.
       */
-    const std::string& getReceiveChannelId() const override;
+    const std::string& getGlobalClusterControllerAddress() const override;
 
     /**
       * Checks the MessageSettings and updates the configuration.
@@ -68,15 +68,11 @@ public:
       */
     void stopReceiveQueue() override;
 
-    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) override;
-
     void registerReceiveCallback(
             std::function<void(const std::string&)> onTextMessageReceived) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttReceiver);
-
-    void init();
 
     /* This semaphore keeps track of the status of the channel. On creation no resources are
        available.
@@ -90,14 +86,13 @@ private:
     bool isChannelCreated;
 
     std::string channelIdForMqttTopic; // currently channelId is used to subscribe
-    std::string channelIdForCapabilitiesDirectory;
+    std::string globalClusterControllerAddress;
 
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
     // Allows for registering multiple receivers for a single channel.
     std::string receiverId;
 
     MessagingSettings settings;
-    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     MosquittoSubscriber mosquittoSubscriber;
 

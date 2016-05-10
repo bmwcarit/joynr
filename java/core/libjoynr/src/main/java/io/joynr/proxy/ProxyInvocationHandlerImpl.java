@@ -19,12 +19,13 @@ package io.joynr.proxy;
  * #L%
  */
 
+import io.joynr.Async;
+import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
-import io.joynr.dispatcher.rpc.JoynrSyncInterface;
+import io.joynr.dispatcher.rpc.annotation.FireAndForget;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -91,6 +92,10 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
     }
 
+    private static interface ConnectorCaller {
+        Object call(Method method, Object[] args) throws Throwable;
+    }
+
     /**
      * executeSyncMethod is called whenever a method of the synchronous interface which is provided by the proxy is
      * called. The ProxyInvocationHandler will check the arbitration status before the call is delegated to the
@@ -104,15 +109,34 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
     @CheckForNull
-    private Object executeSyncMethod(Method method, Object[] args) throws ApplicationException,
-                                                                   JoynrRuntimeException {
+    private Object executeSyncMethod(Method method, Object[] args) throws ApplicationException, JoynrRuntimeException {
+        return executeMethodWithCaller(method, args, new ConnectorCaller() {
+            @Override
+            public Object call(Method method, Object[] args) throws Throwable {
+                return connector.executeSyncMethod(method, args);
+            }
+        });
+    }
 
+    @CheckForNull
+    private Object executeOneWayMethod(Method method, Object[] args) throws ApplicationException, JoynrRuntimeException {
+        return executeMethodWithCaller(method, args, new ConnectorCaller() {
+
+            @Override
+            public Object call(Method method, Object[] args) throws Throwable {
+                connector.executeOneWayMethod(method, args);
+                return null;
+            }
+        });
+    }
+
+    private Object executeMethodWithCaller(Method method, Object[] args, ConnectorCaller connectorCaller) throws ApplicationException {
         try {
             if (waitForConnectorFinished()) {
                 if (connector == null) {
                     throw new IllegalStateException("connector was null although arbitration finished successfully");
                 }
-                return connector.executeSyncMethod(method, args);
+                return connectorCaller.call(method, args);
             }
         } catch (ApplicationException | JoynrRuntimeException e) {
             throw e;
@@ -120,10 +144,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         } catch (Throwable e) {
             throw new JoynrRuntimeException(e);
         }
-
         throw new DiscoveryException("Arbitration and Connector failed: domain: " + domain + " interface: "
                 + interfaceName + " qos: " + discoveryQos + ": Arbitration could not be finished in time.");
-
     }
 
     /**
@@ -142,7 +164,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 return true;
             }
 
-            return connectorSuccessfullyFinished.await(discoveryQos.getDiscoveryTimeout(), TimeUnit.MILLISECONDS);
+            return connectorSuccessfullyFinished.await(discoveryQos.getDiscoveryTimeoutMs(), TimeUnit.MILLISECONDS);
 
         } finally {
             connectorStatusLock.unlock();
@@ -439,9 +461,11 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             return executeSubscriptionMethod(method, args);
         } else if (JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeBroadcastSubscriptionMethod(method, args);
-        } else if (JoynrSyncInterface.class.isAssignableFrom(methodInterfaceClass)) {
+        } else if (methodInterfaceClass.getAnnotation(FireAndForget.class) != null) {
+            return executeOneWayMethod(method, args);
+        } else if (methodInterfaceClass.getAnnotation(Sync.class) != null) {
             return executeSyncMethod(method, args);
-        } else if (JoynrAsyncInterface.class.isAssignableFrom(methodInterfaceClass)) {
+        } else if (methodInterfaceClass.getAnnotation(Async.class) != null) {
             return executeAsyncMethod(method, args);
         } else {
             throw new JoynrIllegalStateException("Method is not part of sync, async or subscription interface");

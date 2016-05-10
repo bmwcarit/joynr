@@ -30,6 +30,5 @@ mvn install checkstyle:checkstyle \
 -DskipTests
 
 (
-  cd java
-  mvn javadoc:aggregate-jar
+  mvn javadoc:jar -P android
 )

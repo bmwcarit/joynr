@@ -26,7 +26,6 @@
 #include "joynr/Logger.h"
 #include "joynr/InProcessAddress.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/types/CommunicationMiddleware.h"
 #include "joynr/IRequestCallerDirectory.h"
 
 namespace joynr
@@ -50,7 +49,6 @@ public:
                               InProcessPublicationSender* inProcessPublicationSender,
                               IRequestCallerDirectory* requestCallerDirectory);
 
-    bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
     virtual ~InProcessConnectorFactory() = default;
 
     template <class T>

@@ -25,16 +25,17 @@
 #include <vector>
 
 #include "cluster-controller/mqtt/MqttSettings.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrClusterControllerRuntimeExport.h"
-#include "joynr/ClientQCache.h"
-#include "joynr/Logger.h"
-#include "joynr/JoynrRuntime.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/LibjoynrSettings.h"
 
+#include "joynr/ClientQCache.h"
+#include "joynr/JoynrClusterControllerRuntimeExport.h"
+#include "joynr/JoynrRuntime.h"
+#include "joynr/LibjoynrSettings.h"
+#include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/RuntimeConfig.h"
+
+#include "libjoynr/websocket/WebSocketSettings.h"
+
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"
 #include "common/dbus/DbusSettings.h"
@@ -50,7 +51,6 @@ class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class IMessageReceiver;
 class IMessageSender;
-class ICapabilitiesClient;
 class SubscriptionManager;
 class ConnectorFactory;
 class InProcessConnectorFactory;
@@ -76,12 +76,13 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : publi
 public:
     JoynrClusterControllerRuntime(QCoreApplication* app,
                                   Settings* settings,
-                                  IMessageReceiver* httpMessageReceiver = nullptr,
-                                  IMessageSender* = nullptr,
-                                  IMessageReceiver* mqttMessageReceiver = nullptr,
-                                  IMessageSender* = nullptr);
+                                  std::shared_ptr<IMessageReceiver> httpMessageReceiver = nullptr,
+                                  std::shared_ptr<IMessageSender> httpMessageSender = nullptr,
+                                  std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
+                                  std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
 
-    static JoynrClusterControllerRuntime* create(Settings* settings);
+    static JoynrClusterControllerRuntime* create(Settings* settings,
+                                                 const std::string& discoveryEntriesFile = "");
 
     ~JoynrClusterControllerRuntime() override;
 
@@ -99,6 +100,11 @@ public:
     void registerRoutingProvider();
     void registerDiscoveryProvider();
 
+    /*
+     * Inject predefined capabilities stored in a JSON file.
+     */
+    void injectGlobalCapabilitiesFromFile(const std::string& fileName);
+
 protected:
     void importMessageRouterFromFile();
     void initializeAllDependencies();
@@ -111,11 +117,9 @@ protected:
     IMessaging* joynrMessagingSendSkeleton;
     JoynrMessageSender* joynrMessageSender;
     QCoreApplication* app;
-    ICapabilitiesClient* capabilitiesClient;
+
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
-    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     ClientQCache cache;
-    std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 

@@ -34,7 +34,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -43,6 +46,7 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.ExpiryDate;
@@ -51,10 +55,13 @@ import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.LongPollingHttpGlobalAddressFactory;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.channel.ChannelMessageSerializerFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.http.HttpMessageSender;
+import io.joynr.messaging.http.operation.ChannelCreatedListener;
+import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.MessagingStubFactory;
@@ -63,29 +70,32 @@ import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
 import io.joynr.messaging.serialize.JsonSerializer;
 import io.joynr.messaging.serialize.MessageSerializerFactory;
+import io.joynr.proxy.Callback;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.DiscoveryEntry;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageRouterTest {
 
     private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
-    private final ChannelAddress channelAddress = new ChannelAddress(channelId);
-
-    @Mock
-    private JsonSerializer jsonSerializer;
+    private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
 
     private RoutingTable routingTable = new RoutingTableImpl();
 
     @Mock
-    private HttpMessageSender httpMessageSenderMock;
+    private ChannelMessagingStubFactory messagingStubFactoryMock;
+    @Mock
+    private IMessaging messagingStubMock;
+
     private MessageRouter messageRouter;
     private JoynrMessage joynrMessage;
     protected String toParticipantId = "toParticipantId";
 
     @Before
     public void setUp() throws Exception {
+        when(messagingStubFactoryMock.create(any(ChannelAddress.class))).thenReturn(messagingStubMock);
 
         AbstractModule mockModule = new AbstractModule() {
 
@@ -96,30 +106,18 @@ public class MessageRouterTest {
             protected void configure() {
                 bind(MessageRouter.class).to(MessageRouterImpl.class);
                 bind(RoutingTable.class).toInstance(routingTable);
-                bind(JsonSerializer.class).toInstance(jsonSerializer);
-                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.CHANNELID)).toInstance(channelId);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
                                 .toInstance(msgRetryIntervalMs);
-                bind(HttpMessageSender.class).toInstance(httpMessageSenderMock);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
                 messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
                 }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
                 }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
-                messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
+                messagingStubFactory.addBinding(ChannelAddress.class).toInstance(messagingStubFactoryMock);
 
-                MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
-                messageSerializerFactory = MapBinder.newMapBinder(binder(),
-                                                                  new TypeLiteral<Class<? extends Address>>() {
-                                                                  },
-                                                                  new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
-                                                                  },
-                                                                  Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
-                messageSerializerFactory.addBinding(ChannelAddress.class).to(ChannelMessageSerializerFactory.class);
                 routingTable.put(toParticipantId, channelAddress);
                 joynrMessage = new JoynrMessage();
                 joynrMessage.setTo(toParticipantId);
-
             }
 
             @Provides
@@ -141,11 +139,11 @@ public class MessageRouterTest {
 
     @Test
     public void testScheduleMessageOk() throws Exception {
-        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(10000));
+        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(100000000));
         messageRouter.route(joynrMessage);
         Thread.sleep(1000);
-        verify(jsonSerializer).serialize(eq(joynrMessage));
-        verify(httpMessageSenderMock).sendMessage(eq(channelAddress), any(String.class), any(FailureAction.class));
+        verify(messagingStubFactoryMock).create(eq(channelAddress));
+        verify(messagingStubMock).transmit(eq(joynrMessage), any(FailureAction.class));
     }
 
     @Test
@@ -155,10 +153,7 @@ public class MessageRouterTest {
         try {
             messageRouter.route(joynrMessage);
         } catch (JoynrMessageNotSentException e) {
-            verify(jsonSerializer, never()).serialize(any(JoynrMessage.class));
-            verify(httpMessageSenderMock, never()).sendMessage(any(ChannelAddress.class),
-                                                               any(String.class),
-                                                               any(FailureAction.class));
+            verify(messagingStubFactoryMock, never()).create(any(ChannelAddress.class));
             return;
         }
         fail("scheduling an expired message should throw");

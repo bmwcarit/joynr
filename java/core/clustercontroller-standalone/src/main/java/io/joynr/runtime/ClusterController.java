@@ -1,7 +1,6 @@
 package io.joynr.runtime;
 
-import io.joynr.capabilities.CapabilitiesStore;
-import io.joynr.capabilities.CapabilityEntry;
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
@@ -31,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import jline.console.ConsoleReader;
+import joynr.types.DiscoveryEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +86,7 @@ public class ClusterController {
         Injector injectorCC = new JoynrInjectorFactory(ccConfig, runtimeModule).getInjector();
 
         runtime = injectorCC.getInstance(JoynrRuntime.class);
-        CapabilitiesStore capabilities = injectorCC.getInstance(CapabilitiesStore.class);
+        LocalCapabilitiesDirectory capabilitiesDirectory = injectorCC.getInstance(LocalCapabilitiesDirectory.class);
 
         ConsoleReader console;
         try {
@@ -96,12 +96,12 @@ public class ClusterController {
                 command = console.readLine();
 
                 if (command.equals("caps")) {
-                    Set<CapabilityEntry> allCapabilities = capabilities.getAllCapabilities();
-                    StringBuffer capabilitiesAsText = new StringBuffer();
-                    for (CapabilityEntry capability : allCapabilities) {
-                        capabilitiesAsText.append(capability.toString()).append('\n');
+                    Set<DiscoveryEntry> allLocalDiscoveryEntries = capabilitiesDirectory.listLocalCapabilities();
+                    StringBuffer discoveryEntriesAsText = new StringBuffer();
+                    for (DiscoveryEntry capability : allLocalDiscoveryEntries) {
+                        discoveryEntriesAsText.append(capability.toString()).append('\n');
                     }
-                    LOG.info(capabilitiesAsText.toString());
+                    LOG.info(discoveryEntriesAsText.toString());
                 } else {
                     LOG.info("\n\nUSAGE press\n" + " q\tto quit\n caps\tto list registered providers\n");
                 }

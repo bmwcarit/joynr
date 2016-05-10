@@ -12,7 +12,7 @@ fi
 
 if [ -z "$ROBUSTNESS_BUILD_DIR" ]
 then
-    ROBUSTNESS_BUILD_DIR=$JOYNR_SOURCE_DIR/tests/robustness/build
+    ROBUSTNESS_BUILD_DIR=$JOYNR_SOURCE_DIR/tests/robustness-test/build
 fi
 
 # if CI environment, source global settings
@@ -23,7 +23,7 @@ fi
 
 if [ -z "$ROBUSTNESS_RESULTS_DIR" ]
 then
-    ROBUSTNESS_RESULTS_DIR=$JOYNR_SOURCE_DIR/tests/robustness/robustness-results-$(date "+%Y-%m-%d-%H:%M:%S")
+    ROBUSTNESS_RESULTS_DIR=$JOYNR_SOURCE_DIR/tests/robustness-test/robustness-results-$(date "+%Y-%m-%d-%H:%M:%S")
 fi
 mkdir -p $ROBUSTNESS_RESULTS_DIR
 

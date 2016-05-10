@@ -18,7 +18,6 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -40,11 +39,6 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName,  HashMap<FMethod, String> methodToErrorEnumName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods) {
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
@@ -119,13 +113,11 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 
 		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 		val hasReadAttribute = hasReadAttribute(francaIntf);
-		val hasMethodWithArguments = hasMethodWithArguments(francaIntf);
 		val hasWriteAttribute = hasWriteAttribute(francaIntf);
 		'''
 «warning()»
 package «packagePath»;
 
-import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 «IF getMethods(francaIntf).size > 0 || hasReadAttribute»
 import io.joynr.proxy.Callback;
 «IF francaIntf.hasMethodWithErrorEnum»
@@ -135,17 +127,19 @@ import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 «ENDIF»
-«IF hasWriteAttribute || hasMethodWithArguments»
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-«ENDIF»
 «IF uniqueMultioutMethods.size > 0»
 import io.joynr.proxy.ICallback;
+«ENDIF»
+import io.joynr.Async;
+«IF jeeExtension»
+import io.joynr.ProvidedBy;
+import io.joynr.UsedBy;
 «ENDIF»
 «IF hasWriteAttribute»
 import io.joynr.exceptions.DiscoveryException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, false)»
 	import «datatype»;
 «ENDFOR»
 
@@ -154,7 +148,12 @@ import io.joynr.exceptions.DiscoveryException;
 	import «packagePath».«interfaceName»Sync.«syncReturnedName»;
 «ENDFOR»
 
-public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterface {
+@Async
+«IF jeeExtension»
+@ProvidedBy(«francaIntf.providerClassName».class)
+@UsedBy(«francaIntf.proxyClassName».class)
+«ENDIF»
+public interface «asyncClassName» extends «interfaceName»«IF hasFireAndForgetMethods(francaIntf)», «interfaceName»FireAndForget«ENDIF» {
 
 	«FOR attribute: getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
@@ -165,7 +164,7 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «attributeType»«IF isArray(attribute)»[]«ENDIF».class) Callback<«attributeType»> callback);
 		«ENDIF»
 		«IF isWritable(attribute)»
-			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserializationType = «attributeType».class) «attributeType» «attributeName») throws DiscoveryException;
+			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, «attributeType» «attributeName») throws DiscoveryException;
 		«ENDIF»
 	«ENDFOR»
 
@@ -218,17 +217,17 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 		}
 	«ENDFOR»
 
-	«FOR method: getMethods(francaIntf)»
+	«FOR method: getMethods(francaIntf).filter[!fireAndForget]»
 		«var methodName = method.joynrName»
-		«var params = getTypedParameterListJavaRpc(method)»
+		«var params = method.inputParameters.typedParameterList»
 		«var callbackParameter = getCallbackParameter(method, methodToCallbackName)»
 
 		/*
 		* «methodName»
 		*/
 		public «methodToFutureName.get(method)» «methodName»(
-				«callbackParameter»«IF !params.equals("")»,«ENDIF»
-				«IF !params.equals("")»«params»«ENDIF»
+				«callbackParameter»«IF !method.inputParameters.empty»,«ENDIF»
+				«params»
 		);
 	«ENDFOR»
 }

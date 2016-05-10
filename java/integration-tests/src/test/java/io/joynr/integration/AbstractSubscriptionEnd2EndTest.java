@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import io.joynr.provider.ProviderAnnotations;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
@@ -41,7 +42,6 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
@@ -110,7 +110,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         String methodName = name.getMethodName();
         logger.info("Starting {} ...", methodName);
         domain = "ProviderDomain-SubscriptionEnd2End-" + methodName + "-" + System.currentTimeMillis();
-        provisionPermissiveAccessControlEntry(domain, SubscriptionTestsProviderImpl.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domain,
+                                              ProviderAnnotations.getInterfaceName(SubscriptionTestsProviderImpl.class));
 
         setupProviderRuntime(methodName);
         setupConsumerRuntime(methodName);
@@ -132,7 +133,9 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
-        providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
+        providerRuntime = getRuntime(factoryPropertiesProvider,
+                                     getSubscriptionPublisherFactoryModule(),
+                                     new StaticDomainAccessControlProvisioningModule());
 
         provider = new SubscriptionTestsProviderImpl();
         providerQos.setPriority(System.currentTimeMillis());
@@ -150,7 +153,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "ClientDomain-" + methodName + "-"
                 + UUID.randomUUID().toString());
 
-        consumerRuntime = getRuntime(factoryPropertiesB);
+        consumerRuntime = getRuntime(factoryPropertiesB, getSubscriptionPublisherFactoryModule());
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -169,9 +172,12 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
 
         int subscriptionDuration = (period_ms * 4);
-        long alertInterval_ms = 500;
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(500);
+        subscriptionQos.setPublicationTtlMs(0);
+
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
         verify(integerListener, times(0)).onError(null);
@@ -182,7 +188,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verify(integerListener, times(1)).onReceive(eq(45));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -200,9 +206,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         }).when(gpsListener).onReceive(eq(provider.getComplexTestAttributeSync()));
         int periods = 2;
         long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
-        long alertInterval_ms = 500;
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(500);
+        subscriptionQos.setPublicationTtlMs(0);
 
         String subscriptionId = proxy.subscribeToComplexTestAttribute(gpsListener, subscriptionQos);
 
@@ -231,9 +239,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         int periods = 2;
         long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
-        long alertInterval_ms = 500;
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(500);
+        subscriptionQos.setPublicationTtlMs(0);
 
         String subscriptionId = proxy.subscribeToEnumAttribute(testEnumListener, subscriptionQos);
 
@@ -263,9 +273,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         int periods = 2;
         long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
-        long alertInterval_ms = 500;
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(500);
+        subscriptionQos.setPublicationTtlMs(0);
 
         String subscriptionId = proxy.subscribeToByteBufferAttribute(testByteBufferListener, subscriptionQos);
 
@@ -293,8 +305,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         int periods = 2;
         long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, 0, 0);
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(0);
+        subscriptionQos.setPublicationTtlMs(0);
 
         String subscriptionId = proxy.subscribeToListOfInts(integersListener, subscriptionQos);
         assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
@@ -312,8 +327,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     public void registerAndStopSubscription() throws InterruptedException {
         AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
         int subscriptionDuration = (period_ms * 2);
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, 0, 0);
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(0);
+        subscriptionQos.setPublicationTtlMs(0);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
@@ -324,7 +342,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         Thread.sleep(subscriptionDuration);
         verifyNoMoreInteractions(integerListener);
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @Test
@@ -337,18 +355,16 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         long minInterval_ms = 50;
         long subscriptionDuration = 1000;
         // publications don't live longer than subscription
-        long publicationTtl_ms = subscriptionDuration;
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
 
-        // do not want to see the interval
-        long maxInterval_ms = subscriptionDuration + 1;
-        SubscriptionQos subscriptionQosMixed = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                        maxInterval_ms,
-                                                                                        expiryDate_ms,
-                                                                                        publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms);
+        subscriptionQos.setMaxIntervalMs(subscriptionDuration + 1);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(subscriptionDuration);
+        subscriptionQos.setPublicationTtlMs(subscriptionDuration);
 
-        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        provider.waitForAttributeSubscription("testAttribute");
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         // when subscribing, we automatically get 1 publication. Expect the starting-publication
         verify(integerListener, times(0)).onError(null);
@@ -365,7 +381,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verifyNoMoreInteractions(integerListener);
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -410,18 +426,17 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         int numberExpectedKeepAlives = 3;
         // the subscription duration is a little longer so that it does not expire exactly as the last keep alive is to be sent
         long subscriptionDuration = maxInterval_ms * numberExpectedKeepAlives + (maxInterval_ms / 2);
-        long publicationTtl_ms = maxInterval_ms; // publications don't live
         // longer than next interval
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
 
-        SubscriptionQos subscriptionQosMixed = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                        maxInterval_ms,
-                                                                                        expiryDate_ms,
-                                                                                        0,
-                                                                                        publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms);
+        subscriptionQos.setMaxIntervalMs(maxInterval_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(0);
+        subscriptionQos.setPublicationTtlMs(maxInterval_ms); // publications don't live
 
-        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        provider.waitForAttributeSubscription("testAttribute");
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
@@ -433,7 +448,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         }
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @Test
@@ -445,19 +460,16 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         // supported
         long maxInterval_ms = 500; // get an interval update after 200 ms
         long subscriptionDuration = maxInterval_ms * 3;
-        long alertInterval_ms = maxInterval_ms + 100;
-        long publicationTtl_ms = maxInterval_ms; // publications don't live
-        // longer than next interval
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
 
-        SubscriptionQos subscriptionQosMixed = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                        maxInterval_ms,
-                                                                                        expiryDate_ms,
-                                                                                        alertInterval_ms,
-                                                                                        publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms);
+        subscriptionQos.setMaxIntervalMs(maxInterval_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(maxInterval_ms + 100);
+        subscriptionQos.setPublicationTtlMs(maxInterval_ms); // publications don't live
 
-        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        provider.waitForAttributeSubscription("testAttribute");
+        String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
@@ -474,7 +486,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + 1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @Test
@@ -483,13 +495,14 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         long minInterval_ms = 0;
-        long publicationTtl_ms = 1000;
-        long expiryDate_ms = System.currentTimeMillis() + 1000;
 
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms);
+        subscriptionQos.setValidityMs(1000);
+        subscriptionQos.setPublicationTtlMs(1000); // publications don't live
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        provider.waitForAttributeSubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         verify(integerListener, times(0)).onError(null);
         assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
@@ -498,7 +511,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -510,9 +523,12 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         int periods = 2;
         int subscriptionDuration = (period_ms * periods);
-        long alertInterval_ms = 1000;
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(1000);
+        subscriptionQos.setPublicationTtlMs(0);
 
         String subscriptionId = proxy.subscribeToAttributeWithProviderRuntimeException(listener, subscriptionQos);
 
@@ -539,9 +555,12 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         int periods = 2;
         int subscriptionDuration = (period_ms * periods);
-        long alertInterval_ms = 1000;
-        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period_ms);
+        subscriptionQos.setValidityMs(subscriptionDuration);
+        subscriptionQos.setAlertAfterIntervalMs(1000);
+        subscriptionQos.setPublicationTtlMs(0);
 
         String subscriptionId = proxy.subscribeToAttributeWithThrownException(listener, subscriptionQos);
 
@@ -568,16 +587,16 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         // Only get onChange messages
         long minInterval_ms = 0;
-        long duration = 500;
         // Expire quickly
-        long expiryDate_ms = System.currentTimeMillis() + duration;
-        // Have a large TTL on subscription messages
-        long publicationTtl_ms = 10000;
+        long duration = 500;
 
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(minInterval_ms);
+        subscriptionQos.setValidityMs(duration);
+        subscriptionQos.setPublicationTtlMs(10000);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        provider.waitForAttributeSubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeSubscription("testAttribute");
 
         // There should have only been one call - the automatic publication when a subscription is made
         assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
@@ -589,7 +608,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         assertFalse(onReceiveSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "NPE in test would fail test")
@@ -613,14 +632,15 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         }
 
         // This should not cause an exception
-        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms,
-                                                                      System.currentTimeMillis() + 30000,
-                                                                      0,
-                                                                      0);
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period_ms);
+        subscriptionQos.setValidityMs(30000);
+        subscriptionQos.setAlertAfterIntervalMs(0);
+        subscriptionQos.setPublicationTtlMs(0);
 
         String subscriptionId = proxyToNonexistentDomain.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(4000);
         proxyToNonexistentDomain.unsubscribeFromTestAttribute(subscriptionId);
-        provider.waitForAttributeUnsubscription("testAttribute");
+        getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 }

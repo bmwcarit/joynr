@@ -18,16 +18,15 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
-import org.franca.core.franca.FInterface
 
 class InterfaceProviderHTemplate extends InterfaceTemplate {
 	@Inject private extension TemplateBase
@@ -35,13 +34,9 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
+	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
 	@Inject private extension MethodUtil
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate()
 '''
@@ -156,30 +151,36 @@ public:
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		/**
 		 * @brief Implementation of the Franca method «method.joynrName»
+		 «IF method.fireAndForget»
+		 * This is a fire-and-forget method. Callers do not expect any response.
+		 «ELSE»
 		 * @param onSuccess A callback function to be called once the asynchronous computation has
 		 * finished with success. It must expect a request status object as well as the method out parameters.
 		 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
+		 «ENDIF»
 		 */
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»
-					«inputTypedParamList.substring(1)»,
+					«inputTypedParamList»«IF !method.fireAndForget»,«ENDIF»
 				«ENDIF»
-				«IF method.outputParameters.empty»
-					std::function<void()> onSuccess,
-				«ELSE»
-					std::function<void(
-							«outputTypedParamList.substring(1)»
-					)> onSuccess,
-				«ENDIF»
-				«IF method.hasErrorEnum»
-					«IF method.errors != null»
-						«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
-						std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
+				«IF !method.fireAndForget»
+					«IF method.outputParameters.empty»
+						std::function<void()> onSuccess,
 					«ELSE»
-						std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+						std::function<void(
+								«outputTypedParamList»
+						)> onSuccess,
 					«ENDIF»
-				«ELSE»
-				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
+					«IF method.hasErrorEnum»
+						«IF method.errors != null»
+							«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
+							std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
+						«ELSE»
+							std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+						«ENDIF»
+					«ELSE»
+						std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
+					«ENDIF»
 				«ENDIF»
 		) = 0;
 
@@ -196,7 +197,9 @@ public:
 		 * @param «broadcastName» the new broadcast value
 		 */
 		virtual void fire«broadcastName.toFirstUpper»(
-				«broadcast.commaSeperatedTypedConstOutputParameterList»
+				«IF !broadcast.outputParameters.empty»
+					«broadcast.commaSeperatedTypedConstOutputParameterList»
+				«ENDIF»
 		) = 0;
 
 	«ENDFOR»

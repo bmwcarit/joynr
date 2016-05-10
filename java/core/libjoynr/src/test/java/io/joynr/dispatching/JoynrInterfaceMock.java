@@ -23,13 +23,11 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
-
 /**
  * 
  * @author david.katz
  */
-public class JoynrInterfaceMock implements JoynrInterface {
+public class JoynrInterfaceMock {
 
     public static final String INTERFACE_NAME = "JoynMock";
 

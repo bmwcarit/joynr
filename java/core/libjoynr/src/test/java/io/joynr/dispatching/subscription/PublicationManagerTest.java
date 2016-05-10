@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
-import io.joynr.provider.RequestCallerFactory;
+import io.joynr.provider.ProviderContainer;
+import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.BroadcastFilter;
 
@@ -101,13 +104,19 @@ public class PublicationManagerTest {
     @Mock
     AttributePollInterpreter attributePollInterpreter;
     @Mock
-    private RequestCallerDirectory requestCallerDirectory;
+    private ProviderDirectory providerDirectory;
     @Mock
     private Dispatcher dispatcher;
     @Mock
-    private JoynrProvider provider;
+    private testProvider provider;
+
+    @Mock
+    private AbstractSubscriptionPublisher subscriptionPublisher;
 
     private RequestCaller requestCaller;
+
+    @Mock
+    private ProviderContainer providerContainer;
 
     String valueToPublish = "valuePublished";
 
@@ -116,36 +125,38 @@ public class PublicationManagerTest {
         Deferred<String> valueToPublishDeferred = new Deferred<String>();
         valueToPublishDeferred.resolve(valueToPublish);
         Promise<Deferred<String>> valueToPublishPromise = new Promise<Deferred<String>>(valueToPublishDeferred);
-        doReturn(testProvider.class).when(provider).getProvidedInterface();
 
         cleanupScheduler = new ScheduledThreadPoolExecutor(1);
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
-                                                        requestCallerDirectory,
+                                                        providerDirectory,
                                                         cleanupScheduler);
 
-        RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
-        requestCaller = requestCallerFactory.create(provider);
+        requestCaller = new RequestCallerFactory().create(provider);
+        when(providerContainer.getRequestCaller()).thenReturn(requestCaller);
+        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
 
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(false);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(false);
 
-        doReturn(valueToPublishPromise).when(attributePollInterpreter).execute(any(RequestCaller.class),
+        doReturn(valueToPublishPromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
                                                                                any(Method.class));
     }
 
     @Test(timeout = 4000)
     public void doNotDelayBroadcastPublicationBurstsForOnChangeSubscriptionsWithoutMinInterval() throws Exception {
         int subscriptionLength = 500;
-        long expiryDate = System.currentTimeMillis() + subscriptionLength;
-        int minInterval = 0;
-        int publicationTtl = 400;
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval, expiryDate, publicationTtl);
+
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(0);
+        qos.setValidityMs(subscriptionLength);
+        qos.setPublicationTtlMs(400);
+
         String subscriptionId = "subscriptionId";
         String proxyId = "proxyId";
         String providerId = "providerId";
         String broadcastName = "location";
 
-        RequestCallerDirectory requestCallerDirectory = mock(RequestCallerDirectory.class);
+        ProviderDirectory requestCallerDirectory = mock(ProviderDirectory.class);
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(subscriptionId,
                                                                                    broadcastName,
                                                                                    new BroadcastFilterParameters(),
@@ -155,8 +166,8 @@ public class PublicationManagerTest {
                                                                            requestCallerDirectory,
                                                                            cleanupScheduler);
 
-        when(requestCallerDirectory.getCaller(eq(providerId))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(providerId))).thenReturn(true);
+        when(requestCallerDirectory.get(eq(providerId))).thenReturn(providerContainer);
+        when(requestCallerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
         List<BroadcastFilter> noFilters = Lists.newArrayList();
@@ -180,27 +191,30 @@ public class PublicationManagerTest {
     @Test(timeout = 4000)
     public void delayBroadcastPublicationBurstsForOnChangeSubscriptions() throws Exception {
         int subscriptionLength = 500;
-        long expiryDate = System.currentTimeMillis() + subscriptionLength;
-        int minInterval = 100;
-        int publicationTtl = 400;
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval, expiryDate, publicationTtl);
+        int minIntervalMs = 100;
+
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(minIntervalMs);
+        qos.setValidityMs(subscriptionLength);
+        qos.setPublicationTtlMs(400);
+
         String subscriptionId = "subscriptionId";
         String proxyId = "proxyId";
         String providerId = "providerId";
         String broadcastName = "location";
 
-        RequestCallerDirectory requestCallerDirectory = mock(RequestCallerDirectory.class);
+        ProviderDirectory providerDirectory = mock(ProviderDirectory.class);
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(subscriptionId,
                                                                                    broadcastName,
                                                                                    new BroadcastFilterParameters(),
                                                                                    qos);
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
-                                                                           requestCallerDirectory,
+                                                                           providerDirectory,
                                                                            cleanupScheduler);
 
-        when(requestCallerDirectory.getCaller(eq(providerId))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(providerId))).thenReturn(true);
+        when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
         List<BroadcastFilter> noFilters = Lists.newArrayList();
@@ -212,7 +226,7 @@ public class PublicationManagerTest {
             publicationManager.broadcastOccurred(subscriptionId, noFilters, i);
         }
 
-        Thread.sleep(minInterval);
+        Thread.sleep(minIntervalMs);
 
         publicationManager.broadcastOccurred(subscriptionId, noFilters, nrIterations + 1);
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
@@ -229,24 +243,25 @@ public class PublicationManagerTest {
     @Test(timeout = 4000)
     public void delayAttributePublicationBurstsForOnChangeSubscriptions() throws Exception {
         int subscriptionLength = 500;
-        long expiryDate = System.currentTimeMillis() + subscriptionLength;
-        int minInterval = 400;
-        int publicationTtl = 400;
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval, expiryDate, publicationTtl);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(400);
+        qos.setValidityMs(subscriptionLength);
+        qos.setPublicationTtlMs(400);
+
         String subscriptionId = "subscriptionId";
         String proxyId = "proxyId";
         String providerId = "providerId";
         String attributeName = "location";
 
-        RequestCallerDirectory requestCallerDirectory = mock(RequestCallerDirectory.class);
+        ProviderDirectory providerDirectory = mock(ProviderDirectory.class);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
-                                                                           requestCallerDirectory,
+                                                                           providerDirectory,
                                                                            cleanupScheduler);
 
-        when(requestCallerDirectory.getCaller(eq(providerId))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(providerId))).thenReturn(true);
+        when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         final Semaphore onReceiveSemaphore = new Semaphore(0);
         doAnswer(new Answer<Object>() {
@@ -268,21 +283,22 @@ public class PublicationManagerTest {
 
         assertTrue(onReceiveSemaphore.tryAcquire(2, subscriptionLength + 1000, TimeUnit.MILLISECONDS));
 
-        assertFalse(onReceiveSemaphore.tryAcquire(1,
-                                                  Math.max(expiryDate - System.currentTimeMillis(), 200),
-                                                  TimeUnit.MILLISECONDS));
+        assertFalse(onReceiveSemaphore.tryAcquire(1, Math.max(subscriptionLength, 200), TimeUnit.MILLISECONDS));
     }
 
     @Test(timeout = 3000)
     public void addPublicationWithExpiryDate() throws Exception {
         long pubicationActiveForMs = 300;
-        long expiryDate = System.currentTimeMillis() + pubicationActiveForMs;
-        long publicationTtl = 1000;
-        SubscriptionQos qos = new OnChangeSubscriptionQos(0, expiryDate, publicationTtl);
+
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(0);
+        qos.setValidityMs(pubicationActiveForMs);
+        qos.setPublicationTtlMs(1000);
+
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -308,11 +324,14 @@ public class PublicationManagerTest {
     @Test(timeout = 3000)
     public void addPublicationWithoutExpiryDate() throws Exception {
         int period = 200;
-        SubscriptionQos qos = new PeriodicSubscriptionQos(100, SubscriptionQos.NO_EXPIRY_DATE, 500, 1000);
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();
+        qos.setPeriodMs(period).setValidityMs(SubscriptionQos.IGNORE_VALUE);
+        qos.setAlertAfterIntervalMs(500).setPublicationTtlMs(1000);
+
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -334,13 +353,12 @@ public class PublicationManagerTest {
     public void startAndStopPeriodicPublication() throws Exception {
         int period = 200;
         int testLengthMax = 3000;
-        long expiryDate = System.currentTimeMillis() + testLengthMax;
-        long publicationTtl = testLengthMax;
-        SubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, publicationTtl);
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();
+        qos.setPeriodMs(200).setValidityMs(testLengthMax).setPublicationTtlMs(testLengthMax);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -360,16 +378,15 @@ public class PublicationManagerTest {
 
     @Test(timeout = 3000)
     public void stopAllPublicationsFromProvider() throws Exception {
-        long expiryDate = System.currentTimeMillis() + 3000;
-        long publicationTtl = 1000;
         String subscriptionId1 = "subscriptionid1";
         String subscriptionId2 = "subscriptionid2";
-        SubscriptionQos qos = new OnChangeSubscriptionQos(0, expiryDate, publicationTtl);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(0).setValidityMs(3000).setPublicationTtlMs(1000);
         SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1, "location", qos);
         SubscriptionRequest subscriptionRequest2 = new SubscriptionRequest(subscriptionId2, "location", qos);
 
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
 
@@ -385,7 +402,7 @@ public class PublicationManagerTest {
                                                                  any(MessagingQos.class));
 
         reset(dispatcher);
-        publicationManager.callerRemoved(PROVIDER_PARTICIPANT_ID);
+        publicationManager.entryRemoved(PROVIDER_PARTICIPANT_ID);
 
         publicationManager.attributeValueChanged(subscriptionId1, valueToPublish);
         publicationManager.attributeValueChanged(subscriptionId2, valueToPublish);
@@ -417,7 +434,7 @@ public class PublicationManagerTest {
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
-        publicationManager.callerAdded(PROVIDER_PARTICIPANT_ID, requestCaller);
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
 
         verify(dispatcher, timeout(period * 5).times(12)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                                       eq(PROXY_PARTICIPANT_ID),
@@ -436,7 +453,7 @@ public class PublicationManagerTest {
 
         publicationManager.stopPublication(subscriptionId1);
 
-        publicationManager.callerAdded(PROVIDER_PARTICIPANT_ID, requestCaller);
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                  eq(PROXY_PARTICIPANT_ID),
@@ -449,7 +466,7 @@ public class PublicationManagerTest {
 
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
-                                                        requestCallerDirectory,
+                                                        providerDirectory,
                                                         cleanupScheduler);
 
         long minInterval_ms = 0;
@@ -461,8 +478,8 @@ public class PublicationManagerTest {
                                                                                    "subscribedToName",
                                                                                    filterParameters,
                                                                                    qos);
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -494,7 +511,7 @@ public class PublicationManagerTest {
 
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
-                                                        requestCallerDirectory,
+                                                        providerDirectory,
                                                         cleanupScheduler);
 
         long minInterval_ms = 0;
@@ -511,8 +528,8 @@ public class PublicationManagerTest {
                                                                                    filterParameters,
                                                                                    qos);
 
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -549,7 +566,7 @@ public class PublicationManagerTest {
 
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
-                                                        requestCallerDirectory,
+                                                        providerDirectory,
                                                         cleanupScheduler);
 
         long minInterval_ms = 0;
@@ -561,8 +578,8 @@ public class PublicationManagerTest {
                                                                                    "subscribedToName",
                                                                                    filterParameters,
                                                                                    qos);
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -597,7 +614,7 @@ public class PublicationManagerTest {
 
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
-                                                        requestCallerDirectory,
+                                                        providerDirectory,
                                                         cleanupScheduler);
 
         long minInterval_ms = 0;
@@ -610,8 +627,8 @@ public class PublicationManagerTest {
                                                                                    filterParameters,
                                                                                    qos);
 
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -641,7 +658,7 @@ public class PublicationManagerTest {
     public void modifySubscriptionTypeForExistingSubscription() throws Exception {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
-                                                        requestCallerDirectory,
+                                                        providerDirectory,
                                                         cleanupScheduler);
         int period = 200;
         int testLengthMax = 3000;
@@ -650,8 +667,8 @@ public class PublicationManagerTest {
         SubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, publicationTtl);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -663,8 +680,8 @@ public class PublicationManagerTest {
         qos = new OnChangeSubscriptionQos(0, expiryDate, publicationTtl);
         subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
-        when(requestCallerDirectory.getCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(requestCaller);
-        when(requestCallerDirectory.containsCaller(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
+        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 

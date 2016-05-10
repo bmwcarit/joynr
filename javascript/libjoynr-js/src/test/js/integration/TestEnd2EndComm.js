@@ -30,6 +30,7 @@ joynrTestRequire(
             "joynr/vehicle/radiotypes/ErrorList",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
+            "joynr/tests/testTypes/ComplexTestType",
             "integration/IntegrationUtils",
             "joynr/provisioning/provisioning_cc",
             "integration/provisioning_end2end_common"
@@ -42,6 +43,7 @@ joynrTestRequire(
                 ErrorList,
                 Country,
                 StringMap,
+                ComplexTestType,
                 IntegrationUtils,
                 provisioning,
                 provisioning_end2end) {
@@ -576,6 +578,32 @@ joynrTestRequire(
                             });
                         });
 
+                        //enable this test once the proxy side is ready for fire n' forget
+                        it("call methodFireAndForgetWithoutParams and expect to call the provider", function() {
+                            var spy = setupSubscriptionAndReturnSpy("fireAndForgetCallArrived", subscriptionQosOnChange);
+                            callOperation("methodFireAndForgetWithoutParams", {
+                            });
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0].methodName).toEqual("methodFireAndForgetWithoutParams");
+                            });
+                        });
+
+                        //enable this test once the proxy side is ready for fire n' forget
+                        it("call methodFireAndForget and expect to call the provider", function() {
+                            var spy = setupSubscriptionAndReturnSpy("fireAndForgetCallArrived", subscriptionQosOnChange);
+                            callOperation("methodFireAndForget", {
+                                intIn: 0,
+                                stringIn : "methodFireAndForget",
+                                complexTestTypeIn : new ComplexTestType({
+                                    a : 0,
+                                    b : 1
+                                })
+                            });
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0].methodName).toEqual("methodFireAndForget");
+                            });
+                        });
+
                         it("subscribe to broadcastWithEnum", function() {
                             var spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {
@@ -588,6 +616,16 @@ joynrTestRequire(
                             });
                         });
 
+                        it("subscribe to emptyBroadcast", function() {
+                            var spy = setupSubscriptionAndReturnSpy("emptyBroadcast", subscriptionQosOnChange);
+                            callOperation("triggerBroadcasts", {
+                                broadcastName: "emptyBroadcast",
+                                times: 1
+                            });
+                            expectPublication(spy, function(call) {
+                                //no expectation for call, as empty broadcast
+                            });
+                        });
 
                         it("subscribe to type def broadcast", function() {
                             var typeDefStructOutput = new RadioStation({

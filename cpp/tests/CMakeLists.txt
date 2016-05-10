@@ -317,6 +317,8 @@ else()
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
+file(COPY "resources/ListOfCapabilitiesToInject.json"
+     DESTINATION "${JOYNR_BINARY_DIR}/test-resources/")
 
 ### set up stuff common for all test targets ##################################
 
@@ -340,16 +342,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 endif(${BUILD_CLUSTER_CONTROLLER})
 
-file(
-    GLOB_RECURSE JoynrTest_GENSOURCES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "gen/*.cpp"
-)
-
-file(
-    GLOB_RECURSE JoynrTest_GENHEADERS
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "gen/*.h"
+set(
+    test_TARGET_LIBRARIES
+    JoynrCommon
+    Joynr
+    JoynrJsonSerializer
 )
 
 set(
@@ -365,11 +362,26 @@ set(
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 
-set(
-    test_TARGET_LIBRARIES
-    JoynrCommon
-    Joynr
-    JoynrJsonSerializer
+file(
+    GLOB_RECURSE JoynrTest_GENSOURCES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "gen/*.cpp"
+)
+
+file(
+    GLOB_RECURSE JoynrTest_GENHEADERS
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "gen/*.h"
+)
+
+add_library(JoynrTestGenerated OBJECT
+    ${JoynrTest_GENSOURCES}
+    ${JoynrTest_GENHEADERS}
+)
+
+target_include_directories(
+    JoynrTestGenerated
+    PUBLIC ${JoynrTest_INCLUDE_DIRECTORIES}
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -483,14 +495,12 @@ set(
     "utils/MockObjects.cpp"
     "utils/MockLocalCapabilitiesDirectoryCallback.cpp"
     "TestMain.cpp"
-    ${JoynrTest_GENSOURCES}
 )
 
 set(
     libjoynr_test_SOURCES
     "PrettyPrint.cpp"
     "TestMain.cpp"
-    ${JoynrTest_GENSOURCES}
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -516,6 +526,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_UNIT_TESTS})
         AddTest(
             g_UnitTests
+            $<TARGET_OBJECTS:JoynrTestGenerated>
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
             ${libjsonserializer_test_HEADERS}
@@ -559,12 +570,16 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_INTEGRATION_TESTS})
         AddTest(
            g_IntegrationTests
+           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${cluster_controller_test_HEADERS}
            ${cluster_controller_test_SOURCES}
            ${g_IntegrationTests_SOURCES}
         )
 
-        target_link_libraries(g_IntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
+        target_link_libraries(
+            g_IntegrationTests
+            ${cluster_controller_test_TARGET_LIBRARIES}
+        )
 
         target_include_directories(
             g_IntegrationTests
@@ -595,12 +610,16 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         AddTest(
            g_SystemIntegrationTests
+           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${cluster_controller_test_HEADERS}
            ${cluster_controller_test_SOURCES}
            ${g_SystemIntegrationTests_SOURCES}
         )
 
-        target_link_libraries(g_SystemIntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
+        target_link_libraries(
+            g_SystemIntegrationTests
+            ${cluster_controller_test_TARGET_LIBRARIES}
+        )
 
         set_target_properties(
            g_SystemIntegrationTests
@@ -639,6 +658,7 @@ else()
     if(${BUILD_UNIT_TESTS})
         AddTest(
             g_UnitTests
+            $<TARGET_OBJECTS:JoynrTestGenerated>
             ${libjoynr_test_HEADERS}
             ${libjoynr_test_SOURCES}
             ${g_UnitTests_SOURCES}
@@ -675,12 +695,16 @@ else()
     if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         AddTest(
            g_SystemIntegrationTests
+           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${libjoynr_test_HEADERS}
            ${libjoynr_test_SOURCES}
            ${g_SystemIntegrationTests_SOURCES}
         )
 
-        target_link_libraries(g_SystemIntegrationTests ${libjoynr_test_TARGET_LIBRARIES})
+        target_link_libraries(
+            g_SystemIntegrationTests
+            ${libjoynr_test_TARGET_LIBRARIES}
+        )
 
         target_include_directories(
             g_SystemIntegrationTests

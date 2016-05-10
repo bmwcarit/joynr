@@ -18,26 +18,19 @@ package io.joynr.generator.proxy
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
-import org.franca.core.franca.FInterface
 
 class InterfaceProxyTemplate extends InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
-
 	override generate() {
 		val interfaceName =  francaIntf.joynrName
-		val className = interfaceName + "Proxy"
+		val className = francaIntf.proxyClassName
 		val asyncClassName = interfaceName + "Async"
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"

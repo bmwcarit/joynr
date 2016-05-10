@@ -34,7 +34,6 @@ namespace joynr
   * @class SubscriptionCallback
   * @brief
   */
-
 template <typename T, typename... Ts>
 class SubscriptionCallback : public ISubscriptionCallback
 {
@@ -55,7 +54,15 @@ public:
         listener->onError(error);
     }
 
-    void onSuccess(const T& value, const Ts&... values)
+    template <typename Holder = T>
+    std::enable_if_t<std::is_void<Holder>::value, void> onSuccess()
+    {
+        listener->onReceive();
+    }
+
+    template <typename Holder = T>
+    std::enable_if_t<!std::is_void<Holder>::value, void> onSuccess(const Holder& value,
+                                                                   const Ts&... values)
     {
         listener->onReceive(value, values...);
     }

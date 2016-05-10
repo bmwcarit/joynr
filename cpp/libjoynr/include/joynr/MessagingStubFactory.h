@@ -64,7 +64,7 @@ public:
     bool contains(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                           destinationAddress) override;
 
-    void registerStubFactory(std::unique_ptr<IMiddlewareMessagingStubFactory> factory);
+    void registerStubFactory(std::shared_ptr<IMiddlewareMessagingStubFactory> factory);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
@@ -81,7 +81,7 @@ private:
     template <typename K, typename V>
     using Map = std::unordered_map<K, V, AddressPtrHash, AddressPtrCompare>;
     ThreadSafeMap<AddressPtr, std::shared_ptr<IMessaging>, Map> address2MessagingStubMap;
-    std::vector<std::unique_ptr<IMiddlewareMessagingStubFactory>> factoryList;
+    std::vector<std::shared_ptr<IMiddlewareMessagingStubFactory>> factoryList;
     std::mutex mutex;
 };
 

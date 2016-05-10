@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.17.0-SNAPSHOT</version>
+		<version>0.18.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -52,6 +52,13 @@
 			<groupId>io.joynr.javascript</groupId>
 			<artifactId>js-dependencies</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr</groupId>
+			<artifactId>basemodel</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -180,17 +187,6 @@
 						</goals>
 						<configuration>
 							<model>joynr/GlobalCapabilitiesDirectory.fidl</model>
-							<outputPath>${basedir}/src/main/generated</outputPath>
-						</configuration>
-					</execution>
-					<execution>
-						<id>channelURLDirectory</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>joynr/ChannelUrlDirectory.fidl</model>
 							<outputPath>${basedir}/src/main/generated</outputPath>
 						</configuration>
 					</execution>

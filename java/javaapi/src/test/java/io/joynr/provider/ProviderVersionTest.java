@@ -19,7 +19,10 @@ package io.joynr.provider;
  * #L%
  */
 
-import org.junit.Assert;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+import io.joynr.JoynrVersion;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -31,17 +34,13 @@ import joynr.tests.testProvider;
 public class ProviderVersionTest {
     @Test
     public void versionIsSetCorrectly() {
-        int expectedMajorVersion = 47;
-        int expectedMinorVersion = 11;
-        Assert.assertEquals(expectedMajorVersion, testProvider.MAJOR_VERSION);
-        Assert.assertEquals(expectedMinorVersion, testProvider.MINOR_VERSION);
+        assertThat(testProvider.class.getAnnotation(JoynrVersion.class).major(), equalTo(47));
+        assertThat(testProvider.class.getAnnotation(JoynrVersion.class).minor(), equalTo(11));
     }
 
     @Test
     public void defaultVersionIsSetCorrectly() {
-        int expectedMajorVersion = 0;
-        int expectedMinorVersion = 0;
-        Assert.assertEquals(expectedMajorVersion, TestWithoutVersionProvider.MAJOR_VERSION);
-        Assert.assertEquals(expectedMinorVersion, TestWithoutVersionProvider.MINOR_VERSION);
+        assertThat(TestWithoutVersionProvider.class.getAnnotation(JoynrVersion.class).major(), equalTo(0));
+        assertThat(TestWithoutVersionProvider.class.getAnnotation(JoynrVersion.class).minor(), equalTo(0));
     }
 }

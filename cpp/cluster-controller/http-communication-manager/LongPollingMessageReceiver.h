@@ -37,7 +37,6 @@
 namespace joynr
 {
 
-class ILocalChannelUrlDirectory;
 class MessageRouter;
 
 /**
@@ -61,8 +60,7 @@ public:
                                const std::string& channelId,
                                const std::string& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
-                               Semaphore* channelCreatedSemaphore,
-                               std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
+                               std::shared_ptr<Semaphore> channelCreatedSemaphore,
                                std::function<void(const std::string&)> onTextMessageReceived);
     void stop() override;
     void run() override;
@@ -84,10 +82,10 @@ private:
     std::mutex interruptedMutex;
     std::condition_variable interruptedWait;
 
-    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
-
     ADD_LOGGER(LongPollingMessageReceiver);
-    Semaphore* channelCreatedSemaphore;
+
+    // Ownership shared between this and HttpReceiver
+    std::shared_ptr<Semaphore> channelCreatedSemaphore;
 
     /*! On text message received callback */
     std::function<void(const std::string&)> onTextMessageReceived;

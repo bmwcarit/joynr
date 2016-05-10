@@ -2,7 +2,7 @@ package io.joynr.generator.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
-import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -40,11 +39,6 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 	@Inject extension AttributeUtil
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToDeferredName) {
 		init(serviceInterface, methodToDeferredName, new ArrayList<FMethod>());
@@ -87,43 +81,53 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
 		init(francaIntf, methodToDeferredName, uniqueMethodsToCreateDeferreds);
 
-		val interfaceName =  francaIntf.joynrName
-		val className = interfaceName + "Provider"
+		val interfaceName = francaIntf.joynrName
+		val className = francaIntf.providerClassName
 		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
 
 		'''
 «warning()»
 package «packagePath»;
 
-«IF getMethods(francaIntf).size > 0 || hasReadAttribute(francaIntf)»
-	import io.joynr.provider.Promise;
-«ENDIF»
-«IF hasReadAttribute(francaIntf)»
-	import io.joynr.provider.Deferred;
-«ENDIF»
-«IF !uniqueMethodsToCreateDeferreds.isEmpty»
-	import io.joynr.provider.AbstractDeferred;
-«ENDIF»
-«IF hasWriteAttribute(francaIntf) || hasMethodWithArguments(francaIntf)»
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-«ENDIF»
-«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
-	import io.joynr.provider.DeferredVoid;
+«IF hasNonFireAndForgetMethods(francaIntf) || hasReadAttribute(francaIntf) || hasWriteAttribute(francaIntf)»
+	«IF getMethods(francaIntf).size > 0 || hasReadAttribute(francaIntf)»
+		import io.joynr.provider.Promise;
+	«ENDIF»
+	«IF hasReadAttribute(francaIntf)»
+		import io.joynr.provider.Deferred;
+	«ENDIF»
+	«IF !uniqueMethodsToCreateDeferreds.isEmpty»
+		import io.joynr.provider.AbstractDeferred;
+	«ENDIF»
+	«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
+		import io.joynr.provider.DeferredVoid;
+	«ENDIF»
 «ENDIF»
 «IF francaIntf.hasMethodWithErrorEnum»
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
-import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.JoynrInterface;
+import io.joynr.JoynrVersion;
 
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
+«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
 
-public interface «className» extends JoynrProvider {
-	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
-	public static final int MAJOR_VERSION = «majorVersion»;
-	public static final int MINOR_VERSION = «minorVersion»;
+import io.joynr.provider.SubscriptionPublisherInjection;
+
+interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPublisherInjection<«interfaceName»SubscriptionPublisher> {}
+«ENDIF»
+
+@JoynrInterface(provides=«className».class, name="«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»")
+@JoynrVersion(major=«majorVersion», minor=«minorVersion»)
+«IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
+public interface «className» extends «interfaceName»SubscriptionPublisherInjection {
+«ELSE»
+public interface «className» {
+«ENDIF»
+
 	«FOR attribute : getAttributes(francaIntf)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
@@ -134,13 +138,10 @@ public interface «className» extends JoynrProvider {
 		«IF isWritable(attribute)»
 			Promise<DeferredVoid> set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
 		«ENDIF»
-		«IF isNotifiable(attribute)»
-			public void «attributeName»Changed(«attributeType» «attributeName»);
-		«ENDIF»
 	«ENDFOR»
 	«FOR method : getMethods(francaIntf)»
 		«var methodName = method.joynrName»
-		«var params = method.typedParameterListJavaRpc»
+		«var params = method.inputParameters.typedParameterList»
 		«var comments = method.javadocCommentsParameterListJavaRpc»
 
 		/**
@@ -148,7 +149,11 @@ public interface «className» extends JoynrProvider {
 		«IF !comments.equals("")»«comments»«ENDIF»
 		 * @return promise for asynchronous handling
 		 */
-		public Promise<«methodToDeferredName.get(method)»> «methodName»(
+		«IF method.fireAndForget»
+		public void «methodName» (
+		«ELSE»
+		public Promise<«methodToDeferredName.get(method)»> «methodName» (
+		«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF»
 		);
 	«ENDFOR»
@@ -181,11 +186,6 @@ public interface «className» extends JoynrProvider {
 				}
 			«ENDIF»
 		}
-	«ENDFOR»
-	«FOR broadcast : francaIntf.broadcasts»
-		«val broadcastName = broadcast.joynrName»
-
-		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList»);
 	«ENDFOR»
 }
 		'''

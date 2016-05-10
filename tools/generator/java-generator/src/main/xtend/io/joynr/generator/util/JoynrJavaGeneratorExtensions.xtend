@@ -31,11 +31,15 @@ import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import org.franca.core.franca.FTypedElement
+import javax.inject.Singleton
 
+@Singleton
 class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.JoynrGeneratorExtensions {
 	@Inject extension JavaTypeUtil
 	@Inject extension InterfaceUtil
 	@Inject extension BroadcastUtil
+
+	var jeeExtension = false
 
 	def String getNamespaceStarter(FInterface interfaceType) {
 		getNamespaceStarter(getPackageNames(interfaceType));
@@ -103,7 +107,7 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 	}
 
 	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface) {
-		getRequiredIncludesFor(serviceInterface, true, true, true, true, true);
+		getRequiredIncludesFor(serviceInterface, true, true, true, true, true, true);
 	}
 
 	def Iterable<String> getRequiredIncludesFor(
@@ -112,11 +116,13 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 			boolean readAttributes,
 			boolean writeAttributes,
 			boolean notifyAttributes,
-			boolean broadcasts
+			boolean broadcasts,
+			boolean fireAndForget
 	) {
 		val includeSet = new TreeSet<String>();
 		val selector = TypeSelector::defaultTypeSelector
 		selector.methods(methods);
+		selector.fireAndForget(fireAndForget);
 		selector.readAttributes(readAttributes);
 		selector.writeAttributes(writeAttributes);
 		selector.notifyAttributes(notifyAttributes);
@@ -201,11 +207,6 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 		return dataType.buildPackagePath(".", true) + "." + dataType.joynrName;
 	}
 
-	override String getOneLineWarning() {
-		//return ""
-		return "/* Generated Code */  "
-	}
-
 	// Returns true if a class has to create lists in its constructor
 	def boolean hasArrayMembers(FCompoundType datatype){
 		for (member : datatype.members) {
@@ -219,4 +220,21 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 	def getJoynTypePackagePrefix(){
 		joynrGenerationPrefix
 	}
+
+	def activateJeeExtension() {
+		jeeExtension = true
+	}
+
+	def jeeExtension() {
+		jeeExtension
+	}
+
+	def getProviderClassName(FInterface francaIntf) {
+		francaIntf.joynrName + "Provider"
+	}
+
+	def getProxyClassName(FInterface francaIntf) {
+		francaIntf.joynrName + "Proxy"
+	}
+
 }

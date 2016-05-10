@@ -53,8 +53,10 @@ public class ParticipantIdStorageTest {
 
     @Test
     public void test() {
-        storage.getProviderParticipantId("domain", TestProvider.class, TOKEN1_PARTICIPANT);
-        String participant2 = storage.getProviderParticipantId("domain", TestProvider.class, TOKEN2_PARTICIPANT);
+        storage.getProviderParticipantId("domain", TestProvider.INTERFACE_NAME, TOKEN1_PARTICIPANT);
+        String participant2 = storage.getProviderParticipantId("domain",
+                                                               TestProvider.INTERFACE_NAME,
+                                                               TOKEN2_PARTICIPANT);
 
         assertEquals(TOKEN2_PARTICIPANT, participant2);
     }

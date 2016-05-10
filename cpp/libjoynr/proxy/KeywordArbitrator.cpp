@@ -79,10 +79,8 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
             if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
                 std::string res = discoveryEntry.getParticipantId();
                 JOYNR_LOG_TRACE(logger, "setting res to {}", res);
-                joynr::types::CommunicationMiddleware::Enum preferredConnection(
-                        selectPreferredCommunicationMiddleware(discoveryEntry.getConnections()));
                 updateArbitrationStatusParticipantIdAndAddress(
-                        ArbitrationStatus::ArbitrationSuccessful, res, preferredConnection);
+                        ArbitrationStatus::ArbitrationSuccessful, res);
                 return;
             }
         }

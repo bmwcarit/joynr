@@ -21,16 +21,15 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.HashSet
 import org.franca.core.franca.FInterface
-import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
-import io.joynr.generator.templates.InterfaceTemplate
-import com.google.inject.assistedinject.Assisted
 
 class InterfaceCppTemplate extends InterfaceTemplate {
 
@@ -57,11 +56,6 @@ class InterfaceCppTemplate extends InterfaceTemplate {
 
 	@Inject
 	private extension TemplateBase
-
-	@Inject
-	new(@Assisted FInterface francaIntf) {
-		super(francaIntf)
-	}
 
 	override generate() {
 		var selector = TypeSelector::defaultTypeSelector
@@ -110,9 +104,6 @@ I«interfaceName»Base::I«interfaceName»Base()
 		*/
 	«ENDIF»
 
-	«FOR metatype : replyMetatypes»
-		registrar.registerReplyMetaType<«metatype»>();
-	«ENDFOR»
 	«FOR broadcast: broadcastMetatypes»
 		registrar.registerMetaType<«broadcast»>();
 	«ENDFOR»

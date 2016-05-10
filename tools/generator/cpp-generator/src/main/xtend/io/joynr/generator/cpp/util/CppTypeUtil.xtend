@@ -133,8 +133,14 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		boolean parameterAsReference
 	) {
 		val returnStringBuilder = new StringBuilder();
+		var firstElement = true;
+
 		for(FArgument argument : arguments){
-			returnStringBuilder.append("\n")
+			if (firstElement) {
+				firstElement = false;
+			} else {
+				returnStringBuilder.append("\n")
+			}
 			if (constParameters) {
 				returnStringBuilder.append("const ");
 			}

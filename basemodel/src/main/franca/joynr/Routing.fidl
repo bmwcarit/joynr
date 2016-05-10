@@ -24,6 +24,8 @@ typeCollection RoutingTypes {
 
 	<** @description: Channel Address **>
 	struct ChannelAddress extends Address {
+		<** @description: Url of HTTP-based message receiver **>
+		String messagingEndpointUrl
 		<** @description: Channel identification **>
 		String channelId
 	}

@@ -22,20 +22,17 @@ package io.joynr.generator;
 import static io.joynr.generator.util.FileSystemAccessUtil.createFileSystemAccess;
 import io.joynr.generator.loading.ModelLoader;
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
-import io.joynr.generator.util.FrancaIDLFrameworkStandaloneSetup;
 import io.joynr.generator.util.InvocationArguments;
-import io.joynr.generator.util.TemplatesLoader;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.IGenerator;
+import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
+import org.franca.core.dsl.FrancaIDLStandaloneSetup;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
@@ -43,24 +40,25 @@ import com.google.inject.name.Names;
 
 public class Executor {
 
-    private Logger logger = Logger.getLogger("io.joynr.generator.Executor");
-    private Injector injector;
-    private InvocationArguments arguments;
+    private final Logger logger = Logger.getLogger("io.joynr.generator.Executor");
+    private final InvocationArguments arguments;
+    private final IGenerator generator;
+    private final IFileSystemAccess outputFileSystem;
 
-    @Inject
-    private IFileSystemAccess outputFileSystem;
-
-    public Executor(final InvocationArguments arguments) {
+    public Executor(final InvocationArguments arguments) throws ClassNotFoundException,
+                                                        InstantiationException,
+                                                        IllegalAccessException {
+        arguments.checkArguments();
         this.arguments = arguments;
 
         // Get an injector and inject into the current instance
-        Injector francaInjector = new FrancaIDLFrameworkStandaloneSetup().createInjectorAndDoEMFRegistration();
-        francaInjector.injectMembers(this);
+        Injector francaInjector = new FrancaIDLStandaloneSetup().createInjectorAndDoEMFRegistration();
 
         // Use a child injector that contains configuration parameters passed to this Executor
-        this.injector = francaInjector.createChildInjector(new AbstractModule() {
+        Injector injector = francaInjector.createChildInjector(new AbstractModule() {
             @Override
             protected void configure() {
+                bind(IFileSystemAccess.class).to(JavaIoFileSystemAccess.class);
                 String generationId = arguments.getGenerationId();
                 if (generationId != null) {
                     bindConstant().annotatedWith(Names.named("generationId")).to(generationId);
@@ -74,33 +72,30 @@ public class Executor {
                                    .toInstance(arguments.clean());
             }
         });
+        this.outputFileSystem = injector.getInstance(IFileSystemAccess.class);
+        this.generator = createGenerator(injector);
     }
 
-    protected IGenerator setup() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        String templatesDir = arguments.getTemplatesDir();
-        String templatesEncoding = arguments.getTemplatesEncoding();
-
-        if (templatesDir != null) {
-            try {
-                TemplatesLoader.load(templatesDir, templatesEncoding);
-            } catch (Exception e) {
-                logger.warning(e.getMessage());
-            }
-        }
-
+    private IGenerator createGenerator(Injector injector) throws ClassNotFoundException, InstantiationException,
+                                                         IllegalAccessException {
         String rootGenerator = arguments.getRootGenerator();
         Class<?> rootGeneratorClass = Class.forName(rootGenerator, true, Thread.currentThread().getContextClassLoader());
         Object templateRootInstance = rootGeneratorClass.newInstance();
 
-        // Is this a generator that supports header files?
         if (templateRootInstance instanceof IGenerator) {
             // This is a standard generator
-            IGenerator result = (IGenerator) templateRootInstance;
-            if (result instanceof IJoynrGenerator && ((IJoynrGenerator) result).getGeneratorModule() != null) {
-                injector = injector.createChildInjector(((IJoynrGenerator) result).getGeneratorModule());
+            IGenerator generator = (IGenerator) templateRootInstance;
+            if (generator instanceof IJoynrGenerator) {
+                IJoynrGenerator joynrGenerator = (IJoynrGenerator) generator;
+                if (joynrGenerator.getGeneratorModule() != null) {
+                    injector = injector.createChildInjector(joynrGenerator.getGeneratorModule());
+                }
+                injector.injectMembers(generator);
+                joynrGenerator.setParameters(arguments.getParameter());
+            } else {
+                injector.injectMembers(generator);
             }
-            injector.injectMembers(result);
-            return result;
+            return generator;
         } else {
             throw new IllegalStateException("Root generator \"" + "\" is not implementing interface \""
                     + IGenerator.class.getName() + "\"");
@@ -108,34 +103,45 @@ public class Executor {
 
     }
 
-    private ModelLoader prepareGeneratorEnvironment(IGenerator generator) {
+    private ModelLoader prepareGeneratorEnvironment() {
         String outputPath = arguments.getOutputPath();
         String modelPath = arguments.getModelPath();
 
         createFileSystemAccess(outputFileSystem, outputPath);
 
-        // This is a normal generator
-        if (generator instanceof IJoynrGenerator) {
-            ((IJoynrGenerator) generator).setParameters(arguments.getParameter());
-        }
-
         return new ModelLoader(modelPath);
     }
 
-    public void generate(IGenerator generator) {
-        ModelLoader modelLoader = prepareGeneratorEnvironment(generator);
-        for (URI foundUri : modelLoader.getURIs()) {
-            final Resource r = modelLoader.getResource(foundUri);
-            if (r.getErrors().size() > 0) {
+    public IGenerator getGenerator() {
+        return generator;
+    }
+
+    public void generate() {
+        ModelLoader modelLoader = prepareGeneratorEnvironment();
+        for (Resource resource : modelLoader.getResources()) {
+            if (resource.getErrors().size() > 0) {
                 StringBuilder errorMsg = new StringBuilder();
-                errorMsg.append("Error loading model " + foundUri.toString() + ". The following errors occured: \n");
-                for (Diagnostic error : r.getErrors()) {
+                errorMsg.append("Error loading model " + resource.getURI().toString()
+                        + ". The following errors occured: \n");
+                for (Diagnostic error : resource.getErrors()) {
                     errorMsg.append(error.getMessage());
                 }
                 logger.log(Level.SEVERE, errorMsg.toString());
             } else {
-                generator.doGenerate(r, outputFileSystem);
+                generator.doGenerate(resource, outputFileSystem);
             }
         }
+    }
+
+    public static void main(String[] args) throws ClassNotFoundException, InstantiationException,
+                                          IllegalAccessException {
+        if (args.length == 1 && (args[0].equals("-help") || args[0].equals("-?"))) {
+            System.out.println(InvocationArguments.usageString());
+            System.exit(0);
+        }
+        // Parse the command line arguments
+        InvocationArguments invocationArguments = new InvocationArguments(args);
+        Executor executor = new Executor(invocationArguments);
+        executor.generate();
     }
 }

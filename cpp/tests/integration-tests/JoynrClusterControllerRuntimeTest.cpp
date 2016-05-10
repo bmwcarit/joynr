@@ -30,6 +30,9 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/JsonSerializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testProvider.h"
@@ -56,10 +59,10 @@ public:
     std::string settingsFilenameHttp;
     JoynrClusterControllerRuntime* runtime;
     joynr::types::Localisation::GpsLocation gpsLocation;
-    MockMessageReceiver* mockHttpMessageReceiver; // will be deleted when runtime is deleted.
-    MockMessageSender* mockHttpMessageSender;
-    MockMessageReceiver* mockMqttMessageReceiver;
-    MockMessageSender* mockMqttMessageSender;
+    std::shared_ptr<MockMessageReceiver> mockHttpMessageReceiver;
+    std::shared_ptr<MockMessageSender> mockHttpMessageSender;
+    std::shared_ptr<MockMessageReceiver> mockMqttMessageReceiver;
+    std::shared_ptr<MockMessageSender> mockMqttMessageSender;
     QSemaphore semaphore;
 
     JoynrClusterControllerRuntimeTest() :
@@ -79,22 +82,29 @@ public:
                 444,                        // device time
                 444                         // time
             ),
-            mockHttpMessageReceiver(new MockMessageReceiver()),
-            mockHttpMessageSender(new MockMessageSender()),
-            mockMqttMessageReceiver(new MockMessageReceiver()),
-            mockMqttMessageSender(new MockMessageSender()),
+            mockHttpMessageReceiver(std::make_shared<MockMessageReceiver>()),
+            mockHttpMessageSender(std::make_shared<MockMessageSender>()),
+            mockMqttMessageReceiver(std::make_shared<MockMessageReceiver>()),
+            mockMqttMessageSender(std::make_shared<MockMessageSender>()),
             semaphore(0)
-    {
-        std::string httpChannelId("JoynrClusterControllerRuntimeTest.HttpChannelId");
-        std::string mqttChannelId("JoynrClusterControllerRuntimeTest.MqttChannelId");
+    {;
+        std::string httpChannelId("http_JoynrClusterControllerRuntimeTest.ChannelId");
+        std::string httpEndPointUrl("http_JoynrClusterControllerRuntimeTest.endPointUrl");
+        std::string mqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic");
+        std::string mqttBrokerUrl("mqtt_JoynrClusterControllerRuntimeTest.brokerUrl");
 
+        using system::RoutingTypes::ChannelAddress;
+        using system::RoutingTypes::MqttAddress;
+
+        std::string serializedChannelAddress = JsonSerializer::serialize(ChannelAddress(httpEndPointUrl, httpChannelId));
+        std::string serializedMqttAddress = JsonSerializer::serialize(MqttAddress(mqttBrokerUrl, mqttTopic));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
-        ON_CALL(*mockHttpMessageReceiver, getReceiveChannelId())
-                .WillByDefault(::testing::ReturnRefOfCopy(httpChannelId));
-        ON_CALL(*mockMqttMessageReceiver, getReceiveChannelId())
-                .WillByDefault(::testing::ReturnRefOfCopy(mqttChannelId));
+        ON_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
+                .WillByDefault(::testing::ReturnRefOfCopy(serializedChannelAddress));
+        ON_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
+                .WillByDefault(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
 
     }
@@ -108,9 +118,9 @@ public:
     }
 
     void createRuntimeMqttWithHttpBackend() {
-        EXPECT_CALL(*mockHttpMessageReceiver, getReceiveChannelId())
+        EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
-        EXPECT_CALL(*mockMqttMessageReceiver, getReceiveChannelId())
+        EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
 
         runtime = new JoynrClusterControllerRuntime(
@@ -124,7 +134,7 @@ public:
     }
 
     void createRuntimeHttp() {
-        EXPECT_CALL(*mockHttpMessageReceiver, getReceiveChannelId())
+        EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
 
         runtime = new JoynrClusterControllerRuntime(
@@ -146,20 +156,17 @@ public:
         onSuccess(gpsLocation);
     }
 
+    void TearDown() override{
+        // Delete persisted files
+        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntimeTest);
 };
-
-
-void SetUp(){
-}
-
-void TearDown(){
-    std::remove(
-                LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
-    std::remove(
-                LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
-}
 
 TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeMqttWithHttpBackend)
 {
@@ -227,7 +234,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeout(50);
+    discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
@@ -272,7 +279,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeout(50);
+    discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
@@ -322,7 +329,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeout(50);
+    discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     tests::testProxy* testProxy = testProxyBuilder
@@ -377,7 +384,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeout(50);
+    discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     tests::testProxy* testProxy = testProxyBuilder
