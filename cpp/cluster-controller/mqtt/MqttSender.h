@@ -22,7 +22,6 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/BrokerUrl.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/Logger.h"
 
@@ -32,12 +31,13 @@ namespace joynr
 class JoynrMessage;
 class MessagingSettings;
 class MosquittoPublisher;
+class MessagingSettings;
 
 class MqttSender : public IMessageSender
 {
 
 public:
-    explicit MqttSender(const BrokerUrl& brokerUrl);
+    explicit MqttSender(const MessagingSettings& settings);
 
     ~MqttSender() override;
 
@@ -56,8 +56,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MqttSender);
 
     MosquittoPublisher mosquittoPublisher;
-
-    const BrokerUrl brokerUrl;
 
     /* Wait for ReceiveQueueStarted callback */
     std::function<void(void)> waitForReceiveQueueStarted;

@@ -94,6 +94,30 @@ const std::string& MessagingSettings::SETTING_CLIENT_CERTIFICATE_PASSWORD()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME()
+{
+    static const std::string value("messaging/mqtt-keep-alive-time");
+    return value;
+}
+
+std::chrono::seconds MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME()
+{
+    static const std::chrono::seconds value(60);
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()
+{
+    static const std::string value("messaging/mqtt-reconnect-sleep-time");
+    return value;
+}
+
+std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_RECONNECT_SLEEP_TIME()
+{
+    static const std::chrono::milliseconds value(1000);
+    return value;
+}
+
 const std::string& MessagingSettings::SETTING_INDEX()
 {
     static const std::string value("messaging/index");
@@ -320,6 +344,27 @@ std::string MessagingSettings::getCapabilitiesDirectoryParticipantId() const
     return settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID());
 }
 
+std::chrono::seconds MessagingSettings::getMqttKeepAliveTime() const
+{
+    return std::chrono::seconds(settings.get<std::int64_t>(SETTING_MQTT_KEEP_ALIVE_TIME()));
+}
+
+void MessagingSettings::setMqttKeepAliveTime(std::chrono::seconds mqttKeepAliveTime)
+{
+    settings.set(SETTING_MQTT_KEEP_ALIVE_TIME(), mqttKeepAliveTime.count());
+}
+
+std::chrono::milliseconds MessagingSettings::getMqttReconnectSleepTime() const
+{
+    return std::chrono::milliseconds(
+            settings.get<std::int64_t>(SETTING_MQTT_RECONNECT_SLEEP_TIME()));
+}
+
+void MessagingSettings::setMqttReconnectSleepTime(std::chrono::milliseconds mqttReconnectSleepTime)
+{
+    settings.set(SETTING_MQTT_RECONNECT_SLEEP_TIME(), mqttReconnectSleepTime.count());
+}
+
 std::int64_t MessagingSettings::getIndex() const
 {
     return settings.get<std::int64_t>(SETTING_INDEX());
@@ -517,6 +562,13 @@ void MessagingSettings::checkSettings()
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
 
+    if (!settings.contains(SETTING_MQTT_KEEP_ALIVE_TIME())) {
+        settings.set(SETTING_MQTT_KEEP_ALIVE_TIME(), DEFAULT_MQTT_KEEP_ALIVE_TIME().count());
+    }
+    if (!settings.contains(SETTING_MQTT_RECONNECT_SLEEP_TIME())) {
+        settings.set(
+                SETTING_MQTT_RECONNECT_SLEEP_TIME(), DEFAULT_MQTT_RECONNECT_SLEEP_TIME().count());
+    }
     if (!settings.contains(SETTING_INDEX())) {
         settings.set(SETTING_INDEX(), 0);
     }
@@ -569,6 +621,14 @@ void MessagingSettings::printSettings() const
                     "SETTING: {}  = {})",
                     SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID(),
                     settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_MQTT_KEEP_ALIVE_TIME(),
+                    settings.get<std::string>(SETTING_MQTT_KEEP_ALIVE_TIME()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_MQTT_RECONNECT_SLEEP_TIME(),
+                    settings.get<std::string>(SETTING_MQTT_RECONNECT_SLEEP_TIME()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {}  = {})",
                     SETTING_INDEX(),

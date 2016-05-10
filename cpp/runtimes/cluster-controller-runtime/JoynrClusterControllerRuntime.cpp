@@ -350,7 +350,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "The mqtt message sender supplied is NULL, creating the default "
                            "mqtt MessageSender");
 
-            mqttMessageSender = std::make_shared<MqttSender>(messagingSettings.getBrokerUrl());
+            mqttMessageSender = std::make_shared<MqttSender>(messagingSettings);
 
             mqttMessageSender->registerReceiveQueueStartedCallback(
                     [&](void) { mqttMessageReceiver->waitForReceiveQueueStarted(); });

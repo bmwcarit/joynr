@@ -33,11 +33,7 @@ MqttReceiver::MqttReceiver(const MessagingSettings& settings)
           channelIdForMqttTopic(),
           globalClusterControllerAddress(),
           receiverId(),
-          settings(settings),
-          mosquittoSubscriber(settings.getBrokerUrl(),
-                              globalClusterControllerAddress,
-                              channelCreatedSemaphore),
-          mqttSettings()
+          mosquittoSubscriber(settings, globalClusterControllerAddress, channelCreatedSemaphore)
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
 
