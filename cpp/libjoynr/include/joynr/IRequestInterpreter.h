@@ -21,15 +21,21 @@
 
 #include <functional>
 #include <memory>
-#include <string>
-#include <vector>
-#include "joynr/exceptions/JoynrException.h"
+
 #include "joynr/Variant.h"
 
 namespace joynr
 {
 
 class RequestCaller;
+class Request;
+class OneWayRequest;
+class Reply;
+
+namespace exceptions
+{
+class JoynrException;
+} // namespace exceptions
 
 /**
   * Common interface for all @class <Intf>RequestInterpreter.
@@ -40,25 +46,18 @@ public:
     virtual ~IRequestInterpreter() = default;
 
     /**
-      * Executes method @param methodName with parameters @param methodParams
-      * on the @param requestCaller object.
+      * Executes request on the @param requestCaller object.
       */
     virtual void execute(
             std::shared_ptr<RequestCaller> requestCaller,
-            const std::string& methodName,
-            const std::vector<Variant>& paramValues,
-            const std::vector<std::string>& paramTypes,
-            std::function<void(std::vector<Variant>&& outParams)> onSuccess,
+            Request& request,
+            std::function<void(Reply&& outParams)> onSuccess,
             std::function<void(const exceptions::JoynrException& exception)> onError) = 0;
 
     /**
-      * Executes fire-and-forget method @param methodName with parameters @param methodParams
-      * on the @param requestCaller object.
+      * Executes fire-and-forget request on the @param requestCaller object.
       */
-    virtual void execute(std::shared_ptr<RequestCaller> requestCaller,
-                         const std::string& methodName,
-                         const std::vector<Variant>& paramValues,
-                         const std::vector<std::string>& paramTypes) = 0;
+    virtual void execute(std::shared_ptr<RequestCaller> requestCaller, OneWayRequest& request) = 0;
 };
 
 } // namespace joynr

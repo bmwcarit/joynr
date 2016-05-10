@@ -47,6 +47,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/SubscriptionUtil.h"
+#include "joynr/Request.h"
 
 namespace joynr
 {
@@ -909,12 +910,10 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
         JOYNR_LOG_DEBUG(logger, "run: executing requestInterpreter= {}", attributeGetter);
         try {
-            requestInterpreter->execute(requestCaller,
-                                        attributeGetter,
-                                        std::vector<Variant>(),
-                                        std::vector<std::string>(),
-                                        onSuccess,
-                                        onError);
+            Request dummyRequest;
+            dummyRequest.setMethodName(attributeGetter);
+            // TODO enable!
+            // requestInterpreter->execute(requestCaller, dummyRequest, onSuccess, onError);
             // ApplicationException is not possible for attributes in Franca
         } catch (const exceptions::ProviderRuntimeException& e) {
             JOYNR_LOG_ERROR(logger,

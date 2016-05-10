@@ -204,7 +204,7 @@ public:
                         _, // messaging QoS
                         AllOf(
                             Property(&Request::getMethodName, Eq("setLocation")),
-                            Property(&Request::getParamsVariant, (Property(&std::vector<Variant>::size, Eq(1))))
+                            Property(&Request::getParamDatatypes, (Property(&std::vector<std::string>::size, Eq(1))))
                         ), // request object to send
                         Property(&std::shared_ptr<IReplyCaller>::get,NotNull()) // reply caller to notify when reply is received
                     )

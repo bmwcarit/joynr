@@ -33,6 +33,17 @@ public:
     MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
 };
 
+template <typename T>
+class MockCallback<T&&>{
+public:
+    MOCK_METHOD1_T(onSuccess, void(const T& result));
+    MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
+    void onSuccess(T&& result)
+    {
+        this->onSuccess(result);
+    }
+};
+
 template <typename T1, typename T2>
 class MockCallback2 {
 public:

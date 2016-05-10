@@ -21,13 +21,13 @@
 
 #include <string>
 
+#include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/PrivateCopyAssign.h"
+#include "joynr/IPlatformSecurityManager.h"
 
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/IPlatformSecurityManager.h"
-#include "joynr/OneWayRequest.h"
 namespace joynr
 {
 
@@ -113,6 +113,16 @@ private:
 
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     ADD_LOGGER(JoynrMessageFactory);
+
+    template <typename T>
+    std::string serializePayloadAsJson(const T& payload) const
+    {
+        using OutputStream = muesli::StringOStream;
+        OutputStream ostream;
+        muesli::JsonOutputArchive<OutputStream> oarchive(ostream);
+        oarchive(payload);
+        return ostream.getString();
+    }
 };
 
 } // namespace joynr

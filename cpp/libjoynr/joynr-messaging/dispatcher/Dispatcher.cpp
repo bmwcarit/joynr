@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@
 #include <cstdint>
 #include <chrono>
 
+#include "muesli/archives/json/JsonInputArchive.h"
+
+#include "joynr/serializer/Serializer.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
@@ -57,7 +60,6 @@ Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
           subscriptionManager(nullptr),
           handleReceivedMessageThreadPool("Dispatcher", maxThreads),
           subscriptionHandlingMutex()
-
 {
 }
 
@@ -126,9 +128,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     std::string senderId = message.getHeaderFrom();
     std::string receiverId = message.getHeaderTo();
 
-    // json request
     // lookup necessary data
-    std::string jsonRequest = message.getPayload();
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
     if (caller == nullptr) {
         JOYNR_LOG_ERROR(
@@ -143,19 +143,16 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     std::shared_ptr<IRequestInterpreter> requestInterpreter =
             InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
 
-    // deserialize json
+    // deserialize Request
     try {
-        Request request = JsonSerializer::deserialize<Request>(jsonRequest);
-
-        std::string requestReplyId = request.getRequestReplyId();
+        Request request = deserializePayload<Request>(message);
+        const std::string& requestReplyId = request.getRequestReplyId();
         JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
-        std::function<void(std::vector<Variant>)> onSuccess =
-                [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                        std::vector<Variant> returnValueVar) {
-            Reply reply;
+        auto onSuccess =
+                [requestReplyId, requestExpiryDate, this, senderId, receiverId](Reply&& reply) {
             reply.setRequestReplyId(requestReplyId);
-            reply.setResponseVariant(std::move(returnValueVar));
+            // reply.setResponseVariant(std::move(returnValueVar));
             // send reply back to the original sender (ie. sender and receiver ids are reversed
             // on
             // purpose)
@@ -169,12 +166,11 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
             messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                      senderId,   // sender of request is receiver of reply
                                      MessagingQos(ttl),
-                                     reply);
+                                     std::move(reply));
         };
 
-        std::function<void(const exceptions::JoynrException&)> onError =
-                [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                        const exceptions::JoynrException& exception) {
+        auto onError = [requestReplyId, requestExpiryDate, this, senderId, receiverId](
+                const exceptions::JoynrException& exception) {
             Reply reply;
             reply.setRequestReplyId(requestReplyId);
             reply.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(exception));
@@ -188,19 +184,14 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
             messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                      senderId,   // sender of request is receiver of reply
                                      MessagingQos(ttl),
-                                     reply);
+                                     std::move(reply));
         };
         // execute request
-        requestInterpreter->execute(caller,
-                                    request.getMethodName(),
-                                    request.getParamsVariant(),
-                                    request.getParamDatatypes(),
-                                    onSuccess,
-                                    onError);
+        requestInterpreter->execute(caller, request, onSuccess, onError);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize request object from: {} - error: {}",
-                        jsonRequest,
+                        message.getPayload(),
                         e.what());
         return;
     }
@@ -212,7 +203,6 @@ void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
 
     // json request
     // lookup necessary data
-    std::string jsonRequest = message.getPayload();
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
     if (caller == nullptr) {
         JOYNR_LOG_ERROR(
@@ -229,16 +219,13 @@ void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
 
     // deserialize json
     try {
-        OneWayRequest request = JsonSerializer::deserialize<OneWayRequest>(jsonRequest);
+        OneWayRequest request = deserializePayload<OneWayRequest>(message);
         // execute request
-        requestInterpreter->execute(caller,
-                                    request.getMethodName(),
-                                    request.getParamsVariant(),
-                                    request.getParamDatatypes());
+        requestInterpreter->execute(caller, request);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize request object from: {} - error: {}",
-                        jsonRequest,
+                        message.getPayload(),
                         e.what());
         return;
     }
@@ -246,15 +233,10 @@ void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
 
 void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 {
-    // json request
-    // lookup necessary data
-    std::string jsonReply = message.getPayload();
-
-    // deserialize the jsonReply
+    // deserialize the Reply
     try {
-        Reply reply = JsonSerializer::deserialize<Reply>(jsonReply);
+        Reply reply = deserializePayload<Reply>(message);
         std::string requestReplyId = reply.getRequestReplyId();
-
         std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
         if (caller == nullptr) {
             // This used to be a fatal error, but it is possible that the replyCallerDirectory
@@ -275,7 +257,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize reply object from: {} - error {}",
-                        jsonReply,
+                        message.getPayload(),
                         e.what());
     }
 }
@@ -431,6 +413,18 @@ void Dispatcher::registerSubscriptionManager(ISubscriptionManager* subscriptionM
 void Dispatcher::registerPublicationManager(PublicationManager* publicationManager)
 {
     this->publicationManager = publicationManager;
+}
+
+template <typename T>
+T Dispatcher::deserializePayload(const JoynrMessage& message)
+{
+    using Stream = muesli::StringIStream;
+    T payload;
+    Stream stream(message.getPayload());
+    auto archive = std::make_shared<muesli::JsonInputArchive<Stream>>(stream);
+    (*archive)(payload);
+
+    return payload;
 }
 
 } // namespace joynr

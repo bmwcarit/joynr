@@ -99,6 +99,7 @@
 #include "joynr/IProxyBuilder.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
+#include "joynr/Reply.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"

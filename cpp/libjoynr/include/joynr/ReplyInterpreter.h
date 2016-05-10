@@ -32,32 +32,40 @@ namespace joynr
 template <class... Ts>
 class ReplyInterpreter
 {
+    using ResponseTuple = std::tuple<Ts...>;
+
 public:
     template <typename Caller>
-    static void execute(Caller& caller, const Reply& reply)
+    static void execute(Caller& caller, Reply&& reply)
     {
-        const Variant& error = reply.getErrorVariant();
-        if (!error.isEmpty()) {
-            caller.returnError(error.get<exceptions::JoynrException>());
+        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
+        if (error) {
+            caller.returnError(*error);
             return;
         }
 
-        const std::vector<Variant>& response = reply.getResponseVariant();
-        if (response.empty()) {
+        if (!reply.hasResponse()) {
             caller.returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
             return;
         }
 
-        callReturnValue(response, caller, std::index_sequence_for<Ts...>{});
+        ResponseTuple responseTuple;
+        try {
+            reply.getResponse(responseTuple);
+        } catch (const std::exception& exception) {
+            caller.returnError(exceptions::JoynrRuntimeException(exception.what()));
+            return;
+        }
+        callReturnValue(std::move(responseTuple), caller, std::index_sequence_for<Ts...>{});
     }
 
 private:
     template <std::size_t... Indices, typename Caller>
-    static void callReturnValue(const std::vector<Variant>& response,
+    static void callReturnValue(ResponseTuple&& response,
                                 Caller& caller,
                                 std::index_sequence<Indices...>)
     {
-        caller.returnValue(util::valueOf<Ts>(response[Indices])...);
+        caller.returnValue(std::move(std::get<Indices>(response))...);
     }
 };
 
@@ -66,11 +74,11 @@ class ReplyInterpreter<void>
 {
 public:
     template <typename Caller>
-    static void execute(Caller& caller, const Reply& reply)
+    static void execute(Caller& caller, Reply&& reply)
     {
-        const Variant& error = reply.getErrorVariant();
-        if (!error.isEmpty()) {
-            caller.returnError(error.get<exceptions::JoynrException>());
+        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
+        if (error) {
+            caller.returnError(*error);
             return;
         }
         caller.returnValue();
