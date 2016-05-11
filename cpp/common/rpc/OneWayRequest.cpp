@@ -24,7 +24,7 @@ namespace joynr
 
 bool isOneWayRequestTypeRegistered = Variant::registerType<OneWayRequest>("joynr.OneWayRequest");
 
-OneWayRequest::OneWayRequest() : methodName(), variantParams(), paramDatatypes()
+OneWayRequest::OneWayRequest() : methodName(), variantParams(), paramDatatypes(), params()
 {
 }
 
