@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include <map>
 #include <string>
 
+#include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Logger.h"
@@ -331,6 +332,12 @@ public:
      */
     void setHeaderReplyAddress(const std::string& replyAddress);
 
+    template <class Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(type), MUESLI_NVP(header), MUESLI_NVP(payload));
+    }
+
 private:
     /**
      * @brief CUSTOM_HEADER_PREFIX The prefix used when adding or retrieving custom headers
@@ -359,4 +366,7 @@ private:
 };
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::JoynrMessage, "joynr.JoynrMessage")
+
 #endif // JOYNRMESSAGE_H
