@@ -22,6 +22,7 @@
 #include <QtWebSockets/QWebSocketServer>
 #include <QtWebSockets/QWebSocket>
 
+#include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Util.h"
 #include "joynr/MessageRouter.h"
@@ -145,7 +146,11 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
 
     // deserialize message and transmit
     try {
-        JoynrMessage joynrMsg = JsonSerializer::deserialize<JoynrMessage>(message.toStdString());
+        JoynrMessage joynrMsg;
+        using Stream = muesli::StringIStream;
+        Stream stream(message.toStdString());
+        muesli::JsonInputArchive<Stream> archive(stream);
+        archive(joynrMsg);
         if (joynrMsg.getType().empty()) {
             JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message.toStdString());
             return;
