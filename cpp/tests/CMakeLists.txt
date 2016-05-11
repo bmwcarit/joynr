@@ -400,7 +400,7 @@ target_include_directories(
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
-        OPTIONAL_DBUS_LIBRARIES 
+        OPTIONAL_DBUS_LIBRARIES
         JoynrDbusRuntime
     )
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
