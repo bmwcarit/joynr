@@ -24,10 +24,10 @@
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/Variant.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
-
 class JOYNRCOMMON_EXPORT Reply
 {
 public:
@@ -51,10 +51,14 @@ public:
     const Variant& getErrorVariant() const;
     void setErrorVariant(const Variant& errorVariant);
 
+    std::shared_ptr<exceptions::JoynrException> getError() const;
+    void setError(std::shared_ptr<exceptions::JoynrException> error);
+
 private:
     std::string requestReplyId;
     std::vector<Variant> responseVariant;
     Variant errorVariant;
+    std::shared_ptr<exceptions::JoynrException> error;
 };
 
 } // namespace joynr

@@ -28,7 +28,7 @@ bool isReplyRegistered = Variant::registerType<Reply>("joynr.Reply");
 
 const Reply Reply::NULL_RESPONSE = Reply();
 
-Reply::Reply() : requestReplyId(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
+Reply::Reply() : requestReplyId(), responseVariant(), errorVariant(Variant::NULL_VARIANT()), error()
 {
 }
 
@@ -62,10 +62,21 @@ void Reply::setErrorVariant(const Variant& errorVariant)
     this->errorVariant = errorVariant;
 }
 
+std::shared_ptr<exceptions::JoynrException> Reply::getError() const
+{
+    return error;
+}
+
+void Reply::setError(std::shared_ptr<exceptions::JoynrException> error)
+{
+    this->error = std::move(error);
+}
+
 bool Reply::operator==(const Reply& other) const
 {
     return requestReplyId == other.getRequestReplyId() &&
-           responseVariant == other.getResponseVariant() && errorVariant == other.getErrorVariant();
+           responseVariant == other.getResponseVariant() &&
+           errorVariant == other.getErrorVariant() && error == other.getError();
 }
 
 bool Reply::operator!=(const Reply& other) const
