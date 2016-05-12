@@ -51,7 +51,7 @@ import joynr.system.RoutingTypes.Address;
 import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
 
-public class ConnectorTests {
+public class ConnectorTest {
 
     @Mock
     private ReplyCallerDirectory replyCallerDirectory;

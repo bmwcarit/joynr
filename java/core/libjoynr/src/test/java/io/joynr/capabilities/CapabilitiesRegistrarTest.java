@@ -25,9 +25,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -49,7 +51,7 @@ import joynr.types.ProviderQos;
 import joynr.types.Version;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CapabilitiesRegistrarTests {
+public class CapabilitiesRegistrarTest {
 
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
     private final long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
@@ -104,6 +106,7 @@ public class CapabilitiesRegistrarTests {
                                                   new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void registerWithCapRegistrar() {
 
@@ -114,20 +117,24 @@ public class CapabilitiesRegistrarTests {
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
         when(providerContainerFactory.create(provider)).thenReturn(providerContainer);
 
+        ArgumentCaptor<DiscoveryEntry> discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);
+
         registrar.registerProvider(domain, provider, providerQos);
-        verify(localDiscoveryAggregator).add(any(Callback.class),
-                                             eq(new DiscoveryEntry(new Version(47, 11),
-                                                                   domain,
-                                                                   TestProvider.INTERFACE_NAME,
-                                                                   participantId,
-                                                                   providerQos,
-                                                                   System.currentTimeMillis(),
-                                                                   expiryDateMs,
-                                                                   publicKeyId)));
+        verify(localDiscoveryAggregator).add(any(Callback.class), discoveryEntryCaptor.capture());
+        DiscoveryEntry actual = discoveryEntryCaptor.getValue();
+        Assert.assertEquals(actual.getProviderVersion(), new Version(0, 0));
+        Assert.assertEquals(actual.getDomain(), domain);
+        Assert.assertEquals(actual.getInterfaceName(), TestProvider.INTERFACE_NAME);
+        Assert.assertEquals(actual.getParticipantId(), participantId);
+        Assert.assertEquals(actual.getQos(), providerQos);
+        Assert.assertTrue((System.currentTimeMillis() - actual.getLastSeenDateMs()) < 5000);
+        Assert.assertTrue((actual.getExpiryDateMs() - expiryDateMs) < 5000);
+        Assert.assertEquals(actual.getPublicKeyId(), publicKeyId);
 
         verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void unregisterProvider() {
         when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
