@@ -19,12 +19,14 @@
 #ifndef EXCEPTIONS_H
 #define EXCEPTIONS_H
 
-#include "joynr/JoynrCommonExport.h"
-
 #include <chrono>
 #include <exception>
 #include <string>
+
+#include "joynr/serializer/Serializer.h"
+
 #include "joynr/Variant.h"
+#include "joynr/JoynrCommonExport.h"
 
 namespace joynr
 {
@@ -76,6 +78,12 @@ public:
      */
     virtual void setMessage(const std::string& message);
 
+    template <typename Archive>
+    void serialize(Archive& ar)
+    {
+        ar(muesli::make_nvp("detailMessage", message));
+    }
+
 protected:
     /**
      * @brief the detail message of the exception.
@@ -116,6 +124,12 @@ public:
      * @brief The typeName used for serialization and logging.
      */
     static const std::string& TYPE_NAME();
+
+    template <typename Archive>
+    void serialize(Archive& ar)
+    {
+        ar(muesli::BaseClass<JoynrException>(this));
+    }
 };
 
 /**
@@ -217,6 +231,13 @@ public:
      */
     static const std::string& TYPE_NAME();
     static const std::chrono::milliseconds DEFAULT_DELAY_MS;
+
+    template <typename Archive>
+    void serialize(Archive& ar)
+    {
+        ar(muesli::BaseClass<JoynrRuntimeException>(this),
+           muesli::make_nvp("delayMs", delayMs.count()));
+    }
 
 private:
     std::chrono::milliseconds delayMs;
@@ -332,6 +353,13 @@ public:
      */
     static const std::string& TYPE_NAME();
 
+    template <typename Archive>
+    void serialize(Archive& ar)
+    {
+        ar(muesli::BaseClass<JoynrRuntimeException>(this),
+           muesli::make_nvp("subscriptionId", subscriptionId));
+    }
+
 private:
     std::string subscriptionId;
 };
@@ -424,7 +452,6 @@ public:
     template <typename Archive>
     void serialize(Archive& ar)
     {
-        std::ignore = ar;
         ar(muesli::BaseClass<JoynrException>(this), muesli::make_nvp("error", error));
     }
 
@@ -436,4 +463,31 @@ private:
 } // namespace exceptions
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::exceptions::JoynrException, "joynr.exceptions.JoynrException");
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::JoynrRuntimeException,
+                                 joynr::exceptions::JoynrException,
+                                 "joynr.exceptions.JoynrRuntimeException")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::JoynrTimeOutException,
+                                 joynr::exceptions::JoynrRuntimeException,
+                                 "joynr.exceptions.JoynrTimeOutException")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::JoynrMessageNotSentException,
+                                 joynr::exceptions::JoynrRuntimeException,
+                                 "joynr.exceptions.JoynrMessageNotSentException")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::JoynrDelayMessageException,
+                                 joynr::exceptions::JoynrRuntimeException,
+                                 "joynr.exceptions.JoynrDelayMessageException")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::DiscoveryException,
+                                 joynr::exceptions::JoynrRuntimeException,
+                                 "joynr.exceptions.DiscoveryException")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::ProviderRuntimeException,
+                                 joynr::exceptions::JoynrRuntimeException,
+                                 "joynr.exceptions.ProviderRuntimeException")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::PublicationMissedException,
+                                 joynr::exceptions::JoynrRuntimeException,
+                                 "joynr.exceptions.PublicationMissedException")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::ApplicationException,
+                                 joynr::exceptions::JoynrException,
+                                 "joynr.exceptions.ApplicationException")
+
 #endif // EXCEPTIONS_H

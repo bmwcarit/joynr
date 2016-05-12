@@ -72,7 +72,8 @@ public:
             return Variant::make<exceptions::JoynrDelayMessageException>(
                     static_cast<const exceptions::JoynrDelayMessageException&>(exception));
         }
-        return Variant::make<exceptions::JoynrException>(exception);
+        // temporary fix as JoynrException is now abstract
+        return Variant::NULL_VARIANT();
     }
 
     static const exceptions::JoynrRuntimeException& extractJoynrRuntimeException(
@@ -142,8 +143,6 @@ public:
     {
         if (variant.is<exceptions::ApplicationException>()) {
             return variant.get<exceptions::ApplicationException>();
-        } else if (variant.is<exceptions::JoynrException>()) {
-            return variant.get<exceptions::JoynrException>();
         } else {
             return extractJoynrRuntimeException(variant);
         }
