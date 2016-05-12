@@ -308,47 +308,20 @@ bool PublicationMissedException::operator==(const PublicationMissedException& ot
     return message == other.getMessage() && subscriptionId == other.getSubscriptionId();
 }
 
-ApplicationException::ApplicationException() noexcept : JoynrException(),
-                                                        value(Variant::NULL_VARIANT()),
-                                                        name(),
-                                                        typeName()
+ApplicationException::ApplicationException() noexcept : JoynrException(), error()
 {
 }
 
-ApplicationException::ApplicationException(const std::string& message,
-                                           const Variant& value,
-                                           const std::string& name,
-                                           const std::string& typeName) noexcept
-        : JoynrException(message),
-          value(value),
-          name(name),
-          typeName(typeName)
+ApplicationException::ApplicationException(
+        const std::string& message,
+        std::shared_ptr<ApplicationExceptionError> error) noexcept : JoynrException(message),
+                                                                     error(std::move(error))
 {
-}
-
-void ApplicationException::setError(const Variant& value) noexcept
-{
-    this->value = value;
 }
 
 std::string ApplicationException::getName() const noexcept
 {
-    return name;
-}
-
-void ApplicationException::setName(const std::string& value) noexcept
-{
-    this->name = value;
-}
-
-std::string ApplicationException::getErrorTypeName() const noexcept
-{
-    return typeName;
-}
-
-void ApplicationException::setErrorTypeName(const std::string& value) noexcept
-{
-    this->typeName = value;
+    return error->getName();
 }
 
 const std::string& ApplicationException::getTypeName() const
@@ -363,8 +336,8 @@ ApplicationException* ApplicationException::clone() const
 
 bool ApplicationException::operator==(const ApplicationException& other) const
 {
-    return message == other.getMessage() && value == other.value && name == other.name &&
-           typeName == other.typeName;
+    return typeid(*error) == typeid(*(other.error)) && message == other.getMessage() &&
+           error->getName() == other.error->getName();
 }
 
 } // namespace exceptions

@@ -336,6 +336,38 @@ private:
     std::string subscriptionId;
 };
 
+class ApplicationExceptionError
+{
+public:
+    ApplicationExceptionError() : name()
+    {
+    }
+    ApplicationExceptionError(const std::string& name) : name(name)
+    {
+    }
+    ApplicationExceptionError(std::string&& name) : name(std::move(name))
+    {
+    }
+    // shall be polymorphic AND abstract
+    virtual ~ApplicationExceptionError() = 0;
+    template <typename Archive>
+    void serialize(Archive& ar)
+    {
+        ar(muesli::make_nvp("name", name));
+    }
+    const std::string& getName() const
+    {
+        return name;
+    }
+
+private:
+    std::string name;
+};
+
+inline ApplicationExceptionError::~ApplicationExceptionError()
+{
+}
+
 /**
  * @brief Joynr exception used to return error enums defined in the corresponding
  * Franca model file from provider to consumer.
@@ -359,47 +391,18 @@ public:
      * @brief Constructor for an ApplicationException with detail message.
      *
      * @param message Description of the reported error
-     * @param value The error Enum value
      * @param name The error Enum literal
      * @param typeName the type name of the error enumeration type (used for serialization and
      * logging)
      */
     ApplicationException(const std::string& message,
-                         const Variant& value,
-                         const std::string& name,
-                         const std::string& typeName) noexcept;
-    /**
-     * @return The reported error Enum value.
-     */
-    template <class T>
-    const T& getError() const;
-    /**
-     * @brief Set the error Enum value.
-     *
-     * @param value The error Enum value.
-     */
-    void setError(const Variant& value) noexcept;
+                         std::shared_ptr<ApplicationExceptionError> error) noexcept;
+
     /**
      * @return The error Enum literal.
      */
     std::string getName() const noexcept;
-    /**
-     * @brief Set the error Enum literal.
-     *
-     * @param name the error Enum lital.
-     */
-    void setName(const std::string& name) noexcept;
-    /**
-     * @return The type name of the error enumeration.
-     */
-    std::string getErrorTypeName() const noexcept;
 
-    /**
-     * @brief Set the type name of the error enumeration.
-     *
-     * @param type name the type name of the error enumeration.
-     */
-    void setErrorTypeName(const std::string& typeName) noexcept;
     const std::string& getTypeName() const override;
     ApplicationException* clone() const override;
     /**
@@ -411,17 +414,24 @@ public:
      */
     static const std::string& TYPE_NAME();
 
-private:
-    Variant value;
-    std::string name;
-    std::string typeName;
-};
+    template <typename ErrorEnum>
+    ErrorEnum getError() const
+    {
+        using Wrapper = typename muesli::EnumTraits<ErrorEnum>::Wrapper;
+        return Wrapper::getEnum(getName());
+    }
 
-template <class T>
-const T& ApplicationException::getError() const
-{
-    return value.get<T>();
-}
+    template <typename Archive>
+    void serialize(Archive& ar)
+    {
+        std::ignore = ar;
+        ar(muesli::BaseClass<JoynrException>(this), muesli::make_nvp("error", error));
+    }
+
+private:
+    // FIXME should be a unique_ptr, but cannot be due to throwJoynrException
+    std::shared_ptr<ApplicationExceptionError> error;
+};
 
 } // namespace exceptions
 

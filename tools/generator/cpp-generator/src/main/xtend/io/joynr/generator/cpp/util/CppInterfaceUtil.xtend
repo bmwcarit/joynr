@@ -309,7 +309,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		}
 		else if (const exceptions::ApplicationException* applicationError = dynamic_cast<const exceptions::ApplicationException*>(&error)) {
 			if(onApplicationError) {
-				onApplicationError(applicationError->getError<«getMethodErrorEnum(serviceInterface, method)»>());
+				onApplicationError(muesli::EnumTraits<«getMethodErrorEnum(serviceInterface, method)»>::Wrapper::getEnum(applicationError->getName()));
 			}
 			else {
 				const std::string errorMessage = "An ApplicationException type was received, but but none was expected. Is the provider version incompatible with the consumer?";

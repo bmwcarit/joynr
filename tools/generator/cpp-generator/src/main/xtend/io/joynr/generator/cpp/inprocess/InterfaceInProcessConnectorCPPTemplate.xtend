@@ -48,6 +48,8 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 #include <functional>
 #include <tuple>
 
+#include "joynr/serializer/Serializer.h"
+
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»InProcessConnector.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
 «FOR datatype: getAllComplexTypes(francaIntf)»

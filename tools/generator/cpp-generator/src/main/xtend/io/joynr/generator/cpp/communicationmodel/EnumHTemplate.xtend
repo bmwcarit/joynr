@@ -60,7 +60,7 @@ class EnumHTemplate extends EnumTemplate {
 
 #include "joynr/Util.h"
 #include "joynr/Variant.h"
-
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 
 «IF type.hasExtendsDeclaration»
@@ -145,6 +145,12 @@ struct «getDllExportMacro()»«typeName» {
 	 * @return The typeName of the enumeration type
 	 */
 	static std::string getTypeName();
+
+    struct ApplicationExceptionErrorImpl : public joynr::exceptions::ApplicationExceptionError
+    {
+        using ApplicationExceptionError::ApplicationExceptionError;
+        ~ApplicationExceptionErrorImpl() override = default;
+    };
 };
 
 // Printing «typeName» with google-test and google-mock.
@@ -197,7 +203,7 @@ struct hash<«type.buildPackagePath("::", true)»::«typeName»::«getNestedEnum
 };
 } // namespace std
 
-MUESLI_REGISTER_TYPE(«type.typeName», "«type.typeNameOfContainingClass.replace("::", ".")»")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.typeNameOfContainingClass»::ApplicationExceptionErrorImpl, joynr::exceptions::ApplicationExceptionError, "«type.typeNameOfContainingClass.replace("::", ".")»")
 
 namespace muesli
 {

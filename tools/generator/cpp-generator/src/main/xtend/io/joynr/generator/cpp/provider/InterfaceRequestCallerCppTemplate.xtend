@@ -149,7 +149,7 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
 							std::string typeName = «errorTypeName»::getTypeName();
 							std::string name = «errorTypeName»::getLiteral(errorEnum);
-							onError(exceptions::ApplicationException(typeName + "::" + name, Variant::make<«errorTypeName»::«nestedEnumName»>(errorEnum), name, typeName));
+							onError(exceptions::ApplicationException(typeName + "::" + name, std::make_shared<«errorTypeName»::ApplicationExceptionErrorImpl>(name)));
 					};
 			«ELSE»
 			std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorWrapper =

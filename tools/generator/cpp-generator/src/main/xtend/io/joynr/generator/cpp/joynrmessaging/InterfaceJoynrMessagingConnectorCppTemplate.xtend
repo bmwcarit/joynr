@@ -77,6 +77,7 @@ internalRequestObject.setMethodName("«method.joynrName»");
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»JoynrMessagingConnector.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/ISubscriptionManager.h"

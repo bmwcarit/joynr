@@ -16,11 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
+
+#include <string>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QVariant>
-#include <string>
+
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/IReplyCaller.h"
@@ -28,6 +29,8 @@
 #include "utils/MockCallback.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/serializer/Serializer.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -172,10 +175,7 @@ public:
     static void checkApplicationException(
             const exceptions::ApplicationException& expected,
             const exceptions::ApplicationException& actual, T expectedEnum) {
-        EXPECT_EQ(expected.getTypeName(), actual.getTypeName());
-        EXPECT_EQ(expected.getMessage(), actual.getMessage());
-        EXPECT_EQ(expected.getErrorTypeName(), actual.getErrorTypeName());
-        EXPECT_EQ(expected.getName(), actual.getName());
+        EXPECT_EQ(expected, actual);
         EXPECT_EQ(expectedEnum, actual.getError<T>());
     }
 
@@ -534,9 +534,7 @@ public:
         std::string typeName = ErrorEnumBase::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected (typeName + "::" + literal,
-                                                   Variant::make<ErrorEnumBase::Enum>(expectedErrorEnum),
-                                                   literal,
-                                                   typeName);
+                                                   std::make_shared<ErrorEnumBase::ApplicationExceptionErrorImpl>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         EXPECT_CALL(*callback, onSuccess()).Times(0);
@@ -564,9 +562,7 @@ public:
         std::string typeName = ErrorEnumBase::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<ErrorEnumBase::Enum>(expectedErrorEnum),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<ErrorEnumBase::ApplicationExceptionErrorImpl>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         try {
@@ -592,9 +588,7 @@ public:
         std::string typeName = MethodWithErrorEnumExtendedErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<MethodWithErrorEnumExtendedErrorEnum::Enum>(expectedErrorEnum),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         EXPECT_CALL(*callback, onSuccess()).Times(0);
@@ -621,9 +615,7 @@ public:
         std::string typeName = MethodWithErrorEnumExtendedErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<MethodWithErrorEnumExtendedErrorEnum::Enum>(error),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         try {
@@ -650,9 +642,7 @@ public:
         std::string typeName = MethodWithImplicitErrorEnumErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<MethodWithImplicitErrorEnumErrorEnum::Enum>(expectedErrorEnum),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<MethodWithImplicitErrorEnumErrorEnum::ApplicationExceptionErrorImpl>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         EXPECT_CALL(*callback, onSuccess()).Times(0);
@@ -680,9 +670,7 @@ public:
         std::string typeName = MethodWithImplicitErrorEnumErrorEnum::getTypeName();
         // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
         exceptions::ApplicationException expected(typeName + "::" + literal,
-                                                  Variant::make<MethodWithImplicitErrorEnumErrorEnum::Enum>(error),
-                                                  literal,
-                                                  typeName);
+                                                  std::make_shared<MethodWithImplicitErrorEnumErrorEnum::ApplicationExceptionErrorImpl>(literal));
         setExpectedExceptionForSendRequestCall(expected);
 
         try {

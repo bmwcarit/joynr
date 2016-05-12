@@ -80,14 +80,15 @@ void ClassDeserializerImpl<exceptions::ApplicationException>::deserialize(
             while (error.hasNextField()) {
                 IField& errorField = error.nextField();
                 if (errorField.name() == "_typeName") {
-                    t.setErrorTypeName(errorField.value());
-                    deserializer =
-                            SerializerRegistry::getPrimitiveDeserializer(t.getErrorTypeName());
+                    // XXX WILL BE REMOVED ----> t.setErrorTypeName(errorField.value());
+                    // XXX WILL BE REMOVED ----> deserializer =
+                    // SerializerRegistry::getPrimitiveDeserializer(t.getErrorTypeName());
                 } else if (errorField.name() == "name") {
-                    t.setName(errorField.value());
+                    // XXX WILL BE REMOVED ----> t.setName(errorField.value());
                     // we assume that the _typeName is contained before the name field in the json
                     if (deserializer.get() != nullptr) {
-                        t.setError(deserializer->deserializeVariant(errorField.value()));
+                        // XXX WILL BE REMOVED ---->
+                        // t.setError(deserializer->deserializeVariant(errorField.value()));
                     } else {
                         throw joynr::exceptions::JoynrRuntimeException(
                                 "Received ApplicationException does not contain a valid error "
@@ -209,7 +210,8 @@ void ClassSerializerImpl<exceptions::ApplicationException>::serialize(
         stream << R"("detailMessage": ")" << exception.getMessage() << R"(",)";
     }
     stream << R"("error": {)";
-    stream << R"("_typeName":")" << exception.getErrorTypeName() << R"(",)";
+    // XXX WILL BE REMOVED ----> stream << R"("_typeName":")" << exception.getErrorTypeName() <<
+    // R"(",)";
     stream << R"("name": ")" << exception.getName() << R"(")";
     stream << "}"; // error
     stream << "}"; // exception
