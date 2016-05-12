@@ -275,6 +275,7 @@ public class JoynrMessage implements JoynrType {
         }
     }
 
+    @JsonIgnore
     /**
      *
      * @param expirationDate
@@ -285,6 +286,7 @@ public class JoynrMessage implements JoynrType {
 
     }
 
+    @JsonIgnore
     /**
      *
      * @return the channelId of the cluster controller that is sending the message
@@ -293,6 +295,7 @@ public class JoynrMessage implements JoynrType {
         return getHeaderValue(HEADER_NAME_REPLY_CHANNELID);
     }
 
+    @JsonIgnore
     /**
      *
      * @param replyToChannelId
