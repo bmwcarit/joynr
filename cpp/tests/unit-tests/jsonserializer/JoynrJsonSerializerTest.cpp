@@ -47,8 +47,6 @@
 #include "joynr/types/TestTypes/TIntegerKeyMap.h"
 #include "joynr/types/TestTypes/TStringToByteBufferMap.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageFactory.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnum.h"
@@ -373,126 +371,6 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrTimeOutException)
     }
 }
 
-TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithProviderRuntimeException)
-{
-    // Create a Reply
-    Reply reply;
-    exceptions::ProviderRuntimeException error("Message of ProviderRuntimeException");
-    reply.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
-
-    // Serialize into JSON
-    std::stringstream stream;
-    auto serializer = ClassSerializer<Reply>{};
-    serializer.serialize(reply, stream);
-    std::string json{ stream.str() };
-    JOYNR_LOG_TRACE(logger, "Reply JSON: {}",json);
-
-    // Deserialize from JSON
-    JsonTokenizer tokenizer(json);
-
-    if (tokenizer.hasNextObject()) {
-        Reply t;
-        ClassDeserializer<Reply>::deserialize(t, tokenizer.nextObject());
-        assert(!t.getErrorVariant().isEmpty());
-        const joynr::exceptions::ProviderRuntimeException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ProviderRuntimeException>());
-        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
-    }
-}
-
-TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithApplicationException)
-{
-    // Create a Reply
-    Reply reply;
-    using namespace joynr::tests;
-    std::string literal = test::MethodWithErrorEnumExtendedErrorEnum::getLiteral(
-                MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION);
-    // Create a ApplicationException
-    exceptions::ApplicationException error(
-                literal,
-                std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum::ApplicationExceptionErrorImpl>(literal));
-    reply.setErrorVariant(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
-
-    // Serialize into JSON
-    std::stringstream stream;
-    auto serializer = ClassSerializer<Reply>{};
-    serializer.serialize(reply, stream);
-    std::string json{ stream.str() };
-    JOYNR_LOG_TRACE(logger, "Reply JSON: {}",json);
-
-    // Deserialize from JSON
-    JsonTokenizer tokenizer(json);
-
-    if (tokenizer.hasNextObject()) {
-        Reply t;
-        ClassDeserializer<Reply>::deserialize(t, tokenizer.nextObject());
-        assert(!t.getErrorVariant().isEmpty());
-        const joynr::exceptions::ApplicationException& deserializedError(t.getErrorVariant().get<joynr::exceptions::ApplicationException>());
-        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
-        ASSERT_EQ(deserializedError.getName(), error.getName());
-    }
-}
-
-TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
-{
-    // Create a Reply
-    Reply expectedReply;
-    std::string someString{"Hello World"};
-    std::vector<Variant> expectedResponse;
-    expectedResponse.push_back(Variant::make<std::string>(someString));
-    const std::int32_t expectedInt = 101;
-    expectedResponse.push_back(Variant::make<int>(expectedInt));
-    SomeOtherType expectedSomeOtherType(2);
-    expectedResponse.push_back(Variant::make<SomeOtherType>(expectedSomeOtherType));
-    const float expectedFloat = 9.99f;
-    expectedResponse.push_back(Variant::make<float>(expectedFloat));
-    bool expectedBool = true;
-    expectedResponse.push_back(Variant::make<bool>(expectedBool));
-
-    std::vector<int32_t> expectedIntList {1,2,3,4};
-    expectedResponse.push_back(joynr::TypeUtil::toVariant<int32_t>(expectedIntList));
-    expectedReply.setResponseVariant(expectedResponse);
-    expectedReply.setRequestReplyId("000-10000-01100");
-
-    // Serialize into JSON
-    std::stringstream stream;
-    auto serializer = ClassSerializer<Reply>{};
-    serializer.serialize(expectedReply, stream);
-    std::string json{ stream.str() };
-    JOYNR_LOG_TRACE(logger, "Reply JSON: {}",json);
-
-    // Deserialize from JSON
-    JsonTokenizer tokenizer(json);
-
-    if (tokenizer.hasNextObject()) {
-        Reply reply;
-        ClassDeserializer<Reply>::deserialize(reply, tokenizer.nextObject());
-        std::vector<Variant> response = reply.getResponseVariant();
-        EXPECT_EQ(expectedReply.getResponseVariant().size(), response.size());
-        Variant first = response[0];
-        EXPECT_TRUE(first.is<std::string>());
-        EXPECT_EQ(someString, first.get<std::string>());
-        Variant intParam = response[1];
-        EXPECT_TRUE(intParam.is<std::uint64_t>());
-        EXPECT_FALSE(intParam.is<std::int32_t>());
-        EXPECT_EQ(expectedInt, static_cast<std::int32_t>(intParam.get<std::uint64_t>()));
-        Variant someOtherTypeParam = response[2];
-        EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
-        EXPECT_EQ(expectedSomeOtherType.getA(), someOtherTypeParam.get<SomeOtherType>().getA());
-        std::cout << "Deserialized value is " << someOtherTypeParam.get<SomeOtherType>().getA() << std::endl;
-        Variant floatParam = response[3];
-        EXPECT_TRUE(floatParam.is<double>());
-        EXPECT_FALSE(floatParam.is<float>());
-        EXPECT_EQ(expectedFloat, static_cast<float>(floatParam.get<double>()));
-        Variant boolParam = response[4];
-        EXPECT_TRUE(boolParam.is<bool>());
-        EXPECT_EQ(expectedBool, boolParam.get<bool>());
-        Variant intListVariant = response[5];
-        EXPECT_TRUE(intListVariant.is<std::vector<Variant>>());
-        std::vector<Variant> intListParam = intListVariant.get<std::vector<Variant>>();
-        EXPECT_EQ(expectedIntList, joynr::util::convertVariantVectorToVector<int32_t>(intListParam));
-        EXPECT_EQ(expectedReply.getRequestReplyId(), reply.getRequestReplyId());
-    }
-}
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationWithProviderRuntimeException)
 {
@@ -824,21 +702,6 @@ void JoynrJsonSerializerTest::testSerializationOfTStruct(joynr::types::TestTypes
 
     // Check that the object serialized/deserialized correctly
     EXPECT_EQ(expectedStruct, actualStruct);
-}
-
-// test with TEverythingStruct
-TEST_F(JoynrJsonSerializerTest, serializeDeserializeStructContainingStringMember)
-{
-    using namespace joynr::types::TestTypes;
-    TStruct expectedStruct{
-        1.1,
-        2,
-        "normalString"
-    };
-    // Serialize
-    testSerializationOfTStruct(expectedStruct);
-    expectedStruct.setTString(R"(\"String containing quotas\")");
-    testSerializationOfTStruct(expectedStruct);
 }
 
 // test with TEverythingStruct
