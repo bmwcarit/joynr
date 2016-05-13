@@ -1,22 +1,9 @@
 package io.joynr.arbitration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Semaphore;
-
-import javax.annotation.CheckForNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +19,18 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.proxy.Callback;
@@ -90,10 +89,8 @@ public class Arbitrator {
         } catch (IllegalStateException e) {
             logger.error("CapabilitiesCallback: " + e.getMessage(), e);
             return;
-
         } catch (JoynrShutdownException e) {
             logger.warn("CapabilitiesCallback onError: " + e.getMessage(), e);
-
         } catch (JoynrRuntimeException e) {
             restartArbitrationIfNotExpired();
         } catch (Throwable e) {
@@ -119,41 +116,52 @@ public class Arbitrator {
             }
 
             @Override
-            public void onSuccess(@CheckForNull DiscoveryEntry[] discoveryEntries) {
-                logger.debug("Lookup succeded. Got {}", Arrays.toString(discoveryEntries));
-                assert (discoveryEntries != null);
-                List<DiscoveryEntry> discoveryEntriesList;
-                // If onChange subscriptions are required ignore
-                // providers that do not support them
-                if (discoveryQos.getProviderMustSupportOnChange()) {
-                    discoveryEntriesList = new ArrayList<DiscoveryEntry>(discoveryEntries.length);
-                    for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-                        ProviderQos providerQos = discoveryEntry.getQos();
-                        if (providerQos.getSupportsOnChangeSubscriptions()) {
-                            discoveryEntriesList.add(discoveryEntry);
-                        }
-                    }
-                } else {
-                    discoveryEntriesList = Arrays.asList(discoveryEntries);
+            public void onSuccess(DiscoveryEntry[] discoveryEntries) {
+                assert discoveryEntries != null : "Discovery entries may not be null.";
+                Set<String> discoveredDomains = new HashSet<String>();
+                for (DiscoveryEntry foundDiscoveryEntry: discoveryEntries) {
+                    discoveredDomains.add(foundDiscoveryEntry.getDomain());
                 }
-
-                Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
-                        .select(discoveryQos.getCustomParameters(), discoveryEntriesList);
-
-                logger.debug("Selected capabilities: {}", selectedCapabilities);
-                if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
-                    Set<String> participantIds = new HashSet<>();
-                    for (DiscoveryEntry selectedCapability : selectedCapabilities) {
-                        if (selectedCapability != null) {
-                            participantIds.add(selectedCapability.getParticipantId());
-                        }
-                    }
-                    logger.debug("Resulting participant IDs: {}", participantIds);
-                    arbitrationResult.setParticipantIds(participantIds);
-                    arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
-                    updateArbitrationResultAtListener();
+                if (!discoveredDomains.equals(domains)) {
+                    Set<String> missingDomains = new HashSet<String>(domains);
+                    missingDomains.removeAll(discoveredDomains);
+                    String discoveryErrorMessage = "All domains must be found. The following domain(s) was/were not found: " + missingDomains;
+                    Arbitrator.this.onError(new DiscoveryException(discoveryErrorMessage));
                 } else {
-                    restartArbitrationIfNotExpired();
+                    logger.debug("Lookup succeded. Got {}", Arrays.toString(discoveryEntries));
+                    List<DiscoveryEntry> discoveryEntriesList;
+                    // If onChange subscriptions are required ignore
+                    // providers that do not support them
+                    if (discoveryQos.getProviderMustSupportOnChange()) {
+                        discoveryEntriesList = new ArrayList<DiscoveryEntry>(discoveryEntries.length);
+                        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+                            ProviderQos providerQos = discoveryEntry.getQos();
+                            if (providerQos.getSupportsOnChangeSubscriptions()) {
+                                discoveryEntriesList.add(discoveryEntry);
+                            }
+                        }
+                    } else {
+                        discoveryEntriesList = Arrays.asList(discoveryEntries);
+                    }
+
+                    Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
+                            .select(discoveryQos.getCustomParameters(), discoveryEntriesList);
+
+                    logger.debug("Selected capabilities: {}", selectedCapabilities);
+                    if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
+                        Set<String> participantIds = new HashSet<>();
+                        for (DiscoveryEntry selectedCapability : selectedCapabilities) {
+                            if (selectedCapability != null) {
+                                participantIds.add(selectedCapability.getParticipantId());
+                            }
+                        }
+                        logger.debug("Resulting participant IDs: {}", participantIds);
+                        arbitrationResult.setParticipantIds(participantIds);
+                        arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
+                        updateArbitrationResultAtListener();
+                    } else {
+                        restartArbitrationIfNotExpired();
+                    }
                 }
             }
         }, domains.toArray(new String[domains.size()]), interfaceName,

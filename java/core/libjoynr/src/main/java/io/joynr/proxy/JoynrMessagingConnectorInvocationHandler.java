@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,13 +95,13 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                          IOException {
 
         if (method == null) {
-            throw new IllegalArgumentException("method cannot be null");
+            throw new IllegalArgumentException("Method cannot be null");
         }
         if (toParticipantIds.size() > 1) {
             throw new JoynrIllegalStateException("You can't execute async methods for multiple participants.");
         }
         if (toParticipantIds.isEmpty()) {
-            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an async method.");
+            throw new JoynrIllegalStateException("You must have exactly one participant to be able to execute an async method.");
         }
 
         MethodMetaInformation methodMetaInformation = JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent(method);
@@ -151,13 +151,13 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         // TODO does a method with 0 args pass in an empty args array, or null for args?
         if (method == null) {
-            throw new IllegalArgumentException("method cannot be null");
+            throw new IllegalArgumentException("Method cannot be null");
         }
         if (toParticipantIds.size() > 1) {
             throw new JoynrIllegalStateException("You can't execute sync methods for multiple participants.");
         }
         if (toParticipantIds.isEmpty()) {
-            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an sync method.");
+            throw new JoynrIllegalStateException("You must have exactly one participant to be able to execute a sync method.");
         }
 
         MethodMetaInformation methodMetaInformation = JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent(method);
@@ -192,6 +192,14 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     public void executeOneWayMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
                                                                  JoynrMessageNotSentException, JsonGenerationException,
                                                                  JsonMappingException, IOException {
+        // TODO does a method with 0 args pass in an empty args array, or null for args?
+        if (method == null) {
+            throw new IllegalArgumentException("Method cannot be null");
+        }
+        if (toParticipantIds.isEmpty()) {
+            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an oneWayMethod.");
+        }
+
         long ttl_ms = qosSettings.getRoundTripTtl_ms();
         OneWayRequest request = new OneWayRequest(method.getName(), args, method.getParameterTypes());
         requestReplyManager.sendOneWayRequest(fromParticipantId, toParticipantIds, request, ttl_ms);
@@ -203,6 +211,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                       JoynrMessageNotSentException,
                                                                                       JsonGenerationException,
                                                                                       JsonMappingException, IOException {
+
+        if (toParticipantIds.isEmpty()) {
+            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
+        }
 
         subscriptionManager.unregisterSubscription(fromParticipantId,
                                                    toParticipantIds,
@@ -217,6 +229,9 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                              JsonGenerationException,
                                                                                              JsonMappingException,
                                                                                              IOException {
+        if (toParticipantIds.isEmpty()) {
+            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
+        }
 
         subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantIds, attributeSubscription);
     }
@@ -228,6 +243,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                              JsonGenerationException,
                                                                                              JsonMappingException,
                                                                                              IOException {
+
+        if (toParticipantIds.isEmpty()) {
+            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
+        }
 
         subscriptionManager.registerBroadcastSubscription(fromParticipantId, toParticipantIds, broadcastSubscription);
     }

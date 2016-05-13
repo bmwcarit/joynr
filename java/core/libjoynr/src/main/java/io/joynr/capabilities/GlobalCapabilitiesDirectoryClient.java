@@ -1,24 +1,9 @@
 package io.joynr.capabilities;
 
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.Callback;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilderFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
-import joynr.types.GlobalDiscoveryEntry;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +19,26 @@ import joynr.types.GlobalDiscoveryEntry;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import com.google.inject.name.Named;
+
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilderFactory;
+import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
+import joynr.types.GlobalDiscoveryEntry;
+
 public class GlobalCapabilitiesDirectoryClient {
 
     // TODO define a proper max messaging ttl
@@ -41,7 +46,9 @@ public class GlobalCapabilitiesDirectoryClient {
     private final String domain;
     private final ProxyBuilderFactory proxyBuilderFactory;
 
-    public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory, String domain) {
+    @Inject
+    public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory,
+                                             @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String domain) {
         this.proxyBuilderFactory = proxyBuilderFactory;
         this.domain = domain;
     }
@@ -49,7 +56,10 @@ public class GlobalCapabilitiesDirectoryClient {
     private GlobalCapabilitiesDirectoryProxy getProxy(long ttl) {
         ProxyBuilder<GlobalCapabilitiesDirectoryProxy> capabilitiesProxyBuilder = proxyBuilderFactory.get(domain,
                                                                                                           GlobalCapabilitiesDirectoryProxy.class);
-        DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.GLOBAL_ONLY, DiscoveryQos.NO_MAX_AGE);
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000,
+                                                     ArbitrationStrategy.HighestPriority,
+                                                     DiscoveryQos.NO_MAX_AGE,
+                                                     DiscoveryScope.GLOBAL_ONLY);
         MessagingQos messagingQos = new MessagingQos(ttl);
         return capabilitiesProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();
     }
