@@ -151,7 +151,7 @@ public interface «syncClassName» extends «interfaceName»«IF hasFireAndForge
 		*/
 		public «methodToReturnTypeName.get(method)» «methodName»(
 				«method.inputParameters.typedParameterList»
-		) «IF method.hasErrorEnum»throws ApplicationException«ENDIF»;
+		)«IF method.hasErrorEnum» throws ApplicationException«ENDIF»;
 «ENDFOR»
 }
 		'''

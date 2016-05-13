@@ -124,9 +124,9 @@ public class «className» extends «abstractProviderName» {
 		*/
 		@Override
 		«IF method.fireAndForget»
-		public void «methodName» (
+		public void «methodName»(
 		«ELSE»
-		public Promise<«deferredName»> «methodName» (
+		public Promise<«deferredName»> «methodName»(
 		«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF») {
 			logger.warn("**********************************************");

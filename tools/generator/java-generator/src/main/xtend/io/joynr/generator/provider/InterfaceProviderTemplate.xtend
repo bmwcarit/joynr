@@ -120,8 +120,8 @@ import io.joynr.provider.SubscriptionPublisherInjection;
 interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPublisherInjection<«interfaceName»SubscriptionPublisher> {}
 «ENDIF»
 
-@JoynrInterface(provides=«className».class, name="«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»")
-@JoynrVersion(major=«majorVersion», minor=«minorVersion»)
+@JoynrInterface(provides = «className».class, name = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»")
+@JoynrVersion(major = «majorVersion», minor = «minorVersion»)
 «IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
 public interface «className» extends «interfaceName»SubscriptionPublisherInjection {
 «ELSE»
@@ -150,9 +150,9 @@ public interface «className» {
 		 * @return promise for asynchronous handling
 		 */
 		«IF method.fireAndForget»
-		public void «methodName» (
+		public void «methodName»(
 		«ELSE»
-		public Promise<«methodToDeferredName.get(method)»> «methodName» (
+		public Promise<«methodToDeferredName.get(method)»> «methodName»(
 		«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF»
 		);
