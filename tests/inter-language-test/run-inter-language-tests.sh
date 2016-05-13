@@ -263,8 +263,8 @@ function start_java_consumer {
 	mkdir $ILT_RESULTS_DIR/consumer-java-$1
 	rm -fr $ILT_DIR/target/surefire-reports
 	mvn $SPECIAL_MAVEN_OPTIONS surefire:test -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-$1.log 2>&1
-	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-$1
 	SUCCESS=$?
+	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-$1
 	if [ "$SUCCESS" != 0 ]
 	then
 		echo '####################################################'
