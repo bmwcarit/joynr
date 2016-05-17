@@ -23,7 +23,10 @@ module.exports = function(config) {
             // Karma will require() these plugins
             'karma-jasmine',
             'karma-chrome-launcher',
-            'karma-requirejs'
+            'karma-phantomjs-launcher',
+            'karma-requirejs',
+            'karma-junit-reporter',
+            'karma-verbose-reporter'
     ],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -64,7 +67,8 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    //reporters: ['progress', 'junit'],
+    reporters: ['verbose', 'junit'],
 
 
     // web server port
@@ -86,7 +90,8 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    //browsers: ['Chrome'],
+    browsers: ['PhantomJS'],
 
 
     // Continuous Integration mode
@@ -95,6 +100,17 @@ module.exports = function(config) {
 
     // Concurrency level
     // how many browser should be started simultanous
-    concurrency: Infinity
+    concurrency: Infinity,
+
+    // outputDir is already located in 'target'
+    junitReporter: {
+      outputDir: 'jstd-test-results',
+      outputFile: 'TestUnit.xml',
+      suite: '',
+      useBrowserName: false,
+      nameFormatter: undefined,
+      classNameFormatter: undefined,
+      properties: {}
+    }
   })
 }
