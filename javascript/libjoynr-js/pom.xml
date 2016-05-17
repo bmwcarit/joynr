@@ -841,51 +841,51 @@
 			</activation>
 			<build>
 				<plugins>
-			<!-- Unpack JavaScript dependencies -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-backend-wars</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>single-bounceproxy</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>domain-access-controller-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>accesscontrol.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>discovery-directory-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>discovery.war</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- jetty only needs to run in case of test execution -->
+					<!-- Unpack JavaScript dependencies -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-backend-wars</id>
+								<phase>initialize</phase>
+								<goals>
+									<goal>copy</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+											<artifactId>single-bounceproxy</artifactId>
+											<version>${project.version}</version>
+											<type>war</type>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>bounceproxy.war</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>io.joynr.java.backend-services</groupId>
+											<artifactId>domain-access-controller-servlet</artifactId>
+											<version>${project.version}</version>
+											<type>war</type>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>accesscontrol.war</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>io.joynr.java.backend-services</groupId>
+											<artifactId>discovery-directory-servlet</artifactId>
+											<version>${project.version}</version>
+											<type>war</type>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>discovery.war</destFileName>
+										</artifactItem>
+									</artifactItems>
+									<overWriteReleases>false</overWriteReleases>
+									<overWriteSnapshots>true</overWriteSnapshots>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- jetty only needs to run in case of test execution -->
 					<plugin>
 						<groupId>org.eclipse.jetty</groupId>
 						<artifactId>jetty-maven-plugin</artifactId>
