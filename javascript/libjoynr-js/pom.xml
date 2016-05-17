@@ -396,12 +396,12 @@
 					</execution>
 				</executions>
 			</plugin>
-            <!--
-             Since the configuration of the maven-java-formatter-plugin is changed
-             in the plugin management section, we need to add the plugin again in the
-             plugin section, even it is already configured in the super POM. Otherwise
-             the configuration is not set correctly on sub modules.
-             -->
+			<!--
+			  Since the configuration of the maven-java-formatter-plugin is changed
+			  in the plugin management section, we need to add the plugin again in the
+			  plugin section, even it is already configured in the super POM. Otherwise
+			  the configuration is not set correctly on sub modules.
+			-->
 			<plugin>
 				<groupId>com.marvinformatics.formatter</groupId>
 				<artifactId>formatter-maven-plugin</artifactId>
@@ -633,65 +633,49 @@
 					<version>1.9.7</version>
 				</configuration>
 			</plugin>
-			<!-- JsTestDriver for javascript tests -->
+
+			<!-- run the tests -->
+
+			<!-- do the "npm install" to get karma and dependencies -->
 			<plugin>
-				<groupId>com.googlecode.jstd-maven-plugin</groupId>
-				<artifactId>jstd-maven-plugin</artifactId>
-				<version>1.3.5.1</version>
-				<!-- configuration options documentation:
-					http://code.google.com/p/js-test-driver/wiki/CommandLineFlags -->
-				<configuration>
-					<port>42442</port>
-					<server>http://127.0.0.1:42442</server>
-					<browser>${phantomjs.binary};--web-security=no;--local-storage-path=${project.build.directory};${project.build.directory}/build-resources/js-test-driver/phantomjs-jstd.js;%s</browser>
-					<testOutput>${project.build.directory}/jstd-test-results</testOutput>
-					<runnerMode>QUIET</runnerMode>
-					<verbose>true</verbose>
-					<captureConsole>true</captureConsole>
-					<reset>true</reset>
-				</configuration>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>run-unit-tests</id>
-						<phase>test</phase>
+						<id>npm-install</id>
+						<phase>generate-sources</phase>
 						<configuration>
-							<config>${project.build.testOutputDirectory}/UnitTests.conf</config>
+							<executable>npm</executable>
+							<arguments>
+								<argument>install</argument>
+							</arguments>
 						</configuration>
 						<goals>
-							<goal>test</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>run-integration-tests</id>
-						<phase>integration-test</phase>
-						<configuration>
-							<config>${project.build.testOutputDirectory}/IntegrationTests.conf</config>
-						</configuration>
-						<goals>
-							<goal>test</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>run-system-integration-tests</id>
-						<phase>integration-test</phase>
-						<configuration>
-							<config>${project.build.testOutputDirectory}/SystemIntegrationTests.conf</config>
-						</configuration>
-						<goals>
-							<goal>test</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>run-intertab-integration-tests</id>
-						<phase>integration-test</phase>
-						<configuration>
-							<config>${project.build.testOutputDirectory}/InterTabIntegrationTests.conf</config>
-						</configuration>
-						<goals>
-							<goal>test</goal>
+							<goal>exec</goal>
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<!-- run karma -->
+			<plugin>
+				<groupId>com.kelveden</groupId>
+				<artifactId>maven-karma-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<phase>test</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<karmaExecutable>${basedir}/node_modules/.bin/karma</karmaExecutable>
+					<configFile>${basedir}/src/test/karma/karma.conf.js</configFile>
+					<skipKarma>false</skipKarma>
+					<karmaFailureIgnore>false</karmaFailureIgnore>
+				</configuration>
 			</plugin>
 
 			<!-- Configure packaging of production version matter libjoynr-js -->
@@ -709,12 +693,12 @@
 				<version>1.2.0</version>
 				<inherited>false</inherited>
 				<executions>
- 					<execution>
- 						<goals>
- 							<goal>jsdoc3</goal>
- 						</goals>
- 						<phase>install</phase>
- 					</execution>
+					<execution>
+						<goals>
+							<goal>jsdoc3</goal>
+						</goals>
+						<phase>install</phase>
+					</execution>
 				</executions>
 				<configuration>
 					<directoryRoots>
@@ -914,7 +898,6 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.3.1</version>
 						<!-- configuration options documentation:
 							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>
@@ -927,7 +910,10 @@
 									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_unit_tests.sh</commandlineArgs>
 								</configuration>
 								<id>process-unit-tests-nodejs</id>
+								<!--
 								<phase>process-test-classes</phase>
+								-->
+								<phase>none</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
@@ -938,7 +924,10 @@
 									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
 								</configuration>
 								<id>run-unit-tests-nodejs</id>
+								<!--
 								<phase>test</phase>
+								-->
+								<phase>none</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
