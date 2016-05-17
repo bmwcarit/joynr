@@ -36,6 +36,7 @@ require.config({
         "JsonParser" : "lib/JsonParser",
         "uuid" : "lib/uuid-annotated",
         "global/WebSocket": "../test-classes/global/WebSocketMock",
+        "global/WaitsFor": "../test-classes/global/WaitsFor",
         "Date" : "../test-classes/global/Date",
         "joynr/tests": "../test-classes/joynr/tests",
         "joynr/provisioning": "../test-classes/joynr/provisioning",
