@@ -214,12 +214,12 @@ returning true).
 ```java
 ...
 OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
-int nsdbMinInterval = 2 * 1000;
-long nsdbExpiryDate = System.currentTimeMillis() + 180 * 1000;
-int nsdbPublicationTtl = 5 * 1000;
-newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos(nsdbMinInterval,
-                                                                           nsdbExpiryDate,
-                                                                           nsdbPublicationTtl);
+int nsdbMinIntervalMs = 2 * 1000;
+long nsdbExpiryDateMs = System.currentTimeMillis() + 180 * 1000;
+int nsdbPublicationTtlMs = 5 * 1000;
+newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos(nsdbMinIntervalMs,
+                                                                           nsdbExpiryDateMs,
+                                                                           nsdbPublicationTtlMs);
 NewStationDiscoveredBroadcastFilterParameters newStationDiscoveredBroadcastFilterParams = new NewStationDiscoveredBroadcastFilterParameters();
 newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
 GeoPosition positionOfInterest = new GeoPosition(48.1351250, 11.5819810); // Munich
