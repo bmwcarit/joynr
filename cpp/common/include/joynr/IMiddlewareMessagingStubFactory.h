@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #ifndef IMIDDLEWAREMESSAGINGSTUBFACTORY_H
 #define IMIDDLEWAREMESSAGINGSTUBFACTORY_H
 
+#include <functional>
 #include <memory>
 
 namespace joynr
