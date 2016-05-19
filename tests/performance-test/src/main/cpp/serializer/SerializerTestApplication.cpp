@@ -29,17 +29,18 @@ int main()
     // run serialization and deserialization for the following payload types:
     using namespace generator;
     using Generators = std::tuple<String, ByteArray, ComplexStruct>;
-
     std::size_t length = 100;
     auto fun = [length](auto generator) {
         using Generator = decltype(generator);
+        using ParamType = typename Generator::type;
+
         SerializerPerformanceTest<Generator> test(length);
 
         test.runSerializationBenchmark();
-        test.runDeSerializationBenchmark();
+        test.template runDeSerializationBenchmark<ParamType>();
 
         test.runFullMessageSerializationBenchmark();
-        test.runFullMessageDeSerializationBenchmark();
+        test.template runFullMessageDeSerializationBenchmark<ParamType>();
     };
 
     boost::fusion::for_each(Generators(), fun);
