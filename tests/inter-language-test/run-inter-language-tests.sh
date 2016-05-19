@@ -205,7 +205,7 @@ function start_java_provider {
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ILT_RESULTS_DIR/provider-java.log 2>&1 &
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport=mqtt > $ILT_RESULTS_DIR/provider-java.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider with PID $PROVIDER_PID"
 	# Allow some time for startup
