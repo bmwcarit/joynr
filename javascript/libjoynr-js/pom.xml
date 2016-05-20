@@ -665,14 +665,27 @@
 				<executions>
 					<execution>
 						<phase>test</phase>
+						<id>karma-unit-tests</id>
 						<goals>
 							<goal>start</goal>
 						</goals>
+						<configuration>
+							<configFile>${basedir}/src/test/karma/karma.conf.js</configFile>
+						</configuration>
+					</execution>
+					<execution>
+						<phase>integration-test</phase>
+						<id>karma-integration-tests</id>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<configFile>${basedir}/src/test/karma/karma.integration.conf.js</configFile>
+						</configuration>
 					</execution>
 				</executions>
 				<configuration>
 					<karmaExecutable>${basedir}/node_modules/.bin/karma</karmaExecutable>
-					<configFile>${basedir}/src/test/karma/karma.conf.js</configFile>
 					<skipKarma>false</skipKarma>
 					<karmaFailureIgnore>false</karmaFailureIgnore>
 				</configuration>
