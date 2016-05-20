@@ -22,9 +22,6 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 
 ##### Start of build ####################
 
-include(AddTest)
-include(AddExternalProject)
-
 # Pull in the Joynr configuration
 find_package(Joynr 0.18.0 REQUIRED)
 
