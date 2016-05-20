@@ -142,7 +142,10 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     var defaultPublicKeyId = "";
 
                     var discoveryStubPromise = discoveryStub.add(new DiscoveryEntry({
-                        providerVersion : new Version(),
+                        providerVersion : new Version({
+                            majorVersion : provider.constructor.MAJOR_VERSION,
+                            minorVersion : provider.constructor.MINOR_VERSION
+                        }),
                         domain : domain,
                         interfaceName : provider.interfaceName,
                         participantId : participantId,
