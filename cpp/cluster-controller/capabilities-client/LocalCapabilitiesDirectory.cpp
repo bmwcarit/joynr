@@ -459,7 +459,11 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = onError;
+    if (domains.size() != 1) {
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "LocalCapabilitiesDirectory does not yet support lookup on multiple domains."));
+        return;
+    }
     auto future = std::make_shared<LocalCapabilitiesFuture>();
     lookup(domains, interfaceName, future, discoveryQos);
     std::vector<CapabilityEntry> capabilities = future->get();

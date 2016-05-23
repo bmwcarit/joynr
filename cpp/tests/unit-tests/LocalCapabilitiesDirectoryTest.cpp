@@ -1189,3 +1189,20 @@ TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
     callback->clearResults();
 }
+
+TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnMultiProxy)
+{
+    const std::vector<std::string> zeroDomains = {};
+    const std::vector<std::string> twoDomains = {DOMAIN_1_NAME, DOMAIN_2_NAME};
+    MockCallback<std::vector<joynr::types::DiscoveryEntry>> mockCallback;
+    auto onSuccess = std::bind(&MockCallback<std::vector<joynr::types::DiscoveryEntry>>::onSuccess, &mockCallback, std::placeholders::_1);
+    auto onError = std::bind(&MockCallback<std::vector<joynr::types::DiscoveryEntry>>::onError, &mockCallback, std::placeholders::_1);
+
+    EXPECT_CALL(mockCallback, onError(_)).Times(1);
+    EXPECT_CALL(mockCallback, onSuccess(_)).Times(0);
+    localCapabilitiesDirectory->lookup(zeroDomains, INTERFACE_1_NAME, discoveryQos, onSuccess, onError);
+
+    EXPECT_CALL(mockCallback, onError(_)).Times(1);
+    EXPECT_CALL(mockCallback, onSuccess(_)).Times(0);
+    localCapabilitiesDirectory->lookup(twoDomains, INTERFACE_1_NAME, discoveryQos, onSuccess, onError);
+}
