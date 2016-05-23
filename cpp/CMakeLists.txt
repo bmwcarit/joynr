@@ -293,7 +293,7 @@ if(${ENABLE_GCOV})
     setup_target_for_coverage_cobertura("UnitCoverageTarget" g_UnitTests "coverage" "--gtest_output=xml:g_UnitTests.junit.xml" "'.*/libs/.*|.*/build/.*|.*/tests/.*|.*/generated/.*'")
     # copy the resource folder to the build folder, because some files are required for the tests
     add_custom_target(CopyResourceFolderToBuildDir
-        cp -r bin/resources .
+        cp -r bin/resources . && cp -r bin/test-resources .
 
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Copy resources to build directory."
