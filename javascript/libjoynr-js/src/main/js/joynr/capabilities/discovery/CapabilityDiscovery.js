@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ define(
             "joynr/types/TypeRegistrySingleton",
             "joynr/util/Typing",
             "joynr/system/LoggerFactory",
-            "joynr/util/UtilInternal"
+            "joynr/util/UtilInternal",
+            "joynr/exceptions/ProviderRuntimeException"
         ],
         function(
                 Promise,
@@ -53,7 +54,8 @@ define(
                 TypeRegistrySingleton,
                 Typing,
                 LoggerFactory,
-                Util) {
+                Util,
+                ProviderRuntimeException) {
 
             /**
              * The CapabilitiesDiscovery looks up the local and global capabilities directory
@@ -261,6 +263,12 @@ define(
                 this.lookup =
                         function lookup(domains, interfaceName, discoveryQos) {
                             var localCapabilities, globalCapabilities;
+
+                            if(domains.length !== 1) {
+                               return Promise.reject(new ProviderRuntimeException({ 
+                                     detailMessage : "Cluster-controller does not yet support multi-proxy lookups." 
+                                  }));
+                            }
 
                             switch (discoveryQos.discoveryScope.value) {
 

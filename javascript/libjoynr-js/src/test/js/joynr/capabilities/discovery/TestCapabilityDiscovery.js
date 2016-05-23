@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -918,6 +918,27 @@ joynrTestRequire(
                                                 .toBeTruthy();
                                         expect(spy.onFulfilled).not.toHaveBeenCalled();
                                     });
+                                });
+
+                        it(
+                                "lookup with multiple domains should throw an exception",
+                                function() {
+                                    localCapStoreSpy =
+                                            getSpiedLookupObjWithReturnValue(
+                                                    "localCapStoreSpy",
+                                                    discoveryEntries);
+                                    globalCapCacheSpy =
+                                            getSpiedLookupObjWithReturnValue(
+                                                    "globalCapCacheSpy",
+                                                    []);
+                                    capabilityDiscovery =
+                                            new CapabilityDiscovery(
+                                                    localCapStoreSpy,
+                                                    globalCapCacheSpy,
+                                                    messageRouterSpy,
+                                                    proxyBuilderSpy,
+                                                    "io.joynr");
+                                    expect(capabilityDiscovery.lookup([domain, domain], interfaceName, discoveryQos).isRejected()).toBe(true);
                                 });
 
                     });
