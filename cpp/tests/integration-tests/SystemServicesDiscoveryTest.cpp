@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/TypeUtil.h"
@@ -134,7 +135,7 @@ private:
 
 TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)
 {
-    EXPECT_NO_THROW(
+    JOYNR_EXPECT_NO_THROW(
         discoveryProxy = discoveryProxyBuilder
                 ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)
