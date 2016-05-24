@@ -136,6 +136,7 @@ function start_services {
 	done
 	if [ "$started" != "200" ]
 	then
+		echo "Starting Jetty FAILED"
 		# startup failed
 		stopall
 	fi
