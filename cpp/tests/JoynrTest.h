@@ -23,18 +23,24 @@
 #include <gtest/gtest.h>
 #include <joynr/exceptions/JoynrException.h>
 
-#define JOYNR_EXPECT_NO_THROW(statement) \
+#define JOYNR_TEST_NO_THROW(statement, fail) \
     try { \
         statement; \
     } catch (joynr::exceptions::JoynrException& e) { \
-        ADD_FAILURE() << "Expected: " #statement " doesn't throw an exception.\n" \
-                         "  Actual: it throws an " << e.getTypeName() << " with description \"" << e.getMessage() << "\""; \
+        fail() << "Expected: " #statement " doesn't throw an exception.\n" \
+                  "  Actual: it throws an " << e.getTypeName() << " with description \"" << e.getMessage() << "\""; \
     } catch (std::exception& e) { \
-        ADD_FAILURE() << "Expected: " #statement " doesn't throw an exception.\n" \
-                         "  Actual: it throws an exception with description \"" << e.what() << "\""; \
+        fail() << "Expected: " #statement " doesn't throw an exception.\n" \
+                  "  Actual: it throws an exception with description \"" << e.what() << "\""; \
     } catch (...) { \
-        ADD_FAILURE() << "Expected: " #statement " doesn't throw an exception.\n" \
-                         "  Actual: it throws."; \
+        fail() << "Expected: " #statement " doesn't throw an exception.\n" \
+                  "  Actual: it throws."; \
     }
+
+#define JOYNR_EXPECT_NO_THROW(statement) \
+    JOYNR_TEST_NO_THROW(statement, ADD_FAILURE)
+
+#define JOYNR_ASSERT_NO_THROW(statement) \
+    JOYNR_TEST_NO_THROW(statement, FAIL)
 
 #endif // JOYNRTEST_H_
