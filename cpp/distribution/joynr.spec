@@ -36,14 +36,14 @@ Have a peek at our documentation on joynr.io for more information!
 
 %package devel
 Summary: joynr extra development files
-Requires: %{name}-%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description devel
 The joynr cmake support files, C++ headers and code generator
 
 %package tests
 Summary: joynr tests
-Requires: %{name}-%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description tests
 The joynr unit, integration and system-integration tests and related resources
