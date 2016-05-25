@@ -31,6 +31,7 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "tests/utils/MockObjects.h"
+#include "utils/MockCallback.h"
 #include "joynr/InterfaceRegistrar.h"
 
 #include "joynr/tests/Itest.h"

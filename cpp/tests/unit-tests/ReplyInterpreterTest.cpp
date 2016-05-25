@@ -25,6 +25,7 @@
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/IReplyCaller.h"
 #include "tests/utils/MockObjects.h"
+#include "utils/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;

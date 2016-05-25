@@ -574,54 +574,6 @@ public:
     MOCK_METHOD1(registerReceiveQueueStartedCallback, void(std::function<void(void)> waitForReceiveQueueStarted));
 };
 
-/*
- * Typed Callbacks
- */
-template <typename ... Ts>
-class MockCallback{
-public:
-    MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
-    MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
-};
-
-template<>
-class MockCallback<void> {
-public:
-    MOCK_METHOD0(onSuccess, void(void));
-    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrException& error));
-};
-
-template <typename T, typename ErrorEnum>
-class MockCallbackWithApplicationError {
-public:
-    MOCK_METHOD1_T(onSuccess, void(const T& result));
-    MOCK_METHOD1_T(onApplicationError, void(const ErrorEnum& errorEnum));
-    MOCK_METHOD1_T(onRuntimeError, void(const joynr::exceptions::JoynrRuntimeException& runtimeError));
-};
-
-template <typename ErrorEnum>
-class MockCallbackWithApplicationError<void, ErrorEnum> {
-public:
-    MOCK_METHOD0_T(onSuccess, void(void));
-    MOCK_METHOD1_T(onApplicationError, void(const ErrorEnum& errorEnum));
-    MOCK_METHOD1_T(onRuntimeError, void(const joynr::exceptions::JoynrRuntimeException& runtimeError));
-};
-
-template <typename ... Ts>
-class MockCallbackWithJoynrException{
-public:
-    MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
-    MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
-};
-
-template<>
-class MockCallbackWithJoynrException<void> {
-
-public:
-    MOCK_METHOD0(onSuccess, void(void));
-    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrException& error));
-};
-
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
 public:
     MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));

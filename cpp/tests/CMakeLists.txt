@@ -388,6 +388,7 @@ set(
     cluster_controller_test_HEADERS
     "JoynrTest.h"
     "PrettyPrint.h"
+    "utils/MockCallback.h"
     "utils/MockObjects.h"
     "utils/LibJoynrMockObjects.h"
     "utils/MockLocalCapabilitiesDirectoryCallback.h"
