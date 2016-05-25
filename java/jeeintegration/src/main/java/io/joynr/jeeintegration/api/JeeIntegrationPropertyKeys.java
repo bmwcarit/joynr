@@ -4,7 +4,7 @@ package io.joynr.jeeintegration.api;
  * #%L
  * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ public class JeeIntegrationPropertyKeys {
      * endpoint registry used by the JEE integration to register itself
      * as a recipient of joynr messages for a given topic.
      * Its value is 'joynr.jeeintegration.endpointregistry.uri'.
+     * You only need to specify a value for this property if you have the
+     * {@link #JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY HTTP Bridge enabled}.
      *
      * @see io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient
      */
