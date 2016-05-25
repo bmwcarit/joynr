@@ -18,6 +18,7 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "JoynrTest.h"
 #include "joynr/Future.h"
 #include "tests/utils/MockObjects.h"
 
@@ -54,17 +55,17 @@ TEST_F(FutureTest, getValueAndStatusAfterResultReceived) {
     int actualValue;
 
     // try retrieving the results with timeout
-    ASSERT_NO_THROW(intFuture.get(1, actualValue));
+    JOYNR_ASSERT_NO_THROW(intFuture.get(1, actualValue));
     ASSERT_EQ(10, actualValue);
     ASSERT_EQ(StatusCodeEnum::SUCCESS, intFuture.getStatus());
 
     // try retrieving the results a second time with timeout
-    ASSERT_NO_THROW(intFuture.get(2, actualValue));
+    JOYNR_ASSERT_NO_THROW(intFuture.get(2, actualValue));
     ASSERT_EQ(10, actualValue);
     ASSERT_EQ(StatusCodeEnum::SUCCESS, intFuture.getStatus());
 
     // try retrieving the results a third time without timeout
-    ASSERT_NO_THROW(intFuture.get(actualValue));
+    JOYNR_ASSERT_NO_THROW(intFuture.get(actualValue));
     ASSERT_EQ(10, actualValue);
     ASSERT_EQ(StatusCodeEnum::SUCCESS, intFuture.getStatus());
 }
@@ -114,15 +115,15 @@ TEST_F(FutureTest, getValueAndStatusForVoidAfterResultReceived) {
     ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 
     // try retrieving the results with timeout
-    ASSERT_NO_THROW(voidFuture.get(1));
+    JOYNR_ASSERT_NO_THROW(voidFuture.get(1));
     ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 
     // try retrieving the results a second time with timeout
-    ASSERT_NO_THROW(voidFuture.get(2));
+    JOYNR_ASSERT_NO_THROW(voidFuture.get(2));
     ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 
     // try retrieving the results a third time without timeout
-    ASSERT_NO_THROW(voidFuture.get());
+    JOYNR_ASSERT_NO_THROW(voidFuture.get());
     ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 }
 
