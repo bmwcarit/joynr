@@ -312,7 +312,7 @@ function start_cpp_consumer {
 	echo '####################################################'
 	cd $ILT_BUILD_DIR/bin
 	#./ilt-consumer-cc $DOMAIN >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
-	./ilt-consumer-ws $DOMAIN >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
+	./ilt-consumer-ws $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]
