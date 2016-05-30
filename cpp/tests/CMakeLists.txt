@@ -330,7 +330,7 @@ if(${GENERATE_SOURCES})
     )
 endif(${GENERATE_SOURCES})
 
-include(AddTest.cmake)
+include(AddTest)
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)

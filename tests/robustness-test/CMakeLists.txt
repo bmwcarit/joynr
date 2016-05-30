@@ -29,7 +29,7 @@ message(STATUS "option USE_PLATFORM_GTEST_GMOCK=" ${USE_PLATFORM_GTEST_GMOCK})
 
 ##### Start of build ####################
 
-include(../../cpp/tests/AddTest.cmake)
+include(AddTest)
 include(AddExternalProject)
 
 # Pull in the Joynr configuration
