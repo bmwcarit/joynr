@@ -21,15 +21,16 @@ package io.joynr.test.interlanguage;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
+
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
 
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.junit.Test;
+import static org.junit.Assert.fail;
 
 public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
@@ -129,11 +130,11 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
     }
 
     // variables that are to be changed inside callbacks must be declared global
-    volatile boolean subscribeAttributeWithExceptionCallbackDone = false;
-    volatile boolean subscribeAttributeWithExceptionCallbackResult = false;
+    volatile boolean subscribeAttributeWithExceptionFromGetterCallbackDone = false;
+    volatile boolean subscribeAttributeWithExceptionFromGetterCallbackResult = false;
 
     @Test
-    public void callSubscribeAttributeWithException() {
+    public void callSubscribeAttributeWithExceptionFromGetter() {
         String subscriptionId;
         int minIntervalMs = 0;
         int maxIntervalMs = 10000;
@@ -150,58 +151,58 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
         LOG.info(name.getMethodName() + "");
 
         try {
-            subscriptionId = testInterfaceProxy.subscribeToAttributeWithException(new AttributeSubscriptionAdapter<Boolean>() {
-                                                                                      @Override
-                                                                                      public void onReceive(Boolean value) {
-                                                                                          LOG.info(name.getMethodName()
-                                                                                                  + " - callback - got unexpected publication");
-                                                                                          subscribeAttributeWithExceptionCallbackResult = false;
-                                                                                          subscribeAttributeWithExceptionCallbackDone = true;
-                                                                                      }
+            subscriptionId = testInterfaceProxy.subscribeToAttributeWithExceptionFromGetter(new AttributeSubscriptionAdapter<Boolean>() {
+                                                                                                @Override
+                                                                                                public void onReceive(Boolean value) {
+                                                                                                    LOG.info(name.getMethodName()
+                                                                                                            + " - callback - got unexpected publication");
+                                                                                                    subscribeAttributeWithExceptionFromGetterCallbackResult = false;
+                                                                                                    subscribeAttributeWithExceptionFromGetterCallbackDone = true;
+                                                                                                }
 
-                                                                                      @Override
-                                                                                      public void onError(JoynrRuntimeException error) {
-                                                                                          if (error instanceof ProviderRuntimeException) {
-                                                                                              if (((ProviderRuntimeException) error).getMessage()
-                                                                                                                                    .equals("Exception from getAttributeWithException")) {
-                                                                                                  LOG.info(name.getMethodName()
-                                                                                                          + " - callback - got expected exception "
-                                                                                                          + ((JoynrRuntimeException) error).getMessage());
-                                                                                                  subscribeAttributeWithExceptionCallbackResult = true;
-                                                                                                  subscribeAttributeWithExceptionCallbackDone = true;
-                                                                                                  return;
-                                                                                              }
-                                                                                              LOG.info(name.getMethodName()
-                                                                                                      + " - callback - caught invalid exception "
-                                                                                                      + ((JoynrRuntimeException) error).getMessage());
-                                                                                          } else if (error instanceof JoynrRuntimeException) {
-                                                                                              LOG.info(name.getMethodName()
-                                                                                                      + " - callback - caught invalid exception "
-                                                                                                      + ((JoynrRuntimeException) error).getMessage());
-                                                                                          } else {
-                                                                                              LOG.info(name.getMethodName()
-                                                                                                      + " - callback - caught invalid exception ");
-                                                                                          }
-                                                                                          subscribeAttributeWithExceptionCallbackResult = false;
-                                                                                          subscribeAttributeWithExceptionCallbackDone = true;
-                                                                                      }
-                                                                                  },
-                                                                                  subscriptionQos);
+                                                                                                @Override
+                                                                                                public void onError(JoynrRuntimeException error) {
+                                                                                                    if (error instanceof ProviderRuntimeException) {
+                                                                                                        if (((ProviderRuntimeException) error).getMessage()
+                                                                                                                                              .equals("Exception from getAttributeWithExceptionFromGetter")) {
+                                                                                                            LOG.info(name.getMethodName()
+                                                                                                                    + " - callback - got expected exception "
+                                                                                                                    + ((JoynrRuntimeException) error).getMessage());
+                                                                                                            subscribeAttributeWithExceptionFromGetterCallbackResult = true;
+                                                                                                            subscribeAttributeWithExceptionFromGetterCallbackDone = true;
+                                                                                                            return;
+                                                                                                        }
+                                                                                                        LOG.info(name.getMethodName()
+                                                                                                                + " - callback - caught invalid exception "
+                                                                                                                + ((JoynrRuntimeException) error).getMessage());
+                                                                                                    } else if (error instanceof JoynrRuntimeException) {
+                                                                                                        LOG.info(name.getMethodName()
+                                                                                                                + " - callback - caught invalid exception "
+                                                                                                                + ((JoynrRuntimeException) error).getMessage());
+                                                                                                    } else {
+                                                                                                        LOG.info(name.getMethodName()
+                                                                                                                + " - callback - caught invalid exception ");
+                                                                                                    }
+                                                                                                    subscribeAttributeWithExceptionFromGetterCallbackResult = false;
+                                                                                                    subscribeAttributeWithExceptionFromGetterCallbackDone = true;
+                                                                                                }
+                                                                                            },
+                                                                                            subscriptionQos);
             LOG.info(name.getMethodName() + " - subscription successful");
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
-            if (subscribeAttributeWithExceptionCallbackDone == false) {
+            if (subscribeAttributeWithExceptionFromGetterCallbackDone == false) {
                 LOG.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
                 LOG.info(name.getMethodName() + " - wait for callback is over");
             } else {
                 LOG.info(name.getMethodName() + " - callback already done");
             }
-            if (!subscribeAttributeWithExceptionCallbackDone) {
+            if (!subscribeAttributeWithExceptionFromGetterCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
                 result = false;
-            } else if (subscribeAttributeWithExceptionCallbackResult) {
+            } else if (subscribeAttributeWithExceptionFromGetterCallbackResult) {
                 LOG.info(name.getMethodName() + " - callback got called and received expected exception");
                 result = true;
             } else {
@@ -211,7 +212,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
 
             // try to unsubscribe in any case
             try {
-                testInterfaceProxy.unsubscribeFromAttributeWithException(subscriptionId);
+                testInterfaceProxy.unsubscribeFromAttributeWithExceptionFromGetter(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());

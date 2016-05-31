@@ -2176,56 +2176,64 @@ bool callMethodWithSingleMapParameters(interlanguagetest::TestInterfaceProxy* te
     return true;
 }
 
-bool callSetAttributeWithException(interlanguagetest::TestInterfaceProxy* testInterfaceProxy)
+bool callSetAttributeWithExceptionFromSetter(
+        interlanguagetest::TestInterfaceProxy* testInterfaceProxy)
 {
-    JOYNR_LOG_INFO(logger, "callSetAttributeWithException");
+    JOYNR_LOG_INFO(logger, "callSetAttributeWithExceptionFromSetter");
     try {
-        testInterfaceProxy->setAttributeWithException(false);
+        testInterfaceProxy->setAttributeWithExceptionFromSetter(false);
         JOYNR_LOG_INFO(logger,
-                       "callSetAttributeWithException - Unexpected continuation without exception");
-        JOYNR_LOG_INFO(logger, "callSetAttributeWithException - FAILED");
+                       "callSetAttributeWithExceptionFromSetter - Unexpected continuation "
+                       "without exception");
+        JOYNR_LOG_INFO(logger, "callSetAttributeWithExceptionFromSetter - FAILED");
         return false;
     } catch (joynr::exceptions::ProviderRuntimeException& e) {
-        if (e.getMessage() != "Exception from setAttributeWithException") {
-            JOYNR_LOG_INFO(logger, "callSetAttributeWithException - invalid exception message");
-            JOYNR_LOG_INFO(logger, "callSetAttributeWithException - FAILED");
+        if (e.getMessage() != "Exception from setAttributeWithExceptionFromSetter") {
+            JOYNR_LOG_INFO(
+                    logger, "callSetAttributeWithExceptionFromSetter - invalid exception message");
+            JOYNR_LOG_INFO(logger, "callSetAttributeWithExceptionFromSetter - FAILED");
             return false;
         }
         // OK
     } catch (joynr::exceptions::JoynrRuntimeException& e) {
-        JOYNR_LOG_INFO(logger, "callSetAttributeWithException - unexpected exception type");
-        JOYNR_LOG_INFO(logger, "callSetAttributeWithException - FAILED");
+        JOYNR_LOG_INFO(
+                logger, "callSetAttributeWithExceptionFromSetter - unexpected exception type");
+        JOYNR_LOG_INFO(logger, "callSetAttributeWithExceptionFromSetter - FAILED");
         return false;
     }
 
-    JOYNR_LOG_INFO(logger, "callSetAttributeWithException - OK");
+    JOYNR_LOG_INFO(logger, "callSetAttributeWithExceptionFromSetter - OK");
     return true;
 }
 
-bool callGetAttributeWithException(interlanguagetest::TestInterfaceProxy* testInterfaceProxy)
+bool callGetAttributeWithExceptionFromGetter(
+        interlanguagetest::TestInterfaceProxy* testInterfaceProxy)
 {
-    JOYNR_LOG_INFO(logger, "callGetAttributeWithException");
+    JOYNR_LOG_INFO(logger, "callGetAttributeWithExceptionFromGetter");
     try {
         bool result;
-        testInterfaceProxy->getAttributeWithException(result);
+        testInterfaceProxy->getAttributeWithExceptionFromGetter(result);
         JOYNR_LOG_INFO(logger,
-                       "callGetAttributeWithException - Unexpected continuation without exception");
-        JOYNR_LOG_INFO(logger, "callGetAttributeWithException - FAILED");
+                       "callGetAttributeWithExceptionFromGetter - Unexpected continuation "
+                       "without exception");
+        JOYNR_LOG_INFO(logger, "callGetAttributeWithExceptionFromGetter - FAILED");
         return false;
     } catch (joynr::exceptions::ProviderRuntimeException& e) {
-        if (e.getMessage() != "Exception from getAttributeWithException") {
-            JOYNR_LOG_INFO(logger, "callGetAttributeWithException - invalid exception message");
-            JOYNR_LOG_INFO(logger, "callGetAttributeWithException - FAILED");
+        if (e.getMessage() != "Exception from getAttributeWithExceptionFromGetter") {
+            JOYNR_LOG_INFO(
+                    logger, "callGetAttributeWithExceptionFromGetter - invalid exception message");
+            JOYNR_LOG_INFO(logger, "callGetAttributeWithExceptionFromGetter - FAILED");
             return false;
         }
         // OK
     } catch (joynr::exceptions::JoynrRuntimeException& e) {
-        JOYNR_LOG_INFO(logger, "callGetAttributeWithException - unexpected exception type");
-        JOYNR_LOG_INFO(logger, "callGetAttributeWithException - FAILED");
+        JOYNR_LOG_INFO(
+                logger, "callGetAttributeWithExceptionFromGetter - unexpected exception type");
+        JOYNR_LOG_INFO(logger, "callGetAttributeWithExceptionFromGetter - FAILED");
         return false;
     }
 
-    JOYNR_LOG_INFO(logger, "callGetAttributeWithException - OK");
+    JOYNR_LOG_INFO(logger, "callGetAttributeWithExceptionFromGetter - OK");
     return true;
 }
 
@@ -3602,106 +3610,117 @@ bool callSubscribeAttributeEnumeration(interlanguagetest::TestInterfaceProxy* te
 }
 
 // variables that are to be changed inside callbacks must be declared global
-volatile bool subscribeAttributeWithExceptionCallbackDone = false;
-volatile bool subscribeAttributeWithExceptionCallbackResult = false;
+volatile bool subscribeAttributeWithExceptionFromGetterCallbackDone = false;
+volatile bool subscribeAttributeWithExceptionFromGetterCallbackResult = false;
 
-class AttributeWithExceptionListener : public SubscriptionListener<bool>
+class AttributeWithExceptionFromGetterListener : public SubscriptionListener<bool>
 {
 public:
-    AttributeWithExceptionListener() = default;
+    AttributeWithExceptionFromGetterListener() = default;
 
-    ~AttributeWithExceptionListener() override = default;
+    ~AttributeWithExceptionFromGetterListener() override = default;
 
     void onReceive(const bool& value) override
     {
-        JOYNR_LOG_INFO(
-                logger,
-                "callSubscribeAttributeWithException - callback - unexpectedly got broadcast");
-        subscribeAttributeWithExceptionCallbackResult = false;
-        subscribeAttributeWithExceptionCallbackDone = true;
+        JOYNR_LOG_INFO(logger,
+                       "callSubscribeAttributeWithExceptionFromGetter - callback - "
+                       "unexpectedly got broadcast");
+        subscribeAttributeWithExceptionFromGetterCallbackResult = false;
+        subscribeAttributeWithExceptionFromGetterCallbackDone = true;
     }
 
     void onError(const joynr::exceptions::JoynrRuntimeException& error) override
     {
         if (error.getTypeName() == "joynr.exceptions.ProviderRuntimeException") {
-            if (error.getMessage() == "Exception from getAttributeWithException") {
-                JOYNR_LOG_INFO(logger,
-                               "callSubscribeAttributeWithException - callback - got expected "
-                               "exception");
-                subscribeAttributeWithExceptionCallbackResult = true;
+            if (error.getMessage() == "Exception from getAttributeWithExceptionFromGetter") {
+                JOYNR_LOG_INFO(
+                        logger,
+                        "callSubscribeAttributeWithExceptionFromGetter - callback - got expected "
+                        "exception");
+                subscribeAttributeWithExceptionFromGetterCallbackResult = true;
             } else {
                 JOYNR_LOG_INFO(logger,
-                               "callSubscribeAttributeWithException - callback - got "
+                               "callSubscribeAttributeWithExceptionFromGetter - callback - got "
                                "ProviderRuntimeException with wrong message");
                 JOYNR_LOG_INFO(logger, error.getMessage());
-                subscribeAttributeWithExceptionCallbackResult = false;
+                subscribeAttributeWithExceptionFromGetterCallbackResult = false;
             }
         } else {
             JOYNR_LOG_INFO(logger,
-                           "callSubscribeAttributeWithException - callback - got invalid "
+                           "callSubscribeAttributeWithExceptionFromGetter - callback - got invalid "
                            "exception "
                            "type");
             JOYNR_LOG_INFO(logger, error.getTypeName());
             JOYNR_LOG_INFO(logger, error.getMessage());
-            subscribeAttributeWithExceptionCallbackResult = false;
+            subscribeAttributeWithExceptionFromGetterCallbackResult = false;
         }
-        subscribeAttributeWithExceptionCallbackDone = true;
+        subscribeAttributeWithExceptionFromGetterCallbackDone = true;
     }
 };
 
-bool callSubscribeAttributeWithException(interlanguagetest::TestInterfaceProxy* testInterfaceProxy)
+bool callSubscribeAttributeWithExceptionFromGetter(
+        interlanguagetest::TestInterfaceProxy* testInterfaceProxy)
 {
     std::string subscriptionId;
     int64_t minInterval_ms = 0;
     int64_t validity = 60000;
     joynr::OnChangeSubscriptionQos subscriptionQos(validity, minInterval_ms);
     bool result;
-    JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithException");
+    JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithExceptionFromGetter");
     try {
-        std::shared_ptr<ISubscriptionListener<bool>> listener(new AttributeWithExceptionListener());
-        subscriptionId =
-                testInterfaceProxy->subscribeToAttributeWithException(listener, subscriptionQos);
-        JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithException - subscription successful");
-        JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithException - Waiting one second");
-        waitForChange(subscribeAttributeWithExceptionCallbackDone, 1000);
-        if (!subscribeAttributeWithExceptionCallbackDone) {
+        std::shared_ptr<ISubscriptionListener<bool>> listener(
+                new AttributeWithExceptionFromGetterListener());
+        subscriptionId = testInterfaceProxy->subscribeToAttributeWithExceptionFromGetter(
+                listener, subscriptionQos);
+        JOYNR_LOG_INFO(
+                logger, "callSubscribeAttributeWithExceptionFromGetter - subscription successful");
+        JOYNR_LOG_INFO(
+                logger, "callSubscribeAttributeWithExceptionFromGetter - Waiting one second");
+        waitForChange(subscribeAttributeWithExceptionFromGetterCallbackDone, 1000);
+        if (!subscribeAttributeWithExceptionFromGetterCallbackDone) {
             JOYNR_LOG_INFO(logger,
-                           "callSubscribeAttributeWithException - callback did not get "
+                           "callSubscribeAttributeWithExceptionFromGetter - callback did not get "
                            "called in time");
             result = false;
-        } else if (subscribeAttributeWithExceptionCallbackResult) {
-            JOYNR_LOG_INFO(logger,
-                           "callSubscribeAttributeWithException - callback got called and "
-                           "received expected exception");
+        } else if (subscribeAttributeWithExceptionFromGetterCallbackResult) {
+            JOYNR_LOG_INFO(
+                    logger,
+                    "callSubscribeAttributeWithExceptionFromGetter - callback got called and "
+                    "received expected exception");
             result = true;
         } else {
-            JOYNR_LOG_INFO(logger,
-                           "callSubscribeAttributeWithException - callback got called but "
-                           "received unexpected error or unexpected publication");
+            JOYNR_LOG_INFO(
+                    logger,
+                    "callSubscribeAttributeWithExceptionFromGetter - callback got called but "
+                    "received unexpected error or unexpected publication");
             result = false;
         }
 
         // try to unsubscribe in any case
         try {
-            testInterfaceProxy->unsubscribeFromAttributeWithException(subscriptionId);
-            JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithException - unsubscribe successful");
+            testInterfaceProxy->unsubscribeFromAttributeWithExceptionFromGetter(subscriptionId);
+            JOYNR_LOG_INFO(
+                    logger,
+                    "callSubscribeAttributeWithExceptionFromGetter - unsubscribe successful");
         } catch (joynr::exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_INFO(logger,
-                           "callSubscribeAttributeWithException - caught unexpected "
+                           "callSubscribeAttributeWithExceptionFromGetter - caught unexpected "
                            "exception on unsubscribe");
-            JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithException - FAILED");
+            JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithExceptionFromGetter - FAILED");
             result = false;
         }
 
         if (!result) {
-            JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithException - FAILED");
+            JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithExceptionFromGetter - FAILED");
         } else {
-            JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithException - OK");
+            JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithExceptionFromGetter - OK");
         }
         return result;
     } catch (joynr::exceptions::JoynrRuntimeException& e) {
-        JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithException - caught unexpected exception");
-        JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithException - FAILED");
+        JOYNR_LOG_INFO(
+                logger,
+                "callSubscribeAttributeWithExceptionFromGetter - caught unexpected exception");
+        JOYNR_LOG_INFO(logger, "callSubscribeAttributeWithExceptionFromGetter - FAILED");
         return false;
     }
 }
@@ -3867,8 +3886,10 @@ int main(int argc, char* argv[])
                    callGetAttributeExtendedExtendedBaseStruct(proxy));
 
         // tests with attribute setters / getters that use exceptions
-        reportTest("callSetAttributeWithException", callSetAttributeWithException(proxy));
-        reportTest("callGetAttributeWithException", callGetAttributeWithException(proxy));
+        reportTest("callSetAttributeWithExceptionFromSetter",
+                   callSetAttributeWithExceptionFromSetter(proxy));
+        reportTest("callGetAttributeWithExceptionFromGetter",
+                   callGetAttributeWithExceptionFromGetter(proxy));
 
         reportTest("callSetAttributeMapStringString", callSetAttributeMapStringString(proxy));
         reportTest("callGetAttributeMapStringString", callGetAttributeMapStringString(proxy));
@@ -3878,8 +3899,8 @@ int main(int argc, char* argv[])
 
         // TODO: subscription to attribute calls
         reportTest("callSubscribeAttributeEnumeration", callSubscribeAttributeEnumeration(proxy));
-        reportTest(
-                "callSubscribeAttributeWithException", callSubscribeAttributeWithException(proxy));
+        reportTest("callSubscribeAttributeWithExceptionFromGetter",
+                   callSubscribeAttributeWithExceptionFromGetter(proxy));
 
         // TODO: subscription to broadcast calls
         reportTest("callSubscribeBroadcastWithSinglePrimitiveParameter",

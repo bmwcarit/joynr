@@ -289,7 +289,9 @@ interface TestInterface {
 
 	// ATTRIBUTE where getter / setter throws exception
 
-	attribute Boolean attributeWithException
+	attribute Boolean attributeWithExceptionFromGetter readonly
+	
+	attribute Boolean attributeWithExceptionFromSetter
 
 	// METHODS WITHOUT ERROR DEFINITIONS
 

@@ -205,16 +205,23 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     }
 
     @Override
-    public Promise<Deferred<Boolean>> getAttributeWithException() {
+    public Promise<Deferred<Boolean>> getAttributeWithExceptionFromGetter() {
         Deferred<Boolean> deferred = new Deferred<Boolean>();
-        deferred.reject(new ProviderRuntimeException("Exception from getAttributeWithException"));
+        deferred.reject(new ProviderRuntimeException("Exception from getAttributeWithExceptionFromGetter"));
         return new Promise<Deferred<Boolean>>(deferred);
     }
 
     @Override
-    public Promise<DeferredVoid> setAttributeWithException(Boolean attributeWithException) {
+    public Promise<Deferred<Boolean>> getAttributeWithExceptionFromSetter() {
+        Deferred<Boolean> deferred = new Deferred<Boolean>();
+        deferred.resolve(false);
+        return new Promise<Deferred<Boolean>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeWithExceptionFromSetter(Boolean attributeWithExceptionFromSetter) {
         DeferredVoid deferred = new DeferredVoid();
-        deferred.reject(new ProviderRuntimeException("Exception from setAttributeWithException"));
+        deferred.reject(new ProviderRuntimeException("Exception from setAttributeWithExceptionFromSetter"));
         return new Promise<DeferredVoid>(deferred);
     }
 

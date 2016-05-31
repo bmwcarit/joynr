@@ -987,22 +987,22 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             });
         });
 
-        it("callGetAttributeWithException", function() {
+        it("callGetAttributeWithExceptionFromGetter", function() {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
             spy.onFulfilled.reset();
             spy.onError.reset();
 
             runs(function() {
-                log("callGetAttributeWithException");
+                log("callGetAttributeWithExceptionFromGetter");
                 var args = {
                     value: false
                 };
-                testInterfaceProxy.attributeWithException.get(args).then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.attributeWithExceptionFromGetter.get(args).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callGetAttributeWithException", 5000);
+            }, "callGetAttributeWithExceptionFromGetter", 5000);
 
             runs(function() {
                 expect(spy.onFulfilled.callCount).toEqual(0);
@@ -1011,27 +1011,27 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
-                expect(retObj.detailMessage).toEqual("Exception from getAttributeWithException");
-                log("callGetAttributeWithException - OK");
+                expect(retObj.detailMessage).toEqual("Exception from getAttributeWithExceptionFromGetter");
+                log("callGetAttributeWithExceptionFromGetter - OK");
             });
         });
 
-        it("callSetAttributeWithException", function() {
+        it("callSetAttributeWithExceptionFromSetter", function() {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
             spy.onFulfilled.reset();
             spy.onError.reset();
 
             runs(function() {
-                log("callSetAttributeWithException");
+                log("callSetAttributeWithExceptionFromSetter");
                 var args = {
                     value: false
                 };
-                testInterfaceProxy.attributeWithException.set(args).then(spy.onFulfilled).catch(spy.onError);
+                testInterfaceProxy.attributeWithExceptionFromSetter.set(args).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callSetAttributeWithException", 5000);
+            }, "callSetAttributeWithExceptionFromSetter", 5000);
 
             runs(function() {
                 expect(spy.onFulfilled.callCount).toEqual(0);
@@ -1040,8 +1040,8 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
-                expect(retObj.detailMessage).toEqual("Exception from setAttributeWithException");
-                log("callSetAttributeWithException - OK");
+                expect(retObj.detailMessage).toEqual("Exception from setAttributeWithExceptionFromSetter");
+                log("callSetAttributeWithExceptionFromSetter - OK");
             });
         });
 
@@ -1646,7 +1646,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             });
         });
 
-        it("callSubscribeAttributeWithException", function() {
+        it("callSubscribeAttributeWithExceptionFromGetter", function() {
             var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError", "onPublication", "onPublicationError" ]);
             var subscriptionId;
             var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minInterval: 50 });
@@ -1656,8 +1656,8 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
             spy.onPublicationError.reset();
 
             runs(function() {
-                log("callSubscribeAttributeWithException");
-                testInterfaceProxy.attributeWithException.subscribe({
+                log("callSubscribeAttributeWithExceptionFromGetter");
+                testInterfaceProxy.attributeWithExceptionFromGetter.subscribe({
                     "subscriptionQos": subscriptionQosOnChange,
                     "onReceive": spy.onPublication,
                     "onError": spy.onPublicationError
@@ -1666,7 +1666,7 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callSubscribeAttributeWithException", 5000);
+            }, "callSubscribeAttributeWithExceptionFromGetter", 5000);
 
             runs(function() {
                 if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
@@ -1675,12 +1675,12 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
                 subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log("subscriptionId = " + subscriptionId);
+                log("callSubscribeAttributeWithExceptionFromGetter - subscriptionId = " + subscriptionId);
             });
 
             waitsFor(function() {
                 return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-            }, "callSubscribeAttributeWithException Publication", 5000);
+            }, "callSubscribeAttributeWithExceptionFromGetter Publication", 5000);
 
             runs(function() {
                 expect(spy.onPublication.callCount).toEqual(0);
@@ -1690,19 +1690,19 @@ var runTests = function(testInterfaceProxy, joynr, onDone) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
-                expect(retObj.detailMessage).toEqual("Exception from getAttributeWithException");
+                expect(retObj.detailMessage).toEqual("Exception from getAttributeWithExceptionFromGetter");
 
                 // unsubscribe again
                 spy.onFulfilled.reset();
                 spy.onError.reset();
-                testInterfaceProxy.attributeWithException.unsubscribe({
+                testInterfaceProxy.attributeWithExceptionFromGetter.unsubscribe({
                     "subscriptionId": subscriptionId
                 }).then(spy.onFulfilled).catch(spy.onError);
             });
 
             waitsFor(function() {
                 return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-            }, "callSubscribeAttributeWithException unsubscribe", 5000);
+            }, "callSubscribeAttributeWithExceptionFromGetter unsubscribe", 5000);
 
             runs(function() {
                 if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {

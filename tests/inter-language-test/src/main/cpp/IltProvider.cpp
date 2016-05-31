@@ -899,21 +899,31 @@ void IltProvider::setAttributeFireAndForget(
 
 // attribute with exception
 
-void IltProvider::getAttributeWithException(
+void IltProvider::getAttributeWithExceptionFromGetter(
         std::function<void(const bool&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
     onError(joynr::exceptions::ProviderRuntimeException(
-            "Exception from getAttributeWithException"));
+            "Exception from getAttributeWithExceptionFromGetter"));
 }
 
-void IltProvider::setAttributeWithException(
-        const bool& attributeWithException,
+void IltProvider::getAttributeWithExceptionFromSetter(
+        std::function<void(const bool&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+{
+    std::ignore = onError;
+    onSuccess(false);
+}
+
+void IltProvider::setAttributeWithExceptionFromSetter(
+        const bool& attributeWithExceptionFromSetter,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
+    std::ignore = attributeWithExceptionFromSetter;
+    std::ignore = onSuccess;
     onError(joynr::exceptions::ProviderRuntimeException(
-            "Exception from setAttributeWithException"));
+            "Exception from setAttributeWithExceptionFromSetter"));
 }
 
 void IltProvider::methodWithSingleMapParameters(

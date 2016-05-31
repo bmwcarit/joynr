@@ -276,13 +276,18 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
 
-    virtual void getAttributeWithException(
+    virtual void getAttributeWithExceptionFromGetter(
             std::function<void(const bool&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError);
 
-    virtual void setAttributeWithException(
-            const bool& attributeWithException,
+    virtual void getAttributeWithExceptionFromSetter(
+            std::function<void(const bool&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError);
+
+    virtual void setAttributeWithExceptionFromSetter(
+            const bool& attributeWithExceptionFromSetter,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError);

@@ -214,37 +214,39 @@ TEST_F(IltConsumerGetterSetterTest, callGetAttributeMapStringString)
     }
 }
 
-TEST_F(IltConsumerGetterSetterTest, callSetAttributeWithException)
+TEST_F(IltConsumerGetterSetterTest, callSetAttributeWithExceptionFromSetter)
 {
     try {
-        testInterfaceProxy->setAttributeWithException(false);
-        FAIL() << "callSetAttributeWithException - Unexpected continuation without exception";
+        testInterfaceProxy->setAttributeWithExceptionFromSetter(false);
+        FAIL() << "callSetAttributeWithExceptionFromSetter - Unexpected continuation without "
+                  "exception";
     } catch (joynr::exceptions::ProviderRuntimeException& e) {
-        if (e.getMessage() != "Exception from setAttributeWithException") {
-            FAIL() << "callSetAttributeWithException - invalid exception message";
+        if (e.getMessage() != "Exception from setAttributeWithExceptionFromSetter") {
+            FAIL() << "callSetAttributeWithExceptionFromSetter - invalid exception message";
         }
         // OK
     } catch (joynr::exceptions::JoynrRuntimeException& e) {
-        FAIL() << "callSetAttributeWithException - unexpected exception type";
+        FAIL() << "callSetAttributeWithExceptionFromSetter - unexpected exception type";
     } catch (...) {
-        FAIL() << "callSetAttributeWithException: unknown exception caught";
+        FAIL() << "callSetAttributeWithExceptionFromSetter: unknown exception caught";
     }
 }
 
-TEST_F(IltConsumerGetterSetterTest, callGetAttributeWithException)
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeWithExceptionFromGetter)
 {
     try {
         bool result;
-        testInterfaceProxy->getAttributeWithException(result);
-        FAIL() << "callGetAttributeWithException - Unexpected continuation without exception";
+        testInterfaceProxy->getAttributeWithExceptionFromGetter(result);
+        FAIL() << "callGetAttributeWithExceptionFromGetter - Unexpected continuation without "
+                  "exception";
     } catch (joynr::exceptions::ProviderRuntimeException& e) {
-        if (e.getMessage() != "Exception from getAttributeWithException") {
-            FAIL() << "callGetAttributeWithException - invalid exception message";
+        if (e.getMessage() != "Exception from getAttributeWithExceptionFromGetter") {
+            FAIL() << "callGetAttributeWithExceptionFromGetter - invalid exception message";
         }
         // OK
     } catch (joynr::exceptions::JoynrRuntimeException& e) {
-        FAIL() << "callGetAttributeWithException - unexpected exception type";
+        FAIL() << "callGetAttributeWithExceptionFromGetter - unexpected exception type";
     } catch (...) {
-        FAIL() << "callGetAttributeWithException: unknown exception caught";
+        FAIL() << "callGetAttributeWithExceptionFromGetter: unknown exception caught";
     }
 }

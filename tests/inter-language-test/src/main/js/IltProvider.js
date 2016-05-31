@@ -243,20 +243,29 @@ exports.implementation = {
         }
     },
 
-    attributeWithException : {
+    attributeWithExceptionFromGetter : {
         get : function() {
-            prettyLog("IltProvider.attributeWithException.get() called");
+            prettyLog("IltProvider.attributeWithExceptionFromGetter.get() called");
             return new Promise(function(resolve, reject) {
                 settings = {};
-                settings.detailMessage = "Exception from getAttributeWithException";
+                settings.detailMessage = "Exception from getAttributeWithExceptionFromGetter";
                 reject(new joynr.exceptions.ProviderRuntimeException(settings));
+            });
+        }
+    },
+
+    attributeWithExceptionFromSetter : {
+        get : function() {
+            prettyLog("IltProvider.attributeWithExceptionFromSetter.get() called");
+            return new Promise(function(resolve, reject) {
+                resolve(false);
             });
         },
         set : function(value) {
-            prettyLog("IltProvider.attributeWithException.set(" + value + ") called");
+            prettyLog("IltProvider.attributeWithExceptionFromSetter.set(" + value + ") called");
             return new Promise(function(resolve, reject) {
                 settings = {};
-                settings.detailMessage = "Exception from setAttributeWithException";
+                settings.detailMessage = "Exception from setAttributeWithExceptionFromSetter";
                 reject(new joynr.exceptions.ProviderRuntimeException(settings));
             });
         }
