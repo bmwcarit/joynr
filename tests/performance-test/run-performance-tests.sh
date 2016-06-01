@@ -24,9 +24,10 @@
 ####################
 
 # Shell script parameters
-JOYNR_SOURCE_DIR=""
-JOYNR_BUILD_DIR=""
-PERFORMANCETESTS_BUILD_DIR=""
+JETTY_PATH=""
+JOYNR_BIN_DIR=""
+PERFORMANCETESTS_BIN_DIR=""
+PERFORMANCETESTS_SOURCE_DIR=""
 PERFORMANCETESTS_RESULTS_DIR=""
 TESTCASE=""
 
@@ -89,7 +90,7 @@ function startJetty {
     JETTY_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/jetty_stdout.txt
     JETTY_STDERR=$PERFORMANCETESTS_RESULTS_DIR/jetty_stderr.txt
 
-    cd $JOYNR_SOURCE_DIR/cpp/tests/
+    cd $JETTY_PATH
     mvn jetty:run-war --quiet 1>$JETTY_STDOUT 2>$JETTY_STDERR & JETTY_PID=$!
 
     waitUntilJettyStarted
@@ -113,9 +114,9 @@ function startCppClusterController {
 
     CC_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/cc_stdout.txt
     CC_STDERR=$PERFORMANCETESTS_RESULTS_DIR/cc_stderr.txt
-    CC_CONFIG_FILE=$PERFORMANCETESTS_BUILD_DIR/bin/resources/$1
+    CC_CONFIG_FILE=$PERFORMANCETESTS_BIN_DIR/resources/$1
 
-    cd $JOYNR_BUILD_DIR/bin/
+    cd $JOYNR_BIN_DIR
     ./cluster-controller $CC_CONFIG_FILE 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
@@ -130,7 +131,7 @@ function startCppPerformanceTestProvider {
     PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
-    cd $PERFORMANCETESTS_BUILD_DIR/bin/
+    cd $PERFORMANCETESTS_BIN_DIR
     ./performance-provider-app $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
 
     # Wait long enough in order to allow the provider to finish the registration procedure
@@ -155,7 +156,7 @@ function startJavaPerformanceTestProvider {
     CONSUMERCLASS="io.joynr.performance.EchoProviderApplication"
     CONSUMERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URI"
 
-    cd $JOYNR_SOURCE_DIR/tests/performance-test
+    cd $PERFORMANCETESTS_SOURCE_DIR
 
     mvn exec:java -o \
         -Dexec.mainClass="$CONSUMERCLASS" \
@@ -179,7 +180,7 @@ function performJavaConsumerTest {
                   -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
                   -sl $INPUTDATA_STRINGLENGTH"
 
-    cd $JOYNR_SOURCE_DIR/tests/performance-test
+    cd $PERFORMANCETESTS_SOURCE_DIR
 
     TEST_PIDS=()
     for (( i=0; i < $NUM_INSTANCES; ++i ))
@@ -203,7 +204,7 @@ function performCppConsumerTest {
     NUM_INSTANCES=$5
     NUM_RUNS=$6
 
-    cd $PERFORMANCETESTS_BUILD_DIR/bin
+    cd $PERFORMANCETESTS_BIN_DIR
     CONSUMERARGS="-d $DOMAINNAME -r $NUM_RUNS -t $TESTCASE_PARAM\
                   -s $MODE_PARAM -l $INPUTDATA_STRINGLENGTH -b $INPUTDATA_BYTEARRAYSIZE"
 
@@ -224,7 +225,7 @@ function performJsConsumerTest {
     STDOUT_PARAM=$1
     REPORTFILE_PARAM=$2
 
-    cd $JOYNR_SOURCE_DIR/tests/performance-test
+    cd $PERFORMANCETESTS_SOURCE_DIR
 
     npm run-script --performance-test:runs=$SINGLECONSUMER_RUNS \
                    --performance-test:domain=$DOMAINNAME \
@@ -235,7 +236,7 @@ function performJsConsumerTest {
 
 function stopJetty {
     echo "Stopping jetty"
-    cd $JOYNR_SOURCE_DIR/cpp/tests/
+    cd $JETTY_PATH
     mvn jetty:stop --quiet
     wait $JETTY_PID
     JETTY_PID=""
@@ -267,10 +268,10 @@ function stopAnyProvider {
 }
 
 function echoUsage {
-    echo "Usage: run-performance-tests.sh -p <performance-build-dir> \
--r <performance-results-dir> -s <joynr-source-dir> \
--t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|JS_ASYNC_MOSQUITTO|OAP_TO_BACKEND_MOSQ|\
-CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-build-dir>\
+    echo "Usage: run-performance-tests.sh -j <jetty-dir> -p <performance-bin-dir> \
+-r <performance-results-dir> -s <performance-source-dir> \
+-t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|OAP_TO_BACKEND_MOSQ|\
+CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-bin-dir>\
 [-c <number-of-consumers> -x <number-of-runs>]"
 }
 
@@ -283,20 +284,23 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:p:r:s:t:x:y:" OPTIONS;
+while getopts "c:j:p:r:s:t:x:y:" OPTIONS;
 do
     case $OPTIONS in
         c)
             MULTICONSUMER_NUMINSTANCES=$OPTARG
             ;;
+        j)
+            JETTY_PATH=${OPTARG%/}
+            ;;
         p)
-            PERFORMANCETESTS_BUILD_DIR=${OPTARG%/}
+            PERFORMANCETESTS_BIN_DIR=${OPTARG%/}
             ;;
         r)
             PERFORMANCETESTS_RESULTS_DIR=${OPTARG%/}
             ;;
         s)
-            JOYNR_SOURCE_DIR=${OPTARG%/}
+            PERFORMANCETESTS_SOURCE_DIR=${OPTARG%/}
             ;;
         t)
             TESTCASE=$OPTARG
@@ -306,7 +310,7 @@ do
             MULTICONSUMER_RUNS=$OPTARG
             ;;
         y)
-            JOYNR_BUILD_DIR=${OPTARG%/}
+            JOYNR_BIN_DIR=${OPTARG%/}
             ;;
         \?)
             echoUsage
@@ -328,10 +332,10 @@ OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER OR ALL"
     exit 1
 fi
 
-checkDirExists $JOYNR_SOURCE_DIR
-checkDirExists $JOYNR_BUILD_DIR
-checkDirExists $PERFORMANCETESTS_BUILD_DIR
+checkDirExists $JOYNR_BIN_DIR
+checkDirExists $PERFORMANCETESTS_BIN_DIR
 checkDirExists $PERFORMANCETESTS_RESULTS_DIR
+checkDirExists $PERFORMANCETESTS_SOURCE_DIR
 
 REPORTFILE=$PERFORMANCETESTS_RESULTS_DIR/performancetest-result.txt
 STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer-stdout.txt
@@ -394,6 +398,7 @@ fi
 
 if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
 then
+    checkDirExists $JETTY_PATH
     startJetty
     startMosquitto
     startCppClusterController default-messaging.settings
