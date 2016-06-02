@@ -19,6 +19,8 @@ package io.joynr.runtime;
  * #L%
  */
 
+import java.util.Set;
+
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -71,17 +73,55 @@ public interface JoynrRuntime {
     void unregisterProvider(String domain, Object provider);
 
     /**
-     * Returns a proxy builder instance to build a proxy object.
+     * Returns a proxy builder instance to build a proxy object for one or more
+     * providers in the given domain. Generally, you will get a proxy for just
+     * one provider, if one is found, but you can also provide custom
+     * {@link ArbitrationStrategyFunction arbitration} in the
+     * {@link ProxyBuilder#setDiscoveryQos(io.joynr.arbitration.DiscoveryQos) discovery QoS}
+     * in order to match against multiple providers.
+     * In this case, calling a method on the proxy will call that method on all
+     * matched providers.
+     * Note that this only works for fire-and-forget methods.
+     * Fire-and-forget methods are RPC methods with no return value and are
+     * marked with <code>fireAndForget</code> in their Franca IDL definition /
+     * annotated with <code>@FireAndForget</code> in the Java interface.
+     * An attempt to call a method which is not fire-and-forget when multiple
+     * providers were matched will result in an exception being thrown.
      *
-     * @param <T> interface
+     * @param <T> interface of the provider you want to build a proxy for.
      * @param domain
      *            Domain of the provider.
+     * @param interfaceClass
+     *            Interface the provider offers.
+     * @return After setting arbitration, proxy and messaging QoS parameters
+     * the returned ProxyBuilder can be used to build the proxy instance.
+     */
+    <T> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass);
+
+    /**
+     * Returns a proxy builder instance to build a proxy object for,
+     * potentially, multiple providers in a given set of domains.
+     * See {@link #getProxyBuilder(String, Class)} for a description of what
+     * this method does, the only difference is that
+     * the search for the providers is done with a set of domains rather than
+     * just one. If more than one provider is matched, a call to the proxy's
+     * methods will result in that method being called on each provider.
+     * Note that this only works for fire-and-forget methods.
+     * Fire-and-forget methods are RPC methods with no return value and are
+     * marked with <code>fireAndForget</code> in their Franca IDL definition /
+     * annotated with <code>@FireAndForget</code> in the Java interface.
+     * An attempt to call a method which is not fire-and-forget when multiple
+     * providers were matched will result in an exception being thrown.
+     *
+     * @param <T> interface of the provider you want to build a proxy for.
+     * @param domains
+     *            the set of domains of the providers.
      * @param interfaceClass
      *            Interface the provider offers.
      * @return After setting arbitration, proxy and messaging QoS parameters the returned ProxyBuilder can be used to
      *         build the proxy instance.
      */
-    <T> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass);
+    <T> ProxyBuilder<T> getProxyBuilder(final Set<String> domains, final Class<T> interfaceClass);
 
     /**
      * Shutdown the joynr instance:

@@ -121,7 +121,8 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
             expect(result).toBeDefined();
 
             result = directory.lookup({
-                domain : discoveryEntry1.domain,
+                domains : [ discoveryEntry1.domain
+                ],
                 interfaceName : discoveryEntry1.interfaceName,
                 cacheMaxAge : discoveryQos.cacheMaxAge
             });
@@ -152,7 +153,8 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
             });
 
             var result = directory.lookup({
-                domain : settings.domain,
+                domains : [ settings.domain
+                ],
                 interfaceName : settings.interfaceName,
                 cacheMaxAge : discoveryQos.cacheMaxAge
             });
@@ -163,7 +165,8 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
 
             increaseFakeTime(discoveryQos.cacheMaxAge + 1);
             result = directory.lookup({
-                domain : settings.domain,
+                domains : [ settings.domain
+                ],
                 interfaceName : settings.interfaceName,
                 cacheMaxAge : discoveryQos.cacheMaxAge
             });
@@ -274,7 +277,8 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
                 ]
             });
             var result = directory.lookup({
-                domain : discoveryEntry1.domain,
+                domains : [ discoveryEntry1.domain
+                ],
                 interfaceName : discoveryEntry1.interfaceName,
                 cacheMaxAge : discoveryQos.cacheMaxAge
             });

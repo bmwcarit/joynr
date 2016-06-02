@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -120,12 +119,11 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                                                  expiryDate);
 
         messageRouter.route(message);
-
     }
 
     @Override
-    public Object sendSyncRequest(final String fromParticipantId,
-                                  final String toParticipantId,
+    public Object sendSyncRequest(String fromParticipantId,
+                                  String toParticipantId,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
                                   long ttl_ms) throws JoynrCommunicationException, JoynrSendBufferFullException,
@@ -177,16 +175,6 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         }
 
         return response;
-    }
-    
-    @Override
-    public void sendOneWayRequest(final String fromParticipantId, final String toParticipantId, OneWayRequest oneWayRequest, long ttl_ms)
-                                                                                                                     throws JoynrSendBufferFullException,
-                                                                                                                     JoynrMessageNotSentException,
-                                                                                                                     JsonGenerationException,
-                                                                                                                     JsonMappingException,
-                                                                                                                     IOException {
-    	sendOneWayRequest(fromParticipantId, Sets.newHashSet(toParticipantId), oneWayRequest, ttl_ms);
     }
 
     @Override

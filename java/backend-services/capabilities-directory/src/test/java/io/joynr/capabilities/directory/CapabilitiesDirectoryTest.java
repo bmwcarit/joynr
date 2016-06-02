@@ -126,12 +126,12 @@ public class CapabilitiesDirectoryTest {
         capabilitiesDirectory.add(interfaces2And3);
 
         PromiseKeeper lookupCapInfo2 = new PromiseKeeper();
-        capabilitiesDirectory.lookup(domain, interface2).then(lookupCapInfo2);
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface2).then(lookupCapInfo2);
         assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry2 },
                                     (GlobalDiscoveryEntry[]) lookupCapInfo2.getValues()[0]);
 
         PromiseKeeper lookupCapInfo3 = new PromiseKeeper();
-        capabilitiesDirectory.lookup(domain, interface3).then(lookupCapInfo3);
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface3).then(lookupCapInfo3);
 
         GlobalDiscoveryEntry[] passedDiscoveryEntries = (GlobalDiscoveryEntry[]) lookupCapInfo3.getValues()[0];
         assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ dicoveryEntry3 }, passedDiscoveryEntries);
@@ -142,7 +142,7 @@ public class CapabilitiesDirectoryTest {
         capabilitiesDirectory.add(disoveryEntry1);
 
         PromiseKeeper lookupCapInfo1 = new PromiseKeeper();
-        capabilitiesDirectory.lookup(domain, interface1).then(lookupCapInfo1);
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface1).then(lookupCapInfo1);
         lookupCapInfo1.waitForSettlement();
         assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ disoveryEntry1 },
                                     (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0]);

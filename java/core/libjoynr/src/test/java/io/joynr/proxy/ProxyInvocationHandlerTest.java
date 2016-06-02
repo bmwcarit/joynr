@@ -19,6 +19,8 @@ package io.joynr.proxy;
  * #L%
  */
 
+import com.google.common.collect.Sets;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,10 +38,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.Sets;
-
 import io.joynr.Sync;
-
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.annotation.FireAndForget;
@@ -76,12 +75,13 @@ public class ProxyInvocationHandlerTest {
     @Before
     public void setup() {
         connectorFactory = Mockito.mock(ConnectorFactory.class);
-        proxyInvocationHandler = new ProxyInvocationHandlerImpl(domain,
+        proxyInvocationHandler = new ProxyInvocationHandlerImpl(Sets.newHashSet(domain),
                                                                 interfaceName,
                                                                 proxyParticipantId,
                                                                 discoveryQos,
                                                                 messagingQos,
                                                                 connectorFactory);
+
     }
 
     @Test(timeout = 3000)

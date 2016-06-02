@@ -148,7 +148,7 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
 
     JOYNR_LOG_DEBUG(logger, "get capabilities");
     std::int64_t defaultDiscoveryMessageTtl = messagingSettings.getDiscoveryMessagesTtl();
-    capabilitiesClient->lookup(capDomain, capInterface, defaultDiscoveryMessageTtl, onSuccess);
+    capabilitiesClient->lookup({capDomain}, capInterface, defaultDiscoveryMessageTtl, onSuccess);
     semaphore.waitFor(std::chrono::seconds(10));
     JOYNR_LOG_DEBUG(logger, "finished get capabilities");
 }

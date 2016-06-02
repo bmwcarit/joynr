@@ -56,7 +56,7 @@ public:
 
     // inherited from joynr::system::IDiscoverySync
     void lookup(std::vector<joynr::types::DiscoveryEntry>& result,
-                const std::string& domain,
+                const std::vector<std::string>& domains,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos) override;
 

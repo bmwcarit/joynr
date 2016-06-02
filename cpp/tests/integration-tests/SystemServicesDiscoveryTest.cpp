@@ -163,7 +163,7 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
     );
 
     try {
-        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
@@ -209,7 +209,7 @@ TEST_F(SystemServicesDiscoveryTest, add)
     expectedResult.push_back(discoveryEntry);
 
     try {
-        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
@@ -222,7 +222,7 @@ TEST_F(SystemServicesDiscoveryTest, add)
     }
 
     try {
-        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
@@ -274,7 +274,7 @@ TEST_F(SystemServicesDiscoveryTest, remove)
 
     std::vector<joynr::types::DiscoveryEntry> result;
     try {
-        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
@@ -288,7 +288,7 @@ TEST_F(SystemServicesDiscoveryTest, remove)
 
     result.clear();
     try {
-        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }

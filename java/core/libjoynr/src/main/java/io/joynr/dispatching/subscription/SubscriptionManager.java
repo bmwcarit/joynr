@@ -29,6 +29,7 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
@@ -38,7 +39,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public interface SubscriptionManager {
 
     void registerAttributeSubscription(String fromParticipantId,
-                                       String toParticipantId,
+                                       Set<String> toParticipantIds,
                                        AttributeSubscribeInvocation subscriptionRequest)
                                                                                         throws JoynrSendBufferFullException,
                                                                                         JoynrMessageNotSentException,
@@ -47,7 +48,7 @@ public interface SubscriptionManager {
                                                                                         IOException;
 
     void registerBroadcastSubscription(String fromParticipantId,
-                                       String toParticipantId,
+                                       Set<String> toParticipantIds,
                                        BroadcastSubscribeInvocation subscriptionRequest)
                                                                                         throws JoynrSendBufferFullException,
                                                                                         JoynrMessageNotSentException,
@@ -56,7 +57,7 @@ public interface SubscriptionManager {
                                                                                         IOException;
 
     void unregisterSubscription(String fromParticipantId,
-                                String toParticipantId,
+                                Set<String> toParticipantIds,
                                 String subscriptionId,
                                 MessagingQos qosSettings) throws JoynrSendBufferFullException,
                                                          JoynrMessageNotSentException, JsonGenerationException,

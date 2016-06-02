@@ -27,9 +27,31 @@ import joynr.types.DiscoveryEntry;
  * #L%
  */
 
+/**
+ * Provide an implementation of this class as part of the
+ * {@link DiscoveryQos} (using one of the constructors which take this as
+ * an argument) in order to have control over which discovery entries are
+ * used as result of the arbitration.
+ *
+ * @see DiscoveryEntry
+ * @see DiscoveryQos
+ * @see ArbitrationStrategy
+ */
 public abstract class ArbitrationStrategyFunction {
 
-    abstract DiscoveryEntry select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities);
+    /**
+     * Implement this method so that it selects all relevant, discovered
+     * capabilities which should be used in the result of the arbitration.
+     *
+     * @param parameters the parameters which can be used during selection.
+     * @param capabilities the list of candidate discovery entries from which
+     * to select the relevant ones.
+     * 
+     * @return the collection of discovery entries which should be used in the
+     * arbitration result. A value of <code>null</code> or an empty collection
+     * are used to indicate that there was no match.
+     */
+    abstract Collection<DiscoveryEntry> select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities);
 
     @CheckForNull
     protected CustomParameter findQosParameter(DiscoveryEntry discoveryEntry, String parameterName) {

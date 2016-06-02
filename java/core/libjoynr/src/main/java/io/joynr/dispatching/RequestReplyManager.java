@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,10 +107,10 @@ public interface RequestReplyManager {
      *
      * @param fromParticipantId
      *            ParticipantId of the endpoint to send to
-     * @param toParticipantId
-     *            ParticipantId of the sending endpoint.
-     * @param payload
-     *            Payload Object to send.
+     * @param toParticipantIds
+     *            ParticipantIds of the endpoints to send to
+     * @param oneWayRequest
+     *            The request data tto send to the endpoints
      * @param ttl_ms
      *            Time to live in milliseconds.
      * @throws IOException
@@ -124,12 +124,6 @@ public interface RequestReplyManager {
      * @throws JoynrSendBufferFullException
      *            in case send buffer is full
      */
-
-    public void sendOneWayRequest(final String fromParticipantId,
-                                  final String toParticipantId,
-                                  OneWayRequest oneWayRequest,
-                                  long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                              JsonGenerationException, JsonMappingException, IOException;
 
     public void sendOneWayRequest(final String fromParticipantId,
                                   final Set<String> toParticipantIds,

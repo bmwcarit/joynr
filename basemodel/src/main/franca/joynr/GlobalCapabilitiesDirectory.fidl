@@ -66,8 +66,8 @@ interface GlobalCapabilitiesDirectory{
 	**>
 	method lookup {
 		in {
-			<** @description: A domain name for which providers shall be returned. **>
-			String domain
+			<** @description: Domain names for which providers shall be returned. **>
+			String[] domains
 			<** @description: The name of the requested provider interface. **>
 			String interfaceName
 		}
