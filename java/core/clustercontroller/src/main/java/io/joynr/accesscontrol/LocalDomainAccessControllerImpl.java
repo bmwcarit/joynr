@@ -491,9 +491,10 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
     private void subscribeForDreChange(String userId) {
         long wsbExpiryDate = System.currentTimeMillis() + QOS_DURATION_MS;
-        OnChangeSubscriptionQos broadcastSubscriptionQos = new OnChangeSubscriptionQos(QOS_MIN_INTERVAL_MS,
-                                                                                       wsbExpiryDate,
-                                                                                       QOS_PUBLICATION_TTL_MS);
+        OnChangeSubscriptionQos broadcastSubscriptionQos = new OnChangeSubscriptionQos();
+        broadcastSubscriptionQos.setMinIntervalMs(QOS_MIN_INTERVAL_MS)
+                                .setExpiryDateMs(wsbExpiryDate)
+                                .setPublicationTtlMs(QOS_PUBLICATION_TTL_MS);
         DomainRoleEntryChangedBroadcastFilterParameters domainRoleFilterParameters = new DomainRoleEntryChangedBroadcastFilterParameters();
         domainRoleFilterParameters.setUserIdOfInterest(userId);
         globalDomainAccessControllerClient.subscribeToDomainRoleEntryChangedBroadcast(new LdacDomainRoleEntryChangedBroadcastListener(localDomainAccessStore),
@@ -503,9 +504,10 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
     private AceSubscription subscribeForAceChange(String domain, String interfaceName) {
         long wsbExpiryDate = System.currentTimeMillis() + QOS_DURATION_MS;
-        OnChangeSubscriptionQos broadcastSubscriptionQos = new OnChangeSubscriptionQos(QOS_MIN_INTERVAL_MS,
-                                                                                       wsbExpiryDate,
-                                                                                       QOS_PUBLICATION_TTL_MS);
+        OnChangeSubscriptionQos broadcastSubscriptionQos = new OnChangeSubscriptionQos();
+        broadcastSubscriptionQos.setMinIntervalMs(QOS_MIN_INTERVAL_MS)
+                                .setExpiryDateMs(wsbExpiryDate)
+                                .setPublicationTtlMs(QOS_PUBLICATION_TTL_MS);
         MasterAccessControlEntryChangedBroadcastFilterParameters masterAcefilterParameters = new MasterAccessControlEntryChangedBroadcastFilterParameters();
         masterAcefilterParameters.setDomainOfInterest(domain);
         masterAcefilterParameters.setInterfaceOfInterest(interfaceName);
