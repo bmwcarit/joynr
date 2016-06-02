@@ -335,4 +335,53 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>create-standalone-jars</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-shade-plugin</artifactId>
+						<version>2.4.3</version>
+						<executions>
+							<execution>
+								<id>consumer</id>
+								<phase>package</phase>
+								<goals>
+									<goal>shade</goal>
+								</goals>
+								<configuration>
+									<outputFile>${project.build.directory}/performance-test-consumer-${project.version}.jar</outputFile>
+									<transformers>
+										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+											<mainClass>io.joynr.performance.ConsumerApplication</mainClass>
+										</transformer>
+									</transformers>
+								</configuration>
+							</execution>
+							<execution>
+								<id>provider</id>
+								<phase>package</phase>
+								<goals>
+									<goal>shade</goal>
+								</goals>
+								<configuration>
+									<outputFile>${project.build.directory}/performance-test-provider-${project.version}.jar</outputFile>
+									<transformers>
+										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+											<mainClass>io.joynr.performance.EchoProviderApplication</mainClass>
+										</transformer>
+									</transformers>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
