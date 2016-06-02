@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,12 +39,6 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 
 /**
- * Base class for provider arbitrators. Concrete arbitrators have to provide
- * implementations for startArbitration() and {@literal selectProvider(ArrayList
- * <CapabilityEntry> capabilities)} which set the ArbitrationStatus and call
- * notifyArbitrationStatusChanged() or set the ArbitrationResult and call
- * updateArbitrationResultAtListener(). The base class offers a
- * CapabilitiesCallback which is used for async requests.
  *
  * The Arbitrator controls the discovery process:
  * <ul>
@@ -89,8 +83,10 @@ public class Arbitrator {
         } catch (IllegalStateException e) {
             logger.error("CapabilitiesCallback: " + e.getMessage(), e);
             return;
+
         } catch (JoynrShutdownException e) {
             logger.warn("CapabilitiesCallback onError: " + e.getMessage(), e);
+
         } catch (JoynrRuntimeException e) {
             restartArbitrationIfNotExpired();
         } catch (Throwable e) {
@@ -173,13 +169,11 @@ public class Arbitrator {
     }
 
     /**
-     * Called by the proxy builder to register the listener for arbitration
-     * results (DiscoveryAgent Instance). If the arbitration is already running
-     * or even finished the current state and in case of a successful
-     * arbitration the result is set at the newly registered listener.
+     * Called by the proxy builder to register the listener for arbitration results (DiscoveryAgent Instance).
+     * If the arbitration is already running or even finished the current state and in case of a successful arbitration
+     * the result is set at the newly registered listener.
      *
-     * @param arbitrationListener
-     *            the arbitration listener
+     * @param arbitrationListener the arbitration listener
      */
     public void setArbitrationListener(ArbitrationCallback arbitrationListener) {
 
@@ -195,8 +189,7 @@ public class Arbitrator {
     }
 
     /**
-     * Sets the arbitration result at the arbitrationListener if the listener is
-     * already registered
+     * Sets the arbitration result at the arbitrationListener if the listener is already registered
      */
     protected void updateArbitrationResultAtListener() {
         // wait for arbitration listener to be registered
@@ -207,8 +200,8 @@ public class Arbitrator {
     }
 
     /**
-     * Notify the arbitrationListener about a changed status without setting an
-     * arbitrationResult (e.g. when arbitration failed)
+     * Notify the arbitrationListener about a changed status without setting an arbitrationResult (e.g. when arbitration
+     * failed)
      */
     protected void notifyArbitrationStatusChanged() {
         // wait for arbitration listener to be registered
@@ -238,7 +231,7 @@ public class Arbitrator {
                 }
                 startArbitration();
             } catch (InterruptedException e) {
-                logger.warn("Interruped while waiting to restart arbitration.", e);
+                Thread.currentThread().interrupt();
             }
         } else {
             cancelArbitration();

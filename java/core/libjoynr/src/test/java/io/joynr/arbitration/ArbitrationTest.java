@@ -139,7 +139,6 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
-            e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
     }
@@ -192,7 +191,6 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
-            e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
     }
@@ -248,7 +246,6 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
-            e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
     }
@@ -310,7 +307,6 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
-            e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
     }
@@ -372,7 +368,6 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
-            e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
     }
@@ -444,7 +439,6 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId)));
         } catch (DiscoveryException e) {
-            e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
     }

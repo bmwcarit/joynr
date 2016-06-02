@@ -34,6 +34,7 @@ import joynr.types.ProviderQos;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Messenger;
+import android.util.Log;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Module;
@@ -62,23 +63,19 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     private JoynrRuntime getJoynrRuntime() {
-        // this will block until the runtime is created successfully
-        // TODO since the caller expects the register call to be async, we need to check if
-        // this will not block to long
-        JoynrRuntime runtime;
-        try {
-            runtime = runtimeInitTask.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            uiLogger.logText(e.getMessage());
-            return null;
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-            uiLogger.logText(e.getMessage());
-            return null;
-        }
-        return runtime;
-    }
+		// this will block until the runtime is created successfully
+		// TODO since the caller expects the register call to be async, we need to check if
+		// this will not block to long
+		JoynrRuntime runtime;
+		try {
+			runtime = runtimeInitTask.get();
+		} catch (ExecutionException | InterruptedException e) {
+			Log.e("JAS", "joynr runtime not started", e);
+			uiLogger.logText(e.getMessage());
+			return null;
+		}
+		return runtime;
+	}
 
     /**
      * Registers an Android provider in the joynr framework

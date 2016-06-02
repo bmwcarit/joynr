@@ -161,7 +161,7 @@ public abstract class IltConsumerTest {
         try {
             resourceStream = new FileInputStream("src/main/resources/" + configFileName);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("setupConsumerRuntime: Error", e);
             resourceStream = null;
         }
 

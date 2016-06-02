@@ -48,7 +48,6 @@ public class CapabilitiesDirectoryProperties {
         try {
             resourceStream = this.getClass().getClassLoader().getResource(CONFIG_FILE_NAME).openStream();
         } catch (IOException e) {
-            e.printStackTrace();
             logger.error("The configuration file: {} could not be located", this.getClass()
                                                                                 .getClassLoader()
                                                                                 .getResource(CONFIG_FILE_NAME)
