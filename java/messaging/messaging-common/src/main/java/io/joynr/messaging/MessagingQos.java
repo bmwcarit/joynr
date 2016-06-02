@@ -23,40 +23,93 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MessagingQos {
-    public static final int DEFAULT_TTL = 60000;
-    public static final Map<String, String> DEFAULTQOS = new HashMap<String, String>();
-    private long ttl_ms;
+	public static final int DEFAULT_TTL = 60000;
+	public static final Map<String, String> DEFAULTQOS = new HashMap<String, String>();
+	private long ttl_ms;
+	private Map<String, String> customHeaders = new HashMap<>();
+
+	/**
+	 * MessagingQos with default values
+	 */
+	public MessagingQos() {
+		ttl_ms = DEFAULT_TTL;
+	}
+
+	public MessagingQos(MessagingQos src) {
+		ttl_ms = src.getRoundTripTtl_ms();
+	}
+
+	/**
+	 * @param ttl_ms
+	 *            Roundtrip timeout for rpc requests.
+	 */
+	public MessagingQos(long ttl_ms) {
+		this.ttl_ms = ttl_ms;
+	}
+
+	public long getRoundTripTtl_ms() {
+		return ttl_ms;
+	}
+
+	/**
+	 * @param ttl_ms
+	 *            Time to live for a joynr message and the corresponding answer on the complete way from the sender to
+	 *            the receiver and back.
+	 */
+	public void setTtl_ms(final long ttl_ms) {
+		this.ttl_ms = ttl_ms;
+	}
 
     /**
-     * MessagingQos with default values
+     * @param key
+     *            may contain ascii alphanumeric or hyphen.
+     * @param value
+     *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+     *            dot, star, forward slash and back slash.
+     * @Throws {@link IllegalArgumentException} if key or value contain any illegal characters
      */
-    public MessagingQos() {
-        ttl_ms = DEFAULT_TTL;
-    }
-
-    public MessagingQos(MessagingQos src) {
-        ttl_ms = src.getRoundTripTtl_ms();
+    public void putCustomMessageHeader(String key, String value) {
+        checkKeyAndValue(key, value);
+        customHeaders.put(key, value);
     }
 
     /**
-     * @param ttl_ms
-     *            Roundtrip timeout for rpc requests.
+     *
+     * @param newCustomHeaders
+     *            map containing custom headers. <br>
+     *            Keys may contain ascii alphanumeric or hyphen. <br>
+     *            Values may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark,
+     *            hyphen, dot, star, forward slash and back slash.
+     * @Throws {@link IllegalArgumentException} if key or value contain any illegal characters
      */
-    public MessagingQos(long ttl_ms) {
-        this.ttl_ms = ttl_ms;
-    }
+    public void putAllCustomMessageHeaders(Map<String, String> newCustomHeaders) {
+        for (Map.Entry<String, String> entry : newCustomHeaders.entrySet()) {
+            checkKeyAndValue(entry.getKey(), entry.getValue());
+        }
 
-    public long getRoundTripTtl_ms() {
-        return ttl_ms;
+        customHeaders.putAll(newCustomHeaders);
     }
 
     /**
-     * @param ttl_ms
-     *            Time to live for a joynr message and the corresponding answer on the complete way from the sender to
-     *            the receiver and back.
+     *
+     * @param key
+     *            may contain ascii alphanumeric or hyphen.
+     * @param value
+     *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+     *            dot, star, forward slash and back slash.
      */
-    public void setTtl_ms(final long ttl_ms) {
-        this.ttl_ms = ttl_ms;
-    }
+	private void checkKeyAndValue(String key, String value) {
+		String keyPattern = "^[a-zA-Z0-9\\-]*$";
+		String valuePattern = "^[a-zA-Z0-9 ;:,+&\\?\\-\\.\\*\\/\\\\]*$";
+		if (!key.matches(keyPattern)) {
+			throw new IllegalArgumentException("key may only contain alphanumeric characters");
+		}
+		if (!value.matches(valuePattern)) {
+			throw new IllegalArgumentException("value contains illegal character. See JavaDoc for allowed characters");
+		}
+	}
 
+	public Map<String, String> getCustomMessageHeaders() {
+		return customHeaders;
+	}
 }
