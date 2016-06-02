@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,12 +47,12 @@ define([
             id : "1234"
         });
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             sharedWebSocket = new SharedWebSocket({
                 remoteAddress : ccAddress,
                 localAddress : localAddress
             });
-            spyOn(sharedWebSocket, "send").andCallThrough();
+            spyOn(sharedWebSocket, "send").and.callThrough();
             sharedWebSocket.addEventListener = jasmine.createSpy("addEventListener");
 
             factory = new WebSocketMessagingStubFactory({
@@ -64,18 +64,20 @@ define([
 
             function JoynrMessage() {}
             joynrMessage = new JoynrMessage();
+            done();
         });
 
-        it("is of correct type and has all members", function() {
+        it("is of correct type and has all members", function(done) {
             expect(WebSocketMessagingStub).toBeDefined();
             expect(typeof WebSocketMessagingStub === "function").toBeTruthy();
             expect(webSocketMessagingStub).toBeDefined();
             expect(webSocketMessagingStub instanceof WebSocketMessagingStub).toBeTruthy();
             expect(webSocketMessagingStub.transmit).toBeDefined();
             expect(typeof webSocketMessagingStub.transmit === "function").toBeTruthy();
+            done();
         });
 
-        it("throws on missing or wrongly typed arguments in constructur", function() {
+        it("throws on missing or wrongly typed arguments in constructur", function(done) {
             expect(function() {
                 // settings object is undefined
                 webSocketMessagingStub = new WebSocketMessagingStub();
@@ -92,9 +94,10 @@ define([
                     sharedWebSocket : sharedWebSocket
                 });
             }).not.toThrow();
+            done();
         });
 
-        it("throws on missing or wrongly typed arguments in transmit", function() {
+        it("throws on missing or wrongly typed arguments in transmit", function(done) {
             expect(function() {
                 webSocketMessagingStub.transmit(undefined);
             }).toThrow();
@@ -110,11 +113,13 @@ define([
             expect(function() {
                 webSocketMessagingStub.transmit(joynrMessage);
             }).not.toThrow();
+            done();
         });
 
-        it("calls websocket.send correctly", function() {
+        it("calls websocket.send correctly", function(done) {
             webSocketMessagingStub.transmit(joynrMessage);
             expect(sharedWebSocket.send).toHaveBeenCalledWith(joynrMessage);
+            done();
         });
 
     });

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,24 +24,25 @@ define([ "joynr/messaging/inprocess/InProcessMessagingStubFactory"
         var skeletonCallReturn, inProcessMessagingSkeleton, inProcessAddress;
         var inProcessMessagingStubFactory, joynrMessage;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             skeletonCallReturn = {
                 key : "skeletonCallReturn"
             };
             inProcessMessagingSkeleton =
                     jasmine.createSpyObj("inProcessMessagingSkeleton", [ "receiveMessage"
                     ]);
-            inProcessMessagingSkeleton.receiveMessage.andReturn(skeletonCallReturn);
+            inProcessMessagingSkeleton.receiveMessage.and.returnValue(skeletonCallReturn);
             inProcessAddress = jasmine.createSpyObj("inProcessAddress", [ "getSkeleton"
             ]);
-            inProcessAddress.getSkeleton.andReturn(inProcessMessagingSkeleton);
+            inProcessAddress.getSkeleton.and.returnValue(inProcessMessagingSkeleton);
             inProcessMessagingStubFactory = new InProcessMessagingStubFactory({});
             joynrMessage = {
                 key : "joynrMessage"
             };
+            done();
         });
 
-        it("is instantiable and of correct type", function() {
+        it("is instantiable and of correct type", function(done) {
             expect(InProcessMessagingStubFactory).toBeDefined();
             expect(typeof InProcessMessagingStubFactory === "function").toBeTruthy();
             expect(inProcessMessagingStubFactory).toBeDefined();
@@ -49,15 +50,17 @@ define([ "joynr/messaging/inprocess/InProcessMessagingStubFactory"
                     .toBeTruthy();
             expect(inProcessMessagingStubFactory.build).toBeDefined();
             expect(typeof inProcessMessagingStubFactory.build === "function").toBeTruthy();
+            done();
         });
 
-        it("creates a messaging stub and uses it correctly", function() {
+        it("creates a messaging stub and uses it correctly", function(done) {
             var inProcessMessagingStub = inProcessMessagingStubFactory.build(inProcessAddress);
             expect(inProcessAddress.getSkeleton).toHaveBeenCalledWith();
 
             var result = inProcessMessagingStub.transmit(joynrMessage);
             expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(joynrMessage);
             expect(result).toEqual(skeletonCallReturn);
+            done();
         });
 
     });

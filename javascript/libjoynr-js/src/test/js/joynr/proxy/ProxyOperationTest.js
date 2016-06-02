@@ -1,4 +1,5 @@
 /*jslint es5: true */
+/*global fail: true */
 
 /*
  * #%L
@@ -26,10 +27,12 @@ define([
             "joynr/messaging/MessagingQos",
             "joynr/dispatching/types/Request",
             "joynr/dispatching/types/OneWayRequest",
+            "joynr/types/TypeRegistrySingleton",
             "test/data/Operation",
             "global/Promise",
             "joynr/tests/testTypes/TestEnum",
-            "joynr/vehicle/radiotypes/RadioStation"
+            "joynr/vehicle/radiotypes/RadioStation",
+            "global/WaitsFor"
         ],
         function(
                 ProxyAttribute,
@@ -38,10 +41,11 @@ define([
                 MessagingQos,
                 Request,
                 OneWayRequest,
+                TypeRegistrySingleton,
                 testDataOperation,
                 Promise,
                 TestEnum,
-                RadioStation) {
+                RadioStation, waitsFor) {
 
             var asyncTimeout = 5000;
 
@@ -66,7 +70,7 @@ define([
                                 expect(spy.onRejected).toHaveBeenCalled();
                                 expect(
                                         Object.prototype.toString
-                                                .call(spy.onRejected.mostRecentCall.args[0]) === "[object Error]")
+                                                .call(spy.onRejected.calls.mostRecent().args[0]) === "[object Error]")
                                         .toBeTruthy();
                             } else {
                                 expect(spy.onFulfilled).toHaveBeenCalled();
@@ -74,11 +78,11 @@ define([
                             }
                         }
 
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             requestReplyManagerSpy =
                                     jasmine.createSpyObj("requestReplyManager", [ "sendRequest", "sendOneWayRequest"
                                     ]);
-                            requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve({
+                            requestReplyManagerSpy.sendRequest.and.returnValue(Promise.resolve({
                                 result : "resultValue"
                             }));
 
@@ -113,118 +117,100 @@ define([
                                 }
                             ]).buildFunction();
 
+                            /*
+                             * Make sure 'TestEnum' is properly registered as a type.
+                             * Just requiring the module is insufficient since the
+                             * automatically generated code called async methods.
+                             * Execution might be still in progress.
+                             */
+                            TypeRegistrySingleton.getInstance().getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("is of correct type", function() {
+                        it("is of correct type", function(done) {
                             expect(addFavoriteStation).toBeDefined();
                             expect(typeof addFavoriteStation === "function").toBeTruthy();
+                            done();
                         });
 
                         it(
                                 "expect correct error reporting after operation call with wrong argument",
-                                function() {
-                                    var spy = jasmine.createSpyObj("spy", [
-                                        "onFulfilled",
-                                        "onRejected"
-                                    ]);
-
-                                    runs(function() {
-                                        addFavoriteStation({
-                                            "nonexistingArgument" : "value"
-                                        }).then(spy.onFulfilled).catch(spy.onRejected);
-                                    });
-
-                                    waitsFor(function() {
-                                        return spy.onRejected.callCount > 0;
-                                    }, "The promise is not pending any more", asyncTimeout);
-
-                                    runs(function() {
-                                        expect(spy.onRejected).toHaveBeenCalled();
-                                        expect(spy.onRejected.calls[0].args[0].message).toContain(
+                                function(done) {
+                                    addFavoriteStation({
+                                        "nonexistingArgument" : "value"
+                                    }).then(function(message) {
+                                        fail("unexpectedly returned from addFavoriteStation");
+                                        return null;
+                                    }).catch(function(message) {
+                                        //expect(message).toContain(
+                                        //        "Cannot call operation with nullable value");
+                                        expect(message).toMatch(
                                                 "Cannot call operation with nullable value");
+                                        done();
+                                        return null;
                                     });
                                 });
 
                         it(
                                 "expect correct error reporting after operation call with wrong type of argument",
-                                function() {
-                                    var spy = jasmine.createSpyObj("spy", [
-                                        "onFulfilled",
-                                        "onRejected"
-                                    ]);
-
-                                    runs(function() {
+                                function(done) {
                                         addFavoriteStation({
                                             "radioStation" : 1
-                                        }).then(spy.onFulfilled).catch(spy.onRejected);
+                                        }).then(function(message) {
+                                            fail("unexpected resolve from addFavoriteStation");
+                                            return null;
+                                        }).catch(function(message) {
+                                            //expect(message).toContain(
+                                            //    "Signature does not match");
+                                            expect(message).toMatch("Signature does not match");
+                                            done();
+                                            return null;
+                                        });
                                     });
-
-                                    waitsFor(function() {
-                                        return spy.onRejected.callCount > 0;
-                                    }, "The promise is not pending any more", asyncTimeout);
-
-                                    runs(function() {
-                                        expect(spy.onRejected).toHaveBeenCalled();
-                                        expect(spy.onRejected.calls[0].args[0].message).toContain(
-                                                "Signature does not match");
-                                    });
-                                });
 
                         it(
                                 "expect correct error reporting after operation call with correctly typed but invalid complex argument value",
-                                function() {
+                                function(done) {
                                     // name should be a string
                                     var radioStation = new RadioStation({
                                         name : 1
                                     });
-                                    var spy = jasmine.createSpyObj("spy", [
-                                        "onFulfilled",
-                                        "onRejected"
-                                    ]);
 
-                                    runs(function() {
-                                        addFavoriteStation({
-                                            "radioStation" : radioStation
-                                        }).then(spy.onFulfilled).catch(spy.onRejected);
-                                    });
-
-                                    waitsFor(function() {
-                                        return spy.onRejected.callCount > 0;
-                                    }, "The promise is not pending any more", asyncTimeout);
-
-                                    runs(function() {
-                                        expect(spy.onRejected).toHaveBeenCalled();
-                                        expect(spy.onRejected.calls[0].args[0].message)
-                                                .toContain(
-                                                        "members.name is not of type String. Actual type is Number");
+                                    addFavoriteStation({
+                                        "radioStation" : radioStation
+                                    }).then(function() {
+                                        fail("unpexected resolve from addFavoriteStation");
+                                        return null;
+                                    }).catch(function(message) {
+                                        //expect(message)
+                                        //    .toContain(
+                                        //        "members.name is not of type String. Actual type is Number");
+                                        expect(message)
+                                            .toMatch(
+                                                "members.name is not of type String. Actual type is Number");
+                                        done();
+                                        return null;
                                     });
                                 });
 
                         it(
                                 "expect no error reporting after operation call with correct string argument",
-                                function() {
-                                    var spy = jasmine.createSpyObj("spy", [
-                                        "onFulfilled",
-                                        "onRejected"
-                                    ]);
-
-                                    runs(function() {
-                                        addFavoriteStation({
-                                            "radioStation" : "correctValue"
-                                        }).then(spy.onFulfilled).catch(spy.onRejected);
-                                    });
-
-                                    waitsFor(function() {
-                                        return spy.onFulfilled.callCount > 0;
-                                    }, "The promise is not pending any more", asyncTimeout);
-
-                                    runs(function() {
-                                        checkSpy(spy);
-                                        expect(spy.onFulfilled).toHaveBeenCalledWith(undefined);
+                                function(done) {
+                                    addFavoriteStation({
+                                        "radioStation" : "correctValue"
+                                    }).then(function(result) {
+                                        expect(result).toBeUndefined();
+                                        done();
+                                        return null;
+                                    }).catch(function(error) {
+                                        fail("unexpected reject from addFavoriteStation");
+                                        return null;
                                     });
                                 });
 
-                        var testForCorrectReturnValues = function(methodName, outputParameter, replyResponse) {
+                        var testForCorrectReturnValues = function(methodName, outputParameter, replyResponse, done) {
                             var originalArguments = arguments;
                             var spy = jasmine.createSpyObj("spy", [
                                "onFulfilled",
@@ -235,7 +221,7 @@ define([
                                providerParticipantId : providerParticipantId
                            };
 
-                           requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve(replyResponse));
+                           requestReplyManagerSpy.sendRequest.and.returnValue(Promise.resolve(replyResponse));
 
                            var testMethod = new ProxyOperation(proxy, {
                                dependencies : {
@@ -249,26 +235,24 @@ define([
                                }
                            ]).buildFunction();
 
-                           runs(function() {
-                               testMethod().then(spy.onFulfilled).catch(spy.onRejected);
-                           });
+                           testMethod().then(spy.onFulfilled).catch(spy.onRejected);
 
-                           waitsFor(function() {
-                               return spy.onFulfilled.callCount > 0;
-                           }, "The promise is not pending any more", asyncTimeout);
-
-                           runs(function() {
+                           return waitsFor(function() {
+                               return spy.onFulfilled.calls.count() > 0;
+                           }, "The promise is not pending any more", asyncTimeout).then(function() {
                                checkSpy(spy);
                                var expectedSpy = expect(spy.onFulfilled);
                                /* The following line takes all arguments expect the first 3 and passes them to the toHaveBeenCalledWith function.
                                 * This way, it is possible to use the testForCorrectReturnValues function with a
                                 */
                                expectedSpy.toHaveBeenCalledWith.apply(expectedSpy, (Array.prototype.slice.call(originalArguments, 3)));
+                           }).catch(function() {
+                               checkSpy(spy);
                            });
                         };
                         it(
                                 "expect correct joynr enum object as return value",
-                                function() {
+                                function(done) {
                                     /*jslint nomen: true */
                                     testForCorrectReturnValues("testMethodHavingEnumAsReturnValue",
                                                                 [ {
@@ -278,31 +262,43 @@ define([
                                                                 ["ZERO"],
                                                                 {
                                                                    returnEnum: TestEnum.ZERO
-                                                                });
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(function() {
+                                        return null;
+                                    });
                                     /*jslint nomen: false */
                                 });
 
                         it(
                                 "expect undefined as return value for missing output parameters",
-                                function() {
+                                function(done) {
                                     testForCorrectReturnValues("testMethodHavingNoOutputParameter",
                                                                 [],
                                                                 [],
-                                                                undefined);
-                                    testForCorrectReturnValues("testMethodHavingNoOutputParameter",
+                                                                undefined).then(function() {
+                                        return testForCorrectReturnValues("testMethodHavingNoOutputParameter",
                                             [],
                                             ["unexpected value"],
                                             undefined);
-                                    testForCorrectReturnValues("testMethodWithUndefinedOutputParameter",
+                                    }).then(function() {
+                                        return testForCorrectReturnValues("testMethodWithUndefinedOutputParameter",
                                             undefined,
                                             [],
                                             undefined);
-
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(function() {
+                                        fail("Test failure detected");
+                                        return null;
+                                    });
                                 });
 
                         it(
                                 "expect multiple return values",
-                                function() {
+                                function(done) {
                                     /*jslint nomen: true */
                                     testForCorrectReturnValues("testMultipleReturnValues",
                                                                 [ {
@@ -316,13 +312,16 @@ define([
                                                                 {
                                                                     returnEnum : TestEnum.ZERO,
                                                                     returnString : "stringValue"
-                                                                });
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                     /*jslint nomen: false */
                                 });
 
                         it(
                                 "expect correct joynr enum object array as return value",
-                                function() {
+                                function(done) {
                                     /*jslint nomen: true */
                                     testForCorrectReturnValues("testMethodHavingEnumArrayAsReturnValue",
                                                                 [ {
@@ -333,56 +332,36 @@ define([
                                                                 [["ZERO", "ONE"]],
                                                                 {
                                                                     returnEnum : [TestEnum.ZERO, TestEnum.ONE]
-                                                                });
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                     /*jslint nomen: false */
                                 });
 
                         it(
                                 "expect no error reporting after operation call with correct complex argument",
-                                function() {
+                                function(done) {
                                     var radioStation = new RadioStation({
                                         name : "correctValue"
                                     });
-                                    var spy = jasmine.createSpyObj("spy", [
-                                        "onFulfilled",
-                                        "onRejected"
-                                    ]);
 
-                                    runs(function() {
-                                        addFavoriteStation({
-                                            "radioStation" : radioStation
-                                        }).then(spy.onFulfilled).catch(spy.onRejected);
-                                    });
-
-                                    waitsFor(function() {
-                                        return spy.onFulfilled.callCount > 0;
-                                    }, "The promise is not pending any more", asyncTimeout);
-
-                                    runs(function() {
-                                        checkSpy(spy);
-                                        expect(spy.onFulfilled).toHaveBeenCalledWith(undefined);
-                                    });
+                                    addFavoriteStation({
+                                        "radioStation" : radioStation
+                                    }).then(function(returnValue) {
+                                        expect(returnValue).toEqual(undefined);
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
-                        it("notifies", function() {
-                            var spy = jasmine.createSpyObj("spy", [
-                                "onFulfilled",
-                                "onRejected"
-                            ]);
-
-                            runs(function() {
-                                addFavoriteStation({
-                                    "radioStation" : "stringStation"
-                                }).then(spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
-                            });
-
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "The promise is not pending any more", asyncTimeout);
-
-                            runs(function() {
-                                checkSpy(spy);
-                            });
+                        it("notifies", function(done) {
+                            addFavoriteStation({
+                                "radioStation" : "stringStation"
+                            }).then(function(returnValue) {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         function testOperationOverloading(operationArguments, errorExpected) {
@@ -391,74 +370,79 @@ define([
                                 "onRejected"
                             ]);
 
-                            runs(function() {
-                                addFavoriteStation(operationArguments).then(
-                                        spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
-                            });
+                            addFavoriteStation(operationArguments).then(
+                                spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
 
-                            waitsFor(function() {
+                            return waitsFor(function() {
                                 return errorExpected
-                                        ? spy.onRejected.callCount > 0
-                                        : spy.onFulfilled.callCount > 0;
-                            }, "The promise is not pending any more", asyncTimeout);
-
-                            runs(function() {
+                                        ? spy.onRejected.calls.count() > 0
+                                        : spy.onFulfilled.calls.count() > 0;
+                            }, "The promise is not pending any more", asyncTimeout).then(function() {
                                 checkSpy(spy, errorExpected);
+                                return null;
+                            }).catch(function() {
+                                checkSpy(spy, errorExpected);
+                                return null;
                             });
                         }
 
-                        it("provides overloading operations", function() {
+                        it("provides overloading operations", function(done) {
+                            // correct version one
                             testOperationOverloading({
                                 radioStation : "stringStation"
-                            }); // correct version one
-
-                            testOperationOverloading({
-                                radioStation : new RadioStation({
-                                    name : "typedStation"
-                                })
-                            }); // correct version two
-
-                            testOperationOverloading({
-                                wrongName : "stringStation"
-                            }, true); // wrong argument name
-
-                            testOperationOverloading({}, true); // wrong number of arguments
-
-                            testOperationOverloading({
-                                radioStation : []
-                            }, true); // wrong number argument type (Array instead of String|RadioStation)
-
-                            testOperationOverloading({
-                                radioStation : 1
-                            }, true); // wrong number argument type (Number instead of String|RadioStation)
-
-                            testOperationOverloading({
-                                radioStation : "stringStation",
-                                anotherArgument : 1
-                            }, true); // wrong additional argument
-
-                            testOperationOverloading({
-                                radioStation : new RadioStation({
-                                    name : "stringStation"
-                                }),
-                                anotherArgument : 2
-                            }, true); // wrong additional arguments
-
-                            testOperationOverloading({
-                                radioStation : null
-                            }, true); // nullable argument
-
-                            testOperationOverloading({
-                                radioStation : undefined
-                            }, true); // nullable argument
-
-                            testOperationOverloading(undefined, true); // nullable settings object
-                            testOperationOverloading(null, true); // nullable settings object
+                            }).then(function() {
+                                return testOperationOverloading({
+                                    radioStation : new RadioStation({
+                                        name : "typedStation"
+                                    })
+                                }); // correct version two
+                            }).then(function() {
+                                return testOperationOverloading({
+                                    wrongName : "stringStation"
+                                }, true); // wrong argument name
+                            }).then(function() {
+                                return testOperationOverloading({}, true); // wrong number of arguments
+                            }).then(function() {
+                                return testOperationOverloading({
+                                    radioStation : []
+                                }, true); // wrong number argument type (Array instead of String|RadioStation)
+                            }).then(function() {
+                                return testOperationOverloading({
+                                    radioStation : 1
+                                }, true); // wrong number argument type (Number instead of String|RadioStation)
+                            }).then(function() {
+                                return testOperationOverloading({
+                                    radioStation : "stringStation",
+                                    anotherArgument : 1
+                                }, true); // wrong additional argument
+                            }).then(function() {
+                                return testOperationOverloading({
+                                    radioStation : new RadioStation({
+                                        name : "stringStation"
+                                    }),
+                                    anotherArgument : 2
+                                }, true); // wrong additional arguments
+                            }).then(function() {
+                                return testOperationOverloading({
+                                    radioStation : null
+                                }, true); // nullable argument
+                            }).then(function() {
+                                return testOperationOverloading({
+                                    radioStation : undefined
+                                }, true); // nullable argument
+                            }).then(function() {
+                                return testOperationOverloading(undefined, true); // nullable settings object
+                            }).then(function() {
+                                return testOperationOverloading(null, true); // nullable settings object
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         it(
                                 "does not throw when giving wrong or nullable operation arguments",
-                                function() {
+                                function(done) {
                                     var spy = jasmine.createSpyObj("spy", [
                                         "onFulfilled",
                                         "onRejected"
@@ -486,36 +470,33 @@ define([
                                     expect(function() {
                                         addFavoriteStation(null).then(spy.onFulfilled).catch(spy.onRejected);
                                     }).not.toThrow();
+
+                                    done();
                                 });
 
                         function checkRequestReplyManagerCall(testData) {
-                            runs(function() {
-                                // construct new ProxyOperation
-                                var myOperation = new ProxyOperation(proxy, {
-                                    dependencies : {
-                                        requestReplyManager : requestReplyManagerSpy
-                                    }
+                            // construct new ProxyOperation
+                            var myOperation = new ProxyOperation(proxy, {
+                                dependencies : {
+                                    requestReplyManager : requestReplyManagerSpy
+                                }
 
-                                }, operationName, [ testData.signature
-                                ]).buildFunction();
-                                requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve(testData.returnParams));
-                                requestReplyManagerSpy.sendRequest.reset();
+                            }, operationName, [ testData.signature
+                            ]).buildFunction();
+                            requestReplyManagerSpy.sendRequest.and.returnValue(Promise.resolve(testData.returnParams));
+                            requestReplyManagerSpy.sendRequest.calls.reset();
 
-                                // do operation call
-                                myOperation(testData.namedArguments).catch(outputPromiseError);
-                            });
+                            // do operation call
+                            myOperation(testData.namedArguments).catch(outputPromiseError);
 
-                            waitsFor(function() {
-                                return requestReplyManagerSpy.sendRequest.callCount > 0;
-                            }, "requestReplyManagerSpy.sendRequest call", 100);
-
-                            runs(function() {
-
+                            return waitsFor(function() {
+                                return requestReplyManagerSpy.sendRequest.calls.count() > 0;
+                            }, "requestReplyManagerSpy.sendRequest call", 100).then(function() {
                                 // check if requestReplyManager has been called correctly
                                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
 
                                 var requestReplyId =
-                                        requestReplyManagerSpy.sendRequest.calls[0].args[0].request.requestReplyId;
+                                        requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
                                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith({
                                     to : providerParticipantId,
                                     from : proxyParticipantId,
@@ -527,31 +508,28 @@ define([
                                         requestReplyId : requestReplyId
                                     })
                                 });
+                            }).catch(function() {
+                                expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
                             });
                         }
 
                         function checkRequestReplyManagerFireAndForgetCall(testData) {
-                            runs(function() {
-                                // construct new ProxyOperation
-                                var myOperation = new ProxyOperation(proxy, {
-                                    dependencies : {
-                                        requestReplyManager : requestReplyManagerSpy
-                                    }
+                            var myOperation = new ProxyOperation(proxy, {
+                                dependencies : {
+                                    requestReplyManager : requestReplyManagerSpy
+                                }
 
-                                }, operationName, [ testData.signature
-                                ]).buildFunction();
-                                requestReplyManagerSpy.sendOneWayRequest.andReturn(Promise.resolve());
-                                requestReplyManagerSpy.sendOneWayRequest.reset();
+                            }, operationName, [ testData.signature
+                            ]).buildFunction();
+                            requestReplyManagerSpy.sendOneWayRequest.and.returnValue(Promise.resolve());
+                            requestReplyManagerSpy.sendOneWayRequest.calls.reset();
 
-                                // do operation call
-                                myOperation(testData.namedArguments).catch(outputPromiseError);
-                            });
+                            // do operation call
+                            myOperation(testData.namedArguments).catch(outputPromiseError);
 
-                            waitsFor(function() {
-                                return requestReplyManagerSpy.sendOneWayRequest.callCount > 0;
-                            }, "requestReplyManagerSpy.sendOneWayRequest call", 100);
-
-                            runs(function() {
+                            return waitsFor(function() {
+                                return requestReplyManagerSpy.sendOneWayRequest.calls.count() > 0;
+                            }, "requestReplyManagerSpy.sendOneWayRequest call", 100).then(function() {
                                 // check if requestReplyManager has been called correctly
                                 expect(requestReplyManagerSpy.sendOneWayRequest).toHaveBeenCalled();
                                 expect(requestReplyManagerSpy.sendOneWayRequest).toHaveBeenCalledWith({
@@ -564,23 +542,43 @@ define([
                                         params : testData.params
                                     })
                                 });
+                            }).catch(function() {
+                                expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
                             });
                         }
 
-                        it("calls RequestReplyManager with correct request", function() {
+                        it("calls RequestReplyManager with correct request", function(done) {
                             var i;
                             var requestReplyManagerSpy =
                                     jasmine.createSpyObj("requestReplyManager", [ "sendRequest"
                                     ]);
 
-                            for (i = 0; i < testDataOperation.length; ++i) {
-                                if (testDataOperation[i].signature.fireAndForget) {
-                                    checkRequestReplyManagerFireAndForgetCall(testDataOperation[i]);
-                                } else {
-                                    checkRequestReplyManagerCall(testDataOperation[i]);
+                            function makeFunc(promiseChain, testOp) {
+                                if (testOp.signature.fireAndForget) {
+                                    return promiseChain.then(function() {
+                                        return checkRequestReplyManagerFireAndForgetCall(testOp);
+                                    });
                                 }
+                                return promiseChain.then(function() {
+                                    return checkRequestReplyManagerCall(testOp);
+                                });
                             }
+
+                            var promiseChain;
+                            if (testDataOperation[0].signature.fireAndForget) {
+                                promiseChain = checkRequestReplyManagerFireAndForgetCall(testDataOperation[0]);
+                            } else {
+                                promiseChain = checkRequestReplyManagerCall(testDataOperation[0]);
+                            }
+
+                            for (i = 1; i < testDataOperation.length; ++i) {
+                                promiseChain = makeFunc(promiseChain, testDataOperation[i]);
+                            }
+                            promiseChain.then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
                     });
 
-        }); // require
+        }); // define

@@ -43,12 +43,13 @@ define(
                             publicationTtlMs : 100
                         };
 
-                        it("is instantiable", function() {
+                        it("is instantiable", function(done) {
                             expect(new OnChangeWithKeepAliveSubscriptionQos(qosSettings))
                                     .toBeDefined();
+                            done();
                         });
 
-                        it("is of correct type", function() {
+                        it("is of correct type", function(done) {
                             var subscriptionQos =
                                     new OnChangeWithKeepAliveSubscriptionQos(qosSettings);
                             expect(subscriptionQos).toBeDefined();
@@ -56,6 +57,7 @@ define(
                             expect(typeof subscriptionQos === "object").toBeTruthy();
                             expect(subscriptionQos instanceof OnChangeWithKeepAliveSubscriptionQos)
                                     .toEqual(true);
+                            done();
                         });
 
                         function createSubscriptionQos(
@@ -158,7 +160,7 @@ define(
 
                         it(
                                 "constructs with correct member values",
-                                function() {
+                                function(done) {
                                     //wrong publicationTtlMs
                                     expect(function() {
                                         createSubscriptionQos(1, 2, false, 4, 5, -6);
@@ -286,12 +288,12 @@ define(
                                         testValues(0, 0, false, 0, 0, 100);
                                     }).toThrow();
                                     testValues(0, 50, false, 0, 0, 100);
-
+                                    done();
                                 });
 
                         it(
                                 "constructs OnChangeWithKeepAliveSubscriptionQos with correct default values",
-                                function() {
+                                function(done) {
                                     var fixture = new OnChangeWithKeepAliveSubscriptionQos();
                                     expect(fixture.minIntervalMs).toEqual(
                                             OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS);
@@ -305,11 +307,12 @@ define(
                                                     OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS);
                                     expect(fixture.publicationTtlMs).toEqual(
                                             SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
+                                    done();
                                 });
 
                         it(
                                 "constructs PeriodicSubscriptionQos with correct default values",
-                                function() {
+                                function(done) {
                                     var fixture = new PeriodicSubscriptionQos();
                                     expect(fixture.periodMs).toEqual(
                                             PeriodicSubscriptionQos.DEFAULT_PERIOD_MS);
@@ -320,21 +323,26 @@ define(
                                                     OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS);
                                     expect(fixture.publicationTtlMs).toEqual(
                                             SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
+                                    done();
                                 });
 
-                        it("SubscriptionQos.clearExpiryDate clears the expiry date", function() {
-                            var fixture = new OnChangeWithKeepAliveSubscriptionQos({
-                                expiryDateMs : 1234
-                            });
+                        it(
+                                "SubscriptionQos.clearExpiryDate clears the expiry date",
+                                function(done) {
+                                    var fixture = new OnChangeWithKeepAliveSubscriptionQos({
+                                        expiryDateMs : 1234
+                                    });
 
-                            expect(fixture.expiryDateMs).toBe(1234);
-                            fixture.clearExpiryDate();
-                            expect(fixture.expiryDateMs).toBe(SubscriptionQos.NO_EXPIRY_DATE);
-                        });
+                                    expect(fixture.expiryDateMs).toBe(1234);
+                                    fixture.clearExpiryDate();
+                                    expect(fixture.expiryDateMs).toBe(
+                                            SubscriptionQos.NO_EXPIRY_DATE);
+                                    done();
+                                });
 
                         it(
                                 "PeriodicSubscriptionQos.clearAlertAfterInterval clears the alert after interval",
-                                function() {
+                                function(done) {
                                     var alertAfterIntervalMs =
                                             PeriodicSubscriptionQos.DEFAULT_PERIOD_MS + 1;
                                     var fixture = new PeriodicSubscriptionQos({
@@ -345,11 +353,12 @@ define(
                                     fixture.clearAlertAfterInterval();
                                     expect(fixture.alertAfterIntervalMs).toBe(
                                             PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL);
+                                    done();
                                 });
 
                         it(
                                 "OnChangeWithKeepAliveSubscriptionQos.clearAlertAfterInterval clears the alert after interval",
-                                function() {
+                                function(done) {
                                     var alertAfterIntervalMs =
                                             OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS + 1;
                                     var fixture = new OnChangeWithKeepAliveSubscriptionQos({
@@ -361,9 +370,10 @@ define(
                                     expect(fixture.alertAfterIntervalMs)
                                             .toBe(
                                                     OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL);
+                                    done();
                                 });
 
-                        it("create deprecated subscriptionQos objects", function() {
+                        it("create deprecated subscriptionQos objects", function(done) {
                             var deprecatedQos = new OnChangeWithKeepAliveSubscriptionQos({
                                 minInterval : 0,
                                 maxInterval : 50,
@@ -377,14 +387,15 @@ define(
                             expect(deprecatedQos.alertAfterIntervalMs).toEqual(200);
                             expect(deprecatedQos.minIntervalMs).toEqual(0);
                             expect(deprecatedQos.maxIntervalMs).toEqual(50);
+                            done();
                         });
 
                         it(
                                 "subscription qos accepts validity instead of expiry date as constructor member",
-                                function() {
+                                function(done) {
                                     var fakeTime = 374747473;
                                     var validityMs = 23232;
-                                    spyOn(Date, "now").andCallFake(function() {
+                                    spyOn(Date, "now").and.callFake(function() {
                                         return fakeTime;
                                     });
 
@@ -393,9 +404,10 @@ define(
                                     });
                                     expect(fixture.validityMs).toBe(undefined);
                                     expect(fixture.expiryDateMs).toBe(fakeTime + validityMs);
+                                    done();
                                 });
 
-                        it("throws on incorrectly typed values", function() {
+                        it("throws on incorrectly typed values", function(done) {
                             // all arguments
                             expect(function() {
                                 createSubscriptionQos(1, 50, false, 4, 80, 100);
@@ -436,6 +448,7 @@ define(
                             expect(function() {
                                 createSubscriptionQos(1, 50, false, 4, 80, {});
                             }).toThrow();
+                            done();
 
                         });
                     });

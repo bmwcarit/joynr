@@ -1,7 +1,10 @@
+/*jslint es5: true */
+/*global fail: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +26,17 @@ define(
             "joynr/system/LoggingManager",
             "joynr/system/DistributedLoggingAppenderConstructorFactory",
             "joynr/system/DistributedLoggingAppender",
-            "joynr/system/LoggerFactory"
+            "joynr/system/LoggerFactory",
+            "global/WaitsFor"
         ],
         function(
                 Promise,
                 LoggingManager,
                 DistributedLoggingAppenderConstructorFactory,
                 DistributedLoggingAppender,
-                LoggerFactory) {
+                LoggerFactory, waitsFor) {
+            var asyncTimeout = 5000;
+
             var log =
                     LoggerFactory
                             .getLogger("joynr.system.TestDistributedLoggingAppenderConstructorFactory");
@@ -74,17 +80,20 @@ define(
                     "libjoynr-js.joynr.system.DistributedLoggingAppenderConstructorFactory",
                     function() {
 
-                        it("is instantiable", function() {
+                        it("is instantiable", function(done) {
                             expect(DistributedLoggingAppenderConstructorFactory).toBeDefined();
+                            done();
                         });
 
                         it(
                                 "creates a constructor of type DistributedLoggingAppender",
-                                function() {
+                                function(done) {
                                     var proxyBuilder, messagingQos, DistributedLoggingAppenderConstructor, newAppender;
 
                                     proxyBuilder = {
-                                        build : function() {}
+                                        build : function() {
+                                            return Promise.resolve();
+                                        }
                                     };
 
                                     messagingQos = {};
@@ -96,22 +105,23 @@ define(
                                     newAppender = new DistributedLoggingAppenderConstructor();
                                     expect(newAppender.constructor).toEqual(
                                             DistributedLoggingAppender.prototype.constructor);
-
+                                    done();
                                 });
 
                         it(
                                 "creates a loggingProxy and sets the proxy on the distributedLoggingAppender",
-                                function() {
+                                function(done) {
                                     var proxyBuilder, resolve, messagingQos, DistributedLoggingAppenderConstructor, newAppender, newProxy =
                                             {};
 
                                     proxyBuilder = {
-                                        build : function() {}
+                                        build : function() { }
                                     };
-                                    spyOn(proxyBuilder, "build").andReturn(
-                                            new Promise(function(internalResolve) {
-                                                resolve = internalResolve;
-                                            }));
+                                    spyOn(proxyBuilder, "build").and
+                                            .returnValue(new Promise(
+                                                    function(internalResolve) {
+                                                        resolve = internalResolve;
+                                                    }));
 
                                     messagingQos = {};
 
@@ -127,7 +137,14 @@ define(
                                     expect(proxyBuilder.build).toHaveBeenCalled();
 
                                     resolve(newProxy);
-                                    expect(newAppender.setProxy).toHaveBeenCalledWith(newProxy);
+
+                                    waitsFor(function() {
+                                        return newAppender.setProxy.calls.count() > 0;
+                                    }, "setProxy has been called", asyncTimeout).then(function() {
+                                        expect(newAppender.setProxy).toHaveBeenCalledWith(newProxy);
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                     });

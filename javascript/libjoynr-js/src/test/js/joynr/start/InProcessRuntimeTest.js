@@ -1,9 +1,10 @@
 /*jslint es5: true */
+/*global fail: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +22,10 @@
 
 define([
     "joynr/provisioning/provisioning_cc",
-    "joynr/start/InProcessRuntime"
-], function(provisioning, InProcessRuntime) {
+    "joynr/start/InProcessRuntime",
+    "global/Promise",
+    "global/WaitsFor"
+], function(provisioning, InProcessRuntime, Promise, waitsFor) {
     function outputPromiseError(error) {
         expect(error.toString()).toBeFalsy();
     }
@@ -49,41 +52,19 @@ define([
         var runtime;
 
         function startInProcessRuntime() {
-            var fulfilledSpy = jasmine.createSpy("fulfilledSpy");
-            runs(function() {
-                provisioning.channelId = "TestInProcessRuntime" + Date.now();
-                runtime.start().then(fulfilledSpy).catch(outputPromiseError);
-            });
-
-            waitsFor(function() {
-                return fulfilledSpy.callCount > 0;
-            }, "until libjoynr is started", 3 * provisioning.internalMessagingQos.ttl);
-
-            runs(function() {
-                expect(fulfilledSpy).toHaveBeenCalled();
-            });
+            return runtime.start().catch(outputPromiseError);
         }
 
         function shutdownInProcessRuntime() {
-            var fulfilledSpy = jasmine.createSpy("fulfilledSpy");
-            runs(function() {
-                runtime.shutdown().then(fulfilledSpy).catch(outputPromiseError);
-            });
-
-            waitsFor(function() {
-                return fulfilledSpy.callCount > 0;
-            }, "until libjoynr is shut down", 3 * provisioning.internalMessagingQos.ttl);
-
-            runs(function() {
-                expect(fulfilledSpy).toHaveBeenCalled();
-            });
+            return runtime.shutdown().catch(outputPromiseError);
         }
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             runtime = new InProcessRuntime(provisioning);
+            done();
         });
 
-        it("is of correct type and has all members", function() {
+        it("is of correct type and has all members", function(done) {
             expect(InProcessRuntime).toBeDefined();
             expect(runtime).toBeDefined();
             expect(runtime instanceof InProcessRuntime).toBeTruthy();
@@ -94,122 +75,62 @@ define([
             expect(runtime.registration).toBeUndefined();
             expect(runtime.proxyBuilder).toBeUndefined();
 
-            startInProcessRuntime();
-
-            runs(function() {
+            startInProcessRuntime().then(function() {
                 expect(runtime.typeRegistry).toBeDefined();
                 expect(runtime.capabilities).toBeDefined();
                 expect(runtime.registration).toBeDefined();
                 expect(runtime.proxyBuilder).toBeDefined();
-            });
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        it("can be started and shutdown successfully", function() {
-            startInProcessRuntime();
+        it("can be started and shutdown successfully", function(done) {
             var log = runtime.logging.getLogger("joynr.start.TestInProcessRuntime");
-            log.info("runtime started");
-            shutdownInProcessRuntime();
+            startInProcessRuntime().then(shutdownInProcessRuntime).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
         var nrRestarts = 3;
-        it("can be started and shut down successfully " + nrRestarts + " times", function() {
+        it("can be started and shut down successfully " + nrRestarts + " times", function(done) {
             var i;
-            for (i = 0; i < nrRestarts; ++i) {
-                startInProcessRuntime();
-                shutdownInProcessRuntime();
+
+            function createFunc(promiseChain) {
+                return promiseChain.then(shutdownInProcessRuntime).then(startInProcessRuntime);
             }
+
+            var promiseChain = startInProcessRuntime();
+            for (i = 1; i < nrRestarts; ++i) {
+                promiseChain = createFunc(promiseChain);
+            }
+            promiseChain.then(shutdownInProcessRuntime).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        it("throws when started in state STARTING", function() {
-            var fulfilledSpy = jasmine.createSpy("fulfilledSpy");
-            runs(function() {
-                provisioning.channelId = "TestInProcessRuntime" + Date.now();
-                runtime.start().then(fulfilledSpy).catch(outputPromiseError);
-            });
-
-            runs(function() {
+        it("throws when started in state STARTED", function(done) {
+            startInProcessRuntime().then(function() {
                 expect(function() {
                     runtime.start();
                 }).toThrow();
-            });
-
-            waitsFor(function() {
-                return fulfilledSpy.callCount > 0;
-            }, "until libjoynr is started", 3 * provisioning.internalMessagingQos.ttl);
-
-            runs(function() {
-                expect(fulfilledSpy).toHaveBeenCalled();
-            });
-
-            shutdownInProcessRuntime();
+                return shutdownInProcessRuntime();
+            }).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        it("throws when started in state STARTED", function() {
-            startInProcessRuntime();
-
-            runs(function() {
-                expect(function() {
-                    runtime.start();
-                }).toThrow();
-            });
-
-            shutdownInProcessRuntime();
-        });
-
-        it("throws when shutdown in state STARTING", function() {
-            var fulfilledSpy = jasmine.createSpy("fulfilledSpy");
-            runs(function() {
-                provisioning.channelId = "TestInProcessRuntime" + Date.now();
-                runtime.start().then(fulfilledSpy).catch(outputPromiseError);
-            });
-
-            expect(function() {
-                runtime.shutdown();
-            }).toThrow();
-
-            waitsFor(function() {
-                return fulfilledSpy.callCount > 0;
-            }, "until libjoynr is started", 3 * provisioning.internalMessagingQos.ttl);
-
-            runs(function() {
-                expect(fulfilledSpy).toHaveBeenCalled();
-            });
-            shutdownInProcessRuntime();
-
-        });
-
-        it("throws when shutdown in state SHUTTINGDOWN", function() {
-            startInProcessRuntime();
-
-            var fulfilledSpy = jasmine.createSpy("fulfilledSpy");
-            runs(function() {
-                runtime.shutdown().then(fulfilledSpy).catch(outputPromiseError);
-            });
-
-            runs(function() {
+        it("throws when shutdown in state SHUTDOWN", function(done) {
+            startInProcessRuntime().then(shutdownInProcessRuntime).then(function() {
                 expect(function() {
                     runtime.shutdown();
                 }).toThrow();
-            });
-
-            waitsFor(function() {
-                return fulfilledSpy.callCount > 0;
-            }, "until libjoynr is shut down", 3 * provisioning.internalMessagingQos.ttl);
-
-            runs(function() {
-                expect(fulfilledSpy).toHaveBeenCalled();
-            });
-        });
-
-        it("throws when shutdown in state SHUTDOWN", function() {
-            startInProcessRuntime();
-            shutdownInProcessRuntime();
-
-            runs(function() {
-                expect(function() {
-                    runtime.shutdown();
-                }).toThrow();
-            });
+                done();
+                return null;
+            }).catch(fail);
         });
     });
 });

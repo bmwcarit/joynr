@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ define([ "joynr/messaging/MessagingStubFactory"
         function Address1() {}
         function Address2() {}
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             messagingStub1 = {
                 key : "messagingStub1"
             };
@@ -40,8 +40,8 @@ define([ "joynr/messaging/MessagingStubFactory"
             factory2 = jasmine.createSpyObj("factory1", [ "build"
             ]);
 
-            factory1.build.andReturn(messagingStub1);
-            factory2.build.andReturn(messagingStub2);
+            factory1.build.and.returnValue(messagingStub1);
+            factory2.build.and.returnValue(messagingStub2);
 
             messagingStubFactory = new MessagingStubFactory({
                 messagingStubFactories : {
@@ -53,40 +53,46 @@ define([ "joynr/messaging/MessagingStubFactory"
             address1 = new Address1();
             address2 = new Address2();
             address3 = "";
+            done();
         });
 
-        it("is instantiable and has all members", function() {
+        it("is instantiable and has all members", function(done) {
             expect(MessagingStubFactory).toBeDefined();
             expect(typeof MessagingStubFactory === "function").toBeTruthy();
             expect(messagingStubFactory).toBeDefined();
             expect(messagingStubFactory instanceof MessagingStubFactory).toBeTruthy();
             expect(messagingStubFactory.createMessagingStub).toBeDefined();
             expect(typeof messagingStubFactory.createMessagingStub === "function").toBeTruthy();
+            done();
         });
 
-        it("it does not call any factory on creation", function() {
+        it("it does not call any factory on creation", function(done) {
             expect(factory1.build).not.toHaveBeenCalled();
             expect(factory2.build).not.toHaveBeenCalled();
+            done();
         });
 
-        it("it resolves addresses correctly", function() {
+        it("it resolves addresses correctly", function(done) {
             expect(messagingStubFactory.createMessagingStub(address1)).toEqual(messagingStub1);
             expect(messagingStubFactory.createMessagingStub(address2)).toEqual(messagingStub2);
+            done();
         });
 
-        it("it calls the build method of the factories", function() {
+        it("it calls the build method of the factories", function(done) {
             messagingStubFactory.createMessagingStub(address1);
             expect(factory1.build).toHaveBeenCalledWith(address1);
             expect(factory2.build).not.toHaveBeenCalled();
 
             messagingStubFactory.createMessagingStub(address2);
             expect(factory2.build).toHaveBeenCalledWith(address2);
+            done();
         });
 
-        it("it throws on none-existing address", function() {
+        it("it throws on none-existing address", function(done) {
             expect(function() {
                 messagingStubFactory.createMessagingStub(address3);
             }).toThrow();
+            done();
         });
 
     });

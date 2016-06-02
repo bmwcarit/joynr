@@ -1,7 +1,9 @@
+/*jslint es5: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +29,13 @@ define([
         var channelMessagingSender, channelMessagingStubFactory, destChannelId;
         var url, myChannelId, channelAddress1, channelAddress2, joynrMessage;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             destChannelId = "destChannelId";
             myChannelId = "myChannelId";
             url = "http://testurl";
             channelMessagingSender = jasmine.createSpyObj("channelMessagingSender", [ "send"
             ]);
-            channelMessagingSender.send.andReturn(Promise.resolve());
+            channelMessagingSender.send.and.returnValue(Promise.resolve());
             channelAddress1 = new ChannelAddress({
                 channelId : destChannelId,
                 messagingEndpointUrl : url
@@ -50,11 +52,12 @@ define([
             joynrMessage = {
                 key : "joynrMessage"
             };
+            done();
         });
 
         it(
                 "is instantiable and of correct type",
-                function() {
+                function(done) {
                     expect(ChannelMessagingStubFactory).toBeDefined();
                     expect(typeof ChannelMessagingStubFactory === "function").toBeTruthy();
                     expect(channelMessagingStubFactory).toBeDefined();
@@ -62,23 +65,23 @@ define([
                             .toBeTruthy();
                     expect(channelMessagingStubFactory.build).toBeDefined();
                     expect(typeof channelMessagingStubFactory.build === "function").toBeTruthy();
+                    done();
                 });
 
-        it(
-                "creates a messaging stub and uses it correctly",
-                function() {
-                    var channelMessagingStub = channelMessagingStubFactory.build(channelAddress1);
-                    var result = channelMessagingStub.transmit(joynrMessage);
-                    expect(channelMessagingSender.send).toHaveBeenCalledWith(
-                            joynrMessage,
-                            channelAddress1);
+        it("creates a messaging stub and uses it correctly", function(done) {
+            var channelMessagingStub = channelMessagingStubFactory.build(channelAddress1);
+            channelMessagingStub.transmit(joynrMessage).catch(function() { return null; });
+            expect(channelMessagingSender.send).toHaveBeenCalledWith(
+                joynrMessage,
+                channelAddress1);
 
-                    channelMessagingSender.send.reset();
-                    //in case of target channelId is the local one --> missconfiguration, drop the message
-                    channelMessagingStub = channelMessagingStubFactory.build(channelAddress2);
-                    result = channelMessagingStub.transmit(joynrMessage);
-                    expect(channelMessagingSender.send).not.toHaveBeenCalled();
-                });
+            channelMessagingSender.send.calls.reset();
+            //in case of target channelId is the local one --> missconfiguration, drop the message
+            channelMessagingStub = channelMessagingStubFactory.build(channelAddress2);
+            channelMessagingStub.transmit(joynrMessage).catch(function() { return null; });
+            expect(channelMessagingSender.send).not.toHaveBeenCalled();
+            done();
+        });
 
     });
 

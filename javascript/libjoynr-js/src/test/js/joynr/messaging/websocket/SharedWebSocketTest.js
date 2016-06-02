@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ define([
         var event = null;
         var joynrMessage = null;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             function JoynrMessage() {}
             joynrMessage = new JoynrMessage();
 
@@ -69,18 +69,20 @@ define([
             event = new MessageEvent();
             data = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
             event.data = JSON.stringify(data);
+            done();
         });
 
-        it("is of correct type and has all members", function() {
+        it("is of correct type and has all members", function(done) {
             expect(SharedWebSocket).toBeDefined();
             expect(typeof SharedWebSocket === "function").toBeTruthy();
             expect(sharedWebSocket).toBeDefined();
             expect(sharedWebSocket instanceof SharedWebSocket).toBeTruthy();
             expect(sharedWebSocket.send).toBeDefined();
             expect(typeof sharedWebSocket.send === "function").toBeTruthy();
+            done();
         });
 
-        it("throws if arguments are missing or of wrong type", function() {
+        it("throws if arguments are missing or of wrong type", function(done) {
             expect(function() {
                 sharedWebSocket = new SharedWebSocket({
                     localAddress : localAddress,
@@ -106,17 +108,19 @@ define([
             expect(function() {
                 sharedWebSocket.onmessage = {};
             }).toThrow(); // callback must be a function
+            done();
         });
 
-        it("calls websocket.send correctly", function() {
+        it("calls websocket.send correctly", function(done) {
             websocket.readyState = WebSocket.OPEN;
             sharedWebSocket.send(joynrMessage);
             expect(websocket.send).toHaveBeenCalledWith(JSON.stringify(joynrMessage));
 
-            websocket.send.reset();
+            websocket.send.calls.reset();
             websocket.readyState = WebSocket.CLOSING;
             sharedWebSocket.send(joynrMessage);
             expect(websocket.send).not.toHaveBeenCalled();
+            done();
         });
     });
 

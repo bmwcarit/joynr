@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ define([
         var webMessagingSkeleton, browserMessagingSkeleton, listener1, listener2;
         var windowId, joynrMessage, untypedJoynrMessage, browserMessage;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             webMessagingSkeleton =
                     jasmine.createSpyObj("webMessagingSkeleton", [ "registerListener"
                     ]);
@@ -48,9 +48,10 @@ define([
                 windowId : windowId,
                 message : untypedJoynrMessage
             };
+            done();
         });
 
-        it("is of correct type and has all members", function() {
+        it("is of correct type and has all members", function(done) {
             expect(BrowserMessagingSkeleton).toBeDefined();
             expect(typeof BrowserMessagingSkeleton === "function").toBeTruthy();
             expect(browserMessagingSkeleton).toBeDefined();
@@ -59,9 +60,10 @@ define([
             expect(typeof browserMessagingSkeleton.registerListener === "function").toBeTruthy();
             expect(browserMessagingSkeleton.unregisterListener).toBeDefined();
             expect(typeof browserMessagingSkeleton.unregisterListener === "function").toBeTruthy();
+            done();
         });
 
-        it("throws if arguments are missing or of wrong type", function() {
+        it("throws if arguments are missing or of wrong type", function(done) {
             expect(function() {
                 browserMessagingSkeleton = new BrowserMessagingSkeleton({
                     webMessagingSkeleton : webMessagingSkeleton
@@ -95,19 +97,20 @@ define([
             expect(function() {
                 browserMessagingSkeleton.unregisterListener({});
             }).toThrow(); // listener is of wrong type
+            done();
         });
 
         function callAllRegisteredListeners(calls, browserMessage) {
             var i;
 
-            for (i = 0; i < calls.length; ++i) {
-                calls[i].args[0](browserMessage);
+            for (i = 0; i < calls.count(); ++i) {
+                calls.argsFor(i)[0](browserMessage);
             }
         }
 
         it(
                 "event calls through to registered listeners",
-                function() {
+                function(done) {
                     browserMessagingSkeleton.registerListener(listener1);
                     browserMessagingSkeleton.registerListener(listener2);
                     expect(listener1).not.toHaveBeenCalled();
@@ -117,13 +120,14 @@ define([
                             browserMessage);
                     expect(listener1).toHaveBeenCalledWith(jasmine.any(JoynrMessage));
                     expect(listener2).toHaveBeenCalledWith(jasmine.any(JoynrMessage));
-                    expect(listener1.calls.length).toBe(1);
-                    expect(listener2.calls.length).toBe(1);
+                    expect(listener1.calls.count()).toBe(1);
+                    expect(listener2.calls.count()).toBe(1);
+                    done();
                 });
 
         it(
                 "event does not call through to unregistered listeners",
-                function() {
+                function(done) {
                     browserMessagingSkeleton.registerListener(listener1);
                     browserMessagingSkeleton.registerListener(listener2);
                     browserMessagingSkeleton.unregisterListener(listener1);
@@ -137,7 +141,8 @@ define([
 
                     expect(listener1).not.toHaveBeenCalled();
                     expect(listener2).toHaveBeenCalled();
-                    expect(listener2.calls.length).toBe(1);
+                    expect(listener2.calls.count()).toBe(1);
+                    done();
                 });
 
     });

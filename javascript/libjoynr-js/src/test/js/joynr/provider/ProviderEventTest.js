@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ define([
         var implementation;
         var provider;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             implementation = {
                 value : {
                     key : "value",
@@ -58,8 +58,8 @@ define([
                     implementation.value = newValue;
                 }
             };
-            spyOn(implementation, "get").andCallThrough();
-            spyOn(implementation, "set").andCallThrough();
+            spyOn(implementation, "get").and.callThrough();
+            spyOn(implementation, "set").and.callThrough();
             var provider = {};
 
             settings = {
@@ -73,22 +73,25 @@ define([
                 type : "String"
             }
             ], {});
+            done();
         });
 
-        it("is of correct type", function() {
+        it("is of correct type", function(done) {
             expect(weakSignal).toBeDefined();
             expect(weakSignal).not.toBeNull();
             expect(typeof weakSignal === "object").toBeTruthy();
             expect(weakSignal instanceof ProviderEvent).toBeTruthy();
+            done();
         });
 
-        it("has correct members", function() {
+        it("has correct members", function(done) {
             expect(weakSignal.createBroadcastOutputParameters).toBeDefined();
             expect(weakSignal.fire).toBeDefined();
             expect(weakSignal.registerObserver).toBeDefined();
             expect(weakSignal.unregisterObserver).toBeDefined();
             expect(weakSignal.addBroadcastFilter).toBeDefined();
             expect(weakSignal.deleteBroadcastFilter).toBeDefined();
+            done();
         });
 
         function buildObserver(spy) {
@@ -97,7 +100,7 @@ define([
             };
         }
 
-        it("implements the observer concept correctly", function() {
+        it("implements the observer concept correctly", function(done) {
             var i, spy1, spy2, attribute, func1, func2, value = {
                 key : "value",
                 1 : 2,
@@ -132,15 +135,16 @@ define([
 
             weakSignal.fire(value);
 
-            expect(spy1.calls.length).toEqual(2);
-            expect(spy2.calls.length).toEqual(1);
+            expect(spy1.calls.count()).toEqual(2);
+            expect(spy2.calls.count()).toEqual(1);
 
             weakSignal.unregisterObserver(func1);
 
             weakSignal.fire(value);
 
-            expect(spy1.calls.length).toEqual(2);
-            expect(spy2.calls.length).toEqual(1);
+            expect(spy1.calls.count()).toEqual(2);
+            expect(spy2.calls.count()).toEqual(1);
+            done();
         });
 
         function isPartOfList(list, data) {
@@ -167,7 +171,7 @@ define([
             };
         }
 
-        it("implements the broadcast filter list correctly", function() {
+        it("implements the broadcast filter list correctly", function(done) {
             var i, spy1, spy2, attribute, observerFunc, filterFunc;
             var value = {
                 key : "value",
@@ -199,9 +203,10 @@ define([
 
             expect(spy1).toHaveBeenCalledWith(data);
             expect(spy2).toHaveBeenCalledWith(value, filterParameters);
+            done();
         });
 
-        it("fire works", function() {
+        it("fire works", function(done) {
             expect(weakSignal.fire).toBeDefined();
             expect(typeof weakSignal.fire === "function").toBeTruthy();
             expect(function() {
@@ -209,6 +214,7 @@ define([
                 boc.setWeakSignalStation("Bayern 3");
                 weakSignal.fire(boc);
             }).not.toThrow();
+            done();
         });
 
     });

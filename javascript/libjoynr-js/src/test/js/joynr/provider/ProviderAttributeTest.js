@@ -1,7 +1,10 @@
+/*jslint es5: true */
+/*global fail: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +33,9 @@ define(
             "joynr/types/ProviderQos",
             "joynr/tests/testTypes/TestEnum",
             "joynr/datatypes/exampleTypes/ComplexRadioStation",
-            "joynr/datatypes/exampleTypes/Country"
+            "joynr/datatypes/exampleTypes/Country",
+            "global/Promise",
+            "global/WaitsFor"
         ],
         function(
                 ProviderAttribute,
@@ -44,7 +49,9 @@ define(
                 ProviderQos,
                 TestEnum,
                 ComplexRadioStation,
-                Country) {
+                Country,
+                Promise,
+                waitsFor) {
 
             var safetyTimeoutDelta = 100;
 
@@ -59,7 +66,7 @@ define(
                         var isOnProviderAttributeReadWrite, isOnProviderAttributeRead;
                         var isOnProviderAttributeWrite, allAttributes, allNotifyAttributes;
 
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             implementation = {
                                 value : {
                                     key : "value",
@@ -73,8 +80,8 @@ define(
                                     implementation.value = newValue;
                                 }
                             };
-                            spyOn(implementation, "get").andCallThrough();
-                            spyOn(implementation, "set").andCallThrough();
+                            spyOn(implementation, "get").and.callThrough();
+                            spyOn(implementation, "set").and.callThrough();
                             var provider = {};
 
                             isOn =
@@ -197,80 +204,89 @@ define(
                                 isOnProviderAttributeNotifyWrite,
                                 isOnProviderAttributeNotify
                             ];
+                            done();
                         });
 
-                        it("is of correct type (ProviderAttribute)", function() {
+                        it("is of correct type (ProviderAttribute)", function(done) {
                             expect(isOn).toBeDefined();
                             expect(isOn).not.toBeNull();
                             expect(typeof isOn === "object").toBeTruthy();
                             expect(isOn instanceof ProviderAttribute).toBeTruthy();
+                            done();
                         });
 
                         it(
                                 "has correct members (ProviderAttribute with NOTIFYREADWRITE)",
-                                function() {
+                                function(done) {
                                     expect(isOn.registerGetter).toBeDefined();
                                     expect(isOn.registerSetter).toBeDefined();
                                     expect(isOn.valueChanged).toBeDefined();
                                     expect(isOn.registerObserver).toBeDefined();
                                     expect(isOn.unregisterObserver).toBeDefined();
+                                    done();
                                 });
 
                         it(
                                 "has correct members (ProviderAttribute with NOTIFYREADONLY)",
-                                function() {
+                                function(done) {
                                     expect(isOnNotifyReadOnly.registerGetter).toBeDefined();
                                     expect(isOnNotifyReadOnly.registerSetter).toBeUndefined();
                                     expect(isOnNotifyReadOnly.valueChanged).toBeDefined();
                                     expect(isOnNotifyReadOnly.registerObserver).toBeDefined();
                                     expect(isOnNotifyReadOnly.unregisterObserver).toBeDefined();
+                                    done();
                                 });
 
                         it(
                                 "has correct members (ProviderAttribute with NOTIFYWRITEONLY)",
-                                function() {
+                                function(done) {
                                     expect(isOnNotifyWriteOnly.registerGetter).toBeUndefined();
                                     expect(isOnNotifyWriteOnly.registerSetter).toBeDefined();
                                     expect(isOnNotifyWriteOnly.valueChanged).toBeDefined();
                                     expect(isOnNotifyWriteOnly.registerObserver).toBeDefined();
                                     expect(isOnNotifyWriteOnly.unregisterObserver).toBeDefined();
+                                    done();
                                 });
 
-                        it("has correct members (ProviderAttribute with NOTIFY)", function() {
+                        it("has correct members (ProviderAttribute with NOTIFY)", function(done) {
                             expect(isOnNotify.registerGetter).toBeUndefined();
                             expect(isOnNotify.registerSetter).toBeUndefined();
                             expect(isOnNotify.valueChanged).toBeDefined();
                             expect(isOnNotify.registerObserver).toBeDefined();
                             expect(isOnNotify.unregisterObserver).toBeDefined();
+                            done();
                         });
 
-                        it("has correct members (ProviderAttribute with READWRITE)", function() {
+                        it("has correct members (ProviderAttribute with READWRITE)", function(done) {
                             expect(isOnReadWrite.registerGetter).toBeDefined();
                             expect(isOnReadWrite.registerSetter).toBeDefined();
                             expect(isOnReadWrite.valueChanged).toBeUndefined();
                             expect(isOnReadWrite.registerObserver).toBeUndefined();
                             expect(isOnReadWrite.unregisterObserver).toBeUndefined();
+                            done();
                         });
 
-                        it("has correct members (ProviderAttribute with READONLY)", function() {
+                        it("has correct members (ProviderAttribute with READONLY)", function(done) {
                             expect(isOnReadOnly.registerGetter).toBeDefined();
                             expect(isOnReadOnly.registerSetter).toBeUndefined();
                             expect(isOnReadOnly.valueChanged).toBeUndefined();
                             expect(isOnReadOnly.registerObserver).toBeUndefined();
                             expect(isOnReadOnly.unregisterObserver).toBeUndefined();
+                            done();
                         });
 
-                        it("has correct members (ProviderAttribute with WRITEONLY)", function() {
+                        it("has correct members (ProviderAttribute with WRITEONLY)", function(done) {
                             expect(isOnWriteOnly.registerGetter).toBeUndefined();
                             expect(isOnWriteOnly.registerSetter).toBeDefined();
                             expect(isOnWriteOnly.valueChanged).toBeUndefined();
                             expect(isOnWriteOnly.registerObserver).toBeUndefined();
                             expect(isOnWriteOnly.unregisterObserver).toBeUndefined();
+                            done();
                         });
 
                         it(
                                 "has correct members (ProviderAttributeNotifyReadWrite)",
-                                function() {
+                                function(done) {
                                     expect(
                                             isOnProviderAttributeNotifyReadWrite instanceof ProviderAttributeNotifyReadWrite)
                                             .toBeTruthy();
@@ -284,11 +300,12 @@ define(
                                             .toBeDefined();
                                     expect(isOnProviderAttributeNotifyReadWrite.unregisterObserver)
                                             .toBeDefined();
+                                    done();
                                 });
 
                         it(
                                 "has correct members (ProviderAttributeNotifyRead)",
-                                function() {
+                                function(done) {
                                     expect(
                                             isOnProviderAttributeNotifyRead instanceof ProviderAttributeNotifyRead)
                                             .toBeTruthy();
@@ -302,11 +319,12 @@ define(
                                             .toBeDefined();
                                     expect(isOnProviderAttributeNotifyRead.unregisterObserver)
                                             .toBeDefined();
+                                    done();
                                 });
 
                         it(
                                 "has correct members (ProviderAttributeNotifyWrite)",
-                                function() {
+                                function(done) {
                                     expect(
                                             isOnProviderAttributeNotifyWrite instanceof ProviderAttributeNotifyWrite)
                                             .toBeTruthy();
@@ -320,9 +338,10 @@ define(
                                             .toBeDefined();
                                     expect(isOnProviderAttributeNotifyWrite.unregisterObserver)
                                             .toBeDefined();
+                                    done();
                                 });
 
-                        it("has correct members (ProviderAttributeNotify)", function() {
+                        it("has correct members (ProviderAttributeNotify)", function(done) {
                             expect(isOnProviderAttributeNotify instanceof ProviderAttributeNotify)
                                     .toBeTruthy();
                             expect(isOnProviderAttributeNotify.registerGetter).toBeUndefined();
@@ -330,11 +349,12 @@ define(
                             expect(isOnProviderAttributeNotify.valueChanged).toBeDefined();
                             expect(isOnProviderAttributeNotify.registerObserver).toBeDefined();
                             expect(isOnProviderAttributeNotify.unregisterObserver).toBeDefined();
+                            done();
                         });
 
                         it(
                                 "has correct members (ProviderAttributeReadWrite)",
-                                function() {
+                                function(done) {
                                     expect(
                                             isOnProviderAttributeReadWrite instanceof ProviderAttributeReadWrite)
                                             .toBeTruthy();
@@ -342,106 +362,97 @@ define(
                                             .toBeDefined();
                                     expect(isOnProviderAttributeReadWrite.registerSetter)
                                             .toBeDefined();
+                                    done();
                                 });
 
-                        it("has correct members (ProviderAttributeRead)", function() {
+                        it("has correct members (ProviderAttributeRead)", function(done) {
                             expect(isOnProviderAttributeRead instanceof ProviderAttributeRead)
                                     .toBeTruthy();
                             expect(isOnProviderAttributeRead.registerGetter).toBeDefined();
                             expect(isOnProviderAttributeRead.registerSetter).toBeUndefined();
+                            done();
                         });
 
-                        it("has correct members (ProviderAttributeWrite)", function() {
+                        it("has correct members (ProviderAttributeWrite)", function(done) {
                             expect(isOnProviderAttributeWrite instanceof ProviderAttributeWrite)
                                     .toBeTruthy();
                             expect(isOnProviderAttributeWrite.registerGetter).toBeUndefined();
                             expect(isOnProviderAttributeWrite.registerSetter).toBeDefined();
+                            done();
                         });
 
-                        function checkRegisteredGettersAndSetters(attribute, i) {
-                            var spy;
+                        it("call[G|S]etter calls through to registered [g|s]etters", function(done) {
                             var result;
-                            var done = false;
                             var testParam = "myTestParameter";
+                            var promiseChain = Promise.resolve();
 
-                            // only check getter if the attribute is readable
-                            if (attribute.get instanceof Function) {
-                                spy = jasmine.createSpy("ProviderAttributeSpy");
-                                spy.andReturn(testParam);
-                                attribute.registerGetter(spy);
-                                result = attribute.get();
-                                expect(spy).toHaveBeenCalled();
-                                expect(result).toEqual([ testParam
-                                ]);
-                            }
-
-                            // only check the setter if the attribute is writable
-                            if (attribute.set instanceof Function) {
-                                runs(function() {
-                                    spy = jasmine.createSpy("ProviderAttributeSpy");
-                                    attribute.registerSetter(spy);
-                                    attribute.set(testParam).then(function() {
-                                        done = true;
-                                    });
-                                });
-
-                                waitsFor(function() {
-                                    return done;
-                                }, i + " setter was not called", 1000);
-
-                                runs(function() {
+                            var createFunc = function(attribute, promiseChain) {
+                                var spy = jasmine.createSpy("ProviderAttributeSpy");
+                                attribute.registerSetter(spy);
+                                return promiseChain.then(function() {
+                                    return attribute.set(testParam);
+                                }).then(function() {
                                     expect(spy).toHaveBeenCalled();
                                     expect(spy).toHaveBeenCalledWith(testParam);
                                 });
-                            }
-                        }
+                            };
 
-                        it("call[G|S]etter calls through to registered [g|s]etters", function() {
-                            var i;
-                            for (i = 0; i < allAttributes.length; i++) {
-                                checkRegisteredGettersAndSetters(allAttributes[i], i);
+                            for (i = 0; i < allAttributes.length; ++i) {
+                                // only check getter if the attribute is readable
+                                if (allAttributes[i].get instanceof Function) {
+                                    var spy = jasmine.createSpy("ProviderAttributeSpy");
+                                    spy.and.returnValue(testParam);
+                                    allAttributes[i].registerGetter(spy);
+                                    result = allAttributes[i].get();
+                                    expect(spy).toHaveBeenCalled();
+                                    expect(result).toEqual([ testParam
+                                    ]);
+                                }
+
+                                if (allAttributes[i].set instanceof Function) {
+                                    promiseChain = createFunc(allAttributes[i], promiseChain);
+                                }
                             }
+                            promiseChain.then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        function checkImplementationGettersAndSetters(attribute, i) {
+                        it("call[G|S]etter calls through to provided implementation", function(done) {
                             var spy;
                             var result;
-                            var done = false;
                             var testParam = "myTestParameter";
+                            var promiseChain = Promise.resolve();
 
-                            // only check getter if the attribute is readable
-                            if (attribute.get instanceof Function) {
-                                implementation.get.reset();
-                                implementation.get.andReturn(testParam);
-                                expect(allAttributes[i].get()).toEqual([ testParam
-                                ]);
-                                expect(implementation.get).toHaveBeenCalled();
-                            }
-
-                            // only check the setter if the attribute is writable
-                            if (attribute.set instanceof Function) {
-                                runs(function() {
-                                    implementation.set.reset();
-                                    allAttributes[i].set(testParam).then(function() {
-                                        done = true;
-                                    });
-                                });
-
-                                waitsFor(function() {
-                                    return done;
-                                }, i + " setter was not called", 1000);
-
-                                runs(function() {
+                            var createFunc = function(attribute, promiseChain) {
+                                return promiseChain.then(function() {
+                                    implementation.set.calls.reset();
+                                    return attribute.set(testParam);
+                                }).then(function() {
                                     expect(implementation.set).toHaveBeenCalled();
                                     expect(implementation.set).toHaveBeenCalledWith(testParam);
                                 });
-                            }
-                        }
+                            };
 
-                        it("call[G|S]etter calls through to provided implementation", function() {
                             for (i = 0; i < allAttributes.length; ++i) {
-                                checkImplementationGettersAndSetters(allAttributes[i], i);
+                                // only check getter if the attribute is readable
+                                if (allAttributes[i].get instanceof Function) {
+                                    implementation.get.calls.reset();
+                                    implementation.get.and.returnValue(testParam);
+                                    expect(allAttributes[i].get()).toEqual([ testParam
+                                    ]);
+                                    expect(implementation.get).toHaveBeenCalled();
+                                }
+
+                                if (allAttributes[i].set instanceof Function) {
+                                    promiseChain = createFunc(allAttributes[i], promiseChain);
+                                }
                             }
+                            promiseChain.then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         function buildObserver(spy) {
@@ -450,7 +461,7 @@ define(
                             };
                         }
 
-                        it("implements the observer concept correctly", function() {
+                        it("implements the observer concept correctly", function(done) {
                             var i, spy1, spy2, attribute, func1, func2, value = {
                                 key : "value",
                                 1 : 2,
@@ -485,19 +496,20 @@ define(
 
                                 attribute.valueChanged(value);
 
-                                expect(spy1.calls.length).toEqual(2);
-                                expect(spy2.calls.length).toEqual(1);
+                                expect(spy1.calls.count()).toEqual(2);
+                                expect(spy2.calls.count()).toEqual(1);
 
                                 attribute.unregisterObserver(func1);
 
                                 attribute.valueChanged(value);
 
-                                expect(spy1.calls.length).toEqual(2);
-                                expect(spy2.calls.length).toEqual(1);
+                                expect(spy1.calls.count()).toEqual(2);
+                                expect(spy2.calls.count()).toEqual(1);
                             }
+                            done();
                         });
 
-                        function setNewValueCallsValueChangedObserver(attribute) {
+                        function setNewValueCallsValueChangedObserver(attribute, promiseChain) {
                             var spy1, spy2, func1, func2, value, done;
                             spy1 = jasmine.createSpy("spy1");
                             spy2 = jasmine.createSpy("spy2");
@@ -518,18 +530,9 @@ define(
                             });
 
                             // expect 2 observers to be called
-                            runs(function() {
-                                done = false;
-                                attribute.set(value).then(function() {
-                                    done = true;
-                                });
-                            });
-
-                            waitsFor(function() {
-                                return done;
-                            }, "setter was not called", 1000);
-
-                            runs(function() {
+                            return promiseChain.then(function() {
+                                return attribute.set(value);
+                            }).then(function() {
                                 expect(spy1).toHaveBeenCalled();
                                 expect(spy1).toHaveBeenCalledWith([ value
                                 ]);
@@ -546,19 +549,10 @@ define(
                                     source : Country.AUSTRIA
                                 });
 
-                                done = false;
-                                attribute.set(value).then(function() {
-                                    done = true;
-                                });
-                            });
-
-                            waitsFor(function() {
-                                return done;
-                            }, "setter was not called", 1000);
-
-                            runs(function() {
-                                expect(spy1.callCount).toEqual(2);
-                                expect(spy2.callCount).toEqual(1);
+                                return attribute.set(value);
+                            }).then(function() {
+                                expect(spy1.calls.count()).toEqual(2);
+                                expect(spy2.calls.count()).toEqual(1);
 
                                 // expect no observers to be called, as none are registered
                                 attribute.unregisterObserver(func1);
@@ -569,36 +563,31 @@ define(
                                     source : Country.AUSTRALIA
                                 });
 
-                                done = false;
-                                attribute.set(value).then(function() {
-                                    done = true;
-                                });
+                                return attribute.set(value);
+                            }).then(function() {
+                                expect(spy1.calls.count()).toEqual(2);
+                                expect(spy2.calls.count()).toEqual(1);
                             });
-
-                            waitsFor(function() {
-                                return done;
-                            }, "setter was not called", 1000);
-
-                            runs(function() {
-                                expect(spy1.callCount).toEqual(2);
-                                expect(spy2.callCount).toEqual(1);
-                            });
-
                         }
 
-                        it("notifies observer when calling set with new value", function() {
+                        it("notifies observer when calling set with new value", function(done) {
                             var i, attribute;
+                            var promiseChain = Promise.resolve();
 
                             for (i = 0; i < allNotifyAttributes.length; ++i) {
                                 attribute = allNotifyAttributes[i];
                                 if (attribute.set) {
-                                    setNewValueCallsValueChangedObserver(attribute);
+                                    promiseChain = setNewValueCallsValueChangedObserver(attribute, promiseChain);
                                 }
                             }
+                            promiseChain.then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        function setSameValueDoesNotCallValueChangedObserver(attribute) {
-                            var spy1, spy2, func1, func2, value, done;
+                        function setSameValueDoesNotCallValueChangedObserver(attribute, promiseChain) {
+                            var spy1, spy2, func1, func2, value;
                             spy1 = jasmine.createSpy("spy1");
                             spy2 = jasmine.createSpy("spy2");
 
@@ -618,59 +607,41 @@ define(
                             });
 
                             // expect 2 observers to be called
-                            runs(function() {
-                                done = false;
-                                attribute.set(value).then(function() {
-                                    done = true;
-                                });
-                            });
-
-                            waitsFor(function() {
-                                return done;
-                            }, "setter was not called", 1000);
-
-                            runs(function() {
+                            return promiseChain.then(function() {
+                                return attribute.set(value);
+                            }).then(function() {
                                 expect(spy1).toHaveBeenCalled();
                                 expect(spy1).toHaveBeenCalledWith([ value
                                 ]);
                                 expect(spy2).toHaveBeenCalled();
                                 expect(spy2).toHaveBeenCalledWith([ value
                                 ]);
-                            });
-
-                            // expect observers not to be called, as setting same value
-                            runs(function() {
-                                done = false;
-                                attribute.set(value).then(function() {
-                                    done = true;
-                                });
-                            });
-
-                            waitsFor(function() {
-                                return done;
-                            }, "setter was not called", 1000);
-
-                            runs(function() {
-                                expect(spy1.callCount).toEqual(1);
-                                expect(spy2.callCount).toEqual(1);
+                                return attribute.set(value);
+                            }).then(function() {
+                                expect(spy1.calls.count()).toEqual(1);
+                                expect(spy2.calls.count()).toEqual(1);
                             });
                         }
 
-                        it("doesn't notify observer when calling set with same values", function() {
+                        it("doesn't notify observer when calling set with same values", function(done) {
                             var i, spy1, spy2, attribute, func1, func2, value;
+                            var promiseChain = Promise.resolve();
 
                             for (i = 0; i < allNotifyAttributes.length; ++i) {
                                 attribute = allNotifyAttributes[i];
                                 if (attribute.set) {
-                                    setSameValueDoesNotCallValueChangedObserver(attribute);
+                                    promiseChain = setSameValueDoesNotCallValueChangedObserver(attribute, promiseChain);
                                 }
                             }
+                            promiseChain.then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         it(
                                 "calls provided setter implementation with enum as operation argument",
-                                function() {
-                                    var done;
+                                function(done) {
                                     /*jslint nomen: true */
                                     var fixture =
                                             new ProviderAttribute(
@@ -681,21 +652,13 @@ define(
                                                     "WRITEONLY");
                                     /*jslint nomen: false */
 
-                                    runs(function() {
-                                        fixture.set("ZERO").then(function() {
-                                            done = true;
-                                        });
-                                    });
-
-                                    waitsFor(function() {
-                                        return done;
-                                    }, " setter was not called", 1000);
-
-                                    runs(function() {
+                                    fixture.set("ZERO").then(function() {
                                         expect(implementation.set).toHaveBeenCalledWith(
                                                 TestEnum.ZERO);
-                                    });
-                                });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
+                        });
                     });
 
         }); // require

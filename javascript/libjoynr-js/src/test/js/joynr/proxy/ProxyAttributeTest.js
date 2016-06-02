@@ -1,9 +1,10 @@
 /*jslint es5: true, nomen: true */
+/*global fail: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +35,7 @@ define([
             "joynr/dispatching/RequestReplyManager",
             "joynr/dispatching/types/Request",
             "joynr/tests/testTypes/TestEnum",
+            "joynr/types/TypeRegistrySingleton",
             "global/Promise"
         ],
         function(
@@ -51,6 +53,7 @@ define([
                 RequestReplyManager,
                 Request,
                 TestEnum,
+                TypeRegistrySingleton,
                 Promise) {
 
             var asyncTimeout = 5000;
@@ -81,31 +84,6 @@ define([
                         var proxyParticipantId;
                         var providerParticipantId;
 
-                        function checkSpy(spy, errorExpected, successArg, errorArg) {
-                            if (errorExpected) {
-                                if (spy.onFulfilled) {
-                                    expect(spy.onFulfilled).not.toHaveBeenCalled();
-                                }
-
-                                if (spy.onRejected) {
-                                    expect(spy.onRejected).toHaveBeenCalled();
-                                }
-                                if (errorArg) {
-                                    if (spy.onRejected) {
-                                        expect(spy.onRejected).toHaveBeenCalledWith(errorArg);
-                                    }
-                                }
-                            } else {
-                                if (spy.onFulfilled) {
-                                    expect(spy.onFulfilled).toHaveBeenCalled();
-                                }
-
-                                if (spy.onRejected) {
-                                    expect(spy.onRejected).not.toHaveBeenCalled();
-                                }
-                            }
-                        }
-
                         function RadioStation(name, station, source) {
                             if (!(this instanceof RadioStation)) {
                                 // in case someone calls constructor without new keyword (e.g. var c
@@ -125,14 +103,14 @@ define([
                             });
                         }
 
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
                             messagingQos = new MessagingQos();
 
                             requestReplyManagerSpy =
                                     jasmine.createSpyObj("requestReplyManager", [ "sendRequest"
                                     ]);
-                            requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve({
+                            requestReplyManagerSpy.sendRequest.and.returnValue(Promise.resolve({
                                 result : {
                                     resultKey : "resultValue"
                                 }
@@ -146,8 +124,8 @@ define([
                                 "registerSubscription",
                                 "unregisterSubscription"
                             ]);
-                            subscriptionManagerSpy.registerSubscription.andReturn(Promise.resolve(subscriptionId));
-                            subscriptionManagerSpy.unregisterSubscription.andReturn(Promise.resolve(subscriptionId));
+                            subscriptionManagerSpy.registerSubscription.and.returnValue(Promise.resolve(subscriptionId));
+                            subscriptionManagerSpy.unregisterSubscription.and.returnValue(Promise.resolve(subscriptionId));
 
                             settings = {
                                 dependencies : {
@@ -255,123 +233,141 @@ define([
                                             settings,
                                             "isOnProxyAttributeWrite",
                                             "Boolean");
+                            TypeRegistrySingleton.getInstance().getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("is of correct type (ProxyAttribute)", function() {
+                        it("is of correct type (ProxyAttribute)", function(done) {
                             expect(isOn).toBeDefined();
                             expect(isOn).not.toBeNull();
                             expect(typeof isOn === "object").toBeTruthy();
                             expect(isOn instanceof ProxyAttribute).toBeTruthy();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttribute with NOTIFYREADWRITE)", function() {
+                        it("has correct members (ProxyAttribute with NOTIFYREADWRITE)", function(done) {
                             expect(isOn.get).toBeDefined();
                             expect(isOn.set).toBeDefined();
                             expect(isOn.subscribe).toBeDefined();
                             expect(isOn.unsubscribe).toBeDefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttribute with NOTIFYREADONLY)", function() {
+                        it("has correct members (ProxyAttribute with NOTIFYREADONLY)", function(done) {
                             expect(isOnNotifyReadOnly.get).toBeDefined();
                             expect(isOnNotifyReadOnly.set).toBeUndefined();
                             expect(isOnNotifyReadOnly.subscribe).toBeDefined();
                             expect(isOnNotifyReadOnly.unsubscribe).toBeDefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttribute with NOTIFYWRITEONLY)", function() {
+                        it("has correct members (ProxyAttribute with NOTIFYWRITEONLY)", function(done) {
                             expect(isOnNotifyWriteOnly.get).toBeUndefined();
                             expect(isOnNotifyWriteOnly.set).toBeDefined();
                             expect(isOnNotifyWriteOnly.subscribe).toBeDefined();
                             expect(isOnNotifyWriteOnly.unsubscribe).toBeDefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttribute with NOTIFY)", function() {
+                        it("has correct members (ProxyAttribute with NOTIFY)", function(done) {
                             expect(isOnNotify.get).toBeUndefined();
                             expect(isOnNotify.set).toBeUndefined();
                             expect(isOnNotify.subscribe).toBeDefined();
                             expect(isOnNotify.unsubscribe).toBeDefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttribute with READWRITE)", function() {
+                        it("has correct members (ProxyAttribute with READWRITE)", function(done) {
                             expect(isOnReadWrite.get).toBeDefined();
                             expect(isOnReadWrite.set).toBeDefined();
                             expect(isOnReadWrite.subscribe).toBeUndefined();
                             expect(isOnReadWrite.unsubscribe).toBeUndefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttribute with READONLY)", function() {
+                        it("has correct members (ProxyAttribute with READONLY)", function(done) {
                             expect(isOnReadOnly.get).toBeDefined();
                             expect(isOnReadOnly.set).toBeUndefined();
                             expect(isOnReadOnly.subscribe).toBeUndefined();
                             expect(isOnReadOnly.unsubscribe).toBeUndefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttribute with WRITEONLY)", function() {
+                        it("has correct members (ProxyAttribute with WRITEONLY)", function(done) {
                             expect(isOnWriteOnly.get).toBeUndefined();
                             expect(isOnWriteOnly.set).toBeDefined();
                             expect(isOnWriteOnly.subscribe).toBeUndefined();
                             expect(isOnWriteOnly.unsubscribe).toBeUndefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttributeNotifyReadWrite)", function() {
+                        it("has correct members (ProxyAttributeNotifyReadWrite)", function(done) {
                             expect(isOnProxyAttributeNotifyReadWrite.get).toBeDefined();
                             expect(isOnProxyAttributeNotifyReadWrite.set).toBeDefined();
                             expect(isOnProxyAttributeNotifyReadWrite.subscribe).toBeDefined();
                             expect(isOnProxyAttributeNotifyReadWrite.unsubscribe).toBeDefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttributeNotifyRead)", function() {
+                        it("has correct members (ProxyAttributeNotifyRead)", function(done) {
                             expect(isOnProxyAttributeNotifyRead.get).toBeDefined();
                             expect(isOnProxyAttributeNotifyRead.set).toBeUndefined();
                             expect(isOnProxyAttributeNotifyRead.subscribe).toBeDefined();
                             expect(isOnProxyAttributeNotifyRead.unsubscribe).toBeDefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttributeNotifyWrite)", function() {
+                        it("has correct members (ProxyAttributeNotifyWrite)", function(done) {
                             expect(isOnProxyAttributeNotifyWrite.get).toBeUndefined();
                             expect(isOnProxyAttributeNotifyWrite.set).toBeDefined();
                             expect(isOnProxyAttributeNotifyWrite.subscribe).toBeDefined();
                             expect(isOnProxyAttributeNotifyWrite.unsubscribe).toBeDefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttributeNotify)", function() {
+                        it("has correct members (ProxyAttributeNotify)", function(done) {
                             expect(isOnProxyAttributeNotify.get).toBeUndefined();
                             expect(isOnProxyAttributeNotify.set).toBeUndefined();
                             expect(isOnProxyAttributeNotify.subscribe).toBeDefined();
                             expect(isOnProxyAttributeNotify.unsubscribe).toBeDefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttributeReadWrite)", function() {
+                        it("has correct members (ProxyAttributeReadWrite)", function(done) {
                             expect(isOnProxyAttributeReadWrite.get).toBeDefined();
                             expect(isOnProxyAttributeReadWrite.set).toBeDefined();
                             expect(isOnProxyAttributeReadWrite.subscribe).toBeUndefined();
                             expect(isOnProxyAttributeReadWrite.unsubscribe).toBeUndefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttributeRead)", function() {
+                        it("has correct members (ProxyAttributeRead)", function(done) {
                             expect(isOnProxyAttributeRead.get).toBeDefined();
                             expect(isOnProxyAttributeRead.set).toBeUndefined();
                             expect(isOnProxyAttributeRead.subscribe).toBeUndefined();
                             expect(isOnProxyAttributeRead.unsubscribe).toBeUndefined();
+                            done();
                         });
 
-                        it("has correct members (ProxyAttributeWrite)", function() {
+                        it("has correct members (ProxyAttributeWrite)", function(done) {
                             expect(isOnProxyAttributeWrite.get).toBeUndefined();
                             expect(isOnProxyAttributeWrite.set).toBeDefined();
                             expect(isOnProxyAttributeWrite.subscribe).toBeUndefined();
                             expect(isOnProxyAttributeWrite.unsubscribe).toBeUndefined();
+                            done();
                         });
 
                         it(
                                 "get calls through to RequestReplyManager",
-                                function() {
+                                function(done) {
                                     var requestReplyId;
-                                    isOn.get();
-
-                                    expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
-                                    requestReplyId =
-                                            requestReplyManagerSpy.sendRequest.calls[0].args[0].request.requestReplyId;
-                                    expect(requestReplyManagerSpy.sendRequest)
+                                    isOn.get().then(function() {
+                                        expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
+                                        requestReplyId =
+                                            requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
+                                        expect(requestReplyManagerSpy.sendRequest)
                                             .toHaveBeenCalledWith({
                                                 to : providerParticipantId,
                                                 from : proxyParticipantId,
@@ -380,34 +376,29 @@ define([
                                                     methodName : "getIsOn",
                                                     requestReplyId : requestReplyId
                                                 })
-                                            }
-
-                                            );
+                                        });
+                                        done();
+                                        return null;
+                                    }).catch(function() {
+                                        fail("get call unexpectedly failed.");
+                                        return null;
+                                    });
                                 });
 
-                        it("get notifies", function() {
+                        it("get notifies", function(done) {
                             expect(isOn.get).toBeDefined();
                             expect(typeof isOn.get === "function").toBeTruthy();
 
-                            var spy = jasmine.createSpyObj("spy", [
-                                "onFulfilled",
-                                "onRejected"
-                            ]);
-
-                            runs(function() {
-                                isOn.get().then(spy.onFulfilled).catch(spy.onRejected);
-                            });
-
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "The promise is not pending any more", asyncTimeout);
-
-                            runs(function() {
-                                checkSpy(spy);
+                            isOn.get().then(function() {
+                                done();
+                                return null;
+                            }).catch(function() {
+                                fail("get notifies rejected unexpectedly");
+                                return null;
                             });
                         });
 
-                        it("get returns correct joynr objects", function() {
+                        it("get returns correct joynr objects", function(done) {
                             var fixture = new ProxyAttribute(
                                     {
                                         proxyParticipantId : "proxy",
@@ -418,81 +409,54 @@ define([
                                     TestEnum.ZERO._typeName,
                                     "NOTIFYREADWRITE");
 
-
                             expect(fixture.get).toBeDefined();
                             expect(typeof fixture.get === "function").toBeTruthy();
-                            var spy = jasmine.createSpyObj("spy", [
-                                "onFulfilled",
-                                "onRejected"
-                            ]);
 
-                            runs(function() {
-                                requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve([ "ZERO" ]));
-                                fixture.get().then(spy.onFulfilled).catch(spy.onRejected);
-                            });
-
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "The promise is not pending any more", asyncTimeout);
-
-                            runs(function() {
-                                checkSpy(spy);
-                                expect(spy.onFulfilled).toHaveBeenCalledWith(TestEnum.ZERO);
+                            requestReplyManagerSpy.sendRequest.and.returnValue(Promise.resolve([ "ZERO" ]));
+                            fixture.get().then(function(data) {
+                                expect(data).toEqual(TestEnum.ZERO);
+                                done();
+                                return null;
+                            }).catch(function() {
+                                return null;
                             });
                         });
 
                         it(
                                 "set calls through to RequestReplyManager",
-                                function() {
+                                function(done) {
                                     var requestReplyId;
                                     isOn.set({
                                         value : true
-                                    });
-
-                                    expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
-                                    requestReplyId =
-                                            requestReplyManagerSpy.sendRequest.calls[0].args[0].request.requestReplyId;
-                                    expect(requestReplyManagerSpy.sendRequest)
-                                            .toHaveBeenCalledWith({
-                                                to : providerParticipantId,
-                                                from : proxyParticipantId,
-                                                messagingQos : messagingQos,
-                                                request : new Request({
-                                                    methodName : "setIsOn",
-                                                    requestReplyId : requestReplyId,
-                                                    paramDatatypes : [ "Boolean"
-                                                    ],
-                                                    params : [ true
-                                                    ]
-                                                })
-                                            }
+                                    }).then(function() {
+                                        expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
+                                        requestReplyId =
+                                                requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
+                                        expect(requestReplyManagerSpy.sendRequest)
+                                                .toHaveBeenCalledWith({
+                                                    to : providerParticipantId,
+                                                    from : proxyParticipantId,
+                                                    messagingQos : messagingQos,
+                                                    request : new Request({
+                                                        methodName : "setIsOn",
+                                                        requestReplyId : requestReplyId,
+                                                        paramDatatypes : [ "Boolean"
+                                                        ],
+                                                        params : [ true
+                                                        ]
+                                                    })
+                                                }
 
                                             );
+                                        done();
+                                        return null;
+                                    }).catch(function() {
+                                        fail("got unexpected reject from setter");
+                                        return null;
+                                    });
                                 });
 
-                        it("set notifies", function() {
-                            expect(isOn.set).toBeDefined();
-                            expect(typeof isOn.set === "function").toBeTruthy();
-
-                            var spy = jasmine.createSpyObj("spy", [
-                                "onFulfilled",
-                                "onRejected"
-                            ]);
-
-                            runs(function() {
-                                isOn.set().then(spy.onFulfilled).catch(spy.onRejected);
-                            });
-
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "The promise is not pending any more", asyncTimeout);
-
-                            runs(function() {
-                                checkSpy(spy);
-                            });
-                        });
-
-                        it("subscribe calls through to SubscriptionManager", function() {
+                        it("subscribe calls through to SubscriptionManager", function(done) {
                             var spy = jasmine.createSpyObj("spy", [
                                 "publication",
                                 "publicationMissed"
@@ -513,57 +477,46 @@ define([
                                         attributeName : "isOn",
                                         attributeType : "Boolean",
                                         qos : subscriptionQos,
+                                        subscriptionId : undefined,
                                         onReceive : spy.publication,
                                         onError : spy.publicationMissed
                                     });
+                            done();
                         });
 
-                        it("subscribe notifies", function() {
+                        it("subscribe notifies", function(done) {
                             expect(isOn.subscribe).toBeDefined();
                             expect(typeof isOn.subscribe === "function").toBeTruthy();
 
-                            var spy = jasmine.createSpyObj("spy", [
-                                "onFulfilled",
-                                "onRejected"
-                            ]);
-
-                            runs(function() {
-                                isOn.subscribe({
-                                    subscriptionQos : subscriptionQos,
-                                    onReceive : function(value) {},
-                                    onError : function(value) {}
-                                }).then(spy.onFulfilled).catch(spy.onRejected);
-                            });
-
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "The promise is not pending any more", asyncTimeout);
-
-                            runs(function() {
-                                checkSpy(spy);
+                            isOn.subscribe({
+                                subscriptionQos : subscriptionQos,
+                                onReceive : function(value) {},
+                                onError : function(value) {}
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(function() {
+                                fail("got reject from subscribe operation");
+                                return null;
                             });
                         });
 
-                        it("subscribe provides a subscriptionId", function() {
+                        it("subscribe provides a subscriptionId", function(done) {
                             var spy = jasmine.createSpyObj("spy", [
                                 "onFulfilled",
                                 "onRejected"
                             ]);
 
-                            runs(function() {
-                                isOn.subscribe({
-                                    subscriptionQos : subscriptionQos,
-                                    onReceive : function(value) {},
-                                    onError : function(value) {}
-                                }).then(spy.onFulfilled).catch(spy.onRejected);
-                            });
-
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "The promise is not pending any more", asyncTimeout);
-
-                            runs(function() {
-                                checkSpy(spy, false, subscriptionId);
+                            isOn.subscribe({
+                                subscriptionQos : subscriptionQos,
+                                onReceive : function(value) {},
+                                onError : function(value) {}
+                            }).then(function(id) {
+                                expect(id).toEqual(subscriptionId);
+                                done();
+                                return null;
+                            }).catch(function() {
+                                return null;
                             });
                         });
 
@@ -582,23 +535,10 @@ define([
                         // undefined", asyncTimeout);
                         // });
 
-                        it("unsubscribe calls through to SubscriptionManager", function() {
-                            var spy = jasmine.createSpyObj("spy", [
-                                "onFulfilled",
-                                "onRejected"
-                            ]);
-
-                            runs(function() {
-                                isOn.unsubscribe({
-                                    subscriptionId : subscriptionId
-                                }).then(spy.onFulfilled).catch(spy.onRejected);
-                            });
-
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "The promise is not pending any more", asyncTimeout);
-
-                            runs(function() {
+                        it("unsubscribe calls through to SubscriptionManager", function(done) {
+                            isOn.unsubscribe({
+                                subscriptionId : subscriptionId
+                            }).then(function() {
                                 expect(subscriptionManagerSpy.unregisterSubscription)
                                         .toHaveBeenCalled();
                                 expect(subscriptionManagerSpy.unregisterSubscription)
@@ -606,52 +546,37 @@ define([
                                             messagingQos : new MessagingQos(),
                                             subscriptionId : subscriptionId
                                         });
+                                done();
+                                return null;
+                            }).catch(function() {
+                                return null;
                             });
                         });
 
-                        it("unsubscribe notifies", function() {
+                        it("unsubscribe notifies", function(done) {
                             expect(isOn.unsubscribe).toBeDefined();
                             expect(typeof isOn.unsubscribe === "function").toBeTruthy();
 
-                            var spy1 = jasmine.createSpyObj("spy1", [
-                                "fulfill",
-                                "onRejected"
-                            ]);
-                            var spy2 = jasmine.createSpyObj("spy2", [
-                                "fulfill",
-                                "onRejected"
-                            ]);
-
-                            runs(function() {
-                                isOn.subscribe({
-                                    subscriptionQos : subscriptionQos,
-                                    onReceive : function(value) {},
-                                    onError : function(value) {}
-                                }).then(function(subscriptionId) {
-                                    spy1.fulfill(subscriptionId);
-                                    isOn.unsubscribe({
-                                        subscriptionId : subscriptionId
-                                    }).then(spy2.fulfill).catch(spy2.onRejected);
-                                }).catch(spy1.onRejected);
-                            });
-
-                            waitsFor(function() {
-                                return spy1.fulfill.callCount > 0;
-                            }, "The promises 1 is not pending any more", asyncTimeout);
-
-                            waitsFor(function() {
-                                return spy2.fulfill.callCount > 0;
-                            }, "The promises 2 is not pending any more", asyncTimeout);
-
-                            runs(function() {
-                                checkSpy(spy1);
-                                checkSpy(spy2);
+                            isOn.subscribe({
+                                subscriptionQos : subscriptionQos,
+                                onReceive : function(value) {},
+                                onError : function(value) {}
+                            }).then(function(subscriptionId) {
+                                return isOn.unsubscribe({
+                                    subscriptionId : subscriptionId
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(function() {
+                                fail("subscribe or unsubscribe unexpectedly failed");
+                                return null;
                             });
                         });
 
                         it(
                                 "throws if caller sets a generic object without a declared _typeName attribute with the name of a registrered type",
-                                function() {
+                                function(done) {
                                     var proxy = {};
                                     var radioStationProxyAttributeWrite =
                                             new ProxyAttributeWrite(
@@ -668,6 +593,7 @@ define([
                                             }
                                         });
                                     }).toThrow();
+                                    done();
                                 });
                     });
 

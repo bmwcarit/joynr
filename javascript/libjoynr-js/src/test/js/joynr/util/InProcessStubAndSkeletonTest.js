@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,17 +39,19 @@ define(
                 InProcessSkeleton) {
 
             describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
-                it("InProcessSkeleton is instantiable", function() {
+                it("InProcessSkeleton is instantiable", function(done) {
                     expect(new InProcessSkeleton()).toBeDefined();
                     expect(new InProcessSkeleton() instanceof InProcessSkeleton).toBeTruthy();
+                    done();
                 });
             });
 
             describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
-                it("InProcessStub is instantiable", function() {
+                it("InProcessStub is instantiable", function(done) {
                     expect(new InProcessStub(new InProcessSkeleton())).toBeDefined();
                     expect(new InProcessStub(new InProcessSkeleton()) instanceof InProcessStub)
                             .toBeTruthy();
+                    done();
                 });
             });
 
@@ -233,12 +235,12 @@ define(
                             stub.lookup(participantId);
 
                             // check if calls are going through to the mocked object
-                            expect(spy.remove.calls[0].args[0]).toEqual(participantId);
-                            expect(spy.remove.calls[1].args[0]).toEqual(participantIds);
-                            expect(spy.add.calls[0].args[0]).toEqual(capability);
-                            expect(spy.add.calls[1].args[0]).toEqual(arrayOfCapabilities);
-                            expect(spy.lookup.calls[0].args[0]).toEqual(lookupTest);
-                            expect(spy.lookup.calls[1].args[0]).toEqual(participantId);
+                            expect(spy.remove.calls.argsFor(0)[0]).toEqual(participantId);
+                            expect(spy.remove.calls.argsFor(1)[0]).toEqual(participantIds);
+                            expect(spy.add.calls.argsFor(0)[0]).toEqual(capability);
+                            expect(spy.add.calls.argsFor(1)[0]).toEqual(arrayOfCapabilities);
+                            expect(spy.lookup.calls.argsFor(0)[0]).toEqual(lookupTest);
+                            expect(spy.lookup.calls.argsFor(1)[0]).toEqual(participantId);
                         }
 
                         var spy;
@@ -250,30 +252,32 @@ define(
                             ]);
                         });
 
-                        it(
-                                "all methods get called through stub and skeleton correctly",
-                                function() {
-                                    var stub = new InProcessStub(new InProcessSkeleton(spy));
-                                    check(stub, spy);
-                                });
+                        it("all methods get called through stub and skeleton correctly", function(
+                                done) {
+                            var stub = new InProcessStub(new InProcessSkeleton(spy));
+                            check(stub, spy);
+                            done();
+                        });
 
                         it(
                                 "all methods get called through stub and skeleton correctly with late initialization",
-                                function() {
+                                function(done) {
                                     var stub = new InProcessStub();
                                     stub.setSkeleton(new InProcessSkeleton(spy));
                                     check(stub, spy);
+                                    done();
                                 });
 
                         it(
                                 "all methods get called through stub and skeleton correctly after overwrite",
-                                function() {
+                                function(done) {
                                     var stub = new InProcessStub();
                                     stub.setSkeleton(new InProcessSkeleton({
                                         someKey : "someValue"
                                     }));
                                     stub.setSkeleton(new InProcessSkeleton(spy));
                                     check(stub, spy);
+                                    done();
                                 });
 
                         var objects = [
@@ -299,7 +303,7 @@ define(
 
                         it(
                                 "throws when Stub receives object which is not of type InProcessSkeleton",
-                                function() {
+                                function(done) {
                                     var i;
                                     for (i = 0; i < objects.length; ++i) {
                                         testValue(objects[i]);
@@ -307,15 +311,17 @@ define(
                                     expect(function() {
                                         var o = new InProcessStub();
                                     }).not.toThrow();
+                                    done();
                                 });
 
-                        it("throws when inProcessSkeleton is undefined or null ", function() {
+                        it("throws when inProcessSkeleton is undefined or null ", function(done) {
                             expect(function() {
                                 new InProcessStub().setSkeleton(undefined);
                             }).toThrow();
                             expect(function() {
                                 new InProcessStub().setSkeleton(null);
                             }).toThrow();
+                            done();
                         });
 
                     });

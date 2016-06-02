@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
  * #L%
  */
 
-define([ "joynr/messaging/webmessaging/WebMessagingStubFactory"
-], function(WebMessagingStubFactory) {
+define([
+    "joynr/messaging/webmessaging/WebMessagingStubFactory",
+    "joynr/util/JSONSerializer"
+], function(WebMessagingStubFactory, JSONSerializer) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", function() {
         var returnValue;
@@ -29,7 +31,7 @@ define([ "joynr/messaging/webmessaging/WebMessagingStubFactory"
         var webMessagingAddress;
         var joynrMessage;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             returnValue = {
                 key : "returnValue"
             };
@@ -44,22 +46,24 @@ define([ "joynr/messaging/webmessaging/WebMessagingStubFactory"
                 "getWindow",
                 "getOrigin"
             ]);
-            webMessagingAddress.getWindow.andReturn(window);
-            webMessagingAddress.getOrigin.andReturn(origin);
+            webMessagingAddress.getWindow.and.returnValue(window);
+            webMessagingAddress.getOrigin.and.returnValue(origin);
             function JoynrMessage() {}
             joynrMessage = new JoynrMessage();
+            done();
         });
 
-        it("is instantiable and of correct type", function() {
+        it("is instantiable and of correct type", function(done) {
             expect(WebMessagingStubFactory).toBeDefined();
             expect(typeof WebMessagingStubFactory === "function").toBeTruthy();
             expect(webMessagingStubFactory).toBeDefined();
             expect(webMessagingStubFactory instanceof WebMessagingStubFactory).toBeTruthy();
             expect(webMessagingStubFactory.build).toBeDefined();
             expect(typeof webMessagingStubFactory.build === "function").toBeTruthy();
+            done();
         });
 
-        it("creates a messaging stub and uses it correctly", function() {
+        it("creates a messaging stub and uses it correctly", function(done) {
             var webMessagingStub = webMessagingStubFactory.build(webMessagingAddress);
             expect(webMessagingAddress.getWindow).toHaveBeenCalledWith();
             expect(webMessagingAddress.getOrigin).toHaveBeenCalledWith();
@@ -68,7 +72,10 @@ define([ "joynr/messaging/webmessaging/WebMessagingStubFactory"
                 message : joynrMessage
             };
             var result = webMessagingStub.transmit(param);
-            expect(window.postMessage).toHaveBeenCalledWith(param, origin);
+            expect(window.postMessage).toHaveBeenCalledWith(
+                    JSON.parse(JSONSerializer.stringify(param)),
+                    origin);
+            done();
         });
 
     });

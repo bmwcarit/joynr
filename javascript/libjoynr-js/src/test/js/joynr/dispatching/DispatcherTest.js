@@ -1,3 +1,6 @@
+/*global fail: true */
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -35,7 +38,8 @@ define(
             "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionStop",
             "joynr/dispatching/types/SubscriptionPublication",
-            "joynr/tests/testTypes/TestEnum"
+            "joynr/tests/testTypes/TestEnum",
+            "joynr/types/TypeRegistrySingleton"
         ],
         function(
                 Util,
@@ -54,7 +58,8 @@ define(
                 SubscriptionReply,
                 SubscriptionStop,
                 SubscriptionPublication,
-                TestEnum) {
+                TestEnum,
+                TypeRegistrySingleton) {
 
             var providerId = "providerId";
             var proxyId = "proxyId";
@@ -69,7 +74,7 @@ define(
                         /**
                          * Called before each test.
                          */
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             requestReplyManager = jasmine.createSpyObj("RequestReplyManager", [
                                 "handleOneWayRequest",
                                 "handleRequest",
@@ -100,11 +105,22 @@ define(
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
+
+                            /*
+                             * Make sure 'TestEnum' is properly registered as a type.
+                             * Just requiring the module is insufficient since the
+                             * automatically generated code called async methods.
+                             * Execution might be still in progress.
+                             */
+                            TypeRegistrySingleton.getInstance().getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         it(
                                 "is instantiable and of correct type",
-                                function() {
+                                function(done) {
                                     expect(Dispatcher).toBeDefined();
                                     expect(typeof Dispatcher === "function").toBeTruthy();
                                     expect(dispatcher).toBeDefined();
@@ -138,11 +154,12 @@ define(
                                             .toBeTruthy();
                                     expect(dispatcher.receive).toBeDefined();
                                     expect(typeof dispatcher.receive === "function").toBeTruthy();
+                                    done();
                                 });
 
                         it(
                                 "forwards subscription request to Publication Manager",
-                                function() {
+                                function(done) {
                                     var payload = {
                                         subscribedToName : "attributeName",
                                         subscriptionId : subscriptionId
@@ -165,9 +182,10 @@ define(
                                                     proxyId,
                                                     providerId,
                                                     new SubscriptionRequest(payload));
+                                    done();
                                 });
 
-                        it("forwards subscription reply to Subscription Manager", function() {
+                        it("forwards subscription reply to Subscription Manager", function(done) {
                             var payload = {
                                 subscriptionId : subscriptionId
                             };
@@ -179,11 +197,12 @@ define(
                             expect(subscriptionManager.handleSubscriptionReply).toHaveBeenCalled();
                             expect(subscriptionManager.handleSubscriptionReply)
                                     .toHaveBeenCalledWith(new SubscriptionReply(payload));
+                            done();
                         });
 
                         it(
                                 "forwards subscription stop to SubscriptionPublication Manager",
-                                function() {
+                                function(done) {
                                     var payload = {
                                         subscriptionId : subscriptionId
                                     };
@@ -196,9 +215,10 @@ define(
                                             .toHaveBeenCalled();
                                     expect(publicationManager.handleSubscriptionStop)
                                             .toHaveBeenCalledWith(new SubscriptionStop(payload));
+                                    done();
                                 });
 
-                        it("forwards publication to Subscription Manager", function() {
+                        it("forwards publication to Subscription Manager", function(done) {
                             var payload = {
                                 subscriptionId : subscriptionId,
                                 response : "myResponse"
@@ -210,11 +230,12 @@ define(
                             expect(subscriptionManager.handlePublication).toHaveBeenCalled();
                             expect(subscriptionManager.handlePublication).toHaveBeenCalledWith(
                                     new SubscriptionPublication(payload));
+                            done();
                         });
 
                         it(
                                 "forwards request to RequestReply Manager",
-                                function() {
+                                function(done) {
                                     var joynrMessage =
                                             new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
                                     joynrMessage.setHeader(
@@ -229,37 +250,47 @@ define(
                                     joynrMessage.payload = JSON.stringify(request);
                                     dispatcher.receive(joynrMessage);
                                     expect(requestReplyManager.handleRequest).toHaveBeenCalled();
-                                    expect(requestReplyManager.handleRequest.mostRecentCall.args[0])
+                                    expect(
+                                            requestReplyManager.handleRequest.calls.mostRecent().args[0])
                                             .toEqual(providerId);
-                                    expect(requestReplyManager.handleRequest.mostRecentCall.args[1])
+                                    expect(
+                                            requestReplyManager.handleRequest.calls.mostRecent().args[1])
                                             .toEqual(request);
                                     expect(
-                                            typeof requestReplyManager.handleRequest.mostRecentCall.args[2] === "function")
+                                            typeof requestReplyManager.handleRequest.calls
+                                                    .mostRecent().args[2] === "function")
                                             .toBeTruthy();
+                                    done();
                                 });
 
-                        it("forwards one-way request to RequestReply Manager", function() {
-                            var joynrMessage =
-                                    new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
-                            joynrMessage.setHeader(
-                                    JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
-                                    providerId);
-                            joynrMessage.setHeader(
-                                    JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
-                                    proxyId);
-                            var oneWayRequest = new OneWayRequest({
-                                methodName : "methodName"
-                            });
-                            joynrMessage.payload = JSON.stringify(oneWayRequest);
-                            dispatcher.receive(joynrMessage);
-                            expect(requestReplyManager.handleOneWayRequest).toHaveBeenCalled();
-                            expect(requestReplyManager.handleOneWayRequest.mostRecentCall.args[0])
-                                    .toEqual(providerId);
-                            expect(requestReplyManager.handleOneWayRequest.mostRecentCall.args[1])
-                                    .toEqual(oneWayRequest);
-                        });
+                        it(
+                                "forwards one-way request to RequestReply Manager",
+                                function(done) {
+                                    var joynrMessage =
+                                            new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
+                                    joynrMessage.setHeader(
+                                            JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
+                                            providerId);
+                                    joynrMessage.setHeader(
+                                            JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
+                                            proxyId);
+                                    var oneWayRequest = new OneWayRequest({
+                                        methodName : "methodName"
+                                    });
+                                    joynrMessage.payload = JSON.stringify(oneWayRequest);
+                                    dispatcher.receive(joynrMessage);
+                                    expect(requestReplyManager.handleOneWayRequest)
+                                            .toHaveBeenCalled();
+                                    expect(
+                                            requestReplyManager.handleOneWayRequest.calls
+                                                    .mostRecent().args[0]).toEqual(providerId);
+                                    expect(
+                                            requestReplyManager.handleOneWayRequest.calls
+                                                    .mostRecent().args[1]).toEqual(oneWayRequest);
+                                    done();
+                                });
 
-                        it("forwards reply to RequestReply Manager", function() {
+                        it("forwards reply to RequestReply Manager", function(done) {
                             var joynrMessage =
                                     new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REPLY);
                             var reply = new Reply({
@@ -270,83 +301,102 @@ define(
                             dispatcher.receive(joynrMessage);
                             expect(requestReplyManager.handleReply).toHaveBeenCalled();
                             expect(requestReplyManager.handleReply).toHaveBeenCalledWith(reply);
+                            done();
                         });
 
-                        it("enriches requests with custom headers", function() {
-                            var sentMessage;
-                            var request = new Request({
-                                methodName : "methodName"
-                            });
-                            var messagingQos = new MessagingQos();
-                            var headerKey = "key";
-                            var headerValue = "value";
-                            messagingQos.putCustomMessageHeader(headerKey, headerValue);
-                            dispatcher.sendRequest({
-                                from : "from",
-                                to : "to",
-                                messagingQos : messagingQos,
-                                request : request
-                            });
-                            expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-                            sentMessage =
-                                    clusterControllerMessagingStub.transmit.mostRecentCall.args[0];
-                            expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
-                        });
+                        it(
+                                "enriches requests with custom headers",
+                                function(done) {
+                                    var sentMessage;
+                                    var request = new Request({
+                                        methodName : "methodName"
+                                    });
+                                    var messagingQos = new MessagingQos();
+                                    var headerKey = "key";
+                                    var headerValue = "value";
+                                    messagingQos.putCustomMessageHeader(headerKey, headerValue);
+                                    dispatcher.sendRequest({
+                                        from : "from",
+                                        to : "to",
+                                        messagingQos : messagingQos,
+                                        request : request
+                                    });
+                                    expect(clusterControllerMessagingStub.transmit)
+                                            .toHaveBeenCalled();
+                                    sentMessage =
+                                            clusterControllerMessagingStub.transmit.calls
+                                                    .mostRecent().args[0];
+                                    expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(
+                                            headerValue);
+                                    done();
+                                });
 
-                        it("enriches one way requests with custom headers", function() {
-                            var sentMessage;
-                            var request = new OneWayRequest({
-                                methodName : "methodName"
-                            });
-                            var messagingQos = new MessagingQos();
-                            var headerKey = "key";
-                            var headerValue = "value";
-                            messagingQos.putCustomMessageHeader(headerKey, headerValue);
-                            dispatcher.sendOneWayRequest({
-                                from : "from",
-                                to : "to",
-                                messagingQos : messagingQos,
-                                request : request
-                            });
-                            expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-                            sentMessage =
-                                    clusterControllerMessagingStub.transmit.mostRecentCall.args[0];
-                            expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
-                        });
+                        it(
+                                "enriches one way requests with custom headers",
+                                function(done) {
+                                    var sentMessage;
+                                    var request = new OneWayRequest({
+                                        methodName : "methodName"
+                                    });
+                                    var messagingQos = new MessagingQos();
+                                    var headerKey = "key";
+                                    var headerValue = "value";
+                                    messagingQos.putCustomMessageHeader(headerKey, headerValue);
+                                    dispatcher.sendOneWayRequest({
+                                        from : "from",
+                                        to : "to",
+                                        messagingQos : messagingQos,
+                                        request : request
+                                    });
+                                    expect(clusterControllerMessagingStub.transmit)
+                                            .toHaveBeenCalled();
+                                    sentMessage =
+                                            clusterControllerMessagingStub.transmit.calls
+                                                    .mostRecent().args[0];
+                                    expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(
+                                            headerValue);
+                                    done();
+                                });
 
-                        it("enriches replies with custom headers from request", function() {
-                            var sentRequestMessage, sentReplyMessage;
-                            var request = new Request({
-                                methodName : "methodName"
-                            });
-                            var messagingQos = new MessagingQos();
-                            var headerKey = "key";
-                            var headerValue = "value";
-                            messagingQos.putCustomMessageHeader(headerKey, headerValue);
-                            dispatcher.sendRequest({
-                                from : "from",
-                                to : "to",
-                                messagingQos : messagingQos,
-                                request : request
-                            });
-                            expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-                            sentRequestMessage =
-                                    clusterControllerMessagingStub.transmit.mostRecentCall.args[0];
-                            // get ready for an incoming request: when handleRequest is called, pass an empty reply back.
-                            requestReplyManager.handleRequest.andCallFake(function(
-                                    to,
-                                    request,
-                                    callback) {
-                                callback(new Reply());
-                            });
-                            // now simulate receiving the request message, as if it had been transmitted
-                            // this will be passed on to the mock requestReplyManager
-                            dispatcher.receive(sentRequestMessage);
-                            sentReplyMessage =
-                                    clusterControllerMessagingStub.transmit.mostRecentCall.args[0];
-                            expect(sentReplyMessage.getCustomHeaders()[headerKey]).toEqual(
-                                    headerValue);
-                        });
+                        it(
+                                "enriches replies with custom headers from request",
+                                function(done) {
+                                    var sentRequestMessage, sentReplyMessage;
+                                    var request = new Request({
+                                        methodName : "methodName"
+                                    });
+                                    var messagingQos = new MessagingQos();
+                                    var headerKey = "key";
+                                    var headerValue = "value";
+                                    messagingQos.putCustomMessageHeader(headerKey, headerValue);
+                                    dispatcher.sendRequest({
+                                        from : "from",
+                                        to : "to",
+                                        messagingQos : messagingQos,
+                                        request : request
+                                    });
+                                    expect(clusterControllerMessagingStub.transmit)
+                                            .toHaveBeenCalled();
+                                    sentRequestMessage =
+                                            clusterControllerMessagingStub.transmit.calls
+                                                    .mostRecent().args[0];
+                                    // get ready for an incoming request: when handleRequest is called, pass an empty reply back.
+                                    requestReplyManager.handleRequest.and.callFake(function(
+                                            to,
+                                            request,
+                                            callback) {
+                                        callback(new Reply());
+                                    });
+                                    // now simulate receiving the request message, as if it had been transmitted
+                                    // this will be passed on to the mock requestReplyManager
+                                    dispatcher.receive(sentRequestMessage);
+                                    sentReplyMessage =
+                                            clusterControllerMessagingStub.transmit.calls
+                                                    .mostRecent().args[0];
+                                    expect(sentReplyMessage.getCustomHeaders()[headerKey]).toEqual(
+                                            headerValue);
+                                    done();
+                                });
                     });
 
         }); // require

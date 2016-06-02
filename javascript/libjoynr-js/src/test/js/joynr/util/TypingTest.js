@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ define(
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
+            "joynr/types/Version",
             "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/ComplexRadioStation",
             "joynr/datatypes/exampleTypes/Country",
@@ -39,6 +40,7 @@ define(
                 DiscoveryEntry,
                 ProviderQos,
                 ProviderScope,
+                Version,
                 RadioStation,
                 ComplexRadioStation,
                 Country,
@@ -65,15 +67,16 @@ define(
             }
 
             describe("libjoynr-js.joynr.Typing", function() {
-                it("is defined and of correct type", function() {
+                it("is defined and of correct type", function(done) {
                     expect(Typing).toBeDefined();
                     expect(Typing).not.toBeNull();
                     expect(typeof Typing === "object").toBeTruthy();
+                    done();
                 });
             });
 
             describe("libjoynr-js.joynr.Typing.getObjectType", function() {
-                it("returns the correct type strings", function() {
+                it("returns the correct type strings", function(done) {
                     expect(Typing.getObjectType(true)).toEqual("Boolean");
                     expect(Typing.getObjectType(false)).toEqual("Boolean");
 
@@ -94,9 +97,10 @@ define(
 
                     expect(Typing.getObjectType([])).toEqual("Array");
                     expect(Typing.getObjectType({})).toEqual("Object");
+                    done();
                 });
 
-                it("throws if no object is provided", function() {
+                it("throws if no object is provided", function(done) {
                     expect(function() {
                         Typing.getObjectType();
                     }).toThrow();
@@ -106,6 +110,7 @@ define(
                     expect(function() {
                         Typing.getObjectType(undefined);
                     }).toThrow();
+                    done();
                 });
             });
 
@@ -295,7 +300,7 @@ define(
                         typeRegistry.addType("MyTypeName", MyType);
                         typeRegistry.addType("MySecondTypeName", MySecondType);
 
-                        it("types all objects correctly", function() {
+                        it("types all objects correctly", function(done) {
                             var i, typed;
                             for (i = 0; i < tests.length; ++i) {
                                 typed = Typing.augmentTypes(tests[i].untyped, typeRegistry);
@@ -305,11 +310,12 @@ define(
                                             Typing.getObjectType(tests[i].typed));
                                 }
                             }
+                            done();
                         });
 
                         it(
                                 "throws when giving a function or an object with a custom type",
-                                function() {
+                                function(done) {
                                     expect(function() {
                                         Typing.augmentTypes(function() {}, typeRegistry);
                                     }).toThrow();
@@ -321,9 +327,10 @@ define(
                                     expect(function() {
                                         Typing.augmentTypes(new MySecondType(), typeRegistry);
                                     }).toThrow();
+                                    done();
                                 });
 
-                        it("augmentTypes is able to deal with enums as input", function() {
+                        it("augmentTypes is able to deal with enums as input", function(done) {
                             var fixture, expected;
                             fixture = "ZERO";
                             expected = TestEnum.ZERO;
@@ -334,11 +341,12 @@ define(
                                     Typing.augmentTypes(fixture, TypeRegistrySingleton
                                             .getInstance(), "joynr.tests.testTypes.TestEnum"))
                                     .toBe(expected);
+                            done();
                         });
 
                         it(
                                 "augmentTypes is able to deal with structs containing enum members",
-                                function() {
+                                function(done) {
                                     var fixture, expected;
                                     /*jslint nomen: true */
                                     fixture =
@@ -357,12 +365,13 @@ define(
                                     expect(
                                             Typing.augmentTypes(fixture, TypeRegistrySingleton
                                                     .getInstance())).toEqual(expected);
+                                    done();
                                 });
 
                         it(
                                 "augmentTypes is able to deal with complex structs containing enum array and other structs as members",
-                                function() {
-                                    var fixture, providerQos, expected;
+                                function(done) {
+                                    var fixture, providerQos, providerVersion, expected;
                                     providerQos = {
                                         _typeName : "joynr.types.ProviderQos",
                                         customParameters : [],
@@ -370,6 +379,12 @@ define(
                                         scope : "GLOBAL",
                                         supportsOnChangeSubscriptions : false
                                     };
+                                    providerVersion = {
+                                        _typeName : "joynr.types.Version",
+                                        majorVersion : 1,
+                                        minorVersion : 2
+                                    };
+
                                     /*jslint nomen: true */
                                     fixture = {
                                         _typeName : "joynr.types.DiscoveryEntry",
@@ -377,8 +392,10 @@ define(
                                         interfaceName : "interfaceName",
                                         participantId : "participantId",
                                         qos : providerQos,
+                                        providerVersion : providerVersion,
                                         lastSeenDateMs : 123,
-                                        publicKeyId : "publicKeyId"
+                                        publicKeyId : "publicKeyId",
+                                        expiryDateMs : 1234
                                     };
                                     /*jslint nomen: false */
 
@@ -396,11 +413,17 @@ define(
                                                                     scope : ProviderScope.GLOBAL,
                                                                     supportsOnChangeSubscriptions : providerQos.supportsOnChangeSubscriptions
                                                                 }),
+                                                        providerVersion : new Version({
+                                                            majorVersion : 1,
+                                                            minorVersion : 2
+                                                        }),
+                                                        expiryDateMs : 1234,
                                                         publicKeyId : "publicKeyId"
                                                     });
                                     expect(
                                             Typing.augmentTypes(fixture, TypeRegistrySingleton
                                                     .getInstance())).toEqual(expected);
+                                    done();
                                 });
 
                     });
@@ -414,14 +437,15 @@ define(
             }
 
             describe("libjoynr-js.joynr.Typing.augmentTypeName", function() {
-                it("augments type into _typeName member", function() {
+                it("augments type into _typeName member", function(done) {
                     augmentTypeName(new MyCustomObj(), "MyCustomObj");
                     augmentTypeName(new _TestConstructor123_(), "_TestConstructor123_");
                     augmentTypeName(new MyType(), "MyType");
                     augmentTypeName(new MySecondType(), "MySecondType");
+                    done();
                 });
 
-                it("augments type into custom member", function() {
+                it("augments type into custom member", function(done) {
                     augmentTypeName(new MyCustomObj(), "MyCustomObj", "myCustomMember");
                     augmentTypeName(
                             new _TestConstructor123_(),
@@ -429,9 +453,10 @@ define(
                             "myCustomMember");
                     augmentTypeName(new MyType(), "MyType", "myCustomMember");
                     augmentTypeName(new MySecondType(), "MySecondType", "myCustomMember");
+                    done();
                 });
 
-                it("throws if no object is provided", function() {
+                it("throws if no object is provided", function(done) {
                     expect(function() {
                         Typing.augmentTypeName();
                     }).toThrow();
@@ -441,9 +466,10 @@ define(
                     expect(function() {
                         Typing.augmentTypeName(undefined);
                     }).toThrow();
+                    done();
                 });
 
-                it("isEnumType accepts enum types", function() {
+                it("isEnumType accepts enum types", function(done) {
                     var fixture = TestEnum.ZERO, radioStation;
                     radioStation = new RadioStation({
                         name : "name",
@@ -454,6 +480,7 @@ define(
                     expect(Typing.isEnumType("TestString")).toBe(false);
                     expect(Typing.isEnumType(123)).toBe(false);
                     expect(Typing.isEnumType(radioStation)).toBe(false);
+                    done();
                 });
 
             });

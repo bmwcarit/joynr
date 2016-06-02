@@ -1,9 +1,10 @@
 /*jslint es5: true */
+/*global fail: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +36,8 @@ define([
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/radiotypes/RadioStation",
-            "global/Promise"
+            "global/Promise",
+            "global/WaitsFor"
         ],
         function(
                 ProxyBuilder,
@@ -53,7 +55,8 @@ define([
                 InProcessAddress,
                 RadioProxy,
                 RadioStation,
-                Promise) {
+                Promise,
+                waitsFor) {
 
             var safetyTimeoutDelta = 100;
 
@@ -74,7 +77,7 @@ define([
                         var loggingManagerSpy;
                         var libjoynrMessagingAddress;
 
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             domain = "myDomain";
                             interfaceName = "vehicle/Radio";
                             discoveryQos = new DiscoveryQos({
@@ -125,7 +128,8 @@ define([
                             };
 
                             var resolvedPromise = Promise.resolve(arbitratedCaps);
-                            arbitratorSpy.startArbitration.andReturn(resolvedPromise);
+                            arbitratorSpy.startArbitration.and.returnValue(resolvedPromise);
+                        
                             proxyBuilder = new ProxyBuilder({
                                 arbitrator : arbitratorSpy
                             }, {
@@ -133,14 +137,16 @@ define([
                                 libjoynrMessagingAddress : libjoynrMessagingAddress,
                                 loggingManager : loggingManagerSpy
                             });
+                            done();
                         });
 
-                        it("is defined and of correct type", function() {
+                        it("is defined and of correct type", function(done) {
                             expect(proxyBuilder).toBeDefined();
                             expect(typeof proxyBuilder.build === "function").toBe(true);
+                            done();
                         });
 
-                        it("throws exceptions upon missing or wrongly typed arguments", function() {
+                        it("throws exceptions upon missing or wrongly typed arguments", function(done) {
                             // settings is undefined
                             expect(function() {
                                 proxyBuilder.build(RadioProxy);
@@ -208,32 +214,31 @@ define([
                                     messagingQos : new MessagingQos()
                                 });
                             }).not.toThrow();
+                            done();
                         });
 
-                        it("does not throw", function() {
+                        it("does not throw", function(done) {
                             expect(function() {
                                 proxyBuilder.build(RadioProxy, settings);
                             }).not.toThrow();
+                            done();
                         });
 
-                        it("returns an A+ Promise object", function() {
+                        it("returns an A+ Promise object", function(done) {
                             var promise = proxyBuilder.build(RadioProxy, settings);
                             expect(promise).toBeDefined();
                             expect(promise).not.toBeNull();
                             expect(typeof promise === "object").toBeTruthy();
                             expect(promise.then).toBeDefined();
+                            done();
                         });
 
-                        it("calls arbitrator with correct arguments", function() {
-                            runs(function() {
-                                proxyBuilder.build(RadioProxy, settings);
-                            });
+                        it("calls arbitrator with correct arguments", function(done) {
+                            proxyBuilder.build(RadioProxy, settings);
 
                             waitsFor(function() {
-                                return arbitratorSpy.startArbitration.callCount > 0;
-                            }, "startArbitration invoked", 100);
-
-                            runs(function(){
+                                return arbitratorSpy.startArbitration.calls.count() > 0;
+                            }, "startArbitration invoked", 100).then(function() {
                                 expect(arbitratorSpy.startArbitration).toHaveBeenCalled();
                                 expect(arbitratorSpy.startArbitration).toHaveBeenCalledWith({
                                     domains : [settings.domain],
@@ -242,71 +247,69 @@ define([
                                     staticArbitration : settings.staticArbitration,
                                     proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
                                 });
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("returned promise is resolved with a frozen proxy object by default", function() {
+                        it("returned promise is resolved with a frozen proxy object by default", function(done) {
                             var spy = jasmine.createSpyObj("spy", [
                                 "onFulfilled",
                                 "onRejected"
                             ]);
 
-                            runs(function() {
-                                proxyBuilder.build(RadioProxy, settings).then(function(argument) {
-                                    spy.onFulfilled(argument);
-                                }).catch(spy.onRejected);
-                            });
+                            proxyBuilder.build(RadioProxy, settings).then(function(argument) {
+                                spy.onFulfilled(argument);
+                            }).catch(spy.onRejected);
 
                             waitsFor(
                                     function() {
-                                        return spy.onFulfilled.callCount > 0;
+                                        return spy.onFulfilled.calls.count() > 0;
                                     },
                                     "until the ProxyBuilder promise is not pending any more",
-                                    safetyTimeoutDelta);
-
-                            runs(function() {
+                            safetyTimeoutDelta).then(function() {
                                 expect(spy.onFulfilled).toHaveBeenCalled();
                                 expect(spy.onFulfilled).toHaveBeenCalledWith(
                                         jasmine.any(RadioProxy));
                                 expect(spy.onRejected).not.toHaveBeenCalled();
-                                var proxy = spy.onFulfilled.mostRecentCall.args[0];
+                                var proxy = spy.onFulfilled.calls.mostRecent().args[0];
                                 proxy.adaptfrozenObjectShouldNotWork = "adaptfrozenObjectShouldNotWork";
                                 expect(proxy.adaptfrozenObjectShouldNotWork).not.toBeDefined();
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("returned promise is resolved with an unfrozen proxy object if set accordingly", function() {
+                        it("returned promise is resolved with an unfrozen proxy object if set accordingly", function(done) {
                             var spy = jasmine.createSpyObj("spy", [
                                 "onFulfilled",
                                 "onRejected"
                             ]);
 
-                            runs(function() {
-                                settings.freeze = false;
-                                proxyBuilder.build(RadioProxy, settings).then(function(argument) {
-                                    spy.onFulfilled(argument);
-                                }).catch(spy.onRejected);
-                            });
+                            settings.freeze = false;
+                            proxyBuilder.build(RadioProxy, settings).then(function(argument) {
+                                spy.onFulfilled(argument);
+                            }).catch(spy.onRejected);
 
                             waitsFor(
                                     function() {
-                                        return spy.onFulfilled.callCount > 0;
+                                        return spy.onFulfilled.calls.count() > 0;
                                     },
                                     "until the ProxyBuilder promise is not pending any more",
-                                    safetyTimeoutDelta);
-
-                            runs(function() {
+                            safetyTimeoutDelta).then(function() {
                                 expect(spy.onFulfilled).toHaveBeenCalled();
                                 expect(spy.onFulfilled).toHaveBeenCalledWith(
                                         jasmine.any(RadioProxy));
                                 expect(spy.onRejected).not.toHaveBeenCalled();
-                                var proxy = spy.onFulfilled.mostRecentCall.args[0];
+                                var proxy = spy.onFulfilled.calls.mostRecent().args[0];
                                 proxy.adaptUnfrozenObjectShouldWork = "adaptUnfrozenObjectShouldWork";
                                 expect(proxy.adaptUnfrozenObjectShouldWork).toEqual("adaptUnfrozenObjectShouldWork");
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("returned promise is rejected with error", function() {
+                        it("returned promise is rejected with error", function(done) {
                             var spy = jasmine.createSpyObj("spy", [
                                 "onFulfilled",
                                 "onRejected"
@@ -315,35 +318,33 @@ define([
 
                             var onRejectedCalled = false;
 
-                            runs(function() {
-                                arbitratorSpy.startArbitration.andReturn(Promise.reject(error));
-                                proxyBuilder = new ProxyBuilder({
-                                    arbitrator : arbitratorSpy
-                                });
-                                proxyBuilder.build(RadioProxy, settings).then(spy.onFulfilled).catch(
-                                        function(error) {
-                                            onRejectedCalled = true;
-                                            spy.onRejected(error);
-                                        });
+                            arbitratorSpy.startArbitration.and.returnValue(Promise.reject(error));
+                            proxyBuilder = new ProxyBuilder({
+                                arbitrator : arbitratorSpy
                             });
+                            proxyBuilder.build(RadioProxy, settings).then(spy.onFulfilled).catch(
+                                    function(error) {
+                                        onRejectedCalled = true;
+                                        spy.onRejected(error);
+                                    });
 
                             waitsFor(
                                     function() {
                                         return onRejectedCalled;
                                     },
                                     "until the ProxyBuilder promise is not pending any more",
-                                    safetyTimeoutDelta);
-
-                            runs(function() {
+                            safetyTimeoutDelta).then(function() {
                                 expect(spy.onFulfilled).not.toHaveBeenCalled();
                                 expect(spy.onRejected).toHaveBeenCalled();
                                 expect(spy.onRejected).toHaveBeenCalledWith(error);
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         it(
                                 "returned promise is resolved with proxy object with injected providerParticipantId",
-                                function() {
+                                function(done) {
                                     var spy = jasmine.createSpyObj("spy", [
                                         "onFulfilled",
                                         "onRejected"
@@ -351,31 +352,29 @@ define([
 
                                     var onFulfilledCalled = false;
 
-                                    runs(function() {
-                                        proxyBuilder.build(RadioProxy, settings).then(
-                                                function(argument) {
-                                                    onFulfilledCalled = true;
-                                                    spy.onFulfilled(argument);
-                                                }).catch(spy.onRejected);
-                                    });
+                                    proxyBuilder.build(RadioProxy, settings).then(
+                                            function(argument) {
+                                                onFulfilledCalled = true;
+                                                spy.onFulfilled(argument);
+                                    }).catch(spy.onRejected);
 
                                     waitsFor(
                                             function() {
                                                 return onFulfilledCalled;
                                             },
                                             "until the ProxyBuilder promise is not pending any more",
-                                            safetyTimeoutDelta);
-
-                                    runs(function() {
+                                            safetyTimeoutDelta).then(function() {
                                         expect(
-                                                spy.onFulfilled.calls[0].args[0].providerParticipantId)
+                                                spy.onFulfilled.calls.argsFor(0)[0].providerParticipantId)
                                                 .toEqual(arbitratedCaps[0].participantId);
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         it(
                                 "adds a routing table entry",
-                                function() {
+                                function(done) {
                                     var promise, spy = jasmine.createSpyObj("spy", [
                                         "onFulfilled",
                                         "onRejected"
@@ -383,12 +382,14 @@ define([
 
                                     var onFulfilledCalled = false;
 
-                                    runs(function() {
-                                        proxyBuilder.build(RadioProxy, settings).then(
-                                                function(argument) {
-                                                    onFulfilledCalled = true;
-                                                    spy.onFulfilled(argument);
-                                                }).catch(spy.onRejected);
+                                    proxyBuilder.build(RadioProxy, settings).then(
+                                        function(argument) {
+                                            onFulfilledCalled = true;
+                                            spy.onFulfilled(argument);
+                                            return null;
+                                    }).catch(function() {
+                                        spy.onRejected();
+                                        return null;
                                     });
 
                                     waitsFor(
@@ -396,21 +397,21 @@ define([
                                                 return onFulfilledCalled;
                                             },
                                             "until the ProxyBuilder promise is not pending any more",
-                                            safetyTimeoutDelta);
-
-                                    runs(function() {
+                                            safetyTimeoutDelta).then(function() {
                                         expect(
-                                                spy.onFulfilled.calls[0].args[0].providerParticipantId)
+                                                spy.onFulfilled.calls.argsFor(0)[0].providerParticipantId)
                                                 .toEqual(arbitratedCaps[0].participantId);
                                         expect(
-                                                typeof messageRouterSpy.addNextHop.mostRecentCall.args[0] === "string")
+                                                typeof messageRouterSpy.addNextHop.calls.mostRecent().args[0] === "string")
                                                 .toBeTruthy();
-                                        expect(messageRouterSpy.addNextHop.mostRecentCall.args[1])
+                                        expect(messageRouterSpy.addNextHop.calls.mostRecent().args[1])
                                                 .toEqual(libjoynrMessagingAddress);
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
-                        it("sets the logging context", function() {
+                        it("sets the logging context", function(done) {
                             var proxy, spy = jasmine.createSpyObj("spy", [
                                 "onFulfilled",
                                 "onRejected"
@@ -420,11 +421,13 @@ define([
                                 myContext : "myContext",
                                 myContextNumber : 1
                             };
-                            runs(function() {
-                                proxyBuilder.build(RadioProxy, settings).then(function(argument) {
-                                    onFulfilledCalled = true;
-                                    spy.onFulfilled(argument);
-                                }).catch(spy.onRejected);
+                            proxyBuilder.build(RadioProxy, settings).then(function(argument) {
+                                onFulfilledCalled = true;
+                                spy.onFulfilled(argument);
+                                return null;
+                            }).catch(function() {
+                                spy.onRejected();
+                                return null;
                             });
 
                             waitsFor(
@@ -432,14 +435,14 @@ define([
                                         return onFulfilledCalled;
                                     },
                                     "until the ProxyBuilder promise is not pending any more",
-                                    safetyTimeoutDelta);
-
-                            runs(function() {
-                                proxy = spy.onFulfilled.calls[0].args[0];
+                                    safetyTimeoutDelta).then(function() {
+                                proxy = spy.onFulfilled.calls.argsFor(0)[0];
                                 expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalledWith(
                                         proxy.proxyParticipantId,
                                         settings.loggingContext);
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
                     });
 

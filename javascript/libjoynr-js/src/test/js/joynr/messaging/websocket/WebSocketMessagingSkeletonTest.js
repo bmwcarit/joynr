@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ define([
             id : "1234"
         });
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             function Window() {}
             window = new Window();
             window.addEventListener = jasmine.createSpy("addEventListener");
@@ -59,7 +59,7 @@ define([
                 localAddress : localAddress
             });
 
-            spyOn(sharedWebSocket, "send").andCallThrough();
+            spyOn(sharedWebSocket, "send").and.callThrough();
 
             webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
                 sharedWebSocket : sharedWebSocket
@@ -71,9 +71,10 @@ define([
             event = new MessageEvent();
             data = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
             event.data = JSON.stringify(data);
+            done();
         });
 
-        it("is of correct type and has all members", function() {
+        it("is of correct type and has all members", function(done) {
             expect(WebSocketMessagingSkeleton).toBeDefined();
             expect(typeof WebSocketMessagingSkeleton === "function").toBeTruthy();
             expect(webSocketMessagingSkeleton).toBeDefined();
@@ -83,9 +84,10 @@ define([
             expect(webSocketMessagingSkeleton.unregisterListener).toBeDefined();
             expect(typeof webSocketMessagingSkeleton.unregisterListener === "function")
                     .toBeTruthy();
+            done();
         });
 
-        it("throws if arguments are missing or of wrong type", function() {
+        it("throws if arguments are missing or of wrong type", function(done) {
             expect(function() {
                 webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
                     sharedWebSocket : sharedWebSocket
@@ -114,9 +116,10 @@ define([
             expect(function() {
                 webSocketMessagingSkeleton.unregisterListener({});
             }).toThrow(); // listener is of wrong type
+            done();
         });
 
-        it("event calls through to registered listeners", function() {
+        it("event calls through to registered listeners", function(done) {
             webSocketMessagingSkeleton.registerListener(listener1);
             webSocketMessagingSkeleton.registerListener(listener2);
             expect(listener1).not.toHaveBeenCalled();
@@ -126,11 +129,12 @@ define([
 
             expect(listener1).toHaveBeenCalledWith(data);
             expect(listener2).toHaveBeenCalledWith(data);
-            expect(listener1.calls.length).toBe(1);
-            expect(listener2.calls.length).toBe(1);
+            expect(listener1.calls.count()).toBe(1);
+            expect(listener2.calls.count()).toBe(1);
+            done();
         });
 
-        it("event does not call through to unregistered listeners", function() {
+        it("event does not call through to unregistered listeners", function(done) {
             webSocketMessagingSkeleton.registerListener(listener1);
             webSocketMessagingSkeleton.registerListener(listener2);
             webSocketMessagingSkeleton.unregisterListener(listener1);
@@ -143,7 +147,8 @@ define([
 
             expect(listener1).not.toHaveBeenCalled();
             expect(listener2).toHaveBeenCalled();
-            expect(listener2.calls.length).toBe(1);
+            expect(listener2.calls.count()).toBe(1);
+            done();
         });
 
     });

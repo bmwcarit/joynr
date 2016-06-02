@@ -1,3 +1,6 @@
+/*jslint es5: true */
+/*global fail: true */
+
 /*
  * #%L
  * %%
@@ -25,17 +28,11 @@ define(
             "joynr/dispatching/types/Reply",
             "joynr/types/TypeRegistrySingleton",
             "joynr/util/Typing",
-            "joynr/util/UtilInternal"
+            "joynr/util/UtilInternal",
+            "global/Promise",
+            "global/WaitsFor"
         ],
-        function(
-                RequestReplyManager,
-                OneWayRequest,
-                Request,
-                Reply,
-                TypeRegistrySingleton,
-                Typing,
-                UtilInternal) {
-
+        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, Promise, waitsFor) {
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
                     function() {
@@ -126,8 +123,9 @@ define(
                             requestReplyManager = new RequestReplyManager({}, typeRegistry);
                         });
 
-                        it("is instantiable", function() {
+                        it("is instantiable", function(done) {
                             expect(requestReplyManager).toBeDefined();
+                            done();
                         });
 
                         var tripleJ = new RadioStation("TripleJ", "107.7", "AUSTRALIA");
@@ -208,7 +206,7 @@ define(
                                     }
                                 ];
 
-                        function testHandleRequestWithExpectedType(paramDatatypes, params) {
+                        function testHandleRequestWithExpectedType(paramDatatypes, params, promiseChain) {
                             var providerParticipantId = "providerParticipantId";
                             var provider = {
                                 testFunction : {
@@ -216,16 +214,16 @@ define(
                                 }
                             };
 
-                            provider.testFunction.callOperation.andReturn([]);
+                            provider.testFunction.callOperation.and.returnValue([]);
 
-                            var request = new Request({
-                                methodName : "testFunction",
-                                paramDatatypes : paramDatatypes,
-                                // untype objects through serialization and deserialization
-                                params : JSON.parse(JSON.stringify(params))
-                            });
+                            return promiseChain.then(function() {
+                                var request = new Request({
+                                    methodName : "testFunction",
+                                    paramDatatypes : paramDatatypes,
+                                    // untype objects through serialization and deserialization
+                                    params : JSON.parse(JSON.stringify(params))
+                                });
 
-                            runs(function() {
                                 requestReplyManager.addRequestCaller(
                                         providerParticipantId,
                                         provider);
@@ -233,19 +231,18 @@ define(
                                         providerParticipantId,
                                         request,
                                         jasmine.createSpy);
-                            });
 
-                            waitsFor(function() {
-                                return provider.testFunction.callOperation.calls.length > 0;
-                            }, "callOperation to be called", 100);
-
-                            runs(function() {
+                                return waitsFor(function() {
+                                    return provider.testFunction.callOperation.calls.count() > 0;
+                                }, "callOperation to be called", 100);
+                            }).then(function() {
                                 expect(provider.testFunction.callOperation).toHaveBeenCalled();
                                 expect(provider.testFunction.callOperation).toHaveBeenCalledWith(
                                         params,
                                         paramDatatypes);
 
-                                var result = provider.testFunction.callOperation.calls[0].args[0];
+                                var result =
+                                        provider.testFunction.callOperation.calls.argsFor(0)[0];
                                 expect(result).toEqual(params);
                                 expect(Typing.getObjectType(result)).toEqual(
                                         Typing.getObjectType(params));
@@ -254,78 +251,77 @@ define(
 
                         it(
                                 "calls registered requestCaller with correctly typed object",
-                                function() {
-                                    spyOn(Typing, 'augmentTypes').andCallThrough();
-
+                                function(done) {
                                     var i, test;
+                                    var promiseChain = Promise.resolve();
                                     for (i = 0; i < testData.length; ++i) {
                                         test = testData[i];
-                                        testHandleRequestWithExpectedType(
+                                        promiseChain = testHandleRequestWithExpectedType(
                                                 test.paramDatatype,
-                                                test.params);
+                                                test.params, promiseChain);
                                     }
+                                    promiseChain.then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
-                        it("calls registered replyCaller when a reply arrives", function() {
+                        it("calls registered replyCaller when a reply arrives", function(done) {
                             var replyCallerSpy = jasmine.createSpyObj("promise", [
                                 "resolve",
                                 "reject"
                             ]);
 
-                            runs(function() {
-                                requestReplyManager.addReplyCaller(
-                                        requestReplyId,
-                                        replyCallerSpy,
-                                        ttl_ms);
-                                requestReplyManager.handleReply(reply);
-                            });
+                            requestReplyManager.addReplyCaller(
+                                requestReplyId,
+                                replyCallerSpy,
+                                ttl_ms);
+                            requestReplyManager.handleReply(reply);
 
                             waitsFor(function() {
-                                return replyCallerSpy.resolve.calls.length > 0
-                                    || replyCallerSpy.reject.calls.length > 0;
-                            }, "reject or fulfill to be called", ttl_ms * 2);
-
-                            runs(function() {
+                                return replyCallerSpy.resolve.calls.count() > 0
+                                    || replyCallerSpy.reject.calls.count() > 0;
+                            }, "reject or fulfill to be called", ttl_ms * 2).then(function() {
                                 expect(replyCallerSpy.resolve).toHaveBeenCalled();
                                 expect(replyCallerSpy.resolve).toHaveBeenCalledWith(testResponse);
                                 expect(replyCallerSpy.reject).not.toHaveBeenCalled();
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         it(
                                 "calls registered replyCaller fail if no reply arrives in time",
-                                function() {
+                                function(done) {
                                     var replyCallerSpy = jasmine.createSpyObj("deferred", [
                                         "resolve",
                                         "reject"
                                     ]);
 
-                                    runs(function() {
-                                        requestReplyManager.addReplyCaller(
-                                                "requestReplyId",
-                                                replyCallerSpy,
-                                                ttl_ms);
-                                    });
+                                    requestReplyManager.addReplyCaller(
+                                        "requestReplyId",
+                                        replyCallerSpy,
+                                        ttl_ms);
 
                                     waitsFor(function() {
-                                        return replyCallerSpy.resolve.calls.length > 0
-                                            || replyCallerSpy.reject.calls.length > 0;
-                                    }, "reject or fulfill to be called", ttl_ms * 2);
-
-                                    runs(function() {
+                                        return replyCallerSpy.resolve.calls.count() > 0
+                                            || replyCallerSpy.reject.calls.count() > 0;
+                                    }, "reject or fulfill to be called", ttl_ms * 2).then(function() {
                                         expect(replyCallerSpy.resolve).not.toHaveBeenCalled();
                                         expect(replyCallerSpy.reject).toHaveBeenCalled();
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
 
                                 });
 
-                        function testHandleReplyWithExpectedType(paramDatatypes, params) {
+                        function testHandleReplyWithExpectedType(paramDatatypes, params, promiseChain) {
                             var replyCallerSpy = jasmine.createSpyObj("deferred", [
                                 "resolve",
                                 "reject"
                             ]);
+                            return promiseChain.then(function() {
 
-                            runs(function() {
                                 var reply = new Reply({
                                     requestReplyId : requestReplyId,
                                     // untype object by serializing and deserializing it
@@ -338,33 +334,36 @@ define(
                                         replyCallerSpy,
                                         ttl_ms);
                                 requestReplyManager.handleReply(reply);
-                            });
 
-                            waitsFor(function() {
-                                return replyCallerSpy.resolve.calls.length > 0
-                                    || replyCallerSpy.reject.calls.length > 0;
-                            }, "reject or fulfill to be called", ttl_ms * 2);
-
-                            runs(function() {
+                                return waitsFor(function() {
+                                    return replyCallerSpy.resolve.calls.count() > 0
+                                        || replyCallerSpy.reject.calls.count() > 0;
+                                }, "reject or fulfill to be called", ttl_ms * 2);
+                            }).then(function() {
                                 expect(replyCallerSpy.resolve).toHaveBeenCalled();
                                 expect(replyCallerSpy.reject).not.toHaveBeenCalled();
 
-                                var result = replyCallerSpy.resolve.calls[0].args[0];
+                                var result = replyCallerSpy.resolve.calls.argsFor(0)[0];
                                 expect(result).toEqual([ params
                                 ]);
                                 expect(Typing.getObjectType(result)).toEqual(
-                                        Typing.getObjectType(params));
+                                    Typing.getObjectType(params));
+                            }).catch(function(error) {
+                                fail(error);
                             });
                         }
 
-                        it("calls registered replyCaller with correctly typed object", function() {
-                            spyOn(Typing, 'augmentTypes').andCallThrough();
-
+                        it("calls registered replyCaller with correctly typed object", function(done) {
                             var i, test;
+                            var promiseChain = Promise.resolve();
                             for (i = 0; i < testData.length; ++i) {
                                 test = testData[i];
-                                testHandleReplyWithExpectedType(test.paramDatatype, test.params);
+                                promiseChain = testHandleReplyWithExpectedType(test.paramDatatype, test.params, promiseChain);
                             }
+                            promiseChain.then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         function callRequestReplyManagerSync(
@@ -396,16 +395,17 @@ define(
                                     set : jasmine.createSpy("setterSpy")
                                 }
                             }, true);
-                            provider.attributeName.get.andReturn([ testParam
+                            provider.attributeName.get.and.returnValue([ testParam
                             ]);
-                            provider.attributeName.set.andReturn([]);
-                            provider.operationName.callOperation.andReturn([ testParam
+                            provider.attributeName.set.and.returnValue([]);
+                            provider.operationName.callOperation.and.returnValue([ testParam
                             ]);
-                            provider.getOperationStartingWithGet.callOperation
-                                    .andReturn([ testParam
+                            provider.getOperationStartingWithGet.callOperation.and
+                                    .returnValue([ testParam
                                     ]);
-                            provider.getOperationHasPriority.callOperation.andReturn([ testParam
-                            ]);
+                            provider.getOperationHasPriority.callOperation.and
+                                    .returnValue([ testParam
+                                    ]);
 
                             var callbackDispatcher = jasmine.createSpy("callbackDispatcher");
 
@@ -447,24 +447,23 @@ define(
                                             testParamDatatype,
                                             useInvalidProviderParticipantId);
 
-                            waitsFor(function() {
-                                return test.callbackDispatcher.calls.length > 0;
-                            }, "callbackDispatcher to be called", 100);
+                            return waitsFor(function() {
+                                return test.callbackDispatcher.calls.count() > 0;
+                            }, "callbackDispatcher to be called", 100).then(function() {
+                                return Promise.resolve(test);
+                            });
 
-                            return test;
+                            //return test;
                         }
 
                         var testParam = "myTestParameter";
                         var testParamDatatype = "String";
 
-                        it("calls attribute getter correctly", function() {
-                            var test =
-                                    callRequestReplyManager(
-                                            "getAttributeName",
-                                            testParam,
-                                            testParamDatatype);
-
-                            runs(function() {
+                        it("calls attribute getter correctly", function(done) {
+                            callRequestReplyManager(
+                                "getAttributeName",
+                                testParam,
+                            testParamDatatype).then(function(test) {
                                 expect(test.provider.attributeName.get).toHaveBeenCalled();
                                 expect(test.provider.attributeName.get).toHaveBeenCalledWith();
                                 expect(test.provider.attributeName.set).not.toHaveBeenCalled();
@@ -485,17 +484,16 @@ define(
                                     ],
                                     requestReplyId : test.request.requestReplyId
                                 }));
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("calls attribute setter correctly", function() {
-                            var test =
-                                    callRequestReplyManager(
-                                            "setAttributeName",
-                                            testParam,
-                                            testParamDatatype);
-
-                            runs(function() {
+                        it("calls attribute setter correctly", function(done) {
+                            callRequestReplyManager(
+                                "setAttributeName",
+                                testParam,
+                            testParamDatatype).then(function(test) {
                                 expect(test.provider.attributeName.get).not.toHaveBeenCalled();
                                 expect(test.provider.attributeName.set).toHaveBeenCalled();
                                 expect(test.provider.attributeName.set).toHaveBeenCalledWith(
@@ -516,17 +514,16 @@ define(
                                     response : [],
                                     requestReplyId : test.request.requestReplyId
                                 }));
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("calls operation function correctly", function() {
-                            var test =
-                                    callRequestReplyManager(
-                                            "operationName",
-                                            testParam,
-                                            testParamDatatype);
-
-                            runs(function() {
+                        it("calls operation function correctly", function(done) {
+                            callRequestReplyManager(
+                                "operationName",
+                                testParam,
+                                testParamDatatype).then(function(test) {
                                 expect(test.provider.attributeName.set).not.toHaveBeenCalled();
                                 expect(test.provider.attributeName.get).not.toHaveBeenCalled();
                                 expect(test.provider.operationName.callOperation)
@@ -550,10 +547,12 @@ define(
                                     ],
                                     requestReplyId : test.request.requestReplyId
                                 }));
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("calls operation function for one-way request correctly", function() {
+                        it("calls operation function for one-way request correctly", function(done) {
                             var providerParticipantId = "oneWayProviderParticipantId";
                             var provider = {
                                 fireAndForgetMethod : {
@@ -571,40 +570,35 @@ define(
                                 ]
                             });
 
-                            runs(function() {
-                                requestReplyManager.addRequestCaller(
-                                        providerParticipantId,
-                                        provider);
+                            requestReplyManager.addRequestCaller(
+                                providerParticipantId,
+                                provider);
 
-                                requestReplyManager.handleOneWayRequest(
-                                        providerParticipantId,
-                                        oneWayRequest);
-                            });
+                            requestReplyManager.handleOneWayRequest(
+                                providerParticipantId,
+                                oneWayRequest);
 
                             waitsFor(function() {
-                                return provider.fireAndForgetMethod.callOperation.calls.length > 0;
-                            }, "callOperation to be called", 1000);
-
-                            runs(function() {
+                                return provider.fireAndForgetMethod.callOperation.calls.count() > 0;
+                            }, "callOperation to be called", 1000).then(function() {
                                 expect(provider.fireAndForgetMethod.callOperation)
                                         .toHaveBeenCalled();
                                 expect(provider.fireAndForgetMethod.callOperation)
                                         .toHaveBeenCalledWith([ testParam
                                         ], [ testParamDatatype
                                         ]);
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         it(
                                 "calls operation \"getOperationStartingWithGet\" when no attribute \"operationStartingWithGet\" exists",
-                                function() {
-                                    var test =
-                                            callRequestReplyManager(
-                                                    "getOperationStartingWithGet",
-                                                    testParam,
-                                                    testParamDatatype);
-
-                                    runs(function() {
+                                function(done) {
+                                    callRequestReplyManager(
+                                        "getOperationStartingWithGet",
+                                        testParam,
+                                        testParamDatatype).then(function(test) {
                                         expect(
                                                 test.provider.getOperationStartingWithGet.callOperation)
                                                 .toHaveBeenCalled();
@@ -613,19 +607,18 @@ define(
                                                 .toHaveBeenCalledWith([ testParam
                                                 ], [ testParamDatatype
                                                 ]);
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         it(
                                 "calls operation \"getOperationHasPriority\" when attribute \"operationHasPriority\" exists",
-                                function() {
-                                    var test =
-                                            callRequestReplyManager(
-                                                    "getOperationHasPriority",
-                                                    testParam,
-                                                    testParamDatatype);
-
-                                    runs(function() {
+                                function(done) {
+                                    callRequestReplyManager(
+                                        "getOperationHasPriority",
+                                        testParam,
+                                        testParamDatatype).then(function(test) {
                                         expect(test.provider.operationHasPriority.set).not
                                                 .toHaveBeenCalled();
                                         expect(test.provider.operationHasPriority.get).not
@@ -636,19 +629,19 @@ define(
                                                 .toHaveBeenCalledWith([ testParam
                                                 ], [ testParamDatatype
                                                 ]);
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         it(
                                 "delivers exception upon non-existent provider",
-                                function() {
-                                    var test =
-                                            callRequestReplyManager(
-                                                    "testFunction",
-                                                    testParam,
-                                                    testParamDatatype,
-                                                    true);
-                                    runs(function() {
+                                function(done) {
+                                    callRequestReplyManager(
+                                        "testFunction",
+                                        testParam,
+                                        testParamDatatype,
+                                        true).then(function(test) {
                                         expect(test.callbackDispatcher).toHaveBeenCalled();
                                         expect(test.callbackDispatcher)
                                                 .toHaveBeenCalledWith(
@@ -665,18 +658,18 @@ define(
                                                                                     typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         it(
                                 "delivers exception when calling not existing operation",
-                                function() {
-                                    var test =
-                                            callRequestReplyManager(
-                                                    "notExistentOperationOrAttribute",
-                                                    testParam,
-                                                    testParamDatatype);
-                                    runs(function() {
+                                function(done) {
+                                    callRequestReplyManager(
+                                        "notExistentOperationOrAttribute",
+                                        testParam,
+                                        testParamDatatype).then(function(test) {
                                         expect(test.callbackDispatcher).toHaveBeenCalled();
                                         expect(test.callbackDispatcher)
                                                 .toHaveBeenCalledWith(
@@ -696,17 +689,17 @@ define(
                                                                                     typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
                         it(
                                 "delivers exception when calling getter for not existing attribute",
-                                function() {
-                                    var test =
-                                            callRequestReplyManager(
-                                                    "getNotExistentOperationOrAttribute",
-                                                    testParam,
-                                                    testParamDatatype);
-                                    runs(function() {
+                                function(done) {
+                                    callRequestReplyManager(
+                                        "getNotExistentOperationOrAttribute",
+                                        testParam,
+                                        testParamDatatype).then(function(test) {
                                         expect(test.callbackDispatcher).toHaveBeenCalled();
                                         expect(test.callbackDispatcher)
                                                 .toHaveBeenCalledWith(
@@ -726,17 +719,17 @@ define(
                                                                                     typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
                         it(
                                 "delivers exception when calling setter for not existing attribute",
-                                function() {
-                                    var test =
-                                            callRequestReplyManager(
-                                                    "setNotExistentOperationOrAttribute",
-                                                    testParam,
-                                                    testParamDatatype);
-                                    runs(function() {
+                                function(done) {
+                                    callRequestReplyManager(
+                                        "setNotExistentOperationOrAttribute",
+                                        testParam,
+                                        testParamDatatype).then(function(test) {
                                         expect(test.callbackDispatcher).toHaveBeenCalled();
                                         expect(test.callbackDispatcher)
                                                 .toHaveBeenCalledWith(
@@ -756,7 +749,9 @@ define(
                                                                                     typeRegistry),
                                                                     requestReplyId : test.request.requestReplyId
                                                                 }));
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
                     });
         }); // require

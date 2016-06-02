@@ -1,4 +1,5 @@
 /*jslint es5: true */
+/*global fail: true */
 
 /*
  * #%L
@@ -27,7 +28,8 @@ define([
     "joynr/proxy/DiscoveryQos",
     "joynr/messaging/MessagingQos",
     "joynr/proxy/OnChangeSubscriptionQos",
-    "global/Promise"
+    "global/Promise",
+    "global/WaitsFor"
 ], function(
         ProxyAttribute,
         ProxyOperation,
@@ -35,7 +37,7 @@ define([
         DiscoveryQos,
         MessagingQos,
         OnChangeSubscriptionQos,
-        Promise) {
+        Promise, waitsFor) {
 
     var asyncTimeout = 5000;
 
@@ -64,7 +66,7 @@ define([
             }
         }
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             var fakeProxy = {
                 fromParticipantId : "proxyParticipantId",
                 toParticipantId : "providerParticipantId"
@@ -76,8 +78,8 @@ define([
             ]);
             subscriptionId = "subscriptionId";
 
-            subscriptionManagerSpy.registerBroadcastSubscription.andReturn(Promise.resolve(subscriptionId));
-            subscriptionManagerSpy.unregisterSubscription.andReturn(Promise.resolve());
+            subscriptionManagerSpy.registerBroadcastSubscription.and.returnValue(Promise.resolve(subscriptionId));
+            subscriptionManagerSpy.unregisterSubscription.and.returnValue(Promise.resolve());
 
             weakSignal = new ProxyEvent(fakeProxy, {
                 broadcastName : "weakSignal",
@@ -87,50 +89,51 @@ define([
                     subscriptionManager : subscriptionManagerSpy
                 }
             });
+            done();
         });
 
-        it("is of correct type", function() {
+        it("is of correct type", function(done) {
             expect(weakSignal).toBeDefined();
             expect(weakSignal).not.toBeNull();
             expect(typeof weakSignal === "object").toBeTruthy();
             expect(weakSignal instanceof ProxyEvent).toBeTruthy();
+            done();
         });
 
-        it("has correct members", function() {
+        it("has correct members", function(done) {
             expect(weakSignal.subscribe).toBeDefined();
             expect(weakSignal.unsubscribe).toBeDefined();
+            done();
         });
 
-        it("subscribe provides a subscriptionId", function() {
+        it("subscribe provides a subscriptionId", function(done) {
             var spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
                 "onRejected"
             ]);
 
-            spy.onFulfilled.andCallFake(function(subscriptionId) {
+            spy.onFulfilled.and.callFake(function(subscriptionId) {
                 return subscriptionId;
             });
 
-            runs(function() {
-                weakSignal.subscribe({
-                    subscriptionQos : subscriptionQos,
-                    receive : function(value) {}
-                }).then(spy.onFulfilled).catch(spy.onRejected).then(function(passedId) {
-                    expect(passedId).toBeDefined();
-                    expect(typeof passedId === "string").toBeTruthy();
-                });
+            weakSignal.subscribe({
+                subscriptionQos : subscriptionQos,
+                receive : function(value) {}
+            }).then(spy.onFulfilled).catch(spy.onRejected).then(function(passedId) {
+                expect(passedId).toBeDefined();
+                expect(typeof passedId === "string").toBeTruthy();
             });
 
             waitsFor(function() {
-                return spy.onFulfilled.callCount > 0;
-            }, "The promise is not pending any more", asyncTimeout);
-
-            runs(function() {
+                return spy.onFulfilled.calls.count() > 0;
+            }, "The promise is not pending any more", asyncTimeout).then(function() {
                 checkSpy(spy);
-            });
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        it("subscribe and unsubscribe notify on success", function() {
+        it("subscribe and unsubscribe notify on success", function(done) {
 
             // precondition: the broadcast object has already been created
             expect(weakSignal.subscribe).toBeDefined();
@@ -144,7 +147,7 @@ define([
             ]);
             // the spy returns the subscriptionId that it was called with,
             // so that the next then in the promise chain also can see it
-            spySubscribePromise.onFulfilled.andCallFake(function(passedSubscriptionId) {
+            spySubscribePromise.onFulfilled.and.callFake(function(passedSubscriptionId) {
                 return passedSubscriptionId;
             });
 
@@ -153,34 +156,35 @@ define([
                 "onRejected"
             ]);
 
-            runs(function() {
-                weakSignal.subscribe({
-                    subscriptionQos : subscriptionQos,
-                    receive : function(value) {}
-                }).then(spySubscribePromise.onFulfilled).catch(spySubscribePromise.onRejected).then(
-                        function(passedSubscriptionId) {
-                            return weakSignal.unsubscribe({
-                                subscriptionId : passedSubscriptionId
-                            });
-                        })
-                        .then(spyUnsubscribePromise.onFulfilled).catch(spyUnsubscribePromise.onRejected);
-
+            weakSignal.subscribe({
+                subscriptionQos : subscriptionQos,
+                receive : function(value) {}
+            }).then(spySubscribePromise.onFulfilled).catch(spySubscribePromise.onRejected).then(function(passedSubscriptionId) {
+                return weakSignal.unsubscribe({
+                    subscriptionId : passedSubscriptionId
+                });
+            }).then(function() {
+                spyUnsubscribePromise.onFulfilled();
+                return null;
+            }).catch(function() {
+                spyUnsubscribePromise.onRejected();
+                return null;
             });
 
             waitsFor(function() {
-                return spyUnsubscribePromise.onFulfilled.callCount > 0;
-            }, "The promise is not pending any more", asyncTimeout);
-
-            runs(function() {
+                return spyUnsubscribePromise.onFulfilled.calls.count() > 0;
+            }, "The promise is not pending any more", asyncTimeout).then(function() {
                 expect(spySubscribePromise.onFulfilled).toHaveBeenCalled();
                 expect(spySubscribePromise.onRejected).not.toHaveBeenCalled();
 
                 expect(spyUnsubscribePromise.onFulfilled).toHaveBeenCalled();
                 expect(spyUnsubscribePromise.onRejected).not.toHaveBeenCalled();
-
-            });
+                done();
+                return null;
+            }).catch(fail);
         });
-        it("subscribe notifies on failure", function() {
+
+        it("subscribe notifies on failure", function(done) {
 
             // precondition: the broadcast object has already been created
             expect(weakSignal.subscribe).toBeDefined();
@@ -194,27 +198,24 @@ define([
             ]);
 
             var expectedError = new Error("error registering broadcast");
-            subscriptionManagerSpy.registerBroadcastSubscription.andReturn(Promise.reject(expectedError));
+            subscriptionManagerSpy.registerBroadcastSubscription.and.returnValue(Promise.reject(expectedError));
 
-            runs(function() {
-                promise = weakSignal.subscribe({
-                    subscriptionQos : subscriptionQos,
-                    receive : function(value) {}
-                }).then(spySubscribePromise.onFulfilled).catch(spySubscribePromise.onRejected);
-
-            });
+            promise = weakSignal.subscribe({
+                subscriptionQos : subscriptionQos,
+                receive : function(value) {}
+            }).then(spySubscribePromise.onFulfilled).catch(spySubscribePromise.onRejected);
 
             waitsFor(function() {
-                return spySubscribePromise.onRejected.callCount > 0;
-            }, "The promise is not pending any more", asyncTimeout);
-
-            runs(function() {
+                return spySubscribePromise.onRejected.calls.count() > 0;
+            }, "The promise is not pending any more", asyncTimeout).then(function() {
                 expect(spySubscribePromise.onFulfilled).not.toHaveBeenCalled();
                 expect(spySubscribePromise.onRejected).toHaveBeenCalledWith(expectedError);
-            });
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        it("unsubscribe notifies on failure", function() {
+        it("unsubscribe notifies on failure", function(done) {
 
             // precondition: the broadcast object has already been created
             expect(weakSignal.subscribe).toBeDefined();
@@ -228,28 +229,25 @@ define([
             ]);
 
             var expectedError = new Error("error unsubscribing from broadcast");
-            subscriptionManagerSpy.unregisterSubscription.andReturn(Promise.reject(expectedError));
+            subscriptionManagerSpy.unregisterSubscription.and.returnValue(Promise.reject(expectedError));
 
-            runs(function() {
-                weakSignal.subscribe({
-                    subscriptionQos : subscriptionQos,
-                    receive : function(value) {}
-                }).then(function(passedSubscriptionId) {
-                    return weakSignal.unsubscribe({
-                        subscriptionId : passedSubscriptionId
-                    });
-                }).then(spyUnsubscribePromise.onFulfilled).catch(spyUnsubscribePromise.onRejected);
-
-            });
+            weakSignal.subscribe({
+                subscriptionQos : subscriptionQos,
+                receive : function(value) {}
+            }).then(function(passedSubscriptionId) {
+                return weakSignal.unsubscribe({
+                    subscriptionId : passedSubscriptionId
+                });
+            }).then(spyUnsubscribePromise.onFulfilled).catch(spyUnsubscribePromise.onRejected);
 
             waitsFor(function() {
-                return spyUnsubscribePromise.onRejected.callCount > 0;
-            }, "The promise is not pending any more", asyncTimeout);
-
-            runs(function() {
+                return spyUnsubscribePromise.onRejected.calls.count() > 0;
+            }, "The promise is not pending any more", asyncTimeout).then(function() {
                 expect(spyUnsubscribePromise.onFulfilled).not.toHaveBeenCalled();
                 expect(spyUnsubscribePromise.onRejected).toHaveBeenCalledWith(expectedError);
-            });
+                done();
+                return null;
+            }).catch(fail);
         });
     });
 

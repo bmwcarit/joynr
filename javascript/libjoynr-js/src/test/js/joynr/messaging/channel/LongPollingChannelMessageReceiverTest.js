@@ -1,9 +1,10 @@
 /*jslint es5: true */
+/*global fail: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +28,8 @@ define([
             "joynr/util/Typing",
             "joynr/system/LoggerFactory",
             "global/LocalStorage",
-            "joynr/provisioning/provisioning_root"
+            "joynr/provisioning/provisioning_root",
+            "global/WaitsFor"
         ],
         function(
                 Promise,
@@ -37,7 +39,8 @@ define([
                 Typing,
                 LoggerFactory,
                 LocalStorage,
-                provisioning) {
+                provisioning,
+                waitsFor) {
 
             var log =
                     LoggerFactory
@@ -50,7 +53,7 @@ define([
                         var atmosphereSpy, communicationModuleSpy, longPollingChannelMessageReceiver;
                         var channelId, channelUrl, joynrMessage;
                         var channelCreationTimeout_ms, channelCreationRetryDelay_ms;
-                        
+
                         function outputPromiseError(error) {
                             expect(error.toString()).toBeFalsy();
                         }
@@ -61,24 +64,24 @@ define([
                                 "onRejected"
                             ]);
 
-                            runs(function() {
-                                communicationModuleSpy.createXMLHTTPRequest.andReturn(Promise.resolve({
+                            communicationModuleSpy.createXMLHTTPRequest.and.returnValue(Promise.resolve({
                                             getResponseHeader : function() {
                                                 return channelUrl;
                                             }
-                                        }));
-                                longPollingChannelMessageReceiver.create(channelId).then(
-                                        spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
+                            }));
+                            longPollingChannelMessageReceiver.create(channelId).then(spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
+
+                            var returnValue = waitsFor(function() {
+                                return spy.onFulfilled.calls.count() > 0;
+                            }, "channel is created", provisioning.ttl).then(function() {
+                                return new Promise(function(resolve, reject) {
+                                    resolve(spy);
+                                });
                             });
-
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "channel is created", provisioning.ttl);
-
-                            return spy;
+                            return returnValue;
                         }
 
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             localStorage.clear();
                             channelId = "myChannel" + Date.now();
                             channelUrl = provisioning.bounceProxyUrl + "/channels/" + channelId;
@@ -117,33 +120,26 @@ define([
                                         communicationModule : communicationModuleSpy,
                                         channelQos : channelQos
                                     });
+                            done();
                         });
 
-                        it("create fails only if channelCreationTimeout_ms exceed", function(){
-                            var spy = jasmine.createSpyObj("spy", [
-                                                                   "onFulfilled",
-                                                                   "onRejected"
-                                                               ]);
+                        it("create fails only if channelCreationTimeout_ms exceed", function(done){
                             var createChannelCallTimestamp;
 
-                            runs(function(){
-                                communicationModuleSpy.createXMLHTTPRequest.andReturn(Promise.reject(new Error("fake http request failed")));
-                                createChannelCallTimestamp = Date.now();
-                                longPollingChannelMessageReceiver.create(channelId).then(spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
-                            });
-
-                            waitsFor(function(){
-                                return spy.onRejected.callCount > 0;
-                            }, "createChannel failed", channelCreationTimeout_ms + 1000);
-
-                            runs(function(){
+                            communicationModuleSpy.createXMLHTTPRequest.and.returnValue(Promise.reject(new Error("fake http request failed")));
+                            createChannelCallTimestamp = Date.now();
+                            longPollingChannelMessageReceiver.create(channelId).then(function() {
+                                fail("create longPollingChannelMessageReceiver succeeded");
+                                return null;
+                            }).catch(function() {
                                 expect(Date.now() - createChannelCallTimestamp > channelCreationTimeout_ms).toEqual(true);
+                                done();
                             });
                         });
 
                         it(
                                 "is instantiable and has all members",
-                                function() {
+                                function(done) {
                                     expect(longPollingChannelMessageReceiver).toBeDefined();
                                     expect(
                                             longPollingChannelMessageReceiver instanceof LongPollingChannelMessageReceiver)
@@ -164,12 +160,11 @@ define([
                                     expect(
                                             typeof longPollingChannelMessageReceiver.stop === "function")
                                             .toBeTruthy();
+                                    done();
                                 });
 
-                        it("create is successful if channel is created", function() {
-                            var spy = createChannel();
-
-                            runs(function() {
+                        it("create is successful if channel is created", function(done) {
+                            createChannel().then(function(spy) {
                                 expect(spy.onFulfilled).toHaveBeenCalled();
                                 expect(spy.onFulfilled).toHaveBeenCalledWith(channelUrl);
                                 expect(spy.onRejected).not.toHaveBeenCalled();
@@ -177,48 +172,39 @@ define([
                                         .toHaveBeenCalled();
                                 expect(communicationModuleSpy.createXMLHTTPRequest)
                                         .toHaveBeenCalledWith(jasmine.any(Object));
+                                done();
+                                return null;
+                            }).catch(function(error) {
+                                fail("spy not returned: error " + error);
+                                return null;
                             });
                         });
 
                         it(
                                 "create is unsuccessful if channel is not created",
-                                function() {
-                                    var spy;
-                                    runs(function() {
-                                        communicationModuleSpy.createXMLHTTPRequest.andReturn(Promise.reject({
-                                                    status : 500,
-                                                    responseText : "responseText"
-                                                }, "errorThrown"));
-                                        spy = jasmine.createSpyObj("spy", [
-                                            "onFulfilled",
-                                            "onRejected"
-                                        ]);
-                                        longPollingChannelMessageReceiver.create(channelId).then(
-                                                spy.onFulfilled).catch(spy.onRejected);
-                                    });
-
-                                    waitsFor(function() {
-                                        return spy.onRejected.callCount > 0;
-                                    }, "channel is created", provisioning.ttl);
-
-                                    runs(function() {
-                                        expect(spy.onFulfilled).not.toHaveBeenCalled();
-                                        expect(spy.onRejected).toHaveBeenCalled();
-                                        expect(
-                                                Object.prototype.toString
-                                                        .call(spy.onRejected.mostRecentCall.args[0]) === "[object Error]")
-                                                .toBeTruthy();
+                                function(done) {
+                                    communicationModuleSpy.createXMLHTTPRequest.and.returnValue(Promise.reject({
+                                        status : 500,
+                                        responseText : "responseText"
+                                    }, "errorThrown"));
+                                    longPollingChannelMessageReceiver.create(channelId).then(function() {
+                                        fail("create longPollingChannelMessageReceiver unexpectedly successfull");
+                                        return null;
+                                    }).catch(function(error) {
+                                        expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
+                                        done();
+                                        return null;
                                     });
                                 });
 
-                        it("after a call to start, messages are transmitted", function() {
+                        it("after a call to start, messages are transmitted", function(done) {
                             var messageSpy = jasmine.createSpy("messageSpy");
                             longPollingChannelMessageReceiver.start(messageSpy);
                             expect(atmosphereSpy.subscribe).toHaveBeenCalled();
                             expect(atmosphereSpy.unsubscribeUrl).toHaveBeenCalled();
 
                             var messageCallback =
-                                    atmosphereSpy.subscribe.calls[0].args[0].onMessage;
+                                    atmosphereSpy.subscribe.calls.argsFor(0)[0].onMessage;
                             expect(messageSpy).not.toHaveBeenCalled();
                             messageCallback({
                                 status : 200,
@@ -226,80 +212,79 @@ define([
                             });
                             expect(messageSpy).toHaveBeenCalled();
                             // Doesn't work because, probably because of JoynrMessage magic: expect(messageSpy).toHaveBeenCalledWith(joynrMessage);
-                            expect(JSON.stringify(messageSpy.calls[0].args[0])).toEqual(
+                            expect(JSON.stringify(messageSpy.calls.argsFor(0)[0])).toEqual(
                                     JSON.stringify(joynrMessage));
+                            done();
                         });
 
-                        it("clear is successful if channel is cleared", function() {
-                            createChannel();
-
+                        it("clear is successful if channel is cleared", function(done) {
                             var spy = jasmine.createSpyObj("spy", [
                                 "onFulfilled",
                                 "onRejected"
                             ]);
-                            runs(function() {
-                                communicationModuleSpy.createXMLHTTPRequest.andReturn(Promise.resolve({
-                                            getResponseHeader : function() {
-                                                return channelUrl;
-                                            }
-                                        }));
+                            createChannel().then(function() {
+                                communicationModuleSpy.createXMLHTTPRequest.and.returnValue(Promise.resolve({
+                                    getResponseHeader : function() {
+                                        return channelUrl;
+                                    }
+                                }));
                                 longPollingChannelMessageReceiver.clear().then(
-                                        spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
-                            });
+                                    spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
 
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "channel is cleared", provisioning.ttl);
-
-                            runs(function() {
+                                return waitsFor(function() {
+                                    return spy.onFulfilled.calls.count() > 0;
+                                }, "channel is cleared", provisioning.ttl);
+                            }).then(function() {
                                 expect(spy.onFulfilled).toHaveBeenCalled();
                                 expect(spy.onFulfilled).toHaveBeenCalledWith(undefined);
                                 expect(spy.onRejected).not.toHaveBeenCalled();
+                                done();
+                                return null;
+                            }).catch(function(error) {
+                                fail("create Channel failed: " + error);
+                                return null;
                             });
                         });
 
                         it(
                                 "clear is unsuccessful if channel is not cleared",
-                                function() {
-                                    createChannel();
-
-                                    var spy = jasmine.createSpyObj("spy", [
-                                        "onFulfilled",
-                                        "onRejected"
-                                    ]);
-                                    runs(function() {
-                                        communicationModuleSpy.createXMLHTTPRequest.andReturn(Promise.reject({
-                                                    status : 500,
-                                                    responseText : "responseText"
-                                                }, "errorThrown"));
-                                        longPollingChannelMessageReceiver.clear().then(
-                                                spy.onFulfilled).catch(spy.onRejected);
-                                    });
-
-                                    waitsFor(function() {
-                                        return spy.onRejected.callCount > 0;
-                                    }, "channel is cleared", provisioning.ttl);
-
-                                    runs(function() {
-                                        expect(spy.onFulfilled).not.toHaveBeenCalled();
-                                        expect(spy.onRejected).toHaveBeenCalled();
-                                        expect(
-                                                Object.prototype.toString
-                                                        .call(spy.onRejected.mostRecentCall.args[0]) === "[object Error]")
-                                                .toBeTruthy();
+                                function(done) {
+                                    createChannel().then(function() {
+                                        var spy = jasmine.createSpyObj("spy", [
+                                            "onFulfilled",
+                                            "onRejected"
+                                        ]);
+                                        communicationModuleSpy.createXMLHTTPRequest.and.returnValue(Promise.reject({
+                                            status : 500,
+                                            responseText : "responseText"
+                                        }, "errorThrown"));
+                                        longPollingChannelMessageReceiver.clear().then(function() {
+                                            fail("clear returned successfully");
+                                            return null;
+                                        }).catch(function(error) {
+                                            expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
+                                            done();
+                                            return null;
+                                        });
+                                        return null;
+                                    }).catch(function(error) {
+                                        fail("create channel failed");
+                                        return null;
                                     });
                                 });
 
-                        it("stops", function() {
-                            createChannel();
-
-                            runs(function(){
+                        it("stops", function(done) {
+                            createChannel().then(function() {
                                 longPollingChannelMessageReceiver.stop();
                                 expect(atmosphereSpy.unsubscribeUrl).toHaveBeenCalled();
                                 expect(atmosphereSpy.unsubscribeUrl).toHaveBeenCalledWith(channelUrl);
+                                done();
+                                return null;
+                            }).catch(function(error) {
+                                fail("create channel failed");
+                                return null;
                             });
                         });
 
                     });
-
         });

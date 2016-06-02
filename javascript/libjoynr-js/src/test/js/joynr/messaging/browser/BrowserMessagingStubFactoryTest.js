@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,14 +26,14 @@ define([
         var returnValue, webMessagingStub, browserMessagingStubFactory;
         var windowId, browserAddress, joynrMessage;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             returnValue = {
                 key : "returnValue"
             };
             function WebMessagingStub() {}
             webMessagingStub = new WebMessagingStub();
             webMessagingStub.transmit = jasmine.createSpy("transmit");
-            webMessagingStub.transmit.andReturn(returnValue);
+            webMessagingStub.transmit.and.returnValue(returnValue);
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
                 webMessagingStub : webMessagingStub
             });
@@ -43,11 +43,12 @@ define([
             browserAddress.windowId = windowId;
             function JoynrMessage() {}
             joynrMessage = new JoynrMessage();
+            done();
         });
 
         it(
                 "is instantiable and of correct type",
-                function() {
+                function(done) {
                     expect(BrowserMessagingStubFactory).toBeDefined();
                     expect(typeof BrowserMessagingStubFactory === "function").toBeTruthy();
                     expect(browserMessagingStubFactory).toBeDefined();
@@ -55,9 +56,10 @@ define([
                             .toBeTruthy();
                     expect(browserMessagingStubFactory.build).toBeDefined();
                     expect(typeof browserMessagingStubFactory.build === "function").toBeTruthy();
+                    done();
                 });
 
-        it("throws on missing or wrongly typed arguments in constructor", function() {
+        it("throws on missing or wrongly typed arguments in constructor", function(done) {
             expect(function() {
                 browserMessagingStubFactory = new BrowserMessagingStubFactory();
             }).toThrow(); // settings is undefined
@@ -82,9 +84,10 @@ define([
                     webMessagingStub : webMessagingStub
                 });
             }).not.toThrow(); // correct call
+            done();
         });
 
-        it("throws on missing or wrongly typed arguments in build", function() {
+        it("throws on missing or wrongly typed arguments in build", function(done) {
             expect(function() {
                 browserMessagingStubFactory.build();
             }).toThrow(); // address is undefined
@@ -97,9 +100,10 @@ define([
             expect(function() {
                 browserMessagingStubFactory.build(browserAddress);
             }).not.toThrow(); // correct call
+            done();
         });
 
-        it("creates a messaging stub and uses it correctly", function() {
+        it("creates a messaging stub and uses it correctly", function(done) {
             var browserMessagingStub = browserMessagingStubFactory.build(browserAddress);
             //expect(browserAddress.getTabId).toHaveBeenCalledWith();
 
@@ -109,6 +113,7 @@ define([
                 message : joynrMessage
             });
             expect(result).toEqual(returnValue);
+            done();
         });
 
     });

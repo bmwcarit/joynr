@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,17 +29,22 @@ define([
 
     describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {
 
-        beforeEach(function() {
-            jasmine.Clock.useMock();
-            jasmine.Clock.reset();
-
+        beforeEach(function(done) {
+            jasmine.clock().install();
+            done();
         });
 
-        it("is instantiable", function() {
+        afterEach(function(done) {
+            jasmine.clock().uninstall();
+            done();
+        });
+
+        it("is instantiable", function(done) {
             expect(new DistributedLoggingAppender()).toBeDefined();
+            done();
         });
 
-        it("uses the correct interval", function() {
+        it("uses the correct interval", function(done) {
             var config, context, appender, loggingEvent;
 
             context = {};
@@ -70,13 +75,13 @@ define([
 
             expect(loggingProxy.log).not.toHaveBeenCalled();
 
-            jasmine.Clock.tick(1000);
+            jasmine.clock().tick(1000);
 
             expect(loggingProxy.log).toHaveBeenCalled();
-
+            done();
         });
 
-        it("flushes when the max number of events has been reached", function() {
+        it("flushes when the max number of events has been reached", function(done) {
             var config, context, appender, loggingEvent;
 
             context = {};
@@ -111,6 +116,7 @@ define([
 
             appender.append(loggingEvent);
             expect(loggingProxy.log).toHaveBeenCalled();
+            done();
         });
 
     });

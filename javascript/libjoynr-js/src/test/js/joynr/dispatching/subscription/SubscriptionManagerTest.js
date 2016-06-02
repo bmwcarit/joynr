@@ -1,5 +1,5 @@
-/*global xit: true */
 /*jslint es5: true */
+/*global fail: true */
 
 /*
  * #%L
@@ -35,7 +35,9 @@ define([
             "joynr/exceptions/PublicationMissedException",
             "joynr/system/LoggerFactory",
             "Date",
-            "joynr/tests/testTypes/TestEnum"
+            "global/WaitsFor",
+            "joynr/tests/testTypes/TestEnum",
+            "joynr/types/TypeRegistrySingleton"
         ],
         function(
                 SubscriptionManager,
@@ -52,7 +54,9 @@ define([
                 PublicationMissedException,
                 LoggerFactory,
                 Date,
-                TestEnum) {
+                waitsFor,
+                TestEnum,
+                TypeRegistrySingleton) {
 
             describe(
                     "libjoynr-js.joynr.dispatching.subscription.SubscriptionManager",
@@ -67,7 +71,7 @@ define([
                         /**
                          * Called before each test.
                          */
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             dispatcherSpy = jasmine.createSpyObj("DispatcherSpy", [
                                 "sendSubscriptionRequest",
                                 "sendBroadcastSubscriptionRequest",
@@ -75,7 +79,7 @@ define([
                             ]);
 
                             dispatcherSpy.sendBroadcastSubscriptionRequest
-                                    .andCallFake(function(settings) {
+                                    .and.callFake(function(settings) {
                                         subscriptionManager
                                                 .handleSubscriptionReply({
                                                     subscriptionId : settings.subscriptionRequest.subscriptionId
@@ -84,7 +88,7 @@ define([
                                     });
 
                             dispatcherSpy.sendSubscriptionRequest
-                                    .andCallFake(function(settings) {
+                                    .and.callFake(function(settings) {
                                         subscriptionManager
                                                 .handleSubscriptionReply({
                                                     subscriptionId : settings.subscriptionRequest.subscriptionId
@@ -93,25 +97,40 @@ define([
                                     });
 
                             subscriptionManager = new SubscriptionManager(dispatcherSpy);
-                            jasmine.Clock.useMock();
-                            jasmine.Clock.reset();
-                            spyOn(Date, 'now').andCallFake(function() {
+                            jasmine.clock().install();
+                            spyOn(Date, 'now').and.callFake(function() {
                                 return fakeTime;
                             });
+
+                            /*
+                             * Make sure 'TestEnum' is properly registered as a type.
+                             * Just requiring the module is insufficient since the
+                             * automatically generated code called async methods.
+                             * Execution might be still in progress.
+                             */
+                            TypeRegistrySingleton.getInstance().getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
+
+                        afterEach(function() {
+                            jasmine.clock().uninstall();
+                          });
 
                         function increaseFakeTime(time_ms) {
                             fakeTime = fakeTime + time_ms;
-                            jasmine.Clock.tick(time_ms);
+                            jasmine.clock().tick(time_ms);
                         }
 
-                        it("is instantiable", function() {
+                        it("is instantiable", function(done) {
                             expect(subscriptionManager).toBeDefined();
+                            done();
                         });
 
                         it(
                                 "sends broadcast subscription requests",
-                                function() {
+                                function(done) {
                                     var ttl = 250;
                                     var parameters = {
                                         proxyId : "subscriber",
@@ -122,96 +141,94 @@ define([
                                         })
                                     };
 
-                                    runs(function() {
-                                        dispatcherSpy.sendBroadcastSubscriptionRequest.reset();
-                                        var spySubscribePromise =
-                                                jasmine.createSpyObj("spySubscribePromise", [
-                                                    "resolve",
-                                                    "reject"
-                                                ]);
+                                    dispatcherSpy.sendBroadcastSubscriptionRequest.calls.reset();
+                                    var spySubscribePromise =
+                                            jasmine.createSpyObj("spySubscribePromise", [
+                                                "resolve",
+                                                "reject"
+                                            ]);
 
-                                        subscriptionManager.registerBroadcastSubscription(
-                                                parameters).then(
-                                                spySubscribePromise.resolve).catch(spySubscribePromise.reject);
-                                        increaseFakeTime(1);
-                                    });
+                                    subscriptionManager.registerBroadcastSubscription(
+                                            parameters).then(
+                                            spySubscribePromise.resolve).catch(spySubscribePromise.reject);
+                                    increaseFakeTime(1);
 
                                     waitsFor(
-                                            function() {
-                                                return dispatcherSpy.sendBroadcastSubscriptionRequest.callCount === 1;
-                                            },
-                                            "dispatcherSpy.sendBroadcastSubscriptionRequest called",
-                                            100);
-
-                                    runs(function() {
+                                        function() {
+                                            return dispatcherSpy.sendBroadcastSubscriptionRequest.calls.count() === 1;
+                                        },
+                                        "dispatcherSpy.sendBroadcastSubscriptionRequest called",
+                                    100).then(function() {
                                         expect(dispatcherSpy.sendBroadcastSubscriptionRequest)
                                                 .toHaveBeenCalled();
                                         expect(
-                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls[0].args[0].messagingQos.ttl)
+                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].messagingQos.ttl)
                                                 .toEqual(ttl);
                                         expect(
-                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls[0].args[0].to)
+                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].to)
                                                 .toEqual(parameters.providerId);
                                         expect(
-                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls[0].args[0].from)
+                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].from)
                                                 .toEqual(parameters.proxyId);
                                         expect(
-                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls[0].args[0].subscriptionRequest.subscribedToName)
+                                                dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].subscriptionRequest.subscribedToName)
                                                 .toEqual(parameters.broadcastName);
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
-                        it("alerts on missed publication and stops", function() {
+                        it("alerts on missed publication and stops", function(done) {
                             var publicationReceivedSpy =
                                     jasmine.createSpy('publicationReceivedSpy');
                             var publicationMissedSpy = jasmine.createSpy('publicationMissedSpy');
                             var subscriptionId;
                             var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
 
-                            runs(function() {
-                                //log.debug("registering subscription");
-                                subscriptionManager.registerSubscription({
-                                    proxyId : "subscriber",
-                                    providerId : "provider",
-                                    attributeName : "testAttribute",
-                                    qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                        alertAfterIntervalMs : alertAfterIntervalMs,
-                                        expiryDateMs : Date.now() + 50 + 2 * alertAfterIntervalMs
-                                    }),
-                                    onReceive : publicationReceivedSpy,
-                                    onError : publicationMissedSpy
-                                }).then(function(returnedSubscriptionId) {
-                                    subscriptionId = returnedSubscriptionId;
-                                }).catch(function(error) {
-                                    log.error("Error in sendSubscriptionRequest :" + error);
-                                });
-                                increaseFakeTime(1);
+                            //log.debug("registering subscription");
+                            subscriptionManager.registerSubscription({
+                                proxyId : "subscriber",
+                                providerId : "provider",
+                                attributeName : "testAttribute",
+                                qos : new OnChangeWithKeepAliveSubscriptionQos({
+                                    alertAfterIntervalMs : alertAfterIntervalMs,
+                                    expiryDateMs : Date.now() + 50 + 2 * alertAfterIntervalMs
+                                }),
+                                onReceive : publicationReceivedSpy,
+                                onError : publicationMissedSpy
+                            }).then(function(returnedSubscriptionId) {
+                                subscriptionId = returnedSubscriptionId;
+                                return null;
+                            }).catch(function(error) {
+                                log.error("Error in sendSubscriptionRequest :" + error);
+                                return null;
                             });
+                            increaseFakeTime(1);
 
                             waitsFor(function() {
                                 return subscriptionId !== undefined;
-                            }, "subscription to be registered", 500);
-
-                            runs(function() {
+                            }, "subscription to be registered", 500).then(function() {
                                 expect(publicationMissedSpy).not.toHaveBeenCalled();
                                 increaseFakeTime(alertAfterIntervalMs + 1);
                                 expect(publicationMissedSpy).toHaveBeenCalled();
-                                expect(publicationMissedSpy.calls[0].args[0] instanceof PublicationMissedException);
-                                expect(publicationMissedSpy.calls[0].args[0].subscriptionId).toEqual(subscriptionId);
+                                expect(publicationMissedSpy.calls.argsFor(0)[0] instanceof PublicationMissedException);
+                                expect(publicationMissedSpy.calls.argsFor(0)[0].subscriptionId).toEqual(subscriptionId);
                                 increaseFakeTime(alertAfterIntervalMs + 1);
-                                expect(publicationMissedSpy.callCount).toEqual(2);
-                                // expiryDateMs should be reached, expect no more interactions
+                                expect(publicationMissedSpy.calls.count()).toEqual(2);
+                                // expiryDate should be reached, expect no more interactions
                                 increaseFakeTime(alertAfterIntervalMs + 1);
-                                expect(publicationMissedSpy.callCount).toEqual(2);
+                                expect(publicationMissedSpy.calls.count()).toEqual(2);
                                 increaseFakeTime(alertAfterIntervalMs + 1);
-                                expect(publicationMissedSpy.callCount).toEqual(2);
-                            });
+                                expect(publicationMissedSpy.calls.count()).toEqual(2);
+                                done();
+                                return null;
+                            }).catch(fail);
 
                         });
 
                         it(
                                 "sets messagingQos.ttl correctly according to subscriptionQos.expiryDateMs",
-                                function() {
+                                function(done) {
                                     var ttl = 250;
                                     var subscriptionSettings = {
                                         proxyId : "subscriber",
@@ -225,27 +242,23 @@ define([
                                         onError : function() {}
                                     };
 
-                                    runs(function() {
-                                        dispatcherSpy.sendSubscriptionRequest.reset();
-                                        subscriptionManager.registerSubscription(
-                                                subscriptionSettings).catch(function(error) {
-                                                    expect(
-                                                            "Error in sendSubscriptionRequest :"
-                                                                + error).toBeTruthy();
-                                                });
-                                        increaseFakeTime(1);
-                                    });
+                                    dispatcherSpy.sendSubscriptionRequest.calls.reset();
+                                    subscriptionManager.registerSubscription(
+                                            subscriptionSettings).catch(function(error) {
+                                                expect(
+                                                        "Error in sendSubscriptionRequest :"
+                                                            + error).toBeTruthy();
+                                            });
+                                    increaseFakeTime(1);
 
                                     waitsFor(
                                             function() {
-                                                return dispatcherSpy.sendSubscriptionRequest.callCount === 1;
+                                                return dispatcherSpy.sendSubscriptionRequest.calls.count() === 1;
                                             },
                                             "dispatcherSpy.sendSubscriptionRequest called the first time",
-                                            100);
-
-                                    runs(function() {
+                                    100).then(function() {
                                         expect(
-                                                dispatcherSpy.sendSubscriptionRequest.calls[0].args[0].messagingQos.ttl)
+                                                dispatcherSpy.sendSubscriptionRequest.calls.argsFor(0)[0].messagingQos.ttl)
                                                 .toEqual(ttl);
                                         subscriptionSettings.qos.expiryDateMs =
                                                 SubscriptionQos.NO_EXPIRY_DATE;
@@ -256,26 +269,24 @@ define([
                                                                 + error).toBeTruthy();
                                                 });
                                         increaseFakeTime(1);
-                                    });
-
-                                    waitsFor(
+                                        return waitsFor(
                                             function() {
-                                                return dispatcherSpy.sendSubscriptionRequest.callCount === 2;
+                                                return dispatcherSpy.sendSubscriptionRequest.calls.count() === 2;
                                             },
                                             "dispatcherSpy.sendSubscriptionRequest called the first time",
                                             100);
-
-                                    runs(function() {
-                                        expect(dispatcherSpy.sendSubscriptionRequest.callCount)
+                                    }).then(function() {
+                                        expect(dispatcherSpy.sendSubscriptionRequest.calls.count())
                                                 .toEqual(2);
                                         expect(
-                                                dispatcherSpy.sendSubscriptionRequest.calls[1].args[0].messagingQos.ttl)
+                                                dispatcherSpy.sendSubscriptionRequest.calls.argsFor(1)[0].messagingQos.ttl)
                                                 .toEqual(defaultMessagingSettings.MAX_MESSAGING_TTL_MS);
-                                    });
-
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
-                        it("forwards publication payload", function() {
+                        it("forwards publication payload", function(done) {
                             var publicationReceivedSpy =
                                     jasmine.createSpy('publicationReceivedSpy');
                             var publicationMissedSpy = jasmine.createSpy('publicationMissedSpy');
@@ -286,8 +297,7 @@ define([
                                         // called when the subscription is registered successfully (see below)
                                         resolveMethod : function(subscriptionId) {
                                             // increase time by 50ms and see if alert was triggered
-                                            increaseFakeTime(alertAfterIntervalMs / 2);
-                                            expect(publicationMissedSpy).not.toHaveBeenCalled();
+                                            increaseFakeTime(alertAfterIntervalMs / 2); expect(publicationMissedSpy).not.toHaveBeenCalled();
                                             var publication = new SubscriptionPublication({
                                                 response : ["test"],
                                                 subscriptionId : subscriptionId
@@ -307,34 +317,34 @@ define([
                                         }
                                     };
 
-                            spyOn(resolveSpy, 'resolveMethod').andCallThrough();
+                            spyOn(resolveSpy, 'resolveMethod').and.callThrough();
 
-                            runs(function() {
-                                //log.debug("registering subscription");
-                                // register the subscription and call the resolve method when ready
-                                subscriptionManager.registerSubscription({
-                                    proxyId : "subscriber",
-                                    providerId : "provider",
-                                    messagingQos : new MessagingQos(),
-                                    attributeName : "testAttribute",
-                                    qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                        alertAfterIntervalMs : alertAfterIntervalMs,
-                                        expiryDateMs : Date.now() + 50 + 2 * alertAfterIntervalMs
-                                    }),
-                                    onReceive : publicationReceivedSpy,
-                                    onError : publicationMissedSpy
-                                }).then(resolveSpy.resolveMethod);
-                                increaseFakeTime(1);
-                            });
+                            //log.debug("registering subscription");
+                            // register the subscription and call the resolve method when ready
+                            subscriptionManager.registerSubscription({
+                                proxyId : "subscriber",
+                                providerId : "provider",
+                                messagingQos : new MessagingQos(),
+                                attributeName : "testAttribute",
+                                qos : new OnChangeWithKeepAliveSubscriptionQos({
+                                    alertAfterIntervalMs : alertAfterIntervalMs,
+                                    expiryDateMs : Date.now() + 50 + 2 * alertAfterIntervalMs
+                                }),
+                                onReceive : publicationReceivedSpy,
+                                onError : publicationMissedSpy
+                            }).then(resolveSpy.resolveMethod);
+                            increaseFakeTime(1);
 
                             waitsFor(function() {
                                 // wait until the subscriptionReply was received
-                                return resolveSpy.resolveMethod.callCount > 0;
-                            }, "resolveSpy.resolveMethod called", 100);
-
+                                return resolveSpy.resolveMethod.calls.count() > 0;
+                            }, "resolveSpy.resolveMethod called", 100).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("augments incoming publications with information from the joynr type system", function() {
+                        it("augments incoming publications with information from the joynr type system", function(done) {
                             var publicationReceivedSpy =
                                     jasmine.createSpy('publicationReceivedSpy');
                             var publicationMissedSpy = jasmine.createSpy('publicationMissedSpy');
@@ -359,35 +369,35 @@ define([
                                         }
                                     };
 
-                            spyOn(resolveSpy, 'resolveMethod').andCallThrough();
+                            spyOn(resolveSpy, 'resolveMethod').and.callThrough();
 
-                            runs(function() {
-                                //log.debug("registering subscription");
-                                // register the subscription and call the resolve method when ready
-                                /*jslint nomen: true */
-                                subscriptionManager.registerSubscription({
-                                    proxyId : "subscriber",
-                                    providerId : "provider",
-                                    attributeName : "testAttribute",
-                                    attributeType : TestEnum.ZERO._typeName,
-                                    qos : new OnChangeSubscriptionQos({
-                                        expiryDateMs : Date.now() + 250
-                                    }),
-                                    onReceive : publicationReceivedSpy,
-                                    onError : publicationMissedSpy
-                                }).then(resolveSpy.resolveMethod);
-                                increaseFakeTime(1);
-                                /*jslint nomen: false */
-                            });
+                            //log.debug("registering subscription");
+                            // register the subscription and call the resolve method when ready
+                            /*jslint nomen: true */
+                            subscriptionManager.registerSubscription({
+                                proxyId : "subscriber",
+                                providerId : "provider",
+                                attributeName : "testAttribute",
+                                attributeType : TestEnum.ZERO._typeName,
+                                qos : new OnChangeSubscriptionQos({
+                                    expiryDateMs : Date.now() + 250
+                                }),
+                                onReceive : publicationReceivedSpy,
+                                onError : publicationMissedSpy
+                            }).then(resolveSpy.resolveMethod);
+                            increaseFakeTime(1);
+                            /*jslint nomen: false */
 
                             waitsFor(function() {
                                 // wait until the subscriptionReply was received
-                                return resolveSpy.resolveMethod.callCount > 0;
-                            }, "resolveSpy.resolveMethod called", 100);
-
+                                return resolveSpy.resolveMethod.calls.count() > 0;
+                            }, "resolveSpy.resolveMethod called", 100).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("augments incoming broadcasts with information from the joynr type system", function() {
+                        it("augments incoming broadcasts with information from the joynr type system", function(done) {
                             var publicationReceivedSpy =
                                     jasmine.createSpy('publicationReceivedSpy');
                             var onErrorSpy = jasmine.createSpy('onErrorSpy');
@@ -413,50 +423,51 @@ define([
                                         }
                                     };
 
-                            spyOn(resolveSpy, 'resolveMethod').andCallThrough();
+                            spyOn(resolveSpy, 'resolveMethod').and.callThrough();
 
-                            runs(function() {
-                                //log.debug("registering subscription");
-                                // register the subscription and call the resolve method when ready
-                                /*jslint nomen: true */
-                                subscriptionManager.registerBroadcastSubscription({
-                                    proxyId : "subscriber",
-                                    providerId : "provider",
-                                    broadcastName : "broadcastName",
-                                    broadcastParameter : [
-                                         {
-                                             name : "param1",
-                                             type : "String",
-                                         },
-                                         {
-                                             name : "param2",
-                                             type : "Integer",
-                                         },
-                                         {
-                                             name : "param3",
-                                             type : TestEnum.ZERO._typeName,
-                                         }
-                                    ],
-                                    qos : new OnChangeSubscriptionQos({
-                                        expiryDateMs : Date.now() + 250
-                                    }),
-                                    onReceive : publicationReceivedSpy,
-                                    onError : onErrorSpy
-                                }).then(resolveSpy.resolveMethod);
-                                increaseFakeTime(1);
-                                /*jslint nomen: false */
-                            });
+                            //log.debug("registering subscription");
+                            // register the subscription and call the resolve method when ready
+                            /*jslint nomen: true */
+                            subscriptionManager.registerBroadcastSubscription({
+                                proxyId : "subscriber",
+                                providerId : "provider",
+                                broadcastName : "broadcastName",
+                                broadcastParameter : [
+                                     {
+                                         name : "param1",
+                                         type : "String",
+                                     },
+                                     {
+                                         name : "param2",
+                                         type : "Integer",
+                                     },
+                                     {
+                                         name : "param3",
+                                         type : TestEnum.ZERO._typeName,
+                                     }
+                                ],
+                                qos : new OnChangeSubscriptionQos({
+                                    expiryDateMs : Date.now() + 250
+                                }),
+                                onReceive : publicationReceivedSpy,
+                                onError : onErrorSpy
+                            }).then(resolveSpy.resolveMethod);
+                            increaseFakeTime(1);
+                            /*jslint nomen: false */
 
                             waitsFor(function() {
                                 // wait until the subscriptionReply was received
-                                return resolveSpy.resolveMethod.callCount > 0;
-                            }, "resolveSpy.resolveMethod called", 100);
+                                return resolveSpy.resolveMethod.calls.count() > 0;
+                            }, "resolveSpy.resolveMethod called", 100).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
 
                         });
 
                         it(
                                 "sends out subscriptionStop and stops alerts on unsubscribe",
-                                function() {
+                                function(done) {
                                     var publicationReceivedSpy =
                                             jasmine.createSpy('publicationReceivedSpy');
                                     var publicationMissedSpy =
@@ -464,42 +475,39 @@ define([
                                     var subscriptionId;
                                     var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
 
-                                    runs(function() {
-                                        //log.debug("registering subscription");
-                                        subscriptionManager.registerSubscription({
-                                            proxyId : "subscriber",
-                                            providerId : "provider",
-                                            attributeName : "testAttribute",
-                                            qos : new OnChangeWithKeepAliveSubscriptionQos({
-                                                alertAfterIntervalMs : alertAfterIntervalMs,
-                                                expiryDateMs : Date.now() + 5 * alertAfterIntervalMs
-                                            }),
-                                            onReceive : publicationReceivedSpy,
-                                            onError : publicationMissedSpy
-                                        }).then(
-                                                function(returnedSubscriptionId) {
-                                                    subscriptionId = returnedSubscriptionId;
-                                                }).catch(function(error) {
-                                                    log.error("Error in sendSubscriptionRequest :"
-                                                        + error);
-                                                });
-                                        increaseFakeTime(1);
-                                    });
+                                    //log.debug("registering subscription");
+                                    subscriptionManager.registerSubscription({
+                                        proxyId : "subscriber",
+                                        providerId : "provider",
+                                        attributeName : "testAttribute",
+                                        qos : new OnChangeWithKeepAliveSubscriptionQos({
+                                            alertAfterIntervalMs : alertAfterIntervalMs,
+                                            expiryDateMs : Date.now() + 5 * alertAfterIntervalMs
+                                        }),
+                                        onReceive : publicationReceivedSpy,
+                                        onError : publicationMissedSpy
+                                    }).then(
+                                            function(returnedSubscriptionId) {
+                                                subscriptionId = returnedSubscriptionId;
+                                            }).catch(function(error) {
+                                                log.error("Error in sendSubscriptionRequest :"
+                                                    + error);
+                                            });
+                                    increaseFakeTime(1);
 
                                     waitsFor(
                                             function() {
                                                 return subscriptionId !== undefined;
                                             },
                                             "SubscriptionId should be set by the SubscriptionManager",
-                                            500);
-
-                                    runs(function() {
+                                    500).then(function() {
                                         increaseFakeTime(alertAfterIntervalMs / 2);
                                         expect(publicationMissedSpy).not.toHaveBeenCalled();
                                         increaseFakeTime((alertAfterIntervalMs / 2) + 1);
                                         expect(publicationMissedSpy).toHaveBeenCalled();
+                                        increaseFakeTime(101);
                                         increaseFakeTime(alertAfterIntervalMs + 1);
-                                        expect(publicationMissedSpy.callCount).toEqual(2);
+                                        expect(publicationMissedSpy.calls.count()).toEqual(2);
 
                                         // unsubscribe and expect no more missed publication alerts
                                         var unsubscrMsgQos = new MessagingQos();
@@ -520,15 +528,17 @@ define([
                                                     messagingQos : unsubscrMsgQos
                                                 });
                                         increaseFakeTime(alertAfterIntervalMs + 1);
-                                        expect(publicationMissedSpy.callCount).toEqual(2);
+                                        expect(publicationMissedSpy.calls.count()).toEqual(2);
                                         increaseFakeTime(alertAfterIntervalMs + 1);
-                                        expect(publicationMissedSpy.callCount).toEqual(2);
+                                        expect(publicationMissedSpy.calls.count()).toEqual(2);
                                         increaseFakeTime(alertAfterIntervalMs + 1);
-                                        expect(publicationMissedSpy.callCount).toEqual(2);
-                                    });
+                                        expect(publicationMissedSpy.calls.count()).toEqual(2);
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
-                    xit(
+                    it(
                     "returns a rejected promise when unsubscribing with a non-existant subscriptionId",
                     function(done) {
                             subscriptionManager.unregisterSubscription({
@@ -538,6 +548,7 @@ define([
                                 var className = Object.prototype.toString.call(value).slice(8, -1);
                                 expect(className).toMatch("Error");
                                 done();
+                                return null;
                             });
                     });
               });

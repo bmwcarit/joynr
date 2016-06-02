@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ define(
 
             function increaseFakeTime(time_ms) {
                 fakeTime = fakeTime + time_ms;
-                jasmine.Clock.tick(time_ms);
+                jasmine.clock().tick(time_ms);
             }
 
             describe(
@@ -52,19 +52,24 @@ define(
                         // set the qsize to 500 bytes for testing purposes
                         });
 
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             fakeTime = Date.now();
-                            jasmine.Clock.useMock();
-                            jasmine.Clock.reset();
-                            spyOn(Date, "now").andCallFake(function() {
+                            jasmine.clock().install();
+                            spyOn(Date, "now").and.callFake(function() {
                                 return fakeTime;
                             });
                             messageQueue.reset();
+                            done();
+                        });
+
+                        afterEach(function(done) {
+                            jasmine.clock().uninstall();
+                            done();
                         });
 
                         it(
                                 "test message queue limit",
-                                function() {
+                                function(done) {
                                     var newJoynrMessage, i = 0, payload = "hello", oldQueueSize, maxIterations =
                                             Math
                                                     .floor((messageQueue.maxQueueSizeInKBytes * 1024 / Util
@@ -96,11 +101,12 @@ define(
                                         expect(messageQueue.currentQueueSize).toEqual(oldQueueSize);
                                         i++;
                                     }
+                                    done();
                                 });
 
                         it(
                                 "put Message adds new queued message, dropped after getAndRemoveMessage call",
-                                function() {
+                                function(done) {
                                     var queuedMessages;
                                     joynrMessage.expiryDate = Date.now() + 1000;
                                     messageQueue.putMessage(joynrMessage);
@@ -116,11 +122,12 @@ define(
                                             messageQueue
                                                     .getAndRemoveMessages(receiverParticipantId).length)
                                             .toEqual(0);
+                                    done();
                                 });
 
                         it(
                                 "put Message adds multiple queued messages, dropped after getAndRemoveMessage call",
-                                function() {
+                                function(done) {
                                     var queuedMessages;
                                     joynrMessage.expiryDate = Date.now() + 1000;
                                     joynrMessage2.expiryDate = Date.now() + 1000;
@@ -139,27 +146,27 @@ define(
                                             messageQueue
                                                     .getAndRemoveMessages(receiverParticipantId).length)
                                             .toEqual(0);
+                                    done();
                                 });
 
-                        it(
-                                "put Message adds new queued message, dropped after timeout",
-                                function() {
-                                    var queuedMessages;
-                                    joynrMessage.expiryDate = Date.now() + 1000;
-                                    messageQueue.putMessage(joynrMessage);
+                        it("put Message adds new queued message, dropped after timeout", function(
+                                done) {
+                            var queuedMessages;
+                            joynrMessage.expiryDate = Date.now() + 1000;
+                            messageQueue.putMessage(joynrMessage);
 
-                                    increaseFakeTime(1000 + 1);
+                            increaseFakeTime(1000 + 1);
 
-                                    queuedMessages =
-                                            messageQueue
-                                                    .getAndRemoveMessages(receiverParticipantId);
+                            queuedMessages =
+                                    messageQueue.getAndRemoveMessages(receiverParticipantId);
 
-                                    expect(queuedMessages.length).toEqual(0);
-                                });
+                            expect(queuedMessages.length).toEqual(0);
+                            done();
+                        });
 
                         it(
                                 "put Message adds multiple queued messages, dropped first one after timeout",
-                                function() {
+                                function(done) {
                                     var queuedMessages;
                                     joynrMessage.expiryDate = Date.now() + 1000;
                                     joynrMessage2.expiryDate = Date.now() + 2000;
@@ -178,6 +185,7 @@ define(
                                             messageQueue
                                                     .getAndRemoveMessages(receiverParticipantId).length)
                                             .toEqual(0);
+                                    done();
                                 });
 
                     });

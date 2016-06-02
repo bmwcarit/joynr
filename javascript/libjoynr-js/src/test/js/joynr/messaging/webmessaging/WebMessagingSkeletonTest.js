@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ define([ "joynr/messaging/webmessaging/WebMessagingSkeleton"
 
         var window, webMessagingSkeleton, listener1, listener2, data, event;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             function Window() {}
             window = new Window();
             window.addEventListener = jasmine.createSpy("addEventListener");
@@ -43,9 +43,10 @@ define([ "joynr/messaging/webmessaging/WebMessagingSkeleton"
             event = {
                 data : data
             };
+            done();
         });
 
-        it("is of correct type and has all members", function() {
+        it("is of correct type and has all members", function(done) {
             expect(WebMessagingSkeleton).toBeDefined();
             expect(typeof WebMessagingSkeleton === "function").toBeTruthy();
             expect(webMessagingSkeleton).toBeDefined();
@@ -54,9 +55,10 @@ define([ "joynr/messaging/webmessaging/WebMessagingSkeleton"
             expect(typeof webMessagingSkeleton.registerListener === "function").toBeTruthy();
             expect(webMessagingSkeleton.unregisterListener).toBeDefined();
             expect(typeof webMessagingSkeleton.unregisterListener === "function").toBeTruthy();
+            done();
         });
 
-        it("throws if arguments are missing or of wrong type", function() {
+        it("throws if arguments are missing or of wrong type", function(done) {
             expect(function() {
                 webMessagingSkeleton = new WebMessagingSkeleton({
                     window : window
@@ -113,17 +115,18 @@ define([ "joynr/messaging/webmessaging/WebMessagingSkeleton"
             expect(function() {
                 webMessagingSkeleton.unregisterListener({});
             }).toThrow(); // listener is of wrong type
+            done();
         });
 
         function callAllRegisteredListeners(calls, event) {
             var i;
 
-            for (i = 0; i < calls.length; ++i) {
-                calls[i].args[1](event);
+            for (i = 0; i < calls.count(); ++i) {
+                calls.argsFor(i)[1](event);
             }
         }
 
-        it("event calls through to registered listeners", function() {
+        it("event calls through to registered listeners", function(done) {
             webMessagingSkeleton.registerListener(listener1);
             webMessagingSkeleton.registerListener(listener2);
             expect(listener1).not.toHaveBeenCalled();
@@ -131,11 +134,12 @@ define([ "joynr/messaging/webmessaging/WebMessagingSkeleton"
             callAllRegisteredListeners(window.addEventListener.calls, event);
             expect(listener1).toHaveBeenCalledWith(data);
             expect(listener2).toHaveBeenCalledWith(data);
-            expect(listener1.calls.length).toBe(1);
-            expect(listener2.calls.length).toBe(1);
+            expect(listener1.calls.count()).toBe(1);
+            expect(listener2.calls.count()).toBe(1);
+            done();
         });
 
-        it("event does not call through to unregistered listeners", function() {
+        it("event does not call through to unregistered listeners", function(done) {
             webMessagingSkeleton.registerListener(listener1);
             webMessagingSkeleton.registerListener(listener2);
             webMessagingSkeleton.unregisterListener(listener1);
@@ -145,7 +149,8 @@ define([ "joynr/messaging/webmessaging/WebMessagingSkeleton"
 
             expect(listener1).not.toHaveBeenCalled();
             expect(listener2).toHaveBeenCalled();
-            expect(listener2.calls.length).toBe(1);
+            expect(listener2.calls.count()).toBe(1);
+            done();
         });
 
     });

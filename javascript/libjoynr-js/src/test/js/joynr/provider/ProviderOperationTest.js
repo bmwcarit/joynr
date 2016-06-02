@@ -1,9 +1,10 @@
 /*jslint es5: true, nomen: true */
+/*global fail: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +26,11 @@ define([
             "test/data/Operation",
             "joynr/tests/testTypes/TestEnum",
             "joynr/util/UtilInternal",
+            "joynr/types/TypeRegistrySingleton",
             "global/Promise",
             "joynr/exceptions/ProviderRuntimeException",
-            "joynr/exceptions/ApplicationException"
+            "joynr/exceptions/ApplicationException",
+            "global/WaitsFor"
         ],
         function(
             ProviderOperation,
@@ -35,9 +38,10 @@ define([
             testDataOperation,
             TestEnum,
             Util,
+            TypeRegistrySingleton,
             Promise,
             ProviderRuntimeException,
-            ApplicationException) {
+            ApplicationException, waitsFor) {
 
     var safetyTimeoutDelta = 100;
 
@@ -45,7 +49,7 @@ define([
 
         var implementation, myOperation, operationSpy, operationName, provider, thenSpy, catchSpy;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             provider = {};
             operationName = "myOperation";
             implementation = jasmine.createSpy("implementation");
@@ -75,17 +79,30 @@ define([
             ]);
             operationSpy = jasmine.createSpy("operation spy");
             myOperation.registerOperation(operationSpy);
+
+            /*
+             * Make sure 'TestEnum' is properly registered as a type.
+             * Just requiring the module is insufficient since the
+             * automatically generated code called async methods.
+             * Execution might be still in progress.
+             */
+            TypeRegistrySingleton.getInstance().getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        it("is of correct type", function() {
+        it("is of correct type", function(done) {
             expect(myOperation).toBeDefined();
             expect(myOperation).not.toBeNull();
             expect(typeof myOperation === "object").toBeTruthy();
             expect(myOperation instanceof ProviderOperation).toBeTruthy();
+            done();
         });
 
-        it("has correct members", function() {
+        it("has correct members", function(done) {
             expect(myOperation.registerOperation).toBeDefined();
+            done();
         });
 
         function testCallRegisteredOperation(testData) {
@@ -97,19 +114,20 @@ define([
                             [ testData.signature
                             ]);
             myOperation.registerOperation(operationSpy);
-            operationSpy.reset();
-            operationSpy.andReturn(testData.returnValue);
+            operationSpy.calls.reset();
+            operationSpy.and.returnValue(testData.returnValue);
             var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
             expect(result).toBeDefined();
             expect(result).toEqual(testData.returnParams);
             expect(implementation).not.toHaveBeenCalled();
         }
 
-        it("calls registered implementation with the correct operation arguments", function() {
+        it("calls registered implementation with the correct operation arguments", function(done) {
             var i;
             for (i = 0; i < testDataOperation.length; ++i) {
                 testCallRegisteredOperation(testDataOperation[i]);
             }
+            done();
         });
 
         function testCallProvidedOperation(testData) {
@@ -121,20 +139,21 @@ define([
                             [ testData.signature
                             ]);
 
-            implementation.reset();
-            implementation.andReturn(testData.returnValue);
+            implementation.calls.reset();
+            implementation.and.returnValue(testData.returnValue);
             myOperation.callOperation(testData.params, testData.paramDatatypes);
             expect(implementation).toHaveBeenCalledWith(testData.namedArguments);
         }
 
-        it("calls provided implementation with the correct operation arguments", function() {
+        it("calls provided implementation with the correct operation arguments", function(done) {
             var i;
             for (i = 0; i < testDataOperation.length; ++i) {
                 testCallProvidedOperation(testDataOperation[i]);
             }
+            done();
         });
 
-        it("calls provided implementation with enum as operation argument", function() {
+        it("calls provided implementation with enum as operation argument", function(done) {
             /*jslint nomen: true */
             var typeName = TestEnum.ZERO._typeName;
             /*jslint nomen: false */
@@ -149,48 +168,45 @@ define([
                     new ProviderOperation(provider, implementation, operationName, [ signature
                     ]);
 
-            implementation.reset();
+            implementation.calls.reset();
             myOperation.callOperation([ "ZERO"
             ], [ typeName
             ]);
             expect(implementation).toHaveBeenCalledWith({
                 enumArgument : TestEnum.ZERO
             });
+            done();
         });
 
         function testCallAsyncOperationResolves(testData) {
-            runs(function() {
-                myOperation =
-                        new ProviderOperation(
-                                provider,
-                                implementation,
-                                operationName,
-                                [ testData.signature
-                                ]);
-                myOperation.registerOperation(operationSpy);
-                operationSpy.reset();
-                operationSpy.andCallFake(function() {
-                    return new Promise(function(resolve, reject) {
-                        resolve(testData.returnValue);
-                    });
-                });
-                var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
-                var b = Util.isPromise(result);
-                expect(b).toBeTruthy();
-                thenSpy = jasmine.createSpy("thenSpy");
-                catchSpy = jasmine.createSpy("catchSpy");
-                result.then(function(value) {
-                    thenSpy(value);
-                }).catch(function(error) {
-                    catchSpy(error);
+            myOperation =
+                    new ProviderOperation(
+                            provider,
+                            implementation,
+                            operationName,
+                            [ testData.signature
+                            ]);
+            myOperation.registerOperation(operationSpy);
+            operationSpy.calls.reset();
+            operationSpy.and.callFake(function() {
+                return new Promise(function(resolve, reject) {
+                    resolve(testData.returnValue);
                 });
             });
+            var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
+            var b = Util.isPromise(result);
+            expect(b).toBeTruthy();
+            thenSpy = jasmine.createSpy("thenSpy");
+            catchSpy = jasmine.createSpy("catchSpy");
+            result.then(function(value) {
+                thenSpy(value);
+            }).catch(function(error) {
+                catchSpy(error);
+            });
 
-            waitsFor(function() {
-                return thenSpy.callCount > 0;
-            }, "thenSpy called", 100);
-
-            runs(function() {
+            return waitsFor(function() {
+                return thenSpy.calls.count() > 0;
+            }, "thenSpy called", 100).then(function() {
                 expect(catchSpy).not.toHaveBeenCalled();
                 expect(thenSpy).toHaveBeenCalled();
                 expect(thenSpy).toHaveBeenCalledWith(testData.returnParams);
@@ -199,181 +215,184 @@ define([
             });
         }
 
-        it("resolves for async implementation ", function() {
-            testCallAsyncOperationResolves(testDataOperation[2]);
+        it("resolves for async implementation ", function(done) {
+            testCallAsyncOperationResolves(testDataOperation[2]).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
         function testCallAsyncOperationRejectsWithProviderRuntimeException(testData) {
             var exampleDetailMessage = "faked error";
-            runs(function() {
-                myOperation =
-                        new ProviderOperation(
-                                provider,
-                                implementation,
-                                operationName,
-                                [ testData.signature
-                                ]);
-                myOperation.registerOperation(operationSpy);
-                operationSpy.reset();
-                operationSpy.andCallFake(function() {
-                    return new Promise(function(resolve, reject) {
-                        reject(new ProviderRuntimeException({ detailMessage : exampleDetailMessage }));
-                    });
-                });
-                var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
-                var b = Util.isPromise(result);
-                expect(b).toBeTruthy();
-                thenSpy = jasmine.createSpy("thenSpy");
-                catchSpy = jasmine.createSpy("catchSpy");
-                result.then(function(value) {
-                    thenSpy(value);
-                }).catch(function(error) {
-                    catchSpy(error);
+            myOperation =
+                    new ProviderOperation(
+                            provider,
+                            implementation,
+                            operationName,
+                            [ testData.signature
+                            ]);
+            myOperation.registerOperation(operationSpy);
+            operationSpy.calls.reset();
+            operationSpy.and.callFake(function() {
+                return new Promise(function(resolve, reject) {
+                    reject(new ProviderRuntimeException({ detailMessage : exampleDetailMessage }));
                 });
             });
+            var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
+            var b = Util.isPromise(result);
+            expect(b).toBeTruthy();
+            thenSpy = jasmine.createSpy("thenSpy");
+            catchSpy = jasmine.createSpy("catchSpy");
+            result.then(function(value) {
+                thenSpy(value);
+            }).catch(function(error) {
+                catchSpy(error);
+            });
 
-            waitsFor(function() {
-                return catchSpy.callCount > 0;
-            }, "catchSpy called", 1000);
-
-            runs(function() {
+            return waitsFor(function() {
+                return catchSpy.calls.count() > 0;
+            }, "catchSpy called", 1000).then(function() {
                 expect(thenSpy).not.toHaveBeenCalled();
                 expect(catchSpy).toHaveBeenCalled();
-                expect(catchSpy.calls[0].args[0] instanceof ProviderRuntimeException).toBeTruthy();
-                expect(catchSpy.calls[0].args[0].detailMessage).toEqual(exampleDetailMessage);
+                expect(catchSpy.calls.argsFor(0)[0] instanceof ProviderRuntimeException).toBeTruthy();
+                expect(catchSpy.calls.argsFor(0)[0].detailMessage).toEqual(exampleDetailMessage);
                 expect(operationSpy).toHaveBeenCalledWith(testData.namedArguments);
                 expect(implementation).not.toHaveBeenCalled();
             });
         }
 
-        it("rejects with ProviderRuntimeException for async implementation ", function() {
-            testCallAsyncOperationRejectsWithProviderRuntimeException(testDataOperation[2]);
+        it("rejects with ProviderRuntimeException for async implementation ", function(done) {
+            testCallAsyncOperationRejectsWithProviderRuntimeException(testDataOperation[2]).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
         function testCallAsyncOperationRejectsWithApplicationException(testData) {
-            runs(function() {
-                myOperation =
-                        new ProviderOperation(
-                                provider,
-                                implementation,
-                                operationName,
-                                [ testData.signature
-                                ]);
-                myOperation.registerOperation(operationSpy);
-                operationSpy.reset();
-                operationSpy.andCallFake(function() {
-                    return new Promise(function(resolve, reject) {
-                        reject(testData.error);
-                    });
-                });
-                var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
-                var b = Util.isPromise(result);
-                expect(b).toBeTruthy();
-                thenSpy = jasmine.createSpy("thenSpy");
-                catchSpy = jasmine.createSpy("catchSpy");
-                result.then(function(value) {
-                    thenSpy(value);
-                }).catch(function(error) {
-                    catchSpy(error);
+            myOperation =
+                    new ProviderOperation(
+                            provider,
+                            implementation,
+                            operationName,
+                            [ testData.signature
+                            ]);
+            myOperation.registerOperation(operationSpy);
+            operationSpy.calls.reset();
+            operationSpy.and.callFake(function() {
+                return new Promise(function(resolve, reject) {
+                    reject(testData.error);
                 });
             });
+            var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
+            var b = Util.isPromise(result);
+            expect(b).toBeTruthy();
+            thenSpy = jasmine.createSpy("thenSpy");
+            catchSpy = jasmine.createSpy("catchSpy");
+            result.then(function(value) {
+                thenSpy(value);
+                return null;
+            }).catch(function(error) {
+                catchSpy(error);
+                return null;
+            });
 
-            waitsFor(function() {
-                return catchSpy.callCount > 0;
-            }, "catchSpy called", 1000);
-
-            runs(function() {
+            return waitsFor(function() {
+                return catchSpy.calls.count() > 0;
+            }, "catchSpy called", 1000).then(function() {
                 expect(thenSpy).not.toHaveBeenCalled();
                 expect(catchSpy).toHaveBeenCalled();
-                expect(catchSpy.calls[0].args[0] instanceof ApplicationException).toBeTruthy();
-                expect(catchSpy.calls[0].args[0].error).toEqual(testData.error);
+                expect(catchSpy.calls.argsFor(0)[0] instanceof ApplicationException).toBeTruthy();
+                expect(catchSpy.calls.argsFor(0)[0].error).toEqual(testData.error);
                 expect(operationSpy).toHaveBeenCalledWith(testData.namedArguments);
             });
         }
 
-        it("rejects with ApplicationException for async implementation ", function() {
-            testCallAsyncOperationRejectsWithApplicationException(testDataOperation[2]);
+        it("rejects with ApplicationException for async implementation ", function(done) {
+            testCallAsyncOperationRejectsWithApplicationException(testDataOperation[2]).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
         function testCallSyncOperationThrowsWithProviderRuntimeException(testData) {
             var exampleDetailMessage = "faked error";
-            runs(function() {
-                myOperation =
-                        new ProviderOperation(
-                                provider,
-                                implementation,
-                                operationName,
-                                [ testData.signature
-                                ]);
-                myOperation.registerOperation(operationSpy);
-                operationSpy.reset();
-                operationSpy.andReturn(42);
-                operationSpy.andCallFake(function() {
-                    throw new ProviderRuntimeException({ detailMessage : exampleDetailMessage });
-                });
-                thenSpy = jasmine.createSpy("thenSpy");
-                catchSpy = jasmine.createSpy("catchSpy");
-                try {
-                    myOperation.callOperation(testData.params, testData.paramDatatypes);
-                    thenSpy();
-                } catch(e) {
-                    catchSpy(e);
-                }
+            myOperation =
+                    new ProviderOperation(
+                            provider,
+                            implementation,
+                            operationName,
+                            [ testData.signature
+                            ]);
+            myOperation.registerOperation(operationSpy);
+            operationSpy.calls.reset();
+            operationSpy.and.returnValue(42);
+            operationSpy.and.callFake(function() {
+                throw new ProviderRuntimeException({ detailMessage : exampleDetailMessage });
             });
-            waitsFor(function() {
-                return catchSpy.callCount > 0;
-            }, "catchSpy called", 1000);
-            runs(function() {
+            thenSpy = jasmine.createSpy("thenSpy");
+            catchSpy = jasmine.createSpy("catchSpy");
+            try {
+                myOperation.callOperation(testData.params, testData.paramDatatypes);
+                thenSpy();
+            } catch(e) {
+                catchSpy(e);
+            }
+            return waitsFor(function() {
+                return catchSpy.calls.count() > 0;
+            }, "catchSpy called", 1000).then(function() {
                 expect(thenSpy).not.toHaveBeenCalled();
                 expect(catchSpy).toHaveBeenCalled();
-                expect(catchSpy.calls[0].args[0] instanceof ProviderRuntimeException).toBeTruthy();
-                expect(catchSpy.calls[0].args[0].detailMessage).toEqual(exampleDetailMessage);
+                expect(catchSpy.calls.argsFor(0)[0] instanceof ProviderRuntimeException).toBeTruthy();
+                expect(catchSpy.calls.argsFor(0)[0].detailMessage).toEqual(exampleDetailMessage);
                 expect(operationSpy).toHaveBeenCalledWith(testData.namedArguments);
             });
         }
 
-        it("throws ProviderRuntimeException for synchronous implementation", function() {
-            testCallSyncOperationThrowsWithProviderRuntimeException(testDataOperation[2]);
+        it("throws ProviderRuntimeException for synchronous implementation", function(done) {
+            testCallSyncOperationThrowsWithProviderRuntimeException(testDataOperation[2]).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
         function testCallSyncOperationThrowsWithApplicationException(testData) {
-            runs(function() {
-                myOperation =
-                        new ProviderOperation(
-                                provider,
-                                implementation,
-                                operationName,
-                                [ testData.signature
-                                ]);
-                myOperation.registerOperation(operationSpy);
-                operationSpy.reset();
-                operationSpy.andReturn(42);
-                operationSpy.andCallFake(function() {
-                    throw testData.error;
-                });
-                thenSpy = jasmine.createSpy("thenSpy");
-                catchSpy = jasmine.createSpy("catchSpy");
-                try {
-                    myOperation.callOperation(testData.params, testData.paramDatatypes);
-                    thenSpy();
-                } catch(e) {
-                    catchSpy(e);
-                }
+            myOperation =
+                    new ProviderOperation(
+                            provider,
+                            implementation,
+                            operationName,
+                            [ testData.signature
+                            ]);
+            myOperation.registerOperation(operationSpy);
+            operationSpy.calls.reset();
+            operationSpy.and.returnValue(42);
+            operationSpy.and.callFake(function() {
+                throw testData.error;
             });
-            waitsFor(function() {
-                return catchSpy.callCount > 0;
-            }, "catchSpy called", 1000);
-            runs(function() {
+            thenSpy = jasmine.createSpy("thenSpy");
+            catchSpy = jasmine.createSpy("catchSpy");
+            try {
+                myOperation.callOperation(testData.params, testData.paramDatatypes);
+                thenSpy();
+            } catch(e) {
+                catchSpy(e);
+            }
+            return waitsFor(function() {
+                return catchSpy.calls.count() > 0;
+            }, "catchSpy called", 1000).then(function() {
                 expect(thenSpy).not.toHaveBeenCalled();
                 expect(catchSpy).toHaveBeenCalled();
-                expect(catchSpy.calls[0].args[0] instanceof ApplicationException).toBeTruthy();
-                expect(catchSpy.calls[0].args[0].error).toEqual(testData.error);
+                expect(catchSpy.calls.argsFor(0)[0] instanceof ApplicationException).toBeTruthy();
+                expect(catchSpy.calls.argsFor(0)[0].error).toEqual(testData.error);
                 expect(operationSpy).toHaveBeenCalledWith(testData.namedArguments);
             });
         }
 
-        it("throws ApplicationException for synchronous implementation", function() {
-            testCallSyncOperationThrowsWithApplicationException(testDataOperation[2]);
+        it("throws ApplicationException for synchronous implementation", function(done) {
+            testCallSyncOperationThrowsWithApplicationException(testDataOperation[2]).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
     });
 }); // require

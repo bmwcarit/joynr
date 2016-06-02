@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,6 +94,7 @@ define([ "joynr/messaging/browser/BrowserMessagingStub"
         it("calls correctly webMessagingStub.transmit correctly", function() {
             browserMessagingStub.transmit(joynrMessage);
             expect(webMessagingStub.transmit).toHaveBeenCalledWith({
+                windowId : undefined,
                 message : joynrMessage
             });
         });

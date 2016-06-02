@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,16 @@
  * #L%
  */
 
-define([ "joynr/messaging/webmessaging/WebMessagingStub"
-], function(WebMessagingStub) {
+define([
+    "joynr/messaging/webmessaging/WebMessagingStub",
+    "joynr/util/JSONSerializer"
+], function(WebMessagingStub, JSONSerializer) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function() {
 
         var window, origin, webMessagingStub, joynrMessage;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             function Window() {}
             window = new Window();
             window.postMessage = jasmine.createSpy("postMessage");
@@ -37,18 +39,20 @@ define([ "joynr/messaging/webmessaging/WebMessagingStub"
 
             function JoynrMessage() {}
             joynrMessage = new JoynrMessage();
+            done();
         });
 
-        it("is of correct type and has all members", function() {
+        it("is of correct type and has all members", function(done) {
             expect(WebMessagingStub).toBeDefined();
             expect(typeof WebMessagingStub === "function").toBeTruthy();
             expect(webMessagingStub).toBeDefined();
             expect(webMessagingStub instanceof WebMessagingStub).toBeTruthy();
             expect(webMessagingStub.transmit).toBeDefined();
             expect(typeof webMessagingStub.transmit === "function").toBeTruthy();
+            done();
         });
 
-        it("throws on missing or wrongly typed arguments in constructur", function() {
+        it("throws on missing or wrongly typed arguments in constructur", function(done) {
             expect(function() {
                 webMessagingStub = new WebMessagingStub(); // settings object is undefined
             }).toThrow();
@@ -109,9 +113,10 @@ define([ "joynr/messaging/webmessaging/WebMessagingStub"
                     origin : origin
                 });
             }).not.toThrow();
+            done();
         });
 
-        it("throws on missing or wrongly typed arguments in transmit", function() {
+        it("throws on missing or wrongly typed arguments in transmit", function(done) {
             expect(function() {
                 webMessagingStub.transmit(undefined);
             }).toThrow();
@@ -129,14 +134,18 @@ define([ "joynr/messaging/webmessaging/WebMessagingStub"
                     message : joynrMessage
                 });
             }).not.toThrow();
+            done();
         });
 
-        it("calls correctly window.postMessage correctly", function() {
+        it("calls correctly window.postMessage correctly", function(done) {
             var param = {
                 message : joynrMessage
             };
             webMessagingStub.transmit(param);
-            expect(window.postMessage).toHaveBeenCalledWith(param, origin);
+            expect(window.postMessage).toHaveBeenCalledWith(
+                    JSON.parse(JSONSerializer.stringify(param)),
+                    origin);
+            done();
         });
 
     });

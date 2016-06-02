@@ -1,3 +1,6 @@
+/*jslint es5: true */
+/*global fail: true */
+
 /*
  * #%L
  * %%
@@ -63,7 +66,7 @@ define(
                         var settings, dependencies, radioProxy;
                         var typeRegistry = TypeRegistrySingleton.getInstance();
 
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             settings = {
                                 domain : "",
                                 interfaceName : "",
@@ -85,71 +88,68 @@ define(
                                 }
                             };
                             radioProxy = new RadioProxy(settings);
+                            done();
                         });
 
-                        it("version is set correctly", function() {
+                        it("version is set correctly", function(done) {
                             expect(TestWithVersionProxy.MAJOR_VERSION).toBeDefined();
                             expect(TestWithVersionProxy.MAJOR_VERSION).toEqual(47);
                             expect(TestWithVersionProxy.MINOR_VERSION).toBeDefined();
                             expect(TestWithVersionProxy.MINOR_VERSION).toEqual(11);
+                            done();
                         });
 
-                        it("default version is set correctly", function() {
+                        it("default version is set correctly", function(done) {
                             expect(TestWithoutVersionProxy.MAJOR_VERSION).toBeDefined();
                             expect(TestWithoutVersionProxy.MAJOR_VERSION).toEqual(0);
                             expect(TestWithoutVersionProxy.MINOR_VERSION).toBeDefined();
                             expect(TestWithoutVersionProxy.MINOR_VERSION).toEqual(0);
+                            done();
                         });
 
-                        it("RadioProxy is instantiable", function() {
+                        it("RadioProxy is instantiable", function(done) {
                             expect(radioProxy).toBeDefined();
                             expect(radioProxy).not.toBeNull();
                             expect(typeof radioProxy === "object").toBeTruthy();
                             expect(radioProxy instanceof RadioProxy).toBeTruthy();
+                            done();
                         });
 
-                        it("RadioProxy provides API to access used datatypes", function() {
+                        it("RadioProxy provides API to access used datatypes", function(done) {
                             expect(RadioProxy.getUsedDatatypes).toBeDefined();
+                            done();
                         });
 
                         it(
                                 "RadioProxy.getUsedDatatype can be used to synchronize to the successful registration of all used datatypes",
-                                function() {
+                                function(done) {
                                     var datatypePromises;
                                     var allDatatypesRegistered;
-                                    runs(function() {
-                                        allDatatypesRegistered = false;
-                                        expect(RadioProxy.getUsedDatatypes).toBeDefined();
-                                        datatypePromises =
-                                                RadioProxy.getUsedDatatypes().map(
-                                                        function(datatype) {
-                                                            return typeRegistry
-                                                                    .getTypeRegisteredPromise(
-                                                                            datatype,
-                                                                            1000);
-                                                        });
-                                        Promise.all(datatypePromises).then(function() {
-                                            allDatatypesRegistered = true;
-                                        });
-                                    });
-
-                                    waitsFor(
-                                            function() {
-                                                return allDatatypesRegistered;
-                                            },
-                                            "all datatypes used by RadioProxy are registered at the typeRegistry",
-                                            1000);
-
-                                    runs(function() {
-                                        expect(allDatatypesRegistered).toEqual(true);
+                                    allDatatypesRegistered = false;
+                                    expect(RadioProxy.getUsedDatatypes).toBeDefined();
+                                    datatypePromises =
+                                            RadioProxy.getUsedDatatypes().map(
+                                                    function(datatype) {
+                                                        return typeRegistry
+                                                                .getTypeRegisteredPromise(
+                                                                        datatype,
+                                                                        1000);
+                                                    });
+                                    Promise.all(datatypePromises).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(function(error) {
+                                        fail("failed to register all datatypes at the typeRegistry");
+                                        return null;
                                     });
                                 });
 
-                        it("RadioProxy saves settings object", function() {
+                        it("RadioProxy saves settings object", function(done) {
                             expect(radioProxy.settings).toEqual(settings);
+                            done();
                         });
 
-                        it("RadioProxy has all members", function() {
+                        it("RadioProxy has all members", function(done) {
                             expect(radioProxy.isOn).toBeDefined();
                             expect(radioProxy.isOn instanceof ProxyAttributeNotifyReadWrite)
                                     .toBeTruthy();
@@ -158,8 +158,9 @@ define(
                                     .toBeTruthy();
                             expect(radioProxy.weakSignal).toBeDefined();
                             expect(radioProxy.weakSignal instanceof ProxyEvent).toBeTruthy();
+                            done();
                         });
 
                     });
 
-        }); // require
+        }); // define

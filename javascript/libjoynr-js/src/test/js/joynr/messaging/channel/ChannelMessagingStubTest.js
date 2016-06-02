@@ -1,7 +1,9 @@
+/*jslint es5: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +30,10 @@ define([
         var channelMessagingStub1, channelMessagingStub2, joynrMessage;
         var url = "http://testurl";
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             channelMessagingSender = jasmine.createSpyObj("channelMessagingSender", [ "send"
             ]);
-            channelMessagingSender.send.andReturn(Promise.resolve());
+            channelMessagingSender.send.and.returnValue(Promise.resolve());
             destinationChannelAddress = new ChannelAddress({
                 channelId : "destChannelId",
                 messagingEndpointUrl : url
@@ -53,30 +55,34 @@ define([
             joynrMessage = {
                 key : "joynrMessage"
             };
+            done();
         });
 
-        it("is instantiable and of correct type", function() {
+        it("is instantiable and of correct type", function(done) {
             expect(ChannelMessagingStub).toBeDefined();
             expect(typeof ChannelMessagingStub === "function").toBeTruthy();
             expect(channelMessagingStub1).toBeDefined();
             expect(channelMessagingStub1 instanceof ChannelMessagingStub).toBeTruthy();
             expect(channelMessagingStub1.transmit).toBeDefined();
             expect(typeof channelMessagingStub1.transmit === "function").toBeTruthy();
+            done();
         });
 
-        it("drop outgoing message if destChannel = myChannel", function() {
+        it("drop outgoing message if destChannel = myChannel", function(done) {
             channelMessagingStub2.transmit(joynrMessage);
             expect(channelMessagingSender.send).not.toHaveBeenCalled();
             expect(joynrMessage.replyChannelId).toBeUndefined();
+            done();
         });
 
-        it("transmits a message and set replyChannelId", function() {
+        it("transmits a message and set replyChannelId", function(done) {
             expect(joynrMessage.replyChannelId).toBeUndefined();
-            var result = channelMessagingStub1.transmit(joynrMessage);
+            channelMessagingStub1.transmit(joynrMessage);
             expect(channelMessagingSender.send).toHaveBeenCalledWith(
                     joynrMessage,
                     destinationChannelAddress);
             expect(joynrMessage.replyChannelId).toBe(JSON.stringify(myChannelAddress));
+            done();
         });
 
     });
