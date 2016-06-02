@@ -19,11 +19,15 @@ package io.joynr.proxy;
  * #L%
  */
 
-import org.junit.Assert;
+import static io.joynr.util.AnnotationUtil.getAnnotation;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import io.joynr.JoynrVersion;
 import joynr.tests.TestWithoutVersionProxy;
 import joynr.tests.testProxy;
 
@@ -33,15 +37,18 @@ public class ProxyVersionTest {
     public void versionIsSetCorrectly() {
         int expectedMajorVersion = 47;
         int expectedMinorVersion = 11;
-        Assert.assertEquals(expectedMajorVersion, testProxy.MAJOR_VERSION);
-        Assert.assertEquals(expectedMinorVersion, testProxy.MINOR_VERSION);
+        JoynrVersion versionAnnotation = getAnnotation(testProxy.class, JoynrVersion.class);
+        assertNotNull(versionAnnotation);
+        assertEquals(expectedMajorVersion, versionAnnotation.major());
+        assertEquals(expectedMinorVersion, versionAnnotation.minor());
     }
 
     @Test
     public void defaultVersionIsSetCorrectly() {
         int expectedMajorVersion = 0;
         int expectedMinorVersion = 0;
-        Assert.assertEquals(expectedMajorVersion, TestWithoutVersionProxy.MAJOR_VERSION);
-        Assert.assertEquals(expectedMinorVersion, TestWithoutVersionProxy.MINOR_VERSION);
+        JoynrVersion versionAnnotation = getAnnotation(TestWithoutVersionProxy.class, JoynrVersion.class);
+        assertEquals(expectedMajorVersion, versionAnnotation.major());
+        assertEquals(expectedMinorVersion, versionAnnotation.minor());
     }
 }
