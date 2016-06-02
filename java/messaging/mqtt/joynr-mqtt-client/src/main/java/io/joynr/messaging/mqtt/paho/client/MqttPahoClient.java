@@ -61,7 +61,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 mqttClient.setCallback(this);
                 logger.debug("MQTT Connected client");
             } catch (MqttException mqttError) {
-                logger.error("MQTT Connect failed: {}", mqttError.getMessage());
+                logger.error("MQTT Connect failed.", mqttError);
                 switch (mqttError.getReasonCode()) {
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                 case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
@@ -79,6 +79,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     try {
                         Thread.sleep(reconnectSleepMs);
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         return;
                     }
                     continue;
@@ -86,7 +87,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     continue;
                 }
             } catch (Exception e) {
-                throw new JoynrIllegalStateException("Unable to start MqttPahoClient: " + e.getMessage());
+                throw new JoynrIllegalStateException("Unable to start MqttPahoClient: " + e.getMessage(), e);
             }
         }
     }
@@ -100,7 +101,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 mqttClient.subscribe(topic);
                 subscribed = true;
             } catch (MqttException mqttError) {
-                logger.error("MQTT subscribe to: {} failed: {}", topic, mqttError.getMessage());
+                logger.debug("MQTT subscribe to: " + topic + " failed: " + mqttError.getMessage(), mqttError);
                 switch (mqttError.getReasonCode()) {
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                 case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
@@ -115,6 +116,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     try {
                         Thread.sleep(reconnectSleepMs);
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         return;
                     }
                     continue;
@@ -125,7 +127,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 }
 
             } catch (Exception e) {
-                throw new JoynrRuntimeException("Unable to start MqttPahoClient: " + e.getMessage());
+                throw new JoynrRuntimeException("Unable to start MqttPahoClient", e);
             }
         }
     }
@@ -154,7 +156,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             logger.debug("MQTT Publish to: {}", topic);
             mqttClient.publish(topic, message);
         } catch (MqttException e) {
-            logger.error("MQTT Publish failed: {}", e.getMessage());
+            logger.debug("MQTT Publish failed: {}", e);
             switch (e.getReasonCode()) {
             case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                 Throwable cause = e.getCause();
@@ -179,7 +181,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 throw new JoynrMessageNotSentException(e.getMessage());
             }
         } catch (Exception e) {
-            throw new JoynrMessageNotSentException(e.getMessage());
+            throw new JoynrMessageNotSentException(e.getMessage(), e);
         }
 
         logger.debug("Published message: " + serializedMessage);

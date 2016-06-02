@@ -241,6 +241,7 @@ public class ReflectionUtils {
                 try {
                     clazz = Class.forName(nameTokens[0]);
                 } catch (ClassNotFoundException e) {
+                    logger.debug("class not found", e);
                     clazz = Object.class;
                 }
                 break;

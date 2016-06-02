@@ -27,7 +27,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class JoynrEmbeddedDatabase {
+    private static final Logger logger = LoggerFactory.getLogger(JoynrEmbeddedDatabase.class);
 
     public static final String PROPERTY_DATABASE_NAME = "joynr.database.embedded.database";
     private boolean started = false;
@@ -64,6 +68,7 @@ public abstract class JoynrEmbeddedDatabase {
                 }
             }
         } catch (SQLException e) {
+            logger.debug("error checking if table exists", e);
         }
         return false;
     }

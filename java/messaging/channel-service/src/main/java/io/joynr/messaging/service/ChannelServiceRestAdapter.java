@@ -84,8 +84,8 @@ public class ChannelServiceRestAdapter {
         try {
             return new GenericEntity<List<ChannelInformation>>(channelService.listChannels()) {
             };
-        } catch (Throwable e) {
-            log.error("GET channels listChannels: error: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("GET channels listChannels: error: {}", e.getMessage(), e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
     }
@@ -112,8 +112,8 @@ public class ChannelServiceRestAdapter {
             return channelService.openChannel(ccid, cacheIndex, atmosphereTrackingId);
         } catch (WebApplicationException e) {
             throw e;
-        } catch (Throwable e) {
-            log.error("GET Channels open long poll ccid: error: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("GET Channels open long poll ccid: error: {}", e.getMessage(), e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
     }
@@ -152,7 +152,6 @@ public class ChannelServiceRestAdapter {
             // look for an existing bounce proxy handling the channel
             channel = channelService.createChannel(ccid, atmosphereTrackingId);
 
-            // TODO error handling
             String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
             log.debug("encoded channel URL " + channel.getLocation() + " to " + encodedChannelLocation);
 
@@ -162,7 +161,7 @@ public class ChannelServiceRestAdapter {
                            .build();
         } catch (WebApplicationException ex) {
             throw ex;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new WebApplicationException(e);
         }
     }
@@ -186,8 +185,8 @@ public class ChannelServiceRestAdapter {
 
         } catch (WebApplicationException e) {
             throw e;
-        } catch (Throwable e) {
-            log.error("DELETE channel for cluster controller: error: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("DELETE channel for cluster controller: error: {}", e.getMessage(), e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
     }

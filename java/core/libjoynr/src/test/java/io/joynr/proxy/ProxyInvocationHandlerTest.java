@@ -95,7 +95,7 @@ public class ProxyInvocationHandlerTest {
                     result = proxyInvocationHandler.invoke(TestSyncInterface.class.getDeclaredMethod("testMethod",
                                                                                                      new Class<?>[]{}),
                                                            new Object[]{});
-                } catch (Throwable e) {
+                } catch (Exception e) {
                 }
 
                 return result;
@@ -110,7 +110,7 @@ public class ProxyInvocationHandlerTest {
                     result = proxyInvocationHandler.invoke(TestSyncInterface.class.getDeclaredMethod("testMethod",
                                                                                                      new Class<?>[]{}),
                                                            new Object[]{});
-                } catch (Throwable e) {
+                } catch (Exception e) {
                 }
                 return result;
             }

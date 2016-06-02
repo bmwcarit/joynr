@@ -145,7 +145,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
             Future<Void> startReceiver = longPollingReceiver.start(messageListener);
             startReceiver.get(servletShutdownTimeout_ms, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            logger.error("error switching to long polling while shutting down servlet: {}", e.getMessage());
+            logger.debug("error switching to long polling while shutting down servlet.", e);
             return false;
         }
         logger.debug("switched to long polling.");

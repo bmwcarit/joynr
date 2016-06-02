@@ -25,8 +25,12 @@ public class JoynrShutdownException extends JoynrRuntimeException {
         super(errorMsg);
     }
 
+    public JoynrShutdownException(String message, Exception cause) {
+        super(message, cause);
+    }
+
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 3620625652713563976L;
 

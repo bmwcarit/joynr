@@ -59,7 +59,7 @@ public class MqttMessagingStub implements IMessaging {
         String serializedMessage = messageSerializer.serialize(message);
         try {
             mqttClient.publishMessage(topic, serializedMessage);
-        } catch (Throwable error) {
+        } catch (Exception error) {
             failureAction.execute(error);
         }
     }
@@ -70,7 +70,7 @@ public class MqttMessagingStub implements IMessaging {
         String topic = address.getTopic() + RAW;
         try {
             mqttClient.publishMessage(topic, serializedMessage);
-        } catch (Throwable error) {
+        } catch (Exception error) {
             failureAction.execute(error);
         }
     }

@@ -3,9 +3,6 @@ package io.joynr.dispatching;
 import java.io.IOException;
 import java.util.Set;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 /*
  * #%L
  * %%
@@ -25,8 +22,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingQos;
 import joynr.SubscriptionPublication;
@@ -38,27 +33,20 @@ public interface Dispatcher extends MessageArrivedListener {
                                         Set<String> toParticipantId,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos qosSettings,
-                                        boolean broadcast) throws JoynrSendBufferFullException,
-                                                          JoynrMessageNotSentException, JsonGenerationException,
-                                                          JsonMappingException, IOException;
+                                        boolean broadcast) throws IOException;
 
     public void sendSubscriptionStop(String fromParticipantId,
                                      Set<String> toParticipantId,
                                      SubscriptionStop subscriptionStop,
-                                     MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                              JoynrMessageNotSentException, JsonGenerationException,
-                                                              JsonMappingException, IOException;
+                                     MessagingQos qosSettings) throws IOException;
 
     public void sendSubscriptionPublication(String fromParticipantId,
                                             Set<String> toParticipantId,
                                             SubscriptionPublication publication,
-                                            MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                     JoynrMessageNotSentException,
-                                                                     JsonGenerationException, JsonMappingException,
-                                                                     IOException;
+                                            MessagingQos qosSettings) throws IOException;
 
     /**
-     * 
+     *
      * @param clear
      *            indicates whether the channel should be closed
      */

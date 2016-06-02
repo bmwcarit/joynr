@@ -188,7 +188,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
                         IMessaging messagingStub = messagingStubFactory.create(address);
                         messagingStub.transmit(message, createFailureAction(message, retriesCount));
-                    } catch (Throwable error) {
+                    } catch (Exception error) {
                         logger.error("error in scheduled message router thread: {}", error.getMessage());
                         FailureAction failureAction = createFailureAction(message, retriesCount);
                         failureAction.execute(error);
@@ -258,6 +258,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                         Thread.sleep(delayMs);
                         this.execute(e);
                     } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
                         return;
                     }
                 }
@@ -272,6 +273,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         try {
             scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             logger.error("Message Scheduler did not shut down in time: {}", e.getMessage());
         }
     }

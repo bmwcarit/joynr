@@ -29,21 +29,18 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
+
 import joynr.JoynrMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -86,9 +83,7 @@ public class DispatcherImpl implements Dispatcher {
                                         Set<String> toParticipantIds,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos qosSettings,
-                                        boolean broadcast) throws JoynrSendBufferFullException,
-                                                          JoynrMessageNotSentException, JsonGenerationException,
-                                                          JsonMappingException, IOException {
+                                        boolean broadcast) throws IOException {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                                  toParticipantId,
@@ -104,9 +99,7 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionStop(String fromParticipantId,
                                      Set<String> toParticipantIds,
                                      SubscriptionStop subscriptionStop,
-                                     MessagingQos messagingQos) throws JoynrSendBufferFullException,
-                                                               JoynrMessageNotSentException, JsonGenerationException,
-                                                               JsonMappingException, IOException {
+                                     MessagingQos messagingQos) throws IOException {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
                                                                               toParticipantId,
@@ -121,10 +114,7 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionPublication(String fromParticipantId,
                                             Set<String> toParticipantIds,
                                             SubscriptionPublication publication,
-                                            MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                     JoynrMessageNotSentException,
-                                                                     JsonGenerationException, JsonMappingException,
-                                                                     IOException {
+                                            MessagingQos qosSettings) throws IOException {
 
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
@@ -136,11 +126,7 @@ public class DispatcherImpl implements Dispatcher {
     }
 
     public void sendReply(final String fromParticipantId, final String toParticipantId, Reply reply, long expiryDate)
-                                                                                                                     throws JoynrSendBufferFullException,
-                                                                                                                     JoynrMessageNotSentException,
-                                                                                                                     JsonGenerationException,
-                                                                                                                     JsonMappingException,
-                                                                                                                     IOException {
+                                                                                                                     throws IOException {
         JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId,
                                                                toParticipantId,
                                                                reply,

@@ -202,6 +202,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             try {
                 globalAddress = globalAddressProvider.get();
             } catch (Exception e) {
+                logger.debug("error getting global address", e);
                 globalAddress = null;
             }
 
@@ -492,7 +493,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(JoynrRuntimeException exception) {
-                    capabilitiesCallback.onError((Exception) exception);
+                    capabilitiesCallback.onError(exception);
 
                 }
             }, participantId, discoveryQos.getDiscoveryTimeoutMs());
@@ -531,7 +532,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
             @Override
             public void onFailure(JoynrRuntimeException exception) {
-                capabilitiesCallback.onError((Exception) exception);
+                capabilitiesCallback.onError(exception);
             }
         },
                                         domains,
@@ -575,6 +576,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     globalCapabilitiesDirectoryClient.remove(callback, Lists.newArrayList(Collections2.transform(discoveryEntries,
                             transfomerFct)));
                 } catch (DiscoveryException e) {
+                	logger.debug("error removing discovery entries", e);
                 }
             }
         }

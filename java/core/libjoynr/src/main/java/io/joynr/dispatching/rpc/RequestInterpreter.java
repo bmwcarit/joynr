@@ -69,7 +69,7 @@ public class RequestInterpreter {
             callback.onFailure(e);
             return;
         } catch (Exception e) {
-            callback.onFailure(new MethodInvocationException(e.toString()));
+            callback.onFailure(new MethodInvocationException(e));
             return;
         }
         promise.then(new PromiseListener() {
@@ -106,8 +106,9 @@ public class RequestInterpreter {
             return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);
-            throw new MethodInvocationException(e.toString());
+            throw new MethodInvocationException(e);
         } catch (InvocationTargetException e) {
+            logger.debug("invokeMethod error", e);
             Throwable cause = e.getCause();
             logger.error("RequestInterpreter: Could not perform an RPC invocation: {}", cause == null ? e.toString()
                     : cause.getMessage());
@@ -125,7 +126,7 @@ public class RequestInterpreter {
                 methodSignatureToMethodMap.putIfAbsent(methodSignature, method);
             }
         } catch (NoSuchMethodException e) {
-            logger.error("RequestInterpreter: Received an RPC invocation for a non existing method {}", request);
+            logger.error("RequestInterpreter: Received an RPC invocation for a non existing method" + request, e);
             throw new MethodInvocationException(e.toString());
         }
     }

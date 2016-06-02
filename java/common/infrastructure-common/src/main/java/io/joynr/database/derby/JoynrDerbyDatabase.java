@@ -66,7 +66,7 @@ public class JoynrDerbyDatabase extends JoynrEmbeddedDatabase {
         try {
             connection = DriverManager.getConnection(getDBCloseUrl());
         } catch (SQLException e) {
-            log.debug("Expected exception \"" + e.getMessage() + "\" ocurred");
+            log.debug("Expected exception \"" + e.getMessage() + "\" ocurred", e);
         } finally {
             if (connection != null) {
                 connection.close();

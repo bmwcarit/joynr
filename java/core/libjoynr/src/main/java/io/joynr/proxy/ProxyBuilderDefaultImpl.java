@@ -160,7 +160,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             T proxy = build();
             callback.onProxyCreated(proxy);
         } catch (JoynrIllegalStateException e) {
-            logger.error(e.toString());
+            logger.debug("error building proxy", e);
             callback.onProxyCreationError(e.toString());
         }
     }

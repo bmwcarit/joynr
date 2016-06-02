@@ -137,7 +137,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
 
         try {
             server.start();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             logger.error("Error while starting websocket server: ", t);
         }
     }
@@ -195,7 +195,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
             // The client must reconnect, but the message can be queued in the mean time.
             sessionMap.remove(toClientAddress.getId());
             //TODO We need a delay with invalidation of the stub
-            throw new JoynrDelayMessageException(e.getMessage());
+            throw new JoynrDelayMessageException(e.getMessage(), e);
         }
     }
 

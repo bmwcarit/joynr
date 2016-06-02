@@ -122,7 +122,7 @@ public class Future<T> {
             value = result;
             status = new RequestStatus(RequestStatusCode.OK);
             statusLockChangedCondition.signalAll();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             status = new RequestStatus(RequestStatusCode.ERROR);
             exception = new JoynrRuntimeException(e);
         } finally {

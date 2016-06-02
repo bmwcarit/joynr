@@ -104,8 +104,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            logger.error("unable to add discoveryEntry: {}, reason: {}", discoveryEntry, e.getMessage());
-        } finally {
+            logger.error("unable to add discoveryEntry: " + discoveryEntry, e);
         }
     }
 
@@ -145,7 +144,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            logger.error("unable to remove capability: {} reason: {}", participantId, e.getMessage());
+            logger.error("unable to remove capability: " + participantId, e);
             return false;
         } finally {
         }

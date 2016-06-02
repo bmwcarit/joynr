@@ -92,7 +92,7 @@ public class MessagingService {
         try {
             return new GenericEntity<Collection<ServletMessageReceiver>>(messageReceivers.getAllServletMessageReceivers()) {
             };
-        } catch (Throwable e) {
+        } catch (Exception e) {
             log.error("GET channels listChannels: error: {}", e.getMessage(), e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
@@ -171,8 +171,8 @@ public class MessagingService {
 
         } catch (WebApplicationException e) {
             throw e;
-        } catch (Throwable e) {
-            log.error("POST message to channel: {} error: {}", channelId, e.getMessage());
+        } catch (Exception e) {
+            log.error("POST message to channel: " + channelId + "error: " + e.getMessage(), e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
     }

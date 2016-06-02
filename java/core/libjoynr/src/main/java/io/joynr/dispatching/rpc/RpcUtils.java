@@ -58,7 +58,7 @@ public class RpcUtils {
                                                 .newInstance((Object) response);
                     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                        logger.error("error calling multi-out method: {}. Unable to recreate return object: {}. Returning NULL instead", method.getName(), e.getMessage());
+                        logger.error("error calling multi-out method: {}. Unable to recreate return object. Returning NULL instead: " + method.getName(), e);
 
                     }
             }
@@ -87,9 +87,9 @@ public class RpcUtils {
                                                                methodMetaInformation.getCallbackAnnotation()
                                                                                     .deserializationType());
             } catch (IllegalArgumentException e) {
-                logger.error("error calling method: {}. Unable to recreate response for callback: {}. Returning NULL instead",
-                             method.getName(),
-                             e.getMessage());
+                logger.error("error calling method: {}. Unable to recreate response for callback. Returning NULL instead"
+                                     + method.getName(),
+                             e);
             }
         } else if (response.getResponse().length > 1) {
             convertMultioutResponseToCorrectTypes(method, response.getResponse());
@@ -108,9 +108,7 @@ public class RpcUtils {
                 response[i] = objectMapper.convertValue(response[i], responseDatatypes[i]);
             }
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            logger.error("error calling method: {}. Unable to recreate response for callback: {}. Returning NULL instead",
-                         method.getName(),
-                         e.getMessage());
+            logger.error("error calling method. Unable to recreate response for callback: Returning NULL instead: " + method.getName(), e);
         }
 }
 }

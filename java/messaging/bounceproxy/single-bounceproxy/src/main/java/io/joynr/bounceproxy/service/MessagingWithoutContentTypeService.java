@@ -41,8 +41,6 @@ import joynr.JoynrMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
@@ -91,9 +89,7 @@ public class MessagingWithoutContentTypeService {
     @POST
     @Consumes({ MediaType.TEXT_PLAIN })
     public Response postMessageWithoutContentType(@PathParam("ccid") String ccid, String messageString)
-                                                                                                       throws IOException,
-                                                                                                       JsonParseException,
-                                                                                                       JsonMappingException {
+                                                                                                       throws IOException {
         JoynrMessage message = objectMapper.readValue(messageString, JoynrMessage.class);
 
         try {
@@ -115,7 +111,7 @@ public class MessagingWithoutContentTypeService {
         } catch (WebApplicationException e) {
             log.error("Invalid request from host {}", request.getRemoteHost());
             throw e;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             log.error("POST message for cluster controller: error: {}", e.getMessage());
             throw new WebApplicationException(e);
         }

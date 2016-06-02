@@ -162,7 +162,7 @@ public class JeeMessagingEndpoint {
             return Response.created(location).build();
         } catch (WebApplicationException e) {
             throw e;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LOG.error(format("POST message to channel: %s error: %s", channelId, e.getMessage()), e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }

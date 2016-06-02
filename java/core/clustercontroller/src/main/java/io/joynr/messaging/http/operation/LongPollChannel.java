@@ -29,7 +29,6 @@ import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.util.Utilities;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -45,7 +44,6 @@ import joynr.JoynrMessage;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
@@ -54,8 +52,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -136,6 +132,7 @@ public class LongPollChannel {
                     try {
                         statusLock.lockInterruptibly();
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new JoynrShutdownException("INTERRUPTED. Shutting down");
                     }
                     logger.trace("Waiting for long polling to be resumed.");
@@ -149,6 +146,7 @@ public class LongPollChannel {
                         // returned
                         Thread.sleep(10);
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new JoynrShutdownException("INTERRUPTED. Shutting down");
                     }
                 }
@@ -166,44 +164,25 @@ public class LongPollChannel {
             return;
         }
 
+        final String asciiString = httpget.getURI().toASCIIString();
         try {
-
             responseBody = httpclient.execute(httpget, new ResponseHandler<String>() {
 
                 @Override
-                public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                public String handleResponse(HttpResponse response) throws IOException {
                     HttpEntity entity = response.getEntity();
                     String body = entity == null ? null : EntityUtils.toString(entity, "UTF-8");
                     statusCode = response.getStatusLine().getStatusCode();
                     statusText = response.getStatusLine().getReasonPhrase();
-                    logger.debug("Long poll returned: {} reason: url {}", statusCode, httpget.getURI().toASCIIString());
+                    logger.debug("Long poll returned: {} reason: url {}", statusCode, asciiString);
                     return body;
                 }
             });
         } catch (IllegalStateException e) {
-            logger.error("IllegalStateException in long poll: {} message: {}",
-                         httpget.getURI().toASCIIString(),
-                         e.getMessage());
-            throw new JoynrShutdownException(e.getMessage());
-        } catch (ClientProtocolException e) {
-            logger.error("ClientProtocolException in long poll: {} message: {}",
-                         httpget.getURI().toASCIIString(),
-                         e.getMessage());
-            delay();
-            return;
-        } catch (SocketException e) {
-            logger.warn("SocketException in long poll: {} message: {} message: {}",
-                        httpget.getURI().toASCIIString(),
-                        e.getMessage());
-            delay();
-            return;
-
-        } catch (IOException e) {
-            logger.warn("IOException in long poll: {} message: {}", httpget.getURI().toASCIIString(), e.getMessage());
-            delay();
-            return;
+            logger.error("IllegalStateException in long poll: {} message: {}", asciiString, e.getMessage());
+            throw new JoynrShutdownException(e.getMessage(), e);
         } catch (Exception e) {
-            logger.warn("Exception in long poll: {} message: {}", httpget.getURI().toASCIIString(), e.getMessage());
+            logger.debug("Exception in long poll: " + asciiString, e);
             delay();
             return;
         }
@@ -230,7 +209,7 @@ public class LongPollChannel {
                         throw new JoynrCommunicationException(error.getReason());
                     }
                 } catch (IOException e) {
-                    throw new JoynrCommunicationException(statusText);
+                    throw new JoynrCommunicationException(statusText, e);
                 }
             }
 
@@ -276,9 +255,8 @@ public class LongPollChannel {
                                                  new JoynrCommunicationException("LongPollingChannel CHANNEL: {} message was null"));
                 }
                 continue;
-            } catch (JsonParseException e) {
-            } catch (JsonMappingException e) {
             } catch (IOException e) {
+                logger.error("error parsing JSON", e);
             }
 
             logger.error("CHANNEL: {} Error converting the JSON into a Message object, message could not be passed to dispatcher. \n"
@@ -297,6 +275,7 @@ public class LongPollChannel {
             try {
                 httpclient.close();
             } catch (IOException e) {
+                logger.error("error closing http client", e);
             }
         }
         logger.debug("LongPollingChannel CHANNEL: {} SHUT DOWN", id);

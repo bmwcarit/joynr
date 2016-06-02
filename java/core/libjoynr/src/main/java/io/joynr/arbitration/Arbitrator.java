@@ -78,19 +78,15 @@ public class Arbitrator {
 
     // TODO JOYN-911 make sure we are shutting down correctly onError
     protected void onError(Throwable exception) {
-        try {
-            throw exception;
-        } catch (IllegalStateException e) {
-            logger.error("CapabilitiesCallback: " + e.getMessage(), e);
+        if (exception instanceof IllegalStateException) {
+            logger.error("CapabilitiesCallback: " + exception.getMessage(), exception);
             return;
-
-        } catch (JoynrShutdownException e) {
-            logger.warn("CapabilitiesCallback onError: " + e.getMessage(), e);
-
-        } catch (JoynrRuntimeException e) {
+        } else if (exception instanceof JoynrShutdownException) {
+            logger.warn("CapabilitiesCallback onError: " + exception.getMessage(), exception);
+        } else if (exception instanceof JoynrRuntimeException) {
             restartArbitrationIfNotExpired();
-        } catch (Throwable e) {
-            logger.error("CapabilitiesCallback onError thowable: " + e.getMessage(), e);
+        } else {
+            logger.error("CapabilitiesCallback onError thowable: " + exception.getMessage(), exception);
         }
     }
 

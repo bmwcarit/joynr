@@ -162,21 +162,22 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     }
 
     private String[] getProviderInterfaceNames(Set<Class<? extends JoynrProvider>> providerInterfaceClasses) {
-        Set<String> providerInterfaceNames = new HashSet<>();
-        for (Class<? extends JoynrProvider> providerInterfaceClass : providerInterfaceClasses) {
-            providerInterfaceNames.add(getInterfaceName(providerInterfaceClass));
-        }
-        return providerInterfaceNames.toArray(new String[providerInterfaceNames.size()]);
-    }
+		Set<String> providerInterfaceNames = new HashSet<>();
+		for (Class<? extends JoynrProvider> providerInterfaceClass : providerInterfaceClasses) {
+			providerInterfaceNames.add(getInterfaceName(providerInterfaceClass));
+		}
+		return providerInterfaceNames.toArray(new String[providerInterfaceNames.size()]);
+	}
 
     private String getInterfaceName(Class<? extends JoynrProvider> providerInterfaceClass) {
-        try {
-            Field interfaceNameField = providerInterfaceClass.getField("INTERFACE_NAME");
-            return (String) interfaceNameField.get(providerInterfaceClass);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            return providerInterfaceClass.getSimpleName();
-        }
-    }
+		try {
+			Field interfaceNameField = providerInterfaceClass.getField("INTERFACE_NAME");
+			return (String) interfaceNameField.get(providerInterfaceClass);
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			LOG.debug("error getting interface details", e);
+			return providerInterfaceClass.getSimpleName();
+		}
+	}
 
     private String getEnvWithDefault(String variableName, String defaultValue) {
         String value = System.getenv(variableName);
@@ -187,32 +188,32 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     }
 
     private void provisionAccessControl(Properties properties, String domain, String[] interfaceNames) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
-        List<MasterAccessControlEntry> allEntries = new ArrayList<>();
-        for (String interfaceName : interfaceNames) {
-            MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
-                                                                                                domain,
-                                                                                                interfaceName,
-                                                                                                TrustLevel.LOW,
-                                                                                                new TrustLevel[]{ TrustLevel.LOW },
-                                                                                                TrustLevel.LOW,
-                                                                                                new TrustLevel[]{ TrustLevel.LOW },
-                                                                                                "*",
-                                                                                                Permission.YES,
-                                                                                                new Permission[]{ joynr.infrastructure.DacTypes.Permission.YES });
-            allEntries.add(newMasterAccessControlEntry);
-        }
-        MasterAccessControlEntry[] provisionedAccessControlEntries = allEntries.toArray(new MasterAccessControlEntry[allEntries.size()]);
-        String provisionedAccessControlEntriesAsJson;
-        try {
-            provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
-            properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
-                                   provisionedAccessControlEntriesAsJson);
-        } catch (JsonProcessingException e) {
-            LOG.error("Error parsing JSON.", e);
-        }
-    }
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+		List<MasterAccessControlEntry> allEntries = new ArrayList<>();
+		for (String interfaceName : interfaceNames) {
+			MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
+					domain,
+					interfaceName,
+					TrustLevel.LOW,
+					new TrustLevel[]{ TrustLevel.LOW },
+					TrustLevel.LOW,
+					new TrustLevel[]{ TrustLevel.LOW },
+					"*",
+					Permission.YES,
+					new Permission[]{ joynr.infrastructure.DacTypes.Permission.YES });
+			allEntries.add(newMasterAccessControlEntry);
+		}
+		MasterAccessControlEntry[] provisionedAccessControlEntries = allEntries.toArray(new MasterAccessControlEntry[allEntries.size()]);
+		String provisionedAccessControlEntriesAsJson;
+		try {
+			provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
+			properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
+					provisionedAccessControlEntriesAsJson);
+		} catch (JsonProcessingException e) {
+			LOG.error("Error parsing JSON.", e);
+		}
+	}
 
     @Override
     public String getLocalDomain() {

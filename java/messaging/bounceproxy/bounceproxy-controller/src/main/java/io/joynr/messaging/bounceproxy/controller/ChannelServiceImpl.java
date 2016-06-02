@@ -128,16 +128,8 @@ public class ChannelServiceImpl implements ChannelService {
 
             return channel;
 
-        } catch (Throwable e) {
-            // TODO do a more fine grained error handling catching different
-            // types of errors later on. Note that from current specification,
-            // the bounce proxy is not expected to reject this call (Channels
-            // are assigned based on performance measures reported by the bounce
-            // proxy).
+        } catch (Exception e) {
             log.error("Could not create channel on bounce proxy: channel {}, error: {}", ccid, e.getMessage());
-
-            // TODO think of maybe trying to open a channel on a different
-            // bounce proxy if it didn't work for this one
             throw new JoynrRuntimeException("Error creating channel on bounce proxy", e);
         }
     }
@@ -151,7 +143,6 @@ public class ChannelServiceImpl implements ChannelService {
      */
     @Override
     public boolean deleteChannel(String ccid) {
-        // TODO Auto-generated method stub
         return false;
     }
 

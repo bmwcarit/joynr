@@ -49,14 +49,14 @@ public class AttributePollInterpreter {
                                            method.getName(),
                                            interfaceName,
                                            e.toString());
-            logger.error(message);
+            logger.error(message, e);
             throw new MethodInvocationException(message);
         } catch (IllegalArgumentException e) {
             String message = String.format("Provider of interface \"%s\" does not declare method \"%s\" (exception: \"%s\")",
                                            interfaceName,
                                            method.getName(),
                                            e.toString());
-            logger.error(message);
+            logger.error(message, e);
             throw new MethodInvocationException(message);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
@@ -64,14 +64,14 @@ public class AttributePollInterpreter {
                                            method.getName(),
                                            interfaceName,
                                            cause == null ? e.toString() : cause.toString());
-            logger.error(message);
+            logger.error(message, e);
             throw new ProviderRuntimeException(cause == null ? e.toString() : cause.toString());
         } catch (Exception e) {
             String message = String.format("Calling method \"%s\" on \"%s\" provider threw an unexpected exception: \"%s\"",
                                            method.getName(),
                                            interfaceName,
                                            e.toString());
-            logger.error(message);
+            logger.error(message, e);
             throw new MethodInvocationException(message);
         }
 

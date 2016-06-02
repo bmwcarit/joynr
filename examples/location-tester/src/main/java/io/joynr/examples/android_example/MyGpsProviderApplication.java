@@ -191,7 +191,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
             try {
                 runtime.unregisterProvider(localDomain, provider);
             } catch (JoynrRuntimeException e) {
-                LOG.error("unable to unregister capabilities {}", e.getMessage());
+                LOG.error("unable to unregister capabilities", e);
             }
         }
         runtime.shutdown(true);
@@ -200,7 +200,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
-            // do nothing; exiting application
+            Thread.currentThread().interrupt();
         }
         System.exit(0);
     }

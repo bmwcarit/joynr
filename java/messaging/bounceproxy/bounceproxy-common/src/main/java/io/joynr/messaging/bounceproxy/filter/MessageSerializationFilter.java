@@ -59,8 +59,8 @@ public class MessageSerializationFilter implements PerRequestBroadcastFilter {
 
         try {
             message = mapper.writeValueAsString(message);
-        } catch (Throwable e) {
-
+        } catch (Exception e) {
+            logger.error("error serializing message", e);
         }
         return message;
     }
