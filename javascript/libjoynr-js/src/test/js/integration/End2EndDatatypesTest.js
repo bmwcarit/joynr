@@ -1,10 +1,10 @@
-/*global joynrTestRequire: true */
+/*global fail: true */
 /*jslint es5: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,15 @@
  * #L%
  */
 
-joynrTestRequire("integration/TestEnd2EndDatatypes", [
+define([
     "global/Promise",
     "joynr",
     "joynr/datatypes/DatatypesProxy",
     "joynr/datatypes/exampleTypes/Country",
     "integration/TestEnd2EndDatatypesTestData",
     "integration/IntegrationUtils",
-    "joynr/provisioning/provisioning_cc"
+    "joynr/provisioning/provisioning_cc",
+    "global/WaitsFor"
 ], function(
         Promise,
         joynr,
@@ -35,48 +36,45 @@ joynrTestRequire("integration/TestEnd2EndDatatypes", [
         Country,
         TestEnd2EndDatatypesTestData,
         IntegrationUtils,
-        provisioning) {
+        provisioning,
+        waitsFor) {
     describe("libjoynr-js.integration.end2end.datatypes", function() {
 
         var datatypesProxy, provisioningSuffix, workerId;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             var testProvisioning = null;
             datatypesProxy = undefined;
             provisioningSuffix = "-" + Date.now();
             testProvisioning = IntegrationUtils.getProvisioning(provisioning, provisioningSuffix);
-            runs(function() {
-                joynr.load(testProvisioning).then(function(newJoynr){
-                    joynr = newJoynr;
-                    IntegrationUtils.initialize(joynr);
+            joynr.load(testProvisioning).then(function(newJoynr){
+                joynr = newJoynr;
+                IntegrationUtils.initialize(joynr);
 
-                    IntegrationUtils.initializeWebWorker(
-                            "TestEnd2EndDatatypesProviderWorker",
-                            provisioningSuffix).then(function(newWorkerId) {
-                        workerId = newWorkerId;
-                        return IntegrationUtils.startWebWorker(workerId);
-                    }).then(
-                            function() {
-                                return IntegrationUtils.buildProxy(DatatypesProxy).then(
-                                        function(newDatatypesProxy) {
-                                            datatypesProxy = newDatatypesProxy;
-                                        });
-                            });
-                }).catch(function(error){
-                    throw error;
-                });
+                IntegrationUtils.initializeWebWorker(
+                        "TestEnd2EndDatatypesProviderWorker",
+                        provisioningSuffix).then(function(newWorkerId) {
+                    workerId = newWorkerId;
+                    return IntegrationUtils.startWebWorker(workerId);
+                }).then(
+                        function() {
+                            return IntegrationUtils.buildProxy(DatatypesProxy).then(
+                                    function(newDatatypesProxy) {
+                                        datatypesProxy = newDatatypesProxy;
+                                        done();
+                                        return null;
+                                    });
+                        });
+            }).catch(function(error){
+                throw error;
             });
-            waitsFor(function() {
-                return datatypesProxy !== undefined;
-            }, "proxy to be resolved", testProvisioning.ttl);
         });
 
-        it("supports all datatypes in attributes get/set", function() {
+        it("supports all datatypes in attributes get/set", function(done) {
             var i, j;
 
             function testAttrType(attributeName, attributeValue) {
                 return new Promise(function(resolve, reject) {
-
                     var attribute;
                     attribute = datatypesProxy[attributeName];
                     attribute.set({
@@ -91,116 +89,101 @@ joynrTestRequire("integration/TestEnd2EndDatatypes", [
                 });
             }
 
-            function setAndGetAttribute(attributeName, attributeValue) {
-                var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-                runs(function() {
-                    testAttrType(attributeName, attributeValue).then(
-                            onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                });
-
-                waitsFor(function() {
-                    return onFulfilledSpy.callCount > 0;
-                }, "attribute set/get", 2 * provisioning.ttl);
-
-                runs(function() {
-                    expect(onFulfilledSpy).toHaveBeenCalled();
-                    expect(onFulfilledSpy).toHaveBeenCalledWith(attributeValue);
-                    IntegrationUtils.checkValueAndType(
-                            onFulfilledSpy.calls[0].args[0],
-                            attributeValue);
+            function setAndGetAttribute(attributeName, attributeValue, promiseChain) {
+                return promiseChain.then(function() {
+                    var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                    testAttrType(attributeName, attributeValue).then(function(value) {
+                        expect(value).toEqual(attributeValue);
+                        IntegrationUtils.checkValueAndType(value, attributeValue);
+                    }).catch(IntegrationUtils.outputPromiseError);
                 });
             }
 
+            var promiseChain = Promise.resolve();
             for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
                 var test = TestEnd2EndDatatypesTestData[i];
                 for (j = 0; j < test.values.length; ++j) {
-                    setAndGetAttribute(test.attribute, test.values[j]);
+                    promiseChain = setAndGetAttribute(test.attribute, test.values[j], promiseChain);
                 }
             }
+            promiseChain.then(function() {
+                done();
+                return null;
+            }).catch(fail);
+        }, 10000);
 
-        });
-
-        it("supports all datatypes as operation arguments", function() {
+        it("supports all datatypes as operation arguments", function(done) {
             var i;
 
-            function testGetJavascriptType(arg, expectedReturnValue) {
-                var onFulfilledSpy;
+            function testGetJavascriptType(arg, expectedReturnValue, promiseChain) {
 
-                runs(function() {
+                return promiseChain.then(function() {
+                    var onFulfilledSpy;
                     onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                     datatypesProxy.getJavascriptType({
                         arg : arg
                     }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                });
 
-                waitsFor(function() {
-                    return onFulfilledSpy.callCount > 0;
-                }, "operation is called", provisioning.ttl);
-
-                runs(function() {
-                    expect(onFulfilledSpy).toHaveBeenCalled();
-                    expect(onFulfilledSpy).toHaveBeenCalledWith({
-                        javascriptType : expectedReturnValue
+                    return waitsFor(function() {
+                        return onFulfilledSpy.calls.count() > 0;
+                    }, "operation is called", provisioning.ttl).then(function() {
+                        expect(onFulfilledSpy).toHaveBeenCalled();
+                        expect(onFulfilledSpy).toHaveBeenCalledWith({
+                            javascriptType : expectedReturnValue
+                        });
                     });
                 });
             }
 
+            var promiseChain = Promise.resolve();
             for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
                 var test = TestEnd2EndDatatypesTestData[i];
-                testGetJavascriptType(test.values[0], test.jsRuntimeType);
+                promiseChain = testGetJavascriptType(test.values[0], test.jsRuntimeType, promiseChain);
             }
+            promiseChain.then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        it("supports all datatypes as operation argument and return value", function() {
+        it("supports all datatypes as operation argument and return value", function(done) {
             var i;
 
-            function testGetArgumentBack(arg) {
-                var onFulfilledSpy;
-
-                runs(function() {
-                    onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+            function testGetArgumentBack(arg, promiseChain) {
+                return promiseChain.then(function() {
                     datatypesProxy.getArgumentBack({
                         arg : arg
-                    }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                });
-
-                waitsFor(function() {
-                    return onFulfilledSpy.callCount > 0;
-                }, "operation is called", provisioning.ttl);
-
-                runs(function() {
-                    expect(onFulfilledSpy).toHaveBeenCalled();
-                    expect(onFulfilledSpy).toHaveBeenCalledWith({
-                        returnValue : arg
-                    });
-                    IntegrationUtils.checkValueAndType(onFulfilledSpy.calls[0].args[0].returnValue, arg);
+                    }).then(function(value) {
+                        expect(value).toEqual({ returnValue : arg });
+                        IntegrationUtils.checkValueAndType(value.returnValue, arg);
+                    }).catch(IntegrationUtils.outputPromiseError);
                 });
             }
 
+            var promiseChain = Promise.resolve();
             for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
                 var test = TestEnd2EndDatatypesTestData[i];
-                testGetArgumentBack(test.values[0]);
+                promiseChain = testGetArgumentBack(test.values[0], promiseChain);
             }
+            promiseChain.then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        it("supports multiple operation arguments", function() {
+        it("supports multiple operation arguments", function(done) {
             var i;
 
             function testMultipleArguments(opArgs) {
                 var onFulfilledSpy;
 
-                runs(function() {
-                    onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-                    datatypesProxy.multipleArguments(opArgs).then(
-                            onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                });
+                onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                datatypesProxy.multipleArguments(opArgs).then(
+                        onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
 
-                waitsFor(function() {
-                    return onFulfilledSpy.callCount > 0;
-                }, "operation is called", provisioning.ttl);
-
-                runs(function() {
+                return waitsFor(function() {
+                    return onFulfilledSpy.calls.count() > 0;
+                }, "operation is called", provisioning.ttl).then(function() {
                     expect(onFulfilledSpy).toHaveBeenCalled();
                     expect(onFulfilledSpy).toHaveBeenCalledWith({
                         serialized : JSON.stringify(opArgs)
@@ -216,25 +199,17 @@ joynrTestRequire("integration/TestEnd2EndDatatypes", [
                 paramName = paramName.slice(0, 1).toLowerCase() + paramName.slice(1);
                 opArgs[paramName] = test.values[0];
             }
-            testMultipleArguments(opArgs);
+            testMultipleArguments(opArgs).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        afterEach(function() {
-            var shutDownWW, shutDownLibJoynr;
-
-            runs(function() {
-                IntegrationUtils.shutdownWebWorker(workerId).then(function() {
-                    shutDownWW = true;
-                });
-                IntegrationUtils.shutdownLibjoynr().then(function() {
-                    shutDownLibJoynr = true;
-                });
-            });
-
-            waitsFor(function() {
-                return shutDownWW && shutDownLibJoynr;
-            }, "WebWorker and Libjoynr to be shut down", 5000);
+        afterEach(function(done) {
+            IntegrationUtils.shutdownWebWorker(workerId).then(IntegrationUtils.shutdownLibjoynr).then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
-
     });
 });

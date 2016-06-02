@@ -1,10 +1,10 @@
-/*global joynrTestRequire: true, requiresJsUndef: true */
+/*global fail: true */
 /*jslint es5: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "integration/TestInterTab",
-        [
+define([
             "global/Promise",
             "joynr",
             "joynr/types/DiscoveryEntry",
@@ -41,7 +39,7 @@ joynrTestRequire(
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provisioning/provisioning_libjoynr",
-            "integration/IntegrationUtils"
+            "integration/IntegrationUtils",
         ],
         function(
                 Promise,
@@ -70,17 +68,14 @@ joynrTestRequire(
                         var libjoynrParentWindow;
                         var radioProvider;
                         var radioProxy;
-                        var workerStarted, libjoynrLoaded;
                         var numberOfStations;
                         var provisioningSuffix;
                         var discoveryTimeoutMs;
                         var messagingQos;
 
-                        beforeEach(function() {
+                        beforeEach(function(done) {
                             var testProvisioning;
                             var worker;
-                            workerStarted = false;
-                            libjoynrLoaded = false;
                             var webWorkerAndLibJoynrStarted = false;
                             provisioningSuffix = "-" + Date.now();
                             discoveryTimeoutMs = 4000;
@@ -124,82 +119,61 @@ joynrTestRequire(
 
                             testProvisioning = IntegrationUtils.getProvisioning(provisioning,provisioningSuffix);
 
-                            runs(function() {
-                                IntegrationUtils
-                                        .initializeWebWorkerCC(
-                                                "TestInterTabCommunicationCCWorker",
-                                                provisioningSuffix)
-                                        .then(
-                                                function(newWorkerId) {
-                                                    libjoynrParentWindow.workerId = newWorkerId;
-                                                    IntegrationUtils.log({
-                                                        level: "debug",
-                                                        message: "CC web worker with ID: initialized with id "
-                                                                     + libjoynrParentWindow.workerId
-                                                    }, "joynr.integration.TestInterTab");
-                                                    IntegrationUtils.log({
-                                                        level: "debug",
-                                                        message: "CC web worker with ID " + libjoynrParentWindow.workerId
-                                                                + ": starting"
-                                                    }, "joynr.integration.TestInterTab");
-                                                    IntegrationUtils.startWebWorker(libjoynrParentWindow.workerId).then(function() {
-                                                        workerStarted = true;
-                                                        IntegrationUtils.log({
-                                                            level: "debug",
-                                                            message: "CC web worker with ID " + libjoynrParentWindow.workerId
-                                                                    + ": started"
-                                                        }, "joynr.integration.TestInterTab");
-                                                        joynr.load(testProvisioning, true).then(function(newJoynr){
-                                                            messagingQos = IntegrationUtils.messagingQos;
-                                                            joynr = newJoynr;
-                                                            IntegrationUtils.initialize(joynr);
-                                                            libjoynrLoaded = true;
-                                                        }).catch(function(error){
-                                                            throw error;
-                                                        });
-                                                    });
-                                                });
-                            });
+                            IntegrationUtils
+                                    .initializeWebWorkerCC(
+                                            "TestInterTabCommunicationCCWorker",
+                                            provisioningSuffix)
+                                    .then(
+                                        function(newWorkerId) {
+                                            libjoynrParentWindow.workerId = newWorkerId;
+                                            IntegrationUtils.log({
+                                                level: "debug",
+                                                message: "CC web worker with ID: initialized with id "
+                                                             + libjoynrParentWindow.workerId
+                                            }, "joynr.integration.TestInterTab");
+                                            IntegrationUtils.log({
+                                                level: "debug",
+                                                message: "CC web worker with ID " + libjoynrParentWindow.workerId
+                                                        + ": starting"
+                                            }, "joynr.integration.TestInterTab");
+                                            return IntegrationUtils.startWebWorker(libjoynrParentWindow.workerId);
+                                    }).then(function() {
+                                        IntegrationUtils.log({
+                                            level: "debug",
+                                            message: "CC web worker with ID " + libjoynrParentWindow.workerId
+                                                    + ": started"
+                                        }, "joynr.integration.TestInterTab");
+                                        return joynr.load(testProvisioning, true);
+                                    }).then(function(newJoynr){
+                                        messagingQos = IntegrationUtils.messagingQos;
+                                        joynr = newJoynr;
+                                        IntegrationUtils.initialize(joynr);
+                                        done();
+                                        return null;
+                                    }).catch(function(error){
+                                        throw error;
+                                    });
+                                });
 
-                            waitsFor(function() {
-                                return workerStarted && libjoynrLoaded;
-                            }, "worker started", testProvisioning.ttl);
-                        });
-
-                        function shutdownWebWorkerAndLibJoynr() {
-                            var shutDownWW;
-                            var shutDownLibJoynr;
+                        afterEach(function(done) {
                             radioProxy = undefined;
 
-                            runs(function() {
+                            IntegrationUtils.log({
+                                level: "debug",
+                                message: "CC web worker with ID " + libjoynrParentWindow.workerId
+                                        + ": terminating"
+                            }, "joynr.integration.TestInterTab");
+                            IntegrationUtils.shutdownWebWorker(libjoynrParentWindow.workerId).then(function() {
                                 IntegrationUtils.log({
                                     level: "debug",
                                     message: "CC web worker with ID " + libjoynrParentWindow.workerId
-                                            + ": terminating"
+                                            + ": terminated"
                                 }, "joynr.integration.TestInterTab");
-                                IntegrationUtils.shutdownWebWorker(libjoynrParentWindow.workerId)
-                                        .then(
-                                                function() {
-                                                    shutDownWW = true;
-                                                    IntegrationUtils.log({
-                                                        level: "debug",
-                                                        message: "CC web worker with ID " + libjoynrParentWindow.workerId
-                                                                + ": terminated"
-                                                    }, "joynr.integration.TestInterTab");
-                                                });
-                                IntegrationUtils.shutdownLibjoynr().then(function() {
-                                    delete provisioning.parentWindow;
-                                    shutDownLibJoynr = true;
-                                });
+                                return IntegrationUtils.shutdownLibjoynr();
+                            }).then(function() {
+                                delete provisioning.parentWindow;
+                                done();
                             });
-
-                            waitsFor(function() {
-                                return shutDownWW && shutDownLibJoynr;
-                            }, "WebWorker and Libjoynr to be shut down", 5000);
-                        }
-
-                        afterEach(function() {
-                            shutdownWebWorkerAndLibJoynr();
                         });
 
                         function createDiscoveryProxy() {
@@ -281,7 +255,7 @@ joynrTestRequire(
 
                         it(
                                 "Create Radio Provider and register properly",
-                                function() {
+                                function(done) {
                                     var domain = "intertab-test-" + Date.now();
                                     /*
                                      * This test
@@ -311,7 +285,7 @@ joynrTestRequire(
                                     var typeDefForStruct = null;
                                     var typeDefForPrimitive = null;
 
-                                    var providerRegistered, providerUnRegistered, proxyResolved;
+                                    var providerUnRegistered, proxyResolved;
 
                                     var messagingQos = new joynr.messaging.MessagingQos({
                                         ttl : 500
@@ -349,7 +323,7 @@ joynrTestRequire(
                                     radioProvider.attributeTestingProviderInterface.registerGetter(function() {
                                        return undefined;
                                     });
- 
+
                                     radioProvider.mixedSubscriptions.registerGetter(function() {
                                         return "interval";
                                     });
@@ -560,147 +534,73 @@ joynrTestRequire(
                                         }
                                     });
 
-                                    runs(function() {
-                                        createDiscoveryProxy()
-                                                .then(
-                                                        function(newDiscoveryProxy) {
-                                                            removeCapabilities(
-                                                                    newDiscoveryProxy,
-                                                                    domain,
-                                                                    radioProvider.interfaceName)
-                                                                    .then(
-                                                                            function() {
-                                                                                // register radio provider
-                                                                                joynr.registration
-                                                                                        .registerProvider(
-                                                                                                domain,
-                                                                                                radioProvider,
-                                                                                                providerQos)
-                                                                                        .then(
-                                                                                                function() {
+                                    createDiscoveryProxy().then(function(newDiscoveryProxy) {
+                                        return removeCapabilities(
+                                            newDiscoveryProxy,
+                                            domain,
+                                            radioProvider.interfaceName);
+                                    }).then(function() {
+                                        // register radio provider
+                                        return joynr.registration.registerProvider(
+                                            domain,
+                                            radioProvider,
+                                            providerQos);
+                                    }).then(function() {
+                                        // publishing changed value regularly
+                                        setInterval(
+                                            function() {
+                                                numberOfStations = Math.round(Math.random() * 256);
+                                                radioProvider.numberOfStations.valueChanged(numberOfStations);
+                                            },
+                                            2000);
 
-                                                                                                    providerRegistered =
-                                                                                                            true;
-                                                                                                    // publishing changed value regularly
-                                                                                                    setInterval(
-                                                                                                            function() {
-                                                                                                                numberOfStations =
-                                                                                                                        Math
-                                                                                                                                .round(Math
-                                                                                                                                        .random() * 256);
-                                                                                                                radioProvider.numberOfStations
-                                                                                                                        .valueChanged(numberOfStations);
-                                                                                                            },
-                                                                                                            2000);
-                                                                                                }).catch(function(
-                                                                                                        error) {
-                                                                                                    providerRegistered =
-                                                                                                            false;
-                                                                                                    expect(
-                                                                                                            " error: "
-                                                                                                                + error.message)
-                                                                                                            .toBeFalsy();
-                                                                                                });
-                                                                            });
-                                                        }).catch(function(error) {
-                                                            expect(" error: " + error.message)
-                                                                    .toBeFalsy();
-                                                        });
-                                    });
-
-                                    waitsFor(function() {
-                                        return providerRegistered;
-                                    }, "Provider to be registered successfully", provisioning.ttl);
-
-                                    runs(function() {
-                                        expect(providerRegistered).toBeTruthy();
-                                        joynr.proxyBuilder
+                                        return joynr.proxyBuilder
                                                 .build(RadioProxy, {
                                                     domain : domain,
                                                     messagingQos : messagingQos
-                                                })
-                                                .then(
-                                                        function(newRadioProxy) {
-                                                            expect(newRadioProxy).toBeDefined();
-                                                            expect(
-                                                                    newRadioProxy.providerParticipantId)
-                                                                    .toEqual(
-                                                                            joynr.participantIdStorage
-                                                                                    .getParticipantId(
-                                                                                            domain,
-                                                                                            radioProvider));
-                                                            radioProxy = newRadioProxy;
-                                                            proxyResolved = true;
-                                                        }).catch(function(error) {
-                                                            proxyResolved = false;
-                                                            expect(" error: " + error.message)
-                                                                    .toBeFalsy();
-                                                        });
-                                    });
-
-                                    waitsFor(function() {
-                                        return radioProxy !== undefined;
-                                    }, "Proxy to be resolved successfully", provisioning.ttl);
-
-                                    runs(function() {
-                                        expect(proxyResolved).toBeTruthy();
-                                        proxyResolved = undefined;
-                                        radioProxy.addFavoriteStation({
-                                            radioStation : "radioStation"
-                                        }).then(
-                                                function(opArgs) {
-                                                    var result = opArgs.returnValue;
-                                                    expect(result).toEqual(true);
-                                                    joynr.registration.unregisterProvider(
-                                                            domain,
-                                                            radioProvider).then(function() {
-                                                        providerUnRegistered = true;
-                                                    }).catch(function(error) {
-                                                        providerUnRegistered = false;
-                                                    });
-                                                }).catch(function(error) {
-                                                    expect(" error: " + error.message).toBeFalsy();
                                                 });
-                                    });
-
-                                    waitsFor(function() {
-                                        return providerUnRegistered;
-                                    }, "Provider to be unregistered successfully", provisioning.ttl);
-
-                                    runs(function() {
-                                        expect(providerUnRegistered).toBeTruthy();
-                                        joynr.proxyBuilder
+                                    }).then(function(newRadioProxy) {
+                                        expect(newRadioProxy).toBeDefined();
+                                        expect(newRadioProxy.providerParticipantId).toEqual(joynr.participantIdStorage.getParticipantId(domain, radioProvider));
+                                        radioProxy = newRadioProxy;
+                                        return radioProxy.addFavoriteStation({
+                                            radioStation : "radioStation"
+                                        });
+                                    }).then(function(opArgs) {
+                                        var result = opArgs.returnValue;
+                                        expect(result).toEqual(true);
+                                        return joynr.registration.unregisterProvider(
+                                            domain,
+                                            radioProvider);
+                                    }).then(function() {
+                                        // the next proxy build should fail since no provider is present
+                                        // after the unregister call.
+                                        // Use inverted logic (resolve on failure) so we can continue
+                                        // with a 'then'
+                                        return new Promise(function(resolve, reject) {
+                                            joynr.proxyBuilder
                                                 .build(RadioProxy, {
                                                     domain : domain,
                                                     messagingQos : messagingQos,
                                                     discoveryQos : {
                                                         discoveryTimeoutMs : discoveryTimeoutMs
                                                     }
-                                                })
-                                                .then(
-                                                        function(newRadioProxy) {
-                                                            proxyResolved = true;
-                                                            expect(
-                                                                    " error: proxy resolved, even if no provider shall be contained in the capability directory")
-                                                                    .toBeFalsy();
-                                                        }).catch(function(error) {
-                                                            proxyResolved = false;
-                                                        });
-                                    });
-
-                                    waitsFor(function() {
-                                        return proxyResolved === false;
-                                    }, "Proxy not be resolved", discoveryTimeoutMs + 500);
-
-                                    runs(function() {
-                                        expect(proxyResolved).toBeFalsy();
-                                    });
-
+                                                }).then(function(newRadioProxy) {
+                                                    reject(new Error("register succeeded unexpectedly"));
+                                                }).catch(function() {
+                                                    resolve();
+                                                });
+                                            });
+                                    }).then(function() {
+                                        // OK
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         it(
                                 "Create separate joynr instance with provider and arbitrate",
-                                function() {
+                                function(done) {
                                     var domain = "intertab-test-" + Date.now();
                                     /*
                                      * This test
@@ -717,64 +617,42 @@ joynrTestRequire(
                                      */
                                     var proxyResolved, radioProxy, providerWorkerId, testFinished;
 
-                                    runs(function() {
-                                        IntegrationUtils.initializeWebWorker(
-                                                "TestEnd2EndCommProviderWorker",
-                                                provisioningSuffix,
-                                                domain).then(function(newWorkerId) {
-                                            providerWorkerId = newWorkerId;
-                                        });
-                                    });
-                                    waitsFor(function() {
-                                        return providerWorkerId !== undefined;
-                                    }, "WebWorker to be ready", provisioning.ttl);
+                                    IntegrationUtils.initializeWebWorker(
+                                            "TestEnd2EndCommProviderWorker",
+                                            provisioningSuffix,
+                                            domain).then(function(newWorkerId) {
+                                        providerWorkerId = newWorkerId;
 
-                                    runs(function() {
-                                        joynr.proxyBuilder.build(RadioProxy, {
+                                        return joynr.proxyBuilder.build(RadioProxy, {
                                             domain : domain,
                                             messagingQos : messagingQos
-                                        }).then(function(newRadioProxy) {
-                                            expect(newRadioProxy).toBeDefined();
-                                            radioProxy = newRadioProxy;
-                                            proxyResolved = true;
-                                        }).catch(function(error) {
-                                            proxyResolved = false;
-                                            expect(" error: " + error.message).toBeFalsy();
                                         });
-                                    });
-
-                                    waitsFor(function() {
-                                        return radioProxy !== undefined;
-                                    }, "Proxy to be resolved successfully", provisioning.ttl);
-
-                                    runs(function() {
-                                        expect(proxyResolved).toBeTruthy();
-                                        proxyResolved = undefined;
-                                        radioProxy.addFavoriteStation({
+                                    }).then(function(newRadioProxy) {
+                                        expect(newRadioProxy).toBeDefined();
+                                        radioProxy = newRadioProxy;
+                                        return radioProxy.addFavoriteStation({
                                             radioStation : "radioStation"
-                                        }).then(
-                                                function(opArgs) {
-                                                    var result = opArgs.returnValue;
-                                                    expect(result).toEqual(false);
-                                                    IntegrationUtils.shutdownWebWorker(
-                                                            providerWorkerId).then(function() {
-                                                        testFinished = true;
-                                                    });
-                                                }).catch(function(error) {
-                                                    IntegrationUtils
-                                                            .shutdownWebWorker(providerWorkerId);
-                                                    expect(" error: " + error.message).toBeFalsy();
-                                                });
+                                        });
+                                    }).then(function(opArgs) {
+                                        var result = opArgs.returnValue;
+                                        expect(result).toEqual(false);
+                                        return IntegrationUtils.shutdownWebWorker(
+                                            providerWorkerId);
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(function(error) {
+                                        if (providerWorkerId) {
+                                            IntegrationUtils
+                                                .shutdownWebWorker(providerWorkerId);
+                                        }
+                                        expect(" error: " + error.message).toBeFalsy();
                                     });
-
-                                    waitsFor(function() {
-                                        return testFinished !== undefined;
-                                    }, "test to be finished", provisioning.ttl);
                                 });
 
                         it(
                                 "Create discovery proxy and check if the cc discovery provider works properly",
-                                function() {
+                                function(done) {
                                     var domain = "intertab-test-" + Date.now(), discoveredEntries;
                                     /*
                                      * This test
@@ -795,37 +673,21 @@ joynrTestRequire(
                                      *   routing interface, to see if the routing provider behaves
                                      *   as expected
                                      */
-                                    var proxyResolved, discoveryProxy, providerWorkerId, testFinished;
+                                    var discoveryProxy, providerWorkerId, providerQos,
+                                        interfaceName = "TestDiscoverAPI", participantId = "222",
+                                        participantId2 = "2222";
 
-                                    runs(function() {
-                                        IntegrationUtils.initializeWebWorker(
-                                                "TestEnd2EndCommProviderWorker",
-                                                provisioningSuffix,
-                                                domain).then(
-                                                function(newWorkerId) {
-                                                    providerWorkerId = newWorkerId;
-                                                    createDiscoveryProxy().then(
-                                                            function(newDiscoveryProxy) {
-                                                                discoveryProxy = newDiscoveryProxy;
-                                                                proxyResolved = true;
-                                                            }).catch(function(error) {
-                                                                proxyResolved = false;
-                                                            });
-                                                });
-                                    });
-
-                                    waitsFor(
-                                            function() {
-                                                return proxyResolved !== undefined;
-                                            },
-                                            "Discovery proxy to be resolved successfully",
-                                            provisioning.ttl);
-
-                                    runs(function() {
-                                        expect(proxyResolved).toBeTruthy();
-                                        proxyResolved = undefined;
-                                        discoveryProxy
-                                                .lookup(
+                                    IntegrationUtils.initializeWebWorker(
+                                        "TestEnd2EndCommProviderWorker",
+                                        provisioningSuffix,
+                                        domain).then(function(newWorkerId) {
+                                        providerWorkerId = newWorkerId;
+                                        return IntegrationUtils.startWebWorker(providerWorkerId);
+                                    }).then(function() {
+                                        return createDiscoveryProxy();
+                                    }).then(function(newDiscoveryProxy) {
+                                        discoveryProxy = newDiscoveryProxy;
+                                        return discoveryProxy.lookup(
                                                         {
                                                             domains : [domain],
                                                             interfaceName : "vehicle/Radio",
@@ -833,63 +695,25 @@ joynrTestRequire(
                                                                     {
                                                                         discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
                                                                     })
-                                                        })
-                                                .then(
-                                                        function(opArgs) {
-                                                            var discoveredStubs = opArgs.result;
-                                                            expect(discoveredStubs.length).toEqual(
-                                                                    1);
-                                                            IntegrationUtils
-                                                                    .shutdownWebWorker(
-                                                                            providerWorkerId)
-                                                                    .then(
-                                                                            function() {
-                                                                                discoveryProxy
-                                                                                        .lookup(
-                                                                                                {
-                                                                                                    domains : [domain],
-                                                                                                    interfaceName : "vehicle/Radio",
-                                                                                                    discoveryQos : new DiscoveryQosGen(
-                                                                                                            {
-                                                                                                                discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
-                                                                                                            })
-                                                                                                })
-                                                                                        .then(
-                                                                                                function(
-                                                                                                        opArgs) {
-                                                                                                    var discoveredStubs = opArgs.result;
-                                                                                                    discoveredEntries =
-                                                                                                            discoveredStubs;
-                                                                                                    expect(
-                                                                                                            discoveredStubs.length)
-                                                                                                            .toEqual(
-                                                                                                                    0);
-                                                                                                }).catch(function(
-                                                                                                        error) {
-                                                                                                    expect(
-                                                                                                            " error: "
-                                                                                                                + error.message)
-                                                                                                            .toBeFalsy();
-                                                                                                });
-                                                                            }).catch(function(error) {
-                                                                                expect(
-                                                                                        " error: "
-                                                                                            + error.message)
-                                                                                        .toBeFalsy();
-                                                                            });
-                                                        });
-                                    });
+                                        });
+                                    }).then(function(opArgs) {
+                                        var discoveredStubs = opArgs.result;
+                                        expect(discoveredStubs.length).toEqual(1);
+                                        return IntegrationUtils.shutdownWebWorker(providerWorkerId);
+                                    }).then(function() {
+                                        return discoveryProxy.lookup({
+                                                domains : [domain],
+                                                interfaceName : "vehicle/Radio",
+                                                discoveryQos : new DiscoveryQosGen(
+                                                    {
+                                                        discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
+                                                })
+                                        });
+                                    }).then(function(opArgs) {
+                                        var discoveredStubs = opArgs.result;
+                                        discoveredEntries = discoveredStubs;
+                                        expect(discoveredStubs.length).toEqual(0);
 
-                                    waitsFor(
-                                            function() {
-                                                return discoveredEntries !== undefined;
-                                            },
-                                            "successfull discovery lookup for the radio interface",
-                                            provisioning.ttl);
-
-                                    runs(function() {
-                                        var participantId = "222", participantId2 = "2222", interfaceName =
-                                                "TestDiscoverAPI", providerQos;
                                         var errorFct = function(error) {
                                             expect(" error: " + error.message).toBeFalsy();
                                         };
@@ -901,8 +725,7 @@ joynrTestRequire(
                                             supportsOnChangeSubscriptions : true
                                         });
 
-                                        discoveryProxy
-                                                .add({
+                                        return discoveryProxy.add({
                                                     discoveryEntry : new DiscoveryEntry({
                                                         domain : domain,
                                                         interfaceName : interfaceName,
@@ -910,123 +733,72 @@ joynrTestRequire(
                                                         qos : providerQos,
                                                         lastSeenDateMs : Date.now()
                                                     })
+                                        });
+                                    }).then(function() {
+                                        return discoveryProxy.lookup( {
+                                                domains : [domain],
+                                                interfaceName : interfaceName,
+                                                discoveryQos : new DiscoveryQosGen(
+                                                    {
+                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY
                                                 })
-                                                .then(
-                                                        function() {
-                                                            discoveryProxy
-                                                                    .lookup(
-                                                                            {
-                                                                                domains : [domain],
-                                                                                interfaceName : interfaceName,
-                                                                                discoveryQos : new DiscoveryQosGen(
-                                                                                        {
-                                                                                            discoveryScope : DiscoveryScope.LOCAL_ONLY
-                                                                                        })
-                                                                            })
-                                                                    .then(
-                                                                            function(
-                                                                                    opArgs) {
-                                                                                var discoveredStubs = opArgs.result;
-                                                                                expect(
-                                                                                        discoveredStubs.length)
-                                                                                        .toEqual(1);
-                                                                                expect(
-                                                                                        discoveredStubs[0].participantId)
-                                                                                        .toEqual(
-                                                                                                participantId);
-                                                                                discoveryProxy
-                                                                                        .add(
-                                                                                                {
-                                                                                                    discoveryEntry : new DiscoveryEntry(
-                                                                                                            {
-                                                                                                                domain : domain,
-                                                                                                                interfaceName : interfaceName,
-                                                                                                                participantId : participantId2,
-                                                                                                                qos : providerQos,
-                                                                                                                lastSeenDateMs: Date.now()
-                                                                                                            })
-                                                                                                })
-                                                                                        .then(
-                                                                                                function() {
-                                                                                                    discoveryProxy
-                                                                                                            .lookup(
-                                                                                                                    {
-                                                                                                                        domains : [domain],
-                                                                                                                        interfaceName : interfaceName,
-                                                                                                                        discoveryQos : new DiscoveryQosGen(
-                                                                                                                                {
-                                                                                                                                    discoveryScope : DiscoveryScope.LOCAL_ONLY
-                                                                                                                                })
-                                                                                                                    })
-                                                                                                            .then(
-                                                                                                                    function(
-                                                                                                                            opArgs) {
-                                                                                                                        var discoveredStubs = opArgs.result;
-                                                                                                                        expect(
-                                                                                                                                discoveredStubs.length)
-                                                                                                                                .toEqual(
-                                                                                                                                        2);
-                                                                                                                        expect(
-                                                                                                                                discoveredStubs[0].participantId)
-                                                                                                                                .toEqual(
-                                                                                                                                        participantId2);
-                                                                                                                        expect(
-                                                                                                                                discoveredStubs[1].participantId)
-                                                                                                                                .toEqual(
-                                                                                                                                        participantId);
-                                                                                                                        discoveryProxy
-                                                                                                                                .remove(
-                                                                                                                                        {
-                                                                                                                                            participantId : participantId
-                                                                                                                                        })
-                                                                                                                                .then(
-                                                                                                                                        function() {
-                                                                                                                                            discoveryProxy
-                                                                                                                                                    .remove(
-                                                                                                                                                            {
-                                                                                                                                                                participantId : participantId2
-                                                                                                                                                            })
-                                                                                                                                                    .then(
-                                                                                                                                                            function() {
-                                                                                                                                                                discoveryProxy
-                                                                                                                                                                        .lookup(
-                                                                                                                                                                                {
-                                                                                                                                                                                    domains : [domain],
-                                                                                                                                                                                    interfaceName : interfaceName,
-                                                                                                                                                                                    discoveryQos : new DiscoveryQosGen(
-                                                                                                                                                                                            {
-                                                                                                                                                                                                discoveryScope : DiscoveryScope.LOCAL_ONLY
-                                                                                                                                                                                            })
-                                                                                                                                                                                })
-                                                                                                                                                                        .then(
-                                                                                                                                                                                function(
-                                                                                                                                                                                        opArgs) {
-                                                                                                                                                                                    var discoveredStubs = opArgs.result;
-                                                                                                                                                                                    expect(
-                                                                                                                                                                                            discoveredStubs.length)
-                                                                                                                                                                                            .toEqual(
-                                                                                                                                                                                                    0);
-                                                                                                                                                                                    testFinished =
-                                                                                                                                                                                            true;
-                                                                                                                                                                                }).catch(errorFct);
-                                                                                                                                                            }).catch(errorFct);
-                                                                                                                                        }).catch(errorFct);
-                                                                                                                    }).catch(errorFct);
-                                                                                                }).catch(errorFct);
-                                                                            }).catch(errorFct);
-                                                        }).catch(errorFct);
-
+                                        });
+                                    }).then(function(opArgs) {
+                                        var discoveredStubs = opArgs.result;
+                                        expect(discoveredStubs.length).toEqual(1);
+                                        expect(discoveredStubs[0].participantId).toEqual(participantId);
+                                        return discoveryProxy.add({
+                                                discoveryEntry : new DiscoveryEntry(
+                                                    {
+                                                        domain : domain,
+                                                        interfaceName : interfaceName,
+                                                        participantId : participantId2,
+                                                        qos : providerQos,
+                                                        lastSeenDateMs: Date.now()
+                                                })
+                                        });
+                                    }).then(function() {
+                                        return discoveryProxy.lookup({
+                                                domains : [domain],
+                                                interfaceName : interfaceName,
+                                                discoveryQos : new DiscoveryQosGen(
+                                                    {
+                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                                })
+                                        });
+                                    }).then(function(opArgs) {
+                                        var discoveredStubs = opArgs.result;
+                                        expect(discoveredStubs.length).toEqual(2);
+                                        expect(discoveredStubs[0].participantId).toEqual(participantId2);
+                                        expect(discoveredStubs[1].participantId).toEqual(participantId);
+                                        return discoveryProxy.remove({
+                                                participantId : participantId
+                                        });
+                                    }).then(function() {
+                                        return discoveryProxy.remove({
+                                            participantId : participantId2
+                                        });
+                                    }).then(function() {
+                                        return discoveryProxy.lookup({
+                                                domains : [domain],
+                                                interfaceName : interfaceName,
+                                                discoveryQos : new DiscoveryQosGen(
+                                                    {
+                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                                })
+                                        });
+                                    }).then(function(opArgs) {
+                                        var discoveredStubs = opArgs.result;
+                                        expect(discoveredStubs.length).toEqual(0);
+                                        done();
+                                    }).catch(function(error) {
+                                        expect( " error: " + error.message).toBeFalsy();
                                     });
-
-                                    waitsFor(function() {
-                                        return testFinished !== undefined;
-                                    }, "finishing test", provisioning.ttl);
-
                                 });
 
                         it(
                                 "Create routing proxy and check if the cc routing provider works properly",
-                                function() {
+                                function(done) {
                                     var domain = "intertab-test-" + Date.now(), discoveredEntries;
                                     /*
                                      * This test
@@ -1048,309 +820,174 @@ joynrTestRequire(
                                      *   interface provider
                                      */
                                     var testParticipantId = "testparticipant-" + Date.now();
-                                    var proxyResolved;
                                     var radioProxy;
                                     var routingProxy;
                                     var providerWorkerId;
                                     var providerParticipantId;
-                                    var resolveSucceed;
-                                    var channelParticipantResolved;
-                                    var browserParticipantResolved;
-                                    var webSocketParticipantResolved;
-                                    var commonApiDbusParticipantResolved;
+
 
                                     var errorFct = function(error) {
                                         expect(" error: " + error.message).toBeFalsy();
                                     };
 
-                                    runs(function() {
-                                        IntegrationUtils
-                                                .initializeWebWorker(
-                                                        "TestEnd2EndCommProviderWorker",
-                                                        provisioningSuffix,
-                                                        domain)
-                                                .then(
-                                                        function(newWorkerId) {
-                                                            providerWorkerId = newWorkerId;
-                                                            IntegrationUtils
-                                                                    .startWebWorker(newWorkerId)
-                                                                    .then(
-                                                                            function(
-                                                                                    newProviderParticipantId) {
-                                                                                providerParticipantId =
-                                                                                        newProviderParticipantId;
-                                                                                createRoutingProxy()
-                                                                                        .then(
-                                                                                                function(
-                                                                                                        newRoutingProxy) {
-                                                                                                    proxyResolved =
-                                                                                                            true;
-                                                                                                    routingProxy =
-                                                                                                            newRoutingProxy;
-                                                                                                }).catch(function(
-                                                                                                        error) {
-                                                                                                    proxyResolved =
-                                                                                                            false;
-                                                                                                });
-                                                                            }).catch(function(error) {
-                                                                                proxyResolved =
-                                                                                        false;
-                                                                            });
-                                                        });
-                                    });
+                                    IntegrationUtils.initializeWebWorker(
+                                        "TestEnd2EndCommProviderWorker",
+                                        provisioningSuffix,
+                                        domain).then(function(newWorkerId) {
+                                        providerWorkerId = newWorkerId;
+                                        return IntegrationUtils.startWebWorker(newWorkerId);
+                                    }).then(function(newProviderParticipantId) {
+                                        providerParticipantId = newProviderParticipantId;
 
-                                    waitsFor(
-                                            function() {
-                                                return routingProxy !== undefined;
-                                            },
-                                            "Routing proxy to be resolved successfully",
-                                            provisioning.ttl);
+                                        // test routing proxy to be resolved successfully
+                                        return createRoutingProxy();
+                                    }).then(function(newRoutingProxy) {
+                                        routingProxy = newRoutingProxy;
 
-                                    runs(function() {
-                                        expect(proxyResolved).toBeTruthy();
-                                        proxyResolved = undefined;
-                                        routingProxy
-                                                .resolveNextHop({
-                                                    participantId : providerParticipantId
-                                                })
-                                                .then(
-                                                        function(opArgs) {
-                                                            var success = opArgs.resolved;
-                                                            expect(success).toBeFalsy();
-                                                            joynr.proxyBuilder
-                                                                    .build(RadioProxy, {
-                                                                        domain : domain,
-                                                                        messagingQos : messagingQos
-                                                                    })
-                                                                    .then(
-                                                                            function(newRadioProxy) {
-                                                                                expect(
-                                                                                        newRadioProxy)
-                                                                                        .toBeDefined();
-                                                                                radioProxy =
-                                                                                        newRadioProxy;
-                                                                                proxyResolved =
-                                                                                        true;
-                                                                            }).catch(function(error) {
-                                                                                proxyResolved =
-                                                                                        false;
-                                                                                IntegrationUtils
-                                                                                        .shutdownWebWorker(providerWorkerId);
-                                                                                expect(
-                                                                                        " error: "
-                                                                                            + error.message)
-                                                                                        .toBeFalsy();
-                                                                            });
-                                                        }).catch(function(error) {
-                                                            IntegrationUtils
-                                                                    .shutdownWebWorker(providerWorkerId);
-                                                            expect("error: " + error).toBeFalsy();
-                                                        });
-                                    });
-
-                                    waitsFor(function() {
-                                        return radioProxy !== undefined;
-                                    }, "Radio proxy to be resolve successfully", provisioning.ttl);
-
-                                    runs(function() {
-                                        routingProxy.resolveNextHop({
+                                        return routingProxy.resolveNextHop({
                                             participantId : providerParticipantId
-                                        }).then(
-                                                function(opArgs) {
-                                                    var success = opArgs.resolved;
-                                                    expect(success).toBeTruthy();
-                                                    IntegrationUtils.shutdownWebWorker(
-                                                            providerWorkerId).then(function() {
-                                                        resolveSucceed = success;
-                                                    });
-                                                }).catch(function(error) {
-                                                    IntegrationUtils
-                                                            .shutdownWebWorker(providerWorkerId);
-                                                });
-                                    });
+                                        });
+                                    }).then(function(opArgs) {
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeFalsy();
 
-                                    waitsFor(function() {
-                                        return resolveSucceed;
-                                    }, "Routing provider to be succeed", provisioning.ttl);
+                                        // test radio proxy to be resolved successfully
+                                        return joynr.proxyBuilder.build(RadioProxy, {
+                                            domain : domain,
+                                            messagingQos : messagingQos
+                                        });
+                                    }).then(function(newRadioProxy) {
+                                        expect(newRadioProxy).toBeDefined();
+                                        radioProxy = newRadioProxy;
 
-                                    runs(function() {
+                                        return routingProxy.resolveNextHop({
+                                            participantId : providerParticipantId
+                                        });
+                                    }).then(function(opArgs) {
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeTruthy();
+
+                                        // shutdown intentionally
+                                        return IntegrationUtils.shutdownWebWorker(providerWorkerId);
+                                    }).then(function() {
+                                        return routingProxy.resolveNextHop({
+                                            participantId : testParticipantId
+                                        });
+                                    }).then(function(opArgs) {
+                                        var success = opArgs.resolved;
                                         var channelAddress = new ChannelAddress({
                                             channelId : "channelId"
                                         });
+                                        expect(success).toBeFalsy();
 
-                                        routingProxy.resolveNextHop({
+                                        // test participant as ChannelAddress to be resolved
+                                        return routingProxy.addNextHop({
+                                            participantId : testParticipantId,
+                                            channelAddress : channelAddress
+                                        });
+                                    }).then(function() {
+                                        return routingProxy.resolveNextHop({
                                             participantId : testParticipantId
-                                        }).then(function(opArgs) {
-                                            var success = opArgs.resolved;
-                                            expect(success).toBeFalsy();
-                                            routingProxy.addNextHop({
-                                                participantId : testParticipantId,
-                                                channelAddress : channelAddress
-                                            }).then(function() {
-                                                routingProxy.resolveNextHop({
-                                                    participantId : testParticipantId
-                                                }).then(function(opArgs) {
-                                                    var success = opArgs.resolved;
-                                                    expect(success).toBeTruthy();
-                                                    routingProxy.removeNextHop({
-                                                        participantId : testParticipantId
-                                                    }).then(function() {
-                                                        channelParticipantResolved = true;
-                                                    }).catch(errorFct);
-                                                }).catch(errorFct);
-                                            }).catch(errorFct);
-                                        }).catch(errorFct);
-                                    });
-
-                                    waitsFor(
-                                            function() {
-                                                return channelParticipantResolved;
-                                            },
-                                            "test participant as ChannelAddress to be resolved ",
-                                            provisioning.ttl);
-
-                                    runs(function() {
+                                        });
+                                    }).then(function(opArgs) {
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeTruthy();
+                                        return routingProxy.removeNextHop({
+                                            participantId : testParticipantId
+                                        });
+                                    }).then(function() {
+                                        // test participant as BrowserAddress to be resolved
+                                        return routingProxy.resolveNextHop({
+                                            participantId : testParticipantId
+                                        });
+                                    }).then(function(opArgs) {
                                         var browserAddress = new BrowserAddress({
                                             windowId : "windowId"
                                         });
-                                        routingProxy.resolveNextHop({
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeFalsy();
+                                        return routingProxy.addNextHop({
+                                            participantId : testParticipantId,
+                                            browserAddress : browserAddress
+                                        });
+                                    }).then(function() {
+                                        return routingProxy.resolveNextHop({
+                                                participantId : testParticipantId
+                                        });
+                                    }).then(function(opArgs) {
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeTruthy();
+                                        return routingProxy.removeNextHop({
                                             participantId : testParticipantId
-                                        }).then(function(opArgs) {
-                                            var success = opArgs.resolved;
-                                            expect(success).toBeFalsy();
-                                            routingProxy.addNextHop({
-                                                participantId : testParticipantId,
-                                                browserAddress : browserAddress
-                                            }).then(function() {
-                                                routingProxy.resolveNextHop({
-                                                    participantId : testParticipantId
-                                                }).then(function(opArgs) {
-                                                    var success = opArgs.resolved;
-                                                    expect(success).toBeTruthy();
-                                                    routingProxy.removeNextHop({
-                                                        participantId : testParticipantId
-                                                    }).then(function() {
-                                                        browserParticipantResolved = true;
-                                                    }).catch(errorFct);
-                                                }).catch(errorFct);
-                                            }).catch(errorFct);
-                                        }).catch(errorFct);
-                                    });
+                                        });
+                                    }).then(function() {
 
-                                    waitsFor(
-                                            function() {
-                                                return browserParticipantResolved;
-                                            },
-                                            "test participant as BrowserAddress to be resolved ",
-                                            provisioning.ttl);
-
-                                    runs(function() {
+                                        // test participant as WebSocketAddress to be resolved
+                                        return routingProxy.resolveNextHop({
+                                            participantId : testParticipantId
+                                        });
+                                    }).then(function(opArgs) {
                                         var webSocketAddress = new WebSocketAddress({
                                             port : 66,
                                             host : "host"
                                         });
-
-                                        routingProxy.resolveNextHop({
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeFalsy();
+                                        return routingProxy.addNextHop({
+                                            participantId : testParticipantId,
+                                            webSocketAddress : webSocketAddress
+                                        });
+                                    }).then(function() {
+                                        return routingProxy.resolveNextHop({
+                                                participantId : testParticipantId
+                                        });
+                                    }).then(function(opArgs) {
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeTruthy();
+                                        return routingProxy.removeNextHop({
                                             participantId : testParticipantId
-                                        }).then(function(opArgs) {
-                                            var success = opArgs.resolved;
-                                            expect(success).toBeFalsy();
-                                            routingProxy.addNextHop({
-                                                participantId : testParticipantId,
-                                                webSocketAddress : webSocketAddress
-                                            }).then(function() {
-                                                routingProxy.resolveNextHop({
-                                                    participantId : testParticipantId
-                                                }).then(function(opArgs) {
-                                                    var success = opArgs.resolved;
-                                                    expect(success).toBeTruthy();
-                                                    routingProxy.removeNextHop({
-                                                        participantId : testParticipantId
-                                                    }).then(function() {
-                                                        webSocketParticipantResolved = true;
-                                                    }).catch(errorFct);
-                                                }).catch(errorFct);
-                                            }).catch(errorFct);
-                                        }).catch(errorFct);
-                                    });
-
-                                    waitsFor(
-                                            function() {
-                                                return webSocketParticipantResolved;
-                                            },
-                                            "test participant as WebSocketAddress to be resolved ",
-                                            provisioning.ttl);
-
-                                    runs(function() {
+                                        });
+                                    }).then(function() {
+                                        // test participant as CommonApiDbusAddress to be resolved
+                                        return routingProxy.resolveNextHop({
+                                            participantId : testParticipantId
+                                        });
+                                    }).then(function(opArgs) {
                                         var commonApiDbusAddress = new CommonApiDbusAddress({
                                             domain : "domain",
                                             participantId : "participantId",
                                             serviceName : "serviceName"
                                         });
-
-                                        routingProxy
-                                                .resolveNextHop({
-                                                    participantId : testParticipantId
-                                                })
-                                                .then(
-                                                        function(opArgs) {
-                                                            var success = opArgs.resolved;
-                                                            expect(success).toBeFalsy();
-                                                            routingProxy
-                                                                    .addNextHop(
-                                                                            {
-                                                                                participantId : testParticipantId,
-                                                                                commonApiDbusAddress : commonApiDbusAddress
-                                                                            })
-                                                                    .then(
-                                                                            function() {
-                                                                                routingProxy
-                                                                                        .resolveNextHop(
-                                                                                                {
-                                                                                                    participantId : testParticipantId
-                                                                                                })
-                                                                                        .then(
-                                                                                                function(
-                                                                                                        opArgs) {
-                                                                                                    var success = opArgs.resolved;
-                                                                                                    expect(
-                                                                                                            success)
-                                                                                                            .toBeTruthy();
-                                                                                                    routingProxy
-                                                                                                            .removeNextHop(
-                                                                                                                    {
-                                                                                                                        participantId : testParticipantId
-                                                                                                                    })
-                                                                                                            .then(
-                                                                                                                    function() {
-                                                                                                                        routingProxy
-                                                                                                                                .resolveNextHop(
-                                                                                                                                        {
-                                                                                                                                            participantId : testParticipantId
-                                                                                                                                        })
-                                                                                                                                .then(
-                                                                                                                                        function(
-                                                                                                                                                opArgs) {
-                                                                                                                                            var success = opArgs.resolved;
-                                                                                                                                            expect(
-                                                                                                                                                    success)
-                                                                                                                                                    .toBeFalsy();
-                                                                                                                                            commonApiDbusParticipantResolved =
-                                                                                                                                                    true;
-                                                                                                                                        }).catch(errorFct);
-                                                                                                                    }).catch(errorFct);
-                                                                                                }).catch(errorFct);
-                                                                            }).catch(errorFct);
-                                                        }).catch(errorFct);
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeFalsy();
+                                        return routingProxy.addNextHop({
+                                            participantId : testParticipantId,
+                                            commonApiDbusAddress : commonApiDbusAddress
+                                        });
+                                    }).then(function() {
+                                        return routingProxy.resolveNextHop({
+                                                participantId : testParticipantId
+                                        });
+                                    }).then(function( opArgs) {
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeTruthy();
+                                        return routingProxy .removeNextHop({
+                                            participantId : testParticipantId
+                                        });
+                                    }).then(function() {
+                                        return routingProxy.resolveNextHop({
+                                            participantId : testParticipantId
+                                        });
+                                    }).then(function(opArgs) {
+                                        var success = opArgs.resolved;
+                                        expect(success).toBeFalsy();
+                                        done();
+                                        return null;
+                                    }).catch(function(error) {
+                                        IntegrationUtils.shutdownWebWorker(providerWorkerId);
+                                        expect(" error: " + error.message).toBeFalsy();
+                                        return null;
                                     });
-
-                                    waitsFor(
-                                            function() {
-                                                return commonApiDbusParticipantResolved;
-                                            },
-                                            "test participant as CommonApiDbusAddress to be resolved ",
-                                            provisioning.ttl);
-
-                                });
                     });
         });
+});

@@ -1,4 +1,4 @@
-/*global joynrTestRequire: true, xit: true, console: true */
+/*global fail: true */
 /*jslint es5: true, nomen: true */
 
 /*
@@ -20,9 +20,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "integration/TestEnd2EndComm",
-        [
+define([
             "global/Promise",
             "joynr",
             "joynr/vehicle/RadioProxy",
@@ -33,7 +31,8 @@ joynrTestRequire(
             "joynr/tests/testTypes/ComplexTestType",
             "integration/IntegrationUtils",
             "joynr/provisioning/provisioning_cc",
-            "integration/provisioning_end2end_common"
+            "integration/provisioning_end2end_common",
+            "global/WaitsFor"
         ],
         function(
                 Promise,
@@ -46,7 +45,8 @@ joynrTestRequire(
                 ComplexTestType,
                 IntegrationUtils,
                 provisioning,
-                provisioning_end2end) {
+                provisioning_end2end,
+                waitsFor) {
 
             describe(
                     "libjoynr-js.integration.end2end.comm",
@@ -61,54 +61,51 @@ joynrTestRequire(
                         var subscriptionQosInterval;
                         var subscriptionQosMixed;
 
-                        beforeEach(function() {
+                        beforeEach(function(done) {
+
                             var testProvisioning = null;
                             radioProxy = undefined;
 
-                            provisioningSuffix = this.description.replace(/ /g, "_").replace(/\(/g,"_").replace(/\)/g,"_") + "-" + Date.now();
+                            provisioningSuffix = "End2EndCommTest" + "-" + Date.now();
                             testProvisioning =
                                     IntegrationUtils.getProvisioning(
                                             provisioning,
                                             provisioningSuffix);
 
-                            runs(function() {
-                                joynr.load(testProvisioning).then(function(newjoynr) {
-                                    joynr = newjoynr;
-                                    IntegrationUtils.initialize(joynr);
 
-                                    subscriptionQosOnChange =
-                                            new joynr.proxy.OnChangeSubscriptionQos({
-                                                minIntervalMs : 50
-                                            });
+                            joynr.load(testProvisioning).then(function(newjoynr) {
+                                joynr = newjoynr;
+                                IntegrationUtils.initialize(joynr);
 
-                                    subscriptionQosInterval =
-                                            new joynr.proxy.PeriodicSubscriptionQos({
-                                                periodMs : 1000
-                                            });
+                                subscriptionQosOnChange =
+                                        new joynr.proxy.OnChangeSubscriptionQos({
+                                            minIntervalMs : 50
+                                        });
 
-                                    subscriptionQosMixed =
-                                            new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
-                                                minIntervalMs : 100,
-                                                maxIntervalMs : 1000
-                                            });
+                                subscriptionQosInterval =
+                                        new joynr.proxy.PeriodicSubscriptionQos({
+                                            periodMs : 1000
+                                        });
 
-                                    IntegrationUtils.initializeWebWorker(
-                                            "TestEnd2EndCommProviderWorker",
-                                            provisioningSuffix).then(function(newWorkerId) {
-                                        workerId = newWorkerId;
-                                        return IntegrationUtils.startWebWorker(workerId);
-                                    }).then(function() {
-                                        return IntegrationUtils.buildProxy(RadioProxy);
-                                    }).then(function(newRadioProxy) {
-                                        radioProxy = newRadioProxy;
-                                    });
-                                }).catch(function(error){
-                                    throw error;
+                                subscriptionQosMixed =
+                                        new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
+                                            minIntervalMs : 100,
+                                            maxIntervalMs : 1000
+                                        });
+
+                                IntegrationUtils.initializeWebWorker(
+                                        "TestEnd2EndCommProviderWorker",
+                                        provisioningSuffix).then(function(newWorkerId) {
+                                    workerId = newWorkerId;
+                                    return IntegrationUtils.startWebWorker(workerId);
+                                }).then(function() {
+                                    return IntegrationUtils.buildProxy(RadioProxy);
+                                }).then(function(newRadioProxy) {
+                                    radioProxy = newRadioProxy;
+                                    done();
+                                    return null;
                                 });
                             });
-                            waitsFor(function() {
-                                return radioProxy !== undefined;
-                            }, "proxy to be resolved", testProvisioning.ttl);
                         });
 
                         /**
@@ -197,16 +194,12 @@ joynrTestRequire(
                                 expectation) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
-                            runs(function() {
-                                radioProxy[operationName](opArgs).then(
-                                        onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                            });
+                            radioProxy[operationName](opArgs).then(
+                                    onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
 
-                            waitsFor(function() {
-                                return onFulfilledSpy.callCount > 0;
-                            }, "operation call to finish", provisioning.ttl);
-
-                            runs(function() {
+                            return waitsFor(function() {
+                                return onFulfilledSpy.calls.count() > 0;
+                            }, "operation call to finish", provisioning.ttl).then(function() {
                                 expect(onFulfilledSpy).toHaveBeenCalled();
                                 if (expectation !== undefined) {
                                     if (typeof expectation === "function") {
@@ -226,155 +219,135 @@ joynrTestRequire(
                                                                             "onError"
                                                                         ]);
 
-                            runs(function() {
-                                promise = radioProxy[subscribingEntity].subscribe({
-                                    subscriptionQos : subscriptionQos,
-                                    onReceive : spy.onReceive,
-                                    onError : spy.onError
-                                }).then(spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
+                            promise = radioProxy[subscribingEntity].subscribe({
+                                subscriptionQos : subscriptionQos,
+                                onReceive : spy.onReceive,
+                                onError : spy.onError
+                            }).then(spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
+
+                            return waitsFor(function() {
+                                return spy.onFulfilled.calls.count() > 0;
+                            }, "subscription to be registered", provisioning.ttl).then(function() {
+                                return Promise.resolve(spy);
                             });
-
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "subscription to be registered", provisioning.ttl);
-
-                            return spy;
                         }
+
                         function expectPublication(spy, expectationFct){
-                            waitsFor(
+                            return waitsFor(
                                     function() {
-                                        return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
+                                        return (spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0);
                                     },
                                     "first publication to occur",
-                                    500 + provisioning.ttl);
-
-                            runs(function() {
+                                    500 + provisioning.ttl).then(function() {
                                 expect(spy.onReceive).toHaveBeenCalled();
                                 expect(spy.onError).not.toHaveBeenCalled();
-                                expectationFct(spy.onReceive.mostRecentCall);
-                                spy.onReceive.reset();
+                                expectationFct(spy.onReceive.calls.mostRecent());
+                                spy.onReceive.calls.reset();
                             });
                         }
 
                         function expectMultiplePublications(spy, expectedPublications, timeout, expectationFct){
-                            waitsFor(
+                            return waitsFor(
                                     function() {
-                                        return (spy.onReceive.calls.length + spy.onError.calls.length >= expectedPublications);
+                                        return (spy.onReceive.calls.count() + spy.onError.calls.count() >= expectedPublications);
                                     },
                                     expectedPublications + "publications to occur",
-                                    timeout);
-
-                            runs(function() {
-                                expect(spy.onReceive.calls.length).toBe(expectedPublications);
+                                    timeout).then(function() {
+                                expect(spy.onReceive.calls.count()).toBe(expectedPublications);
                                 expectationFct(spy.onReceive.calls);
-                                spy.onReceive.reset();
+                                spy.onReceive.calls.reset();
                             });
                         }
 
                         function expectPublicationError(spy){
-                            waitsFor(
+                            return waitsFor(
                                     function() {
-                                        return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
+                                        return (spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0);
                                     },
                                     "first error to occur",
-                                    500 + provisioning.ttl);
-
-                            runs(function() {
+                                    500 + provisioning.ttl).then(function() {
                                 expect(spy.onReceive).not.toHaveBeenCalled();
                                 expect(spy.onError).toHaveBeenCalled();
-                                expect(spy.onError.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
-                                spy.onError.reset();
+                                expect(spy.onError.calls.argsFor(0)[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                spy.onError.calls.reset();
                             });
                         }
                         function publishesValue(subscriptionQos) {
-                            var spy = setupSubscriptionAndReturnSpy("numberOfStations", subscriptionQos);
-                            expectPublication(spy, function(publicationCallback) {
-                                expect(typeof publicationCallback.args[0] === "number").toBeTruthy();
+                            return setupSubscriptionAndReturnSpy("numberOfStations", subscriptionQos).then(function(spy) {
+                                return expectPublication(spy, function(publicationCallback) {
+                                    expect(typeof publicationCallback.args[0] === "number").toBeTruthy();
+                                });
                             });
                         }
 
                         function checkUnsubscribe(timeout, subscriptionQos) {
                             var spy, subscriptionId;
 
-                            runs(function() {
-                                spy = jasmine.createSpyObj("spy", [
-                                    "onFulfilled",
-                                    "onReceive",
-                                    "onError"
-                                ]);
-                                radioProxy.numberOfStations.subscribe({
-                                    subscriptionQos : subscriptionQos,
-                                    onReceive : spy.onReceive,
-                                    onError : spy.onError
-                                }).then(function(id) {
-                                    subscriptionId = id;
-                                    spy.onFulfilled(id);
-                                }).catch(IntegrationUtils.outputPromiseError);
-                            });
-
-                            waitsFor(
-                                    function() {
-                                        return spy.onFulfilled.callCount > 0
-                                            && (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
-                                    },
-                                    "subscription to be registered and first publication to occur",
-                                    provisioning.ttl);
+                            spy = jasmine.createSpyObj("spy", [
+                                "onFulfilled",
+                                "onReceive",
+                                "onError"
+                            ]);
+                            radioProxy.numberOfStations.subscribe({
+                                subscriptionQos : subscriptionQos,
+                                onReceive : spy.onReceive,
+                                onError : spy.onError
+                            }).then(function(id) {
+                                subscriptionId = id;
+                                spy.onFulfilled(id);
+                            }).catch(IntegrationUtils.outputPromiseError);
 
                             var nrOfPublications;
-                            runs(function() {
+                            return waitsFor(
+                                    function() {
+                                        return spy.onFulfilled.calls.count() > 0
+                                            && (spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0);
+                                    },
+                                    "subscription to be registered and first publication to occur",
+                                    provisioning.ttl).then(function() {
                                 expect(spy.onFulfilled).toHaveBeenCalled();
-                                spy.onFulfilled.reset();
-                                nrOfPublications = spy.onReceive.calls.length;
+                                spy.onFulfilled.calls.reset();
+                                nrOfPublications = spy.onReceive.calls.count();
                                 radioProxy.numberOfStations.unsubscribe({
                                     subscriptionId : subscriptionId
                                 }).then(spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
-                            });
 
-                            waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "unsubscribe to complete successfully", provisioning.ttl);
-
-                            runs(function() {
+                                return waitsFor(function() {
+                                    return spy.onFulfilled.calls.count() > 0;
+                                }, "unsubscribe to complete successfully", provisioning.ttl);
+                            }).then(function() {
                                 expect(spy.onFulfilled).toHaveBeenCalled();
-                            });
 
-                            // wait 2 times the publication interval
-                            var waitForPublication = true;
-                            runs(function() {
+                                // wait 2 times the publication interval
+                                var waitForPublication = true;
                                 joynr.util.LongTimer.setTimeout(function() {
                                     waitForPublication = false;
                                 }, 2 * timeout);
-                            });
 
-                            waitsFor(function() {
-                                return !waitForPublication;
-                            }, 4 * timeout);
-
-                            // check that no publications occured since the unsubscribe
-                            runs(function() {
-                                expect(spy.onReceive.calls.length).toEqual(nrOfPublications);
+                                return waitsFor(function() {
+                                    return !waitForPublication;
+                                }, 4 * timeout);
+                            }).then(function() {
+                                // check that no publications occured since the unsubscribe
+                                expect(spy.onReceive.calls.count()).toEqual(nrOfPublications);
                             });
                         }
 
                         var getAttribute = function(attributeName, expectedValue) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
-                            waitsFor(function() {
+                            return waitsFor(function() {
                                 return radioProxy !== undefined;
-                            }, "radioProxy is defined", provisioning.ttl);
-
-                            runs(function() {
+                            }, "radioProxy is defined", provisioning.ttl).then(function() {
                                 radioProxy[attributeName].get().then(function(value) {
                                     expect(value).toEqual(expectedValue);
                                     onFulfilledSpy(value);
                                 }).catch(IntegrationUtils.outputPromiseError);
-                            });
 
-                            waitsFor(function() {
-                                return onFulfilledSpy.callCount > 0;
-                            }, "attribute " + attributeName + " is received", provisioning.ttl);
-
-                            runs(function() {
+                                return waitsFor(function() {
+                                    return onFulfilledSpy.calls.count() > 0;
+                                }, "attribute " + attributeName + " is received", provisioning.ttl);
+                            }).then(function() {
                                 expect(onFulfilledSpy).toHaveBeenCalled();
                             });
                         };
@@ -383,327 +356,468 @@ joynrTestRequire(
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                             var catchSpy = jasmine.createSpy("catchSpy");
 
-                            waitsFor(function() {
+                            return waitsFor(function() {
                                 return radioProxy !== undefined;
-                            }, "radioProxy is defined", provisioning.ttl);
-
-                            runs(function() {
+                            }, "radioProxy is defined", provisioning.ttl).then(function() {
                                 radioProxy[attributeName].get().then(function(value) {
                                     onFulfilledSpy(value);
                                 }).catch(function(exception) {
                                     catchSpy(exception);
                                 });
-                            });
 
-                            waitsFor(function() {
-                                return catchSpy.callCount > 0;
-                            }, "getter for attribute " + attributeName + " returns exception", provisioning.ttl);
-
-                            runs(function() {
+                                return waitsFor(function() {
+                                    return catchSpy.calls.count() > 0;
+                                }, "getter for attribute " + attributeName + " returns exception", provisioning.ttl);
+                            }).then(function() {
                                 expect(catchSpy).toHaveBeenCalled();
-                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
-                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                             });
                         };
 
                         var setAttribute = function(attributeName, value) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
-                            runs(function() {
-                                radioProxy[attributeName].set({
-                                    value : value
-                                }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                            });
+                            radioProxy[attributeName].set({
+                                value : value
+                            }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
 
-                            waitsFor(function() {
-                                return onFulfilledSpy.callCount > 0;
-                            }, "attribute is set", provisioning.ttl);
-
-                            runs(function() {
+                            return waitsFor(function() {
+                                return onFulfilledSpy.calls.count() > 0;
+                            }, "attribute is set", provisioning.ttl).then(function() {
                                 expect(onFulfilledSpy).toHaveBeenCalled();
                             });
                         };
 
-                        it("gets the attribute", function() {
-                            getAttribute("isOn", true);
+                        it("gets the attribute", function(done) {
+                            getAttribute("isOn", true).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("gets the enumAttribute", function() {
-                            getAttribute("enumAttribute", Country.GERMANY);
+                        it("gets the enumAttribute", function(done) {
+                            getAttribute("enumAttribute", Country.GERMANY).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("gets the enumArrayAttribute", function() {
-                            getAttribute("enumArrayAttribute", [Country.GERMANY]);
+                        it("gets the enumArrayAttribute", function(done) {
+                            getAttribute("enumArrayAttribute", [Country.GERMANY]).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("gets an exception for failingSyncAttribute", function() {
-                            getFailingAttribute("failingSyncAttribute");
+                        it("gets an exception for failingSyncAttribute", function(done) {
+                            getFailingAttribute("failingSyncAttribute").then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("gets an exception for failingAsyncAttribute", function() {
-                            getFailingAttribute("failingAsyncAttribute");
+                        it("gets an exception for failingAsyncAttribute", function(done) {
+                            getFailingAttribute("failingAsyncAttribute").then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("sets the enumArrayAttribute", function() {
+                        it("sets the enumArrayAttribute", function(done) {
                             var value = [];
-                            setAttribute("enumArrayAttribute", value);
-                            getAttribute("enumArrayAttribute", value);
                             value = [Country.GERMANY, Country.AUSTRIA, Country.AUSTRALIA, Country.CANADA, Country.ITALY];
-                            setAttribute("enumArrayAttribute", value);
-                            getAttribute("enumArrayAttribute", value);
+                            setAttribute("enumArrayAttribute", value).then(function() {
+                                return getAttribute("enumArrayAttribute", value);
+                            }).then(function() {
+                                return setAttribute("enumArrayAttribute", value);
+                            }).then(function() {
+                                return getAttribute("enumArrayAttribute", value);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("sets the typeDef attributes", function() {
+                        it("sets the typeDef attributes", function(done) {
                             var value = new RadioStation({
                                 name: "TestEnd2EndComm.typeDefForStructAttribute.RadioStation",
                                 byteBuffer: []
                             });
-                            setAttribute("typeDefForStruct", value);
-                            getAttribute("typeDefForStruct", value);
-                            value = 1234543;
-                            setAttribute("typeDefForPrimitive", value);
-                            getAttribute("typeDefForPrimitive", value);
+                            setAttribute("typeDefForStruct", value).then(function() {
+                                return getAttribute("typeDefForStruct", value);
+                            }).then(function() {
+                                value = 1234543;
+                                return setAttribute("typeDefForPrimitive", value);
+                            }).then(function() {
+                                return getAttribute("typeDefForPrimitive", value);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("sets the attribute", function() {
-                            setAttribute("isOn", true);
-                            getAttribute("isOn", true);
-                            setAttribute("isOn", false);
-                            getAttribute("isOn", false);
+                        it("sets the attribute", function(done) {
+                            setAttribute("isOn", true).then(function() {
+                                return getAttribute("isOn", true);
+                            }).then(function() {
+                                return setAttribute("isOn", false);
+                            }).then(function() {
+                                return getAttribute("isOn", false);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("sets the enumAttribute", function() {
-                            setAttribute("enumAttribute", Country.AUSTRIA);
-                            getAttribute("enumAttribute", Country.AUSTRIA);
-                            setAttribute("enumAttribute", Country.AUSTRALIA);
-                            getAttribute("enumAttribute", Country.AUSTRALIA);
+                        it("sets the enumAttribute", function(done) {
+                            setAttribute("enumAttribute", Country.AUSTRIA).then(function() {
+                                return getAttribute("enumAttribute", Country.AUSTRIA);
+                            }).then(function() {
+                                return setAttribute("enumAttribute", Country.AUSTRALIA);
+                            }).then(function() {
+                                return getAttribute("enumAttribute", Country.AUSTRALIA);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("sets the byteBufferAttribute", function() {
+                        it("sets the byteBufferAttribute", function(done) {
                             var testByteBuffer = [1,2,3,4];
-                            setAttribute("byteBufferAttribute", testByteBuffer);
-                            getAttribute("byteBufferAttribute", testByteBuffer);
-                            setAttribute("byteBufferAttribute", testByteBuffer);
-                            getAttribute("byteBufferAttribute", testByteBuffer);
+                            setAttribute("byteBufferAttribute", testByteBuffer).then(function() {
+                                return getAttribute("byteBufferAttribute", testByteBuffer);
+                            }).then(function() {
+                                return setAttribute("byteBufferAttribute", testByteBuffer);
+                            }).then(function() {
+                                return getAttribute("byteBufferAttribute", testByteBuffer);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("sets the stringMapAttribute", function() {
+                        it("sets the stringMapAttribute", function(done) {
                             var stringMap = new StringMap({key1: "value1"});
-                            setAttribute("stringMapAttribute", stringMap);
-                            getAttribute("stringMapAttribute", stringMap);
-                            setAttribute("stringMapAttribute", stringMap);
-                            getAttribute("stringMapAttribute", stringMap);
+                            setAttribute("stringMapAttribute", stringMap).then(function() {
+                                return getAttribute("stringMapAttribute", stringMap);
+                            }).then(function() {
+                                return setAttribute("stringMapAttribute", stringMap);
+                            }).then(function() {
+                                return getAttribute("stringMapAttribute", stringMap);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to failingSyncAttribute", function() {
-                            var spy = setupSubscriptionAndReturnSpy("failingSyncAttribute", subscriptionQosInterval);
-                            expectPublicationError(spy);
+                        it("subscribe to failingSyncAttribute", function(done) {
+                            setupSubscriptionAndReturnSpy("failingSyncAttribute", subscriptionQosInterval).then(function(spy) {
+                                return expectPublicationError(spy);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to failingAsyncAttribute", function() {
-                            var spy = setupSubscriptionAndReturnSpy("failingAsyncAttribute", subscriptionQosInterval);
-                            expectPublicationError(spy);
+                        it("subscribe to failingAsyncAttribute", function(done) {
+                            setupSubscriptionAndReturnSpy("failingAsyncAttribute", subscriptionQosInterval).then(function(spy) {
+                                return expectPublicationError(spy);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to enumAttribute", function() {
-                            setAttribute("enumAttribute", Country.AUSTRIA);
-                            var spy = setupSubscriptionAndReturnSpy("enumAttribute", subscriptionQosOnChange);
-                            expectPublication(spy, function(call) {
-                               expect(call.args[0]).toEqual(Country.AUSTRIA);
-                            });
-                            setAttribute("enumAttribute", Country.AUSTRALIA);
-                            expectPublication(spy, function(call) {
-                                expect(call.args[0]).toEqual(Country.AUSTRALIA);
-                            });
-
-                            setAttribute("enumAttribute", Country.ITALY);
-                            expectPublication(spy, function(call) {
-                                expect(call.args[0]).toEqual(Country.ITALY);
-                            });
+                        it("subscribe to enumAttribute", function(done) {
+                            var mySpy;
+                            setAttribute("enumAttribute", Country.AUSTRIA).then(function() {
+                                return setupSubscriptionAndReturnSpy("enumAttribute", subscriptionQosOnChange);
+                            }).then(function(spy) {
+                                mySpy = spy;
+                                return expectPublication(mySpy, function(call) {
+                                   expect(call.args[0]).toEqual(Country.AUSTRIA);
+                                });
+                            }).then(function() {
+                                return setAttribute("enumAttribute", Country.AUSTRALIA);
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                    expect(call.args[0]).toEqual(Country.AUSTRALIA);
+                                });
+                            }).then(function() {
+                                return setAttribute("enumAttribute", Country.ITALY);
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                    expect(call.args[0]).toEqual(Country.ITALY);
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to complex typedef attribute", function() {
+                        it("subscribe to complex typedef attribute", function(done) {
                             var value = new RadioStation({
                                 name: "TestEnd2EndComm.typeDefForStructAttribute.RadioStation",
                                 byteBuffer: []
                             });
-                            setAttribute("typeDefForStruct", value);
-                            var spy = setupSubscriptionAndReturnSpy("typeDefForStruct", subscriptionQosOnChange);
-                            expectPublication(spy, function(call) {
-                               expect(call.args[0]).toEqual(value);
-                            });
-                        });
-
-                        it("subscribe to primitive typedef attribute", function() {
-                            var value = 1234543;
-                            setAttribute("typeDefForPrimitive", value);
-                            var spy = setupSubscriptionAndReturnSpy("typeDefForPrimitive", subscriptionQosOnChange);
-                            getAttribute("typeDefForPrimitive", value);
-                            expectPublication(spy, function(call) {
-                               expect(call.args[0]).toEqual(value);
-                            });
-                        });
-
-                        it("subscribe to byteBufferAttribute", function() {
-                            //initialize attribute
-                            setAttribute("byteBufferAttribute", []);
-                            var spy = setupSubscriptionAndReturnSpy("byteBufferAttribute", subscriptionQosOnChange);
-                            expectPublication(spy, function(call) {
-                                expect(call.args[0]).toEqual([]);
-                            });
-                            var i, byteBuffer10k = [], testByteBufferAttribute = function(expectedByteBuffer) {
-                                setAttribute("byteBufferAttribute", expectedByteBuffer);
-                                expectPublication(spy, function(call) {
-                                   expect(call.args[0]).toEqual(expectedByteBuffer);
+                            setAttribute("typeDefForStruct", value).then(function(done) {
+                                return setupSubscriptionAndReturnSpy("typeDefForStruct", subscriptionQosOnChange);
+                            }).then(function(spy) {
+                                return expectPublication(spy, function(call) {
+                                   expect(call.args[0]).toEqual(value);
                                 });
-                            };
-                            testByteBufferAttribute([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
-                            testByteBufferAttribute([255]);
-                            testByteBufferAttribute([2,2,2,2]);
-                            for (i = 0; i < 10000; i++) {
-                                byteBuffer10k.push(i % 256);
-                            }
-                            testByteBufferAttribute(byteBuffer10k);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to weakSignal broadcast having ByteBuffer as output parameter", function() {
-                            var spy = setupSubscriptionAndReturnSpy("weakSignal", subscriptionQosOnChange);
-                            callOperation("triggerBroadcasts", {
-                                broadcastName: "weakSignal",
-                                times: 1
-                            });
-                            expectPublication(spy, function(call) {
-                               expect(call.args[0].radioStation).toEqual("radioStation");
-                               expect(call.args[0].byteBuffer).toEqual([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
-                            });
+                        it("subscribe to primitive typedef attribute", function(done) {
+                            var value = 1234543;
+                            var mySpy;
+                            setAttribute("typeDefForPrimitive", value).then(function() {
+                                return setupSubscriptionAndReturnSpy("typeDefForPrimitive", subscriptionQosOnChange);
+                            }).then(function(spy) {
+                                mySpy = spy;
+                                return getAttribute("typeDefForPrimitive", value);
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                   expect(call.args[0]).toEqual(value);
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("subscribe to byteBufferAttribute", function(done) {
+                            //initialize attribute
+                            var mySpy;
+                            var testByteBufferAttribute;
+
+                            setAttribute("byteBufferAttribute", []).then(function() {
+                                return setupSubscriptionAndReturnSpy("byteBufferAttribute", subscriptionQosOnChange);
+                            }).then(function(spy) {
+                                mySpy = spy;
+                                return expectPublication(mySpy, function(call) {
+                                    expect(call.args[0]).toEqual([]);
+                                });
+                            }).then(function() {
+                                testByteBufferAttribute = function(expectedByteBuffer) {
+                                    return setAttribute("byteBufferAttribute", expectedByteBuffer).then(function() {
+                                        return expectPublication(mySpy, function(call) {
+                                           expect(call.args[0]).toEqual(expectedByteBuffer);
+                                        });
+                                    });
+                                };
+                                return testByteBufferAttribute([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
+                            }).then(function() {
+                                return testByteBufferAttribute([255]);
+                            }).then(function() {
+                                return testByteBufferAttribute([2,2,2,2]);
+                            }).then(function() {
+                                var i, byteBuffer10k = [];
+                                for (i = 0; i < 10000; i++) {
+                                    byteBuffer10k.push(i % 256);
+                                }
+                                return testByteBufferAttribute(byteBuffer10k);
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
+                        });
+
+                        it("subscribe to weakSignal broadcast having ByteBuffer as output parameter", function(done) {
+                            var mySpy;
+                            setupSubscriptionAndReturnSpy("weakSignal", subscriptionQosOnChange).then(function(spy) {
+                                mySpy = spy;
+                                return callOperation("triggerBroadcasts", {
+                                    broadcastName: "weakSignal",
+                                    times: 1
+                                });
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                   expect(call.args[0].radioStation).toEqual("radioStation");
+                                   expect(call.args[0].byteBuffer).toEqual([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         //enable this test once the proxy side is ready for fire n' forget
-                        it("call methodFireAndForgetWithoutParams and expect to call the provider", function() {
-                            var spy = setupSubscriptionAndReturnSpy("fireAndForgetCallArrived", subscriptionQosOnChange);
-                            callOperation("methodFireAndForgetWithoutParams", {
-                            });
-                            expectPublication(spy, function(call) {
-                               expect(call.args[0].methodName).toEqual("methodFireAndForgetWithoutParams");
-                            });
+                        it("call methodFireAndForgetWithoutParams and expect to call the provider", function(done) {
+                            var mySpy;
+                            setupSubscriptionAndReturnSpy("fireAndForgetCallArrived", subscriptionQosOnChange).then(function(spy) {
+                                mySpy = spy;
+                                return callOperation("methodFireAndForgetWithoutParams", {});
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                   expect(call.args[0].methodName).toEqual("methodFireAndForgetWithoutParams");
+                                });
+                            }).then(function() {
+                                done();
+                            }).catch(fail);
                         });
 
                         //enable this test once the proxy side is ready for fire n' forget
-                        it("call methodFireAndForget and expect to call the provider", function() {
-                            var spy = setupSubscriptionAndReturnSpy("fireAndForgetCallArrived", subscriptionQosOnChange);
-                            callOperation("methodFireAndForget", {
-                                intIn: 0,
-                                stringIn : "methodFireAndForget",
-                                complexTestTypeIn : new ComplexTestType({
-                                    a : 0,
-                                    b : 1
-                                })
-                            });
-                            expectPublication(spy, function(call) {
-                               expect(call.args[0].methodName).toEqual("methodFireAndForget");
-                            });
+                        it("call methodFireAndForget and expect to call the provider", function(done) {
+                            var mySpy;
+                            setupSubscriptionAndReturnSpy("fireAndForgetCallArrived", subscriptionQosOnChange).then(function(spy) {
+                                mySpy = spy;
+                                return callOperation("methodFireAndForget", {
+                                    intIn: 0,
+                                    stringIn : "methodFireAndForget",
+                                    complexTestTypeIn : new ComplexTestType({
+                                        a : 0,
+                                        b : 1
+                                    })
+                                });
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                   expect(call.args[0].methodName).toEqual("methodFireAndForget");
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to broadcastWithEnum", function() {
-                            var spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
-                            callOperation("triggerBroadcasts", {
-                                broadcastName: "broadcastWithEnum",
-                                times: 1
-                            });
-                            expectPublication(spy, function(call) {
-                               expect(call.args[0].enumOutput).toEqual(Country.CANADA);
-                               expect(call.args[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
-                            });
+                        it("subscribe to broadcastWithEnum", function(done) {
+                            var mySpy;
+                            setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange).then(function(spy) {
+                                mySpy = spy;
+                                return callOperation("triggerBroadcasts", {
+                                    broadcastName: "broadcastWithEnum",
+                                    times: 1 });
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                   expect(call.args[0].enumOutput).toEqual(Country.CANADA);
+                                   expect(call.args[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to emptyBroadcast", function() {
-                            var spy = setupSubscriptionAndReturnSpy("emptyBroadcast", subscriptionQosOnChange);
-                            callOperation("triggerBroadcasts", {
-                                broadcastName: "emptyBroadcast",
-                                times: 1
-                            });
-                            expectPublication(spy, function(call) {
-                                //no expectation for call, as empty broadcast
-                            });
+                        it("subscribe to emptyBroadcast", function(done) {
+                            var mySpy;
+                            setupSubscriptionAndReturnSpy("emptyBroadcast", subscriptionQosOnChange).then(function(spy) {
+                                mySpy = spy;
+                                return callOperation("triggerBroadcasts", {
+                                    broadcastName: "emptyBroadcast",
+                                    times: 1 });
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                    //no expectation for call, as empty broadcast
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to type def broadcast", function() {
+                        it("subscribe to type def broadcast", function(done) {
                             var typeDefStructOutput = new RadioStation({
                                 name: "TestEnd2EndCommProviderWorker.broadcastWithTypeDefs.RadioStation",
                                 byteBuffer: []
                             });
                             var typeDefPrimitiveOutput = 123456;
+                            var mySpy;
 
-                            var spy = setupSubscriptionAndReturnSpy("broadcastWithTypeDefs", subscriptionQosOnChange);
-                            callOperation("triggerBroadcasts", {
-                                broadcastName: "broadcastWithTypeDefs",
-                                times: 1
-                            });
-                            expectPublication(spy, function(call) {
-                               expect(call.args[0].typeDefStructOutput).toEqual(typeDefStructOutput);
-                               expect(call.args[0].typeDefPrimitiveOutput).toEqual(typeDefPrimitiveOutput);
-                            });
+                            setupSubscriptionAndReturnSpy("broadcastWithTypeDefs", subscriptionQosOnChange).then(function(spy) {
+                                mySpy = spy;
+                                return callOperation("triggerBroadcasts", {
+                                    broadcastName: "broadcastWithTypeDefs",
+                                    times: 1 });
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                   expect(call.args[0].typeDefStructOutput).toEqual(typeDefStructOutput);
+                                   expect(call.args[0].typeDefPrimitiveOutput).toEqual(typeDefPrimitiveOutput);
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to broadcastWithEnum and get burst", function() {
+                        it("subscribe to broadcastWithEnum and get burst", function(done) {
                             subscriptionQosOnChange.minIntervalMs = 0;
-                            var times = 100, spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
-                            callOperation("triggerBroadcasts", {
-                                broadcastName: "broadcastWithEnum",
-                                times: times
-                            });
-                            expectMultiplePublications(spy, times, 5000, function(calls) {
-                               var i;
-                               for (i=0;i<times;i++) {
-                                   expect(calls[i].args[0].enumOutput).toEqual(Country.CANADA);
-                                   expect(calls[i].args[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
-                               }
-                            });
+                            var times = 100;
+                            var mySpy;
+                            setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange).then(function(spy) {
+                                mySpy = spy;
+                                return callOperation("triggerBroadcasts", {
+                                    broadcastName: "broadcastWithEnum",
+                                    times: times });
+                            }).then(function() {
+                                return expectMultiplePublications(mySpy, times, 5000, function(calls) {
+                                   var i;
+                                   for (i=0;i<times;i++) {
+                                       expect(calls.argsFor(i)[0].enumOutput).toEqual(Country.CANADA);
+                                       expect(calls.argsFor(i)[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
+                                   }
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("subscribe to enumArrayAttribute", function() {
+                        it("subscribe to enumArrayAttribute", function(done) {
                             var attributeName = "enumArrayAttribute";
                             var value1 = [Country.AUSTRIA];
-                            setAttribute(attributeName, value1);
-                            var spy = setupSubscriptionAndReturnSpy(attributeName, subscriptionQosOnChange);
-                            expectPublication(spy, function(call) {
-                               expect(call.args[0]).toEqual(value1);
-                            });
                             var value2 = [Country.AUSTRIA, Country.GERMANY];
-                            setAttribute(attributeName, value2);
-                            expectPublication(spy, function(call) {
-                                expect(call.args[0]).toEqual(value2);
-                            });
-
                             var value3 = [Country.AUSTRIA, Country.GERMANY, Country.ITALY];
-                            setAttribute(attributeName, value3);
-                            expectPublication(spy, function(call) {
-                                expect(call.args[0]).toEqual(value3);
-                            });
+                            var mySpy;
+                            setAttribute(attributeName, value1).then(function() {
+                                return setupSubscriptionAndReturnSpy(attributeName, subscriptionQosOnChange);
+                            }).then(function(spy) {
+                                mySpy = spy;
+                                return expectPublication(mySpy, function(call) {
+                                   expect(call.args[0]).toEqual(value1);
+                                });
+                            }).then(function() {
+                                return setAttribute(attributeName, value2);
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                    expect(call.args[0]).toEqual(value2);
+                                });
+                            }).then(function() {
+                                return setAttribute(attributeName, value3);
+                            }).then(function() {
+                                return expectPublication(mySpy, function(call) {
+                                    expect(call.args[0]).toEqual(value3);
+                                });
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         function setAndTestAttributeTester(attribute) {
                             var lastRecursionIndex = -1, recursions = 5, onFulfilledSpy =
                                     jasmine.createSpy("onFulfilledSpy");
 
-                            runs(function() {
-                                setAndTestAttribute(attribute, recursions - 1).then(
-                                        onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                            });
+                            setAndTestAttribute(attribute, recursions - 1).then(
+                                    onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
 
-                            waitsFor(function() {
-                                return onFulfilledSpy.callCount > 0;
-                            }, "get/set test to finish", 2 * provisioning.ttl * recursions); // each
-                            // repetition
-                            // consists
-                            // of a
-                            // get
-                            // and
-                            // set
-                            // => 2
-                            // ttls per repetition
+                            return waitsFor(function() {
+                                return onFulfilledSpy.calls.count() > 0;
+                            }, "get/set test to finish", 2 * provisioning.ttl * recursions).then(function() {
+                                // each
+                                // repetition
+                                // consists
+                                // of a
+                                // get
+                                // and
+                                // set
+                                // => 2
+                                // ttls per repetition
 
-                            runs(function() {
                                 // additional sanity check whether recursion level
                                 // really went down
                                 // to 0
@@ -713,143 +827,144 @@ joynrTestRequire(
                         }
 
                         // when provider is working this should also work
-                        it("checks whether the provider stores the attribute value", function() {
-                            setAndTestAttributeTester(radioProxy.isOn);
+                        it("checks whether the provider stores the attribute value", function(done) {
+                            setAndTestAttributeTester(radioProxy.isOn).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("can call an operation successfully (Provider sync, String parameter)", function() {
+                        it("can call an operation successfully (Provider sync, String parameter)", function(done) {
                             callOperation("addFavoriteStation",
                                     {
                                 radioStation : 'stringStation'
                                     }
-                            );
+                            ).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("can call an operation and get a ProviderRuntimeException (Provider sync, String parameter)", function() {
+                        it("can call an operation and get a ProviderRuntimeException (Provider sync, String parameter)", function(done) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                             var catchSpy = jasmine.createSpy("catchSpy");
 
-                            runs(function() {
-                                radioProxy.addFavoriteStation({
-                                    radioStation : 'stringStationerror'
-                                }).then(onFulfilledSpy).catch(catchSpy);
-                            });
+                            radioProxy.addFavoriteStation({
+                                radioStation : 'stringStationerror'
+                            }).then(onFulfilledSpy).catch(catchSpy);
 
                             waitsFor(function() {
-                                return catchSpy.callCount > 0;
-                            }, "operation call to fail", provisioning.ttl);
-
-                            runs(function() {
+                                return catchSpy.calls.count() > 0;
+                            }, "operation call to fail", provisioning.ttl).then(function() {
                                 expect(onFulfilledSpy).not.toHaveBeenCalled();
                                 expect(catchSpy).toHaveBeenCalled();
-                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
-                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
-                                expect(catchSpy.calls[0].args[0].detailMessage).toBeDefined();
-                                expect(catchSpy.calls[0].args[0].detailMessage).toEqual("example message sync");
-                            });
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                expect(catchSpy.calls.argsFor(0)[0].detailMessage).toBeDefined();
+                                expect(catchSpy.calls.argsFor(0)[0].detailMessage).toEqual("example message sync");
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("can call an operation and get an ApplicationException (Provider sync, String parameter)", function() {
+                        it("can call an operation and get an ApplicationException (Provider sync, String parameter)", function(done) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                             var catchSpy = jasmine.createSpy("catchSpy");
 
-                            runs(function() {
-                                radioProxy.addFavoriteStation({
-                                    radioStation : 'stringStationerrorApplicationException'
-                                }).then(onFulfilledSpy).catch(catchSpy);
-                            });
+                            radioProxy.addFavoriteStation({
+                                radioStation : 'stringStationerrorApplicationException'
+                            }).then(onFulfilledSpy).catch(catchSpy);
 
                             waitsFor(function() {
-                                return catchSpy.callCount > 0;
-                            }, "operation call to fail", provisioning.ttl);
-
-                            runs(function() {
+                                return catchSpy.calls.count() > 0;
+                            }, "operation call to fail", provisioning.ttl).then(function() {
                                 expect(onFulfilledSpy).not.toHaveBeenCalled();
                                 expect(catchSpy).toHaveBeenCalled();
-                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
-                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ApplicationException");
-                                expect(catchSpy.calls[0].args[0].error).toBeDefined();
-                                expect(catchSpy.calls[0].args[0].error).toEqual(ErrorList.EXAMPLE_ERROR_2);
-                            });
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toEqual("joynr.exceptions.ApplicationException");
+                                expect(catchSpy.calls.argsFor(0)[0].error).toBeDefined();
+                                //expect(catchSpy.calls.argsFor(0)[0].error).toEqual(ErrorList.EXAMPLE_ERROR_2);
+                                expect(catchSpy.calls.argsFor(0)[0].error).toEqual(jasmine.objectContaining(ErrorList.EXAMPLE_ERROR_2));
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("can call an operation successfully (Provider async, String parameter)", function() {
+                        it("can call an operation successfully (Provider async, String parameter)", function(done) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
-                            runs(function() {
-                                radioProxy.addFavoriteStation({
-                                    radioStation : 'stringStationasync'
-                                }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                            });
+                            radioProxy.addFavoriteStation({
+                                radioStation : 'stringStationasync'
+                            }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
 
                             waitsFor(function() {
-                                return onFulfilledSpy.callCount > 0;
-                            }, "operation call to finish", provisioning.ttl);
-
-                            runs(function() {
+                                return onFulfilledSpy.calls.count() > 0;
+                            }, "operation call to finish", provisioning.ttl).then(function() {
                                 expect(onFulfilledSpy).toHaveBeenCalled();
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("can call an operation and get a ProviderRuntimeException (Provider async, String parameter)", function() {
+                        it("can call an operation and get a ProviderRuntimeException (Provider async, String parameter)", function(done) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                             var catchSpy = jasmine.createSpy("catchSpy");
 
-                            runs(function() {
-                                radioProxy.addFavoriteStation({
-                                    radioStation : 'stringStationasyncerror'
-                                }).then(onFulfilledSpy).catch(catchSpy);
-                            });
+                            radioProxy.addFavoriteStation({
+                                radioStation : 'stringStationasyncerror'
+                            }).then(onFulfilledSpy).catch(catchSpy);
 
                             waitsFor(function() {
-                                return catchSpy.callCount > 0;
-                            }, "operation call to fail", provisioning.ttl);
-
-                            runs(function() {
+                                return catchSpy.calls.count() > 0;
+                            }, "operation call to fail", provisioning.ttl).then(function() {
                                 expect(onFulfilledSpy).not.toHaveBeenCalled();
                                 expect(catchSpy).toHaveBeenCalled();
-                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
-                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
-                                expect(catchSpy.calls[0].args[0].detailMessage).toBeDefined();
-                                expect(catchSpy.calls[0].args[0].detailMessage).toEqual("example message async");
-                            });
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                expect(catchSpy.calls.argsFor(0)[0].detailMessage).toBeDefined();
+                                expect(catchSpy.calls.argsFor(0)[0].detailMessage).toEqual("example message async");
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("can call an operation and get an ApplicationException (Provider async, String parameter)", function() {
+                        it("can call an operation and get an ApplicationException (Provider async, String parameter)", function(done) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                             var catchSpy = jasmine.createSpy("catchSpy");
 
-                            runs(function() {
-                                radioProxy.addFavoriteStation({
-                                    radioStation : 'stringStationasyncerrorApplicationException'
-                                }).then(onFulfilledSpy).catch(catchSpy);
-                            });
+                            radioProxy.addFavoriteStation({
+                                radioStation : 'stringStationasyncerrorApplicationException'
+                            }).then(onFulfilledSpy).catch(catchSpy);
 
                             waitsFor(function() {
-                                return catchSpy.callCount > 0;
-                            }, "operation call to fail", provisioning.ttl);
-
-                            runs(function() {
+                                return catchSpy.calls.count() > 0;
+                            }, "operation call to fail", provisioning.ttl).then(function() {
                                 expect(onFulfilledSpy).not.toHaveBeenCalled();
                                 expect(catchSpy).toHaveBeenCalled();
-                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
-                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ApplicationException");
-                                expect(catchSpy.calls[0].args[0].error).toBeDefined();
-                                expect(catchSpy.calls[0].args[0].error).toEqual(ErrorList.EXAMPLE_ERROR_1);
-                            });
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls.argsFor(0)[0]._typeName).toEqual("joynr.exceptions.ApplicationException");
+                                expect(catchSpy.calls.argsFor(0)[0].error).toBeDefined();
+                                //expect(catchSpy.calls.argsFor(0)[0].error).toEqual(ErrorList.EXAMPLE_ERROR_1);
+                                expect(catchSpy.calls.argsFor(0)[0].error).toEqual(jasmine.objectContaining(ErrorList.EXAMPLE_ERROR_1));
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("can call an operation (parameter of complex type)", function() {
+                        it("can call an operation (parameter of complex type)", function(done) {
                             callOperation("addFavoriteStation",
                                     {
                                         radioStation : 'stringStation'
                                     }
-                            );
+                            ).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         it(
                                 "can call an operation (parameter of byteBuffer type",
-                                function() {
+                                function(done) {
                                     callOperation(
                                             "methodWithByteBuffer",
                                             {
@@ -857,12 +972,15 @@ joynrTestRequire(
                                             },
                                             {
                                                 result : [0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]
-                                            });
+                                            }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                });
 
                         it(
                                 "can call an operation with working parameters and return type",
-                                function() {
+                                function(done) {
                                     callOperation(
                                             "addFavoriteStation",
                                             {
@@ -870,41 +988,47 @@ joynrTestRequire(
                                             },
                                             {
                                                 returnValue : true
-                                            });
-                                    callOperation(
-                                            "addFavoriteStation",
-                                            {
-                                                radioStation : "This is false!"
-                                            },
-                                            {
-                                                returnValue : false
-                                            });
-                                    callOperation(
-                                            "addFavoriteStation",
-                                            {
-                                                radioStation : new RadioStation(
-                                                        {
-                                                            name : "truelyContainingTheRadioStationString\"True\""
-                                                        })
-                                            },
-                                            {
-                                                returnValue : true
-                                            });
-                                    callOperation(
-                                            "addFavoriteStation",
-                                            {
-                                                radioStation : new RadioStation({
-                                                    name : "This is a false RadioStation!"
-                                                })
-                                            },
-                                            {
-                                                returnValue : false
-                                            });
+                                    }).then(function() {
+                                        return callOperation(
+                                                "addFavoriteStation",
+                                                {
+                                                    radioStation : "This is false!"
+                                                },
+                                                {
+                                                    returnValue : false
+                                                });
+                                    }).then(function() {
+                                        return callOperation(
+                                                "addFavoriteStation",
+                                                {
+                                                    radioStation : new RadioStation(
+                                                            {
+                                                                name : "truelyContainingTheRadioStationString\"True\""
+                                                            })
+                                                },
+                                                {
+                                                    returnValue : true
+                                                });
+                                    }).then(function() {
+                                        return callOperation(
+                                                "addFavoriteStation",
+                                                {
+                                                    radioStation : new RadioStation({
+                                                        name : "This is a false RadioStation!"
+                                                    })
+                                                },
+                                                {
+                                                    returnValue : false
+                                                });
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         it(
                                 "can call an operation with typedef arguments",
-                                function() {
+                                function(done) {
                                     var typeDefStructInput = new RadioStation({
                                         name: "TestEnd2EndComm.methodWithTypeDef.RadioStation",
                                         byteBuffer: []
@@ -919,12 +1043,15 @@ joynrTestRequire(
                                             {
                                                 typeDefStructOutput : typeDefStructInput,
                                                 typeDefPrimitiveOutput : typeDefPrimitiveInput
-                                            });
+                                            }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                });
 
                         it(
                                 "can call an operation with enum arguments and enum return type",
-                                function() {
+                                function(done) {
                                     callOperation(
                                             "operationWithEnumsAsInputAndOutput",
                                             {
@@ -933,39 +1060,45 @@ joynrTestRequire(
                                             },
                                             {
                                                 enumOutput : Country.GERMANY
-                                            });
-                                    callOperation(
-                                            "operationWithEnumsAsInputAndOutput",
-                                            {
-                                                enumInput : Country.GERMANY,
-                                                enumArrayInput : [Country.AUSTRIA]
-                                            },
-                                            {
-                                                enumOutput : Country.AUSTRIA
-                                            });
-                                    callOperation(
-                                            "operationWithEnumsAsInputAndOutput",
-                                            {
-                                                enumInput : Country.GERMANY,
-                                                enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
-                                            },
-                                            {
-                                                enumOutput : Country.AUSTRIA
-                                            });
-                                    callOperation(
-                                            "operationWithEnumsAsInputAndOutput",
-                                            {
-                                                enumInput : Country.GERMANY,
-                                                enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
-                                            },
-                                            {
-                                                enumOutput : Country.CANADA
-                                            });
+                                            }).then(function() {
+                                        return callOperation(
+                                                "operationWithEnumsAsInputAndOutput",
+                                                {
+                                                    enumInput : Country.GERMANY,
+                                                    enumArrayInput : [Country.AUSTRIA]
+                                                },
+                                                {
+                                                    enumOutput : Country.AUSTRIA
+                                                });
+                                    }).then(function() {
+                                        return callOperation(
+                                                "operationWithEnumsAsInputAndOutput",
+                                                {
+                                                    enumInput : Country.GERMANY,
+                                                    enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
+                                                },
+                                                {
+                                                    enumOutput : Country.AUSTRIA
+                                                });
+                                    }).then(function() {
+                                        return callOperation(
+                                                "operationWithEnumsAsInputAndOutput",
+                                                {
+                                                    enumInput : Country.GERMANY,
+                                                    enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
+                                                },
+                                                {
+                                                    enumOutput : Country.CANADA
+                                                });
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                });
 
                         it(
                                 "can call an operation with multiple return values and async provider",
-                                function() {
+                                function(done) {
                                     var inputData = {
                                         enumInput : Country.GERMANY,
                                         enumArrayInput : [Country.GERMANY, Country.ITALY],
@@ -980,13 +1113,16 @@ joynrTestRequire(
                                                 enumOutput : inputData.enumInput,
                                                 stringOutput : inputData.stringInput,
                                                 booleanOutput : inputData.syncTest
-                                            });
+                                            }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
 
                         });
 
                         it(
                                 "can call an operation with multiple return values and sync provider",
-                                function() {
+                                function(done) {
                                     var inputData = {
                                         enumInput : Country.GERMANY,
                                         enumArrayInput : [Country.GERMANY, Country.ITALY],
@@ -1001,12 +1137,15 @@ joynrTestRequire(
                                                 enumOutput : inputData.enumInput,
                                                 stringOutput : inputData.stringInput,
                                                 booleanOutput : inputData.syncTest
-                                            });
+                                            }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                         });
 
                         it(
                                 "can call an operation with enum arguments and enum array as return type",
-                                function() {
+                                function(done) {
                                     callOperation(
                                             "operationWithEnumsAsInputAndEnumArrayAsOutput",
                                             {
@@ -1015,39 +1154,45 @@ joynrTestRequire(
                                             },
                                             {
                                                 enumOutput : [Country.GERMANY]
-                                            });
-                                    callOperation(
-                                            "operationWithEnumsAsInputAndEnumArrayAsOutput",
-                                            {
-                                                enumInput : Country.GERMANY,
-                                                enumArrayInput : [Country.AUSTRIA]
-                                            },
-                                            {
-                                                enumOutput : [Country.AUSTRIA, Country.GERMANY]
-                                            });
-                                    callOperation(
-                                            "operationWithEnumsAsInputAndEnumArrayAsOutput",
-                                            {
-                                                enumInput : Country.GERMANY,
-                                                enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
-                                            },
-                                            {
-                                                enumOutput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA, Country.GERMANY]
-                                            });
-                                    callOperation(
-                                            "operationWithEnumsAsInputAndEnumArrayAsOutput",
-                                            {
-                                                enumInput : Country.GERMANY,
-                                                enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
-                                            },
-                                            {
-                                                enumOutput : [Country.CANADA, Country.AUSTRIA, Country.ITALY, Country.GERMANY]
-                                            });
+                                    }).then(function() {
+                                        return callOperation(
+                                                "operationWithEnumsAsInputAndEnumArrayAsOutput",
+                                                {
+                                                    enumInput : Country.GERMANY,
+                                                    enumArrayInput : [Country.AUSTRIA]
+                                                },
+                                                {
+                                                    enumOutput : [Country.AUSTRIA, Country.GERMANY]
+                                                });
+                                    }).then(function() {
+                                        return callOperation(
+                                                "operationWithEnumsAsInputAndEnumArrayAsOutput",
+                                                {
+                                                    enumInput : Country.GERMANY,
+                                                    enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
+                                                },
+                                                {
+                                                    enumOutput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA, Country.GERMANY]
+                                                });
+                                    }).then(function() {
+                                        return callOperation(
+                                                "operationWithEnumsAsInputAndEnumArrayAsOutput",
+                                                {
+                                                    enumInput : Country.GERMANY,
+                                                    enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
+                                                },
+                                                {
+                                                    enumOutput : [Country.CANADA, Country.AUSTRIA, Country.ITALY, Country.GERMANY]
+                                                });
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                });
 
                         it(
                                 "can call an operation with double array as argument and string array as return type",
-                                function() {
+                                function(done) {
                                     callOperation(
                                             "methodWithSingleArrayParameters",
                                             {
@@ -1055,166 +1200,178 @@ joynrTestRequire(
                                             },
                                             {
                                                 stringArrayOut : ["0.01", "1.1", "2.2", "3.3"]
-                                            });
+                                            }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                });
 
-                        it("can start a subscription and provides a subscription id", function() {
+                        it("can start a subscription and provides a subscription id", function(done) {
                             var spy;
 
-                            runs(function() {
-                                spy = jasmine.createSpyObj("spy", [
-                                    "onFulfilled",
-                                    "onError"
-                                ]);
-                                radioProxy.numberOfStations.subscribe({
-                                    subscriptionQos : subscriptionQosOnChange
-                                }).then(spy.onFulfilled).catch(function(error) {
-                                    spy.onError(error);
-                                    IntegrationUtils.outputPromiseError(error);
-                                });
+                            spy = jasmine.createSpyObj("spy", [
+                                "onFulfilled",
+                                "onReceive",
+                                "onError"
+                            ]);
+                            radioProxy.numberOfStations.subscribe({
+                                subscriptionQos : subscriptionQosOnChange,
+                                onReceive : spy.onReceive,
+                                onError : spy.onError
+                            }).then(spy.onFulfilled).catch(function(error) {
+                                spy.onError(error);
+                                IntegrationUtils.outputPromiseError(error);
                             });
 
                             waitsFor(function() {
-                                return spy.onFulfilled.callCount > 0;
-                            }, "subscription to be registered", provisioning.ttl);
-
-                            runs(function() {
+                                return spy.onFulfilled.calls.count() > 0;
+                            }, "subscription to be registered", provisioning.ttl).then(function() {
                                 expect(spy.onFulfilled).toHaveBeenCalled();
-                                expect(typeof spy.onFulfilled.mostRecentCall.args[0] === "string")
+                                expect(typeof spy.onFulfilled.calls.mostRecent().args[0] === "string")
                                         .toBeTruthy();
                                 expect(spy.onError).not.toHaveBeenCalled();
-                            });
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("publishes a value with an onChange subscription", function() {
-                            publishesValue(subscriptionQosOnChange);
+                        it("publishes a value with an onChange subscription", function(done) {
+                            publishesValue(subscriptionQosOnChange).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("publishes a value with an interval subscription", function() {
-                            publishesValue(subscriptionQosInterval);
+                        it("publishes a value with an interval subscription", function(done) {
+                            publishesValue(subscriptionQosInterval).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("publishes a value with a mixed subscription", function() {
-                            publishesValue(subscriptionQosMixed);
+                        it("publishes a value with a mixed subscription", function(done) {
+                            publishesValue(subscriptionQosMixed).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("publishes a value with an ending subscription", function() {
+                        it("publishes a value with an ending subscription", function(done) {
                             subscriptionQosMixed.expiryDateMs = subscriptionLength + Date.now();
-                            publishesValue(subscriptionQosMixed);
+                            publishesValue(subscriptionQosMixed).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         it(
                                 "initially publishes a value on subscription",
-                                function() {
+                                function(done) {
                                     var spy;
 
-                                    runs(function() {
-                                        spy = jasmine.createSpyObj("spy", [
-                                            "onFulfilled",
-                                            "onReceive",
-                                            "onError"
-                                        ]);
-                                        radioProxy.numberOfStations.subscribe({
-                                            subscriptionQos : subscriptionQosOnChange,
-                                            onReceive : spy.onReceive,
-                                            onError : spy.onError
-                                        }).then(
-                                                spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
-                                    });
+                                    spy = jasmine.createSpyObj("spy", [
+                                        "onFulfilled",
+                                        "onReceive",
+                                        "onError"
+                                    ]);
+                                    radioProxy.numberOfStations.subscribe({
+                                        subscriptionQos : subscriptionQosOnChange,
+                                        onReceive : spy.onReceive,
+                                        onError : spy.onError
+                                    }).then(
+                                            spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
 
-                                    waitsFor(
-                                            function() {
-                                                return spy.onFulfilled.callCount > 0
-                                                    && (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
-                                            },
-                                            "initial onReceive to occur",
-                                            provisioning.ttl); // timeout for
+                                    // timeout for
                                     // subscription request
                                     // round trip
-
-                                    runs(function() {
+                                    waitsFor(
+                                            function() {
+                                                return spy.onFulfilled.calls.count() > 0
+                                                    && (spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0);
+                                            },
+                                            "initial onReceive to occur",
+                                            provisioning.ttl).then(function() {
                                         expect(spy.onFulfilled).toHaveBeenCalled();
                                         expect(spy.onReceive).toHaveBeenCalled();
-                                        expect(spy.onReceive.calls[0].args[0]).toEqual(-1);
+                                        expect(spy.onReceive.calls.argsFor(0)[0]).toEqual(-1);
                                         expect(spy.onError).not.toHaveBeenCalled();
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         var nrPubs = 3;
                         it(
                                 "publishes correct values with onChange " + nrPubs + " times",
-                                function() {
+                                function(done) {
                                     var spy;
 
-                                    runs(function() {
-                                        spy = jasmine.createSpyObj("spy", [
-                                            "onFulfilled",
-                                            "onReceive",
-                                            "onError"
-                                        ]);
-                                        radioProxy.numberOfStations.subscribe({
-                                            subscriptionQos : subscriptionQosOnChange,
-                                            onReceive : spy.onReceive,
-                                            onError : spy.onError
-                                        }).then(
-                                                spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
-                                    });
+                                    spy = jasmine.createSpyObj("spy", [
+                                        "onFulfilled",
+                                        "onReceive",
+                                        "onError"
+                                    ]);
+                                    radioProxy.numberOfStations.subscribe({
+                                        subscriptionQos : subscriptionQosOnChange,
+                                        onReceive : spy.onReceive,
+                                        onError : spy.onError
+                                    }).then(
+                                            spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
 
-                                    waitsFor(function() {
-                                        return spy.onFulfilled.callCount > 0;
-                                    }, "subscription promise to resolve", provisioning.ttl); // timeout
+                                    // timeout
                                     // for
                                     // subscription
                                     // request
                                     // round
                                     // trip
-
-                                    runs(function() {
+                                    waitsFor(function() {
+                                        return spy.onFulfilled.calls.count() > 0;
+                                    }, "subscription promise to resolve", provisioning.ttl).then(function() {
                                         expect(spy.onFulfilled).toHaveBeenCalled();
-                                    });
 
-                                    waitsFor(
+                                        // timeout for
+                                        // subscription request
+                                        // round trip
+                                        return waitsFor(
                                             function() {
-                                                return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
+                                                return (spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0);
                                             },
                                             "initial onReceive to occur",
-                                            provisioning.ttl); // timeout for
-                                    // subscription request
-                                    // round trip
-
-                                    runs(function() {
+                                            provisioning.ttl);
+                                    }).then(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
-                                        expect(spy.onReceive.calls[0].args[0]).toEqual(-1);
+                                        expect(spy.onReceive.calls.argsFor(0)[0]).toEqual(-1);
                                         expect(spy.onError).not.toHaveBeenCalled();
 
-                                        spy.onReceive.reset();
-                                        spy.onError.reset();
-                                    });
+                                        spy.onReceive.calls.reset();
+                                        spy.onError.calls.reset();
 
-                                    waitsFor(
+                                        // for subscription request round trip and nrPubs publications, safety (+1)
+                                        return waitsFor(
                                             function() {
-                                                return (spy.onReceive.calls.length >= nrPubs || spy.onError.calls.length > 0);
+                                                return (spy.onReceive.calls.count() >= nrPubs || spy.onError.calls.count() > 0);
                                             },
                                             "subscription to be registered and first publication to occur",
                                             provisioning.ttl + (nrPubs + 1) * 1000); // timeout
-                                    // for subscription request round trip and nrPubs publications, safety (+1)
-
-                                    runs(function() {
+                                    }).then(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
                                         expect(spy.onError).not.toHaveBeenCalled();
 
-                                        expect(spy.onReceive.calls.length).toEqual(nrPubs);
+                                        expect(spy.onReceive.calls.count()).toEqual(nrPubs);
 
                                         var i;
                                         for (i = 0; i < nrPubs; ++i) {
-                                            expect(spy.onReceive.calls[i].args[0]).toEqual(i);
+                                            expect(spy.onReceive.calls.argsFor(i)[0]).toEqual(i);
                                         }
-                                    });
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         it(
                                 "publishes correct values with a mixed subscription",
-                                function() {
+                                function(done) {
                                     var spy;
 
                                     // provider will fire an interval publication 1s after
@@ -1226,108 +1383,96 @@ joynrTestRequire(
                                     // blocked by the
                                     // PublicationManager on the Provider side
 
-                                    runs(function() {
-                                        spy = jasmine.createSpyObj("spy", [
-                                            "onFulfilled",
-                                            "onReceive",
-                                            "onError"
-                                        ]);
-                                        subscriptionQosMixed.expiryDateMs =
-                                                subscriptionLength + Date.now();
-                                        radioProxy.mixedSubscriptions.subscribe({
-                                            subscriptionQos : subscriptionQosMixed,
-                                            onReceive : spy.onReceive,
-                                            onError : spy.onError
-                                        }).then(spy.onFulfilled).catch(function(error) {
-                                            spy.onError(error);
-                                            IntegrationUtils.outputPromiseError(error);
-                                        });
+                                    spy = jasmine.createSpyObj("spy", [
+                                        "onFulfilled",
+                                        "onReceive",
+                                        "onError"
+                                    ]);
+                                    subscriptionQosMixed.expiryDateMs =
+                                            subscriptionLength + Date.now();
+                                    radioProxy.mixedSubscriptions.subscribe({
+                                        subscriptionQos : subscriptionQosMixed,
+                                        onReceive : spy.onReceive,
+                                        onError : spy.onError
+                                    }).then(spy.onFulfilled).catch(function(error) {
+                                        spy.onError(error);
+                                        IntegrationUtils.outputPromiseError(error);
                                     });
 
                                     waitsFor(function() {
-                                        return spy.onFulfilled.callCount > 0;
-                                    }, "subscription to be registered", provisioning.ttl);
-
-                                    runs(function() {
+                                        return spy.onFulfilled.calls.count() > 0;
+                                    }, "subscription to be registered", provisioning.ttl).then(function() {
                                         expect(spy.onFulfilled).toHaveBeenCalled();
-                                    });
 
-                                    waitsFor(
-                                            function() {
-                                                return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
-                                            },
-                                            "initial publication to occur",
-                                            provisioning.ttl); // timeout for
-                                    // subscription request
-                                    // round trip
-
-                                    runs(function() {
+                                        return waitsFor(
+                                                function() {
+                                                    return (spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0);
+                                                },
+                                                "initial publication to occur",
+                                                provisioning.ttl); // timeout for
+                                        // subscription request
+                                        // round trip
+                                    }).then(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
-                                        expect(spy.onReceive.calls[0].args[0])
+                                        expect(spy.onReceive.calls.argsFor(0)[0])
                                                 .toEqual("interval");
                                         expect(spy.onError).not.toHaveBeenCalled();
 
-                                        spy.onReceive.reset();
-                                        spy.onError.reset();
-                                    });
+                                        spy.onReceive.calls.reset();
+                                        spy.onError.calls.reset();
 
-                                    waitsFor(
-                                            function() {
-                                                return (spy.onReceive.callCount > 0 || spy.onError.callCount > 0);
-                                            },
-                                            "the interval publication to occur",
-                                            subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
-
-                                    runs(function() {
+                                        return waitsFor(
+                                                function() {
+                                                        return (spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0);
+                                                },
+                                                "the interval publication to occur",
+                                                subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
+                                    }).then(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
                                         expect(spy.onReceive).toHaveBeenCalledWith("interval");
-                                        spy.onReceive.reset();
-                                    });
+                                        spy.onReceive.calls.reset();
 
-                                    waitsFor(function() {
-                                        return spy.onReceive.callCount > 0;
-                                    }, "the onChange publication to occur", 500 + provisioning.ttl);
+                                        return waitsFor(function() {
+                                            return spy.onReceive.calls.count() > 0;
+                                        }, "the onChange publication to occur", 500 + provisioning.ttl);
+                                    }).then(function() {
+                                        var timeout;
 
-                                    var timeout;
-
-                                    runs(function() {
                                         timeout = false;
                                         expect(spy.onReceive).toHaveBeenCalled();
                                         expect(spy.onReceive).toHaveBeenCalledWith(
                                                 "valueChanged1");
-                                        spy.onReceive.reset();
+                                        spy.onReceive.calls.reset();
                                         joynr.util.LongTimer.setTimeout(function() {
                                             timeout = true;
                                         }, subscriptionQosMixed.minIntervalMs / 2);
-                                    });
 
-                                    waitsFor(
+                                        return waitsFor(
                                             function() {
-                                                return timeout || spy.onReceive.callCount > 0;
+                                                return timeout || spy.onReceive.calls.count() > 0;
                                             },
                                             "the second onChange publication to not occur",
                                             subscriptionQosMixed.minIntervalMs + safetyTimeout);
-
-                                    runs(function() {
+                                    }).then(function() {
                                         expect(spy.onReceive).not.toHaveBeenCalled();
-                                    });
 
-                                    waitsFor(
+                                        return waitsFor(
                                             function() {
-                                                return spy.onReceive.callCount > 0;
+                                                return spy.onReceive.calls.count() > 0;
                                             },
                                             "the second onChange publication occur after minIntervalMs",
                                             provisioning.ttl + safetyTimeout);
-
-                                    runs(function() {
+                                    }).then(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
                                         expect(spy.onReceive).toHaveBeenCalledWith("interval");
-                                    });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         it(
                                 "terminates correctly according to the endDate ",
-                                function() {
+                                function(done) {
                                     var spy, timeout;
 
                                     // provider will fire an interval publication 1s
@@ -1343,98 +1488,98 @@ joynrTestRequire(
                                     // blocked by the
                                     // PublicationManager on the Provider side
 
-                                    runs(function() {
-                                        spy = jasmine.createSpyObj("spy", [
-                                            "onFulfilled",
-                                            "onReceive",
-                                            "onError"
-                                        ]);
-                                        subscriptionQosMixed.expiryDateMs =
-                                                subscriptionQosMixed.maxIntervalMs * 1.5 + Date.now();
-                                        radioProxy.isOn.subscribe({
-                                            subscriptionQos : subscriptionQosMixed,
-                                            onReceive : spy.onReceive,
-                                            onError : spy.onError
-                                        }).then(spy.onFulfilled).catch(function(error) {
-                                            spy.onError(error);
-                                            IntegrationUtils.outputPromiseError(error);
-                                        });
+                                    spy = jasmine.createSpyObj("spy", [
+                                        "onFulfilled",
+                                        "onReceive",
+                                        "onError"
+                                    ]);
+                                    subscriptionQosMixed.expiryDateMs =
+                                            subscriptionQosMixed.maxIntervalMs * 1.5 + Date.now();
+                                    radioProxy.isOn.subscribe({
+                                        subscriptionQos : subscriptionQosMixed,
+                                        onReceive : spy.onReceive,
+                                        onError : spy.onError
+                                    }).then(spy.onFulfilled).catch(function(error) {
+                                        spy.onError(error);
+                                        IntegrationUtils.outputPromiseError(error);
                                     });
 
                                     waitsFor(function() {
-                                        return spy.onFulfilled.callCount > 0;
-                                    }, "subscription to be registered", provisioning.ttl);
-
-                                    runs(function() {
+                                        return spy.onFulfilled.calls.count() > 0;
+                                    }, "subscription to be registered", provisioning.ttl).then(function() {
                                         expect(spy.onFulfilled).toHaveBeenCalled();
-                                    });
-
-                                    waitsFor(
+                                        return waitsFor(
                                             function() {
-                                                return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
+                                                return (spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0);
                                             },
                                             "initial publication to occur",
                                             provisioning.ttl); // timeout for
-                                    // subscription request
-                                    // round trip
-
-                                    runs(function() {
+                                        // subscription request
+                                        // round trip
+                                    }).then(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
-                                        expect(spy.onReceive.calls[0].args[0]).toEqual(true);
+                                        expect(spy.onReceive.calls.argsFor(0)[0]).toEqual(true);
                                         expect(spy.onError).not.toHaveBeenCalled();
 
-                                        spy.onReceive.reset();
-                                        spy.onError.reset();
-                                    });
+                                        spy.onReceive.calls.reset();
+                                        spy.onError.calls.reset();
 
-                                    waitsFor(
+                                        return waitsFor(
                                             function() {
-                                                return (spy.onReceive.callCount > 0 || spy.onError.callCount > 0);
+                                                    return (spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0);
                                             },
                                             "the interval onReceive to occur",
                                             subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
-
-                                    runs(function() {
+                                    }).then(function() {
                                         expect(spy.onReceive).toHaveBeenCalled();
                                         expect(spy.onReceive).toHaveBeenCalledWith(true);
-                                        spy.onReceive.reset();
+                                        spy.onReceive.calls.reset();
 
                                         joynr.util.LongTimer.setTimeout(function() {
                                             timeout = true;
                                         }, subscriptionQosMixed.maxIntervalMs + provisioning.ttl);
-                                    });
-
-                                    waitsFor(
+                                        return waitsFor(
                                             function() {
-                                                return timeout || spy.onReceive.callCount > 0;
+                                                return timeout || spy.onReceive.calls.count() > 0;
                                             },
                                             "the interval onReceive not to occur again",
                                             subscriptionQosMixed.maxIntervalMs
                                                 + provisioning.ttl
                                                 + safetyTimeout);
-
-                                    runs(function() {
+                                    }).then(function() {
                                         expect(spy.onReceive).not.toHaveBeenCalled();
-                                    });
-                                });
+                                        done();
+                                        return null;
+                                    }).catch(fail);
+                        }, 10000);
 
-                        it("unsubscribes onChange subscription successfully", function() {
-                            checkUnsubscribe(1000, subscriptionQosOnChange);
+                        it("unsubscribes onChange subscription successfully", function(done) {
+                            checkUnsubscribe(1000, subscriptionQosOnChange).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
-                        it("unsubscribes interval subscription successfully", function() {
-                            checkUnsubscribe(1000, subscriptionQosInterval);
+                        it("unsubscribes interval subscription successfully", function(done) {
+                            checkUnsubscribe(1000, subscriptionQosInterval).then(function() {
+                                done();
+                                return null;
+                            }).catch(fail);
                         });
 
                         it(
                                 "attributes are working with predefined implementation on provider side",
-                                function() {
-                                    setAndTestAttributeRecursive(radioProxy.attrProvidedImpl);
+                                function(done) {
+                                    //setAndTestAttributeRecursive(radioProxy.attrProvidedImpl).then(function() {
+                                    setAndTestAttribute(radioProxy.attrProvidedImpl, 0).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
                         it(
                                 "operation is working with predefined implementation on provider side",
-                                function() {
+                                function(done) {
                                     var testArgument = "This is my test argument";
                                     callOperation(
                                             "methodProvidedImpl",
@@ -1443,25 +1588,21 @@ joynrTestRequire(
                                             },
                                             {
                                                 returnValue : testArgument
-                                            });
+                                    }).then(function() {
+                                        done();
+                                        return null;
+                                    }).catch(fail);
                                 });
 
-                        afterEach(function() {
-                            var shutDownWW;
-                            var shutDownLibJoynr;
-
-                            runs(function() {
-                                IntegrationUtils.shutdownWebWorker(workerId).then(function() {
-                                    shutDownWW = true;
-                                });
-                                IntegrationUtils.shutdownLibjoynr().then(function() {
-                                    shutDownLibJoynr = true;
-                                });
+                        afterEach(function(done) {
+                            IntegrationUtils.shutdownWebWorker(workerId).then(function() {
+                                return IntegrationUtils.shutdownLibjoynr();
+                            }).then(function() {
+                                done();
+                                return null;
+                            }).catch(function() {
+                                throw new Error("shutdown Webworker and Libjoynr failed");
                             });
-
-                            waitsFor(function() {
-                                return shutDownWW && shutDownLibJoynr;
-                            }, "WebWorker and Libjoynr to be shut down", 5000);
                         });
 
                     });

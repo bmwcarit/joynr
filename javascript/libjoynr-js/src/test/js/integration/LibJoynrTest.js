@@ -1,9 +1,10 @@
-/*global joynrTestRequire: true, it: true */
+/*jslint es5: true */
+/*global fail: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@
  * #L%
  */
 
-joynrTestRequire("integration/TestLibJoynr", [
+define([
     "joynr",
     "integration/IntegrationUtils",
     "joynr/provisioning/provisioning_cc",
@@ -53,59 +54,43 @@ joynrTestRequire("integration/TestLibJoynr", [
         }
 
         function shutdownWebWorkerAndLibJoynr() {
-            var shutDownWW;
-            var shutDownLibJoynr;
-
-            runs(function() {
-                IntegrationUtils.shutdownWebWorker(workerId).then(function() {
-                    shutDownWW = true;
-                });
-                IntegrationUtils.shutdownLibjoynr().then(function() {
-                    shutDownLibJoynr = true;
-                });
-            });
-
-            waitsFor(function() {
-                return shutDownWW && shutDownLibJoynr;
-            }, "WebWorker and Libjoynr to be shut down", 5000);
+            return IntegrationUtils.shutdownWebWorker(workerId).then(IntegrationUtils.shutdownLibjoynr);
         }
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             provisioningSuffix = "-" + Date.now();
-            ready = false;
             testProvisioning = IntegrationUtils.getProvisioning(provisioning, provisioningSuffix);
-            runs(function() {
-                joynr.load(testProvisioning).then(function(newJoynr) {
-                    joynr = newJoynr;
-                    IntegrationUtils.initialize(joynr);
-                    ready = true;
-                });
+            joynr.load(testProvisioning).then(function(newJoynr) {
+                joynr = newJoynr;
+                IntegrationUtils.initialize(joynr);
+                done();
+                return null;
             });
-
-            waitsFor(function() {
-                return ready;
-            }, "joynr to be loaded", testProvisioning.ttl);
-
         });
 
-        afterEach(function() {
-            shutdownWebWorkerAndLibJoynr();
+        afterEach(function(done) {
+            shutdownWebWorkerAndLibJoynr().then(function() {
+                done();
+                return null;
+            }).catch(fail);
         });
 
-        it("joynr namespace is available", function() {
+        it("joynr namespace is available", function(done) {
             expect(joynr).toBeDefined();
+            done();
         });
 
-        it("public modules are available", function() {
+        it("public modules are available", function(done) {
             expect(joynr.proxy.PeriodicSubscriptionQos).toBeDefined();
             expect(joynr.proxy.OnChangeWithKeepAliveSubscriptionQos).toBeDefined();
             expect(joynr.proxy.OnChangeSubscriptionQos).toBeDefined();
             expect(joynr.messaging.MessagingQos).toBeDefined();
             expect(joynr.proxy.DiscoveryQos).toBeDefined();
             expect(joynr.types.ArbitrationStrategyCollection).toBeDefined();
+            done();
         });
 
-        it("public namespaces are immutable", function() {
+        it("public namespaces are immutable", function(done) {
             testMutability(joynr, "proxy");
             testMutability(joynr.proxy, "PeriodicSubscriptionQos");
             testMutability(joynr.proxy, "OnChangeWithKeepAliveSubscriptionQos");
@@ -116,9 +101,10 @@ joynrTestRequire("integration/TestLibJoynr", [
             testMutability(joynr.proxy, "DiscoveryQos");
             testMutability(joynr.types, "ProviderQos");
             testMutability(joynr.types, "ArbitrationStrategyCollection");
+            done();
         });
 
-        it("public objects are immutable", function() {
+        it("public objects are immutable", function(done) {
             var libJoynrStarted;
             testMutability(joynr, "start");
             // testMutability(joynr, "shutdown");
@@ -130,71 +116,57 @@ joynrTestRequire("integration/TestLibJoynr", [
             testMutability(joynr.registration, "registerProvider");
             // testMutability(joynr, "proxyBuilder");
             testMutability(joynr.proxyBuilder, "build");
+            done();
         });
-        it("provisioning is still mutable", function() {
+        it("provisioning is still mutable", function(done) {
             testMutability(provisioning, "bounceProxyBaseUrl", true);
+            done();
         });
 
-        it("proxy is immutable", function() {
+        it("proxy is immutable", function(done) {
             var radioProxy;
 
-            runs(function() {
-                require([ "joynr/vehicle/RadioProxy"
-                ], function(RadioProxy) {
-                    IntegrationUtils.initializeWebWorker(
-                            "TestEnd2EndCommProviderWorker",
-                            provisioningSuffix).then(function(newWorkerId) {
-                        workerId = newWorkerId;
-                        return IntegrationUtils.startWebWorker(workerId);
-                    }).then(function() {
-                        return IntegrationUtils.buildProxy(RadioProxy);
-                    }).then(function(newRadioProxy) {
-                        radioProxy = newRadioProxy;
-                    });
+            require([ "joynr/vehicle/RadioProxy"
+            ], function(RadioProxy) {
+                IntegrationUtils.initializeWebWorker(
+                        "TestEnd2EndCommProviderWorker",
+                        provisioningSuffix).then(function(newWorkerId) {
+                    workerId = newWorkerId;
+                    return IntegrationUtils.startWebWorker(workerId);
+                }).then(function() {
+                    return IntegrationUtils.buildProxy(RadioProxy);
+                }).then(function(newRadioProxy) {
+                    radioProxy = newRadioProxy;
+                    testMutability(radioProxy, "isOn");
+                    testMutability(radioProxy.isOn, "get");
+                    testMutability(radioProxy.isOn, "set");
+                    testMutability(radioProxy.isOn, "subscribe");
+                    testMutability(radioProxy.isOn, "unsubscribe");
+
+                    testMutability(radioProxy, "addFavoriteStation");
+
+                    testMutability(radioProxy, "weakSignal");
+                    testMutability(radioProxy.weakSignal, "subscribe");
+                    testMutability(radioProxy.weakSignal, "unsubscribe");
+                    done();
                 });
-            });
-
-            waitsFor(function() {
-                return radioProxy !== undefined;
-            }, "proxy to be resolved", 5000);
-
-            runs(function() {
-                testMutability(radioProxy, "isOn");
-                testMutability(radioProxy.isOn, "get");
-                testMutability(radioProxy.isOn, "set");
-                testMutability(radioProxy.isOn, "subscribe");
-                testMutability(radioProxy.isOn, "unsubscribe");
-
-                testMutability(radioProxy, "addFavoriteStation");
-
-                testMutability(radioProxy, "weakSignal");
-                testMutability(radioProxy.weakSignal, "subscribe");
-                testMutability(radioProxy.weakSignal, "unsubscribe");
             });
         });
 
-        it("provider is immutable", function() {
+        it("provider is immutable", function(done) {
             var radioProvider;
 
-            runs(function() {
-                require([ "joynr/vehicle/RadioProvider"
-                ], function(RadioProvider) {
-                    /* ensure all required datatypes are loaded once the RadioProvider is resolved */
-                    /*jslint nomen: true */
-                    var untypedObject = {
-                        _typeName : "joynr.vehicle.radiotypes.DatatypeForTestLibjoynr",
-                        name : "untypedObject"
-                    };
-                    /*jslint nomen: false */
-                    joynr.util.Util.ensureTypedValues(untypedObject, joynr.typeRegistry);
-                    radioProvider = joynr.providerBuilder.build(RadioProvider, {});
-                });
-            });
-
-            waitsFor(function() {
-                return radioProvider !== undefined;
-            }, "provider is resolved", 1000);
-            runs(function() {
+            require([ "joynr/vehicle/RadioProvider"
+            ], function(RadioProvider) {
+                /* ensure all required datatypes are loaded once the RadioProvider is resolved */
+                /*jslint nomen: true */
+                var untypedObject = {
+                    _typeName : "joynr.vehicle.radiotypes.DatatypeForTestLibjoynr",
+                    name : "untypedObject"
+                };
+                /*jslint nomen: false */
+                joynr.util.Util.ensureTypedValues(untypedObject, joynr.typeRegistry);
+                radioProvider = joynr.providerBuilder.build(RadioProvider, {});
                 testMutability(radioProvider, "isOn");
                 testMutability(radioProvider.isOn, "registerGetter");
                 testMutability(radioProvider.isOn, "registerSetter");
@@ -210,8 +182,8 @@ joynrTestRequire("integration/TestLibJoynr", [
 
                 testMutability(radioProvider, "weakSignal");
                 testMutability(radioProvider.weakSignal, "fire");
+                done();
             });
         });
-
     });
 });

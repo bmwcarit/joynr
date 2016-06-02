@@ -1,4 +1,4 @@
-/*global Worker: true, console: true */
+/*global Worker: true */
 /*jslint es5: true */
 
 /*
@@ -27,14 +27,14 @@ define(
             "joynr/provisioning/provisioning_root",
             "integration/provisioning_end2end_common",
             "joynr/start/settings/defaultInterTabSettings",
-            "JstdConsoleAppender"
+            "global/WaitsFor"
         ],
         function(
             Promise,
             provisioning_root,
             provisioning_end2end,
             defaultInterTabSettings,
-            JstdConsoleAppender) {
+            waitsFor) {
             var IntegrationUtils = {};
             var currentlyRunningWebWorkerCC;
             var workerReady = {}, workerStarted = {}, workerFinished = {}, worker = {}, workerId =
@@ -58,23 +58,6 @@ define(
                 IntegrationUtils.messagingQos = new joynr.messaging.MessagingQos({
                     ttl : provisioning_root.ttl
                 });
-
-                try {
-                    joynr.logging.registerAppenderClass("JSTD", JstdConsoleAppender);
-                    joynr.logging.createAppender({
-                        type : "JSTD",
-                        name : "jstd_appender",
-                        PatternLayout : {
-                            pattern : "[%c] [%p] [%d] %m"
-                        }
-                    });
-                    joynr.logging.addAppenderToLogger("joynr", "jstd_appender");
-                } catch (e) {
-                    // if setting up the log didnt work, not much we can do here:
-                    if (console) {
-                        console.log("setting up JSTD appender failed: " + e);
-                    }
-                }
 
                 var queuedMsgs, id, msg;
                 for (id in queuedLogs) {
@@ -111,7 +94,7 @@ define(
                     };
 
             IntegrationUtils.newWebWorker = function newWebWorker(workerName, onmessage) {
-                var worker = new Worker("/test/test-classes/integration/" + workerName + ".js");
+                var worker = new Worker("/base/test-classes/integration/" + workerName + ".js");
                 worker.onmessage = onmessage;
                 worker.onerror = function(error) {
                     // workaround to show web worker errors: thrown errors do not interfere
@@ -298,12 +281,10 @@ define(
 
             IntegrationUtils.waitALittle = function waitALittle(time) {
                 var start;
-                runs(function() {
-                    start = Date.now();
-                });
+                start = Date.now();
 
                 // wait for worker to be shut down
-                waitsFor(function() {
+                return waitsFor(function() {
                     return Date.now() - start > time;
                 }, time + " ms to elapse", time);
             };

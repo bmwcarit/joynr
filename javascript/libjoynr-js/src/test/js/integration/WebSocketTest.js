@@ -1,10 +1,10 @@
-/*global joynrTestRequire: true */
+/*global fail: true */
 /*jslint es5: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
  * #L%
  */
 
-joynrTestRequire("integration/TestWebSocket", [
+define([
     "joynr",
     "joynr/vehicle/RadioProxy",
     "joynr/vehicle/RadioProvider",
@@ -28,12 +28,7 @@ joynrTestRequire("integration/TestWebSocket", [
     "integration/IntegrationUtils"
 ], function(joynr, RadioProxy, RadioProvider, provisioning, IntegrationUtils) {
     describe("libjoynr-js.integration.websocket", function() {
-        var radioProxy, runtime, discoveryTimeoutMs;
-
-        beforeEach(function() {
-            var provisioningSuffix = "-" + Date.now(), libJoynrStarted = false;
-            discoveryTimeoutMs = 4000;
-
+        beforeEach(function(done) {
             provisioning.ccAddress = {
                 protocol : "ws",
                 host : "localhost",
@@ -41,97 +36,45 @@ joynrTestRequire("integration/TestWebSocket", [
                 path : "/"
             };
 
-            runs(function() {
-                joynr.load(provisioning).then(function(loadedJoynr){
-                    IntegrationUtils.initialize(loadedJoynr);
-                    IntegrationUtils.messagingQos.ttl = provisioning.ttl = 30000;
-                    libJoynrStarted = true;
-                }).catch(function(error){
-                    throw error;
-                });
+            joynr.load(provisioning).then(function(loadedJoynr){
+                IntegrationUtils.initialize(loadedJoynr);
+                IntegrationUtils.messagingQos.ttl = provisioning.ttl = 30000;
+                done();
+            }).catch(function(error){
+                throw error;
             });
-
-            waitsFor(function() {
-                return libJoynrStarted;
-            }, "libjoynr has to be started ", provisioning.ttl);
-
         });
 
-        function shutdownLibJoynr() {
-            var shutDownLibJoynr;
-
-            runs(function() {
-                IntegrationUtils.shutdownLibjoynr().then(function() {
-                    shutDownLibJoynr = true;
-                });
+        afterEach(function(done) {
+            IntegrationUtils.shutdownLibjoynr().then(function() {
+                done();
+                return null;
+            }).catch(function(error) {
+                return null;
             });
-
-            waitsFor(function() {
-                return shutDownLibJoynr;
-            }, "Libjoynr needs to be shut down", 5000);
-        }
-
-        afterEach(function() {
-            shutdownLibJoynr();
         });
 
-        it("communicates with the websocket server", function() {
-            var promise = null;
-            radioProxy = undefined;
-            runs(function() {
-                IntegrationUtils.buildProxy(RadioProxy).then(function(newRadioProxy) {
-                    radioProxy = newRadioProxy;
-                });
-            });
-
-            waitsFor(function() {
-                return radioProxy !== undefined;
-            }, "proxy to be resolved", provisioning.ttl);
-
-            runs(function() {
-                promise = radioProxy.isOn.set({
+        it("communicates with the websocket server", function(done) {
+            var radioProxy;
+            IntegrationUtils.buildProxy(RadioProxy).then(function(newRadioProxy) {
+                radioProxy = newRadioProxy;
+                return radioProxy.isOn.set({
                     value : true
                 });
-            });
-
-            waitsFor(function() {
-                return promise.state() !== "pending";
-            }, "attribute is set to true", provisioning.ttl);
-
-            runs(function() {
-                promise = radioProxy.isOn.get().then(function(value) {
-                    expect(value).toBe(true);
-                }).catch(IntegrationUtils.outputPromiseError);
-            });
-
-            waitsFor(function() {
-                return promise.state() !== "pending";
-            }, "attribute is received", provisioning.ttl);
-
-            runs(function() {
-                promise = radioProxy.isOn.set({
+            }).then(function() {
+                return radioProxy.isOn.get();
+            }).then(function(value) {
+                expect(value).toBe(true);
+                return radioProxy.isOn.set({
                     value : false
                 });
-            });
-
-            waitsFor(function() {
-                return promise.state() !== "pending";
-            }, "attribute is set", provisioning.ttl);
-
-            runs(function() {
-                promise = radioProxy.isOn.get().then(function(value) {
-                    expect(value).toBe(false);
-                }).catch(IntegrationUtils.outputPromiseError);
-            });
-
-            waitsFor(function() {
-                return promise.state() !== "pending";
-            }, "attribute is received", provisioning.ttl);
-
-            runs(function() {
-                expect(promise.state()).toEqual("resolved");
-            });
-
+            }).then(function() {
+                radioProxy.isOn.get();
+            }).then(function(value) {
+                expect(value).toBe(false);
+                done();
+                return null;
+            }).catch(fail);
         });
     });
 });

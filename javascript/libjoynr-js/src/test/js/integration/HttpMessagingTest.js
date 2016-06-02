@@ -1,9 +1,10 @@
-/*global joynrTestRequire: true */
+/*jslint es5: true */
+/*global fail: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@
  * #L%
  */
 
-joynrTestRequire("integration/TestHttpMessaging", [
+define([
     "global/Promise",
     "joynr/util/UtilInternal",
     "joynr/messaging/CommunicationModule",
@@ -29,7 +30,8 @@ joynrTestRequire("integration/TestHttpMessaging", [
     "joynr/system/RoutingTypes/ChannelAddress",
     "joynr/system/LoggerFactory",
     "global/LocalStorage",
-    "joynr/provisioning/provisioning_cc"
+    "joynr/provisioning/provisioning_cc",
+    "global/WaitsFor"
 ], function(
         Promise,
         Util,
@@ -40,12 +42,13 @@ joynrTestRequire("integration/TestHttpMessaging", [
         ChannelAddress,
         LoggerFactory,
         LocalStorage,
-        provisioning) {
+        provisioning,
+        waitsFor) {
     var log = LoggerFactory.getLogger("joynr.messaging.TestHttpMessaging");
     var localStorage = new LocalStorage();
 
     describe("libjoynr-js.joynr.messaging.TestHttpMessaging", function() {
-        it("sends and receives messages", function() {
+        it("sends and receives messages", function(done) {
             var channelId = "js_testOpenChannelSendMessage" + Date.now();
             var url = provisioning.bounceProxyUrl + "channels/" + channelId + "/";
             var channelAddress = new ChannelAddress({
@@ -65,25 +68,13 @@ joynrTestRequire("integration/TestHttpMessaging", [
             /*
              * Set up a JoynrMessage to send
              */
+            var receivedMessages = 0;
             var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
             joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, 9360686108031);
             joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID, "me");
             joynrMessage.payload = "hello";
 
-            var fulfilledSpy = jasmine.createSpy("fulfilledSpy");
-
-            runs(function() {
-                mr.create(channelId).then(fulfilledSpy);
-            });
-
-            waitsFor(function() {
-                return fulfilledSpy.callCount > 0;
-            }, "channel to be created", provisioning.ttl);
-
-            var receivedMessages = 0;
-            runs(function() {
-                expect(fulfilledSpy).toHaveBeenCalled();
-
+            mr.create(channelId).then(function() {
                 mr.start(function() {
                     ++receivedMessages;
                 });
@@ -98,37 +89,19 @@ joynrTestRequire("integration/TestHttpMessaging", [
                     msgPromises.push(messageSender.send(joynrMessage, channelAddress));
                 }
 
-                fulfilledSpy.reset();
-                Promise.all(msgPromises).then(fulfilledSpy);
-            });
-
-            waitsFor(function() {
-                return fulfilledSpy.callCount > 0;
-            }, "all messages to be sent", provisioning.ttl);
-
-            waitsFor(function() {
-                return receivedMessages === numberOfMessages;
-            }, "all messages are received", provisioning.ttl);
-
-            runs(function() {
-                expect(fulfilledSpy).toHaveBeenCalled();
+                return Promise.all(msgPromises);
+            }).then(function() {
+                return waitsFor(function() {
+                    return receivedMessages === numberOfMessages;
+                }, "all messages are received", provisioning.ttl);
+            }).then(function() {
                 expect(receivedMessages).toBe(numberOfMessages);
-
-                fulfilledSpy.reset();
-
-                mr.clear().then(fulfilledSpy);
-            });
-
-            waitsFor(function() {
-                return fulfilledSpy.callCount > 0;
-            }, "channel to be removed", provisioning.ttl);
-
-            runs(function() {
-                expect(fulfilledSpy).toHaveBeenCalled();
-
+                return mr.clear();
+            }).then(function() {
                 mr.stop();
-            });
-        });
+                done();
+                return null;
+            }).catch(fail);
+        }, provisioning.ttl * 5);
     });
-
 });
