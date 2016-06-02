@@ -180,8 +180,8 @@ public abstract class IltConsumerTest {
         consumerRuntime = getRuntime(joynrConfig);
 
         DiscoveryQos discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryTimeout(10000);
-        discoveryQos.setCacheMaxAge(Long.MAX_VALUE);
+        discoveryQos.setDiscoveryTimeoutMs(10000);
+        discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
 
         ProxyBuilder<TestInterfaceProxy> proxyBuilder = consumerRuntime.getProxyBuilder(providerDomain,

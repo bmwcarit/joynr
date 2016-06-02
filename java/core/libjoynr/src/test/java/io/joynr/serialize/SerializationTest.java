@@ -3,7 +3,7 @@ package io.joynr.serialize;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -322,11 +322,11 @@ public class SerializationTest {
 
     @Test
     public void serializeAndDeserializeSubscriptionQosTest() throws Exception {
-        OnChangeWithKeepAliveSubscriptionQos qos = new OnChangeWithKeepAliveSubscriptionQos(1000L,
-                                                                                            30000L,
-                                                                                            System.currentTimeMillis() + 60000,
-                                                                                            0L,
-                                                                                            5000);
+        OnChangeWithKeepAliveSubscriptionQos qos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(1000L)
+                                                                                             .setMaxIntervalMs(30000L)
+                                                                                             .setValidityMs(60000)
+                                                                                             .setAlertAfterIntervalMs(0L)
+                                                                                             .setPublicationTtlMs(5000);
         String valueAsString = objectMapper.writeValueAsString(qos);
         System.out.println(valueAsString);
 
@@ -449,7 +449,9 @@ public class SerializationTest {
         String subscriptionId = "1234";
         String subscribedToName = "myAttribute";
         long expiryDate = System.currentTimeMillis() + 60000;
-        SubscriptionQos qos = new OnChangeSubscriptionQos(0, expiryDate, 1000);
+        SubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(0)
+                                                           .setExpiryDateMs(expiryDate)
+                                                           .setPublicationTtlMs(1000);
         SubscriptionRequest request = new SubscriptionRequest(subscriptionId, subscribedToName, qos);
 
         String writeValueAsString = objectMapper.writeValueAsString(request);
@@ -482,7 +484,9 @@ public class SerializationTest {
         testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters filterParameters = new testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters();
         filterParameters.setCountry("Germany");
         filterParameters.setStartTime("4:00");
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(0, System.currentTimeMillis() + 60000, 1000);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(0)
+                                                                   .setValidityMs(60000)
+                                                                   .setPublicationTtlMs(1000);
         BroadcastSubscriptionRequest broadcastSubscription = new BroadcastSubscriptionRequest(subscriptionId,
                                                                                               subscribedToName,
                                                                                               filterParameters,

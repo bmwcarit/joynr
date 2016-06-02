@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,10 +98,10 @@ public class SubscriptionTimersTest {
                                                     JsonMappingException, IOException {
         LOG.debug("Starting missedPublicationRunnableIsStopped test");
 
-        long expiryDate = System.currentTimeMillis() // the publication should start now
-                + subscriptionLength;
-
-        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos().setPeriodMs(period)
+                                                                   .setValidityMs(subscriptionLength)
+                                                                   .setAlertAfterIntervalMs(alertAfterInterval)
+                                                                   .setPublicationTtlMs(1000);
 
         // register a subscription
         AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
@@ -136,16 +136,13 @@ public class SubscriptionTimersTest {
         // int numberOfMissedPublications = 5;
         int numberOfSuccessfulPublications = numberOfPublications - numberOfMissedPublications;
 
-        long expiryDate = System.currentTimeMillis() // the publication should start now
-                + period * numberOfPublications // usual length of the subsciption
+        long validityMs = period * numberOfPublications // usual length of the subscription
                 + (alertAfterInterval - period); // plus time for the last possible alertAfterInterval to arrive
 
-        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
-        qos.setPublicationTtlMs(period);
-        qos.setExpiryDateMs(expiryDate);
-        // alert 10 ms after a publication should have been received
-        qos.setAlertAfterIntervalMs(alertAfterInterval);
-        qos.setPublicationTtlMs(1000);
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos().setPeriodMs(period)
+                                                                   .setValidityMs(validityMs)
+                                                                   .setAlertAfterIntervalMs(alertAfterInterval)
+                                                                   .setPublicationTtlMs(1000);
 
         // register a subscription
         AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,

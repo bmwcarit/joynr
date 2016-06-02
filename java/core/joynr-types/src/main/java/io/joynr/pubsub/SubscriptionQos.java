@@ -71,8 +71,8 @@ public abstract class SubscriptionQos implements JoynrType {
      *
      * @deprecated This constructor will be deleted by 2017-01-01.
      * Use the fluent interface instead:
-     *  new SubscriptionQos().setExpiryDate() or
-     *  new SubscriptionQos().setValidity()
+     *  new SubscriptionQos().setExpiryDateMs() or
+     *  new SubscriptionQos().setValidityMs()
      * @param expiryDateMs
      *            The expiryDate is the end date of the subscription. This value
      *            is provided in milliseconds (since 1970-01-01T00:00:00.000).
@@ -90,8 +90,8 @@ public abstract class SubscriptionQos implements JoynrType {
      * publication ttl (full parameter set).
      *
      * @deprecated Use the fluent interface:
-     *  new SubscriptionQos().setExpiryDate() or
-     *  new SubscriptionQos().setValidity()
+     *  new SubscriptionQos().setExpiryDateMs() or
+     *  new SubscriptionQos().setValidityMs()
      *
      * @param expiryDateMs
      *            the end date of the subscription until which publications will
