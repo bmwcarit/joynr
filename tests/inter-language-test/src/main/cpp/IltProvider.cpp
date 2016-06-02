@@ -189,10 +189,7 @@ void IltProvider::methodWithMultipleArrayParameters(
     std::vector<joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>
             structWithStringArrayArrayOut;
 
-    for (auto it = int8ArrayArg.cbegin(); it != int8ArrayArg.cend(); it++) {
-        // TODO: Beware, input could be negative, maybe increase by +128 to make it positive?
-        uInt64ArrayOut.push_back(*it);
-    }
+    uInt64ArrayOut = IltUtil::convertInt8ArrayToUInt64Array(int8ArrayArg);
 
     structWithStringArrayArrayOut = IltUtil::createStructWithStringArrayArray();
 

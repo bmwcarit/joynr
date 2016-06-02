@@ -18,7 +18,7 @@
  */
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 #include <unistd.h>
 #include <memory>
 
