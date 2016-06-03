@@ -12,6 +12,8 @@ include(SetCppStandard)
 include(Sanitizers)
 include(AddClangFormat)
 
+include(GNUInstallDirs)
+
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
@@ -62,6 +64,11 @@ file(GLOB_RECURSE PERFORMANCE_GENERATED_SOURCES
 add_library(performance-generated SHARED
     ${PERFORMANCE_GENERATED_HEADERS}
     ${PERFORMANCE_GENERATED_SOURCES}
+)
+
+install(
+    TARGETS performance-generated
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 target_link_libraries(performance-generated
