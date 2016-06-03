@@ -98,7 +98,7 @@ function prechecks {
 		exit 1
 	fi
 
-	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-consumer-cc" ]
+	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-consumer-ws" ]
 	then
 		echo 'C++ environment not built'
 		exit 1
