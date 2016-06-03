@@ -64,6 +64,7 @@ joynrTestRequire(
                         var providerQos;
                         var address;
                         var checkImplementation;
+                        var TestProvider;
 
                         beforeEach(function() {
 
@@ -78,11 +79,15 @@ joynrTestRequire(
                                 "registerOnChangedProvider"
                             ]);
 
-                            provider = {
-                                id : uuid(),
-                                interfaceName : "myInterfaceName",
-                                checkImplementation : checkImplementation
+                            TestProvider = function() {
+                                this.id = uuid();
+                                this.interfaceName = "myInterfaceName";
+                                this.checkImplementation = checkImplementation;
                             };
+
+                            TestProvider.MAJOR_VERSION = 47;
+                            TestProvider.MINOR_VERSION = 11;
+                            provider = new TestProvider();
 
                             spyOn(provider, "checkImplementation").andCallThrough();
 
@@ -255,6 +260,8 @@ joynrTestRequire(
                             expect(actualDiscoveryEntry.qos).toEqual(providerQos);
                             expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeLessThan(lowerBound);
                             expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeGreaterThan(upperBound);
+                            expect(actualDiscoveryEntry.providerVersion.majorVersion).toEqual(provider.constructor.MAJOR_VERSION);
+                            expect(actualDiscoveryEntry.providerVersion.minorVersion).toEqual(provider.constructor.MINOR_VERSION);
                         });
 
                         it("registers logging context with the ContextManager", function() {
