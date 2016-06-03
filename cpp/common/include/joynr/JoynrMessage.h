@@ -129,6 +129,28 @@ public:
     void setPayload(std::string&& payload);
 
     /**
+     * @brief determines if a custom header with the given key is present
+     * in the headers.
+     * @return true if a custom header value is present for the key, otherwise false.
+     */
+    bool containsCustomHeader(const std::string& key) const;
+
+    /**
+     * @brief JoynrMessage::getCustomHeader retrieves the value for a custom
+     * header previously added with JoynrMessage::setCustomHeader.
+     * @param key the key of the custom header value to get.
+     */
+    std::string getCustomHeader(const std::string& key) const;
+
+    /**
+     * @brief JoynrMessage::setCustomHeader allows setting arbitrary header values for the
+     * message. The header key will be prefixed with 'custom-' when being set.
+     * @param key the key for the header to set.
+     * @param value the value to set for the header.
+     */
+    void setCustomHeader(const std::string& key, const std::string& value);
+
+    /**
      * @brief containsHeaderContentType Tests whether the "content type" header of the message is
      * set or not.
      * @return true, if the "content type" header is set; false, otherwise.
@@ -310,6 +332,13 @@ public:
     void setHeaderReplyAddress(const std::string& replyAddress);
 
 private:
+    /**
+     * @brief CUSTOM_HEADER_PREFIX The prefix used when adding or retrieving custom headers
+     * from the headers map.
+     * @return the prefix for the custom header entries.
+     */
+    static const std::string& CUSTOM_HEADER_PREFIX();
+
     /**
      * @brief containsHeader checks whether key is defined in the header map
      * @param key the header name key to lookup

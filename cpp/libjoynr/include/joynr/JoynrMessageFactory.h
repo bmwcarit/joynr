@@ -96,7 +96,7 @@ private:
     void initMsg(JoynrMessage& msg,
                  const std::string& senderParticipantId,
                  const std::string& receiverParticipantId,
-                 const std::int64_t ttl,
+                 const MessagingQos& qos,
                  const std::string& payload) const;
 
     void initReplyMsg(JoynrMessage& msg,
