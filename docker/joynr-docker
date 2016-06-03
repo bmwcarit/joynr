@@ -58,6 +58,9 @@ function build
     docker tag -f ${repository}joynr-cpp${version} ${repository}joynr-cpp:latest
     docker tag -f ${repository}joynr-cpp${version} joynr-cpp:latest
 
+    docker build -t ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base/
+    docker tag -f ${repository}joynr-runtime-environment-base${version} ${repository}joynr-runtime-environment-base:latest
+    docker tag -f ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base:latest
 }
 
 function pull
@@ -78,6 +81,9 @@ function pull
 
     docker pull ${repository}joynr-cpp${version}
     docker tag -f ${repository}joynr-cpp${version} joynr-cpp
+
+    docker pull ${repository}joynr-runtime-environment-base${version}
+    docker tag -f ${repository}joynr-runtime-environment-base${version} joynr-runtime-environment-base
 }
 
 function push
@@ -89,6 +95,7 @@ function push
     docker push ${repository}joynr-android${version}
     docker push ${repository}joynr-javascript${version}
     docker push ${repository}joynr-cpp${version}
+    docker push ${repository}joynr-runtime-environment-base${version}
 }
 
 
