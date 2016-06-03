@@ -39,7 +39,7 @@ joynrTestRequire(
                     "libjoynr-js.joynr.messaging.ChannelMessagingSender",
                     function() {
                         var communicationModuleSpy, channelMessageSender;
-                        var channelId, channelUrl, channelUrlInformation, joynrMessage;
+                        var channelAddress, channelUrlInformation, joynrMessage;
                         var resendDelay_ms;
 
                         function outputPromiseError(error) {
@@ -48,8 +48,10 @@ joynrTestRequire(
 
                         beforeEach(function() {
                             resendDelay_ms = 500;
-                            channelId = "myChannel" + Date.now();
-                            channelUrl = provisioning.bounceProxyUrl + "/channels/" + channelId;
+                            channelAddress = new ChannelAddress({
+                                messagingEndpointUrl : "http://testurl.com",
+                                channelId : "myChannel" + Date.now()
+                            });
                             var channelQos = {
                                 resendDelay_ms : resendDelay_ms
                             };
@@ -105,7 +107,7 @@ joynrTestRequire(
                                         joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = Date.now() + relativeExpiryDate;
                                         channelMessageSender.start();
                                         timeStamp = Date.now();
-                                        channelMessageSender.send(joynrMessage, new ChannelAddress({channelId: channelId, messagingEndpointUrl: "http://testurl"})).then(
+                                        channelMessageSender.send(joynrMessage, channelAddress).then(
                                                 spy.onFulfilled).catch(spy.onRejected);
                                     });
 
@@ -127,36 +129,36 @@ joynrTestRequire(
                                 });
 
                         it(
-                                "if channelMessageSender.send fails after expiryDate, if ChannelMessagingSender is not started",
+                                "channelMessageSender.send fails after expiryDate, if ChannelMessagingSender is not started",
                                 function() {
-                                    var spy = jasmine.createSpyObj("spy", [
-                                        "onFulfilled",
-                                        "onRejected"
-                                    ]);
-                                    var relativeExpiryDate = resendDelay_ms;
+                                        var spy = jasmine.createSpyObj("spy", [
+                                                                               "onFulfilled",
+                                                                               "onRejected"
+                                                                           ]);
+                                                                           var relativeExpiryDate = resendDelay_ms;
 
-                                    runs(function() {
-                                        joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = Date.now() + relativeExpiryDate;
-                                        channelMessageSender.send(joynrMessage, channelId).then(
-                                                spy.onFulfilled).catch(spy.onRejected);
-                                    });
+                                                                           runs(function() {
+                                                                               joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = Date.now() + relativeExpiryDate;
+                                                                               channelMessageSender.send(joynrMessage, channelAddress).then(
+                                                                                       spy.onFulfilled).catch(spy.onRejected);
+                                                                           });
 
-                                    waitsFor(function() {
-                                        return spy.onFulfilled.callCount > 0 || spy.onRejected.callCount > 0;
-                                    }, "message send to fail", relativeExpiryDate * 5);
+                                                                           waitsFor(function() {
+                                                                               return spy.onFulfilled.callCount > 0 || spy.onRejected.callCount > 0;
+                                                                           }, "message send to fail", relativeExpiryDate * 5);
 
-                                    runs(function() {
-                                        expect(spy.onFulfilled).not.toHaveBeenCalled();
-                                        expect(spy.onRejected).toHaveBeenCalled();
-                                        expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] < Date.now()).toEqual(true);
-                                        expect(
-                                                Object.prototype.toString
-                                                        .call(spy.onRejected.mostRecentCall.args[0]) === "[object Error]")
-                                                .toBeTruthy();
+                                                                           runs(function() {
+                                                                               expect(spy.onFulfilled).not.toHaveBeenCalled();
+                                                                               expect(spy.onRejected).toHaveBeenCalled();
+                                                                               expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] < Date.now()).toEqual(true);
+                                                                               expect(
+                                                                                       Object.prototype.toString
+                                                                                               .call(spy.onRejected.mostRecentCall.args[0]) === "[object Error]")
+                                                                                       .toBeTruthy();
 
-                                        spy.onRejected.reset();
-                                        expect(communicationModuleSpy.createXMLHTTPRequest).not.toHaveBeenCalled();
-                                    });
+                                                                               spy.onRejected.reset();
+                                                                               expect(communicationModuleSpy.createXMLHTTPRequest).not.toHaveBeenCalled();
+                                                                           });
                                 });
 
                         it(
@@ -169,7 +171,7 @@ joynrTestRequire(
                                     runs(function() {
                                         communicationModuleSpy.createXMLHTTPRequest.andReturn(Promise.resolve());
                                         channelMessageSender.start();
-                                        channelMessageSender.send(joynrMessage, channelId).then(
+                                        channelMessageSender.send(joynrMessage, channelAddress).then(
                                                 spy.onFulfilled).catch(spy.onRejected);
                                     });
 

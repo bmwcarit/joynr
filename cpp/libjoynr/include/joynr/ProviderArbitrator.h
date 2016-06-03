@@ -29,6 +29,7 @@
 
 #include "joynr/Semaphore.h"
 #include <string>
+#include <vector>
 
 namespace joynr
 {
@@ -93,7 +94,7 @@ protected:
     joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
-    std::string domain;
+    std::vector<std::string> domains;
     std::string interfaceName;
 
 private:

@@ -47,7 +47,7 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
         var started = false;
 
         var getRelativeExpiryDate = function getRelativeExpiryDate(joynrMessage) {
-            return parseInt(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE], 10) - Date.now();
+            return parseInt(joynrMessage.expiryDate, 10) - Date.now();
         };
 
         var checkIfExpired = function(queuedMessage){
@@ -83,7 +83,7 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
          *            queuedMessage to be sent
          */
         function postMessage(queuedMessage) {
-            var timeout = queuedMessage.expiryDate - Date.now();
+            var timeout = getRelativeExpiryDate(queuedMessage);
 
             // XMLHttpRequest uses a timeout of 0 to mean that there is no timeout.
             // ttl = 0 means the opposite (is already expired)
@@ -155,6 +155,29 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
         }
 
         /**
+         * This is a function introduced to ensure the expiry timer is correctly set. In sporadic cases,
+         * it might happen that the expiryTimer is triggered to early, thus preventing the joynr message
+         * from being expired at that point in time. Thus, this helper method ensures that for this
+         * sporadic case, yet another expiryTimer is created, which ensures the queued message is really
+         * expired.
+         *
+         * @name ChannelMessagingSender#createExpiryTimer
+         * @function
+         * @private
+         */
+        function createExpiryTimer(queuedMessage) {
+            if (queuedMessage.expiryTimer) {
+                LongTimer.clearTimeout(queuedMessage.expiryTimer);
+                queuedMessage.expiryTimer = undefined;
+            }
+            queuedMessage.expiryTimer = LongTimer.setTimeout(function(){
+                if (!checkIfExpired(queuedMessage)) {
+                    createExpiryTimer(queuedMessage);
+                }
+            }, Math.max(0, getRelativeExpiryDate(queuedMessage.message)));
+        }
+
+        /**
          * Sends a JoynrMessage to the given channel Id.
          *
          * @name ChannelMessagingSender#send
@@ -180,10 +203,9 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
                                     resolve : resolve,
                                     reject : reject,
                                     pending : true,
-                                    expiryTimer : LongTimer.setTimeout(function(){
-                                        checkIfExpired(queuedMessage);
-                                    }, getRelativeExpiryDate(joynrMessage))
+                                    expiryTimer : undefined
                                 };
+                                createExpiryTimer(queuedMessage);
                                 messageQueue.push(queuedMessage);
                                 LongTimer.setTimeout(notify, 0);
                             });

@@ -181,7 +181,8 @@ define("joynr/proxy/ProxyBuilder", [
                     return Promise.all(datatypePromises).then(
                             function() {
                                 return arbitrator.startArbitration({
-                                    domain : proxy.domain,
+                                    domains : [ proxy.domain
+                                    ],
                                     interfaceName : proxy.interfaceName,
                                     discoveryQos : settings.discoveryQos,
                                     staticArbitration : settings.staticArbitration

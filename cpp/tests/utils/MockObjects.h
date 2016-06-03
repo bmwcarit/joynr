@@ -140,9 +140,9 @@ public:
     MOCK_METHOD1(add, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilitiesInformationList));
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
-    MOCK_METHOD3(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::string& domain, const std::string& interfaceName, const std::int64_t messagingTtl));
+    MOCK_METHOD3(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::vector<std::string>& domain, const std::string& interfaceName, const std::int64_t messagingTtl));
     MOCK_METHOD5(lookup, void(
-                     const std::string& domain,
+                     const std::vector<std::string>& domain,
                      const std::string& interfaceName,
                      const std::int64_t messagingTtl,
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
@@ -478,7 +478,7 @@ public:
             lookup,
             void(
                 std::vector<joynr::types::DiscoveryEntry> & result,
-                const std::string& domain,
+                const std::vector<std::string>& domain,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos
             )
@@ -509,7 +509,7 @@ public:
     MOCK_METHOD5(
             lookupAsync,
             std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntry>>>(
-                const std::string& domain,
+                const std::vector<std::string>& domain,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos,
                 std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)>

@@ -20,10 +20,12 @@ package io.joynr.arbitration;
  */
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY;
 
-import io.joynr.exceptions.DiscoveryException;
+import java.util.Set;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import io.joynr.exceptions.DiscoveryException;
 import joynr.system.DiscoveryAsync;
 
 public final class ArbitratorFactory {
@@ -39,8 +41,8 @@ public final class ArbitratorFactory {
     /**
      * Creates an arbitrator defined by the arbitrationStrategy set in the discoveryQos.
      *
-     * @param domain
-     *            Domain of the provider.
+     * @param domains
+     *            Set of domains of the provider.
      * @param interfaceName
      *            Provided interface.
      * @param discoveryQos
@@ -50,45 +52,35 @@ public final class ArbitratorFactory {
      * @return the created Arbitrator object
      * @throws DiscoveryException if arbitration strategy is unknown
      */
-    public static Arbitrator create(final String domain,
+    public static Arbitrator create(final Set<String> domains,
                                     final String interfaceName,
                                     final DiscoveryQos discoveryQos,
                                     DiscoveryAsync localDiscoveryAggregator) throws DiscoveryException {
 
+        ArbitrationStrategyFunction arbitrationStrategyFunction;
         switch (discoveryQos.getArbitrationStrategy()) {
         case FixedChannel:
-            return new Arbitrator(domain,
-                                  interfaceName,
-                                  discoveryQos,
-                                  localDiscoveryAggregator,
-                                  minimumArbitrationRetryDelay,
-                                  new FixedParticipantArbitrationStrategyFunction());
+            arbitrationStrategyFunction = new FixedParticipantArbitrationStrategyFunction();
+            break;
         case Keyword:
-            return new Arbitrator(domain,
-                                  interfaceName,
-                                  discoveryQos,
-                                  localDiscoveryAggregator,
-                                  minimumArbitrationRetryDelay,
-                                  new KeywordArbitrationStrategyFunction());
+            arbitrationStrategyFunction = new KeywordArbitrationStrategyFunction();
+            break;
         case HighestPriority:
-            return new Arbitrator(domain,
-                                  interfaceName,
-                                  discoveryQos,
-                                  localDiscoveryAggregator,
-                                  minimumArbitrationRetryDelay,
-                                  new HighestPriorityArbitrationStrategyFunction());
+            arbitrationStrategyFunction = new HighestPriorityArbitrationStrategyFunction();
+            break;
         case Custom:
-            return new Arbitrator(domain,
-                                  interfaceName,
-                                  discoveryQos,
-                                  localDiscoveryAggregator,
-                                  minimumArbitrationRetryDelay,
-                                  discoveryQos.getArbitrationStrategyFunction());
-
+            arbitrationStrategyFunction = discoveryQos.getArbitrationStrategyFunction();
+            break;
         default:
-            throw new DiscoveryException("Arbitration failed: domain: " + domain + " interface: " + interfaceName
+            throw new DiscoveryException("Arbitration failed: domain: " + domains + " interface: " + interfaceName
                     + " qos: " + discoveryQos + ": unknown arbitration strategy or strategy not set!");
         }
-
+        return new Arbitrator(domains,
+                              interfaceName,
+                              discoveryQos,
+                              localDiscoveryAggregator,
+                              minimumArbitrationRetryDelay,
+                              arbitrationStrategyFunction);
     }
+
 }

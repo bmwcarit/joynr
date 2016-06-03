@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionTimersTest {
@@ -108,7 +109,9 @@ public class SubscriptionTimersTest {
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
                                                                                             null);
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, subscriptionRequest);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId,
+                                                          Sets.newHashSet(toParticipantId),
+                                                          subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
         Thread.sleep(subscriptionLength);
         verify(attributeSubscriptionCallback, times(numberOfPublications)).onError(new PublicationMissedException(subscriptionId));
@@ -150,7 +153,9 @@ public class SubscriptionTimersTest {
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
                                                                                             null);
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, subscriptionRequest);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId,
+                                                          Sets.newHashSet(toParticipantId),
+                                                          subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
         boolean lastPublicationIsMissedPublication = false;

@@ -570,7 +570,7 @@ define(
                                                         opArgs.discoveryQos.discoveryScope = DiscoveryScope[opArgs.discoveryQos.discoveryScope];
                                                     }
                                                     return capabilityDiscovery.lookup(
-                                                            opArgs.domain,
+                                                            opArgs.domains,
                                                             opArgs.interfaceName,
                                                             opArgs.discoveryQos).then(function(caps){
                                                                 return {

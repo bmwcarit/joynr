@@ -27,6 +27,17 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+import java.util.Set;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
@@ -37,9 +48,6 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
-
-import java.lang.reflect.Method;
-
 import joynr.OnChangeSubscriptionQos;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
@@ -51,13 +59,6 @@ import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import net.sf.ehcache.CacheManager;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalDomainAccessControllerTest {
@@ -86,6 +87,7 @@ public class LocalDomainAccessControllerTest {
     @Mock
     private Dispatcher dispatcher;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setup() {
         cacheManager = CacheManager.create();
@@ -93,7 +95,7 @@ public class LocalDomainAccessControllerTest {
                                                                        new DefaultDomainAccessControlProvisioning());
 
         String accessControlDomain = "accessControlDomain";
-        when(proxyInvocationHandlerFactoryMock.create(any(String.class),
+        when(proxyInvocationHandlerFactoryMock.create(any(Set.class),
                                                       any(String.class),
                                                       any(String.class),
                                                       any(DiscoveryQos.class),

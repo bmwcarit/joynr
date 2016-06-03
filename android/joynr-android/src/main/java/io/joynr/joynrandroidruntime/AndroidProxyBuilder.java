@@ -25,6 +25,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
 
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -35,7 +36,7 @@ import android.util.Log;
 public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> implements ProxyBuilder<T> {
 
     private JoynrRuntime runtime;
-    private String providerDomain;
+    private Set<String> providerDomains;
     private MessagingQos messagingQos;
     private DiscoveryQos discoveryQos;
     private UILogger uiLogger;
@@ -46,13 +47,13 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
     private InitRuntimeTask runtimeInitTask;
 
     public AndroidProxyBuilder(InitRuntimeTask runtimeInitTask,
-                               String providerDomain,
+                               Set<String> domains,
                                Class<T> proxyInterface,
                                UILogger uiLogger) {
         super();
         this.runtimeInitTask = runtimeInitTask;
 
-        this.providerDomain = providerDomain;
+        this.providerDomains = domains;
         this.proxyInterface = proxyInterface;
         this.uiLogger = uiLogger;
     }
@@ -73,7 +74,7 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
 
     protected T buildProxy() throws InterruptedException, ExecutionException, TimeoutException {
         this.runtime = runtimeInitTask.get(discoveryQos.getDiscoveryTimeoutMs(), TimeUnit.MILLISECONDS);
-        builder = runtime.getProxyBuilder(providerDomain, proxyInterface);
+        builder = runtime.getProxyBuilder(providerDomains, proxyInterface);
         if (participantId != null) {
             builder.setParticipantId(participantId);
         }

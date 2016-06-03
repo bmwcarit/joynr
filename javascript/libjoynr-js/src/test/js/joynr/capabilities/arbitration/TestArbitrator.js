@@ -111,7 +111,7 @@ joynrTestRequire(
                             });
 
                             staticArbitrationSettings = {
-                                domain : domain,
+                                domains : [domain],
                                 interfaceName : interfaceName,
                                 discoveryQos : discoveryQos,
                                 staticArbitration : true
@@ -177,7 +177,7 @@ joynrTestRequire(
                             runs(function() {
                                 // start arbitration
                                 arbitrator.startArbitration({
-                                    domain : domain,
+                                    domains : [domain],
                                     interfaceName : interfaceName,
                                     discoveryQos : discoveryQos
                                 }).then(function() {
@@ -197,7 +197,7 @@ joynrTestRequire(
                                  * Thus, two discoveryScope objects cannot be compared, as during deep copy
                                  * complex types are created as pure objects
                                  */
-                                expect(capDiscoverySpy.lookup.mostRecentCall.args[0]).toBe(domain);
+                                expect(capDiscoverySpy.lookup.mostRecentCall.args[0]).toEqual([domain]);
                                 expect(capDiscoverySpy.lookup.mostRecentCall.args[1]).toBe(interfaceName);
                                 expect(capDiscoverySpy.lookup.mostRecentCall.args[2].cacheMaxAge).toBe(discoveryQos.cacheMaxAgeMs);
                                 expect(capDiscoverySpy.lookup.mostRecentCall.args[2].discoveryScope.name).toBe(discoveryQos.discoveryScope.name);
@@ -221,7 +221,7 @@ joynrTestRequire(
 
                             runs(function() {
                                 arbitrator.startArbitration({
-                                    domain : domain,
+                                    domains : [domain],
                                     interfaceName : interfaceName,
                                     discoveryQos : discoveryQos
                                 }).then(onFulfilledSpy).catch(onRejectedSpy);
@@ -252,7 +252,7 @@ joynrTestRequire(
 
                                     runs(function() {
                                         arbitrator.startArbitration({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName,
                                             discoveryQos : discoveryQos
                                         }).then(onFulfilledSpy).catch(onRejectedSpy);
@@ -288,7 +288,7 @@ joynrTestRequire(
 
                                     runs(function() {
                                         arbitrator.startArbitration({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName,
                                             discoveryQos : discoveryQos
                                         });
@@ -365,7 +365,7 @@ joynrTestRequire(
                             runs(function() {
                                 // call arbitrator
                                 arbitrator.startArbitration({
-                                    domain : domain,
+                                    domain : [domain],
                                     interfaceName : interfaceName,
                                     discoveryQos : discoveryQos
                                 }).then(onFulfilledSpy);
@@ -401,11 +401,11 @@ joynrTestRequire(
                             expect(typeof arbitrator.startArbitration === "function").toBeTruthy();
                         });
 
-                        function arbitratesCorrectly(domain, interfaceName, expected) {
+                        function arbitratesCorrectly(domains, interfaceName, expected) {
                             runs(function() {
                                 staticArbitrationSpy.resolve.reset();
                                 staticArbitrationSpy.reject.reset();
-                                staticArbitrationSettings.domain = domain;
+                                staticArbitrationSettings.domains = domains;
                                 staticArbitrationSettings.interfaceName = interfaceName;
                                 arbitrator.startArbitration(staticArbitrationSettings).then(
                                         staticArbitrationSpy.resolve).catch(staticArbitrationSpy.reject);
@@ -429,15 +429,15 @@ joynrTestRequire(
                                         return discoveredCaps;
                                     });
 
-                            arbitratesCorrectly("myDomain", "noneExistingInterface", []);
-                            arbitratesCorrectly("noneExistingDomain", "myInterface", []);
-                            arbitratesCorrectly("myDomain", "myInterface", [
+                            arbitratesCorrectly(["myDomain"], "noneExistingInterface", []);
+                            arbitratesCorrectly(["noneExistingDomain"], "myInterface", []);
+                            arbitratesCorrectly(["myDomain"], "myInterface", [
                                 capabilities[0],
                                 capabilities[1]
                             ]);
-                            arbitratesCorrectly("otherDomain", "otherInterface", [ capabilities[2]
+                            arbitratesCorrectly(["otherDomain"], "otherInterface", [ capabilities[2]
                             ]);
-                            arbitratesCorrectly("thirdDomain", "otherInterface", [ capabilities[3]
+                            arbitratesCorrectly(["thirdDomain"], "otherInterface", [ capabilities[3]
                             ]);
                         });
 

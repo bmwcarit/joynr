@@ -41,6 +41,7 @@ import io.joynr.proxy.invocation.UnsubscribeInvocation;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -72,18 +73,18 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConcurrentLinkedQueue<MethodInvocation> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation>();
     private ConcurrentLinkedQueue<SubscriptionInvocation> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionInvocation>();
     private String interfaceName;
-    private String domain;
+    private Set<String> domains;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
     @Inject
-    public ProxyInvocationHandlerImpl(@Assisted("domain") String domain,
+    public ProxyInvocationHandlerImpl(@Assisted("domains") Set<String> domains,
                                       @Assisted("interfaceName") String interfaceName,
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
                                       ConnectorFactory connectorFactory) {
-        this.domain = domain;
+        this.domains = domains;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
         this.discoveryQos = discoveryQos;
@@ -144,7 +145,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         } catch (Throwable e) {
             throw new JoynrRuntimeException(e);
         }
-        throw new DiscoveryException("Arbitration and Connector failed: domain: " + domain + " interface: "
+        throw new DiscoveryException("Arbitration and Connector failed: domain: " + domains + " interface: "
                 + interfaceName + " qos: " + discoveryQos + ": Arbitration could not be finished in time.");
     }
 

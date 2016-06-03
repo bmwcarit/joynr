@@ -20,6 +20,29 @@ package io.joynr.dispatching.subscription;
  */
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -31,31 +54,9 @@ import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
 import joynr.BroadcastSubscriptionRequest;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Maps;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 @Singleton
 public class SubscriptionManagerImpl implements SubscriptionManager {
@@ -144,7 +145,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void registerAttributeSubscription(String fromParticipantId,
-                                              String toParticipantId,
+                                              Set<String> toParticipantIds,
                                               AttributeSubscribeInvocation request)
                                                                                    throws JoynrSendBufferFullException,
                                                                                    JoynrMessageNotSentException,
@@ -189,13 +190,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
 
         // TODO pass the future to the messageSender and set the error state when exceptions are thrown
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, false);
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, requestObject, messagingQos, false);
 
     }
 
     @Override
     public void registerBroadcastSubscription(String fromParticipantId,
-                                              String toParticipantId,
+                                              Set<String> toParticipantIds,
                                               BroadcastSubscribeInvocation subscriptionRequest)
                                                                                                throws JoynrSendBufferFullException,
                                                                                                JoynrMessageNotSentException,
@@ -224,12 +225,12 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, true);
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, requestObject, messagingQos, true);
     }
 
     @Override
     public void unregisterSubscription(String fromParticipantId,
-                                       String toParticipantId,
+                                       Set<String> toParticipantIds,
                                        String subscriptionId,
                                        MessagingQos qosSettings) throws JoynrSendBufferFullException,
                                                                 JoynrMessageNotSentException, JsonGenerationException,
@@ -245,7 +246,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
 
         dispatcher.sendSubscriptionStop(fromParticipantId,
-                                        toParticipantId,
+                                        toParticipantIds,
                                         subscriptionStop,
                                         new MessagingQos(qosSettings));
     }

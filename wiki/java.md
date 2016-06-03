@@ -200,6 +200,8 @@ The enumeration ```ArbitrationStrategy``` defines special options to select a Pr
 * **FixedChannel** (also see FixedParticipantArbitrator)
 * **Keyword** Only entries that have a matching keyword will be considered
 * **HighestPriority** Entries will be considered according to priority
+* **Custom** Allows you to provide a `ArbitrationStrategyFunction` to allow custom
+selection of discovered entries
 
 The priority is set by the provider through the call ```providerQos.setPriority()```.
 
@@ -277,6 +279,27 @@ public void run() {
         // could not send message
     }
 }
+```
+
+It is also possible to obtain a proxy for targeting multiple providers. You can either do
+this by specifying a set of domains, by providing a custom `ArbitrationStrategyFunction`
+(see The discovery quality of service above) or a combination of the two.
+When you create such a multi-proxy, a call to a method on that proxy will result in 'n'
+calls to the providers, where 'n' is the number of providers targeted.  
+It is only possible to send calls to multiple providers if the methods are fire-and-forget.
+Attempts to make calls to non-fire-and-forget methods from a multi-proxy will result in an
+exception being thrown.
+
+So, for example, if we change the code above to target two domains, we get:
+
+```java
+...
+	Set<String> domains = new HashSet<>();
+	domains.add(providerDomainOne);
+	domains.add(providerDomainTwo);
+	ProxyBuilder<<Interface>Proxy> proxyBuilder =
+		runtime.getProxyBuilder(domains, <Interface>Proxy.class);
+...
 ```
 
 ## Synchronous Remote procedure calls

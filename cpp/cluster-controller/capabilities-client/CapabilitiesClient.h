@@ -78,14 +78,14 @@ public:
     /*
       Synchronous lookup of capabilities for domain and interface.
       */
-    std::vector<types::GlobalDiscoveryEntry> lookup(const std::string& domain,
+    std::vector<types::GlobalDiscoveryEntry> lookup(const std::vector<std::string>& domains,
                                                     const std::string& interfaceName,
                                                     const std::int64_t messagingTtl) override;
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
       */
-    void lookup(const std::string& domain,
+    void lookup(const std::vector<std::string>& domains,
                 const std::string& interfaceName,
                 const std::int64_t messagingTtl,
                 std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
