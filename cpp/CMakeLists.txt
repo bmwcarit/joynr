@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.17.2)
+project(joynr-0.18.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 17)
-set(JOYNR_PATCH_VERSION 2)
+set(JOYNR_MINOR_VERSION 18)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -293,7 +293,7 @@ if(${ENABLE_GCOV})
     setup_target_for_coverage_cobertura("UnitCoverageTarget" g_UnitTests "coverage" "--gtest_output=xml:g_UnitTests.junit.xml" "'.*/libs/.*|.*/build/.*|.*/tests/.*|.*/generated/.*'")
     # copy the resource folder to the build folder, because some files are required for the tests
     add_custom_target(CopyResourceFolderToBuildDir
-        cp -r bin/resources .
+        cp -r bin/resources . && cp -r bin/test-resources .
 
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Copy resources to build directory."
@@ -776,7 +776,7 @@ set(JoynrConfig_RESOLVE_DEPENDENCIES)
 macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
     file(READ "${CMAKE_CURRENT_LIST_DIR}/CMake/JoynrConfig/${DEPENDENCY_FILE}.cmake.in" FILE_CONTENTS)
     string(CONFIGURE ${FILE_CONTENTS} FILE_CONTENTS @ONLY)
-    string(CONCAT JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES} "${FILE_CONTENTS}")
+    set(JoynrConfig_RESOLVE_DEPENDENCIES ${JoynrConfig_RESOLVE_DEPENDENCIES}${FILE_CONTENTS})
 endmacro(FillJoynrConfigDependencies)
 
 if(USE_PLATFORM_JSMN)

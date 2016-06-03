@@ -1,9 +1,7 @@
-package io.joynr.generator.util;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +16,40 @@ package io.joynr.generator.util;
  * limitations under the License.
  * #L%
  */
+package fireandforget
 
-import org.eclipse.xtext.generator.IFileSystemAccess;
-import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
-import org.eclipse.xtext.service.AbstractGenericModule;
+typeCollection {
+	version {
+		major 1
+		minor 1
+	}
 
-/**
- * Test-related configuration for Guice injector. 
- * 
- * @author Klaus Birken
- */
-public class FrancaIDLFrameworkModule extends AbstractGenericModule {
-    public Class<? extends IFileSystemAccess> bindIFileSystemAccess() {
-        return JavaIoFileSystemAccess.class;
-    }
+	struct MyStruct {
+		String myMember
+	}
+
+	struct MyOtherStruct {
+		String myOtherMember
+	}
+}
+
+interface FireAndForgetWithTypesTest {
+
+	version {major 0 minor 1}
+
+	method callMe fireAndForget {
+		in {
+			MyStruct message
+		}
+	}
+
+	method otherCallMe {
+		in {
+			MyOtherStruct otherMessage
+		}
+		out {
+			String reply
+		}
+	}
 
 }

@@ -31,6 +31,7 @@ class IDispatcher;
 class IReplyCaller;
 class Reply;
 class Request;
+class OneWayRequest;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
 class SubscriptionReply;
@@ -67,8 +68,8 @@ public:
     ~IJoynrMessageSender() override = default;
 
     /*
-      * registers Dispatcher. See above comment why this is necessary.
-      */
+     * registers Dispatcher. See above comment why this is necessary.
+     */
     virtual void registerDispatcher(IDispatcher* dispatcher) = 0;
 
     /*
@@ -79,6 +80,15 @@ public:
                              const MessagingQos& qos,
                              const Request& request,
                              std::shared_ptr<IReplyCaller> callback) = 0;
+
+    /*
+     * Prepares and sends a single message
+     */
+    virtual void sendOneWayRequest(const std::string& senderParticipantId,
+                                   const std::string& receiverParticipantId,
+                                   const MessagingQos& qos,
+                                   const OneWayRequest& request) = 0;
+
     /*
      * Prepares and sends a reply message (an answer to a request)
      */

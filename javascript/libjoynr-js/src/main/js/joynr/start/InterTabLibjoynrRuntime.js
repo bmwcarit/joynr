@@ -392,7 +392,7 @@ define(
                                     new PublicationManager(
                                             dispatcher,
                                             persistency,
-                                            "localchannelId"); //TODO: set joynrInstanceId
+                                            "joynrInstanceId"); //TODO: set joynrInstanceId
 
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
@@ -410,7 +410,6 @@ define(
                                         libjoynrMessagingAddress : new InProcessAddress(
                                                 libjoynrMessagingSkeleton),
                                         participantIdStorage : participantIdStorage,
-                                        localChannelId : "localchannelId", //TODO: set joynrInstanceId
                                         loggingManager : loggingManager
                                     }));
 
@@ -451,12 +450,12 @@ define(
                             var TTL_30DAYS_IN_MS = 30*24*60*60*1000;
                             discovery.setSkeleton(new InProcessSkeleton({
                                 lookup : function lookup(
-                                        domain,
+                                        domains,
                                         interfaceName,
                                         discoveryQos) {
                                     return getDiscoveryProxy(discoveryQos.discoveryTimeoutMs).then(function(newDiscoveryProxy) {
                                         return newDiscoveryProxy.lookup({
-                                            domain : domain,
+                                            domains : domains,
                                             interfaceName : interfaceName,
                                             discoveryQos : discoveryQos
                                         }).then(function(opArgs){

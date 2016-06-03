@@ -243,7 +243,7 @@ joynrTestRequire(
                                         discoveryProxy
                                                 .lookup(
                                                         {
-                                                            domain : domain,
+                                                            domains : [domain],
                                                             interfaceName : interfaceName,
                                                             discoveryQos : new DiscoveryQosGen(
                                                                     {
@@ -428,6 +428,18 @@ joynrTestRequire(
                                         return {
                                             returnValue : true
                                         };
+                                    });
+
+
+                                    radioProvider.methodFireAndForgetWithoutParams.registerOperation(function(opArgs) {
+                                        //do nothing
+                                    });
+
+                                    radioProvider.methodFireAndForget.registerOperation(function(opArgs) {
+                                        var intIn = opArgs.intIn;
+                                        var stringIn = opArgs.stringIn;
+                                        var complexTestTypeIn = opArgs.complexTestTypeIn;
+                                        //do nothing
                                     });
 
                                     // register operation function "operationWithEnumsAsInputAndOutput"
@@ -815,7 +827,7 @@ joynrTestRequire(
                                         discoveryProxy
                                                 .lookup(
                                                         {
-                                                            domain : domain,
+                                                            domains : [domain],
                                                             interfaceName : "vehicle/Radio",
                                                             discoveryQos : new DiscoveryQosGen(
                                                                     {
@@ -835,7 +847,7 @@ joynrTestRequire(
                                                                                 discoveryProxy
                                                                                         .lookup(
                                                                                                 {
-                                                                                                    domain : domain,
+                                                                                                    domains : [domain],
                                                                                                     interfaceName : "vehicle/Radio",
                                                                                                     discoveryQos : new DiscoveryQosGen(
                                                                                                             {
@@ -904,7 +916,7 @@ joynrTestRequire(
                                                             discoveryProxy
                                                                     .lookup(
                                                                             {
-                                                                                domain : domain,
+                                                                                domains : [domain],
                                                                                 interfaceName : interfaceName,
                                                                                 discoveryQos : new DiscoveryQosGen(
                                                                                         {
@@ -939,7 +951,7 @@ joynrTestRequire(
                                                                                                     discoveryProxy
                                                                                                             .lookup(
                                                                                                                     {
-                                                                                                                        domain : domain,
+                                                                                                                        domains : [domain],
                                                                                                                         interfaceName : interfaceName,
                                                                                                                         discoveryQos : new DiscoveryQosGen(
                                                                                                                                 {
@@ -979,7 +991,7 @@ joynrTestRequire(
                                                                                                                                                                 discoveryProxy
                                                                                                                                                                         .lookup(
                                                                                                                                                                                 {
-                                                                                                                                                                                    domain : domain,
+                                                                                                                                                                                    domains : [domain],
                                                                                                                                                                                     interfaceName : interfaceName,
                                                                                                                                                                                     discoveryQos : new DiscoveryQosGen(
                                                                                                                                                                                             {

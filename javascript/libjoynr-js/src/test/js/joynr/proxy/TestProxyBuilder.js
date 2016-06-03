@@ -107,6 +107,7 @@ joynrTestRequire(
                                     supportsOnChangeSubscriptions : true
                                 }),
                                 address : "channelId",
+                                publicKeyId : "",
                                 participantId : "myParticipantId"
                             });
 
@@ -238,7 +239,7 @@ joynrTestRequire(
                             runs(function(){
                                 expect(arbitratorSpy.startArbitration).toHaveBeenCalled();
                                 expect(arbitratorSpy.startArbitration).toHaveBeenCalledWith({
-                                    domain : settings.domain,
+                                    domains : [settings.domain],
                                     interfaceName : interfaceName,
                                     discoveryQos : settings.discoveryQos,
                                     staticArbitration : settings.staticArbitration

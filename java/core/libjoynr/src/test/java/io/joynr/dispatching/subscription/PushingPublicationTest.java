@@ -1,5 +1,7 @@
 package io.joynr.dispatching.subscription;
 
+import static org.hamcrest.Matchers.contains;
+
 /*
  * #%L
  * %%
@@ -21,6 +23,7 @@ package io.joynr.dispatching.subscription;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
@@ -40,6 +43,7 @@ import io.joynr.pubsub.SubscriptionQos;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -92,7 +96,6 @@ public class PushingPublicationTest {
     private String proxyId;
     private String providerId;
     private String attributeName;
-    private SubscriptionQos qos;
     int testAttribute = 123;
     SubscriptionPublication publication;
 
@@ -119,29 +122,22 @@ public class PushingPublicationTest {
     }
 
     void setupPureOnChangedQos() {
-        long maxInterval_ms = SubscriptionQos.IGNORE_VALUE;
-
-        long endDate = System.currentTimeMillis() + 19000;
-        long publicationTtl_ms = 1000;
-        qos = new OnChangeSubscriptionQos(maxInterval_ms, endDate, publicationTtl_ms);
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos();
+        qos.setMinIntervalMs(SubscriptionQos.IGNORE_VALUE).setValidityMs(19000).setPublicationTtlMs(1000);
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
     }
 
     void setupMixedQos() {
-        long minInterval_ms = 10;
-        long maxInterval_ms = 3000; // TODO Also write this test with -1
-
-        long endDate = System.currentTimeMillis() + 19000;
-        long alertInterval_ms = 500;
-        long publicationTtl_ms = 1000;
-        qos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                       maxInterval_ms,
-                                                       endDate,
-                                                       alertInterval_ms,
-                                                       publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos qos = new OnChangeWithKeepAliveSubscriptionQos();
+        qos.setMinIntervalMs(10);
+        qos.setMaxIntervalMs(3000); // TODO Also write this test with -1
+        qos.setValidityMs(19000);
+        qos.setAlertAfterIntervalMs(500);
+        qos.setPublicationTtlMs(1000);
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
     }
 
+    @SuppressWarnings("unchecked")
     void setupMocks() throws JoynrSendBufferFullException, JoynrMessageNotSentException, JsonGenerationException,
                      JsonMappingException, IOException {
         Deferred<Integer> testAttributeDeferred = new Deferred<Integer>();
@@ -167,7 +163,7 @@ public class PushingPublicationTest {
                 return null;
             }
         }).when(dispatcher).sendSubscriptionPublication(any(String.class),
-                                                        any(String.class),
+                                                        any(Set.class),
                                                         any(SubscriptionPublication.class),
                                                         any(MessagingQos.class));
 
@@ -176,6 +172,7 @@ public class PushingPublicationTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void settingAttributeSendsPublication() throws InterruptedException, JoynrSendBufferFullException,
                                                   JoynrMessageNotSentException, JsonGenerationException,
@@ -188,13 +185,14 @@ public class PushingPublicationTest {
         Thread.sleep(1500);
 
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                 eq(proxyId),
+                                                                 (Set<String>) argThat(contains(proxyId)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
         verify(attributePollInterpreter, times(1)).execute(any(ProviderContainer.class), any(Method.class));
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void settingAttributeSendsPublicationOnPureOnChangedSubscription() throws InterruptedException,
                                                                              JoynrSendBufferFullException,
@@ -208,7 +206,7 @@ public class PushingPublicationTest {
 
         ArgumentCaptor<SubscriptionPublication> sentPublication = ArgumentCaptor.forClass(SubscriptionPublication.class);
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                 eq(proxyId),
+                                                                 (Set<String>) argThat(contains(proxyId)),
                                                                  sentPublication.capture(),
                                                                  any(MessagingQos.class));
         assertEquals(publication.getResponse(), sentPublication.getValue().getResponse());

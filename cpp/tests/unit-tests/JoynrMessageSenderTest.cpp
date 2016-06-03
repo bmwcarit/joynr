@@ -113,6 +113,38 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
     joynrMessageSender.sendRequest(senderID, receiverID, qosSettings, request, callBack);
 }
 
+TEST_F(JoynrMessageSenderTest, sendOneWayRequest_normal){
+
+    MockDispatcher mockDispatcher;
+    auto messagingStub = std::make_shared<MockMessageRouter>();
+
+    OneWayRequest oneWayRequest;
+    oneWayRequest.setMethodName("methodName");
+    std::vector<Variant> params;
+    params.push_back(Variant::make<int>(42));
+    params.push_back(Variant::make<std::string>("value"));
+    oneWayRequest.setParams(params);
+    std::vector<std::string> paramDatatypes;
+    paramDatatypes.push_back("java.lang.Integer");
+    paramDatatypes.push_back("java.lang.String");
+    oneWayRequest.setParamDatatypes(paramDatatypes);
+
+    JoynrMessage message = messageFactory.createOneWayRequest(
+                senderID,
+                receiverID,
+                qosSettings,
+                oneWayRequest
+    );
+
+    EXPECT_CALL( *(messagingStub.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY)),
+                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
+
+    JoynrMessageSender joynrMessageSender(messagingStub);
+    joynrMessageSender.registerDispatcher(&mockDispatcher);
+    joynrMessageSender.sendOneWayRequest(senderID, receiverID, qosSettings, oneWayRequest);
+}
+
+
 TEST_F(JoynrMessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death){
 
     MockDispatcher mockDispatcher;

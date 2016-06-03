@@ -51,7 +51,7 @@ import java.util.HashSet;
 import io.joynr.pubsub.publication.BroadcastFilterImpl;
 «ENDIF»
 
-«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true)»
+«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true, false)»
 	import «datatype»;
 «ENDFOR»
 

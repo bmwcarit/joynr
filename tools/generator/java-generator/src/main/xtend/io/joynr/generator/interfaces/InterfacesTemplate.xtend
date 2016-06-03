@@ -50,7 +50,6 @@ import java.util.List;
 	import java.util.Map.Entry;
 «ENDIF»
 
-import com.fasterxml.jackson.core.type.TypeReference;
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
@@ -61,7 +60,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 //To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
 import java.util.TreeSet;
 @SuppressWarnings("unused")
-public interface «className»  {
+public interface «className» {
 	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
 
 	«FOR method: getMethods(francaIntf)»

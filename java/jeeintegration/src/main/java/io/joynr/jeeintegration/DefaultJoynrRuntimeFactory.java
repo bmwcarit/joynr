@@ -51,6 +51,7 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
+import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -84,7 +85,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     /**
      * The scheduled executor service to use for providing to the joynr runtime.
      */
-    @Resource(name = "concurrent/joynrMessagingScheduledExecutor")
+    @Resource(name = JeeIntegrationPropertyKeys.JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE)
     private ScheduledExecutorService scheduledExecutorService;
 
     private Injector fInjector = null;

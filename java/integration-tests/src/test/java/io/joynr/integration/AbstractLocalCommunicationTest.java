@@ -25,7 +25,6 @@ import io.joynr.dispatching.subscription.SubscriptionTestsProviderImpl;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.OnChangeSubscriptionQos;
@@ -67,7 +66,6 @@ public abstract class AbstractLocalCommunicationTest {
 
     @Mock
     private AttributeSubscriptionListener<Integer> listener;
-    private SubscriptionQos subscriptionQos;
     private int lengthInMS = 2000;
 
     // Overridden by test environment implementations
@@ -119,11 +117,10 @@ public abstract class AbstractLocalCommunicationTest {
 
         int period = lengthInMS / times;
         provider.setATTRIBUTEWITHCAPITALLETTERS(initialValue);
-        subscriptionQos = new PeriodicSubscriptionQos(period, // period_ms,
-                                                      System.currentTimeMillis() + lengthInMS, // expiryDate
-                                                      lengthInMS, // alertInterval_ms,
-                                                      lengthInMS / 4 // publicationTtl_ms
-        );
+
+        PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(period).setValidityMs(lengthInMS);
+        subscriptionQos.setAlertAfterIntervalMs(lengthInMS).setPublicationTtlMs(lengthInMS / 4);
 
         proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
         new Timer().scheduleAtFixedRate(new TimerTask() {
@@ -158,8 +155,8 @@ public abstract class AbstractLocalCommunicationTest {
 
         int period = lengthInMS / times;
         provider.ATTRIBUTEWITHCAPITALLETTERSChanged(initialValue);
-        subscriptionQos = new OnChangeSubscriptionQos(lengthInMS / 4, System.currentTimeMillis() + lengthInMS, // expiryDate
-                                                      lengthInMS / 4);
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        subscriptionQos.setMinIntervalMs(lengthInMS / 4).setValidityMs(lengthInMS).setPublicationTtlMs(lengthInMS / 4);
 
         new Timer().scheduleAtFixedRate(new TimerTask() {
             int value = initialValue;

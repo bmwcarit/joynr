@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,21 @@ package io.joynr.dispatching;
  * #L%
  */
 
+import java.io.IOException;
+import java.util.Set;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.provider.ProviderCallback;
-
-import java.io.IOException;
-
-import joynr.OneWay;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 public interface RequestReplyManager {
 
@@ -107,10 +107,10 @@ public interface RequestReplyManager {
      *
      * @param fromParticipantId
      *            ParticipantId of the endpoint to send to
-     * @param toParticipantId
-     *            ParticipantId of the sending endpoint.
-     * @param payload
-     *            Payload Object to send.
+     * @param toParticipantIds
+     *            ParticipantIds of the endpoints to send to
+     * @param oneWayRequest
+     *            The request data tto send to the endpoints
      * @param ttl_ms
      *            Time to live in milliseconds.
      * @throws IOException
@@ -125,12 +125,11 @@ public interface RequestReplyManager {
      *            in case send buffer is full
      */
 
-    public void sendOneWay(final String fromParticipantId, final String toParticipantId, Object payload, long ttl_ms)
-                                                                                                                     throws JoynrSendBufferFullException,
-                                                                                                                     JoynrMessageNotSentException,
-                                                                                                                     JsonGenerationException,
-                                                                                                                     JsonMappingException,
-                                                                                                                     IOException;
+    public void sendOneWayRequest(final String fromParticipantId,
+                                  final Set<String> toParticipantIds,
+                                  OneWayRequest oneWayRequest,
+                                  long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
+                                              JsonGenerationException, JsonMappingException, IOException;
 
     public void sendReply(final String fromParticipantId, final String toParticipantId, Reply payload, ExpiryDate ttl_ms)
                                                                                                                          throws JoynrSendBufferFullException,
@@ -139,14 +138,6 @@ public interface RequestReplyManager {
                                                                                                                          JsonMappingException,
                                                                                                                          IOException;
 
-    /**
-     * Removes the listener registered for the interface address.
-     * @param participantId participant id
-     */
-    public void removeListener(final String participantId);
-
-    void addOneWayRecipient(String participantId, PayloadListener<?> listener);
-
     public void handleReply(Reply reply);
 
     public void handleRequest(ProviderCallback<Reply> replyCallback,
@@ -154,7 +145,7 @@ public interface RequestReplyManager {
                               Request request,
                               long expiryDate);
 
-    public void handleOneWayRequest(String providerParticipantId, OneWay request, long expiryDate);
+    public void handleOneWayRequest(String providerParticipantId, OneWayRequest request, long expiryDate);
 
     public void handleError(Request request, Throwable error);
 

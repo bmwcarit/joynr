@@ -75,6 +75,7 @@ public class CapabilitiesDirectoryTest {
         String participantId1 = "testParticipantId1_" + UUID.randomUUID().toString();
         String participantId2 = "testParticipantId2_" + UUID.randomUUID().toString();
         String participantId3 = "testParticipantId3_" + UUID.randomUUID().toString();
+        String publicKeyId = "publicKeyId";
 
         long lastSeenDateMs = System.currentTimeMillis();
         long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
@@ -85,6 +86,7 @@ public class CapabilitiesDirectoryTest {
                                                   providerQos,
                                                   lastSeenDateMs,
                                                   expiryDateMs,
+                                                  publicKeyId,
                                                   channelAddresSerialized);
         discoveryEntry2 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                    domain,
@@ -93,6 +95,7 @@ public class CapabilitiesDirectoryTest {
                                                    providerQos,
                                                    lastSeenDateMs,
                                                    expiryDateMs,
+                                                   publicKeyId,
                                                    channelAddresSerialized);
         dicoveryEntry3 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                   domain,
@@ -101,6 +104,7 @@ public class CapabilitiesDirectoryTest {
                                                   providerQos,
                                                   lastSeenDateMs,
                                                   expiryDateMs,
+                                                  publicKeyId,
                                                   channelAddresSerialized);
 
     }
@@ -122,12 +126,12 @@ public class CapabilitiesDirectoryTest {
         capabilitiesDirectory.add(interfaces2And3);
 
         PromiseKeeper lookupCapInfo2 = new PromiseKeeper();
-        capabilitiesDirectory.lookup(domain, interface2).then(lookupCapInfo2);
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface2).then(lookupCapInfo2);
         assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry2 },
                                     (GlobalDiscoveryEntry[]) lookupCapInfo2.getValues()[0]);
 
         PromiseKeeper lookupCapInfo3 = new PromiseKeeper();
-        capabilitiesDirectory.lookup(domain, interface3).then(lookupCapInfo3);
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface3).then(lookupCapInfo3);
 
         GlobalDiscoveryEntry[] passedDiscoveryEntries = (GlobalDiscoveryEntry[]) lookupCapInfo3.getValues()[0];
         assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ dicoveryEntry3 }, passedDiscoveryEntries);
@@ -138,7 +142,7 @@ public class CapabilitiesDirectoryTest {
         capabilitiesDirectory.add(disoveryEntry1);
 
         PromiseKeeper lookupCapInfo1 = new PromiseKeeper();
-        capabilitiesDirectory.lookup(domain, interface1).then(lookupCapInfo1);
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface1).then(lookupCapInfo1);
         lookupCapInfo1.waitForSettlement();
         assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ disoveryEntry1 },
                                     (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0]);

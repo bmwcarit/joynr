@@ -56,6 +56,7 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 «FOR parameterType: getRequiredIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
+#include "joynr/Logger.h"
 
 «getNamespaceStarter(francaIntf)»
 
@@ -125,24 +126,28 @@ public:
 		 * @param «iparam.joynrName» Method input parameter «iparam.joynrName»
 		 «ENDFOR»
 		 «ENDIF»
+		 «IF !method.fireAndForget»
 		 * @param onSuccess A callback function to be called once the asynchronous computation has
 		 * finished with success. It must expect the output parameter list, if parameters are present.
 		 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
+		 «ENDIF»
 		 */
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»
-					«inputTypedParamList»,
+					«inputTypedParamList»«IF !method.fireAndForget»,«ENDIF»
 				«ENDIF»
-				«IF method.outputParameters.empty»
-					std::function<void()> onSuccess,
-				«ELSE»
+				«IF !method.fireAndForget»
+					«IF method.outputParameters.empty»
+						std::function<void()> onSuccess,
+					«ELSE»
+						std::function<void(
+								«outputTypedParamList»
+						)> onSuccess,
+					«ENDIF»
 					std::function<void(
-							«outputTypedParamList»
-					)> onSuccess,
+							const exceptions::JoynrException&
+					)> onError
 				«ENDIF»
-				std::function<void(
-						const exceptions::JoynrException&
-				)> onError
 		);
 
 	«ENDFOR»
@@ -177,6 +182,7 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
 	std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider;
+	ADD_LOGGER(«interfaceName»RequestCaller);
 };
 
 «getNamespaceEnder(francaIntf)»

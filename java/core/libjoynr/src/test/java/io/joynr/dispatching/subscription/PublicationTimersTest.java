@@ -1,5 +1,7 @@
 package io.joynr.dispatching.subscription;
 
+import static org.hamcrest.Matchers.contains;
+
 /*
  * #%L
  * %%
@@ -20,6 +22,7 @@ package io.joynr.dispatching.subscription;
  */
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,6 +40,7 @@ import io.joynr.provider.ProviderContainer;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -98,6 +102,7 @@ public class PublicationTimersTest {
                                                                                       any(Method.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 4000)
     public void publicationsSentUntilExpiryDate() throws InterruptedException, JoynrSendBufferFullException,
                                                  JoynrMessageNotSentException, JsonGenerationException,
@@ -105,9 +110,8 @@ public class PublicationTimersTest {
         LOG.debug("Starting PublicationTimersTest.timerIsStoppedWhenEnddateIsReached test");
         int period = 500;
         int subscriptionLength = 1100;
-        long expiryDate = System.currentTimeMillis() + subscriptionLength;
-        int publicationTtl = 1000;
-        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, publicationTtl);
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();
+        qos.setPeriodMs(period).setValidityMs(subscriptionLength).setPublicationTtlMs(1000);
         String subscriptionId = "subscriptionId";
         String proxyId = "proxyId";
         String providerId = "providerId";
@@ -128,7 +132,7 @@ public class PublicationTimersTest {
 
         int publicationTimes = 1 + (subscriptionLength / period);
         verify(dispatcher, times(publicationTimes)).sendSubscriptionPublication(eq(providerId),
-                                                                                eq(proxyId),
+                                                                                (Set<String>) argThat(contains(proxyId)),
                                                                                 any(SubscriptionPublication.class),
                                                                                 any(MessagingQos.class));
 

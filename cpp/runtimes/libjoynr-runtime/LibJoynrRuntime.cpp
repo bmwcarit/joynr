@@ -71,14 +71,18 @@ LibJoynrRuntime::~LibJoynrRuntime()
 }
 
 void LibJoynrRuntime::init(
-        std::unique_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
+        std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress)
 {
     // create messaging stub factory
-    auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
-    messagingStubFactory->registerStubFactory(std::move(middlewareMessagingStubFactory));
-    messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
+    auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
+    middlewareMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
+        messagingStubFactory->remove(destinationAddress);
+    });
+    messagingStubFactory->registerStubFactory(middlewareMessagingStubFactory);
+    messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
     // create message router
     messageRouter = std::make_shared<MessageRouter>(
@@ -139,8 +143,8 @@ void LibJoynrRuntime::init(
             "fixedParticipantId", routingProviderParticipantId);
     routingProviderDiscoveryQos.setDiscoveryTimeoutMs(50);
 
-    auto routingProxyBuilder =
-            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
+    std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder(
+            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain));
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
                                 ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
@@ -148,7 +152,6 @@ void LibJoynrRuntime::init(
     messageRouter->setParentRouter(std::unique_ptr<system::RoutingProxy>(routingProxy),
                                    ccMessagingAddress,
                                    routingProviderParticipantId);
-    delete routingProxyBuilder;
 
     // setup discovery
     std::string discoveryProviderParticipantId =
@@ -161,8 +164,8 @@ void LibJoynrRuntime::init(
             "fixedParticipantId", discoveryProviderParticipantId);
     discoveryProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
 
-    ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
-            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
+    std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder(
+            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain));
     joynr::system::IDiscoverySync* proxy =
             discoveryProxyBuilder->setMessagingQos(MessagingQos(10000))
                     ->setCached(false)

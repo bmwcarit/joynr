@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,40 @@
  */
 #ifndef LOCALCAPABILITIESDIRECTORY_H
 #define LOCALCAPABILITIESDIRECTORY_H
+
+#include <chrono>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
+
+#include <QMap>
+
+#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "cluster-controller/mqtt/MqttSettings.h"
+
+#include "common/InterfaceAddress.h"
+
+#include "joynr/ClusterControllerDirectories.h"
+#include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/Logger.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
+#include "joynr/system/DiscoveryAbstractProvider.h"
+#include "joynr/TypedClientMultiCache.h"
+#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
+
+namespace joynr
+{
+
+class CapabilityEntry;
+class InterfaceAddress;
+class ICapabilitiesClient;
+class LibjoynrSettings;
+class MessageRouter;
 
 /**
   * The local capabilities directory is the "first point of call" for accessing
@@ -31,46 +64,16 @@
   * Capabilities Client which will make the remote call to the backend to retrieve
   * the data.
   */
-
-#include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/TypedClientMultiCache.h"
-#include "joynr/Logger.h"
-#include "joynr/ClusterControllerDirectories.h"
-#include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/system/DiscoveryAbstractProvider.h"
-#include "joynr/types/DiscoveryQos.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
-#include "joynr/Semaphore.h"
-#include "common/InterfaceAddress.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "cluster-controller/mqtt/MqttSettings.h"
-#include <vector>
-
-#include <memory>
-#include <mutex>
-#include <string>
-#include <chrono>
-
-#include <QMap>
-
-namespace joynr
-{
-
-class MessageRouter;
-class ICapabilitiesClient;
-class CapabilityEntry;
-
-class InterfaceAddress;
-
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
         : public joynr::system::DiscoveryAbstractProvider
 {
 public:
+    // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
     LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
-                               ICapabilitiesClient* capabilitiesClientPtr,
+                               std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
-                               MessageRouter& messageRouter);
+                               MessageRouter& messageRouter,
+                               LibjoynrSettings& libJoynrSettings);
 
     ~LocalCapabilitiesDirectory() override;
 
@@ -92,7 +95,7 @@ public:
      * Returns a list of capabilitiess matching the given domain and interfaceName,
      * this is an asynchronous request, must supply a callback.
      */
-    virtual void lookup(const std::string& domain,
+    virtual void lookup(const std::vector<std::string>& domains,
                         const std::string& interfaceName,
                         std::shared_ptr<ILocalCapabilitiesCallback> callback,
                         const joynr::types::DiscoveryQos& discoveryQos);
@@ -111,7 +114,7 @@ public:
       */
     std::vector<CapabilityEntry> getCachedLocalCapabilities(const std::string& participantId);
     std::vector<CapabilityEntry> getCachedLocalCapabilities(
-            const InterfaceAddress& interfaceAddress);
+            const std::vector<InterfaceAddress>& interfaceAddress);
     /*
      * Performs maintenance on the cache and removes old entries
      */
@@ -131,7 +134,7 @@ public:
             override;
     // inherited method from joynr::system::DiscoveryProvider
     void lookup(
-            const std::string& domain,
+            const std::vector<std::string>& domains,
             const std::string& interfaceName,
             const joynr::types::DiscoveryQos& discoveryQos,
             std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess,
@@ -164,10 +167,25 @@ public:
     void removeProviderRegistrationObserver(
             std::shared_ptr<IProviderRegistrationObserver> observer);
 
-    void saveToFile();
-    void loadFromFile(std::string fileName);
-    std::string serializeToJson() const;
-    void deserializeFromJson(const std::string& jsonString);
+    /*
+     * Persist the content of the local capabilities directory to a file.
+     */
+    void updatePersistedFile();
+
+    /*
+     * Load persisted capabilities from the specified file.
+     */
+    void loadPersistedFile();
+
+    /*
+     * Save the content of the local capabilities directory to the specified file.
+     */
+    void saveLocalCapabilitiesToFile(const std::string& fileName);
+
+    /*
+     * Load capabilities from the the specified file.
+     */
+    void injectGlobalCapabilitiesFromFile(const std::string& fileName);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
@@ -177,7 +195,7 @@ private:
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
                               joynr::types::DiscoveryScope::Enum discoveryScope);
 
-    bool getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress,
+    bool getLocalAndCachedCapabilities(const std::vector<InterfaceAddress>& interfaceAddress,
                                        const joynr::types::DiscoveryQos& discoveryQos,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool getLocalAndCachedCapabilities(const std::string& participantId,
@@ -193,12 +211,16 @@ private:
                        bool isGlobal,
                        bool localCache,
                        bool globalCache);
-    std::vector<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress,
+    std::vector<CapabilityEntry> searchCache(const std::vector<InterfaceAddress>& interfaceAddress,
                                              std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
     std::vector<CapabilityEntry> searchCache(const std::string& participantId,
                                              std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
+
+    void cleanCaches();
+
+    std::string serializeLocalCapabilitiesToJson() const;
 
     void convertDiscoveryEntryIntoCapabilityEntry(
             const joynr::types::DiscoveryEntry& discoveryEntry,
@@ -212,10 +234,8 @@ private:
             const std::vector<types::DiscoveryEntry>& discoveryEntries,
             std::vector<CapabilityEntry>& capabilityEntries);
 
-    void cleanCaches();
-
     ADD_LOGGER(LocalCapabilitiesDirectory);
-    ICapabilitiesClient* capabilitiesClient;
+    std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
     std::string localAddress;
     std::mutex cacheLock;
 
@@ -231,7 +251,7 @@ private:
 
     MqttSettings mqttSettings;
 
-    std::string localCapabilitiesDirectoryFileName;
+    LibjoynrSettings& libJoynrSettings; // to retrieve info about persistency
 
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);

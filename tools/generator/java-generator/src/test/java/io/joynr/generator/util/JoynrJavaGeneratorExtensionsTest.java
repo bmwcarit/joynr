@@ -1,4 +1,4 @@
-package io.joyn.generator.util;
+package io.joynr.generator.util;
 
 /*
  * #%L
@@ -29,7 +29,6 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions;
 import java.util.Iterator;
 
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.franca.core.franca.FCompoundType;
 import org.franca.core.franca.FModel;
@@ -45,8 +44,8 @@ import com.google.inject.name.Names;
 
 public class JoynrJavaGeneratorExtensionsTest {
 
-    private static final String SECOND_LEVEL_STRUCT_TYPE_NAME = "joynr.io.joyn.generator.util.TestTypes.SecondLevelStruct";
-    private static final String TOP_LEVEL_STRUCT_INCLUDE = "joynr.io.joyn.generator.util.TestTypes.TopLevelStruct";
+    private static final String SECOND_LEVEL_STRUCT_TYPE_NAME = "joynr.io.joynr.generator.util.TestTypes.SecondLevelStruct";
+    private static final String TOP_LEVEL_STRUCT_INCLUDE = "joynr.io.joynr.generator.util.TestTypes.TopLevelStruct";
     private JoynrJavaGeneratorExtensions fixture;
     private static final String FIXTURE_TYPE_NAME = "fixture";
 
@@ -79,10 +78,9 @@ public class JoynrJavaGeneratorExtensionsTest {
         // this test shall check for correct import statements (avoiding
         // warnings) in case of hierachical structs
         ModelLoader modelLoader = new ModelLoader(model);
-        Iterator<URI> modelUrisIterator = modelLoader.getURIs().iterator();
-        URI modelUnderTest = modelUrisIterator.next();
-        assertFalse(modelUrisIterator.hasNext());
-        final Resource input = modelLoader.getResource(modelUnderTest);
+        Iterator<Resource> modelResourcesIterator = modelLoader.getResources().iterator();
+        Resource input = modelResourcesIterator.next();
+        assertFalse(modelResourcesIterator.hasNext());
 
         FModel fModel = (FModel) input.getContents().get(0);
 

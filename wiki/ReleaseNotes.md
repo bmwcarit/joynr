@@ -1,3 +1,28 @@
+#joynr 0.18.0
+
+##API relevant changes
+* **[C++, Java, JS]** The communication protocol between local directories on the cluster controller
+  and global directories in the backend changed. Please make sure that clients and backend use
+  compatible versions.
+* **[C++, Java, JS]** Support for fire and forget methods. Methods modelled with
+  the franca keyword "fireAndForget" are now supported in the intended way, i.e. no
+  reply is expected and allowed for the calling provider.
+* **[Java]** Support for multi-addressed proxies. This way, a single proxy can communicate with
+  multiple providers at the same time. The consumer can share a number of domains with the proxy
+  builder, and depending on the arbitration strategy, multiple providers are connected with the
+  returning proxy. In this case, the communication with the proxy is limited to fire and forget
+  methods and subscriptions (attributes and broadcasts).
+* **[JEE]** MQTT is now used for incoming and outgoing messages by default. The HTTP Bridge
+  functionality is still available, but must be explicitely activated by setting the
+  `joynr.jeeintegration.enable.httpbridge` property to `true`.
+  See
+  `io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY`
+  for details.
+
+##Other changes
+* **[Tools]** Refactored joynr generator framework to simplify the maintenance,
+   revised its required dependencies.
+
 #joynr 0.17.2
 This is a minor bug fix release.
 

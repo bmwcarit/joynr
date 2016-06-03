@@ -89,17 +89,19 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 «warning()»
 package «packagePath»;
 
-«IF getMethods(francaIntf).size > 0 || hasReadAttribute(francaIntf)»
-	import io.joynr.provider.Promise;
-«ENDIF»
-«IF hasReadAttribute(francaIntf)»
-	import io.joynr.provider.Deferred;
-«ENDIF»
-«IF !uniqueMethodsToCreateDeferreds.isEmpty»
-	import io.joynr.provider.AbstractDeferred;
-«ENDIF»
-«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
-	import io.joynr.provider.DeferredVoid;
+«IF hasNonFireAndForgetMethods(francaIntf) || hasReadAttribute(francaIntf) || hasWriteAttribute(francaIntf)»
+	«IF getMethods(francaIntf).size > 0 || hasReadAttribute(francaIntf)»
+		import io.joynr.provider.Promise;
+	«ENDIF»
+	«IF hasReadAttribute(francaIntf)»
+		import io.joynr.provider.Deferred;
+	«ENDIF»
+	«IF !uniqueMethodsToCreateDeferreds.isEmpty»
+		import io.joynr.provider.AbstractDeferred;
+	«ENDIF»
+	«IF hasWriteAttribute(francaIntf) || hasMethodWithoutReturnValue(francaIntf)»
+		import io.joynr.provider.DeferredVoid;
+	«ENDIF»
 «ENDIF»
 «IF francaIntf.hasMethodWithErrorEnum»
 	import joynr.exceptions.ApplicationException;
@@ -118,8 +120,8 @@ import io.joynr.provider.SubscriptionPublisherInjection;
 interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPublisherInjection<«interfaceName»SubscriptionPublisher> {}
 «ENDIF»
 
-@JoynrInterface(provides=«className».class, name="«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»")
-@JoynrVersion(major=«majorVersion», minor=«minorVersion»)
+@JoynrInterface(provides = «className».class, name = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»")
+@JoynrVersion(major = «majorVersion», minor = «minorVersion»)
 «IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
 public interface «className» extends «interfaceName»SubscriptionPublisherInjection {
 «ELSE»
@@ -147,7 +149,11 @@ public interface «className» {
 		«IF !comments.equals("")»«comments»«ENDIF»
 		 * @return promise for asynchronous handling
 		 */
+		«IF method.fireAndForget»
+		public void «methodName»(
+		«ELSE»
 		public Promise<«methodToDeferredName.get(method)»> «methodName»(
+		«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF»
 		);
 	«ENDFOR»

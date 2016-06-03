@@ -24,12 +24,14 @@ import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
 import io.joynr.generator.cpp.util.CppTemplateFactory
+import io.joynr.generator.templates.util.InterfaceUtil
 
 class ProxyGenerator {
 
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 	@Inject CppTemplateFactory templateFactory;
+	@Inject private extension InterfaceUtil
 
 	def doGenerate(FModel model,
 		IFileSystemAccess sourceFileSystem,
@@ -105,6 +107,22 @@ class ProxyGenerator {
 				sourcePath + serviceName + "AsyncProxy.cpp",
 				interfaceAsyncProxyCppTemplate
 			);
+
+			if (hasFireAndForgetMethods(fInterface)) {
+				var interfaceFireAndForgetProxyHTemplate = templateFactory.createInterfaceFireAndForgetProxyHTemplate(fInterface)
+				generateFile(
+					headerFileSystem,
+					headerPath + serviceName + "FireAndForgetProxy.h",
+					interfaceFireAndForgetProxyHTemplate
+				);
+
+				var interfaceFireAndForgetProxyCppTemplate = templateFactory.createInterfaceFireAndForgetProxyCppTemplate(fInterface)
+				generateFile(
+					sourceFileSystem,
+					sourcePath + serviceName + "FireAndForgetProxy.cpp",
+					interfaceFireAndForgetProxyCppTemplate
+				);
+			}
 		}
 	}
 

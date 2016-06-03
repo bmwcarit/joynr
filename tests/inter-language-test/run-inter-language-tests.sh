@@ -205,7 +205,7 @@ function start_java_provider {
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ILT_RESULTS_DIR/provider-java.log 2>&1 &
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport=mqtt > $ILT_RESULTS_DIR/provider-java.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider with PID $PROVIDER_PID"
 	# Allow some time for startup
@@ -263,8 +263,8 @@ function start_java_consumer {
 	mkdir $ILT_RESULTS_DIR/consumer-java-$1
 	rm -fr $ILT_DIR/target/surefire-reports
 	mvn $SPECIAL_MAVEN_OPTIONS surefire:test -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-$1.log 2>&1
-	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-$1
 	SUCCESS=$?
+	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-$1
 	if [ "$SUCCESS" != 0 ]
 	then
 		echo '####################################################'

@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>0.17.2</version>
+		<version>0.18.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -219,6 +219,21 @@
 					properties defined in plugin management in super POM.
 					-->
 					<jettyXml>${project.build.directory}/jetty-config-files/jetty.xml,${project.build.directory}/jetty-config-files/jetty-http.xml,${project.build.directory}/jetty-config-files/jetty-ssl.xml,${project.build.directory}/jetty-config-files/jetty-https.xml</jettyXml>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<verbose>false</verbose>
+					<addSvnKeyWords>true</addSvnKeyWords>
+					<licenseName>apache_v2</licenseName>
+					<roots>
+						<root>.</root>
+					</roots>
+                        		<excludes>
+        		                    <exclude>resources/ListOfCapabilitiesToInject.json</exclude>
+	                       		</excludes>
 				</configuration>
 			</plugin>
 		</plugins>

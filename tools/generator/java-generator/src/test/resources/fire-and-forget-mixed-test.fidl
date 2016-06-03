@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,25 @@
  * limitations under the License.
  * #L%
  */
-#ifndef IREPLYINTERPRETER_H
-#define IREPLYINTERPRETER_H
+package fireandforget
 
-#include "joynr/IReplyCaller.h"
+interface FireAndForgetTest {
 
-#include <memory>
+	version {major 0 minor 1}
 
-namespace joynr
-{
+	method callMe fireAndForget {
+		in {
+			String message
+		}
+	}
 
-class Reply;
-
-class IReplyInterpreter
-{
-public:
-    virtual ~IReplyInterpreter() = default;
-    // The ReplyCaller is the instance that calls the actual receiver of the reply.
-    virtual void execute(std::shared_ptr<IReplyCaller> replyCaller, const Reply& reply) = 0;
-};
-
-} // namespace joynr
-#endif // IREPLYINTERPRETER_H
+	method callMeTwo {
+		in {
+			String first
+			String second
+		}
+		out {
+			String result
+		}
+	}
+}

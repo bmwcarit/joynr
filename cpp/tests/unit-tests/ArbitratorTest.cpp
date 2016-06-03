@@ -36,6 +36,7 @@ public:
     ArbitratorTest() :
         lastSeenDateMs(0),
         expiryDateMs(0),
+        publicKeyId("publicKeyId"),
         mockDiscovery()
     {}
 
@@ -46,6 +47,7 @@ public:
 protected:
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
+    std::string publicKeyId;
     MockDiscovery mockDiscovery;
 };
 
@@ -79,7 +81,8 @@ TEST_F(ArbitratorTest, getHighestPriority) {
                                  participantId[i],
                                  qosEntries[i],
                                  lastSeenDateMs,
-                                 expiryDateMs
+                                 expiryDateMs,
+                                 publicKeyId
         ));
     }
 
@@ -119,7 +122,8 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
                                  participantId[i],
                                  qosEntries[i],
                                  lastSeenDateMs,
-                                 expiryDateMs
+                                 expiryDateMs,
+                                 publicKeyId
         ));
     }
 
@@ -174,7 +178,8 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
                                  participantId[i],
                                  qosEntries[i],
                                  lastSeenDateMs,
-                                 expiryDateMs
+                                 expiryDateMs,
+                                 publicKeyId
         ));
     }
 
@@ -189,7 +194,7 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
                 mockDiscovery,
                 lookup(
                     A<std::vector<joynr::types::DiscoveryEntry>&>(),
-                    A<const std::string&>(),
+                    A<const std::vector<std::string>&>(),
                     A<const std::string&>(),
                     A<const joynr::types::DiscoveryQos&>()
                 )

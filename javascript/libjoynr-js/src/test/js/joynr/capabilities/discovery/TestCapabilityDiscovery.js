@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,8 @@ joynrTestRequire(
                         onChangeSubscriptions : true
                     }),
                     address : JSON.stringify((newGlobalAddress !== undefined ? newGlobalAddress : address)),
-                    participantId : "700"
+                    participantId : "700",
+                    publicKeyId : ""
                 });
             }
 
@@ -106,6 +107,7 @@ joynrTestRequire(
                 expect(actual.participantId).toEqual(expected.participantId);
                 expect(actual.qos).toEqual(expected.qos);
                 expect(actual.address).toEqual(expected.address);
+                expect(actual.publicKeyId).toEqual(expected.publicKeyId);
             }
 
             function getDiscoveryEntry(domain, interfaceName) {
@@ -126,7 +128,8 @@ joynrTestRequire(
                         onChangeSubscriptions : true
                     }),
                     participantId : "700",
-                    lastSeenDateMs : Date.now()
+                    lastSeenDateMs : Date.now(),
+                    publicKeyId : ""
                 });
             }
 
@@ -259,9 +262,9 @@ joynrTestRequire(
                                                     proxyBuilderSpy,
                                                     "io.joynr");
 
-                                    capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                    capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                        domain : domain,
+                                        domains : [domain],
                                         interfaceName : interfaceName
                                     });
                                     expect(globalCapDirSpy.lookup).not.toHaveBeenCalled();
@@ -273,7 +276,7 @@ joynrTestRequire(
                                 function() {
                                     runs(function(){
                                         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
-                                        capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     });
 
                                     waitsFor(function(){
@@ -284,16 +287,16 @@ joynrTestRequire(
 
                                     runs(function(){
                                         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                         expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName,
                                             cacheMaxAge : discoveryQos.cacheMaxAge
                                         });
                                         expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                     });
@@ -306,9 +309,9 @@ joynrTestRequire(
                                             domain,
                                             interfaceName)
                                     ]);
-                                    capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                    capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                        domain : domain,
+                                        domains : [domain],
                                         interfaceName : interfaceName
                                     });
                                     expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
@@ -320,7 +323,7 @@ joynrTestRequire(
                                 function() {
                                     runs(function(){
                                         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
-                                        capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     });
 
                                     waitsFor(function(){
@@ -331,16 +334,16 @@ joynrTestRequire(
 
                                     runs(function(){
                                         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                         expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName,
                                             cacheMaxAge : discoveryQos.cacheMaxAge
                                         });
                                         expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                     });
@@ -350,9 +353,9 @@ joynrTestRequire(
                                 "calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_ONLY",
                                 function() {
                                     discoveryQos.discoveryScope = DiscoveryScope.LOCAL_ONLY;
-                                    capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                    capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-                                        domain : domain,
+                                        domains : [domain],
                                         interfaceName : interfaceName
                                     });
                                     expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
@@ -364,7 +367,7 @@ joynrTestRequire(
                                 function() {
                                     runs(function(){
                                         discoveryQos.discoveryScope = DiscoveryScope.GLOBAL_ONLY;
-                                        capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     });
 
                                     waitsFor(function(){
@@ -376,12 +379,12 @@ joynrTestRequire(
                                     runs(function(){
                                         expect(localCapStoreSpy.lookup).not.toHaveBeenCalled();
                                         expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName,
                                             cacheMaxAge : discoveryQos.cacheMaxAge
                                         });
                                         expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
-                                            domain : domain,
+                                            domains : [domain],
                                             interfaceName : interfaceName
                                         });
                                     });
@@ -395,10 +398,10 @@ joynrTestRequire(
                                             interfaceName)
                                     ]);
                                     discoveryQos.discoveryScope = DiscoveryScope.GLOBAL_ONLY;
-                                    capabilityDiscovery.lookup(domain, interfaceName, discoveryQos);
+                                    capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
                                     expect(localCapStoreSpy.lookup).not.toHaveBeenCalled();
                                     expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
-                                        domain : domain,
+                                        domains : [domain],
                                         interfaceName : interfaceName,
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
@@ -444,7 +447,7 @@ joynrTestRequire(
                             });
 
                             runs(function() {
-                                capabilityDiscovery.lookup(domain, interfaceName, discoveryQos)
+                                capabilityDiscovery.lookup([domain], interfaceName, discoveryQos)
                                         .then(onFulfilledSpy).catch(onRejectedSpy);
                             });
 
@@ -746,7 +749,8 @@ joynrTestRequire(
                                     onChangeSubscription : true
                                 }),
                                 participantId : "700",
-                                lastSeenDateMs : 123
+                                lastSeenDateMs : 123,
+                                publicKeyId : ""
                             });
                         }
 
@@ -767,7 +771,8 @@ joynrTestRequire(
                                     onChangeSubscription : true
                                 }),
                                 address : JSON.stringify(address),
-                                participantId : "700"
+                                participantId : "700",
+                                publicKeyId : ""
                             });
                         }
 
@@ -913,6 +918,27 @@ joynrTestRequire(
                                                 .toBeTruthy();
                                         expect(spy.onFulfilled).not.toHaveBeenCalled();
                                     });
+                                });
+
+                        it(
+                                "lookup with multiple domains should throw an exception",
+                                function() {
+                                    localCapStoreSpy =
+                                            getSpiedLookupObjWithReturnValue(
+                                                    "localCapStoreSpy",
+                                                    discoveryEntries);
+                                    globalCapCacheSpy =
+                                            getSpiedLookupObjWithReturnValue(
+                                                    "globalCapCacheSpy",
+                                                    []);
+                                    capabilityDiscovery =
+                                            new CapabilityDiscovery(
+                                                    localCapStoreSpy,
+                                                    globalCapCacheSpy,
+                                                    messageRouterSpy,
+                                                    proxyBuilderSpy,
+                                                    "io.joynr");
+                                    expect(capabilityDiscovery.lookup([domain, domain], interfaceName, discoveryQos).isRejected()).toBe(true);
                                 });
 
                     });

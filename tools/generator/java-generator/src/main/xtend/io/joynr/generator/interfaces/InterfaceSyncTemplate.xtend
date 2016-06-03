@@ -101,7 +101,7 @@ import io.joynr.UsedBy;
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, false)»
 	import «datatype»;
 «ENDFOR»
 
@@ -110,7 +110,8 @@ import io.joynr.UsedBy;
 @ProvidedBy(«francaIntf.providerClassName».class)
 @UsedBy(«francaIntf.proxyClassName».class)
 «ENDIF»
-public interface «syncClassName» extends «interfaceName» {
+public interface «syncClassName» extends «interfaceName»«IF hasFireAndForgetMethods(francaIntf)», «interfaceName»FireAndForget«ENDIF» {
+
 «FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
 	«var attributeName = attribute.joynrName»
 	«var attributeType = attribute.typeName.objectDataTypeForPlainType»
@@ -143,14 +144,14 @@ public interface «syncClassName» extends «interfaceName» {
 		}
 «ENDFOR»
 
-«FOR method: getMethods(francaIntf) SEPARATOR "\n"»
+«FOR method: getMethods(francaIntf).filter[!fireAndForget] SEPARATOR "\n"»
 	«var methodName = method.joynrName»
 		/*
 		* «methodName»
 		*/
 		public «methodToReturnTypeName.get(method)» «methodName»(
 				«method.inputParameters.typedParameterList»
-		) «IF method.hasErrorEnum»throws ApplicationException«ENDIF»;
+		)«IF method.hasErrorEnum» throws ApplicationException«ENDIF»;
 «ENDFOR»
 }
 		'''

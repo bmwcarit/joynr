@@ -317,6 +317,8 @@ else()
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
+file(COPY "resources/ListOfCapabilitiesToInject.json"
+     DESTINATION "${JOYNR_BINARY_DIR}/test-resources/")
 
 ### set up stuff common for all test targets ##################################
 
@@ -354,10 +356,14 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${spdlog_INCLUDE_DIRS}
     ${JoynrJsonSerializer_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_INCLUDE_DIR}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
+)
+
+set(
+    JoynrTest_SYSTEM_INCLUDE_DIRECTORIES
+    ${spdlog_INCLUDE_DIRS}
+    ${jsmn_INCLUDE_DIR}
 )
 
 file(
@@ -372,24 +378,29 @@ file(
     "gen/*.h"
 )
 
-add_library(JoynrTestGenerated SHARED
+add_library(JoynrTestGenerated OBJECT
     ${JoynrTest_GENSOURCES}
     ${JoynrTest_GENHEADERS}
 )
 
-target_link_libraries(
-    JoynrTestGenerated
-    ${test_TARGET_LIBRARIES}
-)
+if(NOT USE_PLATFORM_SPDLOG)
+    add_dependencies(JoynrTestGenerated spdlog)
+endif(NOT USE_PLATFORM_SPDLOG)
 
 target_include_directories(
     JoynrTestGenerated
     PUBLIC ${JoynrTest_INCLUDE_DIRECTORIES}
 )
 
+target_include_directories(
+    JoynrTestGenerated
+    SYSTEM PUBLIC
+    ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
+)
+
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
-        OPTIONAL_DBUS_LIBRARIES 
+        OPTIONAL_DBUS_LIBRARIES
         JoynrDbusRuntime
     )
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
@@ -452,6 +463,7 @@ set(
 
 set(
     cluster_controller_test_HEADERS
+    "JoynrTest.h"
     "PrettyPrint.h"
     "utils/MockObjects.h"
     "utils/LibJoynrMockObjects.h"
@@ -529,6 +541,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_UNIT_TESTS})
         AddTest(
             g_UnitTests
+            $<TARGET_OBJECTS:JoynrTestGenerated>
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
             ${libjsonserializer_test_HEADERS}
@@ -538,7 +551,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
             Qt5::Test
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
@@ -573,6 +585,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_INTEGRATION_TESTS})
         AddTest(
            g_IntegrationTests
+           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${cluster_controller_test_HEADERS}
            ${cluster_controller_test_SOURCES}
            ${g_IntegrationTests_SOURCES}
@@ -580,7 +593,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_IntegrationTests
-            JoynrTestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -613,6 +625,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         AddTest(
            g_SystemIntegrationTests
+           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${cluster_controller_test_HEADERS}
            ${cluster_controller_test_SOURCES}
            ${g_SystemIntegrationTests_SOURCES}
@@ -620,7 +633,6 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -661,6 +673,7 @@ else()
     if(${BUILD_UNIT_TESTS})
         AddTest(
             g_UnitTests
+            $<TARGET_OBJECTS:JoynrTestGenerated>
             ${libjoynr_test_HEADERS}
             ${libjoynr_test_SOURCES}
             ${g_UnitTests_SOURCES}
@@ -668,7 +681,6 @@ else()
 
     target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
             Qt5::Test
             ${libjoynr_test_TARGET_LIBRARIES}
         )
@@ -698,6 +710,7 @@ else()
     if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         AddTest(
            g_SystemIntegrationTests
+           $<TARGET_OBJECTS:JoynrTestGenerated>
            ${libjoynr_test_HEADERS}
            ${libjoynr_test_SOURCES}
            ${g_SystemIntegrationTests_SOURCES}
@@ -705,7 +718,6 @@ else()
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
         )
 

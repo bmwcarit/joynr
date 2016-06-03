@@ -1,5 +1,7 @@
 package io.joynr.arbitration;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * %%
@@ -22,9 +24,10 @@ package io.joynr.arbitration;
 import java.util.Collection;
 import java.util.Map;
 
-import joynr.types.DiscoveryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import joynr.types.DiscoveryEntry;
 
 /**
  * Arbitrator using a custom parameter in the QoS map called "priority". The provider with the highest priority value is
@@ -35,7 +38,8 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
     private static final Logger logger = LoggerFactory.getLogger(HighestPriorityArbitrationStrategyFunction.class);
 
     @Override
-    public final DiscoveryEntry select(Map<String, String> parameters, final Collection<DiscoveryEntry> capabilities) {
+    public final Collection<DiscoveryEntry> select(Map<String, String> parameters,
+                                                   final Collection<DiscoveryEntry> capabilities) {
         logger.trace("starting select Provider by priority");
         DiscoveryEntry highestPriorityCapability = null;
         long highestPriority = -1L;
@@ -50,6 +54,6 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
         }
         logger.trace("capability with highest priority: " + highestPriority + "\r\n" + highestPriorityCapability);
 
-        return highestPriorityCapability;
+        return highestPriorityCapability == null ? null : Arrays.asList(highestPriorityCapability);
     }
 }

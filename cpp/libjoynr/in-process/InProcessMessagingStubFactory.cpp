@@ -41,4 +41,11 @@ std::shared_ptr<IMessaging> InProcessMessagingStubFactory::create(
     return std::make_shared<InProcessMessagingStub>(inprocessAddress->getSkeleton());
 }
 
+void InProcessMessagingStubFactory::registerOnMessagingStubClosedCallback(
+        std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                                   destinationAddress)> onMessagingStubClosedCallback)
+{
+    std::ignore = onMessagingStubClosedCallback;
+}
+
 } // namespace joynr

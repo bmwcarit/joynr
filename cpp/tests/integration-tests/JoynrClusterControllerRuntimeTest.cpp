@@ -59,10 +59,10 @@ public:
     std::string settingsFilenameHttp;
     JoynrClusterControllerRuntime* runtime;
     joynr::types::Localisation::GpsLocation gpsLocation;
-    MockMessageReceiver* mockHttpMessageReceiver; // will be deleted when runtime is deleted.
-    MockMessageSender* mockHttpMessageSender;
-    MockMessageReceiver* mockMqttMessageReceiver;
-    MockMessageSender* mockMqttMessageSender;
+    std::shared_ptr<MockMessageReceiver> mockHttpMessageReceiver;
+    std::shared_ptr<MockMessageSender> mockHttpMessageSender;
+    std::shared_ptr<MockMessageReceiver> mockMqttMessageReceiver;
+    std::shared_ptr<MockMessageSender> mockMqttMessageSender;
     QSemaphore semaphore;
 
     JoynrClusterControllerRuntimeTest() :
@@ -82,10 +82,10 @@ public:
                 444,                        // device time
                 444                         // time
             ),
-            mockHttpMessageReceiver(new MockMessageReceiver()),
-            mockHttpMessageSender(new MockMessageSender()),
-            mockMqttMessageReceiver(new MockMessageReceiver()),
-            mockMqttMessageSender(new MockMessageSender()),
+            mockHttpMessageReceiver(std::make_shared<MockMessageReceiver>()),
+            mockHttpMessageSender(std::make_shared<MockMessageSender>()),
+            mockMqttMessageReceiver(std::make_shared<MockMessageReceiver>()),
+            mockMqttMessageSender(std::make_shared<MockMessageSender>()),
             semaphore(0)
     {;
         std::string httpChannelId("http_JoynrClusterControllerRuntimeTest.ChannelId");

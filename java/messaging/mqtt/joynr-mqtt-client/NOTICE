@@ -31,12 +31,12 @@ This project has dependencies to:
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
+  io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
   Mockito under The MIT License
-  org.eclipse.paho.client.mqttv3 under Eclipse Public License - Version 1.0
   SLF4J API Module under MIT License
 

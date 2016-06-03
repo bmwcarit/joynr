@@ -31,6 +31,7 @@ importScripts("../joynr/provisioning/provisioning_cc.js");
 importScripts("provisioning_end2end_common.js");
 importScripts("../joynr/vehicle/RadioProvider.js");
 importScripts("../joynr/vehicle/radiotypes/RadioStation.js");
+importScripts("../joynr/tests/testTypes/ComplexTestType.js");
 importScripts("../joynr/datatypes/exampleTypes/Country.js");
 importScripts("../joynr/datatypes/exampleTypes/StringMap.js");
 importScripts("../joynr/vehicle/radiotypes/ErrorList.js");
@@ -383,6 +384,20 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 }
             });
 
+            radioProvider.methodFireAndForgetWithoutParams.registerOperation(function(opArgs) {
+                var broadcast = radioProvider.fireAndForgetCallArrived;
+                var outputParams = broadcast.createBroadcastOutputParameters();
+                outputParams.setMethodName("methodFireAndForgetWithoutParams");
+                broadcast.fire(outputParams);
+            });
+
+            radioProvider.methodFireAndForget.registerOperation(function(opArgs) {
+                var broadcast = radioProvider.fireAndForgetCallArrived;
+                var outputParams = broadcast.createBroadcastOutputParameters();
+                outputParams.setMethodName("methodFireAndForget");
+                broadcast.fire(outputParams);
+            });
+
             providerQos.priority = Date.now();
             // register provider at the given providerDomain
             libjoynrAsync.registration.registerProvider(
@@ -396,6 +411,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 reject(error);
                 throw new Error("error registering provider: " + error);
             });
+
             return libjoynrAsync;
         }).catch(function(error){
             throw error;

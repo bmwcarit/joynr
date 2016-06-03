@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,10 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
         : discoveryProxy(discoveryProxy),
           discoveryQos(discoveryQos),
           systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
+                             discoveryQos.getDiscoveryTimeoutMs(),
                              discoveryQos.getDiscoveryScope(),
                              discoveryQos.getProviderMustSupportOnChange()),
-          domain(domain),
+          domains({domain}),
           interfaceName(interfaceName),
           participantId(""),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),

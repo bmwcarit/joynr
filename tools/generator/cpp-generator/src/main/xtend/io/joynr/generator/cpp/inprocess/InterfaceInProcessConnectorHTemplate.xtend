@@ -132,7 +132,7 @@ public:
 	«produceAsyncGetterDeclarations(francaIntf, false)»
 	«produceAsyncSetterDeclarations(francaIntf, false)»
 	«produceAsyncMethodDeclarations(francaIntf, false, true)»
-
+	«produceFireAndForgetMethodDeclarations(francaIntf, false)»
 	«produceSubscribeUnsubscribeMethods(francaIntf, false)»
 
 private:

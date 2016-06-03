@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 #include <PrettyPrint.h>
+#include "JoynrTest.h"
 #include "joynr/Util.h"
 #include "joynr/types/TestTypes/TEnum.h"
 #include "joynr/types/TestTypes/TStruct.h"
@@ -215,6 +216,17 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     EXPECT_EQ(expectedVariantVectorParam.end(), expectedIt);
     EXPECT_EQ(deserializedVariantVectorParam.end(), deserializedIt);
+}
+
+TEST_F(JsonSerializerTest, deserialize_byte_array_with_null_pointer) {
+    std::string jsonString =
+            "{\"_typeName\":\"joynr.Request\", \
+            \"methodName\": \"deserialize_byte_array_with_null_pointer\", \
+            \"paramDatatypes\": [\"List\"], \
+            \"params\": [[1,null,3,255,254,253]], \
+            \"requestReplyId\": \"789eaj21312390\" }";
+
+    EXPECT_THROW(JsonSerializer::deserialize<Request>(jsonString), std::invalid_argument);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt8) {
@@ -435,7 +447,7 @@ void serializeAndDeserializePermission(const Permission::Enum& input, const std:
 TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum) {
     using namespace infrastructure::DacTypes;
 
-    ASSERT_NO_THROW(serializeAndDeserializePermission(Permission::NO, "Permission::NO", logger));
+    JOYNR_ASSERT_NO_THROW(serializeAndDeserializePermission(Permission::NO, "Permission::NO", logger));
 
     ASSERT_ANY_THROW(serializeAndDeserializePermission(static_cast<Permission::Enum>(999), "999", logger));
 }
@@ -443,7 +455,7 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum) {
 TEST_F(JsonSerializerTest, deserializeTypeEnum) {
     using namespace infrastructure::DacTypes;
 
-    ASSERT_NO_THROW(deserializePermission("NO", Permission::NO));
+    JOYNR_ASSERT_NO_THROW(deserializePermission("NO", Permission::NO));
 
     ASSERT_ANY_THROW(deserializePermission("999", static_cast<Permission::Enum>(999)));
 }
@@ -788,6 +800,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     std::int64_t lastSeenMs = 3;
     std::int64_t expiryDateMs = 7;
 
+    std::string publicKeyId("publicKeyId");
     joynr::system::RoutingTypes::ChannelAddress channelAddress1("localhost", "channelId1");
     std::string serializedAddress1 = JsonSerializer::serialize(channelAddress1);
     joynr::system::RoutingTypes::ChannelAddress channelAddress2("localhost", "channelId2");
@@ -795,10 +808,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
 
     std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntries;
     types::GlobalDiscoveryEntry globalDiscoveryEntry1(providerVersion,
-            "domain1", "interface1", "participant1", types::ProviderQos(), lastSeenMs, expiryDateMs, serializedAddress1);
+            "domain1", "interface1", "participant1", types::ProviderQos(), lastSeenMs, expiryDateMs, publicKeyId, serializedAddress1);
     globalDiscoveryEntries.push_back(globalDiscoveryEntry1);
     globalDiscoveryEntries.push_back(types::GlobalDiscoveryEntry(providerVersion,
-        "domain2", "interface2", "participant2", types::ProviderQos(), lastSeenMs, expiryDateMs, serializedAddress2));
+        "domain2", "interface2", "participant2", types::ProviderQos(), lastSeenMs, expiryDateMs, publicKeyId, serializedAddress2));
 
     Reply reply;
 
@@ -1023,6 +1036,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
                 R"("supportsOnChangeSubscriptions": false},)"
                 R"("lastSeenDateMs": 123,)"
                 R"("expiryDateMs": 1234,)"
+                R"("publicKeyId": "publicKeyId",)"
                 R"("address": "serialized_address"})"
                 );
 
@@ -1036,6 +1050,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
     globalDiscoveryEntry.setParticipantId("someParticipant");
     globalDiscoveryEntry.setAddress("serialized_address");
     globalDiscoveryEntry.setInterfaceName("testInterface");
+    globalDiscoveryEntry.setPublicKeyId("publicKeyId");
     JOYNR_LOG_DEBUG(logger, "GlobalDiscoveryEntry {}", globalDiscoveryEntry.toString());
 
     std::string serialized = JsonSerializer::serialize<types::GlobalDiscoveryEntry>(globalDiscoveryEntry);

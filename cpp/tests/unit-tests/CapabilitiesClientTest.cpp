@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,55 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
+
+#include <string>
+#include <vector>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 
-class CapabilitiesClientTest : public ::testing::Test {
+class CapabilitiesClientTestFixture : public ::testing::Test {
 public:
-    CapabilitiesClientTest()
-        : capClient(new CapabilitiesClient())
-    {
-    }
+    CapabilitiesClientTestFixture():
+        capClient(std::make_unique<CapabilitiesClient>()),
+        proxyBuilder(std::make_unique<MockProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>())
+    {}
 
-private:
-    CapabilitiesClient* capClient;
-    DISALLOW_COPY_AND_ASSIGN(CapabilitiesClientTest);
+protected:
+    std::unique_ptr<ICapabilitiesClient> capClient;
+    std::unique_ptr<MockProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> proxyBuilder;
 };
+
+TEST_F(CapabilitiesClientTestFixture, callWithoutSetProxyBuilder)
+{
+    // prepare test data
+    joynr::types::GlobalDiscoveryEntry aCapabilitiesInformation;
+    std::vector<types::GlobalDiscoveryEntry> capabilitiesInformationList;
+    capabilitiesInformationList.push_back(aCapabilitiesInformation);
+    std::vector<std::string> participantIds = {"aParticipantIDinAvector"};
+    auto onSuccess = [](const std::vector<joynr::types::GlobalDiscoveryEntry>& result) {
+        std::ignore = result;
+    };
+
+    // Attempt to call add, remove or lookup without settting ProxyBuilder should
+    // trigger an assertion
+    EXPECT_CALL(*(proxyBuilder.get()), build()).Times(0);
+    EXPECT_CALL(*(proxyBuilder.get()), setCached(_)).Times(0);
+    EXPECT_CALL(*(proxyBuilder.get()), setMessagingQos(_)).Times(0);
+    EXPECT_CALL(*(proxyBuilder.get()), setDiscoveryQos(_)).Times(0);
+
+    EXPECT_DEATH(capClient->add(capabilitiesInformationList), "Assertion.*");
+    EXPECT_DEATH(capClient->remove("aParticipantID"), "Assertion.*");
+    EXPECT_DEATH(capClient->remove(participantIds), "Assertion.*");
+    EXPECT_DEATH(capClient->lookup({"domain"}, "interface", 0), "Assertion.*");
+    EXPECT_DEATH(capClient->lookup({"domain"}, "interface", 0, onSuccess), "Assertion.*");
+    EXPECT_DEATH(capClient->lookup("aParticipantID", onSuccess), "Assertion.*");
+}

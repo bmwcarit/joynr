@@ -72,6 +72,7 @@ public class StaticCapabilitiesProvisioningTest {
         ProviderQos qos = new ProviderQos();
         Long lastSeenDateMs = 0L;
         Long expiryDateMs = 0L;
+        String publicKeyId = "publicKeyId";
         Address address = new MqttAddress("brokerUri", "topic");
         GlobalDiscoveryEntry entry1 = CapabilityUtils.newGlobalDiscoveryEntry("domain1",
                                                                               "interfaceName1",
@@ -79,6 +80,7 @@ public class StaticCapabilitiesProvisioningTest {
                                                                               qos,
                                                                               lastSeenDateMs,
                                                                               expiryDateMs,
+                                                                              publicKeyId,
                                                                               address);
 
         GlobalDiscoveryEntry entry2 = CapabilityUtils.newGlobalDiscoveryEntry("domain2",
@@ -87,6 +89,7 @@ public class StaticCapabilitiesProvisioningTest {
                                                                               qos,
                                                                               lastSeenDateMs,
                                                                               expiryDateMs,
+                                                                              publicKeyId,
                                                                               address);
         discoveryEntries.add(entry1);
         discoveryEntries.add(entry2);

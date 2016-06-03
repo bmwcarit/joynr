@@ -18,3 +18,5 @@ if hash nproc 2>/dev/null; then
 else
     JOBS=1
 fi
+
+ulimit -c unlimited

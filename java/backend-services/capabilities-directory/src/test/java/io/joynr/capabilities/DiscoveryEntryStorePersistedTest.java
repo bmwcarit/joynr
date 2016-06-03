@@ -128,7 +128,7 @@ public class DiscoveryEntryStorePersistedTest {
         String interfaceName = "interfaceName";
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry(domain, interfaceName, "participantId");
         store.add(discoveryEntry);
-        Collection<DiscoveryEntry> lookup = store.lookup(domain, interfaceName);
+        Collection<DiscoveryEntry> lookup = store.lookup(new String[]{ domain }, interfaceName);
         assertTrue(lookup.contains(discoveryEntry));
     }
 
@@ -161,6 +161,7 @@ public class DiscoveryEntryStorePersistedTest {
         ProviderQos qos = new ProviderQos();
         long lastSeenDateMs = 123L;
         long expiryDateMs = Long.MAX_VALUE;
+        String publicKeyId = "publicKeyId";
         Address address = new MqttAddress("brokerUri", "topic");
         String addressSeialized = new ObjectMapper().writeValueAsString(address);
         GlobalDiscoveryEntryPersisted discoveryEntry = new GlobalDiscoveryEntryPersisted(new Version(47, 11),
@@ -170,13 +171,14 @@ public class DiscoveryEntryStorePersistedTest {
                                                                                          qos,
                                                                                          lastSeenDateMs,
                                                                                          expiryDateMs,
+                                                                                         publicKeyId,
                                                                                          addressSeialized);
         return discoveryEntry;
     }
 
     private void assertContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
         for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
-            Collection<DiscoveryEntry> returnedEntries = store.lookup(discoveryEntry.getDomain(),
+            Collection<DiscoveryEntry> returnedEntries = store.lookup(new String[]{ discoveryEntry.getDomain() },
                                                                       discoveryEntry.getInterfaceName(),
                                                                       10000);
             assertTrue(returnedEntries.contains(discoveryEntry));
@@ -185,7 +187,7 @@ public class DiscoveryEntryStorePersistedTest {
 
     private void assertNotContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
         for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
-            Collection<DiscoveryEntry> returnedEntries = store.lookup(discoveryEntry.getDomain(),
+            Collection<DiscoveryEntry> returnedEntries = store.lookup(new String[]{ discoveryEntry.getDomain() },
                                                                       discoveryEntry.getInterfaceName(),
                                                                       10000);
             assertFalse(returnedEntries.contains(discoveryEntry));

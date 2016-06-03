@@ -20,17 +20,13 @@ package io.joynr.dispatching;
  */
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
-import io.joynr.dispatching.rpc.RpcUtils;
-import io.joynr.dispatching.subscription.PublicationManager;
-import io.joynr.dispatching.subscription.SubscriptionManager;
-import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.provider.AbstractSubscriptionPublisher;
-import io.joynr.provider.ProviderContainer;
-import io.joynr.proxy.JoynrMessagingConnectorFactory;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -42,13 +38,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import joynr.Request;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -57,6 +50,21 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
+
+import io.joynr.common.ExpiryDate;
+import io.joynr.dispatching.rpc.RpcUtils;
+import io.joynr.dispatching.subscription.PublicationManager;
+import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.messaging.JsonMessageSerializerModule;
+import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.provider.AbstractSubscriptionPublisher;
+import io.joynr.provider.ProviderContainer;
+import io.joynr.proxy.JoynrMessagingConnectorFactory;
+import joynr.JoynrMessage;
+import joynr.OneWayRequest;
+import joynr.Request;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DispatcherImplTest {
@@ -74,10 +82,11 @@ public class DispatcherImplTest {
 
     private Dispatcher fixture;
     private ProviderDirectory requestCallerDirectory;
+    private JoynrMessageFactory joynrMessageFactory;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException {
-        Injector injector = Guice.createInjector(new AbstractModule() {
+        Injector injector = Guice.createInjector(new JsonMessageSerializerModule(), new AbstractModule() {
 
             @Override
             protected void configure() {
@@ -108,6 +117,7 @@ public class DispatcherImplTest {
             }
         });
         requestCallerDirectory = injector.getInstance(ProviderDirectory.class);
+        joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
     }
 
     @Test
@@ -145,7 +155,23 @@ public class DispatcherImplTest {
 
         // should not throw a timeout exception
         future.get(1000, TimeUnit.MILLISECONDS);
-        Mockito.verify(messageReceiverMock).start(Mockito.eq(fixture), Mockito.any(ReceiverStatusListener.class));
+        verify(messageReceiverMock).start(eq(fixture), any(ReceiverStatusListener.class));
 
+    }
+
+    @Test
+    public void testHandleOneWayRequest() throws IOException {
+        OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
+        String toParticipantId = "toParticipantId";
+        ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(1000L);
+        JoynrMessage joynrMessage = joynrMessageFactory.createOneWayRequest("fromParticipantId",
+                                                                            toParticipantId,
+                                                                            request,
+                                                                            expiryDate);
+
+        fixture.messageArrived(joynrMessage);
+
+        verify(requestReplyManagerMock).handleOneWayRequest(toParticipantId, request, joynrMessage.getExpiryDate());
+        verify(messageRouterMock, never()).route((JoynrMessage) any());
     }
 }

@@ -134,7 +134,6 @@ joynrTestRequire(
                                 libjoynrMessagingAddress : libjoynrMessagingAddress,
                                 requestReplyManager : requestReplyManagerSpy,
                                 publicationManager : publicationManagerSpy,
-                                localChannelId : localChannelId,
                                 loggingManager : loggingManagerSpy
                             });
 
@@ -145,6 +144,7 @@ joynrTestRequire(
                                 qos : providerQos,
                                 channelId : localChannelId,
                                 participantId : participantId,
+                                publicKeyId: "",
                                 address : address
                             });
                         });

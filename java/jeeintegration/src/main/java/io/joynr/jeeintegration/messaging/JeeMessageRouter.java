@@ -68,6 +68,7 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.MessageRouterIm
 
     @Override
     protected void schedule(Runnable runnable, String messageId, long delay, TimeUnit timeUnit) {
+        LOG.trace("Scheduling {} on {} with delay {} {}", new Object[]{ runnable, scheduler, delay, timeUnit });
         scheduler.schedule(runnable, delay, timeUnit);
     }
 }

@@ -1,6 +1,3 @@
-/**
- *
- */
 package io.joynr.jeeintegration.messaging;
 
 /*
@@ -23,7 +20,6 @@ package io.joynr.jeeintegration.messaging;
  */
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
@@ -31,10 +27,8 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
@@ -42,14 +36,15 @@ import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
-import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
- * Like {@link io.joynr.messaging.mqtt.MqttModule}, but does not configure the messaging skeleton, so that messages are
- * only sent via MQTT, but not received via MQTT. This is so that we can receive messages via HTTP from the
- * {@link JeeServletMessageReceiver} so that a load balancer can distribute the load in a JEE cluster.
+ * Like {@link io.joynr.messaging.mqtt.MqttModule}, but configures the {@link MqttMessagingSkeletonProvider} so that if
+ * the {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} property
+ * is set to <code>true</true>, messages are only sent via MQTT, but not received via MQTT. This is so that we can
+ * receive messages via HTTP from the {@link JeeServletMessageReceiver} in order for a load balancer to be able to
+ * distribute the load across a JEE cluster.
  */
 public class JeeMqttMessageSendingModule extends AbstractModule {
 
@@ -79,7 +74,7 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     protected void configure() {
         messagingStubFactory.addBinding(MqttAddress.class).to(MqttMessagingStubFactory.class);
         messageSerializerFactory.addBinding(MqttAddress.class).to(MqttMessageSerializerFactory.class);
-        messagingSkeletonFactory.addBinding(MqttAddress.class).to(NoOpMessagingSkeleton.class);
+        messagingSkeletonFactory.addBinding(MqttAddress.class).toProvider(MqttMessagingSkeletonProvider.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
@@ -89,43 +84,6 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);
-    }
-
-    /**
-     * Because the messaging stub will refuse to send a message via MQTT unless a messaging skeleton has been registered
-     * for the MqttAddress type, we bind a dummy implementation in this module which simply does nothing (no operation -
-     * NoOp).
-     */
-    public static class NoOpMessagingSkeleton implements IMessagingSkeleton {
-
-        private MqttClientFactory mqttClientFactory;
-        private JoynrMqttClient mqttClient;
-
-        @Inject
-        public NoOpMessagingSkeleton(MqttClientFactory mqttClientFactory) {
-            this.mqttClientFactory = mqttClientFactory;
-        }
-
-        @Override
-        public void transmit(JoynrMessage message, FailureAction failureAction) {
-        }
-
-        @Override
-        public void transmit(String serializedMessage, FailureAction failureAction) {
-        }
-
-        @Override
-        public void init() {
-            mqttClient = mqttClientFactory.create();
-            mqttClient.setMessageListener(this);
-            mqttClient.start();
-        }
-
-        @Override
-        public void shutdown() {
-            mqttClient.shutdown();
-        }
-
     }
 
 }

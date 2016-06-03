@@ -51,7 +51,7 @@ class InterfaceSubscriptionTemplate extends InterfaceTemplate {
 		import io.joynr.pubsub.SubscriptionQos;
 		«ENDIF»
 
-		«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, true, false)»
+		«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, true, false, false)»
 			import «datatype»;
 		«ENDFOR»
 

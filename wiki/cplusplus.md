@@ -125,11 +125,11 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
 
 The class ```DiscoveryQos``` configures how the search for a provider will be handled. It has the following members:
 
-* **discoveryTimeout**  Timeout for discovery process (milliseconds), afterwards triggers JoynrArbitrationException
-* **cacheMaxAge** Defines the maximum allowed age of cached entries (milliseconds), only younger entries will be considered. If no suitable providers are found, then depending on the discoveryScope, a remote global lookup may be triggered.
+* **discoveryTimeoutMs**  Timeout for discovery process (milliseconds), afterwards triggers JoynrArbitrationException
+* **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds), only younger entries will be considered. If no suitable providers are found, then depending on the discoveryScope, a remote global lookup may be triggered.
 * **arbitrationStrategy** The arbitration strategy (see below)
 * **customParameters** special parameters, that must match, e.g. keyword (see below)
-* **retryInterval** The time to wait between discovery retries after encountering a discovery error.
+* **retryIntervalMs** The time to wait between discovery retries after encountering a discovery error.
 * **discoveryScope** default: LOCAL_AND_GLOBAL (details see below)
 
 The **discoveryScope** defines, whether a suitable provider will be searched only in the local capabilities directory or also in the global one.
@@ -168,12 +168,12 @@ Example for the creation of a DiscoveryQos class object:
 ```cpp
 DiscoveryQos discoveryQos;
 
-discoveryQos.setDiscoveryTimeout(10000); // optional, default 30000
-discoveryQos.setCacheMaxAge(0); // optional, default 0
+discoveryQos.setDiscoveryTimeoutMs(10000); // optional, default 30000
+discoveryQos.setCacheMaxAgeMs(0); // optional, default 0
 discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // default HP
 discoveryQos.addCustomParameter(key, value); // optional, default none
 discoveryQos.setProviderMustSupportOnChange(true); // optional, default false
-discoveryQos.setRetryInterval(1000); // optional, default 1000
+discoveryQos.setRetryIntervalMs(1000); // optional, default 1000
 ```
 
 ## The message quality of service

@@ -27,7 +27,6 @@
 #include "MosquittoConnection.h"
 #include "MqttSettings.h"
 
-#include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
@@ -38,11 +37,12 @@ namespace joynr
 
 class JoynrMessage;
 class MessageRouter;
+class MessagingSettings;
 
 class MosquittoSubscriber : public Thread, MosquittoConnection
 {
 public:
-    explicit MosquittoSubscriber(const BrokerUrl& brokerUrl,
+    explicit MosquittoSubscriber(const MessagingSettings& settings,
                                  const std::string& channelId,
                                  Semaphore* channelCreatedSemaphore);
 
@@ -61,7 +61,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoSubscriber);
 
     MqttSettings mqttSettings;
-    const BrokerUrl brokerUrl;
     std::string channelId;
     std::string topic;
     Semaphore* channelCreatedSemaphore;

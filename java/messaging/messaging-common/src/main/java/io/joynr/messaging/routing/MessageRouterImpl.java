@@ -140,6 +140,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
             address = routingTable.get(toParticipantId);
         }
+        logger.trace("Participant with ID {} has address {}", new Object[]{ toParticipantId, address });
         return address;
     }
 
@@ -160,9 +161,11 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
     private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
         try {
+            logger.debug("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
             schedule(new Runnable() {
                 @Override
                 public void run() {
+                    logger.debug("Staring processing of message {}", message);
                     try {
                         checkExpiry(message);
 

@@ -49,8 +49,6 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 «ENDFOR»
 
 #include "joynr/Future.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
 #include "joynr/exceptions/JoynrException.h"
 
 «getNamespaceStarter(francaIntf)»
@@ -63,7 +61,8 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 		bool cached
 ) :
 	joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
-	«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
+	«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«IF hasFireAndForgetMethods(francaIntf)»,
+	«interfaceName»FireAndForgetProxy(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«ENDIF»
 {
 }
 
@@ -121,30 +120,31 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 	«ENDIF»
 «ENDFOR»
 «FOR method: getMethods(francaIntf)»
-	«var methodName = method.joynrName»
-	«var outputParameters = method.commaSeparatedOutputParameterTypes»
-	«var inputParamList = getCommaSeperatedUntypedInputParameterList(method)»
-	/*
-	 * «methodName»
-	 */
-	«produceAsyncMethodSignature(francaIntf, method, asyncClassName)»
-	{
-		if (connector==nullptr){
-			«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
-			JOYNR_LOG_WARN(logger, "«errorMsg»");
-			exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException("«errorMsg»");
-			if (onRuntimeError) {
-				onRuntimeError(error);
+	«IF !method.fireAndForget»
+		«var methodName = method.joynrName»
+		«var outputParameters = method.commaSeparatedOutputParameterTypes»
+		«var inputParamList = getCommaSeperatedUntypedInputParameterList(method)»
+		/*
+		 * «methodName»
+		 */
+		«produceAsyncMethodSignature(francaIntf, method, asyncClassName)»
+		{
+			if (connector==nullptr){
+				«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
+				JOYNR_LOG_WARN(logger, "«errorMsg»");
+				exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException("«errorMsg»");
+				if (onRuntimeError) {
+					onRuntimeError(error);
+				}
+				auto future = std::make_shared<joynr::Future<«outputParameters»>>();
+				future->onError(error);
+				return future;
 			}
-			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
-			future->onError(error);
-			return future;
+			else{
+				return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess, «IF method.hasErrorEnum»onApplicationError, «ENDIF»onRuntimeError);
+			}
 		}
-		else{
-			return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess, «IF method.hasErrorEnum»onApplicationError, «ENDIF»onRuntimeError);
-		}
-	}
-
+	«ENDIF»
 «ENDFOR»
 «getNamespaceEnder(francaIntf)»
 '''

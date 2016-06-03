@@ -19,6 +19,8 @@ package io.joynr.test;
  * #L%
  */
 
+import java.util.Set;
+
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -50,6 +52,11 @@ public class TestRuntime implements JoynrRuntime {
 
     @Override
     public void shutdown(boolean clear) {
+    }
+
+    @Override
+    public <T> ProxyBuilder<T> getProxyBuilder(Set<String> domains, Class<T> interfaceClass) {
+        return null;
     }
 
 }

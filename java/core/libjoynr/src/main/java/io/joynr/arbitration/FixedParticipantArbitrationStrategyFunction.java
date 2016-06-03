@@ -1,5 +1,7 @@
 package io.joynr.arbitration;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * %%
@@ -30,7 +32,7 @@ public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStra
     private static final Logger logger = LoggerFactory.getLogger(FixedParticipantArbitrationStrategyFunction.class);
 
     @Override
-    public DiscoveryEntry select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
+    public Collection<DiscoveryEntry> select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
         String participantId = parameters.get(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD);
         logger.trace("starting select Provider by participant Id: {}", participantId);
         DiscoveryEntry capabilityWithParticipantId = null;
@@ -42,6 +44,6 @@ public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStra
         }
         logger.trace("capability with participantId: {}: {}" + participantId, capabilityWithParticipantId);
 
-        return capabilityWithParticipantId;
+        return capabilityWithParticipantId == null ? null : Arrays.asList(capabilityWithParticipantId);
     }
 }

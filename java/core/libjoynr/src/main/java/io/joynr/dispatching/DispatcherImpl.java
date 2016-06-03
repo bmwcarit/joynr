@@ -19,29 +19,12 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.dispatching.subscription.PublicationManager;
-import io.joynr.dispatching.subscription.SubscriptionManager;
-import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.provider.ProviderCallback;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Singleton;
-
-import joynr.JoynrMessage;
-import joynr.OneWay;
-import joynr.Reply;
-import joynr.Request;
-import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +34,23 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+
+import io.joynr.dispatching.subscription.PublicationManager;
+import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.provider.ProviderCallback;
+import joynr.JoynrMessage;
+import joynr.OneWayRequest;
+import joynr.Reply;
+import joynr.Request;
+import joynr.SubscriptionPublication;
+import joynr.SubscriptionRequest;
+import joynr.SubscriptionStop;
 
 public class DispatcherImpl implements Dispatcher {
 
@@ -83,50 +83,56 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void sendSubscriptionRequest(String fromParticipantId,
-                                        String toParticipantId,
+                                        Set<String> toParticipantIds,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos qosSettings,
                                         boolean broadcast) throws JoynrSendBufferFullException,
                                                           JoynrMessageNotSentException, JsonGenerationException,
                                                           JsonMappingException, IOException {
-        JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                             toParticipantId,
-                                                                             subscriptionRequest,
-                                                                             DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()),
-                                                                             broadcast);
+        for (String toParticipantId : toParticipantIds) {
+            JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
+                                                                                 toParticipantId,
+                                                                                 subscriptionRequest,
+                                                                                 DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()),
+                                                                                 broadcast);
 
-        messageRouter.route(message);
+            messageRouter.route(message);
+        }
     }
 
     @Override
     public void sendSubscriptionStop(String fromParticipantId,
-                                     String toParticipantId,
+                                     Set<String> toParticipantIds,
                                      SubscriptionStop subscriptionStop,
                                      MessagingQos messagingQos) throws JoynrSendBufferFullException,
                                                                JoynrMessageNotSentException, JsonGenerationException,
                                                                JsonMappingException, IOException {
-        JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
-                                                                          toParticipantId,
-                                                                          subscriptionStop,
-                                                                          DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
-        messageRouter.route(message);
+        for (String toParticipantId : toParticipantIds) {
+            JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
+                                                                              toParticipantId,
+                                                                              subscriptionStop,
+                                                                              DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
+            messageRouter.route(message);
+        }
 
     }
 
     @Override
     public void sendSubscriptionPublication(String fromParticipantId,
-                                            String toParticipantId,
+                                            Set<String> toParticipantIds,
                                             SubscriptionPublication publication,
                                             MessagingQos qosSettings) throws JoynrSendBufferFullException,
                                                                      JoynrMessageNotSentException,
                                                                      JsonGenerationException, JsonMappingException,
                                                                      IOException {
 
-        JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
-                                                                     toParticipantId,
-                                                                     publication,
-                                                                     DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()));
-        messageRouter.route(message);
+        for (String toParticipantId : toParticipantIds) {
+            JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
+                                                                         toParticipantId,
+                                                                         publication,
+                                                                         DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()));
+            messageRouter.route(message);
+        }
     }
 
     public void sendReply(final String fromParticipantId, final String toParticipantId, Reply reply, long expiryDate)
@@ -166,7 +172,7 @@ public class DispatcherImpl implements Dispatcher {
                     logger.debug("Parsed request from message payload :" + message.getPayload());
                     handle(request, message.getFrom(), message.getTo(), expiryDate);
                 } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
-                    OneWay oneWayRequest = objectMapper.readValue(message.getPayload(), OneWay.class);
+                    OneWayRequest oneWayRequest = objectMapper.readValue(message.getPayload(), OneWayRequest.class);
                     logger.debug("Parsed one way request from message payload :" + message.getPayload());
                     handle(oneWayRequest, message.getTo(), expiryDate);
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
@@ -234,7 +240,7 @@ public class DispatcherImpl implements Dispatcher {
         requestReplyManager.handleReply(reply);
     }
 
-    private void handle(OneWay oneWayRequest, String toParticipantId, final long expiryDate) {
+    private void handle(OneWayRequest oneWayRequest, String toParticipantId, final long expiryDate) {
         requestReplyManager.handleOneWayRequest(toParticipantId, oneWayRequest, expiryDate);
     }
 

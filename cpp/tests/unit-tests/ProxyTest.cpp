@@ -49,14 +49,14 @@ public:
         mockConnectorFactory(),
         mockInProcessConnectorFactory()
     {}
-    void SetUp() {
+    void SetUp() override {
         AbstractSyncAsyncTest::SetUp();
         mockInProcessConnectorFactory = new MockInProcessConnectorFactory();
         JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, (SubscriptionManager*) nullptr);
         mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     }
 
-    void TearDown(){
+    void TearDown() override {
         AbstractSyncAsyncTest::TearDown();
         delete mockConnectorFactory;
     }
@@ -68,7 +68,7 @@ public:
             const MessagingQos&, // messaging QoS
             const Request&, // request object to send
             std::shared_ptr<IReplyCaller> // reply caller to notify when reply is received
-    )>& setExpectationsForSendRequestCall(int expectedTypeId, std::string methodName) {
+    )>& setExpectationsForSendRequestCall(std::string methodName) override {
         return EXPECT_CALL(
                     *mockJoynrMessageSender,
                     sendRequest(
@@ -76,15 +76,12 @@ public:
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
                         Property(&Request::getMethodName, Eq(methodName)), // request object to send
-                        Property(
-                            &std::shared_ptr<IReplyCaller>::get,
-                            AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(expectedTypeId)))
-                        ) // reply caller to notify when reply is received
+                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()) // reply caller to notify when reply is received
                     )
         );
     }
 
-    tests::Itest* createFixture(bool cacheEnabled) {
+    tests::Itest* createFixture(bool cacheEnabled) override {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
         tests::testProxy* proxy = new tests::testProxy(
                     endPointAddress,

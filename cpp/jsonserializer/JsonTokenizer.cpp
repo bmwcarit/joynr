@@ -201,16 +201,14 @@ Variant JsonValue::parseJsonPrimitive(const std::string &tokenString)
             if (ch == '-') {
                 numberType = NumberType::INT;
             } else if (!std::isdigit(ch)) {
-                // This is not a number - return an empty variant
-                return Variant::NULL_VARIANT();
+                throw std::invalid_argument("Cannot parse \"" + tokenString + "\" as a primitive");
             }
         } else if (!std::isdigit(ch))  {
             // Any non-digits imply floating point
             if (ch == '.' || ch == 'e') {
                 numberType = NumberType::FLOAT;
             } else {
-                // This is not a number - return an empty variant
-                return Variant::NULL_VARIANT();
+                throw std::invalid_argument("Cannot parse \"" + tokenString + "\" as a primitive");
             }
         }
     }

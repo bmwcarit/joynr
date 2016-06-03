@@ -92,10 +92,10 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(final String domain, final String interfaceName) {
+    public Promise<Lookup1Deferred> lookup(final String[] domains, final String interfaceName) {
         Lookup1Deferred deferred = new Lookup1Deferred();
-        logger.debug("Searching channels for domain: " + domain + " interfaceName: " + interfaceName + " {}");
-        Collection<DiscoveryEntry> discoveryEntries = discoveryEntryStore.lookup(domain, interfaceName);
+        logger.debug("Searching channels for domains: {} interfaceName: {}", domains, interfaceName);
+        Collection<DiscoveryEntry> discoveryEntries = discoveryEntryStore.lookup(domains, interfaceName);
         GlobalDiscoveryEntry[] globalDiscoveryEntries = new GlobalDiscoveryEntry[discoveryEntries.size()];
         int index = 0;
         for (DiscoveryEntry discoveryEntry : discoveryEntries) {
@@ -120,5 +120,12 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             deferred.resolve((GlobalDiscoveryEntry) discoveryEntry);
         }
         return new Promise<Lookup2Deferred>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> touch(String clusterControllerId) {
+        DeferredVoid deferred = new DeferredVoid();
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
     }
 }

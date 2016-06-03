@@ -70,7 +70,7 @@ exports.implementation = {
                         {detailMessage: "methodWithStringParameters: invalid argument stringArg"}));
             } else {
                 resolve({
-                    stringOut: "done"
+                    stringOut: "received stringArg: " + opArgs.stringArg
                 });
             }
         });
@@ -112,9 +112,16 @@ exports.implementation = {
                 clearTimeout(intervalTimer);
                 intervalTimer = undefined;
             }
+            var numberOfBroadcasts = 0;
+            var periodMs = 250;
+            var validityMs = 60000;
             intervalTimer = setInterval(function() {
                 sendBroadcast(self);
-            }, 1000);
+                numberOfBroadcasts++;
+                if (numberOfBroadcasts === (validityMs / periodMs)) {
+                    clearInterval(intervalTimer);
+                }
+            }, periodMs);
             if (intervalTimer) {
                 // intervalTimer successfully started
                 resolve();

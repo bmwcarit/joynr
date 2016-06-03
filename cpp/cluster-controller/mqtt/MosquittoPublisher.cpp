@@ -20,18 +20,20 @@
 
 #include "MosquittoPublisher.h"
 
+#include "joynr/MessagingSettings.h"
+
 namespace joynr
 {
 
 INIT_LOGGER(MosquittoPublisher);
 
-MosquittoPublisher::MosquittoPublisher(const BrokerUrl& brokerUrl)
+MosquittoPublisher::MosquittoPublisher(const MessagingSettings& settings)
         : joynr::Thread("MosquittoPublisher"),
-          MosquittoConnection(brokerUrl),
+          MosquittoConnection(settings),
           mqttSettings(),
-          brokerUrl(brokerUrl),
           isRunning(true)
 {
+    mqttSettings.reconnectSleepTimeMs = settings.getMqttReconnectSleepTime();
 }
 
 void MosquittoPublisher::interrupt()

@@ -42,7 +42,7 @@ public class TypeSerializerTest {
     public void testFilterParameters() throws Exception {
         URL fixtureURL = TypeSerializerTest.class.getResource("TypeSerializer.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
-        Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
+        Resource fixtureResource = loader.getResources().iterator().next();
         CppTemplateFactory templateFactory = Guice.createInjector(new AbstractModule() {
 
             @Override

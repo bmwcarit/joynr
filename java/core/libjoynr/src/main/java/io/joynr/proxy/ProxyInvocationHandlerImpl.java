@@ -25,6 +25,7 @@ import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
+import io.joynr.dispatcher.rpc.annotation.FireAndForget;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -40,6 +41,7 @@ import io.joynr.proxy.invocation.UnsubscribeInvocation;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -71,24 +73,28 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConcurrentLinkedQueue<MethodInvocation> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation>();
     private ConcurrentLinkedQueue<SubscriptionInvocation> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionInvocation>();
     private String interfaceName;
-    private String domain;
+    private Set<String> domains;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
     @Inject
-    public ProxyInvocationHandlerImpl(@Assisted("domain") String domain,
+    public ProxyInvocationHandlerImpl(@Assisted("domains") Set<String> domains,
                                       @Assisted("interfaceName") String interfaceName,
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
                                       ConnectorFactory connectorFactory) {
-        this.domain = domain;
+        this.domains = domains;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
         this.discoveryQos = discoveryQos;
         this.qosSettings = messagingQos;
         this.connectorFactory = connectorFactory;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
+    }
+
+    private static interface ConnectorCaller {
+        Object call(Method method, Object[] args) throws Throwable;
     }
 
     /**
@@ -104,15 +110,34 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
     @CheckForNull
-    private Object executeSyncMethod(Method method, Object[] args) throws ApplicationException,
-                                                                   JoynrRuntimeException {
+    private Object executeSyncMethod(Method method, Object[] args) throws ApplicationException, JoynrRuntimeException {
+        return executeMethodWithCaller(method, args, new ConnectorCaller() {
+            @Override
+            public Object call(Method method, Object[] args) throws Throwable {
+                return connector.executeSyncMethod(method, args);
+            }
+        });
+    }
 
+    @CheckForNull
+    private Object executeOneWayMethod(Method method, Object[] args) throws ApplicationException, JoynrRuntimeException {
+        return executeMethodWithCaller(method, args, new ConnectorCaller() {
+
+            @Override
+            public Object call(Method method, Object[] args) throws Throwable {
+                connector.executeOneWayMethod(method, args);
+                return null;
+            }
+        });
+    }
+
+    private Object executeMethodWithCaller(Method method, Object[] args, ConnectorCaller connectorCaller) throws ApplicationException {
         try {
             if (waitForConnectorFinished()) {
                 if (connector == null) {
                     throw new IllegalStateException("connector was null although arbitration finished successfully");
                 }
-                return connector.executeSyncMethod(method, args);
+                return connectorCaller.call(method, args);
             }
         } catch (ApplicationException | JoynrRuntimeException e) {
             throw e;
@@ -120,10 +145,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         } catch (Throwable e) {
             throw new JoynrRuntimeException(e);
         }
-
-        throw new DiscoveryException("Arbitration and Connector failed: domain: " + domain + " interface: "
+        throw new DiscoveryException("Arbitration and Connector failed: domain: " + domains + " interface: "
                 + interfaceName + " qos: " + discoveryQos + ": Arbitration could not be finished in time.");
-
     }
 
     /**
@@ -439,6 +462,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             return executeSubscriptionMethod(method, args);
         } else if (JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeBroadcastSubscriptionMethod(method, args);
+        } else if (methodInterfaceClass.getAnnotation(FireAndForget.class) != null) {
+            return executeOneWayMethod(method, args);
         } else if (methodInterfaceClass.getAnnotation(Sync.class) != null) {
             return executeSyncMethod(method, args);
         } else if (methodInterfaceClass.getAnnotation(Async.class) != null) {

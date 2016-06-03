@@ -44,10 +44,6 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«syncClassName».h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
-#include "joynr/Dispatcher.h"
-#include "joynr/DispatcherUtils.h"
 
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	#include «datatype»
@@ -66,7 +62,8 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 		bool cached
 ) :
 		joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
-		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
+		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«IF hasFireAndForgetMethods(francaIntf)»,
+		«interfaceName»FireAndForgetProxy(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«ENDIF»
 {
 }
 
@@ -104,7 +101,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	«ENDIF»
 
 «ENDFOR»
-«FOR method: getMethods(francaIntf)»
+«FOR method: getMethods(francaIntf).filter[!fireAndForget]»
 	«var methodName = method.name»
 	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 	«var params = getCommaSeperatedUntypedInputParameterList(method)»
@@ -123,7 +120,6 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 			return connector->«methodName»(«outputUntypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«params»);
 		}
 	}
-
 «ENDFOR»
 «getNamespaceEnder(francaIntf)»
 '''

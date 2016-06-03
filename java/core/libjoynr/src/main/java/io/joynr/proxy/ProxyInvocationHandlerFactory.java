@@ -22,10 +22,12 @@ package io.joynr.proxy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.MessagingQos;
 
+import java.util.Set;
+
 import com.google.inject.assistedinject.Assisted;
 
 public interface ProxyInvocationHandlerFactory {
-    public ProxyInvocationHandler create(@Assisted("domain") String domain,
+    public ProxyInvocationHandler create(@Assisted("domains") Set<String> domains,
                                          @Assisted("interfaceName") String interfaceName,
                                          @Assisted("proxyParticipantId") String proxyParticipantId,
                                          DiscoveryQos discoveryQos,

@@ -64,9 +64,10 @@ public:
      * @param messagingStubFactory Factory
      * @param serverAddress Address of the server
      */
-    WebSocketCcMessagingSkeleton(MessageRouter& messageRouter,
-                                 WebSocketMessagingStubFactory& messagingStubFactory,
-                                 const system::RoutingTypes::WebSocketAddress& serverAddress);
+    WebSocketCcMessagingSkeleton(
+            MessageRouter& messageRouter,
+            std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
+            const system::RoutingTypes::WebSocketAddress& serverAddress);
 
     /**
      * @brief Destructor
@@ -95,7 +96,7 @@ private:
     /*! Router for incoming messages */
     MessageRouter& messageRouter;
     /*! Factory to build outgoing messaging stubs */
-    WebSocketMessagingStubFactory& messagingStubFactory;
+    std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
 };
 
 } // namespace joynr

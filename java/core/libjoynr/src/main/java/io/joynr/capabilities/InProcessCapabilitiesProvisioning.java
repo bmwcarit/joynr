@@ -53,6 +53,7 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
     public Collection<DiscoveryEntry> getDiscoveryEntries() {
 
         List<DiscoveryEntry> provisionedList = Lists.newArrayList();
+        String defaultPulicKeyId = "";
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
         provisionedList.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
@@ -62,6 +63,7 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
                                                                     providerQos,
                                                                     System.currentTimeMillis(),
                                                                     NO_EXPIRY,
+                                                                    defaultPulicKeyId,
                                                                     discoveryProviderAddress));
 
         return provisionedList;

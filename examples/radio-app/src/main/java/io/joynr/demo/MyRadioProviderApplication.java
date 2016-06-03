@@ -30,6 +30,7 @@ import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
+import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -205,6 +206,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
     private static void configureMqtt(Properties joynrConfig) {
         joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
+        joynrConfig.put(GlobalAddressProvider.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
     }
 
     @Override

@@ -1,5 +1,8 @@
 package io.joynr.arbitration;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /*
  * #%L
  * %%
@@ -20,29 +23,33 @@ package io.joynr.arbitration;
  */
 
 public class ArbitrationResult {
-    private String participantId;
+    private Set<String> participantIds;
 
-    public ArbitrationResult(final String participantId) {
-        super();
-        this.participantId = participantId;
+    public ArbitrationResult(final String ... participantIds) {
+        this.participantIds = new HashSet<>();
+        if (participantIds != null && participantIds.length > 0) {
+			for (String participantId : participantIds) {
+				this.participantIds.add(participantId);
+			}
+        }
     }
 
     public ArbitrationResult() {
     }
 
-    public String getParticipantId() {
-        return participantId;
+    public Set<String> getParticipantIds() {
+        return participantIds;
     }
 
-    public void setParticipantId(String participantId) {
-        this.participantId = participantId;
+    public void setParticipantIds(Set<String> participantIds) {
+        this.participantIds = participantIds;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
+        result = prime * result + ((participantIds == null) ? 0 : participantIds.hashCode());
         return result;
     }
 
@@ -58,11 +65,11 @@ public class ArbitrationResult {
             return false;
         }
         ArbitrationResult other = (ArbitrationResult) obj;
-        if (participantId == null) {
-            if (other.participantId != null) {
+        if (participantIds == null) {
+            if (other.participantIds != null) {
                 return false;
             }
-        } else if (!participantId.equals(other.participantId)) {
+        } else if (!participantIds.equals(other.participantIds)) {
             return false;
         }
         return true;

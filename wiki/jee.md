@@ -219,3 +219,8 @@ in the above example:
 
 The time-to-live for joynr messages can be set through an additional parameter
 in the ServiceLocator.get method.
+
+It is also possible to target multiple providers with one proxy. You can achieve
+this by either spcifying a set of domains during lookup, or a custom
+`ArbitrationStrategyFunction` in the `DiscoveryQos`, or combine both approaches.
+See the [Java Developer Guide](java.md) for details.

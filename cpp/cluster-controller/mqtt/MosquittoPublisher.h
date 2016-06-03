@@ -34,10 +34,12 @@
 namespace joynr
 {
 
+class MessagingSettings;
+
 class MosquittoPublisher : public Thread, MosquittoConnection
 {
 public:
-    explicit MosquittoPublisher(const BrokerUrl& brokerUrl);
+    explicit MosquittoPublisher(const MessagingSettings& settings);
 
     ~MosquittoPublisher() override = default;
 
@@ -57,7 +59,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoPublisher);
 
     MqttSettings mqttSettings;
-    const BrokerUrl brokerUrl;
 
     std::atomic<bool> isRunning;
 

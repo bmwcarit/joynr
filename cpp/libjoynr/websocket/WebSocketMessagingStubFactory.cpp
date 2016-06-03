@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,11 @@ namespace joynr
 INIT_LOGGER(WebSocketMessagingStubFactory);
 
 WebSocketMessagingStubFactory::WebSocketMessagingStubFactory()
-        : serverStubMap(), serverStubMapMutex(), clientStubMap(), clientStubMapMutex()
+        : serverStubMap(),
+          serverStubMapMutex(),
+          clientStubMap(),
+          clientStubMapMutex(),
+          onMessagingStubClosedCallback(nullptr)
 {
 }
 
@@ -85,10 +89,8 @@ void WebSocketMessagingStubFactory::addClient(
         const system::RoutingTypes::WebSocketClientAddress& clientAddress,
         IWebSocketSendInterface* webSocket)
 {
-
     if (clientStubMap.count(clientAddress) == 0) {
-        WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(
-                webSocket, [this, clientAddress]() { this->onMessagingStubClosed(clientAddress); });
+        WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(webSocket);
         std::shared_ptr<IMessaging> clientStub(wsClientStub);
         {
             std::lock_guard<std::mutex> lock(clientStubMapMutex);
@@ -112,9 +114,7 @@ void WebSocketMessagingStubFactory::addServer(
         const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
         IWebSocketSendInterface* webSocket)
 {
-
-    auto serverStub = std::make_shared<WebSocketMessagingStub>(
-            webSocket, [this, serverAddress]() { this->onMessagingStubClosed(serverAddress); });
+    auto serverStub = std::make_shared<WebSocketMessagingStub>(webSocket);
     {
         std::lock_guard<std::mutex> lock(serverStubMapMutex);
         serverStubMap[serverAddress] = serverStub;
@@ -125,16 +125,31 @@ void WebSocketMessagingStubFactory::onMessagingStubClosed(
         const system::RoutingTypes::Address& address)
 {
     JOYNR_LOG_DEBUG(logger, "removing messaging stub for address: {}", address.toString());
+    std::shared_ptr<const system::RoutingTypes::Address> addressPtr = nullptr;
     // if destination is a WS client address
     if (auto webSocketClientAddress =
                 dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&address)) {
         std::lock_guard<std::mutex> lock(clientStubMapMutex);
         clientStubMap.erase(*webSocketClientAddress);
+        addressPtr = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                *webSocketClientAddress);
     } else if (auto webSocketServerAddress =
                        dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&address)) {
         std::lock_guard<std::mutex> lock(serverStubMapMutex);
         serverStubMap.erase(*webSocketServerAddress);
+        addressPtr = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                *webSocketServerAddress);
     }
+    if (onMessagingStubClosedCallback) {
+        onMessagingStubClosedCallback(addressPtr);
+    }
+}
+
+void WebSocketMessagingStubFactory::registerOnMessagingStubClosedCallback(
+        std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                                   destinationAddress)> onMessagingStubClosedCallback)
+{
+    this->onMessagingStubClosedCallback = std::move(onMessagingStubClosedCallback);
 }
 
 Url WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(

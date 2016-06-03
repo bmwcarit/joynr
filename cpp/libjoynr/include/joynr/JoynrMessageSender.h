@@ -74,6 +74,13 @@ public:
                      const Request& request,
                      std::shared_ptr<IReplyCaller> callback) override;
     /*
+     * Prepares and sends a single message
+     */
+    virtual void sendOneWayRequest(const std::string& senderParticipantId,
+                                   const std::string& receiverParticipantId,
+                                   const MessagingQos& qos,
+                                   const OneWayRequest& request) override;
+    /*
      * Prepares and sends a reply message (an answer to a request)
      */
     void sendReply(const std::string& senderParticipantId,

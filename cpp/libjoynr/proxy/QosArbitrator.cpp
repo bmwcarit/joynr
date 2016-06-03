@@ -42,13 +42,13 @@ void QosArbitrator::attemptArbitration()
 {
     std::vector<joynr::types::DiscoveryEntry> result;
     try {
-        discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
+        discoveryProxy.lookup(result, domains, interfaceName, systemDiscoveryQos);
         receiveCapabilitiesLookupResults(result);
     } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "
                         "from discovery. Error: {}",
-                        domain,
+                        domains.size() > 0 ? domains.at(0) : "EMPTY",
                         interfaceName,
                         e.getMessage());
     }

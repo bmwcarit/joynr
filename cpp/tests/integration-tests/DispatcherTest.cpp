@@ -173,7 +173,6 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
 
 TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
 
-    joynr::MetaTypeRegistrar::instance().registerReplyMetaType<types::Localisation::GpsLocation>();
     // Expect the mock callback's onSuccess method to be called with the reply (a gps location)
     EXPECT_CALL(*mockCallback, onSuccess(Eq(gpsLocation1)));
 
@@ -203,7 +202,3 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
 }
-
-
-
-

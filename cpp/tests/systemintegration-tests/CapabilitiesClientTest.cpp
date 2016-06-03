@@ -86,13 +86,15 @@ private:
 INIT_LOGGER(CapabilitiesClientTest);
 
 TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
-    auto capabilitiesClient = std::make_unique<CapabilitiesClient>();
-    ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
+    std::unique_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> capabilitiesProxyBuilder (
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                 messagingSettings.getDiscoveryDirectoriesDomain()
-            );
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
+            ));
+
+    DiscoveryQos discoveryQos(10000);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    discoveryQos.addCustomParameter(
+            "fixedParticipantId", messagingSettings.getCapabilitiesDirectoryParticipantId());
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
         capabilitiesProxyBuilder
             ->setMessagingQos(MessagingQos(10000)) //TODO magic values.
@@ -100,18 +102,20 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
             ->setDiscoveryQos(discoveryQos)
             ->build()
         );
-    capabilitiesClient->init(cabilitiesProxy);
+
+    std::unique_ptr<CapabilitiesClient> capabilitiesClient (std::make_unique<CapabilitiesClient>());
+    capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
 
     std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntryList;
     std::string capDomain("testDomain");
     std::string capInterface("testInterface");
     types::ProviderQos capProviderQos;
-    std::string capSerializedChannelAddress("testChannelId");
     std::string capParticipantId("testParticipantId");
+    std::string capPublicKeyId("publicKeyId");
     joynr::types::Version providerVersion(47, 11);
     std::int64_t capLastSeenMs = 0;
     std::int64_t capExpiryDateMs = 1000;
-
+    std::string capSerializedChannelAddress("testChannelId");
     globalDiscoveryEntryList.push_back(types::GlobalDiscoveryEntry(
                                            providerVersion,
                                            capDomain,
@@ -120,6 +124,7 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
                                            capProviderQos,
                                            capLastSeenMs,
                                            capExpiryDateMs,
+                                           capPublicKeyId,
                                            capSerializedChannelAddress));
 
     JOYNR_LOG_DEBUG(logger, "Registering capabilities");
@@ -142,10 +147,10 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
             };
 
     JOYNR_LOG_DEBUG(logger, "get capabilities");
-    capabilitiesClient->lookup(capDomain, capInterface, onSuccess);
+    std::int64_t defaultDiscoveryMessageTtl = messagingSettings.getDiscoveryMessagesTtl();
+    capabilitiesClient->lookup({capDomain}, capInterface, defaultDiscoveryMessageTtl, onSuccess);
     semaphore.waitFor(std::chrono::seconds(10));
     JOYNR_LOG_DEBUG(logger, "finished get capabilities");
-    delete capabilitiesProxyBuilder;
 }
 
 INSTANTIATE_TEST_CASE_P(Http,

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,13 +64,20 @@ public:
     bool contains(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                           destinationAddress) override;
 
-    void registerStubFactory(std::unique_ptr<IMiddlewareMessagingStubFactory> factory);
+    void registerStubFactory(std::shared_ptr<IMiddlewareMessagingStubFactory> factory);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
 
-    using AddressPtr = std::shared_ptr<const joynr::system::RoutingTypes::Address>;
-    using AddressPtrHash = boost::hash<AddressPtr>;
+    using Address = joynr::system::RoutingTypes::Address;
+    using AddressPtr = std::shared_ptr<const Address>;
+    struct AddressPtrHash
+    {
+        std::size_t operator()(const AddressPtr& addressPtr) const
+        {
+            return addressPtr->hashCode();
+        }
+    };
     struct AddressPtrCompare
     {
         bool operator()(const AddressPtr& p1, const AddressPtr& p2) const
@@ -81,7 +88,7 @@ private:
     template <typename K, typename V>
     using Map = std::unordered_map<K, V, AddressPtrHash, AddressPtrCompare>;
     ThreadSafeMap<AddressPtr, std::shared_ptr<IMessaging>, Map> address2MessagingStubMap;
-    std::vector<std::unique_ptr<IMiddlewareMessagingStubFactory>> factoryList;
+    std::vector<std::shared_ptr<IMiddlewareMessagingStubFactory>> factoryList;
     std::mutex mutex;
 };
 

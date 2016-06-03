@@ -66,8 +66,8 @@ interface GlobalCapabilitiesDirectory{
 	**>
 	method lookup {
 		in {
-			<** @description: A domain name for which providers shall be returned. **>
-			String domain
+			<** @description: Domain names for which providers shall be returned. **>
+			String[] domains
 			<** @description: The name of the requested provider interface. **>
 			String interfaceName
 		}
@@ -116,6 +116,19 @@ interface GlobalCapabilitiesDirectory{
             from the backend.
 			**>
 			String participantId
+		}
+	}
+
+	<**
+		@description: Updates the last seen date for a specific cluster controller.
+	**>
+	method touch {
+		in {
+			<**
+				@description: Identifies the cluster controller for which the last
+				seen date shall be updated.
+			**>
+			String clusterControllerId
 		}
 	}
 }

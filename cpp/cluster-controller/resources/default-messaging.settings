@@ -28,6 +28,13 @@ capabilities-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/d
 capabilities-directory-channelid=discoverydirectory_channelid
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
+# Time span in seconds after which the mqtt broker will send a PING message to the client
+# if no other messages have been exchanged with the mqtt broker
+mqtt-keep-alive-time-seconds=60
+# Time to wait in milliseconds between mqtt reconnect attempts
+mqtt-reconnect-sleep-time-ms=1000
+
+
 index=0
 create-channel-retry-interval=500
 delete-channel-retry-interval=5000

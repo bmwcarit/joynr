@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>0.17.2</version>
+		<version>0.18.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -76,7 +76,7 @@
 					<!-- unpack all non-runnable files into info -->
 					<execution>
 						<id>unpack-dependency-info</id>
-						<phase>process-resources</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>unpack-dependencies</goal>
 						</goals>
@@ -93,7 +93,7 @@
 					<!-- unpack runnable files into classes -->
 					<execution>
 						<id>unpack-dependency-classes</id>
-						<phase>process-classes</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>unpack-dependencies</goal>
 						</goals>
@@ -155,7 +155,7 @@
 					</excludes>
 					<archive>
 						<manifest>
-							<mainClass>io.joynr.generator.ExecutorCL</mainClass>
+							<mainClass>io.joynr.generator.Executor</mainClass>
 						</manifest>
 						<manifestEntries>
 							<mode>development</mode>

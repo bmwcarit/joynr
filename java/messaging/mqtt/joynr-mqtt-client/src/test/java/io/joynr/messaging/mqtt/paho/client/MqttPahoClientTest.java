@@ -20,6 +20,8 @@ package io.joynr.messaging.mqtt.paho.client;
  */
 
 import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -88,6 +90,8 @@ public class MqttPahoClientTest {
                                             @Override
                                             protected void configure() {
                                                 bind(MessageRouter.class).toInstance(mockMessageRouter);
+                                                bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
+                                                                                    .toInstance(Executors.newScheduledThreadPool(10));
                                             }
                                         });
         mqttClientFactory = injector.getInstance(MqttClientFactory.class);

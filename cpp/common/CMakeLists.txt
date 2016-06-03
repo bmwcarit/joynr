@@ -138,7 +138,8 @@ target_include_directories(
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../libjoynr/include
 )
 
-generate_export_header(
+include(GenerateJoynrExports)
+GenerateJoynrExports(
     JoynrCommon
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrCommon_EXPORT_HEADER}"
 )

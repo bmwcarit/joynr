@@ -84,7 +84,7 @@ public:
         accessControllerCallback(new MockConsumerPermissionCallback()),
         settings(),
         messagingSettingsMock(settings),
-        localCapabilitiesDirectoryMock(messagingSettingsMock),
+        localCapabilitiesDirectoryMock(messagingSettingsMock, settings),
         accessController(
                 localCapabilitiesDirectoryMock,
                 localDomainAccessControllerMock
@@ -132,7 +132,8 @@ public:
                 toParticipantId,
                 types::ProviderQos(),
                 lastSeenDateMs,
-                expiryDateMs
+                expiryDateMs,
+                TEST_PUBLICKEYID
         );
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
@@ -166,6 +167,7 @@ protected:
     static const std::string TEST_DOMAIN;
     static const std::string TEST_INTERFACE;
     static const std::string TEST_OPERATION;
+    static const std::string TEST_PUBLICKEYID;
 private:
     DISALLOW_COPY_AND_ASSIGN(AccessControllerTest);
 };
@@ -178,6 +180,7 @@ const std::string AccessControllerTest::DUMMY_USERID("testUserId");
 const std::string AccessControllerTest::TEST_DOMAIN("testDomain");
 const std::string AccessControllerTest::TEST_INTERFACE("testInterface");
 const std::string AccessControllerTest::TEST_OPERATION("testOperation");
+const std::string AccessControllerTest::TEST_PUBLICKEYID("publicKeyId");
 
 //----- Tests ------------------------------------------------------------------
 

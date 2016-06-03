@@ -41,6 +41,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
 {
     std::int64_t lastSeenDateMs = 0;
     std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    std::string defaultPublicKeyId("");
 
     joynr::types::Version providerVersion;
     joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
@@ -50,7 +51,8 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             systemServicesSettings.getCcRoutingProviderParticipantId(),
             joynr::types::ProviderQos(),
             lastSeenDateMs,
-            expiryDateMs);
+            expiryDateMs,
+            defaultPublicKeyId);
     provisionedDiscoveryEntries.insert(std::make_pair(
             routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
     joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
@@ -60,7 +62,8 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),
             joynr::types::ProviderQos(),
             lastSeenDateMs,
-            expiryDateMs);
+            expiryDateMs,
+            defaultPublicKeyId);
     provisionedDiscoveryEntries.insert(std::make_pair(
             discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
 }
@@ -85,7 +88,7 @@ void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discovery
 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>& result,
-                                      const std::string& domain,
+                                      const std::vector<std::string>& domains,
                                       const std::string& interfaceName,
                                       const joynr::types::DiscoveryQos& discoveryQos)
 {
@@ -94,7 +97,7 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
     }
-    discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+    discoveryProxy->lookup(result, domains, interfaceName, discoveryQos);
 }
 
 // inherited from joynr::system::IDiscoverySync

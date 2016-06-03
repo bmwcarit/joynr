@@ -26,6 +26,7 @@ import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
+import org.franca.core.franca.FMethod
 
 class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 
@@ -36,6 +37,68 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
 	@Inject private extension InterfaceUtil
+
+	def handleInputParams(FMethod method) {
+		val methodName = method.joynrName
+		val inputParams = getInputParameters(method)
+		var iterator = -1
+'''
+						«FOR input : inputParams»
+							«val inputName = input.joynrName»
+							«val inputType = input.type.resolveTypeDef»
+							Variant «inputName»Var(paramValues.at(«iterator=iterator+1»));
+							«IF inputType.isEnum && input.isArray»
+								//isEnumArray
+								«input.typeName» «inputName» =
+									«joynrGenerationPrefix»::util::convertVariantVectorToEnumVector<«getTypeNameOfContainingClass(inputType.derived)»> («inputName»Var.get<std::vector<Variant>>());
+							«ELSEIF inputType.isEnum»
+								//isEnum
+								«input.typeName» «inputName» = «joynrGenerationPrefix»::util::convertVariantToEnum<«buildPackagePath(inputType.derived, "::", true) + "::" + inputType.joynrName»>(«inputName»Var);
+							«ELSEIF input.isArray»
+								//isArray
+								if (!«inputName»Var.is<std::vector<Variant>>()) {
+									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
+									return;
+								}
+								std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
+								std::vector<«inputType.typeName»> «inputName» = «joynrGenerationPrefix»::util::convertVariantVectorToVector<«inputType.typeName»>(«inputName»VarList);
+							«ELSEIF inputType.isByteBuffer»
+								//isArray
+								if (!«inputName»Var.is<std::vector<Variant>>()) {
+									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
+									return;
+								}
+								std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
+								std::vector<«byteBufferElementType»> «inputName» = «joynrGenerationPrefix»::util::convertVariantVectorToVector<«byteBufferElementType»>(«inputName»VarList);
+							«ELSE»
+								//«input.typeName»
+								«var inputRef = if (inputType.float)
+													"static_cast<float>(" + inputName + "Var.get<double>())"
+												else if (inputType.string)
+													"joynr::util::removeEscapeFromSpecialChars(" + inputName + "Var.get<" + input.typeName + ">())"
+												else
+													inputName + "Var.get<" + input.typeName + ">()"»
+								«IF input.typeName.startsWith("std::int")»
+									if (!(«inputName»Var.is<std::uint64_t>() || «inputName»Var.is<std::int64_t>())) {
+								«ELSEIF input.typeName.startsWith("std::uint")»
+									if (!«inputName»Var.is<std::uint64_t>()) {
+								«ELSEIF inputType.float»
+									if (!«inputName»Var.is<double>()) {
+								«ELSE»
+									if (!«inputName»Var.is<«input.typeName»>()) {
+								«ENDIF»
+								«IF method.fireAndForget»
+									JOYNR_LOG_ERROR(logger, "Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)");
+								«ELSE»
+									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
+								«ENDIF»
+									return;
+								}
+								«input.typeName» «inputName» = «inputRef»;
+							«ENDIF»
+						«ENDFOR»
+'''
+	}
 
 	override generate()
 '''
@@ -65,7 +128,7 @@ INIT_LOGGER(«interfaceName»RequestInterpreter);
 
 «val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
 «val attributes = getAttributes(francaIntf)»
-«val methods = getMethods(francaIntf)»
+«val methodsWithoutFireAndForget = getMethods(francaIntf).filter[!fireAndForget]»
 void «interfaceName»RequestInterpreter::execute(
 		std::shared_ptr<joynr::RequestCaller> requestCaller,
 		const std::string& methodName,
@@ -77,7 +140,7 @@ void «interfaceName»RequestInterpreter::execute(
 	std::ignore = paramValues;//if all methods of the interface are empty, the paramValues would not be used and give a warning.
 	std::ignore = paramTypes;//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
 
-	«IF francaIntf.hasReadAttribute || francaIntf.hasWriteAttribute || !methods.empty»
+	«IF francaIntf.hasReadAttribute || francaIntf.hasWriteAttribute || !methodsWithoutFireAndForget.empty»
 		// cast generic RequestCaller to «interfaceName»Requestcaller
 		std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
 				std::dynamic_pointer_cast<«interfaceName»RequestCaller>(requestCaller);
@@ -181,107 +244,55 @@ void «interfaceName»RequestInterpreter::execute(
 			«ENDIF»
 			«ENDFOR»
 		«ENDIF»
-		«IF methods.size>0»
-			«FOR method: getMethods(francaIntf)»
-				«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
-				«val methodName = method.joynrName»
-				«val inputParams = getInputParameters(method)»
-				«var iterator = -1»
-				if (methodName == "«methodName»" && paramTypes.size() == «inputParams.size»
-					«FOR input : inputParams»
-						&& paramTypes.at(«iterator=iterator+1») == "«input.joynrTypeName»"
-					«ENDFOR»
-				) {
-					«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
-					std::function<void(«outputTypedParamList»)> requestCallerOnSuccess =
-							[onSuccess](«outputTypedParamList»){
-								std::vector<Variant> outParams;
-								«FOR param : method.outputParameters»
-									«val paramType = param.type.resolveTypeDef»
-									outParams.push_back(
-											«IF paramType.isEnum && param.isArray»
-												joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(paramType.derived)»>(«param.joynrName»))
-											«ELSEIF paramType.isEnum»
-												Variant::make<«getTypeName(param)»>(«param.joynrName»)
-											«ELSEIF param.isArray»
-												joynr::TypeUtil::toVariant<«paramType.typeName»>(«param.joynrName»)
-											«ELSEIF paramType.isCompound»
-												Variant::make<«getTypeName(param)»>(«param.joynrName»)
-											«ELSEIF paramType.isMap»
-												Variant::make<«getTypeName(param)»>(«param.joynrName»)
-											«ELSEIF paramType.isByteBuffer»
-												joynr::TypeUtil::toVariant(«param.joynrName»)
-											«ELSE»
-												Variant::make<«getTypeName(param)»>(«param.joynrName»)
-											«ENDIF»
-									);
-								«ENDFOR»
-								onSuccess(std::move(outParams));
-							};
+		«FOR method : methodsWithoutFireAndForget»
+			«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
+			«val methodName = method.joynrName»
+			«val inputParams = getInputParameters(method)»
+			«var iterator = -1»
+			if (methodName == "«methodName»" && paramTypes.size() == «inputParams.size»
+				«FOR input : inputParams»
+					&& paramTypes.at(«iterator=iterator+1») == "«input.joynrTypeName»"
+				«ENDFOR»
+			) {
+				«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
+				std::function<void(«outputTypedParamList»)> requestCallerOnSuccess =
+						[onSuccess](«outputTypedParamList»){
+							std::vector<Variant> outParams;
+							«FOR param : method.outputParameters»
+								«val paramType = param.type.resolveTypeDef»
+								outParams.push_back(
+										«IF paramType.isEnum && param.isArray»
+											joynr::TypeUtil::toVariant(util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(paramType.derived)»>(«param.joynrName»))
+										«ELSEIF paramType.isEnum»
+											Variant::make<«getTypeName(param)»>(«param.joynrName»)
+										«ELSEIF param.isArray»
+											joynr::TypeUtil::toVariant<«paramType.typeName»>(«param.joynrName»)
+										«ELSEIF paramType.isCompound»
+											Variant::make<«getTypeName(param)»>(«param.joynrName»)
+										«ELSEIF paramType.isMap»
+											Variant::make<«getTypeName(param)»>(«param.joynrName»)
+										«ELSEIF paramType.isByteBuffer»
+											joynr::TypeUtil::toVariant(«param.joynrName»)
+										«ELSE»
+											Variant::make<«getTypeName(param)»>(«param.joynrName»)
+										«ENDIF»
+								);
+							«ENDFOR»
+							onSuccess(std::move(outParams));
+						};
 
-					«var iterator2 = -1»
-					try {
-						«FOR input : inputParams»
-							«val inputName = input.joynrName»
-							«val inputType = input.type.resolveTypeDef»
-							Variant «inputName»Var(paramValues.at(«iterator2=iterator2+1»));
-							«IF inputType.isEnum && input.isArray»
-								//isEnumArray
-								«input.typeName» «inputName» =
-									«joynrGenerationPrefix»::util::convertVariantVectorToEnumVector<«getTypeNameOfContainingClass(inputType.derived)»> («inputName»Var.get<std::vector<Variant>>());
-							«ELSEIF inputType.isEnum»
-								//isEnum
-								«input.typeName» «inputName» = «joynrGenerationPrefix»::util::convertVariantToEnum<«buildPackagePath(inputType.derived, "::", true) + "::" + inputType.joynrName»>(«inputName»Var);
-							«ELSEIF input.isArray»
-								//isArray
-								if (!«inputName»Var.is<std::vector<Variant>>()) {
-									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
-									return;
-								}
-								std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
-								std::vector<«inputType.typeName»> «inputName» = «joynrGenerationPrefix»::util::convertVariantVectorToVector<«inputType.typeName»>(«inputName»VarList);
-							«ELSEIF inputType.isByteBuffer»
-								//isArray
-								if (!«inputName»Var.is<std::vector<Variant>>()) {
-									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
-									return;
-								}
-								std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
-								std::vector<«byteBufferElementType»> «inputName» = «joynrGenerationPrefix»::util::convertVariantVectorToVector<«byteBufferElementType»>(«inputName»VarList);
-							«ELSE»
-								//«input.typeName»
-								«var inputRef = if (inputType.float)
-													"static_cast<float>(" + inputName + "Var.get<double>())"
-												else if (inputType.string)
-													"joynr::util::removeEscapeFromSpecialChars(" + inputName + "Var.get<" + input.typeName + ">())"
-												else
-													inputName + "Var.get<" + input.typeName + ">()"»
-								«IF input.typeName.startsWith("std::int")»
-									if (!(«inputName»Var.is<std::uint64_t>() || «inputName»Var.is<std::int64_t>())) {
-								«ELSEIF input.typeName.startsWith("std::uint")»
-									if (!«inputName»Var.is<std::uint64_t>()) {
-								«ELSEIF inputType.float»
-									if (!«inputName»Var.is<double>()) {
-								«ELSE»
-									if (!«inputName»Var.is<«input.typeName»>()) {
-								«ENDIF»
-									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
-									return;
-								}
-								«input.typeName» «inputName» = «inputRef»;
-							«ENDIF»
-						«ENDFOR»
-						«requestCallerName»->«methodName»(
-								«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-								requestCallerOnSuccess,
-								onError);
-					} catch (const std::invalid_argument& exception) {
-						onError(exceptions::MethodInvocationException(exception.what()));
-					}
-					return;
+				try {
+					«handleInputParams(method)»
+					«requestCallerName»->«methodName»(
+							«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
+							requestCallerOnSuccess,
+							onError);
+				} catch (const std::invalid_argument& exception) {
+					onError(exceptions::MethodInvocationException(exception.what()));
 				}
-			«ENDFOR»
-		«ENDIF»
+				return;
+			}
+		«ENDFOR»
 	«ELSE»
 		std::ignore = requestCaller;
 		std::ignore = onSuccess;
@@ -291,6 +302,47 @@ void «interfaceName»RequestInterpreter::execute(
 	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + methodName));
 }
 
+void «interfaceName»RequestInterpreter::execute(
+		std::shared_ptr<joynr::RequestCaller> requestCaller,
+		const std::string& methodName,
+		const std::vector<Variant>& paramValues,
+		const std::vector<std::string>& paramTypes
+) {
+	«val fireAndForgetMethods = getMethods(francaIntf).filter[fireAndForget]»
+	«IF fireAndForgetMethods.empty»
+		std::ignore = requestCaller;
+		std::ignore = methodName;
+		std::ignore = paramValues;
+		std::ignore = paramTypes;
+	«ELSE»
+		// cast generic RequestCaller to «interfaceName»Requestcaller
+		std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
+				std::dynamic_pointer_cast<«interfaceName»RequestCaller>(requestCaller);
+
+		// execute operation
+		«FOR method : fireAndForgetMethods»
+			«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
+			«val methodName = method.joynrName»
+			«val inputParams = getInputParameters(method)»
+			«var iterator = -1»
+			if (methodName == "«methodName»" && paramTypes.size() == «inputParams.size»
+				«FOR input : inputParams»
+					&& paramTypes.at(«iterator=iterator+1») == "«input.joynrTypeName»"
+				«ENDFOR»
+			) {
+				try {
+					«handleInputParams(method)»
+					«requestCallerName»->«methodName»(«inputUntypedParamList»);
+				} catch (const std::invalid_argument& exception) {
+					JOYNR_LOG_ERROR(logger, exception.what());
+				}
+				return;
+			}
+		«ENDFOR»
+	«ENDIF»
+
+	JOYNR_LOG_WARN(logger, "unknown method name for interface «interfaceName»: {}", methodName);
+}
 «getNamespaceEnder(francaIntf)»
 '''
 }

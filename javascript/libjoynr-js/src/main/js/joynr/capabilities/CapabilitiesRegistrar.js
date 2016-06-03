@@ -46,8 +46,6 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
      *            dependencies.requestReplyManager passed on to providerAttribute, providerOperation and providerEvent
      * @param {PublicationManager}
      *            dependencies.publicationManager passed on to providerAttribute
-     * @param {String}
-     *            dependencies.localChannelId passed on to providerAttribute
      * 
      */
     function CapabilitiesRegistrar(dependencies) {
@@ -57,7 +55,6 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
         var libjoynrMessagingAddress = dependencies.libjoynrMessagingAddress;
         var requestReplyManager = dependencies.requestReplyManager;
         var publicationManager = dependencies.publicationManager;
-        var localChannelId = dependencies.localChannelId;
         var loggingManager = dependencies.loggingManager;
 
         /**
@@ -141,12 +138,16 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     // if provider has at least one attribute, add it as publication provider
                     publicationManager.addPublicationProvider(participantId, provider);
 
+                    // TODO: Must be later provided by the user or retrieved from somewhere
+                    var defaultPublicKeyId = "";
+
                     var discoveryStubPromise = discoveryStub.add(new DiscoveryEntry({
                         providerVersion : new Version(),
                         domain : domain,
                         interfaceName : provider.interfaceName,
                         participantId : participantId,
                         qos : providerQos,
+                        publicKeyId : defaultPublicKeyId,
                         lastSeenDateMs : Date.now()
                     }));
 

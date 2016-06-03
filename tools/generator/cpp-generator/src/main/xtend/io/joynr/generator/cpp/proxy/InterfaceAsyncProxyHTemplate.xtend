@@ -48,6 +48,9 @@ class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
+«IF hasFireAndForgetMethods(francaIntf)»
+	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»FireAndForgetProxy.h"
+«ENDIF»
 
 namespace joynr
 {
@@ -71,7 +74,11 @@ namespace exceptions
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
+class «getDllExportMacro()» «asyncClassName» :
+		virtual public «className»Base,
+		virtual public I«interfaceName»Async«IF hasFireAndForgetMethods(francaIntf)»,
+		virtual public «interfaceName»FireAndForgetProxy«ENDIF»
+{
 public:
 
 	/**

@@ -53,7 +53,7 @@ void FixedParticipantArbitrator::attemptArbitration()
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "
                         "from discovery. Error: {}",
-                        domain,
+                        domains.size() > 0 ? domains.at(0) : "EMPTY",
                         interfaceName,
                         e.getMessage());
     }

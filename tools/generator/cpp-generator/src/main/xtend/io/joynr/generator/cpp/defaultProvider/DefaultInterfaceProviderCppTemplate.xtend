@@ -123,27 +123,31 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 	«val methodName = method.joynrName»
 	void Default«interfaceName»Provider::«method.joynrName»(
 			«IF !method.inputParameters.empty»
-				«inputTypedParamList»,
+				«inputTypedParamList»«IF !method.fireAndForget»,«ENDIF»
 			«ENDIF»
-			«IF method.outputParameters.empty»
-				std::function<void()> onSuccess,
-			«ELSE»
-				std::function<void(
-						«outputTypedParamList»
-				)> onSuccess,
-			«ENDIF»
-			«IF method.hasErrorEnum»
-				«IF method.errors != null»
-					«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
-					std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
+			«IF !method.fireAndForget»
+				«IF method.outputParameters.empty»
+					std::function<void()> onSuccess,
 				«ELSE»
-					std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+					std::function<void(
+							«outputTypedParamList»
+					)> onSuccess,
 				«ENDIF»
-			«ELSE»
-			std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
+				«IF method.hasErrorEnum»
+					«IF method.errors != null»
+						«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
+						std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
+					«ELSE»
+						std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+					«ENDIF»
+				«ELSE»
+					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
+				«ENDIF»
 			«ENDIF»
 	) {
-		std::ignore = onError;
+		«IF !method.fireAndForget»
+			std::ignore = onError;
+		«ENDIF»
 		«FOR inputParameter: getInputParameters(method)»
 			std::ignore = «inputParameter.joynrName»;
 		«ENDFOR»
@@ -178,9 +182,11 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		JOYNR_LOG_WARN(logger, "**********************************************");
 		JOYNR_LOG_WARN(logger, "* Default«interfaceName»Provider::«methodName» called");
 		JOYNR_LOG_WARN(logger, "**********************************************");
-		onSuccess(
-				«outputUntypedParamList»
-		);
+		«IF !method.fireAndForget»
+			onSuccess(
+					«outputUntypedParamList»
+			);
+		«ENDIF»
 	}
 
 «ENDFOR»

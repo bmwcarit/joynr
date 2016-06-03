@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,27 +30,33 @@ using namespace testing;
 struct MockMiddlewareMessagingStubFactory : public joynr::IMiddlewareMessagingStubFactory {
     MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const joynr::system::RoutingTypes::Address& destAddress));
     MOCK_METHOD1(canCreate, bool(const joynr::system::RoutingTypes::Address& destAddress));
+    MOCK_METHOD1(registerOnMessagingStubClosedCallback,
+                 void(std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)> onMessagingStubClosedCallback));
 };
 
 class MessagingStubFactoryTest : public Test {
 public:
     MessagingStubFactoryTest() : messagingStubFactory(), expectedStub(std::make_shared<MockMessagingStub>())
     {
-        auto mockMiddlewareMessagingStubFactory = std::make_unique<MockMiddlewareMessagingStubFactory>();
+        auto mockMiddlewareMessagingStubFactory = std::make_shared<MockMiddlewareMessagingStubFactory>();
         // retain a pointer for later use in EXPECT_CALL, unique_ptr will be moved when registering
         this->mockMiddlewareMessagingStubFactory = mockMiddlewareMessagingStubFactory.get();
         ON_CALL(*(this->mockMiddlewareMessagingStubFactory), create(_)).WillByDefault(Return(expectedStub));
         ON_CALL(*(this->mockMiddlewareMessagingStubFactory), canCreate(_)).WillByDefault(Return(true));
-        messagingStubFactory.registerStubFactory(std::move(mockMiddlewareMessagingStubFactory));
+        messagingStubFactory.registerStubFactory(mockMiddlewareMessagingStubFactory);
 
+        std::string host = "test.domain";
         address = std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>();
-        address->setHost("test.domain");
+        address->setHost(host);
+        addressCopy = std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>();
+        addressCopy->setHost(host);
     }
 
 protected:
     MessagingStubFactory messagingStubFactory;
     std::shared_ptr<MockMessagingStub> expectedStub;
     std::shared_ptr<joynr::system::RoutingTypes::WebSocketAddress> address;
+    std::shared_ptr<joynr::system::RoutingTypes::WebSocketAddress> addressCopy;
     MockMiddlewareMessagingStubFactory* mockMiddlewareMessagingStubFactory;
 };
 
@@ -73,12 +79,23 @@ TEST_F(MessagingStubFactoryTest, repeatedCreateReturnsSameStub)
     ASSERT_TRUE(stub1 != nullptr);
     std::shared_ptr<IMessaging> stub2 = messagingStubFactory.create(address);
     EXPECT_TRUE(stub1 == stub2);
+    std::shared_ptr<IMessaging> stub3 = messagingStubFactory.create(addressCopy);
+    EXPECT_TRUE(stub1 == stub3);
 }
 
 TEST_F(MessagingStubFactoryTest, containsFindsStub)
 {
     messagingStubFactory.create(address);
     EXPECT_TRUE(messagingStubFactory.contains(address));
+    EXPECT_TRUE(messagingStubFactory.contains(addressCopy));
+}
+
+TEST_F(MessagingStubFactoryTest, nullptrIsNotInsertedIntoCache)
+{
+    EXPECT_CALL(*(this->mockMiddlewareMessagingStubFactory), create(_)).WillOnce(Return(std::shared_ptr<IMessaging>()));
+    messagingStubFactory.create(address);
+    EXPECT_FALSE(messagingStubFactory.contains(address));
+    EXPECT_FALSE(messagingStubFactory.contains(addressCopy));
 }
 
 TEST_F(MessagingStubFactoryTest, emptyAfterRemove)
@@ -86,5 +103,11 @@ TEST_F(MessagingStubFactoryTest, emptyAfterRemove)
     messagingStubFactory.create(address);
     messagingStubFactory.remove(address);
     EXPECT_FALSE(messagingStubFactory.contains(address));
+    EXPECT_FALSE(messagingStubFactory.contains(addressCopy));
+
+    messagingStubFactory.create(address);
+    messagingStubFactory.remove(addressCopy);
+    EXPECT_FALSE(messagingStubFactory.contains(address));
+    EXPECT_FALSE(messagingStubFactory.contains(addressCopy));
 }
 

@@ -104,9 +104,6 @@ I«interfaceName»Base::I«interfaceName»Base()
 		*/
 	«ENDIF»
 
-	«FOR metatype : replyMetatypes»
-		registrar.registerReplyMetaType<«metatype»>();
-	«ENDFOR»
 	«FOR broadcast: broadcastMetatypes»
 		registrar.registerMetaType<«broadcast»>();
 	«ENDFOR»

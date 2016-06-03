@@ -45,7 +45,7 @@ package «packagePath»;
 
 import io.joynr.provider.SubscriptionPublisher;
 
-«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true)»
+«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true, false)»
 	import «datatype»;
 «ENDFOR»
 

@@ -69,4 +69,4 @@ RdxTzACfRDOSgU3zaPEHWKLT6pfFMMc5qE4Aniqe++21Geal59e6MBXR0yABvAlO
 ```
 
 # C++ Binaries
-C++ binaries are currently not distributed.
+**Linux**: RPM packages are available in our [joynr-repos GitHub repository](https://github.com/bmwcarit/joynr-repos).

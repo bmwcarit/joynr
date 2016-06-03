@@ -18,80 +18,106 @@
  */
 
 /*
-*   Client for the capabilities directory. It uses a joynr proxy provided by
-*   an instance of libjoynr running on the clusterController.
-*
-*/
+ * Client for the global capabilities directory.
+ */
 
-#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
-#include "joynr/DispatcherUtils.h"
-#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/Future.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
 #include <string>
 #include <cstdint>
 #include <cassert>
+
+#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
+#include "joynr/DispatcherUtils.h"
+#include "joynr/Future.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/ProxyBuilder.h"
+#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/types/DiscoveryQos.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(CapabilitiesClient);
 
-CapabilitiesClient::CapabilitiesClient() : capabilitiesProxy(nullptr)
+// The capabilitiesProxyBuilder will use as MessagingQoS the one provided by the CapabilitiesClient
+// user. If nothing is provided the default MessageQoS::ttl will be used.
+//
+// Additionally, if the capabilitiesProxyBuilder is not configured correctly an excpetion will
+// be thrown (see ProxyBuilder::build())
+// The configuration excpects that a discoveryQoS is set (see ProxyBuilder::setDiscoveryQos())
+// The capabilitiesClient should not be responsible to change the DiscoveryQoS.
+
+CapabilitiesClient::CapabilitiesClient()
+        : defaultCapabilitiesProxy(nullptr),
+          capabilitiesProxy(nullptr),
+          capabilitiesProxyBuilder(nullptr),
+          capabilitiesProxyWorker(nullptr)
 {
+}
+
+void CapabilitiesClient::setDefaultGlobalCapabilitiesDirectoryProxy()
+{
+    assert(defaultCapabilitiesProxy);
+    capabilitiesProxyWorker = defaultCapabilitiesProxy.get();
+}
+
+void CapabilitiesClient::setGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl)
+{
+    assert(capabilitiesProxyBuilder);
+    capabilitiesProxy.reset(
+            capabilitiesProxyBuilder->setMessagingQos(MessagingQos(messagingTtl))->build());
+    assert(capabilitiesProxy);
+    capabilitiesProxyWorker = capabilitiesProxy.get();
 }
 
 void CapabilitiesClient::add(
         const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList)
 {
-    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
-                               // the capabilitiesProxy has been set via the init method
+    if (capabilitiesInformationList.empty()) {
+        return;
+    }
+
+    setDefaultGlobalCapabilitiesDirectoryProxy();
 
     std::function<void(const exceptions::JoynrException&)> onError =
             [&](const exceptions::JoynrException& error) {
         std::ignore = error;
         JOYNR_LOG_ERROR(logger, "Error occured during the execution of capabilitiesProxy->add");
     };
-
-    capabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
+    capabilitiesProxyWorker->addAsync(capabilitiesInformationList, nullptr, onError);
 }
 
 void CapabilitiesClient::remove(const std::string& participantId)
 {
-    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
-                               // the capabilitiesProxy has been set via the init method
-    capabilitiesProxy->remove(participantId);
+    setDefaultGlobalCapabilitiesDirectoryProxy();
+    capabilitiesProxyWorker->remove(participantId);
 }
 
 void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 {
-    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
-                               // the capabilitiesProxy has been set via the init method
-    capabilitiesProxy->remove(participantIdList);
+    setDefaultGlobalCapabilitiesDirectoryProxy();
+    capabilitiesProxyWorker->remove(participantIdList);
 }
 
 std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
-        const std::string& domain,
-        const std::string& interfaceName)
+        const std::vector<std::string>& domains,
+        const std::string& interfaceName,
+        const std::int64_t messagingTtl)
 {
-    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
-                               // the capabilitiesProxy has been set via the init method
-
+    setGlobalCapabilitiesDirectoryProxy(messagingTtl);
     std::vector<types::GlobalDiscoveryEntry> result;
-    capabilitiesProxy->lookup(result, domain, interfaceName);
+    capabilitiesProxyWorker->lookup(result, domains, interfaceName);
     return result;
 }
 
 void CapabilitiesClient::lookup(
-        const std::string& domain,
+        const std::vector<std::string>& domains,
         const std::string& interfaceName,
+        const std::int64_t messagingTtl,
         std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
-                               // the capabilitiesProxy has been set via the init method
-
-    capabilitiesProxy->lookupAsync(domain, interfaceName, onSuccess, onError);
+    setGlobalCapabilitiesDirectoryProxy(messagingTtl);
+    capabilitiesProxyWorker->lookupAsync(domains, interfaceName, onSuccess, onError);
 }
 
 void CapabilitiesClient::lookup(
@@ -100,9 +126,8 @@ void CapabilitiesClient::lookup(
                 onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
-                               // the capabilitiesProxy has been set via the init method
-    capabilitiesProxy->lookupAsync(
+    setDefaultGlobalCapabilitiesDirectoryProxy();
+    capabilitiesProxyWorker->lookupAsync(
             participantId,
             [onSuccess](const joynr::types::GlobalDiscoveryEntry& capability) {
                 std::vector<joynr::types::GlobalDiscoveryEntry> result;
@@ -112,10 +137,12 @@ void CapabilitiesClient::lookup(
             onError);
 }
 
-void CapabilitiesClient::init(
-        std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy)
+void CapabilitiesClient::setProxyBuilder(std::unique_ptr<
+        IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> inCapabilitiesProxyBuilder)
 {
-    this->capabilitiesProxy = capabilitiesProxy;
+    assert(inCapabilitiesProxyBuilder);
+    capabilitiesProxyBuilder = std::move(inCapabilitiesProxyBuilder);
+    defaultCapabilitiesProxy.reset(capabilitiesProxyBuilder->build());
 }
 
 } // namespace joynr

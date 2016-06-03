@@ -22,12 +22,14 @@ package itest.io.joynr.jeeintegration;
  * #L%
  */
 
+import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
+import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI;
+
 import java.util.Properties;
 
 import javax.ejb.Singleton;
 import javax.enterprise.inject.Produces;
 
-import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 
@@ -47,7 +49,8 @@ public class JeeIntegrationJoynrTestConfigurationProvider {
 		joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
 				"/io.joynr.jeeintegration.providerwar/messaging");
 		joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:28585");
-		joynrProperties.setProperty(JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI, "http://localhost:18080");
+		joynrProperties.setProperty(JEE_INTEGRATION_ENDPOINTREGISTRY_URI, "http://localhost:18080");
+		joynrProperties.setProperty(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY, "true");
 		return joynrProperties;
 	}
 

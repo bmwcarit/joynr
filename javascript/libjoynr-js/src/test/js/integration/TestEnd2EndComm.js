@@ -30,6 +30,7 @@ joynrTestRequire(
             "joynr/vehicle/radiotypes/ErrorList",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
+            "joynr/tests/testTypes/ComplexTestType",
             "integration/IntegrationUtils",
             "joynr/provisioning/provisioning_cc",
             "integration/provisioning_end2end_common"
@@ -42,6 +43,7 @@ joynrTestRequire(
                 ErrorList,
                 Country,
                 StringMap,
+                ComplexTestType,
                 IntegrationUtils,
                 provisioning,
                 provisioning_end2end) {
@@ -573,6 +575,32 @@ joynrTestRequire(
                             expectPublication(spy, function(call) {
                                expect(call.args[0].radioStation).toEqual("radioStation");
                                expect(call.args[0].byteBuffer).toEqual([0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0]);
+                            });
+                        });
+
+                        //enable this test once the proxy side is ready for fire n' forget
+                        it("call methodFireAndForgetWithoutParams and expect to call the provider", function() {
+                            var spy = setupSubscriptionAndReturnSpy("fireAndForgetCallArrived", subscriptionQosOnChange);
+                            callOperation("methodFireAndForgetWithoutParams", {
+                            });
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0].methodName).toEqual("methodFireAndForgetWithoutParams");
+                            });
+                        });
+
+                        //enable this test once the proxy side is ready for fire n' forget
+                        it("call methodFireAndForget and expect to call the provider", function() {
+                            var spy = setupSubscriptionAndReturnSpy("fireAndForgetCallArrived", subscriptionQosOnChange);
+                            callOperation("methodFireAndForget", {
+                                intIn: 0,
+                                stringIn : "methodFireAndForget",
+                                complexTestTypeIn : new ComplexTestType({
+                                    a : 0,
+                                    b : 1
+                                })
+                            });
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0].methodName).toEqual("methodFireAndForget");
                             });
                         });
 

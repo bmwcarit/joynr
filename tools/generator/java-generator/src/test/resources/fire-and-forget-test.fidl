@@ -1,9 +1,7 @@
-package io.joynr.generator.util;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +16,22 @@ package io.joynr.generator.util;
  * limitations under the License.
  * #L%
  */
+package fireandforget
 
-import java.io.File;
-import java.io.FileFilter;
+interface FireAndForgetTest {
 
-public class IgnoreSVNFileFilter implements FileFilter {
+	version {major 0 minor 1}
 
-    public IgnoreSVNFileFilter() {
-
-    }
-
-    public boolean accept(File file) {
-        return (!file.getAbsolutePath().contains(".svn"));
-    }
-
+	method callMe fireAndForget {
+		in {
+			String message
+		}
+	}
+	
+	method callMeTwo fireAndForget {
+		in {
+			String first
+			String second
+		}
+	}
 }
