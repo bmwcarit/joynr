@@ -167,6 +167,8 @@ void JoynrMessage::setHeader(const std::map<std::string, std::string>& newHeader
         if (!containsHeader(i->first)) {
             header.insert(std::pair<std::string, std::string>(i->first, i->second));
             JOYNR_LOG_DEBUG(logger, "insert header: {} = {}", i->second, i->first);
+        } else {
+            header[i->first] = i->second;
         }
         i++;
     }
