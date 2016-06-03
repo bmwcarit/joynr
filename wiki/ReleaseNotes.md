@@ -1,3 +1,12 @@
+#joynr 0.18.1
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Include README in joynr node package
+
 #joynr 0.18.0
 
 ##API relevant changes
