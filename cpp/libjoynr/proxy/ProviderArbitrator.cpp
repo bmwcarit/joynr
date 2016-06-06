@@ -36,6 +36,7 @@ INIT_LOGGER(ProviderArbitrator);
 
 ProviderArbitrator::ProviderArbitrator(const std::string& domain,
                                        const std::string& interfaceName,
+                                       const joynr::types::Version& interfaceVersion,
                                        joynr::system::IDiscoverySync& discoveryProxy,
                                        const DiscoveryQos& discoveryQos)
         : discoveryProxy(discoveryProxy),
@@ -46,6 +47,7 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
                              discoveryQos.getProviderMustSupportOnChange()),
           domains({domain}),
           interfaceName(interfaceName),
+          interfaceVersion(interfaceVersion),
           participantId(""),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
           listener(nullptr),

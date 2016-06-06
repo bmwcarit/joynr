@@ -295,8 +295,9 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     // setDiscoveryQos method can be called twice
     assert(!hasArbitrationStarted);
     discoveryTimeout = discoveryQos.getDiscoveryTimeoutMs();
+    joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
     arbitrator = ProviderArbitratorFactory::createArbitrator(
-            domain, T::INTERFACE_NAME(), discoveryProxy, discoveryQos);
+            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
     arbitrationSemaphore.wait();
     arbitrator->setArbitrationListener(this);
     arbitrator->startArbitration();

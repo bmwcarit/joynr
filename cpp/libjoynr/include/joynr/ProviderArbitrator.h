@@ -26,6 +26,7 @@
 #include "joynr/Logger.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/Version.h"
 
 #include "joynr/Semaphore.h"
 #include <string>
@@ -81,6 +82,7 @@ protected:
      */
     ProviderArbitrator(const std::string& domain,
                        const std::string& interfaceName,
+                       const joynr::types::Version& interfaceVersion,
                        joynr::system::IDiscoverySync& discoveryProxy,
                        const DiscoveryQos& discoveryQos);
     /*
@@ -96,6 +98,7 @@ protected:
     joynr::types::DiscoveryQos systemDiscoveryQos;
     std::vector<std::string> domains;
     std::string interfaceName;
+    joynr::types::Version interfaceVersion;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);

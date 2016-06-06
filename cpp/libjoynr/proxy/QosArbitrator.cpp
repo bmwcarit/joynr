@@ -32,9 +32,10 @@ INIT_LOGGER(QosArbitrator);
 
 QosArbitrator::QosArbitrator(const std::string& domain,
                              const std::string& interfaceName,
+                             const joynr::types::Version& interfaceVersion,
                              joynr::system::IDiscoverySync& discoveryProxy,
                              const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
+        : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos)
 {
 }
 
@@ -65,9 +66,19 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
         return;
 
     std::int64_t highestPriority = -1;
+    joynr::types::Version providerVersion;
     for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
+        providerVersion = discoveryEntry.getProviderVersion();
+        if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
+            providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
+            JOYNR_LOG_TRACE(logger,
+                            "Skipping capabilitiesEntry with incompatible version, expected: " +
+                                    std::to_string(interfaceVersion.getMajorVersion()) + "." +
+                                    std::to_string(interfaceVersion.getMinorVersion()));
+            continue;
+        }
         if (discoveryQos.getProviderMustSupportOnChange() &&
             !providerQos.getSupportsOnChangeSubscriptions()) {
             continue;

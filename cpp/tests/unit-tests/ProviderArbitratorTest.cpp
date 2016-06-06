@@ -47,8 +47,9 @@ class MockProviderArbitrator : public ProviderArbitrator {
 public:
     MockProviderArbitrator(const std::string& domain,
                        const std::string& interfaceName,
+                       const joynr::types::Version& interfaceVersion,
                        joynr::system::IDiscoverySync& discoveryProxy,
-                       const DiscoveryQos& discoveryQos) : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos){
+                       const DiscoveryQos& discoveryQos) : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos){
     };
 
     MOCK_METHOD0(attemptArbitration, void (void));
@@ -81,7 +82,8 @@ public:
     {
         discoveryQos.setDiscoveryTimeoutMs(discoveryTimeout);
         discoveryQos.setRetryIntervalMs(retryInterval);
-        mockProviderArbitrator = new MockProviderArbitrator("domain", "interfaceName", mockDiscovery, discoveryQos);
+        types::Version providerVersion;
+        mockProviderArbitrator = new MockProviderArbitrator("domain", "interfaceName", providerVersion, mockDiscovery, discoveryQos);
     }
     void SetUp() {
         mockProviderArbitrator->setArbitrationListener(mockArbitrationListener);

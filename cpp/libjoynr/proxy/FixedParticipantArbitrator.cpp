@@ -33,9 +33,10 @@ INIT_LOGGER(FixedParticipantArbitrator);
 FixedParticipantArbitrator::FixedParticipantArbitrator(
         const std::string& domain,
         const std::string& interfaceName,
+        const joynr::types::Version& interfaceVersion,
         joynr::system::IDiscoverySync& discoveryProxy,
         const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
+        : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos),
           participantId(discoveryQos.getCustomParameter("fixedParticipantId").getValue()),
           reqCacheDataFreshness(discoveryQos.getCacheMaxAgeMs())
 {
@@ -46,7 +47,16 @@ void FixedParticipantArbitrator::attemptArbitration()
     joynr::types::DiscoveryEntry result;
     try {
         discoveryProxy.lookup(result, participantId);
-
+        joynr::types::Version providerVersion = result.getProviderVersion();
+        if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
+            providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
+            throw joynr::exceptions::DiscoveryException(
+                    "Provider with participantId " + participantId + " version is not compatible." +
+                    std::to_string(providerVersion.getMajorVersion()) + "." +
+                    std::to_string(providerVersion.getMinorVersion()) + " wanted: " +
+                    std::to_string(interfaceVersion.getMajorVersion()) + "." +
+                    std::to_string(interfaceVersion.getMinorVersion()));
+        }
         updateArbitrationStatusParticipantIdAndAddress(
                 ArbitrationStatus::ArbitrationSuccessful, participantId);
     } catch (const exceptions::JoynrException& e) {

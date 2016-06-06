@@ -32,9 +32,10 @@ INIT_LOGGER(DefaultArbitrator);
 
 DefaultArbitrator::DefaultArbitrator(const std::string& domain,
                                      const std::string& interfaceName,
+                                     const joynr::types::Version& interfaceVersion,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
+        : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos)
 {
 }
 
@@ -61,10 +62,16 @@ void DefaultArbitrator::receiveCapabilitiesLookupResults(
     if (discoveryEntries.size() == 0)
         return;
 
-    // default arbitrator picks first entry
-    joynr::types::DiscoveryEntry discoveredProvider = discoveryEntries.front();
-    updateArbitrationStatusParticipantIdAndAddress(
-            ArbitrationStatus::ArbitrationSuccessful, discoveredProvider.getParticipantId());
+    // default arbitrator picks first entry with compatible version
+    joynr::types::Version providerVersion;
+    for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
+        providerVersion = discoveryEntry.getProviderVersion();
+        if (providerVersion.getMajorVersion() == interfaceVersion.getMajorVersion() &&
+            providerVersion.getMinorVersion() >= interfaceVersion.getMinorVersion()) {
+            updateArbitrationStatusParticipantIdAndAddress(
+                    ArbitrationStatus::ArbitrationSuccessful, discoveryEntry.getParticipantId());
+        }
+    }
 }
 
 } // namespace joynr

@@ -30,9 +30,10 @@ INIT_LOGGER(KeywordArbitrator);
 
 KeywordArbitrator::KeywordArbitrator(const std::string& domain,
                                      const std::string& interfaceName,
+                                     const joynr::types::Version& interfaceVersion,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
+        : ProviderArbitrator(domain, interfaceName, interfaceVersion, discoveryProxy, discoveryQos),
           keyword(discoveryQos.getCustomParameter(DiscoveryQos::KEYWORD_PARAMETER()).getValue())
 {
 }
@@ -62,9 +63,15 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     }
 
     // Loop through the result list
+    joynr::types::Version providerVersion;
     for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
+        providerVersion = discoveryEntry.getProviderVersion();
+        if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
+            providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
+            continue;
+        }
 
         // Check that the provider supports onChange subscriptions if this was requested
         if (discoveryQos.getProviderMustSupportOnChange() &&

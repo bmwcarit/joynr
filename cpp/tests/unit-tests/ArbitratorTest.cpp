@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     joynr::types::Version providerVersion(47, 11);
-    QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
+    QosArbitrator qosArbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
@@ -91,6 +91,49 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     EXPECT_EQ(participantId.back(), qosArbitrator.getParticipantId());
 }
 
+// Test that the QosArbitrator selects a provider with compatible version
+TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    joynr::types::Version expectedVersion(47, 11);
+    QosArbitrator qosArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+
+    // Create a list of discovery entries
+    types::ProviderQos providerQos(
+                      std::vector<types::CustomParameter>(),// custom provider parameters
+                      42,                                   // priority
+                      joynr::types::ProviderScope::GLOBAL,  // discovery scope
+                      false                                 // supports on change notifications
+    );
+    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    joynr::types::Version providerVersion;
+    int participantIdCounter = 0;
+    std::string expectedParticipantId;
+    for (std::int32_t i = -2; i < 2; i++) {
+        providerVersion.setMajorVersion(expectedVersion.getMajorVersion() + i);
+        for (std::int32_t j = -2; j < 2; j++) {
+            providerVersion.setMinorVersion(expectedVersion.getMinorVersion() + j);
+            discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+                                     providerVersion,
+                                     domain,
+                                     interfaceName,
+                                     std::to_string(participantIdCounter),
+                                     providerQos,
+                                     lastSeenDateMs,
+                                     expiryDateMs,
+                                     publicKeyId
+            ));
+            if (providerVersion == expectedVersion) {
+                expectedParticipantId = std::to_string(participantIdCounter);
+            }
+            participantIdCounter++;
+        }
+    }
+
+    // Check that the correct participant was selected
+    qosArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
+    EXPECT_EQ(expectedParticipantId, qosArbitrator.getParticipantId());
+}
 
 // Test that the QosArbitrator selects a provider that supports onChange subscriptions
 TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
@@ -98,7 +141,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setProviderMustSupportOnChange(true);
     joynr::types::Version providerVersion(47, 11);
-    QosArbitrator qosArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
+    QosArbitrator qosArbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
@@ -140,8 +183,8 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
-    KeywordArbitrator keywordArbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
     joynr::types::Version providerVersion(47, 11);
+    KeywordArbitrator keywordArbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
@@ -188,6 +231,56 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     EXPECT_EQ(participantId.back(), keywordArbitrator.getParticipantId());
 }
 
+// Test that the KeywordArbitrator selects the provider with compatible version
+TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
+    // Search for this keyword value
+    const std::string keywordValue("unittests-keyword");
+
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
+    discoveryQos.addCustomParameter("keyword", keywordValue);
+    joynr::types::Version expectedVersion(47, 11);
+    KeywordArbitrator keywordArbitrator(domain, interfaceName, expectedVersion, mockDiscovery, discoveryQos);
+
+    // Create a list of discovery entries with the correct keyword
+    std::vector<types::CustomParameter> parameterList;
+    parameterList.push_back(types::CustomParameter("keyword", keywordValue));
+    types::ProviderQos providerQos(
+                      parameterList,                        // custom provider parameters
+                      42,                                   // priority
+                      joynr::types::ProviderScope::GLOBAL,  // discovery scope
+                      false                                 // supports on change notifications
+    );
+    std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
+    joynr::types::Version providerVersion;
+    int participantIdCounter = 0;
+    std::string expectedParticipantId;
+    for (std::int32_t i = -2; i < 2; i++) {
+        providerVersion.setMajorVersion(expectedVersion.getMajorVersion() + i);
+        for (std::int32_t j = -2; j < 2; j++) {
+            providerVersion.setMinorVersion(expectedVersion.getMinorVersion() + j);
+            discoveryEntries.push_back(joynr::types::DiscoveryEntry(
+                                     providerVersion,
+                                     domain,
+                                     interfaceName,
+                                     std::to_string(participantIdCounter),
+                                     providerQos,
+                                     lastSeenDateMs,
+                                     expiryDateMs,
+                                     publicKeyId
+            ));
+            if (providerVersion == expectedVersion) {
+                expectedParticipantId = std::to_string(participantIdCounter);
+            }
+            participantIdCounter++;
+        }
+    }
+
+    // Check that the correct participant was selected
+    keywordArbitrator.receiveCapabilitiesLookupResults(discoveryEntries);
+    EXPECT_EQ(expectedParticipantId, keywordArbitrator.getParticipantId());
+}
+
 TEST_F(ArbitratorTest, retryFiveTimes) {
     std::vector<joynr::types::DiscoveryEntry> result;
     EXPECT_CALL(
@@ -210,7 +303,8 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
     DiscoveryQos discoveryQos;
     discoveryQos.setRetryIntervalMs(100);
     discoveryQos.setDiscoveryTimeoutMs(450);
-    DefaultArbitrator arbitrator(domain, interfaceName, mockDiscovery, discoveryQos);
+    joynr::types::Version providerVersion(47, 11);
+    DefaultArbitrator arbitrator(domain, interfaceName, providerVersion, mockDiscovery, discoveryQos);
 
     arbitrator.startArbitration();
 }
