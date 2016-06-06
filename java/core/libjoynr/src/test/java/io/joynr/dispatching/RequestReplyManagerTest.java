@@ -65,6 +65,7 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
@@ -181,7 +182,7 @@ public class RequestReplyManagerTest {
         requestReplyManager.sendOneWayRequest(testSenderParticipantId,
                                               testOneWayRecipientParticipantIds,
                                               oneWay1,
-                                              TIME_TO_LIVE);
+                                              new MessagingQos(TIME_TO_LIVE));
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
         verify(messageRouterMock, times(1)).route(messageCapture.capture());
@@ -198,7 +199,7 @@ public class RequestReplyManagerTest {
         requestReplyManager.sendRequest(testSenderParticipantId,
                                         testMessageResponderParticipantId,
                                         request1,
-                                        TIME_TO_LIVE);
+                                        new MessagingQos(TIME_TO_LIVE));
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
         verify(messageRouterMock, times(1)).route(messageCapture.capture());

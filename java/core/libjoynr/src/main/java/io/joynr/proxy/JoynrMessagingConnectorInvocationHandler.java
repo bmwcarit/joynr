@@ -130,10 +130,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
 
         replyCallerDirectory.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, expiryDate);
-        requestReplyManager.sendRequest(fromParticipantId,
-                                        toParticipantIds.iterator().next(),
-                                        request,
-                                        qosSettings.getRoundTripTtl_ms());
+        requestReplyManager.sendRequest(fromParticipantId, toParticipantIds.iterator().next(), request, qosSettings);
         return future;
     }
 
@@ -175,7 +172,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                             toParticipantIds.iterator().next(),
                                                             request,
                                                             synchronizedReplyCaller,
-                                                            qosSettings.getRoundTripTtl_ms());
+                                                            qosSettings);
         if (reply.getError() == null) {
             if (method.getReturnType().equals(void.class)) {
                 return null;
@@ -189,6 +186,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     }
 
+    @Override
     public void executeOneWayMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
                                                                  JoynrMessageNotSentException, JsonGenerationException,
                                                                  JsonMappingException, IOException {
@@ -200,9 +198,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an oneWayMethod.");
         }
 
-        long ttl_ms = qosSettings.getRoundTripTtl_ms();
         OneWayRequest request = new OneWayRequest(method.getName(), args, method.getParameterTypes());
-        requestReplyManager.sendOneWayRequest(fromParticipantId, toParticipantIds, request, ttl_ms);
+        requestReplyManager.sendOneWayRequest(fromParticipantId, toParticipantIds, request, qosSettings);
     }
 
     @Override

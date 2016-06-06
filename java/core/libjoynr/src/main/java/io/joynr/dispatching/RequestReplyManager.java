@@ -25,6 +25,7 @@ import java.util.Set;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.provider.ProviderCallback;
+import io.joynr.messaging.MessagingQos;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -54,8 +55,10 @@ public interface RequestReplyManager {
      *            in case send buffer is full
      */
 
-    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, long ttl_ms)
-                                                                                                                       throws IOException;
+    public void sendRequest(final String fromParticipantId,
+                            final String toParticipantId,
+                            Request request,
+                            MessagingQos qosSettings) throws IOException;
 
     /**
      * Sends a request and blocks the current thread until the response is received or the roundTripTtl is reached. If
@@ -88,7 +91,7 @@ public interface RequestReplyManager {
                                   final String toParticipantId,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
-                                  long ttl_ms) throws IOException;
+                                  MessagingQos qosSettings) throws IOException;
 
     /**
      * Send a one way message.
@@ -116,10 +119,12 @@ public interface RequestReplyManager {
     public void sendOneWayRequest(final String fromParticipantId,
                                   final Set<String> toParticipantIds,
                                   OneWayRequest oneWayRequest,
-                                  long ttl_ms) throws IOException;
+                                  MessagingQos messagingQos) throws IOException;
 
-    public void sendReply(final String fromParticipantId, final String toParticipantId, Reply payload, ExpiryDate ttl_ms)
-                                                                                                                         throws IOException;
+    public void sendReply(final String fromParticipantId,
+                          final String toParticipantId,
+                          Reply payload,
+                          ExpiryDate expiryDate) throws IOException;
 
     public void handleReply(Reply reply);
 

@@ -29,6 +29,7 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
@@ -99,12 +100,12 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
      */
 
     @Override
-    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, long ttl_ms)
+    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, MessagingQos messagingQos)
             throws IOException {
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
-        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(ttl_ms);
+        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
 
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
                                                                  toParticipantId,
@@ -119,7 +120,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                   String toParticipantId,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
-                                  long ttl_ms) throws IOException {
+                                  MessagingQos messagingQos) throws IOException {
 
         if (!running) {
             throw new IllegalStateException("Request: " + request.getRequestReplyId() + " failed. SenderImpl ID: "
@@ -130,16 +131,16 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         // the synchronizedReplyCaller will call notify on the responsePayloadContainer when a message arrives
         synchronizedReplyCaller.setResponseContainer(responsePayloadContainer);
 
-        sendRequest(fromParticipantId, toParticipantId, request, ttl_ms);
+        sendRequest(fromParticipantId, toParticipantId, request, messagingQos);
 
         long entryTime = System.currentTimeMillis();
 
         // saving all calling threads so that they can be interrupted at shutdown
         outstandingRequestThreads.add(Thread.currentThread());
         synchronized (responsePayloadContainer) {
-            while (running && responsePayloadContainer.isEmpty() && entryTime + ttl_ms > System.currentTimeMillis()) {
+            while (running && responsePayloadContainer.isEmpty() && entryTime + messagingQos.getRoundTripTtl_ms() > System.currentTimeMillis()) {
                 try {
-                    responsePayloadContainer.wait(ttl_ms);
+                    responsePayloadContainer.wait(messagingQos.getRoundTripTtl_ms());
                 } catch (InterruptedException e) {
                     if (running) {
                         throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
@@ -170,12 +171,12 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
     @Override
     public void sendOneWayRequest(String fromParticipantId, Set<String> toParticipantIds, OneWayRequest oneWayRequest,
-                                  long ttl_ms) throws IOException {
+                                  MessagingQos messagingQos) throws IOException {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
                                                                            toParticipantId,
                                                                            oneWayRequest,
-                                                                           DispatcherUtils.convertTtlToExpirationDate(ttl_ms));
+                                                                           DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
             messageRouter.route(message);
         }
     }
@@ -276,14 +277,14 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     private void queueRequest(final ProviderCallback<Reply> replyCallback,
                               final String providerParticipantId,
                               Request request,
-                              ExpiryDate incomingTtlExpirationDate_ms) {
+                              ExpiryDate expiryDate) {
 
         if (!requestQueue.containsKey(providerParticipantId)) {
             ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> newRequestList = new ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>();
             requestQueue.putIfAbsent(providerParticipantId, newRequestList);
         }
         final ContentWithExpiryDate<Request> requestItem = new ContentWithExpiryDate<Request>(request,
-                incomingTtlExpirationDate_ms);
+                expiryDate);
         requestQueue.get(providerParticipantId).add(requestItem);
         replyCallbacks.put(request, replyCallback);
         cleanupScheduler.schedule(new Runnable() {
@@ -297,7 +298,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                             new String[]{ providerParticipantId, request.getMethodName() });
 
             }
-        }, incomingTtlExpirationDate_ms.getRelativeTtl(), TimeUnit.MILLISECONDS);
+        }, expiryDate.getRelativeTtl(), TimeUnit.MILLISECONDS);
     }
 
     @Override
