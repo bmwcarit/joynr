@@ -40,14 +40,14 @@ public class AndroidRobolectricProxyBuilder<T> extends AndroidProxyBuilder<T> {
     }
 
     @Override
-	public T build() {
-		T proxy = null;
-		try {
-			proxy = buildProxy();
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			Log.e("JAS", e.getMessage(), e);
-			publishProgress(e.getMessage());
-		}
-		return proxy;
-	}
+    public T build() {
+        T proxy = null;
+        try {
+            proxy = buildProxy();
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Log.e("JAS", e.getMessage(), e);
+            publishProgress(e.getMessage());
+        }
+        return proxy;
+    }
 }

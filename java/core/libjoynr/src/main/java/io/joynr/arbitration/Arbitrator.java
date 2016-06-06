@@ -160,7 +160,7 @@ public class Arbitrator {
                                         new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                                                                      discoveryQos.getDiscoveryTimeoutMs(),
                                                                      joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
-                                                                                                                    .name()),
+                                                                                                        .name()),
                                                                      discoveryQos.getProviderMustSupportOnChange()));
     }
 

@@ -23,42 +23,42 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MessagingQos {
-	public static final int DEFAULT_TTL = 60000;
-	public static final Map<String, String> DEFAULTQOS = new HashMap<String, String>();
-	private long ttl_ms;
-	private Map<String, String> customHeaders = new HashMap<>();
+    public static final int DEFAULT_TTL = 60000;
+    public static final Map<String, String> DEFAULTQOS = new HashMap<String, String>();
+    private long ttl_ms;
+    private Map<String, String> customHeaders = new HashMap<>();
 
-	/**
-	 * MessagingQos with default values
-	 */
-	public MessagingQos() {
-		ttl_ms = DEFAULT_TTL;
-	}
+    /**
+     * MessagingQos with default values
+     */
+    public MessagingQos() {
+        ttl_ms = DEFAULT_TTL;
+    }
 
-	public MessagingQos(MessagingQos src) {
-		ttl_ms = src.getRoundTripTtl_ms();
-	}
+    public MessagingQos(MessagingQos src) {
+        ttl_ms = src.getRoundTripTtl_ms();
+    }
 
-	/**
-	 * @param ttl_ms
-	 *            Roundtrip timeout for rpc requests.
-	 */
-	public MessagingQos(long ttl_ms) {
-		this.ttl_ms = ttl_ms;
-	}
+    /**
+     * @param ttl_ms
+     *            Roundtrip timeout for rpc requests.
+     */
+    public MessagingQos(long ttl_ms) {
+        this.ttl_ms = ttl_ms;
+    }
 
-	public long getRoundTripTtl_ms() {
-		return ttl_ms;
-	}
+    public long getRoundTripTtl_ms() {
+        return ttl_ms;
+    }
 
-	/**
-	 * @param ttl_ms
-	 *            Time to live for a joynr message and the corresponding answer on the complete way from the sender to
-	 *            the receiver and back.
-	 */
-	public void setTtl_ms(final long ttl_ms) {
-		this.ttl_ms = ttl_ms;
-	}
+    /**
+     * @param ttl_ms
+     *            Time to live for a joynr message and the corresponding answer on the complete way from the sender to
+     *            the receiver and back.
+     */
+    public void setTtl_ms(final long ttl_ms) {
+        this.ttl_ms = ttl_ms;
+    }
 
     /**
      * @param key
@@ -98,18 +98,18 @@ public class MessagingQos {
      *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
      *            dot, star, forward slash and back slash.
      */
-	private void checkKeyAndValue(String key, String value) {
-		String keyPattern = "^[a-zA-Z0-9\\-]*$";
-		String valuePattern = "^[a-zA-Z0-9 ;:,+&\\?\\-\\.\\*\\/\\\\]*$";
-		if (!key.matches(keyPattern)) {
-			throw new IllegalArgumentException("key may only contain alphanumeric characters");
-		}
-		if (!value.matches(valuePattern)) {
-			throw new IllegalArgumentException("value contains illegal character. See JavaDoc for allowed characters");
-		}
-	}
+    private void checkKeyAndValue(String key, String value) {
+        String keyPattern = "^[a-zA-Z0-9\\-]*$";
+        String valuePattern = "^[a-zA-Z0-9 ;:,+&\\?\\-\\.\\*\\/\\\\]*$";
+        if (!key.matches(keyPattern)) {
+            throw new IllegalArgumentException("key may only contain alphanumeric characters");
+        }
+        if (!value.matches(valuePattern)) {
+            throw new IllegalArgumentException("value contains illegal character. See JavaDoc for allowed characters");
+        }
+    }
 
-	public Map<String, String> getCustomMessageHeaders() {
-		return customHeaders;
-	}
+    public Map<String, String> getCustomMessageHeaders() {
+        return customHeaders;
+    }
 }

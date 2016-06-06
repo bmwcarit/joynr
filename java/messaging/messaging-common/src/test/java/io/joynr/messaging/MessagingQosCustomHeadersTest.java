@@ -103,24 +103,24 @@ public class MessagingQosCustomHeadersTest {
     }
 
     @Test
-	public void putCustomMessageHeadersTest() {
-		MessagingQos messagingQos = new MessagingQos();
-		Map<String, String> customHeaders = new HashMap<>();
-		customHeaders.put(key, value);
-		try {
-			messagingQos.putAllCustomMessageHeaders(customHeaders);
-			if (!conforms) {
-				fail("key: " + key + " value: " + value + " should have caused an exception");
-			}
-			Map<String, String> customMessageHeaders = messagingQos.getCustomMessageHeaders();
-			assertTrue(customMessageHeaders.containsKey(key));
-			assertEquals(value, customMessageHeaders.get(key));
-		} catch (Exception e) {
-			if (conforms) {
-				fail("key: " + key + " value: " + value + " should not have caused an exception");
-			} else {
-				return;
-			}
-		}
-	}
+    public void putCustomMessageHeadersTest() {
+        MessagingQos messagingQos = new MessagingQos();
+        Map<String, String> customHeaders = new HashMap<>();
+        customHeaders.put(key, value);
+        try {
+            messagingQos.putAllCustomMessageHeaders(customHeaders);
+            if (!conforms) {
+                fail("key: " + key + " value: " + value + " should have caused an exception");
+            }
+            Map<String, String> customMessageHeaders = messagingQos.getCustomMessageHeaders();
+            assertTrue(customMessageHeaders.containsKey(key));
+            assertEquals(value, customMessageHeaders.get(key));
+        } catch (Exception e) {
+            if (conforms) {
+                fail("key: " + key + " value: " + value + " should not have caused an exception");
+            } else {
+                return;
+            }
+        }
+    }
 }
