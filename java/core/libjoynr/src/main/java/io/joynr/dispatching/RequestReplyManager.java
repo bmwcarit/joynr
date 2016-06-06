@@ -22,7 +22,6 @@ package io.joynr.dispatching;
 import java.io.IOException;
 import java.util.Set;
 
-import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.messaging.MessagingQos;
@@ -120,11 +119,6 @@ public interface RequestReplyManager {
                                   final Set<String> toParticipantIds,
                                   OneWayRequest oneWayRequest,
                                   MessagingQos messagingQos) throws IOException;
-
-    public void sendReply(final String fromParticipantId,
-                          final String toParticipantId,
-                          Reply payload,
-                          ExpiryDate expiryDate) throws IOException;
 
     public void handleReply(Reply reply);
 

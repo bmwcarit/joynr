@@ -182,16 +182,6 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     }
 
     @Override
-    public void sendReply(final String fromParticipantId,
-                          final String toParticipantId,
-                          Reply payload,
-                          ExpiryDate expiryDate) throws IOException {
-        JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, payload, expiryDate);
-
-        messageRouter.route(message);
-    }
-
-    @Override
     public void entryAdded(String participantId, ProviderContainer providerContainer) {
         ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> requestList = requestQueue.remove(participantId);
         if (requestList != null) {
