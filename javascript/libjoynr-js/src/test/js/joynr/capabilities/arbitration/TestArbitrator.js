@@ -50,15 +50,18 @@ joynrTestRequire(
             var capabilities, fakeTime, staticArbitrationSettings, staticArbitrationSpy, domain;
             var interfaceName, discoveryQos, capDiscoverySpy, arbitrator, discoveryEntries, nrTimes;
             var safetyTimeoutDelta = 100;
+            var discoveryEntryWithMajor47AndMinor0, discoveryEntryWithMajor47AndMinor1;
+            var discoveryEntryWithMajor47AndMinor2, discoveryEntryWithMajor47AndMinor3;
+            var discoveryEntryWithMajor48AndMinor2;
 
             function increaseFakeTime(time_ms) {
                 fakeTime = fakeTime + time_ms;
                 jasmine.Clock.tick(time_ms);
             }
 
-            function getDiscoveryEntry(domain, interfaceName, discoveryStrategy) {
+            function getDiscoveryEntry(domain, interfaceName, discoveryStrategy, providerVersion) {
                 return new DiscoveryEntry({
-                    providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
+                    providerVersion : providerVersion,
                     domain : domain,
                     interfaceName : interfaceName,
                     qos : new ProviderQos([ new CustomParameter("theName", "theValue")
@@ -78,27 +81,32 @@ joynrTestRequire(
                             {
                                 domain : "myDomain",
                                 interfaceName : "myInterface",
-                                participantId : 1
+                                participantId : 1,
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11})
                             },
                             {
                                 domain : "myDomain",
                                 interfaceName : "myInterface",
-                                participantId : 2
+                                participantId : 2,
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11})
                             },
                             {
                                 domain : "otherDomain",
                                 interfaceName : "otherInterface",
-                                participantId : 3
+                                participantId : 3,
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11})
                             },
                             {
                                 domain : "thirdDomain",
                                 interfaceName : "otherInterface",
-                                participantId : 4
+                                participantId : 4,
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11})
                             }
                         ];
 
                         beforeEach(function() {
                             var i;
+                            var providerQos;
                             domain = "myDomain";
                             interfaceName = "myInterface";
                             discoveryQos = new DiscoveryQos({
@@ -114,7 +122,8 @@ joynrTestRequire(
                                 domains : [domain],
                                 interfaceName : interfaceName,
                                 discoveryQos : discoveryQos,
-                                staticArbitration : true
+                                staticArbitration : true,
+                                proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
                             };
 
                             staticArbitrationSpy = jasmine.createSpyObj("staticArbitrationSpy", [
@@ -134,8 +143,72 @@ joynrTestRequire(
                                 discoveryEntries.push(getDiscoveryEntry(
                                         domain + i.toString(),
                                         interfaceName + i.toString(),
-                                        discoveryQos.discoveryStrategy));
+                                        discoveryQos.discoveryStrategy,
+                                        new Version({ majorVersion: 47, minorVersion: 11})
+                                ));
                             }
+
+                            // prepare a number of similar discovery entries with different
+                            // provider versions
+
+                            providerQos = new ProviderQos({
+                                    customParameters : [],
+                                    priority: 123,
+                                    scope: discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY
+                                            ? true : false,
+                                    onChangeSubscriptions : true
+                            });
+
+                            discoveryEntryWithMajor47AndMinor0 = new DiscoveryEntry({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 0 }),
+                                domain : domain,
+                                interfaceName : interfaceName,
+                                qos : providerQos,
+                                participantId : "700",
+                                lastSeenDateMs : Date.now(),
+                                publicKeyId : ""
+                            });
+
+                            discoveryEntryWithMajor47AndMinor1 = new DiscoveryEntry({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 1 }),
+                                domain : domain,
+                                interfaceName : interfaceName,
+                                qos : providerQos,
+                                participantId : "700",
+                                lastSeenDateMs : Date.now(),
+                                publicKeyId : ""
+                            });
+
+                            discoveryEntryWithMajor47AndMinor2 = new DiscoveryEntry({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 2 }),
+                                domain : domain,
+                                interfaceName : interfaceName,
+                                qos : providerQos,
+                                participantId : "700",
+                                lastSeenDateMs : Date.now(),
+                                publicKeyId : ""
+                            });
+
+                            discoveryEntryWithMajor47AndMinor3 = new DiscoveryEntry({
+                                providerVersion : new Version({ majorVersion: 47, minorVersion: 3 }),
+                                domain : domain,
+                                interfaceName : interfaceName,
+                                qos : providerQos,
+                                participantId : "700",
+                                lastSeenDateMs : Date.now(),
+                                publicKeyId : ""
+                            });
+
+                            discoveryEntryWithMajor48AndMinor2 = new DiscoveryEntry({
+                                providerVersion : new Version({ majorVersion: 48, minorVersion: 2 }),
+                                domain : domain,
+                                interfaceName : interfaceName,
+                                qos : providerQos,
+                                participantId : "700",
+                                lastSeenDateMs : Date.now(),
+                                publicKeyId : ""
+                            });
+
                             //discoveryQos.arbitrationStrategy.andReturn([]);
 
                             nrTimes = 5;
@@ -179,7 +252,8 @@ joynrTestRequire(
                                 arbitrator.startArbitration({
                                     domains : [domain],
                                     interfaceName : interfaceName,
-                                    discoveryQos : discoveryQos
+                                    discoveryQos : discoveryQos,
+                                    proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
                                 }).then(function() {
                                     resolved = true;
                                 });
@@ -223,7 +297,8 @@ joynrTestRequire(
                                 arbitrator.startArbitration({
                                     domains : [domain],
                                     interfaceName : interfaceName,
-                                    discoveryQos : discoveryQos
+                                    discoveryQos : discoveryQos,
+                                    proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
                                 }).then(onFulfilledSpy).catch(onRejectedSpy);
                                 increaseFakeTime(1);
                             });
@@ -242,6 +317,56 @@ joynrTestRequire(
                             });
                         });
 
+                        it("returns capabilities with matching provider version", function() {
+                            var onFulfilledSpy, onRejectedSpy;
+                            var discoveryEntriesWithDifferentProviderVersions = [
+                                discoveryEntryWithMajor47AndMinor0,
+                                discoveryEntryWithMajor47AndMinor1,
+                                discoveryEntryWithMajor47AndMinor2,
+                                discoveryEntryWithMajor47AndMinor3,
+                                discoveryEntryWithMajor48AndMinor2
+                            ];
+
+                            // return discoveryEntries to check whether a subset is eventually
+                            // returned by the arbitrator
+                            capDiscoverySpy.lookup.andReturn(Promise.resolve(discoveryEntriesWithDifferentProviderVersions));
+                            arbitrator = new Arbitrator(capDiscoverySpy);
+
+                            // spy on and instrument arbitrationStrategy
+                            spyOn(discoveryQos, "arbitrationStrategy").andCallThrough();
+
+                            // call arbitrator
+                            onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            onRejectedSpy = jasmine.createSpy("onRejectedSpy");
+
+                            runs(function() {
+                                arbitrator.startArbitration({
+                                    domains : [domain],
+                                    interfaceName : interfaceName,
+                                    discoveryQos : discoveryQos,
+                                    proxyVersion : new Version({ majorVersion: 47, minorVersion: 2 })
+                                }).then(onFulfilledSpy).catch(onRejectedSpy);
+                                increaseFakeTime(1);
+                            });
+
+                            waitsFor(function() {
+                                return onFulfilledSpy.callCount > 0;
+                            }, "until onresolve has been invoked", 300);
+
+                            runs(function() {
+                                // arbitrator finally returned the discoveryEntries (filtered only
+                                // by providerVersion because of ArbitrationStrategyCollection.Nothing)
+                                expect(onRejectedSpy).not.toHaveBeenCalled();
+                                expect(onFulfilledSpy).toHaveBeenCalled();
+                                var returnedDiscoveryEntries = onFulfilledSpy.calls[0].args[0];
+                                expect(returnedDiscoveryEntries).not.toContain(discoveryEntryWithMajor47AndMinor0);
+                                expect(returnedDiscoveryEntries).not.toContain(discoveryEntryWithMajor47AndMinor1);
+                                expect(returnedDiscoveryEntries).toContain(discoveryEntryWithMajor47AndMinor2);
+                                expect(returnedDiscoveryEntries).toContain(discoveryEntryWithMajor47AndMinor3);
+                                expect(returnedDiscoveryEntries).not.toContain(discoveryEntryWithMajor48AndMinor2);
+                            });
+                        });
+
                         it(
                                 "timeouts after the given discoveryTimeoutMs on empty results",
                                 function() {
@@ -254,7 +379,8 @@ joynrTestRequire(
                                         arbitrator.startArbitration({
                                             domains : [domain],
                                             interfaceName : interfaceName,
-                                            discoveryQos : discoveryQos
+                                            discoveryQos : discoveryQos,
+                                            proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
                                         }).then(onFulfilledSpy).catch(onRejectedSpy);
                                         // let discoveryTimeoutMs - 1 pass
                                         increaseFakeTime(discoveryQos.discoveryTimeoutMs - 1);
@@ -290,7 +416,8 @@ joynrTestRequire(
                                         arbitrator.startArbitration({
                                             domains : [domain],
                                             interfaceName : interfaceName,
-                                            discoveryQos : discoveryQos
+                                            discoveryQos : discoveryQos,
+                                            proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
                                         });
                                         increaseFakeTime(1);
                                     });
@@ -367,7 +494,8 @@ joynrTestRequire(
                                 arbitrator.startArbitration({
                                     domain : [domain],
                                     interfaceName : interfaceName,
-                                    discoveryQos : discoveryQos
+                                    discoveryQos : discoveryQos,
+                                    proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
                                 }).then(onFulfilledSpy);
                                 // increaseFakeTime: is required for test purpose to ensure the
                                 // resolve/reject callbacks are called
@@ -476,7 +604,7 @@ joynrTestRequire(
                                             });
 
                                     expect(function() {
-                                        arbitrator.startArbitration(staticArbitrationSettings);
+                                            arbitrator.startArbitration(staticArbitrationSettings).then(function() { return null; }).catch(function() { return null; });
                                     }).not.toThrow();
 
                                     runs(function() {

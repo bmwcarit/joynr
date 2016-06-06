@@ -242,7 +242,8 @@ joynrTestRequire(
                                     domains : [settings.domain],
                                     interfaceName : interfaceName,
                                     discoveryQos : settings.discoveryQos,
-                                    staticArbitration : settings.staticArbitration
+                                    staticArbitration : settings.staticArbitration,
+                                    proxyVersion : new Version({ majorVersion: 47, minorVersion: 11})
                                 });
                             });
                         });

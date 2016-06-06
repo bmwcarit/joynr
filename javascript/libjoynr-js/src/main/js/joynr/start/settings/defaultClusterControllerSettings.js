@@ -48,7 +48,11 @@
                         messagingEndpointUrl : defaultSettings.getDefaultDiscoveryChannelUrl()
                     }),
                     publicKeyId : "",
-                    participantId : "capabilitiesdirectory_participantid"
+                    participantId : "capabilitiesdirectory_participantid",
+                    providerVersion : {
+                        majorVersion : 0,
+                        minorVersion : 1
+                    }
                 };
 
                 defaultSettings.capabilities = [ globalCapDirCapability

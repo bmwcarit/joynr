@@ -33,6 +33,7 @@ define(
                     domains,
                     interfaceName,
                     discoveryQos,
+                    proxyVersion,
                     deferred) {
                 try {
                     var i, capability, arbitratedCaps = [];
@@ -44,7 +45,9 @@ define(
                         for (i = 0; i < capabilities.length; ++i) {
                             capability = capabilities[i];
                             if (domains.indexOf(capability.domain) !== -1
-                                    && interfaceName === capability.interfaceName) {
+                                    && interfaceName === capability.interfaceName &&
+                                capability.providerVersion.MAJOR_VERSION === proxyVersion.MAJOR_VERSION &&
+                                capability.providerVersion.MINOR_VERSION === proxyVersion.MINOR_VERSION) {
                                 arbitratedCaps.push(capability);
                             }
                         }
@@ -71,6 +74,7 @@ define(
                     domains,
                     interfaceName,
                     applicationDiscoveryQos,
+                    proxyVersion,
                     deferred) {
                 // discover caps from local capabilities directory
                 capabilityDiscoveryStub.lookup(domains, interfaceName, new DiscoveryQos({
@@ -81,13 +85,21 @@ define(
                             // filter caps according to chosen arbitration strategy
                             var arbitratedCaps =
                                     applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
+                            var versionCompatibleArbitratedCaps = [];
+                            var i;
                             // if deferred is still pending => discoveryTimeoutMs is not expired yet
                             if (deferred.pending) {
                                 // if there are caps found
-                                if (arbitratedCaps.length > 0) {
+                                for (i = 0; i < arbitratedCaps.length; i++) {
+                                    if (arbitratedCaps[i].providerVersion.majorVersion === proxyVersion.majorVersion &&
+                                        arbitratedCaps[i].providerVersion.minorVersion >= proxyVersion.minorVersion) {
+                                        versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
+                                    }
+                                }
+                                if (versionCompatibleArbitratedCaps.length > 0) {
                                     // report the discovered & arbitrated caps
                                     deferred.pending = false;
-                                    deferred.resolve(arbitratedCaps);
+                                    deferred.resolve(versionCompatibleArbitratedCaps);
                                 } else {
                                     // retry discovery in discoveryRetryDelayMs ms
                                     LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
@@ -96,6 +108,7 @@ define(
                                                 domains,
                                                 interfaceName,
                                                 applicationDiscoveryQos,
+                                                proxyVersion,
                                                 deferred);
                                     }, applicationDiscoveryQos.discoveryRetryDelayMs);
                                 }
@@ -134,6 +147,7 @@ define(
                  * @param {String} settings.interfaceName the interfaceName to discover the provider
                  * @param {DiscoveryQos} settings.discoveryQos
                  * @param {Boolean} [settings.staticArbitration] shall the arbitrator use staticCapabilities or contact the discovery provider
+                 * @param {Version} [settings.proxyVersion] the version of the proxy object
                  * @returns {Object} a A+ Promise object, that will provide asynchronously an array of arbitrated capabilities
                  */
                 this.startArbitration =
@@ -152,6 +166,7 @@ define(
                                                     settings.domains,
                                                     settings.interfaceName,
                                                     settings.discoveryQos,
+                                                    settings.proxyVersion,
                                                     deferred);
                                         } else {
                                             var discoveryTimeoutMsId =
@@ -180,6 +195,7 @@ define(
                                                     settings.domains,
                                                     settings.interfaceName,
                                                     settings.discoveryQos,
+                                                    settings.proxyVersion,
                                                     deferred);
                                         }
                                     });
