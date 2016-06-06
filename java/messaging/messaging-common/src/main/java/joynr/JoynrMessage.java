@@ -51,6 +51,7 @@ public class JoynrMessage implements JoynrType {
     public static final String MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
     public static final String MESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
 
+    public static final String MESSAGE_CUSTOM_HEADER_PREFIX = "custom-";
     public static final String CONTENT_TYPE_TEXT_PLAIN = "text/plain";
     public static final String CONTENT_TYPE_APPLICATION_JSON = "application/json";
 
@@ -97,6 +98,18 @@ public class JoynrMessage implements JoynrType {
 
     public Map<String, String> getHeader() {
         return header;
+    }
+
+    public Map<String, String> getCustomHeaders() {
+        Map<String, String> customHeaders = new HashMap<>();
+        for (Map.Entry<String, String> entry : header.entrySet())
+        {
+            if (entry.getKey().startsWith(MESSAGE_CUSTOM_HEADER_PREFIX)) {
+                String key = entry.getKey().replaceFirst("^" + MESSAGE_CUSTOM_HEADER_PREFIX, "");
+                customHeaders.put(key, entry.getValue());
+            }
+        }
+        return customHeaders;
     }
 
     /**
