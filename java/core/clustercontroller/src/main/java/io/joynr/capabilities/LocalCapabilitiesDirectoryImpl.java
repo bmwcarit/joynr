@@ -69,8 +69,8 @@ import joynr.types.Version;
 
 @Singleton
 public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory implements
-        TransportReadyListener {
-    
+TransportReadyListener {
+
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
     private static final Set<DiscoveryScope> INCLUDE_LOCAL_SCOPES = new HashSet<>();
@@ -315,11 +315,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private void handleLocalAndGlobal(String[] domains,
-                                       String interfaceName,
-                                       DiscoveryQos discoveryQos,
-                                       CapabilitiesCallback capabilitiesCallback,
-                                       Set<DiscoveryEntry> localDiscoveryEntries,
-                                       Set<DiscoveryEntry> globalDiscoveryEntries) {
+                                      String interfaceName,
+                                      DiscoveryQos discoveryQos,
+                                      CapabilitiesCallback capabilitiesCallback,
+                                      Set<DiscoveryEntry> localDiscoveryEntries,
+                                      Set<DiscoveryEntry> globalDiscoveryEntries) {
         Set<String> domainsForGlobalLookup = new HashSet<>();
         Set<DiscoveryEntry> matchedDiscoveryEntries = new HashSet<>();
         for (String domainToMatch : domains) {
@@ -336,10 +336,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private void handleGlobalOnly(String[] domains,
-                                       String interfaceName,
-                                       DiscoveryQos discoveryQos,
-                                       CapabilitiesCallback capabilitiesCallback,
-                                       Set<DiscoveryEntry> globalDiscoveryEntries) {
+                                  String interfaceName,
+                                  DiscoveryQos discoveryQos,
+                                  CapabilitiesCallback capabilitiesCallback,
+                                  Set<DiscoveryEntry> globalDiscoveryEntries) {
         Set<String> domainsForGlobalLookup = Sets.newHashSet(domains);
         for (DiscoveryEntry discoveryEntry : globalDiscoveryEntries) {
             domainsForGlobalLookup.remove(discoveryEntry.getDomain());
@@ -369,18 +369,18 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private boolean addEntriesForDomain(Collection<DiscoveryEntry> discoveryEntries, Collection<DiscoveryEntry> addTo, String domain) {
         boolean domainMatched = false;
-            for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-                if (discoveryEntry.getDomain().equals(domain)) {
-                    addTo.add(discoveryEntry);
-                    domainMatched = true;
-                }
+        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+            if (discoveryEntry.getDomain().equals(domain)) {
+                addTo.add(discoveryEntry);
+                domainMatched = true;
             }
-            return domainMatched;
+        }
+        return domainMatched;
     }
 
     private Set<DiscoveryEntry> getGloballyCachedEntriesIfRequired(DiscoveryScope discoveryScope,
-                                                                          String[] domains,
-                                                                          String interfaceName, long cacheMaxAge) {
+                                                                   String[] domains,
+                                                                   String interfaceName, long cacheMaxAge) {
         if (INCLUDE_GLOBAL_SCOPES.contains(discoveryScope)) {
             return new HashSet<DiscoveryEntry>(globalDiscoveryEntryCache.lookup(domains, interfaceName, cacheMaxAge));
         }
@@ -535,9 +535,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 capabilitiesCallback.onError(exception);
             }
         },
-                                        domains,
-                                        interfaceName,
-                                        discoveryTimeout);
+                                                 domains,
+                                                 interfaceName,
+                                                 discoveryTimeout);
     }
 
     @Override
@@ -574,9 +574,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                     };
                     globalCapabilitiesDirectoryClient.remove(callback, Lists.newArrayList(Collections2.transform(discoveryEntries,
-                            transfomerFct)));
+                                                                                                                 transfomerFct)));
                 } catch (DiscoveryException e) {
-                	logger.debug("error removing discovery entries", e);
+                    logger.debug("error removing discovery entries", e);
                 }
             }
         }
@@ -604,9 +604,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
         lookup(domains, interfaceName, new DiscoveryQos(DEFAULT_DISCOVERYTIMEOUT,
-                                                       ArbitrationStrategy.NotSet,
-                                                       discoveryQos.getCacheMaxAge(),
-                                                       discoveryScope), callback);
+                                                        ArbitrationStrategy.NotSet,
+                                                        discoveryQos.getCacheMaxAge(),
+                                                        discoveryScope), callback);
 
         return new Promise<>(deferred);
     }

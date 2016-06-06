@@ -46,22 +46,22 @@ public class RpcUtils {
 
         Object responsePayload = null;
 
-            if (response.length == 1) {
-                responsePayload = objectMapper.convertValue(response[0], method.getReturnType());
-            } else if (response.length > 1) {
-                try {
-                        convertMultioutResponseToCorrectTypes(method, response);
+        if (response.length == 1) {
+            responsePayload = objectMapper.convertValue(response[0], method.getReturnType());
+        } else if (response.length > 1) {
+            try {
+                convertMultioutResponseToCorrectTypes(method, response);
 
-                        final Class<?>[] constructorParameterTypes = { Object[].class };
-                        responsePayload = method.getReturnType()
-                                                .getConstructor(constructorParameterTypes)
-                                                .newInstance((Object) response);
-                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                        logger.error("error calling multi-out method: {}. Unable to recreate return object. Returning NULL instead: " + method.getName(), e);
+                final Class<?>[] constructorParameterTypes = { Object[].class };
+                responsePayload = method.getReturnType()
+                        .getConstructor(constructorParameterTypes)
+                        .newInstance((Object) response);
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                logger.error("error calling multi-out method: {}. Unable to recreate return object. Returning NULL instead: " + method.getName(), e);
 
-                    }
             }
+        }
 
 
         return responsePayload;
@@ -110,5 +110,5 @@ public class RpcUtils {
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             logger.error("error calling method. Unable to recreate response for callback: Returning NULL instead: " + method.getName(), e);
         }
-}
+    }
 }

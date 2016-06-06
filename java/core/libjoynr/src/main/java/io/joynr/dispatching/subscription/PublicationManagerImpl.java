@@ -635,11 +635,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     @Override
     public void sendSubscriptionPublication(SubscriptionPublication publication,
                                             PublicationInformation publicationInformation)
-                                                                                          throws JoynrSendBufferFullException,
-                                                                                          JoynrMessageNotSentException,
-                                                                                          JsonGenerationException,
-                                                                                          JsonMappingException,
-                                                                                          IOException {
+                                                    throws JoynrSendBufferFullException,
+                                                    JoynrMessageNotSentException,
+                                                    JsonGenerationException,
+                                                    JsonMappingException,
+                                                    IOException {
         MessagingQos messagingQos = new MessagingQos();
         messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtlMs());
         Set<String> toParticipantIds = new HashSet<>();

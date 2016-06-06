@@ -172,9 +172,9 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
         List<DiscoveryEntry> result = new ArrayList<>();
         for (String domain : domains) {
             List<DiscoveryEntry> capabilitiesList = entityManager.createQuery(query)
-                                                                  .setParameter("domain", domain)
-                                                                  .setParameter("interfaceName", interfaceName)
-                                                                  .getResultList();
+                    .setParameter("domain", domain)
+                    .setParameter("interfaceName", interfaceName)
+                    .getResultList();
             result.addAll(capabilitiesList);
         }
 

@@ -131,19 +131,19 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-	public Boolean updateDomainRole(@Nonnull DomainRoleEntry updatedEntry) {
-		boolean updateSuccess = false;
-		Cache cache = getCache(CacheId.DOMAIN_ROLES);
-		UserRoleKey dreKey = new UserRoleKey(updatedEntry.getUid(), updatedEntry.getRole());
-		try {
-			cache.put(new Element(dreKey, updatedEntry));
-			updateSuccess = true;
-		} catch (IllegalArgumentException | IllegalStateException | CacheException e) {
-			logger.error("updateDomainRole failed.", e);
-		}
+    public Boolean updateDomainRole(@Nonnull DomainRoleEntry updatedEntry) {
+        boolean updateSuccess = false;
+        Cache cache = getCache(CacheId.DOMAIN_ROLES);
+        UserRoleKey dreKey = new UserRoleKey(updatedEntry.getUid(), updatedEntry.getRole());
+        try {
+            cache.put(new Element(dreKey, updatedEntry));
+            updateSuccess = true;
+        } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
+            logger.error("updateDomainRole failed.", e);
+        }
 
-		return updateSuccess;
-	}
+        return updateSuccess;
+    }
 
     @Override
     public Boolean removeDomainRole(String uid, Role role) {
@@ -473,29 +473,29 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     private <T extends ControlEntry> Boolean updateAce(T accessControlEntry, CacheId cacheId, Object aceKey) {
-		Cache cache = getCache(cacheId);
-		boolean updateSuccess = false;
-		try {
-			cache.put(new Element(aceKey, accessControlEntry));
-			updateSuccess = true;
-		} catch (IllegalArgumentException | IllegalStateException | CacheException e) {
-			logger.error("update " + cacheId + "failed.", e);
-		}
+        Cache cache = getCache(cacheId);
+        boolean updateSuccess = false;
+        try {
+            cache.put(new Element(aceKey, accessControlEntry));
+            updateSuccess = true;
+        } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
+            logger.error("update " + cacheId + "failed.", e);
+        }
 
-		return updateSuccess;
-	}
+        return updateSuccess;
+    }
 
     private boolean removeAce(CacheId cacheId, Object aceKey) {
-		Cache cache = getCache(cacheId);
-		boolean removeResult = false;
-		try {
-			removeResult = cache.remove(aceKey);
-		} catch (IllegalArgumentException | IllegalStateException | CacheException e) {
-			logger.error("remove " +  cacheId + " failed.", e);
-		}
+        Cache cache = getCache(cacheId);
+        boolean removeResult = false;
+        try {
+            removeResult = cache.remove(aceKey);
+        } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
+            logger.error("remove " +  cacheId + " failed.", e);
+        }
 
-		return removeResult;
-	}
+        return removeResult;
+    }
 
     protected Cache getCache(CacheId cacheId) {
         Cache cache = cacheManager.getCache(cacheId.getIdAsString());

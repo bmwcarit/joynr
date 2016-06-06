@@ -74,7 +74,7 @@ public class ChannelServiceRestAdapter {
 
     /**
      * A simple HTML list view of channels. A JSP is used for rendering.
-     * 
+     *
      * @return a HTML list of available channels, and their resources (long poll
      *         connections) if connected.
      */
@@ -94,7 +94,7 @@ public class ChannelServiceRestAdapter {
      * Open a long poll channel for the given cluster controller.
      *  The channel is closed automatically by the server at
      * regular intervals to ensure liveliness.
-     * 
+     *
      * @param ccid cluster controller id
      * @param cacheIndex cache index
      * @param atmosphereTrackingId the tracking for atmosphere
@@ -168,7 +168,7 @@ public class ChannelServiceRestAdapter {
 
     /**
      * Remove the channel for the given cluster controller.
-     * 
+     *
      * @param ccid the ID of the channel
      * @return response ok if deletion was successful, else empty response
      */

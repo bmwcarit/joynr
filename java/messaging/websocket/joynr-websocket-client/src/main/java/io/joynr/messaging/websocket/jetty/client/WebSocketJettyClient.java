@@ -83,52 +83,52 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-	public synchronized void start() {
-		if (jettyClient == null) {
-			jettyClient = new WebSocketClient();
-			jettyClient.getPolicy().setMaxTextMessageSize(maxMessageSize);
-			jettyClient.setMaxIdleTimeout(websocketIdleTimeout);
-		}
+    public synchronized void start() {
+        if (jettyClient == null) {
+            jettyClient = new WebSocketClient();
+            jettyClient.getPolicy().setMaxTextMessageSize(maxMessageSize);
+            jettyClient.setMaxIdleTimeout(websocketIdleTimeout);
+        }
 
-		try {
-			jettyClient.start();
-			sessionFuture = jettyClient.connect(this, toUrl(serverAddress));
-			sendInitializationMessage();
-		} catch (JoynrShutdownException | JoynrIllegalStateException e) {
-			logger.error("unrecoverable error starting WebSocket client: {}", e);
-			return;
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		} catch (Exception e) {
-			// TODO which exceptions are recoverable? Only catch those ones
-			// JoynrCommunicationExeption is thrown if the initialization message could not be sent
-			logger.debug("error starting WebSocket client. Will retry", e);
-			if (shutdown) {
-				return;
-			}
-			reconnectTimer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					start();
-				}
-			}, reconnectDelay);
-		}
-	}
+        try {
+            jettyClient.start();
+            sessionFuture = jettyClient.connect(this, toUrl(serverAddress));
+            sendInitializationMessage();
+        } catch (JoynrShutdownException | JoynrIllegalStateException e) {
+            logger.error("unrecoverable error starting WebSocket client: {}", e);
+            return;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            // TODO which exceptions are recoverable? Only catch those ones
+            // JoynrCommunicationExeption is thrown if the initialization message could not be sent
+            logger.debug("error starting WebSocket client. Will retry", e);
+            if (shutdown) {
+                return;
+            }
+            reconnectTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    start();
+                }
+            }, reconnectDelay);
+        }
+    }
 
     private void sendInitializationMessage() throws InterruptedException, JoynrCommunicationException  {
-		String serializedAddress;
-		try {
-			serializedAddress = objectMapper.writeValueAsString(ownAddress);
-		} catch (JsonProcessingException e) {
-			throw new JoynrIllegalStateException("unable to serialize WebSocket Client address: " + ownAddress, e);
-		}
+        String serializedAddress;
+        try {
+            serializedAddress = objectMapper.writeValueAsString(ownAddress);
+        } catch (JsonProcessingException e) {
+            throw new JoynrIllegalStateException("unable to serialize WebSocket Client address: " + ownAddress, e);
+        }
 
-		try {
-			sessionFuture.get(30, TimeUnit.SECONDS).getRemote().sendString(serializedAddress);
-		} catch (IOException | ExecutionException | TimeoutException e) {
-			throw new JoynrCommunicationException(e.getMessage(), e);
-		}
-	}
+        try {
+            sessionFuture.get(30, TimeUnit.SECONDS).getRemote().sendString(serializedAddress);
+        } catch (IOException | ExecutionException | TimeoutException e) {
+            throw new JoynrCommunicationException(e.getMessage(), e);
+        }
+    }
 
     private URI toUrl(WebSocketAddress address) {
         try {
@@ -159,20 +159,20 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     private void closeSession() {
-		try {
-			if (sessionFuture != null) {
-				Session session = sessionFuture.get();
-				if (session != null) {
-					session.close();
-				}
-				sessionFuture = null;
-			}
-		} catch (InterruptedException | ExecutionException e) {
-			logger.error("Error while closing websocket connection: ", e);
-		} catch (Exception e) {
-			logger.error("Error: ", e);
-		}
-	}
+        try {
+            if (sessionFuture != null) {
+                Session session = sessionFuture.get();
+                if (session != null) {
+                    session.close();
+                }
+                sessionFuture = null;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error while closing websocket connection: ", e);
+        } catch (Exception e) {
+            logger.error("Error: ", e);
+        }
+    }
 
     @Override
     public void reconnect() {
@@ -209,47 +209,47 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-	public void writeText(Address to, String message, long timeout, TimeUnit unit, final FailureAction failureAction) {
-		if (messageListener == null) {
-			throw new JoynrDelayMessageException(20, "WebSocket write failed: receiver has not been set yet");
-		}
+    public void writeText(Address to, String message, long timeout, TimeUnit unit, final FailureAction failureAction) {
+        if (messageListener == null) {
+            throw new JoynrDelayMessageException(20, "WebSocket write failed: receiver has not been set yet");
+        }
 
-		if (sessionFuture == null) {
-			try {
-				reconnect();
-			} catch (Exception e) {
-				throw new JoynrDelayMessageException(10, "WebSocket reconnect failed. Will try later", e);
-			}
-		}
+        if (sessionFuture == null) {
+            try {
+                reconnect();
+            } catch (Exception e) {
+                throw new JoynrDelayMessageException(10, "WebSocket reconnect failed. Will try later", e);
+            }
+        }
 
-		try {
-			Session session = sessionFuture.get(timeout, unit);
-			session.getRemote().sendString(message, new WriteCallback() {
+        try {
+            Session session = sessionFuture.get(timeout, unit);
+            session.getRemote().sendString(message, new WriteCallback() {
 
-				@Override
-				public void writeSuccess() {
-					// Nothing to do
-				}
+                @Override
+                public void writeSuccess() {
+                    // Nothing to do
+                }
 
-				@Override
-				public void writeFailed(Throwable error) {
-					if (error instanceof WebSocketException) {
-						reconnect();
-						failureAction.execute(new JoynrDelayMessageException(reconnectDelay, error.getMessage()));
-					} else {
-						failureAction.execute(error);
-					}
-				}
-			});
-		} catch (WebSocketException | ExecutionException e) {
-			reconnect();
-			throw new JoynrDelayMessageException(10, "WebSocket write timed out", e);
-		} catch (TimeoutException e) {
-			throw new JoynrDelayMessageException("WebSocket write timed out", e);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-	}
+                @Override
+                public void writeFailed(Throwable error) {
+                    if (error instanceof WebSocketException) {
+                        reconnect();
+                        failureAction.execute(new JoynrDelayMessageException(reconnectDelay, error.getMessage()));
+                    } else {
+                        failureAction.execute(error);
+                    }
+                }
+            });
+        } catch (WebSocketException | ExecutionException e) {
+            reconnect();
+            throw new JoynrDelayMessageException(10, "WebSocket write timed out", e);
+        } catch (TimeoutException e) {
+            throw new JoynrDelayMessageException("WebSocket write timed out", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 
     @Override
     public void onWebSocketClose(int statusCode, String reason) {
