@@ -33,6 +33,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
+import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
@@ -82,13 +83,13 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionRequest(String fromParticipantId,
                                         Set<String> toParticipantIds,
                                         SubscriptionRequest subscriptionRequest,
-                                        MessagingQos qosSettings,
+                                        MessagingQos messagingQos,
                                         boolean broadcast) throws IOException {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                                  toParticipantId,
                                                                                  subscriptionRequest,
-                                                                                 DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()),
+                                                                                 ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()),
                                                                                  broadcast);
 
             messageRouter.route(message);
@@ -104,7 +105,7 @@ public class DispatcherImpl implements Dispatcher {
             JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
                                                                               toParticipantId,
                                                                               subscriptionStop,
-                                                                              DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
+                                                                              ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
             messageRouter.route(message);
         }
 
@@ -114,23 +115,23 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionPublication(String fromParticipantId,
                                             Set<String> toParticipantIds,
                                             SubscriptionPublication publication,
-                                            MessagingQos qosSettings) throws IOException {
+                                            MessagingQos messagingQos) throws IOException {
 
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
                                                                          toParticipantId,
                                                                          publication,
-                                                                         DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()));
+                                                                         ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
             messageRouter.route(message);
         }
     }
 
-    public void sendReply(final String fromParticipantId, final String toParticipantId, Reply reply, long expiryDate)
-                                                                                                                     throws IOException {
+    public void sendReply(final String fromParticipantId, final String toParticipantId, Reply reply, long expiryDateMs)
+                                                                                                                       throws IOException {
         JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId,
                                                                toParticipantId,
                                                                reply,
-                                                               DispatcherUtils.convertTtlToExpirationDate(expiryDate));
+                                                               ExpiryDate.fromAbsolute(expiryDateMs));
         messageRouter.route(message);
     }
 
