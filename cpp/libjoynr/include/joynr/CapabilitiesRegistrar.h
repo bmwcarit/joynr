@@ -82,7 +82,7 @@ public:
         const std::int64_t lastSeenDateMs = now;
         const std::int64_t defaultExpiryDateMs = now + defaultExpiryIntervalMs;
         const std::string defaultPublicKeyId("");
-        joynr::types::Version providerVersion;
+        joynr::types::Version providerVersion(provider->MAJOR_VERSION, provider->MINOR_VERSION);
         joynr::types::DiscoveryEntry entry(providerVersion,
                                            domain,
                                            interfaceName,

@@ -536,6 +536,8 @@ public:
 
 class MockProvider : public joynr::AbstractJoynrProvider, public IMockProviderInterface {
 public:
+    static const std::uint32_t MAJOR_VERSION;
+    static const std::uint32_t MINOR_VERSION;
     MOCK_CONST_METHOD0(getProviderQos, joynr::types::ProviderQos());
     MOCK_CONST_METHOD0(getParticipantId, std::string());
     ~MockProvider() override = default;
