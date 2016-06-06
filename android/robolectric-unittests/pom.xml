@@ -66,16 +66,25 @@
 			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <scope>test</scope>
-    </dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<!-- Robolectric dependencies -->
 		<dependency>
 			<groupId>org.robolectric</groupId>
 			<artifactId>robolectric</artifactId>
 			<version>3.0</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- this dependency is explicitely mentioned, to avoid
+		     issues with the robolectric maven dependency resolver
+		-->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20080701</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
