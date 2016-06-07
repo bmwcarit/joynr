@@ -275,7 +275,7 @@ function start_cpp_provider {
 	rm -fr $PROVIDER_DIR
 	cp -a $ILT_BUILD_DIR/bin $PROVIDER_DIR
 	cd $PROVIDER_DIR
-	./ilt-provider-cc $DOMAIN > $ILT_RESULTS_DIR/provider-cpp.log 2>&1 &
+	./ilt-provider-ws $DOMAIN > $ILT_RESULTS_DIR/provider-cpp.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started C++ provider with PID $PROVIDER_PID in directory $PROVIDER_DIR"
 	# Allow some time for startup
