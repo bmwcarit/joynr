@@ -110,7 +110,8 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
                                                                  toParticipantId,
                                                                  request,
-                                                                 expiryDate);
+                                                                 expiryDate,
+                                                                 messagingQos.getCustomMessageHeaders());
 
         messageRouter.route(message);
     }
@@ -176,7 +177,8 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
             JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
                                                                            toParticipantId,
                                                                            oneWayRequest,
-                                                                           DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
+                                                                           DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()),
+                                                                           messagingQos.getCustomMessageHeaders());
             messageRouter.route(message);
         }
     }

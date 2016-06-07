@@ -22,6 +22,7 @@ package io.joynr.dispatching;
 import io.joynr.common.ExpiryDate;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import joynr.JoynrMessage;
@@ -54,39 +55,68 @@ public class JoynrMessageFactory {
                                        String fromParticipantId,
                                        String toParticipantId,
                                        Object payload,
-                                       ExpiryDate ttlExpirationDate) {
+                                       ExpiryDate ttlExpirationDate,
+                                       Map<String, String> customHeaders) {
         JoynrMessage message = new JoynrMessage();
         message.setType(joynrMessageType);
         Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
         header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(ttlExpirationDate.getValue()));
         message.setHeader(header);
         message.setPayload(serializePayload(payload));
+        message.setCustomHeaders(customHeaders);
         return message;
+    }
+
+    private JoynrMessage createMessage(String messageType,
+                                       String fromParticipantId,
+                                       String toParticipantId,
+                                       Object payload,
+                                       ExpiryDate expiryDate) {
+        return createMessage(messageType,
+                             fromParticipantId,
+                             toParticipantId,
+                             payload,
+                             expiryDate,
+                             Collections.<String, String> emptyMap());
     }
 
     public JoynrMessage createOneWayRequest(final String fromParticipantId,
                                             final String toParticipantId,
                                             OneWayRequest request,
-                                            ExpiryDate ttlExpirationDate) {
+                                            ExpiryDate ttlExpirationDate,
+                                            final Map<String, String> customHeaders) {
         return createMessage(JoynrMessage.MESSAGE_TYPE_ONE_WAY,
                              fromParticipantId,
                              toParticipantId,
                              request,
-                             ttlExpirationDate);
+                             ttlExpirationDate,
+                             customHeaders);
     }
 
     public JoynrMessage createRequest(final String fromParticipantId,
                                       final String toParticipantId,
                                       Request request,
-                                      ExpiryDate expiryDate) {
-        return createMessage(JoynrMessage.MESSAGE_TYPE_REQUEST, fromParticipantId, toParticipantId, request, expiryDate);
+                                      ExpiryDate expiryDate,
+                                      final Map<String, String> customHeaders) {
+        return createMessage(JoynrMessage.MESSAGE_TYPE_REQUEST,
+                             fromParticipantId,
+                             toParticipantId,
+                             request,
+                             expiryDate,
+                             customHeaders);
     }
 
     public JoynrMessage createReply(final String fromParticipantId,
                                     final String toParticipantId,
                                     Reply reply,
-                                    ExpiryDate expiryDate) {
-        return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY, fromParticipantId, toParticipantId, reply, expiryDate);
+                                    ExpiryDate expiryDate,
+                                    final Map<String, String> customHeaders) {
+        return createMessage(JoynrMessage.MESSAGE_TYPE_REPLY,
+                             fromParticipantId,
+                             toParticipantId,
+                             reply,
+                             expiryDate,
+                             customHeaders);
     }
 
     public JoynrMessage createSubscriptionRequest(String fromParticipantId,

@@ -24,6 +24,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
@@ -101,7 +104,11 @@ public class AccessControllerTest {
 
         // Create a dummy message
         request = new Request(testOperation, new String[]{}, new Class<?>[]{});
-        message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, expiryDate);
+        message = messageFactory.createRequest(fromParticipantId,
+                                               toParticipantId,
+                                               request,
+                                               expiryDate,
+                                               Collections.<String, String> emptyMap());
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
