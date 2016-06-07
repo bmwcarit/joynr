@@ -22,6 +22,7 @@ package joynr;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
@@ -41,4 +42,33 @@ public class JoynrMessageTest {
         assertFalse(customHeaders.containsKey(customHeaderName));
     }
 
+    @Test
+    public void testSetCustomHeaders() {
+        JoynrMessage joynrMessage = new JoynrMessage();
+        String headerName = "header";
+        String headerValue = "value";
+        String customHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
+        Map<String, String> expectedCustomHeaders = new HashMap<>();
+        expectedCustomHeaders.put(headerName, headerValue);
+        joynrMessage.setCustomHeaders(expectedCustomHeaders);
+        Map<String, String> customHeaders = joynrMessage.getCustomHeaders();
+        assertTrue(customHeaders.containsKey(headerName));
+        assertFalse(customHeaders.containsKey(customHeaderName));
+        assertTrue(joynrMessage.getHeader().containsKey(customHeaderName));
+    }
+
+    @Test
+    public void testSetCustomHeadersWithCustomInKeyName() {
+        JoynrMessage joynrMessage = new JoynrMessage();
+        String headerName = "header-custom";
+        String headerValue = "value";
+        String customHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
+        Map<String, String> expectedCustomHeaders = new HashMap<>();
+        expectedCustomHeaders.put(headerName, headerValue);
+        joynrMessage.setCustomHeaders(expectedCustomHeaders);
+        Map<String, String> customHeaders = joynrMessage.getCustomHeaders();
+        assertTrue(customHeaders.containsKey(headerName));
+        assertFalse(customHeaders.containsKey(customHeaderName));
+        assertTrue(joynrMessage.getHeader().containsKey(customHeaderName));
+    }
 }

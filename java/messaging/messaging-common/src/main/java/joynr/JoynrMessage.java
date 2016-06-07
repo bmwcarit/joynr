@@ -100,10 +100,15 @@ public class JoynrMessage implements JoynrType {
         return header;
     }
 
+    public void setCustomHeaders(Map<String, String> customHeaders) {
+        for (Map.Entry<String, String> entry : customHeaders.entrySet()) {
+            header.put(MESSAGE_CUSTOM_HEADER_PREFIX + entry.getKey(), entry.getValue());
+        }
+    }
+
     public Map<String, String> getCustomHeaders() {
         Map<String, String> customHeaders = new HashMap<>();
-        for (Map.Entry<String, String> entry : header.entrySet())
-        {
+        for (Map.Entry<String, String> entry : header.entrySet()) {
             if (entry.getKey().startsWith(MESSAGE_CUSTOM_HEADER_PREFIX)) {
                 String key = entry.getKey().replaceFirst("^" + MESSAGE_CUSTOM_HEADER_PREFIX, "");
                 customHeaders.put(key, entry.getValue());
