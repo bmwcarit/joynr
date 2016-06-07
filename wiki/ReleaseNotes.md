@@ -1,3 +1,12 @@
+#joynr 0.18.2
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Fixed bug when using joynr with node version >= 6
+
 #joynr 0.18.1
 This is a minor bug fix release.
 
