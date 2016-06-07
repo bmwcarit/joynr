@@ -108,4 +108,29 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
     public String getAddress() {
         return super.getAddress();
     }
+
+    @Override
+    @Column
+    public String getPublicKeyId() {
+        return super.getPublicKeyId();
+    }
+
+    @Column
+    public Integer getMajorVersion() {
+        return getProviderVersion().getMajorVersion();
+    }
+
+    public void setMajorVersion(Integer majorVersion) {
+        getProviderVersion().setMajorVersion(majorVersion);
+    }
+
+    @Column
+    public Integer getMinorVersion() {
+        return getProviderVersion().getMinorVersion();
+    }
+
+    public void setMinorVersion(Integer minorVersion) {
+        getProviderVersion().setMinorVersion(minorVersion);
+    }
+
 }
