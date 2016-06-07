@@ -72,7 +72,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
     std::int64_t lastSeenDateMs = 0;
     std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     std::string defaultPublicKeyId("");
-    types::Version providerVersion;
+    types::Version providerVersion(infrastructure::IGlobalCapabilitiesDirectory::MAJOR_VERSION,
+                                   infrastructure::IGlobalCapabilitiesDirectory::MINOR_VERSION);
     this->insertInCache(joynr::types::DiscoveryEntry(
                                 providerVersion,
                                 messagingSettings.getDiscoveryDirectoriesDomain(),
