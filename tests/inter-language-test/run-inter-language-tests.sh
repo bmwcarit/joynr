@@ -422,10 +422,13 @@ rm -fr $ILT_RESULTS_DIR
 mkdir -p $ILT_RESULTS_DIR
 cd $ILT_DIR
 rm -fr node_modules
-rm -fr localStorageStorage
 rm -fr reports
-rm -f npm-debug.log
-rm -f joynr_participantIds.properties
+
+function clean_up {
+	cd $ILT_DIR
+	rm -f derby.log npm-debug.log
+	rm -fr localStorageStorage
+}
 
 # prepare JavaScript
 npm install
@@ -442,6 +445,7 @@ npm install jasmine-node
 # since it currently assumes that it will be restarted.
 
 # run checks with Java provider cc
+clean_up
 echo ''
 echo '####################################################'
 echo '####################################################'
@@ -458,6 +462,7 @@ stop_cluster_controller
 stop_services
 
 # run checks with Java provider ws
+clean_up
 echo ''
 echo '####################################################'
 echo '####################################################'
@@ -475,6 +480,7 @@ stop_cluster_controller
 stop_services
 
 # run checks with C++ provider
+clean_up
 echo ''
 echo '####################################################'
 echo '####################################################'
@@ -491,6 +497,7 @@ stop_cluster_controller
 stop_services
 
 # run checks with Javascript provider
+clean_up
 echo ''
 echo '####################################################'
 echo '####################################################'
