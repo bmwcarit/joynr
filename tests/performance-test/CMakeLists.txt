@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(performance-test-0.18.1)
+project(performance-test-0.18.2)
 
 # Compile to a bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -15,7 +15,7 @@ include(AddClangFormat)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.18.1 REQUIRED)
+find_package(Joynr 0.18.2 REQUIRED)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
