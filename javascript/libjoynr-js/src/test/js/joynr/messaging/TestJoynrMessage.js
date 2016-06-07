@@ -60,6 +60,7 @@ joynrTestRequire("joynr/messaging/TestJoynrMessage", [ "joynr/messaging/JoynrMes
         it("has members that cannot be changed after initialization", function() {
             var messageType = JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST;
             var joynrMessage = new JoynrMessage(messageType);
+            var messageHeader;
 
             // the following setting os fields should have no effect. These are not writable.
             /*jslint newcap: true, nomen: true */
@@ -70,8 +71,9 @@ joynrTestRequire("joynr/messaging/TestJoynrMessage", [ "joynr/messaging/JoynrMes
             joynrMessage.type = "nonsense";
             expect(joynrMessage.type).toEqual(messageType);
 
+            messageHeader = joynrMessage.header;
             joynrMessage.header = "nonsense";
-            expect(joynrMessage.header).toEqual({});
+            expect(joynrMessage.header).toEqual(messageHeader);
 
         });
 
@@ -84,10 +86,10 @@ joynrTestRequire("joynr/messaging/TestJoynrMessage", [ "joynr/messaging/JoynrMes
                     JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID,
                     fields.replyChannelId);
 
-            var targeteader = {};
-            targeteader[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = fields.expiryDate;
-            targeteader[JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID] = fields.replyChannelId;
-            expect(joynrMessage.header).toEqual(targeteader);
+            expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE]).toEqual(
+                    fields.expiryDate);
+            expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID]).toEqual(
+                    fields.replyChannelId);
 
             var payload = "hello";
             joynrMessage.payload = payload;
