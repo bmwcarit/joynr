@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(inter-language-test-0.18.0-SNAPSHOT)
+project(inter-language-test-0.19.0-SNAPSHOT)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
 include(SetCppStandard)
+
 include(AddClangFormat)
 include(Sanitizers)
 
@@ -22,20 +23,18 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.18.0 REQUIRED)
+find_package(Joynr 0.19.0 REQUIRED)
+
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_DBUS_INCLUDE_DIRS=${Joynr_LIB_DBUS_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_LIBRARIES=${Joynr_LIB_COMMON_LIBRARIES}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_LIBRARIES=${Joynr_LIB_INPROCESS_LIBRARIES}")
-message(STATUS "joynr variable Joynr_LIB_DBUS_LIBRARIES=${Joynr_LIB_DBUS_LIBRARIES}")
 message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
-message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
 
-######## Add Boost ########
+### BEGIN Boost ###
 
 find_package(Boost 1.56.0 REQUIRED
     COMPONENTS
@@ -46,6 +45,10 @@ message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
 message(STATUS "variable Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
 
 include_directories(${Boost_INCLUDE_DIRS})
+
+### END Boost ###
+
+include(AddGtestGmock)
 
 ##### Helper variables for using generated code ###########
 
@@ -61,7 +64,6 @@ set(GENERATED_INCLUDE_DIRS
     "src/main/generated-cpp/include"
 )
 
-# Put the Joynr_LIB_COMMON_INCLUDE_DIRS last so that it is possible to override types
 # defined in libjoynr
 include_directories(
     ${GENERATED_INCLUDE_DIRS}
@@ -72,13 +74,20 @@ include_directories(
 set(ilt-consumer_HEADERS
     "src/main/cpp/IltHelper.h"
     "src/main/cpp/IltUtil.h"
+    "src/main/cpp/IltAbstractConsumerTest.h"
 )
 
 # Use the generated source files for the consumer application
 set(ilt-consumer_SOURCES
     "src/main/cpp/IltHelper.cpp"
     "src/main/cpp/IltUtil.cpp"
-    "src/main/cpp/IltConsumerApplication.cpp"
+    "src/main/cpp/IltConsumerAsyncMethodTest.cpp"
+    "src/main/cpp/IltConsumerAttributeSubscriptionTest.cpp"
+    "src/main/cpp/IltConsumerBroadcastSubscriptionTest.cpp"
+    "src/main/cpp/IltConsumerFilteredBroadcastSubscriptionTest.cpp"
+    "src/main/cpp/IltConsumerGetterSetterTest.cpp"
+    "src/main/cpp/IltConsumerSyncMethodTest.cpp"
+    "src/main/cpp/IltAbstractConsumerTest.cpp"
 )
 
 # Use the generated header files for the provider application
@@ -103,62 +112,26 @@ set(ilt-provider_SOURCES
 set(ilt_LIBRARIES
     ${Joynr_LIB_COMMON_LIBRARIES}
     ${Boost_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
 )
 
 # Put the generated code into a library and put the library in the bin directory
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    find_package(PkgConfig)
-    pkg_check_modules(DBUS1 REQUIRED dbus-1)
-    message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
-    message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
-    message(STATUS "variable DBUS1_LIBRARY_DIRS=" ${DBUS1_LIBRARY_DIRS})
-    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1.4)
-    message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
-    message(STATUS "variable COMMONAPI_VERSION=" ${COMMONAPI_VERSION})
-    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1.4)
-    message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS=" ${COMMONAPI_DBUS_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
-    message(STATUS "variable COMMONAPI_DBUS_VERSION=" ${COMMONAPI_DBUS_VERSION})
-
-    link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 add_library(ilt SHARED
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
 
+target_include_directories(
+    ilt
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+)
+
 target_link_libraries(ilt
     ${ilt_LIBRARIES}
-)
-
-# Compile the provider application (running in-process with cluster controller)
-add_executable(ilt-provider-cc
-    ${ilt-provider_HEADERS}
-    ${ilt-provider_SOURCES}
-)
-
-# Compile the consumer application (running in-process with cluster controller)
-add_executable(ilt-consumer-cc
-    ${ilt-consumer_HEADERS}
-    ${ilt-consumer_SOURCES}
-)
-
-# Link the provider application
-target_link_libraries(ilt-provider-cc
-    ilt
-    ${ilt_LIBRARIES}
-    ${Joynr_LIB_INPROCESS_LIBRARIES}
-)
-
-# Link the consumer application
-target_link_libraries(ilt-consumer-cc
-    ilt
-    ${ilt_LIBRARIES}
-    ${Joynr_LIB_INPROCESS_LIBRARIES}
 )
 
 # copy joynr resources and settings
@@ -173,11 +146,30 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
+# Compile the provider application (running in-process with cluster controller)
+add_executable(ilt-provider-cc
+    ${ilt-provider_HEADERS}
+    ${ilt-provider_SOURCES}
+)
+
+# Link the provider application
+target_link_libraries(ilt-provider-cc
+    ilt
+    ${ilt_LIBRARIES}
+    ${Joynr_LIB_INPROCESS_LIBRARIES}
+)
+
 # Compile the provider application (requires: running cluster controller)
 # Communicates via WebSockets with cluster controller
 add_executable(ilt-provider-ws
     ${ilt-provider_HEADERS}
     ${ilt-provider_SOURCES}
+)
+
+target_include_directories(
+    ilt-provider-ws
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 # Link the provider application
@@ -187,11 +179,19 @@ target_link_libraries(ilt-provider-ws
     ${Joynr_LIB_WS_LIBRARIES}
 )
 
-# Compile the consumer application (requires: running cluster controller)
+# Compile the test application (requires: running cluster controller)
 # Communicates via WebSockets with cluster controller
-add_executable(ilt-consumer-ws
+AddTest(
+    ilt-consumer-ws
     ${ilt-consumer_HEADERS}
     ${ilt-consumer_SOURCES}
+)
+
+target_include_directories(
+    ilt-consumer-ws
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
 )
 
 # Link the consumer application
@@ -205,54 +205,20 @@ install(TARGETS
             ilt-provider-ws
             ilt-consumer-ws
             ilt-provider-cc
-            ilt-consumer-cc
         RUNTIME DESTINATION bin COMPONENT bin
 )
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    # Compile the provider application (requires: Dbus and running cluster controller)
-    # Communicates via Dbus with cluster controller
-    add_executable(ilt-provider-dbus
-        ${ilt-provider_HEADERS}
-        ${ilt-provider_SOURCES}
-    )
-
-    # Link the provider application
-    target_link_libraries(ilt-provider-dbus
-        ilt
-        ${ilt_LIBRARIES}
-        ${Joynr_LIB_DBUS_LIBRARIES}
-    )
-
-    # Compile the consumer application (requires: Dbus and running cluster controller)
-    # Communicates via Dbus with cluster controller
-    add_executable(ilt-consumer-dbus
-        ${ilt-consumer_HEADERS}
-        ${ilt-consumer_SOURCES}
-    )
-
-    # Link the consumer application
-    target_link_libraries(ilt-consumer-dbus
-        ilt
-        ${ilt_LIBRARIES}
-        ${Joynr_LIB_DBUS_LIBRARIES}
-    )
-
-    install(TARGETS
-                ilt-provider-dbus
-                ilt-consumer-dbus
-            RUNTIME DESTINATION bin COMPONENT bin
-    )
-
-    AddClangFormat(ilt-provider-dbus)
-    AddClangFormat(ilt-consumer-dbus)
-
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
 AddClangFormat(ilt-provider-cc)
-AddClangFormat(ilt-consumer-cc)
 AddClangFormat(ilt-provider-ws)
 AddClangFormat(ilt-consumer-ws)
+
+if(NOT DEFINED JOYNR_SERVER_HOST)
+    set(JOYNR_SERVER_HOST "localhost")
+endif(NOT DEFINED JOYNR_SERVER_HOST)
+
+if(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
+    set(JOYNR_SERVER_HTTP_PORT "8080")
+endif(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.dbus.settings)

@@ -80,9 +80,9 @@ public:
         }
     }
 
-    void execute(const Reply& reply) override
+    void execute(Reply&& reply) override
     {
-        ReplyInterpreter<Ts...>::execute(*this, reply);
+        ReplyInterpreter<Ts...>::execute(*this, std::move(reply));
     }
 
 private:
@@ -112,9 +112,9 @@ public:
         }
     }
 
-    void execute(const Reply& reply) override
+    void execute(Reply&& reply) override
     {
-        ReplyInterpreter<void>::execute(*this, reply);
+        ReplyInterpreter<void>::execute(*this, std::move(reply));
     }
 
 private:

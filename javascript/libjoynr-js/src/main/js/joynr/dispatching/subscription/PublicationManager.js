@@ -401,10 +401,7 @@ define(
                     for (subscriptionId in subscriptions) {
                         if (subscriptions.hasOwnProperty(subscriptionId)) {
                             var subscriptionInfo = subscriptions[subscriptionId];
-                            if (subscriptionInfo.qos.minIntervalMs !== undefined
-                                && subscriptionInfo.qos.minIntervalMs > 0) {
-                                prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
-                            }
+                            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
                         }
                     }
                 }

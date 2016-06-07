@@ -361,55 +361,89 @@ joynrTestRequire(
                             expect(isOnProviderAttributeWrite.registerSetter).toBeDefined();
                         });
 
-                        it("call[G|S]etter calls through to registered [g|s]etters", function() {
-                            var spy, nrGetters = 0, nrSetters = 0, testParam = "myTestParameter";
+                        function checkRegisteredGettersAndSetters(attribute, i) {
+                            var spy;
+                            var result;
+                            var done = false;
+                            var testParam = "myTestParameter";
 
-                            for (i = 0; i < allAttributes.length; ++i) {
-                                if (allAttributes[i].get) {
-                                    spy = jasmine.createSpy("ProviderAttributeSpy");
-                                    spy.andReturn(testParam);
-                                    allAttributes[i].registerGetter(spy);
-                                    var result = allAttributes[i].get();
-                                    expect(spy).toHaveBeenCalled();
-                                    expect(result).toEqual([ testParam
-                                    ]);
-                                    ++nrGetters;
-                                }
-                                if (allAttributes[i].set) {
-                                    spy = jasmine.createSpy("ProviderAttributeSpy");
-                                    allAttributes[i].registerSetter(spy);
-                                    allAttributes[i].set(testParam);
-                                    expect(spy).toHaveBeenCalled();
-                                    expect(spy).toHaveBeenCalledWith(testParam);
-                                    ++nrSetters;
-                                }
+                            // only check getter if the attribute is readable
+                            if (attribute.get instanceof Function) {
+                                spy = jasmine.createSpy("ProviderAttributeSpy");
+                                spy.andReturn(testParam);
+                                attribute.registerGetter(spy);
+                                result = attribute.get();
+                                expect(spy).toHaveBeenCalled();
+                                expect(result).toEqual([ testParam
+                                ]);
                             }
 
-                            // must be 4 combinations of getters and setters in 2 variations each => 4 * 2
-                            expect(nrGetters).toBe(8);
-                            expect(nrSetters).toBe(8);
+                            // only check the setter if the attribute is writable
+                            if (attribute.set instanceof Function) {
+                                runs(function() {
+                                    spy = jasmine.createSpy("ProviderAttributeSpy");
+                                    attribute.registerSetter(spy);
+                                    attribute.set(testParam).then(function() {
+                                        done = true;
+                                    });
+                                });
 
-                            // expect provided implementation not to have been called
-                            expect(implementation.get.callCount).toBe(8);
-                            expect(implementation.set).not.toHaveBeenCalled();
+                                waitsFor(function() {
+                                    return done;
+                                }, i + " setter was not called", 1000);
+
+                                runs(function() {
+                                    expect(spy).toHaveBeenCalled();
+                                    expect(spy).toHaveBeenCalledWith(testParam);
+                                });
+                            }
+                        }
+
+                        it("call[G|S]etter calls through to registered [g|s]etters", function() {
+                            var i;
+                            for (i = 0; i < allAttributes.length; i++) {
+                                checkRegisteredGettersAndSetters(allAttributes[i], i);
+                            }
                         });
 
-                        it("call[G|S]etter calls through to provided implementation", function() {
-                            var spy, nrGetters = 0, nrSetters = 0, testParam = "myTestParameter";
+                        function checkImplementationGettersAndSetters(attribute, i) {
+                            var spy;
+                            var result;
+                            var done = false;
+                            var testParam = "myTestParameter";
 
-                            for (i = 0; i < allAttributes.length; ++i) {
-                                if (allAttributes[i].get) {
-                                    implementation.get.reset();
-                                    implementation.get.andReturn(testParam);
-                                    expect(allAttributes[i].get()).toEqual([ testParam
-                                    ]);
-                                    expect(implementation.get).toHaveBeenCalled();
-                                }
-                                if (allAttributes[i].set) {
+                            // only check getter if the attribute is readable
+                            if (attribute.get instanceof Function) {
+                                implementation.get.reset();
+                                implementation.get.andReturn(testParam);
+                                expect(allAttributes[i].get()).toEqual([ testParam
+                                ]);
+                                expect(implementation.get).toHaveBeenCalled();
+                            }
+
+                            // only check the setter if the attribute is writable
+                            if (attribute.set instanceof Function) {
+                                runs(function() {
                                     implementation.set.reset();
-                                    allAttributes[i].set(testParam);
+                                    allAttributes[i].set(testParam).then(function() {
+                                        done = true;
+                                    });
+                                });
+
+                                waitsFor(function() {
+                                    return done;
+                                }, i + " setter was not called", 1000);
+
+                                runs(function() {
+                                    expect(implementation.set).toHaveBeenCalled();
                                     expect(implementation.set).toHaveBeenCalledWith(testParam);
-                                }
+                                });
+                            }
+                        }
+
+                        it("call[G|S]etter calls through to provided implementation", function() {
+                            for (i = 0; i < allAttributes.length; ++i) {
+                                checkImplementationGettersAndSetters(allAttributes[i], i);
                             }
                         });
 
@@ -466,65 +500,164 @@ joynrTestRequire(
                             }
                         });
 
+                        function setNewValueCallsValueChangedObserver(attribute) {
+                            var spy1, spy2, func1, func2, value, done;
+                            spy1 = jasmine.createSpy("spy1");
+                            spy2 = jasmine.createSpy("spy2");
+
+                            func1 = buildObserver(spy1);
+                            func2 = buildObserver(spy2);
+
+                            attribute.registerObserver(func1);
+                            attribute.registerObserver(func2);
+
+                            expect(spy1).not.toHaveBeenCalled();
+                            expect(spy2).not.toHaveBeenCalled();
+
+                            value = new ComplexRadioStation({
+                                name : "nameValue",
+                                station : "stationValue",
+                                source : Country.GERMANY
+                            });
+
+                            // expect 2 observers to be called
+                            runs(function() {
+                                done = false;
+                                attribute.set(value).then(function() {
+                                    done = true;
+                                });
+                            });
+
+                            waitsFor(function() {
+                                return done;
+                            }, "setter was not called", 1000);
+
+                            runs(function() {
+                                expect(spy1).toHaveBeenCalled();
+                                expect(spy1).toHaveBeenCalledWith([ value
+                                ]);
+                                expect(spy2).toHaveBeenCalled();
+                                expect(spy2).toHaveBeenCalledWith([ value
+                                ]);
+
+                                // expect one observer to be called
+                                attribute.unregisterObserver(func2);
+
+                                value = new ComplexRadioStation({
+                                    name : "nameValue2",
+                                    station : "stationValue2",
+                                    source : Country.AUSTRIA
+                                });
+
+                                done = false;
+                                attribute.set(value).then(function() {
+                                    done = true;
+                                });
+                            });
+
+                            waitsFor(function() {
+                                return done;
+                            }, "setter was not called", 1000);
+
+                            runs(function() {
+                                expect(spy1.callCount).toEqual(2);
+                                expect(spy2.callCount).toEqual(1);
+
+                                // expect no observers to be called, as none are registered
+                                attribute.unregisterObserver(func1);
+
+                                value = new ComplexRadioStation({
+                                    name : "nameValue3",
+                                    station : "stationValue3",
+                                    source : Country.AUSTRALIA
+                                });
+
+                                done = false;
+                                attribute.set(value).then(function() {
+                                    done = true;
+                                });
+                            });
+
+                            waitsFor(function() {
+                                return done;
+                            }, "setter was not called", 1000);
+
+                            runs(function() {
+                                expect(spy1.callCount).toEqual(2);
+                                expect(spy2.callCount).toEqual(1);
+                            });
+
+                        }
+
                         it("notifies observer when calling set with new value", function() {
-                            var i, spy1, spy2, attribute, func1, func2, value;
+                            var i, attribute;
 
                             for (i = 0; i < allNotifyAttributes.length; ++i) {
                                 attribute = allNotifyAttributes[i];
                                 if (attribute.set) {
-                                    spy1 = jasmine.createSpy("spy1");
-                                    spy2 = jasmine.createSpy("spy2");
-
-                                    func1 = buildObserver(spy1);
-                                    func2 = buildObserver(spy2);
-
-                                    attribute.registerObserver(func1);
-                                    attribute.registerObserver(func2);
-
-                                    expect(spy1).not.toHaveBeenCalled();
-                                    expect(spy2).not.toHaveBeenCalled();
-
-                                    value = new ComplexRadioStation({
-                                        name : "nameValue",
-                                        station : "stationValue",
-                                        source : Country.GERMANY
-                                    });
-                                    attribute.set(value);
-
-                                    expect(spy1).toHaveBeenCalled();
-                                    expect(spy1).toHaveBeenCalledWith([ value
-                                    ]);
-                                    expect(spy2).toHaveBeenCalled();
-                                    expect(spy2).toHaveBeenCalledWith([ value
-                                    ]);
-
-                                    attribute.unregisterObserver(func2);
-
-                                    value = new ComplexRadioStation({
-                                        name : "nameValue2",
-                                        station : "stationValue2",
-                                        source : Country.AUSTRIA
-                                    });
-
-                                    attribute.set(value);
-
-                                    expect(spy1.callCount).toEqual(2);
-                                    expect(spy2.callCount).toEqual(1);
-
-                                    attribute.unregisterObserver(func1);
-
-                                    value = new ComplexRadioStation({
-                                        name : "nameValue3",
-                                        station : "stationValue3",
-                                        source : Country.AUSTRALIA
-                                    });
-                                    attribute.set(value);
-
-                                    expect(spy1.callCount).toEqual(2);
-                                    expect(spy2.callCount).toEqual(1);
+                                    setNewValueCallsValueChangedObserver(attribute);
                                 }
                             }
                         });
+
+                        function setSameValueDoesNotCallValueChangedObserver(attribute) {
+                            var spy1, spy2, func1, func2, value, done;
+                            spy1 = jasmine.createSpy("spy1");
+                            spy2 = jasmine.createSpy("spy2");
+
+                            func1 = buildObserver(spy1);
+                            func2 = buildObserver(spy2);
+
+                            attribute.registerObserver(func1);
+                            attribute.registerObserver(func2);
+
+                            expect(spy1).not.toHaveBeenCalled();
+                            expect(spy2).not.toHaveBeenCalled();
+
+                            value = new ComplexRadioStation({
+                                name : "nameValue",
+                                station : "stationValue",
+                                source : Country.GERMANY
+                            });
+
+                            // expect 2 observers to be called
+                            runs(function() {
+                                done = false;
+                                attribute.set(value).then(function() {
+                                    done = true;
+                                });
+                            });
+
+                            waitsFor(function() {
+                                return done;
+                            }, "setter was not called", 1000);
+
+                            runs(function() {
+                                expect(spy1).toHaveBeenCalled();
+                                expect(spy1).toHaveBeenCalledWith([ value
+                                ]);
+                                expect(spy2).toHaveBeenCalled();
+                                expect(spy2).toHaveBeenCalledWith([ value
+                                ]);
+                            });
+
+                            // expect observers not to be called, as setting same value
+                            runs(function() {
+                                done = false;
+                                attribute.set(value).then(function() {
+                                    done = true;
+                                });
+                            });
+
+                            waitsFor(function() {
+                                return done;
+                            }, "setter was not called", 1000);
+
+                            runs(function() {
+                                expect(spy1.callCount).toEqual(1);
+                                expect(spy2.callCount).toEqual(1);
+                            });
+                        }
 
                         it("doesn't notify observer when calling set with same values", function() {
                             var i, spy1, spy2, attribute, func1, func2, value;
@@ -532,40 +665,7 @@ joynrTestRequire(
                             for (i = 0; i < allNotifyAttributes.length; ++i) {
                                 attribute = allNotifyAttributes[i];
                                 if (attribute.set) {
-                                    spy1 = jasmine.createSpy("spy1");
-                                    spy2 = jasmine.createSpy("spy2");
-
-                                    func1 = buildObserver(spy1);
-                                    func2 = buildObserver(spy2);
-
-                                    attribute.registerObserver(func1);
-                                    attribute.registerObserver(func2);
-
-                                    expect(spy1).not.toHaveBeenCalled();
-                                    expect(spy2).not.toHaveBeenCalled();
-
-                                    value = new ComplexRadioStation({
-                                        name : "nameValue",
-                                        station : "stationValue1",
-                                        source : Country.AUSTRIA
-                                    });
-                                    attribute.set(value);
-
-                                    expect(spy1).toHaveBeenCalled();
-                                    expect(spy1).toHaveBeenCalledWith([ value
-                                    ]);
-                                    expect(spy2).toHaveBeenCalled();
-                                    expect(spy2).toHaveBeenCalledWith([ value
-                                    ]);
-
-                                    attribute.unregisterObserver(func2);
-
-                                    attribute.set(value);
-
-                                    expect(spy1.callCount).toEqual(1);
-                                    expect(spy2.callCount).toEqual(1);
-
-                                    attribute.unregisterObserver(func1);
+                                    setSameValueDoesNotCallValueChangedObserver(attribute);
                                 }
                             }
                         });
@@ -573,6 +673,7 @@ joynrTestRequire(
                         it(
                                 "calls provided setter implementation with enum as operation argument",
                                 function() {
+                                    var done;
                                     /*jslint nomen: true */
                                     var fixture =
                                             new ProviderAttribute(
@@ -583,10 +684,21 @@ joynrTestRequire(
                                                     "WRITEONLY");
                                     /*jslint nomen: false */
 
-                                    fixture.set("ZERO");
-                                    expect(implementation.set).toHaveBeenCalledWith(TestEnum.ZERO);
-                                });
+                                    runs(function() {
+                                        fixture.set("ZERO").then(function() {
+                                            done = true;
+                                        });
+                                    });
 
+                                    waitsFor(function() {
+                                        return done;
+                                    }, " setter was not called", 1000);
+
+                                    runs(function() {
+                                        expect(implementation.set).toHaveBeenCalledWith(
+                                                TestEnum.ZERO);
+                                    });
+                                });
                     });
 
         }); // require

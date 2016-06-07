@@ -54,7 +54,7 @@ public class RegexTestHarness {
                 } else {
                     System.err.println("No match found.");
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 System.err.println(e);
             }
         }

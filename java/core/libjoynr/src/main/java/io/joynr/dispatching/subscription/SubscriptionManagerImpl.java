@@ -21,9 +21,7 @@ package io.joynr.dispatching.subscription;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
@@ -37,25 +35,24 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import joynr.BroadcastSubscriptionRequest;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import joynr.BroadcastSubscriptionRequest;
+import joynr.SubscriptionRequest;
+import joynr.SubscriptionStop;
 
 @Singleton
 public class SubscriptionManagerImpl implements SubscriptionManager {
@@ -144,12 +141,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     public void registerAttributeSubscription(String fromParticipantId,
-                                              String toParticipantId,
-                                              AttributeSubscribeInvocation request)
-                                                                                   throws JoynrSendBufferFullException,
-                                                                                   JoynrMessageNotSentException,
-                                                                                   JsonGenerationException,
-                                                                                   JsonMappingException, IOException {
+                                              Set<String> toParticipantIds,
+                                              AttributeSubscribeInvocation request) throws IOException {
         if (!request.hasSubscriptionId()) {
             request.setSubscriptionId(UUID.randomUUID().toString());
         }
@@ -189,19 +182,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
 
         // TODO pass the future to the messageSender and set the error state when exceptions are thrown
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, false);
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, requestObject, messagingQos, false);
 
     }
 
     @Override
     public void registerBroadcastSubscription(String fromParticipantId,
-                                              String toParticipantId,
-                                              BroadcastSubscribeInvocation subscriptionRequest)
-                                                                                               throws JoynrSendBufferFullException,
-                                                                                               JoynrMessageNotSentException,
-                                                                                               JsonGenerationException,
-                                                                                               JsonMappingException,
-                                                                                               IOException {
+                                              Set<String> toParticipantIds,
+                                              BroadcastSubscribeInvocation subscriptionRequest) throws IOException {
         if (!subscriptionRequest.hasSubscriptionId()) {
             subscriptionRequest.setSubscriptionId(UUID.randomUUID().toString());
         }
@@ -224,16 +212,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
         }
 
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, true);
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantIds, requestObject, messagingQos, true);
     }
 
     @Override
     public void unregisterSubscription(String fromParticipantId,
-                                       String toParticipantId,
+                                       Set<String> toParticipantIds,
                                        String subscriptionId,
-                                       MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                JoynrMessageNotSentException, JsonGenerationException,
-                                                                JsonMappingException, IOException {
+                                       MessagingQos qosSettings) throws IOException {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
             logger.info("Called unregister / unsubscribe on subscription id= " + subscriptionId);
@@ -245,7 +231,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
 
         dispatcher.sendSubscriptionStop(fromParticipantId,
-                                        toParticipantId,
+                                        toParticipantIds,
                                         subscriptionStop,
                                         new MessagingQos(qosSettings));
     }

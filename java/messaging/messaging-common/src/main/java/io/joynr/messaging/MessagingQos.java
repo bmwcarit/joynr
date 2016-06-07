@@ -26,6 +26,7 @@ public class MessagingQos {
     public static final int DEFAULT_TTL = 60000;
     public static final Map<String, String> DEFAULTQOS = new HashMap<String, String>();
     private long ttl_ms;
+    private Map<String, String> customHeaders = new HashMap<>();
 
     /**
      * MessagingQos with default values
@@ -59,4 +60,56 @@ public class MessagingQos {
         this.ttl_ms = ttl_ms;
     }
 
+    /**
+     * @param key
+     *            may contain ascii alphanumeric or hyphen.
+     * @param value
+     *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+     *            dot, star, forward slash and back slash.
+     * @Throws {@link IllegalArgumentException} if key or value contain any illegal characters
+     */
+    public void putCustomMessageHeader(String key, String value) {
+        checkKeyAndValue(key, value);
+        customHeaders.put(key, value);
+    }
+
+    /**
+     *
+     * @param newCustomHeaders
+     *            map containing custom headers. <br>
+     *            Keys may contain ascii alphanumeric or hyphen. <br>
+     *            Values may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark,
+     *            hyphen, dot, star, forward slash and back slash.
+     * @Throws {@link IllegalArgumentException} if key or value contain any illegal characters
+     */
+    public void putAllCustomMessageHeaders(Map<String, String> newCustomHeaders) {
+        for (Map.Entry<String, String> entry : newCustomHeaders.entrySet()) {
+            checkKeyAndValue(entry.getKey(), entry.getValue());
+        }
+
+        customHeaders.putAll(newCustomHeaders);
+    }
+
+    /**
+     *
+     * @param key
+     *            may contain ascii alphanumeric or hyphen.
+     * @param value
+     *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+     *            dot, star, forward slash and back slash.
+     */
+    private void checkKeyAndValue(String key, String value) {
+        String keyPattern = "^[a-zA-Z0-9\\-]*$";
+        String valuePattern = "^[a-zA-Z0-9 ;:,+&\\?\\-\\.\\*\\/\\\\]*$";
+        if (!key.matches(keyPattern)) {
+            throw new IllegalArgumentException("key may only contain alphanumeric characters");
+        }
+        if (!value.matches(valuePattern)) {
+            throw new IllegalArgumentException("value contains illegal character. See JavaDoc for allowed characters");
+        }
+    }
+
+    public Map<String, String> getCustomMessageHeaders() {
+        return customHeaders;
+    }
 }

@@ -236,19 +236,6 @@ class JavaTypeUtil extends AbstractTypeUtil {
 		return sb.toString
 	}
 
-	def String getTypedParameterListJavaTypeReference(FMethod method) {
-		val sb = new StringBuilder()
-		val params = getInputParameters(method)
-		for (param : params) {
-			sb.append("public static class "+param.typeName+ "Token extends TypeReference<"+param.typeName+" > {}\n")
-		}
-		sb.append("public static class "+ method.typeNamesForOutputParameter+ "Token extends TypeReference<"+ method.typeNamesForOutputParameter +" > {}\n")
-		if (sb.length()==0) {
-			return ""
-		}
-		return sb.toString
-	}
-
 	def getDefaultValue(FTypedElement element) {
 		if ((isArray(element))){
 			return "{}";

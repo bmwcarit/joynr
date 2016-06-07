@@ -29,13 +29,12 @@ namespace joynr
 
 INIT_LOGGER(MosquittoSubscriber);
 
-MosquittoSubscriber::MosquittoSubscriber(const BrokerUrl& brokerUrl,
+MosquittoSubscriber::MosquittoSubscriber(const MessagingSettings& settings,
                                          const std::string& channelId,
                                          joynr::Semaphore* channelCreatedSemaphore)
         : joynr::Thread("MosquittoSubscriber"),
-          MosquittoConnection(brokerUrl),
+          MosquittoConnection(settings),
           mqttSettings(),
-          brokerUrl(brokerUrl),
           channelId(channelId),
           topic(),
           channelCreatedSemaphore(channelCreatedSemaphore),
@@ -43,6 +42,7 @@ MosquittoSubscriber::MosquittoSubscriber(const BrokerUrl& brokerUrl,
           isChannelAvailable(false),
           onTextMessageReceived(nullptr)
 {
+    mqttSettings.reconnectSleepTimeMs = settings.getMqttReconnectSleepTime();
 }
 
 void MosquittoSubscriber::interrupt()

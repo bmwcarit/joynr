@@ -43,19 +43,14 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import joynr.BroadcastFilterParameters;
-import joynr.BroadcastSubscriptionRequest;
-import joynr.OnChangeSubscriptionQos;
-import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
-import joynr.exceptions.ProviderRuntimeException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +63,13 @@ import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import joynr.BroadcastFilterParameters;
+import joynr.BroadcastSubscriptionRequest;
+import joynr.OnChangeSubscriptionQos;
+import joynr.SubscriptionPublication;
+import joynr.SubscriptionRequest;
+import joynr.exceptions.ProviderRuntimeException;
 
 @Singleton
 public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer> {
@@ -425,7 +427,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
     /**
      * Stops all publications for a provider
-     * 
+     *
      * @param providerId provider for which all publication should be stopped
      */
     private void stopPublicationByProviderId(String providerParticipantId) {
@@ -449,7 +451,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     /**
      * Called every time a provider is registered to check whether there are already
      * subscriptionRequests waiting.
-     * 
+     *
      * @param providerId provider id
      * @param providerContainer provider container
      */
@@ -581,14 +583,8 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         try {
             sendSubscriptionPublication(publication, publicationInformation);
             // TODO handle exceptions during publication. See JOYNR-2113
-        } catch (JoynrRuntimeException e) {
-            logger.error("sendPublication error: {}", e.getMessage());
-        } catch (JsonGenerationException e) {
-            logger.error("sendPublication error: {}", e.getMessage());
-        } catch (JsonMappingException e) {
-            logger.error("sendPublication error: {}", e.getMessage());
-        } catch (IOException e) {
-            logger.error("sendPublication error: {}", e.getMessage());
+        } catch (JoynrRuntimeException | IOException e) {
+            logger.error("sendPublication error.", e);
         }
     }
 
@@ -639,15 +635,17 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     @Override
     public void sendSubscriptionPublication(SubscriptionPublication publication,
                                             PublicationInformation publicationInformation)
-                                                                                          throws JoynrSendBufferFullException,
-                                                                                          JoynrMessageNotSentException,
-                                                                                          JsonGenerationException,
-                                                                                          JsonMappingException,
-                                                                                          IOException {
+                                                    throws JoynrSendBufferFullException,
+                                                    JoynrMessageNotSentException,
+                                                    JsonGenerationException,
+                                                    JsonMappingException,
+                                                    IOException {
         MessagingQos messagingQos = new MessagingQos();
         messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtlMs());
+        Set<String> toParticipantIds = new HashSet<>();
+        toParticipantIds.add(publicationInformation.proxyParticipantId);
         dispatcher.sendSubscriptionPublication(publicationInformation.providerParticipantId,
-                                               publicationInformation.proxyParticipantId,
+                                               toParticipantIds,
                                                publication,
                                                messagingQos);
         publicationInformation.getState().updateTimeOfLastPublication();

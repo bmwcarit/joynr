@@ -1,5 +1,7 @@
 package io.joynr.dispatching.subscription;
 
+import static org.hamcrest.Matchers.contains;
+
 /*
  * #%L
  * %%
@@ -20,11 +22,35 @@ package io.joynr.dispatching.subscription;
  */
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
+
+import java.io.IOException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -35,31 +61,11 @@ import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Maps;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionManagerTest {
@@ -159,6 +165,7 @@ public class SubscriptionManagerTest {
         toParticipantId = "toParticipantId";
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void registerSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                       JsonGenerationException, JsonMappingException, IOException {
@@ -170,7 +177,9 @@ public class SubscriptionManagerTest {
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
                                                                                             null);
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, subscriptionRequest);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId,
+                                                          Sets.newHashSet(toParticipantId),
+                                                          subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
         Mockito.verify(attributeSubscriptionDirectory).put(Mockito.anyString(),
@@ -184,12 +193,13 @@ public class SubscriptionManagerTest {
                                                                      Mockito.any(ScheduledFuture.class));
 
         Mockito.verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                           eq(toParticipantId),
+                                                           (Set<String>) argThat(contains(toParticipantId)),
                                                            any(SubscriptionRequest.class),
                                                            any(MessagingQos.class),
                                                            eq(false));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void registerBroadcastSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                                JsonGenerationException, JsonMappingException, IOException {
@@ -199,7 +209,9 @@ public class SubscriptionManagerTest {
                                                                                             broadcastSubscriptionListener,
                                                                                             onChangeQos,
                                                                                             null);
-        subscriptionManager.registerBroadcastSubscription(fromParticipantId, toParticipantId, subscriptionRequest);
+        subscriptionManager.registerBroadcastSubscription(fromParticipantId,
+                                                          Sets.newHashSet(toParticipantId),
+                                                          subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
         Mockito.verify(broadcastSubscriptionDirectory).put(Mockito.anyString(),
@@ -213,12 +225,13 @@ public class SubscriptionManagerTest {
                                                                      Mockito.any(ScheduledFuture.class));
 
         Mockito.verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                           eq(toParticipantId),
+                                                           (Set<String>) argThat(contains(toParticipantId)),
                                                            any(SubscriptionRequest.class),
                                                            any(MessagingQos.class),
                                                            eq(true));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionWithoutExpiryDate() throws JoynrSendBufferFullException,
                                                        JoynrMessageNotSentException, JsonGenerationException,
@@ -232,7 +245,7 @@ public class SubscriptionManagerTest {
                                                                                 qosWithoutExpiryDate,
                                                                                 null);
         subscriptionId = request.getSubscriptionId();
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, request);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, Sets.newHashSet(toParticipantId), request);
 
         Mockito.verify(attributeSubscriptionDirectory).put(Mockito.anyString(),
                                                            Mockito.eq(attributeSubscriptionCallback));
@@ -244,12 +257,13 @@ public class SubscriptionManagerTest {
         Mockito.verify(subscriptionEndFutures, never()).put(Mockito.anyString(), Mockito.any(ScheduledFuture.class));
 
         Mockito.verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                           eq(toParticipantId),
+                                                           (Set<String>) argThat(contains(toParticipantId)),
                                                            any(SubscriptionRequest.class),
                                                            any(MessagingQos.class),
                                                            eq(false));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void unregisterSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                         JsonGenerationException, JsonMappingException, IOException {
@@ -257,13 +271,16 @@ public class SubscriptionManagerTest {
         Mockito.when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
         Mockito.when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
         Mockito.when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
-        subscriptionManager.unregisterSubscription(fromParticipantId, toParticipantId, subscriptionId, qosSettings);
+        subscriptionManager.unregisterSubscription(fromParticipantId,
+                                                   Sets.newHashSet(toParticipantId),
+                                                   subscriptionId,
+                                                   qosSettings);
 
         Mockito.verify(subscriptionStates).get(Mockito.eq(subscriptionId));
         Mockito.verify(subscriptionState).stop();
 
         Mockito.verify(dispatcher, times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
-                                                                  Mockito.eq(toParticipantId),
+                                                                  (Set<String>) argThat(contains(toParticipantId)),
                                                                   Mockito.eq(new SubscriptionStop(subscriptionId)),
                                                                   Mockito.any(MessagingQos.class));
 

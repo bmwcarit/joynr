@@ -19,10 +19,11 @@
 #ifndef MESSAGINGSETTINGS_H
 #define MESSAGINGSETTINGS_H
 
+#include <chrono>
+#include <string>
+
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-
-#include <string>
 
 namespace joynr
 {
@@ -44,6 +45,8 @@ public:
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
+    static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME();
+    static const std::string& SETTING_MQTT_RECONNECT_SLEEP_TIME();
     static const std::string& SETTING_INDEX();
     static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
@@ -94,6 +97,8 @@ public:
      * @see SETTING_MAXIMUM_TTL_MS
      */
     static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
+    static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME();
+    static std::chrono::milliseconds DEFAULT_MQTT_RECONNECT_SLEEP_TIME();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
@@ -109,6 +114,10 @@ public:
     std::string getCapabilitiesDirectoryChannelId() const;
     std::string getCapabilitiesDirectoryParticipantId() const;
 
+    std::chrono::seconds getMqttKeepAliveTime() const;
+    void setMqttKeepAliveTime(std::chrono::seconds mqttKeepAliveTime);
+    std::chrono::milliseconds getMqttReconnectSleepTime() const;
+    void setMqttReconnectSleepTime(std::chrono::milliseconds mqttReconnectSleepTime);
     std::int64_t getIndex() const;
     void setIndex(std::int64_t index);
     int getCreateChannelRetryInterval() const;

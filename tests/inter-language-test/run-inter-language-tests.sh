@@ -4,9 +4,13 @@
 JOYNR_SOURCE_DIR=""
 ILT_BUILD_DIR=""
 ILT_RESULTS_DIR=""
-while getopts "b:s:r:" OPTIONS;
+CC_LANGUAGE=""
+while getopts "b:c:s:r:" OPTIONS;
 do
 	case $OPTIONS in
+		c)
+			CC_LANGUAGE=$OPTARG
+			;;
 		b)
 			ILT_BUILD_DIR=$OPTARG
 			;;
@@ -25,11 +29,21 @@ do
 			;;
 		\?)
 			echo "Illegal option found."
-			echo "Synopsis: run-inter-language-tests.sh [-b <joynr-build-dir>] [-r <ilt-results-dir>] [-s <joynr-source-dir>]"
+			echo "Synopsis: run-inter-language-tests.sh [-b <joynr-build-dir>] [-c <cluster-controller-language (CPP|JAVA)>] [-r <ilt-results-dir>] [-s <joynr-source-dir>]"
 			exit 1
 			;;
 	esac
 done
+
+if [ -z "$CC_LANGUAGE" ]
+then
+	# use default C++ cluster-controller
+	CC_LANGUAGE=CPP
+elif [ "$CC_LANGUAGE" != "CPP" ] && [ "$CC_LANGUAGE" != "JAVA" ]
+then
+	echo 'invalid value for cluster-controller language: $CC_LANGUAGE'
+	exit 1
+fi
 
 if [ -z "$JOYNR_SOURCE_DIR" ]
 then
@@ -84,7 +98,7 @@ function prechecks {
 		exit 1
 	fi
 
-	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-consumer-cc" ]
+	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-consumer-ws" ]
 	then
 		echo 'C++ environment not built'
 		exit 1
@@ -136,6 +150,7 @@ function start_services {
 	done
 	if [ "$started" != "200" ]
 	then
+		echo "Starting Jetty FAILED"
 		# startup failed
 		stopall
 	fi
@@ -158,20 +173,30 @@ function stop_services {
 }
 
 function start_cluster_controller {
-	echo '####################################################'
-	echo '# starting C++ clustercontroller'
-	echo '####################################################'
-	if [ ! -d $ILT_BUILD_DIR -o ! -d $ILT_BUILD_DIR/bin ]
+	if [ "$CC_LANGUAGE" = "JAVA" ]
 	then
-		echo "C++ build directory or build/bin directory does not exist!"
-		stopall
+		echo '####################################################'
+		echo '# starting JAVA clustercontroller'
+		echo '####################################################'
+		CLUSTER_CONTROLLER_DIR=$JOYNR_SOURCE_DIR/java/core/clustercontroller-standalone
+		cd $CLUSTER_CONTROLLER_DIR
+		mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="http::mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
+	else
+		echo '####################################################'
+		echo '# starting C++ clustercontroller'
+		echo '####################################################'
+		if [ ! -d $ILT_BUILD_DIR -o ! -d $ILT_BUILD_DIR/bin ]
+		then
+			echo "C++ build directory or build/bin directory does not exist!"
+			stopall
+		fi
+		CLUSTER_CONTROLLER_DIR=$ILT_BUILD_DIR/cluster-controller-bin
+		cd $ILT_BUILD_DIR
+		rm -fr $CLUSTER_CONTROLLER_DIR
+		cp -a $ILT_BUILD_DIR/bin $CLUSTER_CONTROLLER_DIR
+		cd $CLUSTER_CONTROLLER_DIR
+		./cluster-controller > $ILT_RESULTS_DIR/clustercontroller-cpp-$1.log 2>&1 &
 	fi
-	CLUSTER_CONTROLLER_DIR=$ILT_BUILD_DIR/cluster-controller-bin
-	cd $ILT_BUILD_DIR
-	rm -fr $CLUSTER_CONTROLLER_DIR
-	cp -a $ILT_BUILD_DIR/bin $CLUSTER_CONTROLLER_DIR
-	cd $CLUSTER_CONTROLLER_DIR
-	./cluster-controller > $ILT_RESULTS_DIR/clustercontroller-$1.log 2>&1 &
 	CLUSTER_CONTROLLER_PID=$!
 	echo "Started external cluster controller with PID $CLUSTER_CONTROLLER_PID in directory $CLUSTER_CONTROLLER_DIR"
 	# Allow some time for startup
@@ -182,7 +207,7 @@ function stop_cluster_controller {
 	if [ -n "$CLUSTER_CONTROLLER_PID" ]
 	then
 		echo '####################################################'
-		echo '# stopping C++ clustercontroller'
+		echo '# stopping clustercontroller'
 		echo '####################################################'
 		disown $CLUSTER_CONTROLLER_PID
 		kill -9 $CLUSTER_CONTROLLER_PID
@@ -205,7 +230,7 @@ function start_java_provider {
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ILT_RESULTS_DIR/provider-java.log 2>&1 &
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport=mqtt > $ILT_RESULTS_DIR/provider-java.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider with PID $PROVIDER_PID"
 	# Allow some time for startup
@@ -263,8 +288,8 @@ function start_java_consumer {
 	mkdir $ILT_RESULTS_DIR/consumer-java-$1
 	rm -fr $ILT_DIR/target/surefire-reports
 	mvn $SPECIAL_MAVEN_OPTIONS surefire:test -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-$1.log 2>&1
-	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-$1
 	SUCCESS=$?
+	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-$1
 	if [ "$SUCCESS" != 0 ]
 	then
 		echo '####################################################'
@@ -287,7 +312,7 @@ function start_cpp_consumer {
 	echo '####################################################'
 	cd $ILT_BUILD_DIR/bin
 	#./ilt-consumer-cc $DOMAIN >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
-	./ilt-consumer-ws $DOMAIN >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
+	./ilt-consumer-ws $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]

@@ -140,6 +140,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
             address = routingTable.get(toParticipantId);
         }
+        logger.trace("Participant with ID {} has address {}", new Object[]{ toParticipantId, address });
         return address;
     }
 
@@ -160,9 +161,11 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
     private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
         try {
+            logger.debug("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
             schedule(new Runnable() {
                 @Override
                 public void run() {
+                    logger.debug("Staring processing of message {}", message);
                     try {
                         checkExpiry(message);
 
@@ -185,7 +188,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
                         IMessaging messagingStub = messagingStubFactory.create(address);
                         messagingStub.transmit(message, createFailureAction(message, retriesCount));
-                    } catch (Throwable error) {
+                    } catch (Exception error) {
                         logger.error("error in scheduled message router thread: {}", error.getMessage());
                         FailureAction failureAction = createFailureAction(message, retriesCount);
                         failureAction.execute(error);
@@ -255,6 +258,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                         Thread.sleep(delayMs);
                         this.execute(e);
                     } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
                         return;
                     }
                 }
@@ -269,6 +273,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         try {
             scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             logger.error("Message Scheduler did not shut down in time: {}", e.getMessage());
         }
     }

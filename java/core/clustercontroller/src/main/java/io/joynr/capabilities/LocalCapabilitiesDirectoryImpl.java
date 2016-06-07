@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -36,42 +38,58 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.GlobalAddressProvider;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.Address;
-import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 import joynr.types.Version;
 
 @Singleton
 public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory implements
-        TransportReadyListener {
+TransportReadyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
+
+    private static final Set<DiscoveryScope> INCLUDE_LOCAL_SCOPES = new HashSet<>();
+    static {
+        INCLUDE_LOCAL_SCOPES.add(DiscoveryScope.LOCAL_ONLY);
+        INCLUDE_LOCAL_SCOPES.add(DiscoveryScope.LOCAL_AND_GLOBAL);
+        INCLUDE_LOCAL_SCOPES.add(DiscoveryScope.LOCAL_THEN_GLOBAL);
+    }
+
+    private static final Set<DiscoveryScope> INCLUDE_GLOBAL_SCOPES = new HashSet<>();
+    static {
+        INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.GLOBAL_ONLY);
+        INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_AND_GLOBAL);
+        INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_THEN_GLOBAL);
+    }
+
     private static final long NO_EXPIRY = Long.MAX_VALUE;
     private DiscoveryEntryStore localDiscoveryEntryStore;
-    private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
+    private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore globalDiscoveryEntryCache;
     private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
@@ -115,7 +133,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           DiscoveryEntryStore localDiscoveryEntryStore,
                                           DiscoveryEntryStore globalDiscoveryEntryCache,
                                           MessageRouter messageRouter,
-                                          ProxyBuilderFactory proxyBuilderFactory,
+                                          GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient,
                                           ObjectMapper objectMapper) {
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
@@ -123,6 +141,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.objectMapper = objectMapper;
+        this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
 
         String defaultPublicKeyId = "";
 
@@ -144,10 +163,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                    NO_EXPIRY,
                                                                                    defaultPublicKeyId,
                                                                                    domainAccessControllerAddress));
-
-        globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(proxyBuilderFactory,
-                                                                         discoveryDirectoriesDomain);
-
     }
 
     /**
@@ -158,7 +173,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         final DeferredVoid deferred = new DeferredVoid();
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
-            DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.LOCAL_AND_GLOBAL, DiscoveryQos.NO_MAX_AGE);
+            DiscoveryQos discoveryQos = new DiscoveryQos(30000,
+                                                         ArbitrationStrategy.HighestPriority,
+                                                         DiscoveryQos.NO_MAX_AGE,
+                                                         DiscoveryScope.LOCAL_AND_GLOBAL);
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
                     || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(), discoveryQos.getCacheMaxAgeMs()) != null) {
                 // in this case, no further need for global registration is required. Registration completed.
@@ -184,6 +202,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             try {
                 globalAddress = globalAddressProvider.get();
             } catch (Exception e) {
+                logger.debug("error getting global address", e);
                 globalAddress = null;
             }
 
@@ -201,7 +220,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             logger.info("starting global registration for " + globalDiscoveryEntry.getDomain() + " : "
                     + globalDiscoveryEntry.getInterfaceName());
 
-            globalCapabilitiesClient.add(new Callback<Void>() {
+            globalCapabilitiesDirectoryClient.add(new Callback<Void>() {
 
                 @Override
                 public void onSuccess(Void nothing) {
@@ -240,7 +259,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     //do nothing
                 }
             };
-            globalCapabilitiesClient.remove(callback, Arrays.asList(discoveryEntry.getParticipantId()));
+            globalCapabilitiesDirectoryClient.remove(callback, Arrays.asList(discoveryEntry.getParticipantId()));
         }
 
         // Remove endpoint addresses
@@ -248,75 +267,131 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public void lookup(final String domain,
+    public void lookup(final String[] domains,
                        final String interfaceName,
                        final DiscoveryQos discoveryQos,
                        final CapabilitiesCallback capabilitiesCallback) {
-
-        Collection<DiscoveryEntry> localDiscoveryEntries = localDiscoveryEntryStore.lookup(domain, interfaceName);
-        Collection<DiscoveryEntry> globalDiscoveryEntries = null;
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
+        Set<DiscoveryEntry> localDiscoveryEntries = getLocalEntriesIfRequired(discoveryScope, domains, interfaceName);
+        Set<DiscoveryEntry> globalDiscoveryEntries = getGloballyCachedEntriesIfRequired(discoveryScope, domains, interfaceName, discoveryQos.getCacheMaxAgeMs());
         switch (discoveryScope) {
         case LOCAL_ONLY:
             capabilitiesCallback.processCapabilitiesReceived(localDiscoveryEntries);
             break;
         case LOCAL_THEN_GLOBAL:
-            if (localDiscoveryEntries.size() > 0) {
-                capabilitiesCallback.processCapabilitiesReceived(localDiscoveryEntries);
-            } else {
-                globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domain,
-                                                                          interfaceName,
-                                                                          discoveryQos.getCacheMaxAgeMs());
-                if (globalDiscoveryEntries.size() > 0) {
-                    capabilitiesCallback.processCapabilitiesReceived(globalDiscoveryEntries);
-                } else {
-                    asyncGetGlobalCapabilitities(domain,
-                                                 interfaceName,
-                                                 null,
-                                                 discoveryQos.getDiscoveryTimeoutMs(),
-                                                 capabilitiesCallback);
-                }
-            }
+            handleLocalThenGlobal(domains, interfaceName, discoveryQos, capabilitiesCallback, localDiscoveryEntries, globalDiscoveryEntries);
             break;
         case GLOBAL_ONLY:
-            globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domain,
-                                                                      interfaceName,
-                                                                      discoveryQos.getCacheMaxAgeMs());
-            if (globalDiscoveryEntries.size() > 0) {
-                capabilitiesCallback.processCapabilitiesReceived(globalDiscoveryEntries);
-            } else {
-                // in this case, no global only caps are included in the cache --> call glob cap dir
-                asyncGetGlobalCapabilitities(domain,
-                                             interfaceName,
-                                             null,
-                                             discoveryQos.getDiscoveryTimeoutMs(),
-                                             capabilitiesCallback);
-            }
+            handleGlobalOnly(domains, interfaceName, discoveryQos, capabilitiesCallback, globalDiscoveryEntries);
             break;
         case LOCAL_AND_GLOBAL:
-            globalDiscoveryEntries = globalDiscoveryEntryCache.lookup(domain,
-                                                                      interfaceName,
-                                                                      discoveryQos.getCacheMaxAgeMs());
-            if (globalDiscoveryEntries.size() > 0) {
-                for (DiscoveryEntry discoveryEntry : localDiscoveryEntries) {
-                    if (!globalDiscoveryEntries.contains(discoveryEntry)) {
-                        globalDiscoveryEntries.add(discoveryEntry);
-                    }
-                }
-                capabilitiesCallback.processCapabilitiesReceived(globalDiscoveryEntries);
-            } else {
-                // in this case, no global only caps are included in the cache --> call glob cap dir
-                asyncGetGlobalCapabilitities(domain,
-                                             interfaceName,
-                                             localDiscoveryEntries,
-                                             discoveryQos.getDiscoveryTimeoutMs(),
-                                             capabilitiesCallback);
-            }
+            handleLocalAndGlobal(domains, interfaceName, discoveryQos, capabilitiesCallback, localDiscoveryEntries, globalDiscoveryEntries);
             break;
         default:
-            break;
-
+            throw new IllegalStateException("Unknown or illegal DiscoveryScope value: " + discoveryScope);
         }
+    }
+
+    private void handleLocalThenGlobal(String[] domains,
+                                       String interfaceName,
+                                       DiscoveryQos discoveryQos,
+                                       CapabilitiesCallback capabilitiesCallback,
+                                       Set<DiscoveryEntry> localDiscoveryEntries,
+                                       Set<DiscoveryEntry> globalDiscoveryEntries) {
+        Set<String> domainsForGlobalLookup = new HashSet<>();
+        Set<DiscoveryEntry> matchedDiscoveryEntries = new HashSet<>();
+        for (String domainToMatch : domains) {
+            boolean domainMatched = addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
+            domainMatched = domainMatched || addEntriesForDomain(globalDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
+            if (!domainMatched) {
+                domainsForGlobalLookup.add(domainToMatch);
+            }
+        }
+        handleMissingGlobalEntries(interfaceName,
+                                   discoveryQos,
+                                   capabilitiesCallback,
+                                   domainsForGlobalLookup,
+                                   matchedDiscoveryEntries);
+    }
+
+    private void handleLocalAndGlobal(String[] domains,
+                                      String interfaceName,
+                                      DiscoveryQos discoveryQos,
+                                      CapabilitiesCallback capabilitiesCallback,
+                                      Set<DiscoveryEntry> localDiscoveryEntries,
+                                      Set<DiscoveryEntry> globalDiscoveryEntries) {
+        Set<String> domainsForGlobalLookup = new HashSet<>();
+        Set<DiscoveryEntry> matchedDiscoveryEntries = new HashSet<>();
+        for (String domainToMatch : domains) {
+            addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
+            if (!addEntriesForDomain(globalDiscoveryEntries, matchedDiscoveryEntries, domainToMatch)) {
+                domainsForGlobalLookup.add(domainToMatch);
+            }
+        }
+        handleMissingGlobalEntries(interfaceName,
+                                   discoveryQos,
+                                   capabilitiesCallback,
+                                   domainsForGlobalLookup,
+                                   matchedDiscoveryEntries);
+    }
+
+    private void handleGlobalOnly(String[] domains,
+                                  String interfaceName,
+                                  DiscoveryQos discoveryQos,
+                                  CapabilitiesCallback capabilitiesCallback,
+                                  Set<DiscoveryEntry> globalDiscoveryEntries) {
+        Set<String> domainsForGlobalLookup = Sets.newHashSet(domains);
+        for (DiscoveryEntry discoveryEntry : globalDiscoveryEntries) {
+            domainsForGlobalLookup.remove(discoveryEntry.getDomain());
+        }
+        handleMissingGlobalEntries(interfaceName,
+                                   discoveryQos,
+                                   capabilitiesCallback,
+                                   domainsForGlobalLookup,
+                                   globalDiscoveryEntries);
+    }
+
+    private void handleMissingGlobalEntries(String interfaceName,
+                                            DiscoveryQos discoveryQos,
+                                            CapabilitiesCallback capabilitiesCallback,
+                                            Set<String> domainsForGlobalLookup,
+                                            Set<DiscoveryEntry> matchedDiscoveryEntries) {
+        if (domainsForGlobalLookup.isEmpty()) {
+            capabilitiesCallback.processCapabilitiesReceived(matchedDiscoveryEntries);
+        } else {
+            asyncGetGlobalCapabilitities(domainsForGlobalLookup.toArray(new String[domainsForGlobalLookup.size()]),
+                                         interfaceName,
+                                         matchedDiscoveryEntries,
+                                         discoveryQos.getDiscoveryTimeoutMs(),
+                                         capabilitiesCallback);
+        }
+    }
+
+    private boolean addEntriesForDomain(Collection<DiscoveryEntry> discoveryEntries, Collection<DiscoveryEntry> addTo, String domain) {
+        boolean domainMatched = false;
+        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+            if (discoveryEntry.getDomain().equals(domain)) {
+                addTo.add(discoveryEntry);
+                domainMatched = true;
+            }
+        }
+        return domainMatched;
+    }
+
+    private Set<DiscoveryEntry> getGloballyCachedEntriesIfRequired(DiscoveryScope discoveryScope,
+                                                                   String[] domains,
+                                                                   String interfaceName, long cacheMaxAge) {
+        if (INCLUDE_GLOBAL_SCOPES.contains(discoveryScope)) {
+            return new HashSet<DiscoveryEntry>(globalDiscoveryEntryCache.lookup(domains, interfaceName, cacheMaxAge));
+        }
+        return null;
+    }
+
+    private Set<DiscoveryEntry> getLocalEntriesIfRequired(DiscoveryScope discoveryScope, String[] domains, String interfaceName) {
+        if (INCLUDE_LOCAL_SCOPES.contains(discoveryScope)) {
+            return new HashSet<DiscoveryEntry>(localDiscoveryEntryStore.lookup(domains, interfaceName));
+        }
+        return null;
     }
 
     @Override
@@ -403,7 +478,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (cachedGlobalCapability != null) {
             capabilitiesCallback.processCapabilityReceived(cachedGlobalCapability);
         } else {
-            globalCapabilitiesClient.lookup(new Callback<GlobalDiscoveryEntry>() {
+            globalCapabilitiesDirectoryClient.lookup(new Callback<GlobalDiscoveryEntry>() {
 
                 @Override
                 public void onSuccess(@CheckForNull GlobalDiscoveryEntry newGlobalDiscoveryEntry) {
@@ -418,7 +493,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(JoynrRuntimeException exception) {
-                    capabilitiesCallback.onError((Exception) exception);
+                    capabilitiesCallback.onError(exception);
 
                 }
             }, participantId, discoveryQos.getDiscoveryTimeoutMs());
@@ -429,7 +504,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     /**
      * mixes in the localDiscoveryEntries to global capabilities found by participantId
      */
-    private void asyncGetGlobalCapabilitities(final String domain,
+    private void asyncGetGlobalCapabilitities(final String[] domains,
                                               final String interfaceName,
                                               Collection<DiscoveryEntry> localDiscoveryEntries2,
                                               long discoveryTimeout,
@@ -438,7 +513,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         final Collection<DiscoveryEntry> localDiscoveryEntries = localDiscoveryEntries2 == null ? new LinkedList<DiscoveryEntry>()
                 : localDiscoveryEntries2;
 
-        globalCapabilitiesClient.lookup(new Callback<List<GlobalDiscoveryEntry>>() {
+        globalCapabilitiesDirectoryClient.lookup(new Callback<List<GlobalDiscoveryEntry>>() {
 
             @Override
             public void onSuccess(List<GlobalDiscoveryEntry> globalDiscoverEntries) {
@@ -457,12 +532,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
             @Override
             public void onFailure(JoynrRuntimeException exception) {
-                capabilitiesCallback.onError((Exception) exception);
+                capabilitiesCallback.onError(exception);
             }
         },
-                                        domain,
-                                        interfaceName,
-                                        discoveryTimeout);
+                                                 domains,
+                                                 interfaceName,
+                                                 discoveryTimeout);
     }
 
     @Override
@@ -498,16 +573,17 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         }
 
                     };
-                    globalCapabilitiesClient.remove(callback, Lists.newArrayList(Collections2.transform(discoveryEntries,
-                            transfomerFct)));
+                    globalCapabilitiesDirectoryClient.remove(callback, Lists.newArrayList(Collections2.transform(discoveryEntries,
+                                                                                                                 transfomerFct)));
                 } catch (DiscoveryException e) {
+                    logger.debug("error removing discovery entries", e);
                 }
             }
         }
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String domain,
+    public Promise<Lookup1Deferred> lookup(String[] domains,
                                            String interfaceName,
                                            joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
@@ -517,7 +593,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 if (capabilities == null) {
                     deferred.reject(new ProviderRuntimeException("Received capablities collection was null"));
                 } else {
-                    deferred.resolve(capabilities.toArray(new DiscoveryEntry[0]));
+                    deferred.resolve(capabilities.toArray(new DiscoveryEntry[capabilities.size()]));
                 }
             }
 
@@ -527,10 +603,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
-        lookup(domain, interfaceName, new DiscoveryQos(DEFAULT_DISCOVERYTIMEOUT,
-                                                       ArbitrationStrategy.NotSet,
-                                                       discoveryQos.getCacheMaxAge(),
-                                                       discoveryScope), callback);
+        lookup(domains, interfaceName, new DiscoveryQos(DEFAULT_DISCOVERYTIMEOUT,
+                                                        ArbitrationStrategy.NotSet,
+                                                        discoveryQos.getCacheMaxAge(),
+                                                        discoveryScope), callback);
 
         return new Promise<>(deferred);
     }

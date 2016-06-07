@@ -20,16 +20,23 @@ package io.joynr.capabilities;
  */
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
 
+import javax.persistence.EntityManager;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
@@ -46,8 +53,12 @@ import joynr.types.Version;
 
 public class DiscoveryEntryStorePersistedTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(DiscoveryEntryStorePersistedTest.class);
+
+    private static final int CACHE_MAX_AGE = 10000;
     private PersistService service;
     private DiscoveryEntryStore store;
+    private EntityManager entityManager;
 
     @Before
     public void setUp() throws Exception {
@@ -63,6 +74,7 @@ public class DiscoveryEntryStorePersistedTest {
         });
         service = injector.getInstance(PersistService.class);
         store = injector.getInstance(DiscoveryEntryStore.class);
+        entityManager = injector.getInstance(EntityManager.class);
     }
 
     @After
@@ -75,8 +87,33 @@ public class DiscoveryEntryStorePersistedTest {
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
 
         store.add(discoveryEntry);
+        entityManager.clear();
         assertContains(discoveryEntry);
 
+    }
+
+    @Test
+    public void testVersionPersistedAndRetrieved() throws Exception {
+        GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
+        logger.info("Discovery entry: " + discoveryEntry);
+
+        store.add(discoveryEntry);
+        entityManager.clear();
+
+        Collection<DiscoveryEntry> lookupResult = store.lookup(new String[]{ discoveryEntry.getDomain() },
+                                                               discoveryEntry.getInterfaceName(),
+                                                               CACHE_MAX_AGE);
+        assertNotNull(lookupResult);
+        assertEquals(1, lookupResult.size());
+        DiscoveryEntry persistedEntry = lookupResult.iterator().next();
+        logger.info("Persisted entry: " + persistedEntry);
+        assertNotEquals(System.identityHashCode(discoveryEntry), System.identityHashCode(persistedEntry));
+        assertNotNull(persistedEntry);
+        assertNotNull(persistedEntry.getProviderVersion());
+        assertEquals(discoveryEntry.getProviderVersion().getMajorVersion(), persistedEntry.getProviderVersion()
+                                                                                          .getMajorVersion());
+        assertEquals(discoveryEntry.getProviderVersion().getMinorVersion(), persistedEntry.getProviderVersion()
+                                                                                          .getMinorVersion());
     }
 
     @Test
@@ -90,6 +127,7 @@ public class DiscoveryEntryStorePersistedTest {
                                                                              "participantId2");
 
         store.add(Arrays.asList(discoveryEntry1, discoveryEntry2));
+        entityManager.clear();
         assertContains(discoveryEntry1, discoveryEntry2);
     }
 
@@ -97,9 +135,11 @@ public class DiscoveryEntryStorePersistedTest {
     public void testRemoveByParticipantId() throws Exception {
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
         store.add(discoveryEntry);
+        entityManager.clear();
         assertContains(discoveryEntry);
 
         store.remove(discoveryEntry.getParticipantId());
+        entityManager.clear();
         assertNotContains(discoveryEntry);
     }
 
@@ -114,9 +154,11 @@ public class DiscoveryEntryStorePersistedTest {
                                                                              "participantId2");
 
         store.add(Arrays.asList(discoveryEntry1, discoveryEntry2));
+        entityManager.clear();
         assertContains(discoveryEntry1, discoveryEntry2);
 
         store.remove(Arrays.asList(discoveryEntry1.getParticipantId(), discoveryEntry2.getParticipantId()));
+        entityManager.clear();
         assertNotContains(discoveryEntry1, discoveryEntry2);
 
     }
@@ -128,7 +170,8 @@ public class DiscoveryEntryStorePersistedTest {
         String interfaceName = "interfaceName";
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry(domain, interfaceName, "participantId");
         store.add(discoveryEntry);
-        Collection<DiscoveryEntry> lookup = store.lookup(domain, interfaceName);
+        entityManager.clear();
+        Collection<DiscoveryEntry> lookup = store.lookup(new String[]{ domain }, interfaceName);
         assertTrue(lookup.contains(discoveryEntry));
     }
 
@@ -178,18 +221,18 @@ public class DiscoveryEntryStorePersistedTest {
 
     private void assertContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
         for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
-            Collection<DiscoveryEntry> returnedEntries = store.lookup(discoveryEntry.getDomain(),
+            Collection<DiscoveryEntry> returnedEntries = store.lookup(new String[]{ discoveryEntry.getDomain() },
                                                                       discoveryEntry.getInterfaceName(),
-                                                                      10000);
+                                                                      CACHE_MAX_AGE);
             assertTrue(returnedEntries.contains(discoveryEntry));
         }
     }
 
     private void assertNotContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
         for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
-            Collection<DiscoveryEntry> returnedEntries = store.lookup(discoveryEntry.getDomain(),
+            Collection<DiscoveryEntry> returnedEntries = store.lookup(new String[]{ discoveryEntry.getDomain() },
                                                                       discoveryEntry.getInterfaceName(),
-                                                                      10000);
+                                                                      CACHE_MAX_AGE);
             assertFalse(returnedEntries.contains(discoveryEntry));
         }
     }

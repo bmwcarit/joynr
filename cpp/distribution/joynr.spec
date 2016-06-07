@@ -2,7 +2,7 @@
 BuildRoot:      /data/build/joynr/package/RPM/joynr
 Summary:        joynr base package including executables, libraries and default settings
 Name:           joynr
-Version:        0.18.0
+Version:        0.19.0
 Release:        1
 License:        Apache License, Version 2.0
 Group:          unknown
@@ -36,14 +36,14 @@ Have a peek at our documentation on joynr.io for more information!
 
 %package devel
 Summary: joynr extra development files
-Requires: %{name}-%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description devel
 The joynr cmake support files, C++ headers and code generator
 
 %package tests
 Summary: joynr tests
-Requires: %{name}-%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description tests
 The joynr unit, integration and system-integration tests and related resources

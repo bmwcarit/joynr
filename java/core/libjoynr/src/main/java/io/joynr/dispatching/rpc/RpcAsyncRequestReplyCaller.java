@@ -82,9 +82,8 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
                 }
             }
         } catch (Exception e) {
-            logger.error("Error calling async method: {} error: {}", method.getName(), e.getMessage());
+            logger.error("Error calling async method: " + method.getName(), e);
         }
-
     }
 
     @Override

@@ -190,29 +190,31 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
     }
 
     @Override
-    public Collection<DiscoveryEntry> lookup(final String domain, final String interfaceName) {
-        return lookup(domain, interfaceName, DiscoveryQos.NO_MAX_AGE);
+    public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName) {
+        return lookup(domains, interfaceName, DiscoveryQos.NO_MAX_AGE);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Collection<DiscoveryEntry> lookup(final String domain, final String interfaceName, long cacheMaxAge) {
+    public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName, long cacheMaxAge) {
         ArrayList<DiscoveryEntry> capabilitiesList = new ArrayList<DiscoveryEntry>();
 
         synchronized (storeLock) {
-            String domainInterfacekey = domainInterfaceKey(domain, interfaceName);
-            List<String> matchingDiscoveryEntries = interfaceAddressToCapabilityMapping.get(domainInterfacekey);
-            if (matchingDiscoveryEntries != null) {
-                // check that sure cache age is OK
-                for (String capId : matchingDiscoveryEntries) {
-                    DiscoveryEntry discoveryEntry = capabilityKeyToCapabilityMapping.get(capId);
+            for (String domain : domains) {
+                String domainInterfacekey = domainInterfaceKey(domain, interfaceName);
+                List<String> matchingDiscoveryEntries = interfaceAddressToCapabilityMapping.get(domainInterfacekey);
+                if (matchingDiscoveryEntries != null) {
+                    // check that sure cache age is OK
+                    for (String capId : matchingDiscoveryEntries) {
+                        DiscoveryEntry discoveryEntry = capabilityKeyToCapabilityMapping.get(capId);
 
-                    if (discoveryEntry instanceof GlobalDiscoveryEntry
-                            && !checkAge(registeredCapabilitiesTime.get(capId), cacheMaxAge)) {
-                        continue;
+                        if (discoveryEntry instanceof GlobalDiscoveryEntry
+                                && !checkAge(registeredCapabilitiesTime.get(capId), cacheMaxAge)) {
+                            continue;
+                        }
+
+                        capabilitiesList.add(discoveryEntry);
                     }
-
-                    capabilitiesList.add(discoveryEntry);
                 }
             }
         }

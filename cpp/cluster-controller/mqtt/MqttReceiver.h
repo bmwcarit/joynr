@@ -92,11 +92,7 @@ private:
     // Allows for registering multiple receivers for a single channel.
     std::string receiverId;
 
-    MessagingSettings settings;
-
     MosquittoSubscriber mosquittoSubscriber;
-
-    MqttSettings mqttSettings;
 
     ADD_LOGGER(MqttReceiver);
 };

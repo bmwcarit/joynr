@@ -22,11 +22,15 @@ package io.joynr.exceptions;
 public class JoynrIllegalStateException extends JoynrRuntimeException {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
     public JoynrIllegalStateException(String message) {
         super(message);
+    }
+
+    public JoynrIllegalStateException(String message, Exception cause) {
+        super(message, cause);
     }
 }

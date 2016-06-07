@@ -266,7 +266,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
             return;
         }
 
-        caller->execute(reply);
+        caller->execute(std::move(reply));
 
         // Clean up
         removeReplyCaller(requestReplyId);

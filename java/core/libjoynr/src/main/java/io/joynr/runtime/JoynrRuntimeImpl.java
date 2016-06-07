@@ -20,6 +20,19 @@ package io.joynr.runtime;
  */
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
@@ -37,10 +50,6 @@ import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.subtypes.JoynrType;
-
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-
 import joynr.BroadcastSubscriptionRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -50,14 +59,6 @@ import joynr.SubscriptionStop;
 import joynr.system.DiscoveryProxy;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.ProviderQos;
-
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
@@ -141,17 +142,20 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     @Override
     public <T> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass) {
+        Set<String> domains = new HashSet<>();
+        domains.add(domain);
+        return getProxyBuilder(domains, interfaceClass);
+    }
 
-        if (domain == null || domain.isEmpty()) {
+    @Override
+    public <T> ProxyBuilder<T> getProxyBuilder(final Set<String> domains, final Class<T> interfaceClass) {
+        if (domains == null || domains.isEmpty() || domains.contains(null)) {
             throw new IllegalArgumentException("Cannot create ProxyBuilder: domain was not set");
-
         }
-
         if (interfaceClass == null) {
             throw new IllegalArgumentException("Cannot create ProxyBuilder: interfaceClass may not be NULL");
         }
-
-        return proxyBuilderFactory.get(domain, interfaceClass);
+        return proxyBuilderFactory.get(domains, interfaceClass);
     }
 
     /**

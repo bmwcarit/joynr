@@ -36,4 +36,13 @@ public class MethodInvocationException extends JoynrRuntimeException {
     public MethodInvocationException(String message) {
         super(message);
     }
+
+    /**
+     * Constructor for a MethodInvocationException with detail message.
+     *
+     * @param cause exception that caused the method invocation exception
+     */
+    public MethodInvocationException(Exception cause) {
+        super(cause);
+    }
 }

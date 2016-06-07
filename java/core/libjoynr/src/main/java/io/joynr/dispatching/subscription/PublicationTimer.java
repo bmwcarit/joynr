@@ -21,9 +21,7 @@ package io.joynr.dispatching.subscription;
 
 import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
 import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.provider.ProviderContainer;
@@ -41,9 +39,6 @@ import joynr.exceptions.ProviderRuntimeException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * Timer object to handle periodic subscriptions
@@ -167,17 +162,8 @@ public class PublicationTimer extends PubSubTimerBase {
             logger.trace("sending subscriptionreply");
             try {
                 publicationManager.sendSubscriptionPublication(publication, publicationInformation);
-                // TODO handle exceptions during publication
-            } catch (JoynrSendBufferFullException e) {
-                logger.error("sendPublication error: {}", e.getMessage());
-            } catch (JoynrMessageNotSentException e) {
-                logger.error("sendPublication error: {}", e.getMessage());
-            } catch (JsonGenerationException e) {
-                logger.error("sendPublication error: {}", e.getMessage());
-            } catch (JsonMappingException e) {
-                logger.error("sendPublication error: {}", e.getMessage());
             } catch (IOException e) {
-                logger.error("sendPublication error: {}", e.getMessage());
+                logger.error("sendPublication error.", e);
             }
             synchronized (PublicationTimer.this) {
                 if (pendingPublication) {
@@ -202,6 +188,7 @@ public class PublicationTimer extends PubSubTimerBase {
                                         sendPublication(publication);
                                     }
                                 } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
                                     logger.trace("DelayedPublicationThread interrupted. No publication is sent.");
                                 }
                             }

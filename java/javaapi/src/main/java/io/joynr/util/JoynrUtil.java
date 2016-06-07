@@ -226,9 +226,6 @@ public class JoynrUtil {
                     }
                 }
             }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } finally {
             if (jf != null) {
                 jf.close();
@@ -293,7 +290,7 @@ public class JoynrUtil {
             outputStream.write(byteResource);
 
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.error("Writing file " + fileName + " failed.", e);
         } finally {
             if (outputStream != null) {
                 outputStream.close();

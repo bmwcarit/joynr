@@ -30,6 +30,7 @@
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
+#include "utils/MockCallback.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <string>
 #include "joynr/LibjoynrSettings.h"

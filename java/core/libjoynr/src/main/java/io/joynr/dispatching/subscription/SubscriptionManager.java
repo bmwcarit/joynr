@@ -19,9 +19,7 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
@@ -29,38 +27,24 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javax.annotation.CheckForNull;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 public interface SubscriptionManager {
 
     void registerAttributeSubscription(String fromParticipantId,
-                                       String toParticipantId,
-                                       AttributeSubscribeInvocation subscriptionRequest)
-                                                                                        throws JoynrSendBufferFullException,
-                                                                                        JoynrMessageNotSentException,
-                                                                                        JsonGenerationException,
-                                                                                        JsonMappingException,
-                                                                                        IOException;
+                                       Set<String> toParticipantIds,
+                                       AttributeSubscribeInvocation subscriptionRequest) throws IOException;
 
     void registerBroadcastSubscription(String fromParticipantId,
-                                       String toParticipantId,
-                                       BroadcastSubscribeInvocation subscriptionRequest)
-                                                                                        throws JoynrSendBufferFullException,
-                                                                                        JoynrMessageNotSentException,
-                                                                                        JsonGenerationException,
-                                                                                        JsonMappingException,
-                                                                                        IOException;
+                                       Set<String> toParticipantIds,
+                                       BroadcastSubscribeInvocation subscriptionRequest) throws IOException;
 
     void unregisterSubscription(String fromParticipantId,
-                                String toParticipantId,
+                                Set<String> toParticipantIds,
                                 String subscriptionId,
-                                MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                         JoynrMessageNotSentException, JsonGenerationException,
-                                                         JsonMappingException, IOException;
+                                MessagingQos qosSettings) throws IOException;
 
     void touchSubscriptionState(final String subscriptionId);
 

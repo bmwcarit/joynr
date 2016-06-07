@@ -19,22 +19,22 @@ package io.joynr.proxy;
  * #L%
  */
 
-import io.joynr.dispatching.RequestReplyManager;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
-import io.joynr.dispatching.subscription.SubscriptionManager;
-import io.joynr.messaging.MessagingQos;
-
 import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import joynr.MethodMetaInformation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.inject.Inject;
+
+import io.joynr.dispatching.RequestReplyManager;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.messaging.MessagingQos;
+import joynr.MethodMetaInformation;
 
 /**
  * This class creates a connector to access a service over JoynRPC using Java dynamic proxies.
@@ -73,10 +73,10 @@ public class JoynrMessagingConnectorFactory {
      * @return connector to execute remote procedure calls
      */
     public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,
-                                                           final String toParticipantId,
+                                                           final Set<String> toParticipantIds,
                                                            final MessagingQos qosSettings) {
 
-        return new JoynrMessagingConnectorInvocationHandler(toParticipantId,
+        return new JoynrMessagingConnectorInvocationHandler(toParticipantIds,
                                                             fromParticipantId,
                                                             qosSettings,
                                                             requestReplyManager,

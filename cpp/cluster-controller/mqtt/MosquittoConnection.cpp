@@ -20,14 +20,15 @@
 
 #include "MosquittoConnection.h"
 #include "MqttSettings.h"
+#include "joynr/MessagingSettings.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(MosquittoConnection);
 
-MosquittoConnection::MosquittoConnection(const BrokerUrl& brokerUrl)
-        : mqttSettings(), brokerUrl(brokerUrl)
+MosquittoConnection::MosquittoConnection(const MessagingSettings& settings)
+        : mqttSettings(), brokerUrl(settings.getBrokerUrl())
 {
     const Url url = brokerUrl.getBrokerChannelsBaseUrl();
 
@@ -36,6 +37,7 @@ MosquittoConnection::MosquittoConnection(const BrokerUrl& brokerUrl)
 
     mqttSettings.host = std::string(host);
     mqttSettings.port = port;
+    mqttSettings.keepAliveTime = settings.getMqttKeepAliveTime();
 
     JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", mqttSettings.host, mqttSettings.port);
 

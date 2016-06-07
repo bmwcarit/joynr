@@ -259,7 +259,7 @@ int main(int argc, char* argv[])
     // As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
     // is triggered. If the discovery process does not find matching providers within the
     // discovery timeout duration, discovery will be terminated and you will get a discovery exception.
-    discoveryQos.setDiscoveryTimeout(40000);
+    discoveryQos.setDiscoveryTimeoutMs(40000);
     // Provider entries in the global capabilities directory are cached locally. Discovery will
     // consider entries in this cache valid if they are younger as the max age of cached
     // providers as defined in the QoS. All valid entries will be processed by the arbitrator when
@@ -268,7 +268,7 @@ int main(int argc, char* argv[])
     // NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
     //       directory. Therefore, not all providers registered with the global capabilities
     //       directory might be taken into account during arbitration.
-    discoveryQos.setCacheMaxAge(std::numeric_limits<qint64>::max());
+    discoveryQos.setCacheMaxAgeMs(std::numeric_limits<qint64>::max());
     // The discovery process outputs a list of matching providers. The arbitration strategy then
     // chooses one or more of them to be used by the proxy.
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -328,7 +328,7 @@ int main(int argc, char* argv[])
         // As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
         // is triggered. If the discovery process does not find matching providers within the
         // discovery timeout duration it will be terminated and you will get a discovery exception.
-        discoveryQos.setDiscoveryTimeout(10000);
+        discoveryQos.setDiscoveryTimeoutMs(10000);
         // Provider entries in the global capabilities directory are cached locally. Discovery will
         // consider entries in this cache valid if they are younger as the max age of cached
         // providers as defined in the QoS. All valid entries will be processed by the arbitrator when searching
@@ -336,7 +336,7 @@ int main(int argc, char* argv[])
         // NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
         // directory. Therefore, not all providers registered with the global capabilities
         // directory might be taken into account during discovery.
-        discoveryQos.setCacheMaxAge(Long.MAX_VALUE);
+        discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
         // The discovery process outputs a list of matching providers. The arbitration strategy then
         // chooses one or more of them to be used by the proxy.
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
@@ -345,31 +345,31 @@ int main(int argc, char* argv[])
         // successive notifications, even if on-change notifications are enabled and the value changes more
         // often. This prevents the consumer from being flooded by updated values. The filtering happens on
         // the provider's side, thus also preventing excessive network traffic.
-        int minInterval_ms = 0;
+        int minIntervalMs = 0;
         // The provider will send notifications every maximum interval in milliseconds, even if the value didn't
         // change. It will send notifications more often if on-change notifications are enabled,
         // the value changes more often, and the minimum interval QoS does not prevent it. The maximum interval
         // can thus be seen as a sort of heart beat.
-        int maxInterval_ms = 10000;
+        int maxIntervalMs = 10000;
 
         // The provider will send notifications until the end date is reached. The consumer will not receive any
         // notifications (neither value notifications nor missed publication notifications) after
         // this date.
-        long expiryDate_ms = System.currentTimeMillis() + 60000;
+        long expiryDateMs = System.currentTimeMillis() + 60000;
         // If no notification was received within the last alert interval, a missed publication
         // notification will be raised.
-        int alertAfterInterval_ms = 20000;
+        int alertAfterIntervalMs = 20000;
         // Notification messages will be sent with this time-to-live. If a notification message can not be
         // delivered within its TTL, it will be deleted from the system.
         // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
         // missed publication notification (depending on the value of the alert interval QoS).
-        int publicationTtl_ms = 5000;
+        int publicationTtlMs = 5000;
 
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minInterval_ms,
-                                                                                                        maxInterval_ms,
-                                                                                                        expiryDate_ms,
-                                                                                                        alertAfterInterval_ms,
-                                                                                                        publicationTtl_ms);
+        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(minIntervalMs,
+                                                                                                        maxIntervalMs,
+                                                                                                        expiryDateMs,
+                                                                                                        alertAfterIntervalMs,
+                                                                                                        publicationTtlMs);
 
         ProxyBuilder<RadioProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain, RadioProxy.class);
         try {

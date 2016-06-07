@@ -86,7 +86,7 @@ public class JoynrAndroidExampleApplication extends Application {
                        }
                    });
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logToOutput("ERROR: create proxy failed: " + e.getMessage() + "\n");
             logger.error("create proxy failed: ", e);
         }

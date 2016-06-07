@@ -30,11 +30,13 @@
 namespace joynr
 {
 
+class MessagingSettings;
+
 class MosquittoConnection : public mosqpp::mosquittopp
 {
 
 public:
-    explicit MosquittoConnection(const BrokerUrl& brokerUrl);
+    explicit MosquittoConnection(const MessagingSettings& brokerUrl);
 
     ~MosquittoConnection() override = default;
 

@@ -28,8 +28,8 @@ import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
@@ -48,9 +48,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -68,7 +65,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>>();
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<OneWayCallable>> oneWayRequestQueue =
-    		new ConcurrentHashMap<>();
+            new ConcurrentHashMap<>();
     private ConcurrentHashMap<Request, ProviderCallback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, ProviderCallback<Reply>>();
 
     private ReplyCallerDirectory replyCallerDirectory;
@@ -103,16 +100,12 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
      */
 
     @Override
-    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, long ttl_ms)
-                                                                                                                       throws JoynrSendBufferFullException,
-                                                                                                                       JoynrMessageNotSentException,
-                                                                                                                       JsonGenerationException,
-                                                                                                                       JsonMappingException,
-                                                                                                                       IOException {
+    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, MessagingQos messagingQos)
+            throws IOException {
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
-        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(ttl_ms);
+        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
 
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
                                                                  toParticipantId,
@@ -120,17 +113,14 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                                                  expiryDate);
 
         messageRouter.route(message);
-
     }
 
     @Override
-    public Object sendSyncRequest(final String fromParticipantId,
-                                  final String toParticipantId,
+    public Object sendSyncRequest(String fromParticipantId,
+                                  String toParticipantId,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
-                                  long ttl_ms) throws JoynrCommunicationException, JoynrSendBufferFullException,
-                                              JoynrMessageNotSentException, JsonGenerationException,
-                                              JsonMappingException, IOException {
+                                  MessagingQos messagingQos) throws IOException {
 
         if (!running) {
             throw new IllegalStateException("Request: " + request.getRequestReplyId() + " failed. SenderImpl ID: "
@@ -141,23 +131,23 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         // the synchronizedReplyCaller will call notify on the responsePayloadContainer when a message arrives
         synchronizedReplyCaller.setResponseContainer(responsePayloadContainer);
 
-        sendRequest(fromParticipantId, toParticipantId, request, ttl_ms);
+        sendRequest(fromParticipantId, toParticipantId, request, messagingQos);
 
         long entryTime = System.currentTimeMillis();
 
         // saving all calling threads so that they can be interrupted at shutdown
         outstandingRequestThreads.add(Thread.currentThread());
         synchronized (responsePayloadContainer) {
-            while (running && responsePayloadContainer.isEmpty() && entryTime + ttl_ms > System.currentTimeMillis()) {
+            while (running && responsePayloadContainer.isEmpty() && entryTime + messagingQos.getRoundTripTtl_ms() > System.currentTimeMillis()) {
                 try {
-                    responsePayloadContainer.wait(ttl_ms);
+                    responsePayloadContainer.wait(messagingQos.getRoundTripTtl_ms());
                 } catch (InterruptedException e) {
                     if (running) {
                         throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
-                                + " interrupted.");
+                        + " interrupted.");
                     }
                     throw new JoynrShutdownException("Request: " + request.getRequestReplyId()
-                            + " interrupted by shutdown");
+                    + " interrupted by shutdown");
 
                 }
             }
@@ -166,7 +156,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
         if (responsePayloadContainer.isEmpty()) {
             throw new JoynrCommunicationException("Request: " + request.getRequestReplyId()
-                    + " failed. The response didn't arrive in time");
+            + " failed. The response didn't arrive in time");
         }
 
         Object response = responsePayloadContainer.get(0);
@@ -178,36 +168,24 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
         return response;
     }
-    
-    @Override
-    public void sendOneWayRequest(final String fromParticipantId, final String toParticipantId, OneWayRequest oneWayRequest, long ttl_ms)
-                                                                                                                     throws JoynrSendBufferFullException,
-                                                                                                                     JoynrMessageNotSentException,
-                                                                                                                     JsonGenerationException,
-                                                                                                                     JsonMappingException,
-                                                                                                                     IOException {
-    	sendOneWayRequest(fromParticipantId, Sets.newHashSet(toParticipantId), oneWayRequest, ttl_ms);
-    }
 
     @Override
     public void sendOneWayRequest(String fromParticipantId, Set<String> toParticipantIds, OneWayRequest oneWayRequest,
-    		long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException, JsonGenerationException,
-    		JsonMappingException, IOException {
-    	for (String toParticipantId : toParticipantIds) {
-			JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-																	toParticipantId,
-																	oneWayRequest,
-																	DispatcherUtils.convertTtlToExpirationDate(ttl_ms));
-			messageRouter.route(message);
-		}
+                                  MessagingQos messagingQos) throws IOException {
+        for (String toParticipantId : toParticipantIds) {
+            JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
+                                                                           toParticipantId,
+                                                                           oneWayRequest,
+                                                                           DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
+            messageRouter.route(message);
+        }
     }
 
     @Override
     public void sendReply(final String fromParticipantId,
                           final String toParticipantId,
                           Reply payload,
-                          ExpiryDate expiryDate) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                                JsonGenerationException, JsonMappingException, IOException {
+                          ExpiryDate expiryDate) throws IOException {
         JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, payload, expiryDate);
 
         messageRouter.route(message);
@@ -226,9 +204,9 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         }
         ConcurrentLinkedQueue<OneWayCallable> oneWayCallables = oneWayRequestQueue.remove(participantId);
         if (oneWayCallables != null) {
-        	for (OneWayCallable oneWayCallable : oneWayCallables) {
-				oneWayCallable.call();
-			}
+            for (OneWayCallable oneWayCallable : oneWayCallables) {
+                oneWayCallable.call();
+            }
         }
     }
 
@@ -239,24 +217,24 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
     @Override
     public void handleOneWayRequest(final String providerParticipantId, final OneWayRequest request, long expiryDate) {
-    	Callable<Void> requestHandler = new Callable<Void>() {
-			@Override
-			public Void call() {
-				requestInterpreter.invokeMethod(providerDirectory.get(providerParticipantId).getRequestCaller(), request);
-				return null;
-			}
-		};
-		OneWayCallable oneWayCallable = new OneWayCallable(requestHandler, ExpiryDate.fromAbsolute(expiryDate), String.valueOf(request));
-    	if (providerDirectory.contains(providerParticipantId)) {
-    		oneWayCallable.call();
-    	} else {
-    		if (!oneWayRequestQueue.containsKey(providerParticipantId)) {
-				oneWayRequestQueue.putIfAbsent(providerParticipantId, new ConcurrentLinkedQueue<OneWayCallable>());
-    		}
-			oneWayRequestQueue.get(providerParticipantId).add(oneWayCallable);
-    	}
+        Callable<Void> requestHandler = new Callable<Void>() {
+            @Override
+            public Void call() {
+                requestInterpreter.invokeMethod(providerDirectory.get(providerParticipantId).getRequestCaller(), request);
+                return null;
+            }
+        };
+        OneWayCallable oneWayCallable = new OneWayCallable(requestHandler, ExpiryDate.fromAbsolute(expiryDate), String.valueOf(request));
+        if (providerDirectory.contains(providerParticipantId)) {
+            oneWayCallable.call();
+        } else {
+            if (!oneWayRequestQueue.containsKey(providerParticipantId)) {
+                oneWayRequestQueue.putIfAbsent(providerParticipantId, new ConcurrentLinkedQueue<OneWayCallable>());
+            }
+            oneWayRequestQueue.get(providerParticipantId).add(oneWayCallable);
+        }
     }
-    
+
     @Override
     public void handleRequest(ProviderCallback<Reply> replyCallback,
                               String providerParticipant,
@@ -299,14 +277,14 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     private void queueRequest(final ProviderCallback<Reply> replyCallback,
                               final String providerParticipantId,
                               Request request,
-                              ExpiryDate incomingTtlExpirationDate_ms) {
+                              ExpiryDate expiryDate) {
 
         if (!requestQueue.containsKey(providerParticipantId)) {
             ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> newRequestList = new ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>();
             requestQueue.putIfAbsent(providerParticipantId, newRequestList);
         }
         final ContentWithExpiryDate<Request> requestItem = new ContentWithExpiryDate<Request>(request,
-                                                                                              incomingTtlExpirationDate_ms);
+                expiryDate);
         requestQueue.get(providerParticipantId).add(requestItem);
         replyCallbacks.put(request, replyCallback);
         cleanupScheduler.schedule(new Runnable() {
@@ -320,7 +298,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                             new String[]{ providerParticipantId, request.getMethodName() });
 
             }
-        }, incomingTtlExpirationDate_ms.getRelativeTtl(), TimeUnit.MILLISECONDS);
+        }, expiryDate.getRelativeTtl(), TimeUnit.MILLISECONDS);
     }
 
     @Override

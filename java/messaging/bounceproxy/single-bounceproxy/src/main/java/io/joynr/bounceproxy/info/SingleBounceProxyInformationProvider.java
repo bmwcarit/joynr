@@ -79,7 +79,7 @@ public class SingleBounceProxyInformationProvider implements Provider<BounceProx
         try {
             hostPathFromRequest = new URI(scheme, null, bounceProxyServerName, port, servletContext, null, null);
         } catch (URISyntaxException e) {
-            log.error("Error retrieving bounceproxy URL: error: {}. Trying simplified version.", e.getMessage());
+            log.debug("Error retrieving bounceproxy URL. Trying simplified version.", e);
             hostPathFromRequest = URI.create(String.format("%s://%s:%d/%s",
                                                            scheme,
                                                            bounceProxyServerName,

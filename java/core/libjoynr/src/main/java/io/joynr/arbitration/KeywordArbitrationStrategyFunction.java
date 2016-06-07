@@ -1,5 +1,7 @@
 package io.joynr.arbitration;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * %%
@@ -28,7 +30,7 @@ import joynr.types.DiscoveryEntry;
 public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunction {
 
     @Override
-    public DiscoveryEntry select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
+    public Collection<DiscoveryEntry> select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
         String requestedKeyword = parameters.get(ArbitrationConstants.KEYWORD_PARAMETER);
         DiscoveryEntry capabilityWithKeyword = null;
 
@@ -44,6 +46,6 @@ public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunct
             }
         }
 
-        return capabilityWithKeyword;
+        return capabilityWithKeyword == null ? null : Arrays.asList(capabilityWithKeyword);
     }
 }

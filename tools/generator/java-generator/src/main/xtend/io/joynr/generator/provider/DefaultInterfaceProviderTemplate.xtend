@@ -94,9 +94,9 @@ public class «className» extends «abstractProviderName» {
 		«IF isReadable(attribute)»
 			@Override
 			public Promise<Deferred<«attributeType»>> get«attributeName.toFirstUpper»() {
-				Deferred<«attributeType»> deferred = new Deferred<«attributeType»>();
+				Deferred<«attributeType»> deferred = new Deferred<>();
 				deferred.resolve(«attributeName»);
-				return new Promise<Deferred<«attributeType»>>(deferred);
+				return new Promise<>(deferred);
 			}
 		«ENDIF»
 		«IF isWritable(attribute)»
@@ -108,7 +108,7 @@ public class «className» extends «abstractProviderName» {
 					«attributeName»Changed(«attributeName»);
 				«ENDIF»
 				deferred.resolve();
-				return new Promise<DeferredVoid>(deferred);
+				return new Promise<>(deferred);
 			}
 		«ENDIF»
 	«ENDFOR»
@@ -124,9 +124,9 @@ public class «className» extends «abstractProviderName» {
 		*/
 		@Override
 		«IF method.fireAndForget»
-		public void «methodName» (
+		public void «methodName»(
 		«ELSE»
-		public Promise<«deferredName»> «methodName» (
+		public Promise<«deferredName»> «methodName»(
 		«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF») {
 			logger.warn("**********************************************");
@@ -138,7 +138,7 @@ public class «className» extends «abstractProviderName» {
 				«outputParameter.typeName» «outputParameter.name» = «outputParameter.defaultValue»;
 			«ENDFOR»
 			deferred.resolve(«method.commaSeperatedUntypedOutputParameterList»);
-			return new Promise<«deferredName»>(deferred);
+			return new Promise<>(deferred);
 			«ENDIF»
 		}
 	«ENDFOR»

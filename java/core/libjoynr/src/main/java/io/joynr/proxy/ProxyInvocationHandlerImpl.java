@@ -41,6 +41,7 @@ import io.joynr.proxy.invocation.UnsubscribeInvocation;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -72,18 +73,18 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConcurrentLinkedQueue<MethodInvocation> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation>();
     private ConcurrentLinkedQueue<SubscriptionInvocation> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionInvocation>();
     private String interfaceName;
-    private String domain;
+    private Set<String> domains;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
     @Inject
-    public ProxyInvocationHandlerImpl(@Assisted("domain") String domain,
+    public ProxyInvocationHandlerImpl(@Assisted("domains") Set<String> domains,
                                       @Assisted("interfaceName") String interfaceName,
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
                                       ConnectorFactory connectorFactory) {
-        this.domain = domain;
+        this.domains = domains;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
         this.discoveryQos = discoveryQos;
@@ -93,7 +94,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     }
 
     private static interface ConnectorCaller {
-        Object call(Method method, Object[] args) throws Throwable;
+        Object call(Method method, Object[] args) throws Exception;
     }
 
     /**
@@ -112,7 +113,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private Object executeSyncMethod(Method method, Object[] args) throws ApplicationException, JoynrRuntimeException {
         return executeMethodWithCaller(method, args, new ConnectorCaller() {
             @Override
-            public Object call(Method method, Object[] args) throws Throwable {
+            public Object call(Method method, Object[] args) throws Exception {
                 return connector.executeSyncMethod(method, args);
             }
         });
@@ -123,7 +124,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         return executeMethodWithCaller(method, args, new ConnectorCaller() {
 
             @Override
-            public Object call(Method method, Object[] args) throws Throwable {
+            public Object call(Method method, Object[] args) throws Exception {
                 connector.executeOneWayMethod(method, args);
                 return null;
             }
@@ -141,10 +142,10 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         } catch (ApplicationException | JoynrRuntimeException e) {
             throw e;
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new JoynrRuntimeException(e);
         }
-        throw new DiscoveryException("Arbitration and Connector failed: domain: " + domain + " interface: "
+        throw new DiscoveryException("Arbitration and Connector failed: domain: " + domains + " interface: "
                 + interfaceName + " qos: " + discoveryQos + ": Arbitration could not be finished in time.");
     }
 
@@ -288,7 +289,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     }
 
     @CheckForNull
-    private Object executeSubscriptionMethod(Method method, Object[] args) throws IllegalAccessException, Throwable {
+    private Object executeSubscriptionMethod(Method method, Object[] args) throws IllegalAccessException, Exception {
         Future<String> future = new Future<String>();
         if (method.getName().startsWith("subscribeTo")) {
             AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method, args, future);
@@ -385,7 +386,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         }
     }
 
-    private <T> Object executeAsyncMethod(Method method, Object[] args) throws IllegalAccessException, Throwable {
+    private <T> Object executeAsyncMethod(Method method, Object[] args) throws IllegalAccessException, Exception {
         @SuppressWarnings("unchecked")
         Future<T> future = (Future<T>) method.getReturnType().getConstructor().newInstance();
 
@@ -455,7 +456,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     @Override
     @CheckForNull
-    public Object invoke(@Nonnull Method method, Object[] args) throws Throwable {
+    public Object invoke(@Nonnull Method method, Object[] args) throws Exception {
         Class<?> methodInterfaceClass = method.getDeclaringClass();
         if (JoynrSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
             return executeSubscriptionMethod(method, args);

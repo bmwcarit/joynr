@@ -20,17 +20,7 @@
 #define MY_PROVIDER_H
 
 #include "joynr/interlanguagetest/DefaultTestInterfaceProvider.h"
-#if 0
-#include "joynr/vehicle/QtTestInterfaceStation.h"
-#include "joynr/vehicle/QtCountry.h"
-#endif
-//#include "joynr/joynrlogging.h"
 #include "joynr/Logger.h"
-#if 0
-#include <QList>
-#include <QMap>
-#include <QMutex>
-#endif
 
 /**
   * A TestInterface Provider with a circular list of radio stations

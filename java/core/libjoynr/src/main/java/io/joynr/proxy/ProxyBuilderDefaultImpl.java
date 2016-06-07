@@ -30,6 +30,7 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 
+import java.util.Set;
 import java.util.UUID;
 
 import joynr.system.DiscoveryAsync;
@@ -45,7 +46,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     MessagingQos messagingQos;
     private Arbitrator arbitrator;
     private DiscoveryAsync localDiscoveryAggregator;
-    private String domain;
+    private Set<String> domains;
     private String proxyParticipantId;
     private boolean buildCalled;
     Class<T> myClass;
@@ -57,7 +58,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private long maxMessagingTtl;
 
     ProxyBuilderDefaultImpl(DiscoveryAsync localDiscoveryAggregator,
-                            String domain,
+                            Set<String> domains,
                             Class<T> interfaceClass,
                             ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
                             MessageRouter messageRouter,
@@ -78,20 +79,13 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         this.proxyParticipantId = UUID.randomUUID().toString();
 
         this.localDiscoveryAggregator = localDiscoveryAggregator;
-        this.domain = domain;
+        this.domains = domains;
         discoveryQos = new DiscoveryQos();
-        arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localDiscoveryAggregator);
+        arbitrator = ArbitratorFactory.create(domains, interfaceName, discoveryQos, localDiscoveryAggregator);
         messagingQos = new MessagingQos();
         buildCalled = false;
 
     }
-
-    // public ProxyBuilder(String domain,
-    // Class<T> interfaceClass,
-    // RequestReplySender messageSender,
-    // RequestReplyDispatcher dispatcher) {
-    // this(null, domain, interfaceClass, messageSender, dispatcher);
-    // }
 
     /*
      * (non-Javadoc)
@@ -124,7 +118,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
         this.discoveryQos = discoveryQos;
         // TODO which interfaceName should be used here?
-        arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localDiscoveryAggregator);
+        arbitrator = ArbitratorFactory.create(domains, interfaceName, discoveryQos, localDiscoveryAggregator);
 
         return this;
     }
@@ -138,8 +132,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     @Override
     public ProxyBuilder<T> setMessagingQos(final MessagingQos messagingQos) {
         if (messagingQos.getRoundTripTtl_ms() > maxMessagingTtl) {
-            logger.warn("Error in MessageQos. domain: {} interface: {} Max allowed ttl: {}. Passed ttl: {}",
-                        new Object[]{ domain, interfaceName, maxMessagingTtl, messagingQos.getRoundTripTtl_ms() });
+            logger.warn("Error in MessageQos. domains: {} interface: {} Max allowed ttl: {}. Passed ttl: {}",
+                        new Object[]{ domains, interfaceName, maxMessagingTtl, messagingQos.getRoundTripTtl_ms() });
             messagingQos.setTtl_ms(maxMessagingTtl);
         }
 
@@ -166,7 +160,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             T proxy = build();
             callback.onProxyCreated(proxy);
         } catch (JoynrIllegalStateException e) {
-            logger.error(e.toString());
+            logger.debug("error building proxy", e);
             callback.onProxyCreationError(e.toString());
         }
     }
@@ -178,7 +172,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         }
         buildCalled = true;
 
-        final ProxyInvocationHandler proxyInvocationHandler = proxyInvocationHandlerFactory.create(domain,
+        final ProxyInvocationHandler proxyInvocationHandler = proxyInvocationHandlerFactory.create(domains,
                                                                                                    interfaceName,
                                                                                                    proxyParticipantId,
                                                                                                    discoveryQos,

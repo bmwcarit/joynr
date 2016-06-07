@@ -1,5 +1,23 @@
 package io.joynr.capabilities;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.transaction.Transactional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+
 /*
  * #%L
  * %%
@@ -20,26 +38,10 @@ package io.joynr.capabilities;
  */
 
 import com.google.inject.persist.PersistService;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrCommunicationException;
 import joynr.types.DiscoveryEntry;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
 /**
  * The CapabilitiesStore stores a list of provider channelIds and the interfaces
@@ -102,8 +104,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            logger.error("unable to add discoveryEntry: {}, reason: {}", discoveryEntry, e.getMessage());
-        } finally {
+            logger.error("unable to add discoveryEntry: " + discoveryEntry, e);
         }
     }
 
@@ -143,7 +144,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            logger.error("unable to remove capability: {} reason: {}", participantId, e.getMessage());
+            logger.error("unable to remove capability: " + participantId, e);
             return false;
         } finally {
         }
@@ -158,23 +159,27 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
     }
 
     @Override
-    public Collection<DiscoveryEntry> lookup(final String domain, final String interfaceName) {
-        return lookup(domain, interfaceName, DiscoveryQos.NO_MAX_AGE);
+    public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName) {
+        return lookup(domains, interfaceName, DiscoveryQos.NO_MAX_AGE);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     @Transactional
-    public Collection<DiscoveryEntry> lookup(final String domain, final String interfaceName, long cacheMaxAge) {
+    public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName, long cacheMaxAge) {
         EntityManager entityManager = entityManagerProvider.get();
         String query = "from GlobalDiscoveryEntryPersisted where domain=:domain and interfaceName=:interfaceName";
-        List<DiscoveryEntry> capabilitiesList = entityManager.createQuery(query)
-                                                             .setParameter("domain", domain)
-                                                             .setParameter("interfaceName", interfaceName)
-                                                             .getResultList();
+        List<DiscoveryEntry> result = new ArrayList<>();
+        for (String domain : domains) {
+            List<DiscoveryEntry> capabilitiesList = entityManager.createQuery(query)
+                    .setParameter("domain", domain)
+                    .setParameter("interfaceName", interfaceName)
+                    .getResultList();
+            result.addAll(capabilitiesList);
+        }
 
-        logger.debug("Capabilities found: {}", capabilitiesList.toString());
-        return capabilitiesList;
+        logger.debug("Capabilities found: {}", result.toString());
+        return result;
     }
 
     @Override

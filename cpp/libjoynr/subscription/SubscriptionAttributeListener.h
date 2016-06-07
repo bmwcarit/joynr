@@ -19,10 +19,10 @@
 #ifndef SUBSCRIPTIONATTRIBUTELISTENER_H
 #define SUBSCRIPTIONATTRIBUTELISTENER_H
 
+#include <string>
+
 #include "joynr/JoynrExport.h"
 #include "joynr/IAttributeListener.h"
-
-#include <string>
 
 namespace joynr
 {

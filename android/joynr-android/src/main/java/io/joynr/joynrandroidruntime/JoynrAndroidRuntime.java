@@ -27,13 +27,16 @@ import io.joynr.runtime.JoynrRuntime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import joynr.types.ProviderQos;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Messenger;
+import android.util.Log;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Module;
 
 public class JoynrAndroidRuntime implements JoynrRuntime {
@@ -66,12 +69,8 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
         JoynrRuntime runtime;
         try {
             runtime = runtimeInitTask.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            uiLogger.logText(e.getMessage());
-            return null;
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        } catch (ExecutionException | InterruptedException e) {
+            Log.e("JAS", "joynr runtime not started", e);
             uiLogger.logText(e.getMessage());
             return null;
         }
@@ -126,7 +125,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
 
     @Override
     public <T> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
-        return new AndroidProxyBuilder<T>(runtimeInitTask, domain, interfaceClass, uiLogger);
+        return new AndroidProxyBuilder<T>(runtimeInitTask, Sets.newHashSet(domain), interfaceClass, uiLogger);
     }
 
     public void addLogListener(Messenger clientMessenger) {
@@ -141,6 +140,11 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     public void shutdown(boolean clear) {
         JoynrRuntime runtime = getJoynrRuntime();
         runtime.shutdown(clear);
+    }
+
+    @Override
+    public <T> ProxyBuilder<T> getProxyBuilder(Set<String> domains, Class<T> interfaceClass) {
+        return new AndroidProxyBuilder<T>(runtimeInitTask, domains, interfaceClass, uiLogger);
     }
 
 }

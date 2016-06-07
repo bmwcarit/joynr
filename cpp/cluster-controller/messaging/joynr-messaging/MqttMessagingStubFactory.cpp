@@ -47,4 +47,11 @@ std::shared_ptr<IMessaging> MqttMessagingStubFactory::create(
             messageSender, *mqttAddress, globalClusterControllerAddress);
 }
 
+void MqttMessagingStubFactory::registerOnMessagingStubClosedCallback(
+        std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                                   destinationAddress)> onMessagingStubClosedCallback)
+{
+    std::ignore = onMessagingStubClosedCallback;
+}
+
 } // namespace joynr

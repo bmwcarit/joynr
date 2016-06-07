@@ -176,11 +176,11 @@ public static void main(String[] args) throws IOException {
 
 The class ```DiscoveryQos``` configures how the search for a provider will be handled. It has the following members:
 
-* **discoveryTimeout**  Timeout for discovery process (milliseconds), afterwards triggers DiscoveryException
-* **cacheMaxAge** Defines the maximum allowed age of cached entries (milliseconds), only younger entries will be considered. If no suitable providers are found, then depending on the discoveryScope, a remote global lookup may be triggered.
+* **discoveryTimeoutMs**  Timeout for discovery process (milliseconds), afterwards triggers DiscoveryException
+* **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds), only younger entries will be considered. If no suitable providers are found, then depending on the discoveryScope, a remote global lookup may be triggered.
 * **arbitrationStrategy** The arbitration strategy (see below)
 * **customParameters** special parameters, that must match, e.g. keyword (see below)
-* **retryInterval** The time to wait between discovery retries after encountering a discovery error.
+* **retryIntervalMs** The time to wait between discovery retries after encountering a discovery error.
 * **discoveryScope** default: LOCAL_AND_GLOBAL (details see below)
 
 The **discoveryScope** defines, whether a suitable provider will be searched only in the local capabilities directory or also in the global one.
@@ -200,6 +200,8 @@ The enumeration ```ArbitrationStrategy``` defines special options to select a Pr
 * **FixedChannel** (also see FixedParticipantArbitrator)
 * **Keyword** Only entries that have a matching keyword will be considered
 * **HighestPriority** Entries will be considered according to priority
+* **Custom** Allows you to provide a `ArbitrationStrategyFunction` to allow custom
+selection of discovered entries
 
 The priority is set by the provider through the call ```providerQos.setPriority()```.
 
@@ -225,12 +227,12 @@ Example for the creation of a DiscoveryQos class object:
 ```java
 DiscoveryQos discoveryQos = new DiscoveryQos();
 
-discoveryQos.setDiscoveryTimeout(10000); // optional, default 30000
-discoveryQos.setCacheMaxAge(Long.MAX_VALUE); // optional, default 0
+discoveryQos.setDiscoveryTimeoutMs(10000); // optional, default 30000
+discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE); // optional, default 0
 discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority); // default HP
 discoveryQos.addCustomParameter(key, value); // optional, default none
 discoveryQos.setProviderMustSupportOnChange(true); // optional, default false
-discoveryQos.setRetryInterval(1000); // optional, default 1000
+discoveryQos.setRetryIntervalMs(1000); // optional, default 1000
 discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_AND_GLOBAL); // optional, default as stated
 ```
 
@@ -277,6 +279,27 @@ public void run() {
         // could not send message
     }
 }
+```
+
+It is also possible to obtain a proxy for targeting multiple providers. You can either do
+this by specifying a set of domains, by providing a custom `ArbitrationStrategyFunction`
+(see The discovery quality of service above) or a combination of the two.
+When you create such a multi-proxy, a call to a method on that proxy will result in 'n'
+calls to the providers, where 'n' is the number of providers targeted.  
+It is only possible to send calls to multiple providers if the methods are fire-and-forget.
+Attempts to make calls to non-fire-and-forget methods from a multi-proxy will result in an
+exception being thrown.
+
+So, for example, if we change the code above to target two domains, we get:
+
+```java
+...
+	Set<String> domains = new HashSet<>();
+	domains.add(providerDomainOne);
+	domains.add(providerDomainTwo);
+	ProxyBuilder<<Interface>Proxy> proxyBuilder =
+		runtime.getProxyBuilder(domains, <Interface>Proxy.class);
+...
 ```
 
 ## Synchronous Remote procedure calls
@@ -607,14 +630,14 @@ public void run() {
     private String subscriptionId;
     ...
     try {
-        int minInterval;
-        long expiryDate;
-        int publicationTtl;
+        int minIntervalMs;
+        long expiryDateMs;
+        int publicationTtlMs;
         ...
-        // provide values for minInterval, expiryDate, publicationTtl here
+        // provide values for minIntervalMs, expiryDateMs, publicationTtlMs here
         ...
         OnChangeSubscriptionQos qos =
-            new OnChangeSubscriptionQos(minInterval, expiryDate, publicationTtl);
+            new OnChangeSubscriptionQos(minIntervalMs, expiryDateMs, publicationTtlMs);
         ...
         subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
             new <Broadcast>BroadcastAdapter() {
@@ -684,14 +707,14 @@ public void run() {
     private String subscriptionId;
     ...
     try {
-        int minInterval;
-        long expiryDate;
-        int publicationTtl;
+        int minIntervalMs;
+        long expiryDateMs;
+        int publicationTtlMs;
         ...
-        // provide values for minInterval, expiryDate, publicationTtl here
+        // provide values for minIntervalMs, expiryDateMs, publicationTtlMs here
         ...
         OnChangeSubscriptionQos qos =
-            new OnChangeSubscriptionQos(minInterval, expiryDate, publicationTtl);
+            new OnChangeSubscriptionQos(minIntervalMs, expiryDateMs, publicationTtlMs);
 
         <Broadcast>FilterParameters filter = new <Broadcast>FilterParameters();
         // foreach BroadcastFilterAttribute of that filter

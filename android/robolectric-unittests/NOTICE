@@ -38,6 +38,7 @@ This project has dependencies to:
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
+  Hamcrest library under New BSD License
   ICU4J under ICU License
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
@@ -60,6 +61,7 @@ This project has dependencies to:
   Jetty :: Websocket :: API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  JSON (JavaScript Object Notation) under provided without support or warranty
   JUnit under Common Public License Version 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0

@@ -21,9 +21,11 @@ package io.joynr.proxy;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
+import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.Sets;
 import com.google.inject.name.Named;
 
 import io.joynr.runtime.SystemServicesSettings;
@@ -53,8 +55,13 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 
     @Override
     public <T> ProxyBuilder<T> get(String domain, Class<T> interfaceClass) {
+        return get(Sets.newHashSet(domain), interfaceClass);
+    }
+
+    @Override
+    public <T> ProxyBuilder<T> get(Set<String> domains, Class<T> interfaceClass) {
         return new ProxyBuilderDefaultImpl<>(localDiscoveryAggregator,
-                domain,
+                domains,
                 interfaceClass,
                 proxyInvocationHandlerFactory,
                 messageRouter,

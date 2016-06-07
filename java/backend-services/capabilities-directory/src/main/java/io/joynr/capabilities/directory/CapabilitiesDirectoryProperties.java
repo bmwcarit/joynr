@@ -24,6 +24,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -45,14 +46,11 @@ public class CapabilitiesDirectoryProperties {
     private Properties getConfigProperties() {
 
         InputStream resourceStream;
+        URL resource = this.getClass().getClassLoader().getResource(CONFIG_FILE_NAME);
         try {
-            resourceStream = this.getClass().getClassLoader().getResource(CONFIG_FILE_NAME).openStream();
+            resourceStream = resource.openStream();
         } catch (IOException e) {
-            e.printStackTrace();
-            logger.error("The configuration file: {} could not be located", this.getClass()
-                                                                                .getClassLoader()
-                                                                                .getResource(CONFIG_FILE_NAME)
-                                                                                .toString());
+            logger.error("The configuration file could not be located" + resource.toString(), e);
             resourceStream = null;
         }
 

@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
+#include "JoynrTest.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/TypeUtil.h"
@@ -128,7 +129,7 @@ private:
 
 TEST_F(SystemServicesRoutingTest, routingProviderIsAvailable)
 {
-    EXPECT_NO_THROW(
+    JOYNR_EXPECT_NO_THROW(
         routingProxy = routingProxyBuilder
                 ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)

@@ -375,7 +375,6 @@ public class MonitoringServiceClientTest {
                 return true;
 
             } catch (URISyntaxException e) {
-                e.printStackTrace();
                 return false;
             }
         }
@@ -435,7 +434,6 @@ public class MonitoringServiceClientTest {
                 return true;
 
             } catch (URISyntaxException e) {
-                e.printStackTrace();
                 return false;
             }
         }

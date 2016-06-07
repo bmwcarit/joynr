@@ -151,9 +151,9 @@ public class MessagingServiceRestAdapter {
 
         } catch (WebApplicationException e) {
             throw e;
-        } catch (Throwable e) {
-            log.error("POST message to channel: {} error: {}", ccid, e.getMessage());
-            throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            log.debug("POST message to channel: {} error: {}", ccid, e.getMessage());
+            throw new WebApplicationException(e, Status.INTERNAL_SERVER_ERROR);
         }
 
     }

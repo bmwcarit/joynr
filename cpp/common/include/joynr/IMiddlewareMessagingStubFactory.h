@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #ifndef IMIDDLEWAREMESSAGINGSTUBFACTORY_H
 #define IMIDDLEWAREMESSAGINGSTUBFACTORY_H
 
+#include <functional>
 #include <memory>
 
 namespace joynr
@@ -41,6 +42,9 @@ public:
     virtual std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) = 0;
     virtual bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) = 0;
+    virtual void registerOnMessagingStubClosedCallback(std::function<void(
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)>
+                                                               onMessagingStubDisconnected) = 0;
 };
 
 } // namespace joynr

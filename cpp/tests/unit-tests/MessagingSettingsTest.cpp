@@ -66,6 +66,11 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_URL()));
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
+
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME()));
+    EXPECT_EQ(messagingSettings.getMqttKeepAliveTime().count(), MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME().count());
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()));
+    EXPECT_EQ(messagingSettings.getMqttReconnectSleepTime().count(), MessagingSettings::DEFAULT_MQTT_RECONNECT_SLEEP_TIME().count());
 }
 
 TEST_F(MessagingSettingsTest, overrideDefaultSettings) {

@@ -19,9 +19,12 @@ package io.joynr.proxy;
  * #L%
  */
 
+import static org.hamcrest.Matchers.contains;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.times;
 
 import java.lang.reflect.Method;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,6 +34,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Sets;
 
 import io.joynr.Async;
 import io.joynr.Sync;
@@ -51,7 +55,7 @@ import joynr.system.RoutingTypes.Address;
 import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
 
-public class ConnectorTests {
+public class ConnectorTest {
 
     @Mock
     private ReplyCallerDirectory replyCallerDirectory;
@@ -110,6 +114,7 @@ public class ConnectorTests {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void subscriptionMethodCallWithNoExpiryDate() throws JoynrIllegalStateException {
 
@@ -118,7 +123,8 @@ public class ConnectorTests {
         try {
             Future<String> future = new Future<String>();
             String subscriptionId = "subscriptionId";
-            PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(1000, 0, 1000);
+            PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
+            subscriptionQos.setPeriodMs(1000).setExpiryDateMs(0).setAlertAfterIntervalMs(1000);
             AttributeSubscriptionListener<GpsPosition> listener = new AttributeSubscriptionListener<GpsPosition>() {
                 @Override
                 public void onReceive(GpsPosition value) {
@@ -137,7 +143,7 @@ public class ConnectorTests {
             connector.executeSubscriptionMethod(attributeSubscription);
             Mockito.verify(subscriptionManager, times(1))
                    .registerAttributeSubscription(Mockito.eq(fromParticipantId),
-                                                  Mockito.eq(toParticipantId),
+                                                  (Set<String>) argThat(contains(toParticipantId)),
                                                   Mockito.eq(attributeSubscription));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
@@ -146,6 +152,7 @@ public class ConnectorTests {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void unsubscriptionMethodCall() throws JoynrIllegalStateException {
 
@@ -159,10 +166,11 @@ public class ConnectorTests {
                                                                                       String.class);
             UnsubscribeInvocation unsubscribeInvocation = new UnsubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(unsubscribeInvocation);
-            Mockito.verify(subscriptionManager, times(1)).unregisterSubscription(Mockito.eq(fromParticipantId),
-                                                                                 Mockito.eq(toParticipantId),
-                                                                                 Mockito.eq(subscriptionId),
-                                                                                 Mockito.any(MessagingQos.class));
+            Mockito.verify(subscriptionManager, times(1))
+                   .unregisterSubscription(Mockito.eq(fromParticipantId),
+                                           (Set<String>) argThat(contains(toParticipantId)),
+                                           Mockito.eq(subscriptionId),
+                                           Mockito.any(MessagingQos.class));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
             Assert.fail("Calling a subscription method with no expiry date throws an exception.");
@@ -171,7 +179,7 @@ public class ConnectorTests {
 
     private ConnectorInvocationHandler createConnector() {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
-        arbitrationResult.setParticipantId(toParticipantId);
+        arbitrationResult.setParticipantIds(Sets.newHashSet(toParticipantId));
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
                                                                                                            subscriptionManager);

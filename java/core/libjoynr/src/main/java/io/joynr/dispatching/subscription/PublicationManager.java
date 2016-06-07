@@ -20,8 +20,6 @@ package io.joynr.dispatching.subscription;
  */
 
 import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.pubsub.publication.BroadcastFilter;
 
 import java.io.IOException;
@@ -30,14 +28,11 @@ import java.util.List;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 public interface PublicationManager {
 
     /**
      * Adds SubscriptionRequest when the Provider is not yet registered and there is no RequestCaller as yet.
-     * 
+     *
      * @param fromParticipantId origin participant id
      * @param toParticipantId destination participant id
      * @param subscriptionRequest request to be added
@@ -48,7 +43,7 @@ public interface PublicationManager {
 
     /**
      * Stops the sending of publications
-     * 
+     *
      * @param subscriptionId id of subscription ot be stopped
      */
     void stopPublication(final String subscriptionId);
@@ -63,11 +58,7 @@ public interface PublicationManager {
     void broadcastOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values);
 
     void sendSubscriptionPublication(SubscriptionPublication publication, PublicationInformation information)
-                                                                                                             throws JoynrSendBufferFullException,
-                                                                                                             JoynrMessageNotSentException,
-                                                                                                             JsonGenerationException,
-                                                                                                             JsonMappingException,
-                                                                                                             IOException;
+                                                                                                             throws IOException;
 
     void shutdown();
 

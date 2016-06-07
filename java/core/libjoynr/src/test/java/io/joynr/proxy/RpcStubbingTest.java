@@ -43,6 +43,7 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -146,11 +147,13 @@ public class RpcStubbingTest {
     // private String interfaceName;
     private String fromParticipantId;
     private String toParticipantId;
+    private final MessagingQos messagingQos = new MessagingQos(DEFAULT_TTL);
 
     private Injector injector;
 
     private JoynrMessagingConnectorInvocationHandler connector;
 
+    @SuppressWarnings("unchecked")
     @Before
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF", justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
@@ -196,7 +199,7 @@ public class RpcStubbingTest {
                                                  eq(toParticipantId),
                                                  any(Request.class),
                                                  any(SynchronizedReplyCaller.class),
-                                                 eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
+                                                 eq(messagingQos))).thenAnswer(new Answer<Reply>() {
 
             @Override
             public Reply answer(InvocationOnMock invocation) throws Throwable {
@@ -227,14 +230,16 @@ public class RpcStubbingTest {
             }
         });
 
-        MessagingQos qosSettings = new MessagingQos(DEFAULT_TTL);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
                                                                                                            subscriptionManager);
-        connector = joynrMessagingConnectorFactory.create(fromParticipantId, toParticipantId, qosSettings);
+        connector = joynrMessagingConnectorFactory.create(fromParticipantId,
+                                                          Sets.newHashSet(toParticipantId),
+                                                          messagingQos);
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testWithoutArguments() throws IOException, JoynrRuntimeException, SecurityException,
                                       InstantiationException, IllegalAccessException, NoSuchMethodException,
@@ -251,13 +256,14 @@ public class RpcStubbingTest {
                                                     eq(toParticipantId),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(DEFAULT_TTL));
+                                                    eq(messagingQos));
 
         verify(testMock).noParamsNoReturnValue();
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testWithArguments() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
                                    InstantiationException, IllegalAccessException, NoSuchMethodException {
@@ -276,7 +282,7 @@ public class RpcStubbingTest {
                                                     eq(toParticipantId),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(DEFAULT_TTL));
+                                                    eq(messagingQos));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(2, requestCaptor.getValue().getParamDatatypes().length);
@@ -285,6 +291,7 @@ public class RpcStubbingTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testWithReturn() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
                                 InstantiationException, IllegalAccessException, NoSuchMethodException {
@@ -297,7 +304,7 @@ public class RpcStubbingTest {
                                                     eq(toParticipantId),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(DEFAULT_TTL));
+                                                    eq(messagingQos));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);
@@ -305,6 +312,7 @@ public class RpcStubbingTest {
         assertEquals(gpsValue, response);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testWithListReturn() throws IOException, JoynrRuntimeException, ApplicationException,
                                     SecurityException, InstantiationException, IllegalAccessException,
@@ -318,7 +326,7 @@ public class RpcStubbingTest {
                                                     eq(toParticipantId),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(DEFAULT_TTL));
+                                                    eq(messagingQos));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);

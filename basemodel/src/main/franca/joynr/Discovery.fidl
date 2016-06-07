@@ -48,7 +48,7 @@ interface Discovery {
     method lookup {
         in {
 			<** @description: the domain to search for provider **>
-			String domain
+			String[] domains
 			<** @description: the interface the provider must implement **>
 			String interfaceName
 			<** @description: the QoS used for the lookup **>

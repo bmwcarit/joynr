@@ -34,9 +34,9 @@ public interface DiscoveryEntryStore {
 
     public abstract void remove(Collection<String> participantIds);
 
-    public abstract Collection<DiscoveryEntry> lookup(String domain, String interfaceName, long cacheMaxAge);
+    public abstract Collection<DiscoveryEntry> lookup(String[] domain, String interfaceName, long cacheMaxAge);
 
-    public abstract Collection<DiscoveryEntry> lookup(String domain, String interfaceName);
+    public abstract Collection<DiscoveryEntry> lookup(String[] domain, String interfaceName);
 
     public abstract DiscoveryEntry lookup(String participantId, long cacheMaxAge);
 

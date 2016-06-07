@@ -41,11 +41,11 @@ public:
             const std::vector<types::GlobalDiscoveryEntry>& capabilitiesInformationList) = 0;
     virtual void remove(const std::string& participantId) = 0;
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
-    virtual std::vector<types::GlobalDiscoveryEntry> lookup(const std::string& domain,
+    virtual std::vector<types::GlobalDiscoveryEntry> lookup(const std::vector<std::string>& domains,
                                                             const std::string& interfaceName,
                                                             const std::int64_t messagingTtl) = 0;
     virtual void lookup(
-            const std::string& domain,
+            const std::vector<std::string>& domains,
             const std::string& interfaceName,
             const std::int64_t messagingTtl,
             std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>

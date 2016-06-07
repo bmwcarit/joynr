@@ -27,8 +27,8 @@ namespace joynr
 
 INIT_LOGGER(MqttSender);
 
-MqttSender::MqttSender(const BrokerUrl& brokerUrl)
-        : mosquittoPublisher(brokerUrl), brokerUrl(brokerUrl), waitForReceiveQueueStarted(nullptr)
+MqttSender::MqttSender(const MessagingSettings& settings)
+        : mosquittoPublisher(settings), waitForReceiveQueueStarted(nullptr)
 {
     mosquittoPublisher.start();
 }

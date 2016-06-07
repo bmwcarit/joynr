@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 #include "joynr/ReplyCaller.h"
 #include "tests/utils/MockObjects.h"
+#include "utils/MockCallback.h"
 
 using ::testing::Property;
 using ::testing::Eq;

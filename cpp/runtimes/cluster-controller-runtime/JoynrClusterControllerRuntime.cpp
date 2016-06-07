@@ -245,6 +245,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     // setup CC WebSocket interface
     auto wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
+    wsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
+        messagingStubFactory->remove(destinationAddress);
+    });
     system::RoutingTypes::WebSocketAddress wsAddress =
             wsSettings.createClusterControllerMessagingAddress();
     wsCcMessagingSkeleton =
@@ -346,7 +350,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                            "The mqtt message sender supplied is NULL, creating the default "
                            "mqtt MessageSender");
 
-            mqttMessageSender = std::make_shared<MqttSender>(messagingSettings.getBrokerUrl());
+            mqttMessageSender = std::make_shared<MqttSender>(messagingSettings);
 
             mqttMessageSender->registerReceiveQueueStartedCallback(
                     [&](void) { mqttMessageReceiver->waitForReceiveQueueStarted(); });

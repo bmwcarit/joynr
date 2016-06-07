@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.18.0-SNAPSHOT</version>
+	<version>0.19.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -481,9 +481,9 @@
 				<version>${jetty.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.eclipse.paho</groupId>
-				<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-				<version>1.0.2</version>
+				<groupId>io.joynr.mqtt</groupId>
+				<artifactId>mqtt-client</artifactId>
+				<version>0.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject</groupId>
@@ -1171,7 +1171,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>cobertura-maven-plugin</artifactId>
-					<version>2.6</version>
+					<version>2.7</version>
 					<configuration>
 						<instrumentation>
 							<excludes>

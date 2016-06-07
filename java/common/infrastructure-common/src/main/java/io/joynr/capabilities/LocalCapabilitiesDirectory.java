@@ -62,12 +62,12 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
     /**
      * Searches for capabilities by domain and interface name.
      *
-     * @param domain The Domain for which the search is to be done.
+     * @param domains The Domains for which the search is to be done.
      * @param interfaceName The interface for which the search is to be done.
      * @param discoveryQos The discovery quality of service for the search.
      * @param capabilitiesCallback Callback to deliver the results asynchronously.
      */
-    void lookup(String domain,
+    void lookup(String[] domains,
                 String interfaceName,
                 DiscoveryQos discoveryQos,
                 CapabilitiesCallback capabilitiesCallback);

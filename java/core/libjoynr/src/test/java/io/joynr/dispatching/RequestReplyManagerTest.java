@@ -35,13 +35,13 @@ import io.joynr.provider.ProviderContainer;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -52,6 +52,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -64,6 +65,7 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
@@ -83,6 +85,7 @@ public class RequestReplyManagerTest {
     private ProviderDirectory providerDirectory;
     private String testSenderParticipantId;
     private String testOneWayRecipientParticipantId;
+    private Set<String> testOneWayRecipientParticipantIds;
     private String testMessageResponderParticipantId;
     private String testResponderUnregisteredParticipantId;
 
@@ -106,8 +109,8 @@ public class RequestReplyManagerTest {
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException, JsonGenerationException, IOException {
-
         testOneWayRecipientParticipantId = "testOneWayRecipientParticipantId";
+        testOneWayRecipientParticipantIds = Sets.newHashSet(testOneWayRecipientParticipantId);
         testMessageResponderParticipantId = "testMessageResponderParticipantId";
         testSenderParticipantId = "testSenderParticipantId";
         testResponderUnregisteredParticipantId = "testResponderUnregisteredParticipantId";
@@ -177,9 +180,9 @@ public class RequestReplyManagerTest {
     @Test
     public void oneWayMessagesAreSentToTheCommunicationManager() throws Exception {
         requestReplyManager.sendOneWayRequest(testSenderParticipantId,
-                                              testOneWayRecipientParticipantId,
+                                              testOneWayRecipientParticipantIds,
                                               oneWay1,
-                                              TIME_TO_LIVE);
+                                              new MessagingQos(TIME_TO_LIVE));
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
         verify(messageRouterMock, times(1)).route(messageCapture.capture());
@@ -196,7 +199,7 @@ public class RequestReplyManagerTest {
         requestReplyManager.sendRequest(testSenderParticipantId,
                                         testMessageResponderParticipantId,
                                         request1,
-                                        TIME_TO_LIVE);
+                                        new MessagingQos(TIME_TO_LIVE));
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
         verify(messageRouterMock, times(1)).route(messageCapture.capture());
@@ -307,24 +310,4 @@ public class RequestReplyManagerTest {
         oneWayRecipient.assertAllPayloadsReceived(TIME_TO_LIVE);
     }
 
-    @Test
-    @Ignore
-    public void requestReplyRoundtrip() throws JoynrMessageNotSentException, JoynrSendBufferFullException,
-                                       JsonGenerationException, JsonMappingException, IOException {
-        /*
-         * This test is not a unit test, but an integration test. We already have such integration tests, so this test is obsolete
-        TestRequestCaller testResponder = new TestRequestCaller(1);
-        requestCallerDirectory.addCaller(testMessageResponderParticipantId, testResponder);
-        ReplyCaller replyCaller = mock(ReplyCaller.class);
-        requestReplyManager.addReplyCaller(request1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
-
-        requestReplyManager.sendRequest(testSenderParticipantId,
-                                        testMessageResponderParticipantId,
-                                        request1,
-                                        TIME_TO_LIVE);
-
-        testResponder.assertAllPayloadsReceived(20);
-        assertEquals(2, messageSenderReceiverMock.getSentMessages().size());
-         */
-    }
 }

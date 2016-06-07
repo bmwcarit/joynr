@@ -194,7 +194,7 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
                 mockDiscovery,
                 lookup(
                     A<std::vector<joynr::types::DiscoveryEntry>&>(),
-                    A<const std::string&>(),
+                    A<const std::vector<std::string>&>(),
                     A<const std::string&>(),
                     A<const joynr::types::DiscoveryQos&>()
                 )

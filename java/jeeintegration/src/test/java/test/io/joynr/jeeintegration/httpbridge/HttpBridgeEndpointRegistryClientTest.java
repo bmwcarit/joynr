@@ -22,9 +22,18 @@ package test.io.joynr.jeeintegration.httpbridge;
  * #L%
  */
 
-import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
@@ -38,13 +47,11 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient;
+import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient.EndpointRegistryUriHolder;
 
 /**
  * Unit tests for the {@link HttpBridgeEndpointRegistryClient}.
@@ -61,7 +68,8 @@ public class HttpBridgeEndpointRegistryClientTest {
         when(httpClient.execute(any())).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(201);
-        String brokerUri = "http://localhost";
+        String endpointRegistryUri = "http://localhost";
+        EndpointRegistryUriHolder endpointRegistryUriHolder = new EndpointRegistryUriHolder(endpointRegistryUri);
         ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
         when(scheduledExecutorService.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenAnswer(new Answer<Object>() {
                                                                                                          @Override
@@ -74,7 +82,7 @@ public class HttpBridgeEndpointRegistryClientTest {
                                                                                                      });
 
         HttpBridgeEndpointRegistryClient subject = new HttpBridgeEndpointRegistryClient(httpClient,
-                                                                                        brokerUri,
+                                                                                        endpointRegistryUriHolder,
                                                                                         scheduledExecutorService);
 
         subject.register("http://endpoint:8080", "channel-id-1");
@@ -83,7 +91,7 @@ public class HttpBridgeEndpointRegistryClientTest {
         Mockito.verify(httpClient).execute(captor.capture());
         HttpPost httpPost = captor.getValue();
         assertNotNull(httpPost);
-        assertEquals(brokerUri, httpPost.getURI().toString());
+        assertEquals(endpointRegistryUri, httpPost.getURI().toString());
         assertNotNull(httpPost.getEntity());
         assertTrue(httpPost.getEntity() instanceof StringEntity);
         ObjectMapper objectMapper = new ObjectMapper();

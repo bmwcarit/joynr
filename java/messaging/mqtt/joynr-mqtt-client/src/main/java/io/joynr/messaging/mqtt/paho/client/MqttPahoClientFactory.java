@@ -19,6 +19,8 @@ package io.joynr.messaging.mqtt.paho.client;
  * #L%
  */
 
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
@@ -32,6 +34,7 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
 @Singleton
@@ -41,12 +44,15 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private MqttAddress ownAddress;
     private JoynrMqttClient mqttClient = null;
     private int reconnectSleepMs;
+    private ScheduledExecutorService scheduledExecutorService;
 
     @Inject
     public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
-                                 @Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs) {
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs,
+                                 @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService) {
         this.ownAddress = ownAddress;
         this.reconnectSleepMs = reconnectSleepMs;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @Override
@@ -65,7 +71,8 @@ public class MqttPahoClientFactory implements MqttClientFactory {
 
             MqttClient mqttClient = new MqttClient(ownAddress.getBrokerUri(),
                                                    ownAddress.getTopic(),
-                                                   new MemoryPersistence());
+                                                   new MemoryPersistence(),
+                                                   scheduledExecutorService);
             pahoClient = new MqttPahoClient(mqttClient, reconnectSleepMs);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);

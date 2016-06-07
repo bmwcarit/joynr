@@ -40,6 +40,7 @@ import joynr.JoynrMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
 import static java.lang.String.format;
 
 /**
@@ -63,11 +64,14 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
 
     private final HttpBridgeRegistryClient httpBridgeRegistryClient;
 
+    private boolean httpBridgeEnabled;
+
     @Inject
     public JeeServletMessageReceiver(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot,
                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath,
-                                     HttpBridgeRegistryClient httpBridgeRegistryClient) {
+                                     HttpBridgeRegistryClient httpBridgeRegistryClient,
+                                     @Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String httpBridgeEnabled) {
         if (LOG.isDebugEnabled()) {
             LOG.debug(format("Initialising with:%n\tchannelId: %s%n\tcontextRoot: %s%n\thostPath: %s%n\thttpBridgeRegistryClient: %s",
                              channelId,
@@ -79,6 +83,7 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
         this.hostPath = hostPath;
         this.contextRoot = contextRoot;
         this.httpBridgeRegistryClient = httpBridgeRegistryClient;
+        this.httpBridgeEnabled = Boolean.valueOf(httpBridgeEnabled);
     }
 
     @Override
@@ -175,14 +180,20 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
                 LOG.error(message, illegalArgumentException);
                 throw illegalArgumentException;
             }
-            String endpointUrl = hostPath + contextRoot + "/channels/" + channelId + "/";
-            CompletionStage<Void> registrationResult = httpBridgeRegistryClient.register(endpointUrl, channelId);
-            registrationResult.thenAccept((v) -> {
+            if (httpBridgeEnabled) {
+                LOG.debug("HTTP Bridge enabled - registering channel with endpoint registry.");
+                String endpointUrl = hostPath + contextRoot + "/channels/" + channelId + "/";
+                CompletionStage<Void> registrationResult = httpBridgeRegistryClient.register(endpointUrl, channelId);
+                registrationResult.thenAccept((v) -> {
+                    registered = true;
+                }).exceptionally((t) -> {
+                    LOG.error("Unable to register channel URL.", t);
+                    return null;
+                });
+            } else {
+                LOG.debug("HTTP Bridge disabled.");
                 registered = true;
-            }).exceptionally((t) -> {
-                LOG.error("Unable to register channel URL.", t);
-                return null;
-            });
+            }
         }
     }
 }

@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.18.0-SNAPSHOT</version>
+		<version>0.19.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -524,6 +524,9 @@
 										<exclude>joynr/security/PlatformSecurityManager.js</exclude>
 										<exclude>joynr/system/LoggingManager.js</exclude>
 									</excludes>
+								</resource>
+								<resource>
+									<directory>${basedir}/wiki/npm</directory>
 								</resource>
 							</resources>
 						</configuration>

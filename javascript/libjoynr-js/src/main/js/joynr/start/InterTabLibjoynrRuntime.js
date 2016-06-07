@@ -450,12 +450,12 @@ define(
                             var TTL_30DAYS_IN_MS = 30*24*60*60*1000;
                             discovery.setSkeleton(new InProcessSkeleton({
                                 lookup : function lookup(
-                                        domain,
+                                        domains,
                                         interfaceName,
                                         discoveryQos) {
                                     return getDiscoveryProxy(discoveryQos.discoveryTimeoutMs).then(function(newDiscoveryProxy) {
                                         return newDiscoveryProxy.lookup({
-                                            domain : domain,
+                                            domains : domains,
                                             interfaceName : interfaceName,
                                             discoveryQos : discoveryQos
                                         }).then(function(opArgs){

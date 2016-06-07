@@ -39,6 +39,7 @@ import org.mockito.stubbing.Answer;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
+import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
@@ -65,7 +66,11 @@ public class JeeServletMessageReceiverTest {
 
     @Before
     public void setup() {
-        subject = new JeeServletMessageReceiver(channelId, contextRoot, hostPath, httpBridgeRegistryClient);
+        subject = new JeeServletMessageReceiver(channelId,
+                                                contextRoot,
+                                                hostPath,
+                                                httpBridgeRegistryClient,
+                                                TRUE.toString());
     }
 
     @Test
@@ -137,10 +142,12 @@ public class JeeServletMessageReceiverTest {
         verify(messageArrivedListener).error(message, error);
     }
 
+    @SuppressWarnings("unchecked")
     private void start() {
         CompletionStage<Void> completionStage = mock(CompletionStage.class);
         when(httpBridgeRegistryClient.register(anyString(), anyString())).thenReturn(completionStage);
         when(completionStage.thenAccept(any(Consumer.class))).thenAnswer(new Answer<CompletionStage<Void>>() {
+            @SuppressWarnings("rawtypes")
             @Override
             public CompletionStage<Void> answer(InvocationOnMock invocationOnMock) throws Throwable {
                 ((Consumer) invocationOnMock.getArguments()[0]).accept(null);

@@ -64,7 +64,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String domain, String interfaceName, joynr.types.DiscoveryQos discoveryQos) {
+    public Promise<Lookup1Deferred> lookup(String[] domains, String interfaceName, joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
@@ -82,10 +82,10 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
             }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
-        lookup(domain, interfaceName, new DiscoveryQos(30000,
-                                                       ArbitrationStrategy.NotSet,
-                                                       discoveryQos.getCacheMaxAge(),
-                                                       discoveryScope), callback);
+        lookup(domains, interfaceName, new DiscoveryQos(30000,
+                                                        ArbitrationStrategy.NotSet,
+                                                        discoveryQos.getCacheMaxAge(),
+                                                        discoveryScope), callback);
 
         return new Promise<Lookup1Deferred>(deferred);
     }
@@ -113,15 +113,17 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public void lookup(String domain,
+    public void lookup(String[] domains,
                        String interfaceName,
                        DiscoveryQos discoveryQos,
                        CapabilitiesCallback capabilitiesCallback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilities async");
         ArrayList<DiscoveryEntry> foundCapabilities = Lists.newArrayList();
-        for (DiscoveryEntry ce : registeredCapabilities) {
-            if (ce.getDomain().equals(domain) && ce.getInterfaceName().equals(interfaceName)) {
-                foundCapabilities.add(ce);
+        for (String domain : domains) {
+            for (DiscoveryEntry ce : registeredCapabilities) {
+                if (ce.getDomain().equals(domain) && ce.getInterfaceName().equals(interfaceName)) {
+                    foundCapabilities.add(ce);
+                }
             }
         }
         capabilitiesCallback.processCapabilitiesReceived(foundCapabilities);
