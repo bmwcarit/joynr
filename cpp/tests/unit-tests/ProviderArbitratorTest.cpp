@@ -88,7 +88,7 @@ public:
     }
 
     void TearDown(){
-        mockProviderArbitrator->removeArbitationListener();
+        mockProviderArbitrator->removeArbitrationListener();
         delete mockArbitrationListener;
         delete mockProviderArbitrator;
     }

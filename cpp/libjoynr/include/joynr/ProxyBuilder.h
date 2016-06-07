@@ -224,7 +224,7 @@ template <class T>
 ProxyBuilder<T>::~ProxyBuilder()
 {
     if (arbitrator != nullptr) {
-        arbitrator->removeArbitationListener();
+        arbitrator->removeArbitrationListener();
         // question: it is only safe to delete the arbitrator here, if the proxybuilder will not be
         // deleted
         // before all arbitrations are finished.

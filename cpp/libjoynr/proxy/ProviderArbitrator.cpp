@@ -143,7 +143,7 @@ void ProviderArbitrator::setArbitrationStatus(
     }
 }
 
-void ProviderArbitrator::removeArbitationListener()
+void ProviderArbitrator::removeArbitrationListener()
 {
     if (listener != nullptr) {
         this->listener = nullptr;
