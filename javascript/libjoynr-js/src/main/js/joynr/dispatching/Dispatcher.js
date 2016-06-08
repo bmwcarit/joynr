@@ -348,10 +348,6 @@ define(
                  *            settings.to participantId of the receiver
                  * @param {Number}
                  *            settings.expiryDate time-to-live
-                 * @param {MessagingQos}
-                 *            settings.messagingQos quality-of-service parameters such as time-to-live
-                 * @param {String}
-                 *            settings.replyChannelId channelId of receiver, as received in request
                  * @param {Reply}
                  *            reply
                  */
