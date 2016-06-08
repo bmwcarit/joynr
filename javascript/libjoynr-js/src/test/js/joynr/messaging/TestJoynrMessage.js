@@ -96,6 +96,37 @@ joynrTestRequire("joynr/messaging/TestJoynrMessage", [ "joynr/messaging/JoynrMes
             expect(joynrMessage.payload).toEqual(payload);
         });
 
+        it("allows setting custom headers", function() {
+            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            var headerKey = "headerKey";
+            var customHeaderKey = "custom-" + headerKey;
+            var customHeaders = {};
+            customHeaders[headerKey] = "customHeaderValue";
+
+            joynrMessage.setCustomHeaders(customHeaders);
+            expect(joynrMessage.header[customHeaderKey]).toEqual(customHeaders.headerKey);
+        });
+
+        it("allows getting custom headers", function() {
+            var retrievedCustomHeaders;
+            var headerKey = "headerKey";
+            var customHeaderKey = "custom-" + headerKey;
+            var headerValue = "headerValue";
+            var myCustomHeaders = {};
+            myCustomHeaders[headerKey] = "customHeaderValue";
+
+            var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            joynrMessage.setCustomHeaders(myCustomHeaders);
+            joynrMessage.setHeader(headerKey, headerValue);
+
+            retrievedCustomHeaders = joynrMessage.getCustomHeaders();
+
+            expect(retrievedCustomHeaders[headerKey]).toEqual(myCustomHeaders[headerKey]);
+            expect(retrievedCustomHeaders[customHeaderKey]).not.toBeDefined();
+            expect(joynrMessage.header[customHeaderKey]).toEqual(myCustomHeaders[headerKey]);
+            expect(joynrMessage.header[headerKey]).toEqual(headerValue);
+        });
+
         it("has a payload that can be set", function() {
             var joynrMessage = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
             var payload = "hello";
