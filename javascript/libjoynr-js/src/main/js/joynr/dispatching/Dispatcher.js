@@ -184,6 +184,10 @@ define(
                             var requestMessage =
                                     new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
                             requestMessage.payload = JSONSerializer.stringify(settings.request);
+                            if (settings.messagingQos.customHeaders) {
+                                requestMessage
+                                        .setCustomHeaders(settings.messagingQos.customHeaders);
+                            }
 
                             log.info("calling "
                                 + settings.request.methodName
@@ -220,7 +224,10 @@ define(
                                     new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY);
                             oneWayRequestMessage.payload =
                                     JSONSerializer.stringify(settings.request);
-
+                            if (settings.messagingQos.customHeaders) {
+                                oneWayRequestMessage
+                                        .setCustomHeaders(settings.messagingQos.customHeaders);
+                            }
                             log.info("calling "
                                 + settings.request.methodName
                                 + ". OneWayRequest: "
@@ -348,6 +355,8 @@ define(
                  *            settings.to participantId of the receiver
                  * @param {Number}
                  *            settings.expiryDate time-to-live
+                 * @param {Object}
+                 *            settings.customHeaders custom headers from request
                  * @param {Reply}
                  *            reply
                  */
@@ -365,6 +374,7 @@ define(
                     replyMessage.from = settings.from;
                     replyMessage.to = settings.to;
                     replyMessage.expiryDate = settings.expiryDate;
+                    replyMessage.setCustomHeaders(settings.customHeaders);
 
                     /*
                      * in case the reply contains an error, do not perform any special string replacement
@@ -441,7 +451,9 @@ define(
                                                     sendReply({
                                                         from : joynrMessage.to,
                                                         to : joynrMessage.from,
-                                                        expiryDate : joynrMessage.expiryDate
+                                                        expiryDate : joynrMessage.expiryDate,
+                                                        customHeaders : joynrMessage
+                                                                .getCustomHeaders()
                                                     }, reply);
                                                 });
                                     } catch (errorInRequest) {
