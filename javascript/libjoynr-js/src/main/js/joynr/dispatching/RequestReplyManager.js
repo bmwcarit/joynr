@@ -32,8 +32,7 @@ define(
             "joynr/util/LongTimer",
             "joynr/exceptions/MethodInvocationException",
             "joynr/exceptions/ProviderRuntimeException",
-            "joynr/system/LoggerFactory",
-            "joynr/types/TypeRegistrySingleton"
+            "joynr/system/LoggerFactory"
         ],
         function(
                 Promise,
@@ -46,9 +45,7 @@ define(
                 LongTimer,
                 MethodInvocationException,
                 ProviderRuntimeException,
-                LoggerFactory,
-                TypeRegistrySingleton) {
-                var typeRegistry = TypeRegistrySingleton.getInstance();
+                LoggerFactory) {
             /**
              * The RequestReplyManager is responsible maintaining a list of providers that wish to
              * receive incoming requests, and also a list of requestReplyIds which is used to match
