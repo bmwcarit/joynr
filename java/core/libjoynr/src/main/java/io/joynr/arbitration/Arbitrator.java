@@ -113,6 +113,8 @@ public class Arbitrator {
 
         localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
 
+            private Set<Version> discoveredVersions = new HashSet<>();
+
             @Override
             public void onFailure(JoynrRuntimeException error) {
                 Arbitrator.this.onError(error);
@@ -131,47 +133,57 @@ public class Arbitrator {
                     String discoveryErrorMessage = "All domains must be found. The following domain(s) was/were not found: " + missingDomains;
                     Arbitrator.this.onError(new DiscoveryException(discoveryErrorMessage));
                 } else {
-                    logger.debug("Lookup succeded. Got {}", Arrays.toString(discoveryEntries));
-                    Set<DiscoveryEntry> discoveryEntriesSet;
-                    // If onChange subscriptions are required ignore
-                    // providers that do not support them
-                    if (discoveryQos.getProviderMustSupportOnChange()) {
-                        discoveryEntriesSet = new HashSet<DiscoveryEntry>(discoveryEntries.length);
-                        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-                            ProviderQos providerQos = discoveryEntry.getQos();
-                            if (providerQos.getSupportsOnChangeSubscriptions()) {
-                                discoveryEntriesSet.add(discoveryEntry);
-                            }
-                        }
-                    } else {
-                        discoveryEntriesSet = Sets.newHashSet(discoveryEntries);
-                    }
-                    discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion, discoveryEntriesSet);
-                    if (discoveryEntriesSet.isEmpty()) {
-                        logger.debug(
-                                  format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
-                                                               interfaceName, interfaceVersion, Arrays.toString(discoveryEntries)));
-                    }
+                    logger.debug("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
+                    Set<DiscoveryEntry> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
                     Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
                             .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
 
                     logger.debug("Selected capabilities: {}", selectedCapabilities);
                     if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
-                        Set<String> participantIds = new HashSet<>();
-                        for (DiscoveryEntry selectedCapability : selectedCapabilities) {
-                            if (selectedCapability != null) {
-                                participantIds.add(selectedCapability.getParticipantId());
-                            }
-                        }
-                        logger.debug("Resulting participant IDs: {}", participantIds);
+                        Set<String> participantIds = getParticipantIds(selectedCapabilities);
                         arbitrationResult.setParticipantIds(participantIds);
                         arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
                         updateArbitrationResultAtListener();
                     } else {
-                        restartArbitrationIfNotExpired();
+                        restartArbitrationIfNotExpired(discoveredVersions);
                     }
                 }
+            }
+
+            private Set<String> getParticipantIds(Collection<DiscoveryEntry> selectedCapabilities) {
+                Set<String> participantIds = new HashSet<>();
+                for (DiscoveryEntry selectedCapability : selectedCapabilities) {
+                    if (selectedCapability != null) {
+                        participantIds.add(selectedCapability.getParticipantId());
+                    }
+                }
+                logger.debug("Resulting participant IDs: {}", participantIds);
+                return participantIds;
+            }
+
+            private Set<DiscoveryEntry> filterDiscoveryEntries(DiscoveryEntry[] discoveryEntries) {
+                Set<DiscoveryEntry> discoveryEntriesSet;
+                // If onChange subscriptions are required ignore
+                // providers that do not support them
+                if (discoveryQos.getProviderMustSupportOnChange()) {
+                    discoveryEntriesSet = new HashSet<DiscoveryEntry>(discoveryEntries.length);
+                    for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+                        ProviderQos providerQos = discoveryEntry.getQos();
+                        if (providerQos.getSupportsOnChangeSubscriptions()) {
+                            discoveryEntriesSet.add(discoveryEntry);
+                        }
+                    }
+                } else {
+                    discoveryEntriesSet = Sets.newHashSet(discoveryEntries);
+                }
+                discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion, discoveryEntriesSet, discoveredVersions);
+                if (discoveryEntriesSet.isEmpty()) {
+                    logger.debug(
+                              format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
+                                                           interfaceName, interfaceVersion, Arrays.toString(discoveryEntries)));
+                }
+                return discoveryEntriesSet;
             }
         }, domains.toArray(new String[domains.size()]), interfaceName,
                                         new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
@@ -225,9 +237,7 @@ public class Arbitrator {
     }
 
     public ArbitrationStatus getArbitrationStatus() {
-        synchronized (arbitrationStatus) {
-            return arbitrationStatus;
-        }
+        return arbitrationStatus;
     }
 
     protected boolean isArbitrationInTime() {
@@ -235,6 +245,10 @@ public class Arbitrator {
     }
 
     protected void restartArbitrationIfNotExpired() {
+        restartArbitrationIfNotExpired(null);
+    }
+
+    protected void restartArbitrationIfNotExpired(Set<Version> discoveredVersions) {
         if (isArbitrationInTime()) {
             logger.info("Restarting Arbitration");
             long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
@@ -247,13 +261,14 @@ public class Arbitrator {
                 Thread.currentThread().interrupt();
             }
         } else {
-            cancelArbitration();
+            arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
+            if (arbitrationListenerSemaphore.tryAcquire()) {
+                if (discoveredVersions != null && !discoveredVersions.isEmpty()) {
+                    arbitrationListener.setDiscoveredVersions(discoveredVersions);
+                }
+                arbitrationListener.notifyArbitrationStatusChanged(arbitrationStatus);
+            }
         }
-    }
-
-    protected void cancelArbitration() {
-        arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
-        notifyArbitrationStatusChanged();
     }
 
 }

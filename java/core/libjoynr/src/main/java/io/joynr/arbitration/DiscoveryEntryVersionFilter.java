@@ -52,10 +52,15 @@ public class DiscoveryEntryVersionFilter {
      * @param callerVersion the version of the caller. Must not be <code>null</code>.
      * @param discoveryEntries the discovery entries which are to be filtered by versions.
      * Must not be <code>null</code>.
+     * @param discoveredVersions a container into which the method will write all
+     * versions it comes across during the filtering. Mainly provided so that the
+     * iteration only occurs once. If <code>null</code>, then it is ignored.
      *
      * @return the filtered discovery entry set.
      */
-    public Set<DiscoveryEntry> filter(Version callerVersion, Set<DiscoveryEntry> discoveryEntries) {
+    public Set<DiscoveryEntry> filter(Version callerVersion,
+                                      Set<DiscoveryEntry> discoveryEntries,
+                                      Set<Version> discoveredVersions) {
         if (callerVersion == null || discoveryEntries == null) {
             throw new IllegalArgumentException(String.format("Neither callerVersion (%s) nor discoveryEntries (%s) can be null.",
                                                              callerVersion,
@@ -64,6 +69,9 @@ public class DiscoveryEntryVersionFilter {
         Iterator<DiscoveryEntry> iterator = discoveryEntries.iterator();
         while (iterator.hasNext()) {
             DiscoveryEntry discoveryEntry = iterator.next();
+            if (discoveredVersions != null) {
+                discoveredVersions.add(discoveryEntry.getProviderVersion());
+            }
             if (!versionCompatibilityChecker.check(callerVersion, discoveryEntry.getProviderVersion())) {
                 iterator.remove();
             }

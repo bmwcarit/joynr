@@ -19,6 +19,10 @@ package io.joynr.arbitration;
  * #L%
  */
 
+import java.util.Set;
+
+import joynr.types.Version;
+
 /**
  * Interface to receive arbitration results.
  * 
@@ -28,4 +32,6 @@ public interface ArbitrationCallback {
     void notifyArbitrationStatusChanged(ArbitrationStatus arbitrationStatus);
 
     void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult);
+
+    void setDiscoveredVersions(Set<Version> discoveredVersions);
 }

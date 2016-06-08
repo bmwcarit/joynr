@@ -20,7 +20,7 @@ package io.joynr.exceptions;
  */
 
 /**
- * Joynr exeption to report errors during discovery.
+ * Joynr exception to report errors during discovery.
  */
 public class DiscoveryException extends JoynrRuntimeException {
     private static final long serialVersionUID = -5333394188396893835L;

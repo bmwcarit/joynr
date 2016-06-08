@@ -20,6 +20,7 @@ package io.joynr.arbitration;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.eq;
@@ -61,7 +62,7 @@ public class DiscoveryEntryVersionFilterTest {
         Version callerVersion = new Version(0, 0);
         Set<DiscoveryEntry> discoveryEntries = new HashSet<>();
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries);
+        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, null);
 
         assertNotNull(result);
         assertEquals(discoveryEntries, result);
@@ -69,12 +70,12 @@ public class DiscoveryEntryVersionFilterTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCallerVersionNull() {
-        subject.filter(null, new HashSet<DiscoveryEntry>());
+        subject.filter(null, new HashSet<DiscoveryEntry>(), null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testDiscoveryEntriesNull() {
-        subject.filter(new Version(1, 1), null);
+        subject.filter(new Version(1, 1), null, null);
     }
 
     @Test
@@ -85,7 +86,7 @@ public class DiscoveryEntryVersionFilterTest {
         when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
         Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(discoveryEntry);
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries);
+        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, null);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -100,7 +101,7 @@ public class DiscoveryEntryVersionFilterTest {
         Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(discoveryEntry);
         when(versionCompatibilityChecker.check(eq(callerVersion), eq(providerVersion))).thenReturn(true);
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries);
+        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -120,11 +121,32 @@ public class DiscoveryEntryVersionFilterTest {
         when(versionCompatibilityChecker.check(callerVersion, incompatibleVersion)).thenReturn(false);
         Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(compatibleEntry, incompatibleEntry);
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries);
+        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(compatibleEntry, result.iterator().next());
     }
 
+    @Test
+    public void testFilteredOutVersionsCollected() {
+        Version callerVersion = new Version(1, 0);
+        DiscoveryEntry discoveryEntry = mock(DiscoveryEntry.class);
+        Version providerVersion = new Version(2, 0);
+        when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
+        DiscoveryEntry otherDiscoveryEntry = mock(DiscoveryEntry.class);
+        Version otherProviderVersion = new Version(4, 10);
+        when(otherDiscoveryEntry.getProviderVersion()).thenReturn(otherProviderVersion);
+        Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(discoveryEntry, otherDiscoveryEntry);
+
+        Set<Version> filteredOutVersions = new HashSet<>();
+
+        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, filteredOutVersions);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        assertFalse(filteredOutVersions.isEmpty());
+        assertEquals(2, filteredOutVersions.size());
+        assertTrue(filteredOutVersions.containsAll(Sets.newHashSet(providerVersion, otherProviderVersion)));
+    }
 }

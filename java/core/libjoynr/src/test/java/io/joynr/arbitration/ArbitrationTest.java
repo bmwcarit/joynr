@@ -23,6 +23,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,6 +45,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -112,7 +114,9 @@ public class ArbitrationTest {
             public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
                 return (Set<DiscoveryEntry>) invocation.getArguments()[1];
             }
-        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(), Mockito.<Set<DiscoveryEntry>> any());
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                    Mockito.<Set<DiscoveryEntry>> any(),
+                                                    Mockito.<Set<Version>> any());
     }
 
     @Test
@@ -577,7 +581,61 @@ public class ArbitrationTest {
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
 
-        verify(discoveryEntryVersionFilter).filter(interfaceVersion, new HashSet<DiscoveryEntry>(capabilitiesList));
+        verify(discoveryEntryVersionFilter).filter(interfaceVersion,
+                                                   new HashSet<DiscoveryEntry>(capabilitiesList),
+                                                   new HashSet<Version>());
     }
 
+    @Test
+    public void testIncompatibleVersionsReported() {
+        Version incompatibleVersion = new Version(100, 100);
+        final Collection<DiscoveryEntry> discoveryEntries = Lists.newArrayList(new DiscoveryEntry(incompatibleVersion,
+                                                                                            domain,
+                                                                                            interfaceName,
+                                                                                            "first-participant",
+                                                                                            new ProviderQos(),
+                                                                                            System.currentTimeMillis(),
+                                                                                            NO_EXPIRY,
+                                                                                            "public-key-1"));
+        ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
+        when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),
+                                                Mockito.<Collection<DiscoveryEntry>> any())).thenReturn(new HashSet<DiscoveryEntry>());
+        doAnswer(new Answer<Set<DiscoveryEntry>>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
+                Set<Version> filteredVersions = (Set<Version>) invocation.getArguments()[2];
+                Set<DiscoveryEntry> discoveryEntries = (Set<DiscoveryEntry>) invocation.getArguments()[1];
+                filteredVersions.add(discoveryEntries.iterator().next().getProviderVersion());
+                discoveryEntries.clear();
+                return new HashSet<>();
+            }
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                   Mockito.<Set<DiscoveryEntry>> any(),
+                                                   Mockito.<Set<Version>> any());
+        DiscoveryQos discoveryQos = new DiscoveryQos(10L, arbitrationStrategyFunction, 0L);
+        reset(localDiscoveryAggregator);
+        doAnswer(new Answer<Object>() {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                ((Callback<DiscoveryEntry[]>) invocation.getArguments()[0]).resolve((Object) discoveryEntries.toArray(new DiscoveryEntry[1]));
+                return null;
+            }
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntry[]>> any(),
+                                                 eq(new String[]{ domain }),
+                                                 eq(interfaceName),
+                                                 Mockito.<joynr.types.DiscoveryQos> any());
+
+        Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+                                                         interfaceName,
+                                                         interfaceVersion,
+                                                         discoveryQos,
+                                                         localDiscoveryAggregator);
+        arbitrator.setArbitrationListener(arbitrationCallback);
+        arbitrator.startArbitration();
+
+        verify(arbitrationCallback).setDiscoveredVersions(Sets.newHashSet(incompatibleVersion));
+    }
 }

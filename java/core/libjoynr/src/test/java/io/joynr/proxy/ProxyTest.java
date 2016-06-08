@@ -261,7 +261,9 @@ public class ProxyTest {
             public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
                 return (Set<DiscoveryEntry>) invocation.getArguments()[1];
             }
-        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(), Mockito.<Set<DiscoveryEntry>> any());
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                    Mockito.<Set<DiscoveryEntry>> any(),
+                                                    Mockito.<Set<Version>> any());
     }
 
     private <T> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {

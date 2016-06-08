@@ -19,6 +19,13 @@ package io.joynr.proxy;
  * #L%
  */
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.arbitration.ArbitrationCallback;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.ArbitrationStatus;
@@ -27,19 +34,14 @@ import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.NoCompatibleProviderFoundException;
+import io.joynr.exceptions.NoCompatibleProviderFoundException.VersionInformation;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.util.VersionUtil;
-
-import java.util.Set;
-import java.util.UUID;
-
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.Version;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private static final Logger logger = LoggerFactory.getLogger(ProxyBuilderDefaultImpl.class);
@@ -195,6 +197,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         // Arbitrator cannot return early
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
 
+            private Set<Version> discoveredVersions;
+
             @Override
             public void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
                 if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
@@ -205,7 +209,23 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
             @Override
             public void notifyArbitrationStatusChanged(ArbitrationStatus arbitrationStatus) {
-                //do nothing
+                if (arbitrationStatus == ArbitrationStatus.ArbitrationCanceledForever && discoveredVersions != null
+                        && !discoveredVersions.isEmpty()) {
+                    Set<VersionInformation> discoveredVersionStrings = new HashSet<>();
+                    for (Version discoveredVersion : discoveredVersions) {
+                        discoveredVersionStrings.add(new VersionInformation(discoveredVersion.getMajorVersion()
+                                                                                             .intValue(),
+                                                                            discoveredVersion.getMinorVersion()
+                                                                                             .intValue()));
+                    }
+                    proxyInvocationHandler.setThrowableForInvoke(new NoCompatibleProviderFoundException(interfaceName,
+                                                                                                        discoveredVersionStrings));
+                }
+            }
+
+            @Override
+            public void setDiscoveredVersions(Set<Version> discoveredVersions) {
+                this.discoveredVersions = new HashSet<>(discoveredVersions);
             }
         });
 
