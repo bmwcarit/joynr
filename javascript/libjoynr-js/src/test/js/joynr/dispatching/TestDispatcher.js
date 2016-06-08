@@ -64,7 +64,7 @@ joynrTestRequire(
                     "libjoynr-js.joynr.dispatching.Dispatcher",
                     function() {
 
-                        var dispatcher, requestReplyManager, subscriptionManager, publicationManager, clusterControllerMessagingStub, libjoynrMessageReceiver, subscriptionId =
+                        var dispatcher, requestReplyManager, subscriptionManager, publicationManager, clusterControllerMessagingStub, securityManager, subscriptionId =
                                 "mySubscriptionId", requestReplyId = "requestReplyId";
 
                         /**
@@ -87,16 +87,16 @@ joynrTestRequire(
                             clusterControllerMessagingStub =
                                     jasmine.createSpy("inProcessMessagingStub");
 
-                            libjoynrMessageReceiver =
+                            securityManager =
                                     jasmine.createSpyObj(
-                                            "inProcessMessagingReceiver",
-                                            [ "registerListener"
+                                            "SecurityManager",
+                                            [ "getCurrentProcessUserId"
                                             ]);
 
                             dispatcher =
                                     new Dispatcher(
                                             clusterControllerMessagingStub,
-                                            libjoynrMessageReceiver);
+                                            securityManager);
                             dispatcher.registerRequestReplyManager(requestReplyManager);
                             dispatcher.registerSubscriptionManager(subscriptionManager);
                             dispatcher.registerPublicationManager(publicationManager);
