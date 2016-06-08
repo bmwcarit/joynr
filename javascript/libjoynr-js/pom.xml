@@ -643,12 +643,13 @@
 				<executions>
 					<execution>
 						<id>npm-install</id>
-						<phase>generate-sources</phase>
+						<phase>generate-test-resources</phase>
 						<configuration>
 							<executable>npm</executable>
 							<arguments>
 								<argument>install</argument>
 							</arguments>
+							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
 						</configuration>
 						<goals>
 							<goal>exec</goal>
@@ -685,7 +686,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<karmaExecutable>${basedir}/node_modules/.bin/karma</karmaExecutable>
+					<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>
 					<skipKarma>false</skipKarma>
 					<karmaFailureIgnore>false</karmaFailureIgnore>
 				</configuration>
@@ -696,7 +697,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-				    <classesDirectory>${project.build.directory}/jar-classes</classesDirectory>
+					<classesDirectory>${project.build.directory}/jar-classes</classesDirectory>
 				</configuration>
 			</plugin>
 
