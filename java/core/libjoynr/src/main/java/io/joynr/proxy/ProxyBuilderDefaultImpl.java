@@ -29,12 +29,14 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.util.VersionUtil;
 
 import java.util.Set;
 import java.util.UUID;
 
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
+import joynr.types.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +53,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private boolean buildCalled;
     Class<T> myClass;
     private final String interfaceName;
+    private Version interfaceVersion;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     private MessageRouter messageRouter;
@@ -74,6 +77,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             logger.error("INTERFACE_NAME needs to be set in the interface class {}", interfaceClass);
             throw new IllegalStateException(e);
         }
+        interfaceVersion = VersionUtil.getVersionFromAnnotation(interfaceClass);
 
         myClass = interfaceClass;
         this.proxyParticipantId = UUID.randomUUID().toString();
@@ -81,7 +85,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.domains = domains;
         discoveryQos = new DiscoveryQos();
-        arbitrator = ArbitratorFactory.create(domains, interfaceName, discoveryQos, localDiscoveryAggregator);
+        arbitrator = ArbitratorFactory.create(domains,
+                                              interfaceName,
+                                              interfaceVersion,
+                                              discoveryQos,
+                                              localDiscoveryAggregator);
         messagingQos = new MessagingQos();
         buildCalled = false;
 
@@ -118,7 +126,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
         this.discoveryQos = discoveryQos;
         // TODO which interfaceName should be used here?
-        arbitrator = ArbitratorFactory.create(domains, interfaceName, discoveryQos, localDiscoveryAggregator);
+        arbitrator = ArbitratorFactory.create(domains,
+                                              interfaceName,
+                                              interfaceVersion,
+                                              discoveryQos,
+                                              localDiscoveryAggregator);
 
         return this;
     }

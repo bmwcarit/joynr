@@ -26,16 +26,19 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.UUID;
 
 import io.joynr.Async;
+import io.joynr.JoynrVersion;
 import io.joynr.Sync;
 import io.joynr.runtime.SystemServicesSettings;
 
@@ -62,6 +65,8 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 
 import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.ArbitratorFactory;
+import io.joynr.arbitration.DiscoveryEntryVersionFilter;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.ExpiryDate;
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -125,6 +130,9 @@ public class ProxyTest {
     @Mock
     private Callback<String> callback;
 
+    @Mock
+    private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
+
     private ProxyBuilderFactory proxyBuilderFactory;
 
     private enum ApplicationErrors {
@@ -148,6 +156,7 @@ public class ProxyTest {
         Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
     }
 
+    @JoynrVersion(major = 0, minor = 0)
     public interface TestInterface extends SyncTestInterface, AsyncTestInterface {
         public static final String INTERFACE_NAME = "TestInterface";
     }
@@ -242,6 +251,17 @@ public class ProxyTest {
 
         discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         messagingQos = new MessagingQos();
+
+        Field discoveryEntryVersionFilterField = ArbitratorFactory.class.getDeclaredField("discoveryEntryVersionFilter");
+        discoveryEntryVersionFilterField.setAccessible(true);
+        discoveryEntryVersionFilterField.set(ArbitratorFactory.class, discoveryEntryVersionFilter);
+
+        doAnswer(new Answer<Set<DiscoveryEntry>>() {
+            @Override
+            public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
+                return (Set<DiscoveryEntry>) invocation.getArguments()[1];
+            }
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(), Mockito.<Set<DiscoveryEntry>> any());
     }
 
     private <T> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {

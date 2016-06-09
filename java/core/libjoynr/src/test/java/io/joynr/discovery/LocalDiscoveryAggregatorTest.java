@@ -96,7 +96,7 @@ public class LocalDiscoveryAggregatorTest {
         localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyMock);
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        discoveryProviderEntry = new DiscoveryEntry(new Version(0, 0),
+        discoveryProviderEntry = new DiscoveryEntry(new Version(0, 1),
                                                     systemServicesDomain,
                                                     Discovery.INTERFACE_NAME,
                                                     discoveryProviderParticipantId,

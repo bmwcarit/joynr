@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,18 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import java.util.ArrayList;
+import static java.lang.String.format;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Sets;
 
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -37,6 +39,7 @@ import io.joynr.proxy.Callback;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 /**
  *
@@ -59,21 +62,29 @@ public class Arbitrator {
     private long arbitrationDeadline;
     private Set<String> domains;
     private String interfaceName;
+    private Version interfaceVersion;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
+    private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
 
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public Arbitrator(final Set<String> domains,
                       final String interfaceName,
+                      final Version interfaceVersion,
                       final DiscoveryQos discoveryQos,
                       DiscoveryAsync localDiscoveryAggregator,
                       long minimumArbitrationRetryDelay,
-                      ArbitrationStrategyFunction arbitrationStrategyFunction) {
+                      ArbitrationStrategyFunction arbitrationStrategyFunction,
+                      DiscoveryEntryVersionFilter discoveryEntryVersionFilter) {
+        // CHECKSTYLE:ON
         this.domains = domains;
         this.interfaceName = interfaceName;
+        this.interfaceVersion = interfaceVersion;
         MINIMUM_ARBITRATION_RETRY_DELAY = minimumArbitrationRetryDelay;
         this.discoveryQos = discoveryQos;
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         arbitrationDeadline = System.currentTimeMillis() + discoveryQos.getDiscoveryTimeoutMs();
+        this.discoveryEntryVersionFilter = discoveryEntryVersionFilter;
     }
 
     // TODO JOYN-911 make sure we are shutting down correctly onError
@@ -121,23 +132,29 @@ public class Arbitrator {
                     Arbitrator.this.onError(new DiscoveryException(discoveryErrorMessage));
                 } else {
                     logger.debug("Lookup succeded. Got {}", Arrays.toString(discoveryEntries));
-                    List<DiscoveryEntry> discoveryEntriesList;
+                    Set<DiscoveryEntry> discoveryEntriesSet;
                     // If onChange subscriptions are required ignore
                     // providers that do not support them
                     if (discoveryQos.getProviderMustSupportOnChange()) {
-                        discoveryEntriesList = new ArrayList<DiscoveryEntry>(discoveryEntries.length);
+                        discoveryEntriesSet = new HashSet<DiscoveryEntry>(discoveryEntries.length);
                         for (DiscoveryEntry discoveryEntry : discoveryEntries) {
                             ProviderQos providerQos = discoveryEntry.getQos();
                             if (providerQos.getSupportsOnChangeSubscriptions()) {
-                                discoveryEntriesList.add(discoveryEntry);
+                                discoveryEntriesSet.add(discoveryEntry);
                             }
                         }
                     } else {
-                        discoveryEntriesList = Arrays.asList(discoveryEntries);
+                        discoveryEntriesSet = Sets.newHashSet(discoveryEntries);
+                    }
+                    discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion, discoveryEntriesSet);
+                    if (discoveryEntriesSet.isEmpty()) {
+                        logger.debug(
+                                  format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
+                                                               interfaceName, interfaceVersion, Arrays.toString(discoveryEntries)));
                     }
 
                     Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
-                            .select(discoveryQos.getCustomParameters(), discoveryEntriesList);
+                            .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
 
                     logger.debug("Selected capabilities: {}", selectedCapabilities);
                     if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {

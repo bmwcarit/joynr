@@ -19,6 +19,8 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,13 +61,14 @@ import io.joynr.runtime.GlobalAddressProvider;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 import joynr.infrastructure.GlobalDomainAccessController;
+import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
-import joynr.types.Version;
 
 @Singleton
 public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory implements
@@ -145,7 +148,7 @@ TransportReadyListener {
 
         String defaultPublicKeyId = "";
 
-        this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
+        this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(getVersionFromAnnotation(GlobalCapabilitiesDirectoryProvider.class),
                                                                                    discoveryDirectoriesDomain,
                                                                                    GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                                                                    capabilitiesDirectoryParticipantId,
@@ -154,7 +157,7 @@ TransportReadyListener {
                                                                                    NO_EXPIRY,
                                                                                    defaultPublicKeyId,
                                                                                    capabiltitiesDirectoryAddress));
-        this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
+        this.globalDiscoveryEntryCache.add(CapabilityUtils.newGlobalDiscoveryEntry(getVersionFromAnnotation(GlobalDomainAccessControllerProvider.class),
                                                                                    discoveryDirectoriesDomain,
                                                                                    GlobalDomainAccessController.INTERFACE_NAME,
                                                                                    domainAccessControllerParticipantId,

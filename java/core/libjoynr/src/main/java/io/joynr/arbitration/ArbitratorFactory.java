@@ -27,12 +27,16 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.DiscoveryException;
 import joynr.system.DiscoveryAsync;
+import joynr.types.Version;
 
 public final class ArbitratorFactory {
 
     @Inject
     @Named(PROPERTY_ARBITRATION_MINIMUMRETRYDELAY)
     private static long minimumArbitrationRetryDelay;
+
+    @Inject
+    private static DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
 
     private ArbitratorFactory() {
 
@@ -45,15 +49,19 @@ public final class ArbitratorFactory {
      *            Set of domains of the provider.
      * @param interfaceName
      *            Provided interface.
+     * @param interfaceVersion
+     *            the Version of the interface being looked for.
      * @param discoveryQos
      *            Arbitration settings like arbitration strategy, timeout and strategy specific parameters.
      * @param localDiscoveryAggregator
      *            Source for capabilities lookup.
      * @return the created Arbitrator object
-     * @throws DiscoveryException if arbitration strategy is unknown
+     * @throws DiscoveryException
+     *             if arbitration strategy is unknown
      */
     public static Arbitrator create(final Set<String> domains,
                                     final String interfaceName,
+                                    final Version interfaceVersion,
                                     final DiscoveryQos discoveryQos,
                                     DiscoveryAsync localDiscoveryAggregator) throws DiscoveryException {
 
@@ -77,10 +85,12 @@ public final class ArbitratorFactory {
         }
         return new Arbitrator(domains,
                               interfaceName,
+                              interfaceVersion,
                               discoveryQos,
                               localDiscoveryAggregator,
                               minimumArbitrationRetryDelay,
-                              arbitrationStrategyFunction);
+                              arbitrationStrategyFunction,
+                              discoveryEntryVersionFilter);
     }
 
 }

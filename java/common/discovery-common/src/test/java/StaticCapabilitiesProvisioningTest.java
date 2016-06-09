@@ -43,6 +43,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 public class StaticCapabilitiesProvisioningTest {
 
@@ -74,7 +75,8 @@ public class StaticCapabilitiesProvisioningTest {
         Long expiryDateMs = 0L;
         String publicKeyId = "publicKeyId";
         Address address = new MqttAddress("brokerUri", "topic");
-        GlobalDiscoveryEntry entry1 = CapabilityUtils.newGlobalDiscoveryEntry("domain1",
+        GlobalDiscoveryEntry entry1 = CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
+                                                                              "domain1",
                                                                               "interfaceName1",
                                                                               participantId,
                                                                               qos,
@@ -83,7 +85,8 @@ public class StaticCapabilitiesProvisioningTest {
                                                                               publicKeyId,
                                                                               address);
 
-        GlobalDiscoveryEntry entry2 = CapabilityUtils.newGlobalDiscoveryEntry("domain2",
+        GlobalDiscoveryEntry entry2 = CapabilityUtils.newGlobalDiscoveryEntry(new Version(),
+                                                                              "domain2",
                                                                               "interfaceName2",
                                                                               participantId,
                                                                               qos,
