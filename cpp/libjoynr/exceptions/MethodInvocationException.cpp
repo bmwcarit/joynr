@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/exceptions/MethodInvocationException.h"
-#include "joynr/Variant.h"
 #include "joynr/types/Version.h"
 
 namespace joynr
@@ -52,7 +51,7 @@ MethodInvocationException::MethodInvocationException(const std::string& message,
 {
 }
 
-const std::string MethodInvocationException::getTypeName() const
+const std::string& MethodInvocationException::getTypeName() const
 {
     return MethodInvocationException::TYPE_NAME;
 }

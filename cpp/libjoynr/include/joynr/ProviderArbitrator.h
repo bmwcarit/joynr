@@ -19,18 +19,19 @@
 
 #ifndef PROVIDERARBITRATOR_H
 #define PROVIDERARBITRATOR_H
-#include "joynr/PrivateCopyAssign.h"
+#include <unordered_set>
+#include <string>
+#include <vector>
 
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/IArbitrationListener.h"
 #include "joynr/Logger.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/Version.h"
-
 #include "joynr/Semaphore.h"
-#include <string>
-#include <vector>
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -85,13 +86,10 @@ protected:
                        const joynr::types::Version& interfaceVersion,
                        joynr::system::IDiscoverySync& discoveryProxy,
                        const DiscoveryQos& discoveryQos);
-    /*
-     *  setArbitrationStatus uses the callback to notify the ProviderProxy about the arbitration
-     * results.
-     */
-    void updateArbitrationStatusParticipantIdAndAddress(
-            ArbitrationStatus::ArbitrationStatusType arbitrationStatus,
-            std::string participantId);
+
+    void notifyArbitrationListener(const std::string& participantId);
+
+    void notifyArbitrationListener(const exceptions::DiscoveryException& error);
 
     joynr::system::IDiscoverySync& discoveryProxy;
     DiscoveryQos discoveryQos;
@@ -99,11 +97,14 @@ protected:
     std::vector<std::string> domains;
     std::string interfaceName;
     joynr::types::Version interfaceVersion;
+    std::unordered_set<joynr::types::Version> discoveredIncompatibleVersions;
+    exceptions::DiscoveryException arbitrationError;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProviderArbitrator);
     void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
     void setParticipantId(std::string participantId);
+    void setArbitrationError(const exceptions::DiscoveryException& error);
     std::string participantId;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;

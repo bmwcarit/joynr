@@ -45,6 +45,8 @@
 #include "joynr/IMessaging.h"
 #include "joynr/IClientCache.h"
 #include "joynr/ReplyCaller.h"
+#include "joynr/ArbitrationStatus.h"
+#include "joynr/IArbitrationListener.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
@@ -997,6 +999,13 @@ public:
 
     MOCK_METHOD1(send, void (const std::string& message));
     MOCK_CONST_METHOD0(isConnected, bool ());
+};
+
+class MockArbitrationListener : public joynr::IArbitrationListener {
+public:
+    MOCK_METHOD1(setArbitrationStatus, void(joynr::ArbitrationStatus::ArbitrationStatusType arbitrationStatus));
+    MOCK_METHOD1(setParticipantId, void(const std::string& participantId));
+    MOCK_METHOD1(setArbitrationError, void(const joynr::exceptions::DiscoveryException& error));
 };
 
 #ifdef _MSC_VER

@@ -89,7 +89,7 @@ void JoynrException::setMessage(const std::string& message)
     this->message = message;
 }
 
-const std::string JoynrException::getTypeName() const
+const std::string& JoynrException::getTypeName() const
 {
     return JoynrException::TYPE_NAME;
 }
@@ -109,7 +109,7 @@ JoynrRuntimeException::JoynrRuntimeException(const std::string& message) noexcep
 {
 }
 
-const std::string JoynrRuntimeException::getTypeName() const
+const std::string& JoynrRuntimeException::getTypeName() const
 {
     return JoynrRuntimeException::TYPE_NAME;
 }
@@ -124,7 +124,7 @@ JoynrTimeOutException::JoynrTimeOutException(const std::string& message) noexcep
 {
 }
 
-const std::string JoynrTimeOutException::getTypeName() const
+const std::string& JoynrTimeOutException::getTypeName() const
 {
     return JoynrTimeOutException::TYPE_NAME;
 }
@@ -139,7 +139,7 @@ JoynrMessageNotSentException::JoynrMessageNotSentException(const std::string& me
 {
 }
 
-const std::string JoynrMessageNotSentException::getTypeName() const
+const std::string& JoynrMessageNotSentException::getTypeName() const
 {
     return JoynrMessageNotSentException::TYPE_NAME;
 }
@@ -179,7 +179,7 @@ void JoynrDelayMessageException::setDelayMs(const std::chrono::milliseconds& del
     this->delayMs = delayMs;
 }
 
-const std::string JoynrDelayMessageException::getTypeName() const
+const std::string& JoynrDelayMessageException::getTypeName() const
 {
     return JoynrDelayMessageException::TYPE_NAME;
 }
@@ -204,7 +204,7 @@ DiscoveryException::DiscoveryException(const std::string& message) noexcept
 {
 }
 
-const std::string DiscoveryException::getTypeName() const
+const std::string& DiscoveryException::getTypeName() const
 {
     return DiscoveryException::TYPE_NAME;
 }
@@ -219,7 +219,7 @@ ProviderRuntimeException::ProviderRuntimeException(const std::string& message) n
 {
 }
 
-const std::string ProviderRuntimeException::getTypeName() const
+const std::string& ProviderRuntimeException::getTypeName() const
 {
     return ProviderRuntimeException::TYPE_NAME;
 }
@@ -245,7 +245,7 @@ std::string PublicationMissedException::getSubscriptionId() const noexcept
     return subscriptionId;
 }
 
-const std::string PublicationMissedException::getTypeName() const
+const std::string& PublicationMissedException::getTypeName() const
 {
     return PublicationMissedException::TYPE_NAME;
 }
@@ -309,7 +309,7 @@ void ApplicationException::setErrorTypeName(const std::string& value) noexcept
     this->typeName = value;
 }
 
-const std::string ApplicationException::getTypeName() const
+const std::string& ApplicationException::getTypeName() const
 {
     return ApplicationException::TYPE_NAME;
 }

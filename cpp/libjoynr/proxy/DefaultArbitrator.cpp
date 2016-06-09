@@ -62,14 +62,18 @@ void DefaultArbitrator::receiveCapabilitiesLookupResults(
     if (discoveryEntries.size() == 0)
         return;
 
+    discoveredIncompatibleVersions.clear();
+
     // default arbitrator picks first entry with compatible version
     joynr::types::Version providerVersion;
     for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         providerVersion = discoveryEntry.getProviderVersion();
         if (providerVersion.getMajorVersion() == interfaceVersion.getMajorVersion() &&
             providerVersion.getMinorVersion() >= interfaceVersion.getMinorVersion()) {
-            updateArbitrationStatusParticipantIdAndAddress(
-                    ArbitrationStatus::ArbitrationSuccessful, discoveryEntry.getParticipantId());
+            notifyArbitrationListener(discoveryEntry.getParticipantId());
+            break;
+        } else {
+            discoveredIncompatibleVersions.insert(providerVersion);
         }
     }
 }

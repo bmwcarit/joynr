@@ -19,13 +19,10 @@
 #ifndef METHODINVOCATIONEXCEPTION_H
 #define METHODINVOCATIONEXCEPTION_H
 
-#include "joynr/JoynrCommonExport.h"
-
-#include <chrono>
-#include <exception>
 #include <string>
+
+#include "joynr/JoynrCommonExport.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/Variant.h"
 #include "joynr/types/Version.h"
 
 namespace joynr
@@ -55,7 +52,7 @@ public:
     explicit MethodInvocationException(const std::string& message) noexcept;
     explicit MethodInvocationException(const std::string& message,
                                        const Version& providerVersion) noexcept;
-    const std::string getTypeName() const override;
+    const std::string& getTypeName() const override;
     MethodInvocationException* clone() const override;
     /**
      * @brief The typeName used for serialization and logging.

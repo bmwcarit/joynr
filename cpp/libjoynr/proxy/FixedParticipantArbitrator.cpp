@@ -45,20 +45,16 @@ FixedParticipantArbitrator::FixedParticipantArbitrator(
 void FixedParticipantArbitrator::attemptArbitration()
 {
     joynr::types::DiscoveryEntry result;
+    discoveredIncompatibleVersions.clear();
     try {
         discoveryProxy.lookup(result, participantId);
         joynr::types::Version providerVersion = result.getProviderVersion();
         if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
             providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
-            throw joynr::exceptions::DiscoveryException(
-                    "Provider with participantId " + participantId + " version is not compatible." +
-                    std::to_string(providerVersion.getMajorVersion()) + "." +
-                    std::to_string(providerVersion.getMinorVersion()) + " wanted: " +
-                    std::to_string(interfaceVersion.getMajorVersion()) + "." +
-                    std::to_string(interfaceVersion.getMinorVersion()));
+            discoveredIncompatibleVersions.insert(providerVersion);
+        } else {
+            notifyArbitrationListener(participantId);
         }
-        updateArbitrationStatusParticipantIdAndAddress(
-                ArbitrationStatus::ArbitrationSuccessful, participantId);
     } catch (const exceptions::JoynrException& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to lookup provider (domain: {}, interface: {}) "
