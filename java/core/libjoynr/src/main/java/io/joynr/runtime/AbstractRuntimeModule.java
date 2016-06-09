@@ -91,6 +91,12 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        requestStaticInjection(CapabilityUtils.class,
+                               RpcUtils.class,
+                               ArbitratorFactory.class,
+                               JoynrDelayMessageException.class,
+                               JoynrAppenderManagerFactory.class);
+
         install(new JsonMessageSerializerModule());
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
                                           .build(ProxyInvocationHandlerFactory.class));
@@ -127,13 +133,10 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
 
-        requestStaticInjection(CapabilityUtils.class, RpcUtils.class, JoynrAppenderManagerFactory.class);
-
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
-        requestStaticInjection(ArbitratorFactory.class, JoynrDelayMessageException.class);
     }
 
     @Provides
