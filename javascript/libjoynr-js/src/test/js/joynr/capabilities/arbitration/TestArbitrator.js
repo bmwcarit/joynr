@@ -31,6 +31,8 @@ joynrTestRequire(
             "joynr/types/ArbitrationStrategyCollection",
             "joynr/types/DiscoveryQos",
             "joynr/types/DiscoveryScope",
+            "joynr/exceptions/DiscoveryException",
+            "joynr/exceptions/NoCompatibleProviderFoundException",
             "joynr/types/Version",
             "global/Promise",
             "Date"
@@ -44,6 +46,8 @@ joynrTestRequire(
                 ArbitrationStrategyCollection,
                 DiscoveryQosGen,
                 DiscoveryScope,
+                DiscoveryException,
+                NoCompatibleProviderFoundException,
                 Version,
                 Promise,
                 Date) {
@@ -367,6 +371,108 @@ joynrTestRequire(
                             });
                         });
 
+                        it("rejects with NoCompatibleProviderFoundException including a list of incompatible provider version of latest lookup", function() {
+                            var onFulfilledSpy, onRejectedSpy;
+                            var expectedMinimumMinorVersion = 2;
+                            var firstLookupResult = [
+                                discoveryEntryWithMajor47AndMinor0,
+                                discoveryEntryWithMajor47AndMinor1,
+                                discoveryEntryWithMajor47AndMinor2,
+                                discoveryEntryWithMajor47AndMinor3,
+                                discoveryEntryWithMajor48AndMinor2
+                            ];
+                            var secondLookupResult = [
+                                discoveryEntryWithMajor47AndMinor0,
+                                discoveryEntryWithMajor48AndMinor2
+                            ];
+
+                            // return discoveryEntries to check whether these are eventually
+                            // returned by the arbitrator
+                            capDiscoverySpy.lookup.andReturn(Promise.resolve(firstLookupResult));
+                            arbitrator = new Arbitrator(capDiscoverySpy);
+
+                            var discoveryQosWithShortTimers = new DiscoveryQos({
+                                discoveryTimeoutMs : 1000,
+                                discoveryRetryDelayMs : 600,
+                                arbitrationStrategy : ArbitrationStrategyCollection.Nothing,
+                                cacheMaxAgeMs : 0,
+                                discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+                                additionalParameters : {}
+                            });
+
+                            // spy on and instrument arbitrationStrategy
+                            spyOn(discoveryQosWithShortTimers, "arbitrationStrategy").andCallThrough();
+
+                            // call arbitrator
+                            onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            onRejectedSpy = jasmine.createSpy("onRejectedSpy");
+
+                            runs(function() {
+                                arbitrator.startArbitration({
+                                    domains : [domain],
+                                    interfaceName : interfaceName,
+                                    discoveryQos : discoveryQosWithShortTimers,
+                                    proxyVersion : new Version({ majorVersion: 49, minorVersion: expectedMinimumMinorVersion})
+                                }).then(onFulfilledSpy).catch(onRejectedSpy);
+
+                                increaseFakeTime(1);
+                            });
+
+                            // wait until immediate lookup is finished
+                            waitsFor(function() {
+                                return discoveryQosWithShortTimers.arbitrationStrategy.callCount === 1;
+                            }, "capDiscoverySpy.lookup call", 100);
+
+                            runs(function() {
+                                expect(capDiscoverySpy.lookup.callCount).toBe(1);
+                            });
+
+                            runs(function() {
+                                increaseFakeTime(discoveryQosWithShortTimers.discoveryRetryDelayMs - 2);
+                            });
+
+                            waitsFor(function() {
+                                return discoveryQosWithShortTimers.arbitrationStrategy.callCount === 1;
+                            }, "discoveryQosWithShortTimers.arbitrationStrategy.callCount call", 1000);
+
+                            runs(function() {
+                                capDiscoverySpy.lookup.andReturn(Promise.resolve(secondLookupResult));
+                                expect(capDiscoverySpy.lookup.callCount).toBe(1);
+                                increaseFakeTime(2);
+                            });
+
+                            // wait until 1st retry is finished, which returns different
+                            // discovery entries
+                            waitsFor(function() {
+                                return discoveryQosWithShortTimers.arbitrationStrategy.callCount === 2;
+                            }, "capDiscoverySpy.lookup call", 1000);
+
+                            runs(function() {
+                                expect(capDiscoverySpy.lookup.callCount).toBe(2);
+                                increaseFakeTime(1000);
+                            });
+
+                            // wait until arbitration expires, the incompatible versions found
+                            // during the 2nd lookup (= 1st retry) should be returned inside
+                            // a NoCompatibleProviderFoundException
+                            waitsFor(function() {
+                                return onRejectedSpy.callCount > 0;
+                            }, "until onRejected has been invoked", 5000);
+
+                            runs(function() {
+                                expect(onRejectedSpy).toHaveBeenCalled();
+                                expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                expect(onRejectedSpy.calls[0].args[0] instanceof NoCompatibleProviderFoundException).toBeTruthy();
+                                // discoverVersion should contain all not matching entries of only the last(!) lookup
+                                var discoveredVersions = onRejectedSpy.calls[0].args[0].discoveredVersions;
+                                expect(discoveredVersions).toContain(discoveryEntryWithMajor47AndMinor0.providerVersion);
+                                expect(discoveredVersions).not.toContain(discoveryEntryWithMajor47AndMinor1.providerVersion);
+                                expect(discoveredVersions).not.toContain(discoveryEntryWithMajor47AndMinor2.providerVersion);
+                                expect(discoveredVersions).not.toContain(discoveryEntryWithMajor47AndMinor3.providerVersion);
+                                expect(discoveredVersions).toContain(discoveryEntryWithMajor48AndMinor2.providerVersion);
+                            });
+                        });
+
                         it(
                                 "timeouts after the given discoveryTimeoutMs on empty results",
                                 function() {
@@ -399,10 +505,7 @@ joynrTestRequire(
                                     runs(function() {
                                         expect(onFulfilledSpy).not.toHaveBeenCalled();
                                         expect(onRejectedSpy).toHaveBeenCalled();
-                                        expect(
-                                                Object.prototype.toString
-                                                        .call(onRejectedSpy.mostRecentCall.args[0]) === "[object Error]")
-                                                .toBeTruthy();
+                                        expect(onRejectedSpy.calls[0].args[0] instanceof DiscoveryException).toBeTruthy();
                                     });
                                 });
 

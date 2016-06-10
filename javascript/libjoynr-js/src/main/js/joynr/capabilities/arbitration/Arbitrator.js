@@ -25,9 +25,11 @@ define(
             "global/Promise",
             "joynr/types/DiscoveryQos",
             "joynr/util/UtilInternal",
+            "joynr/exceptions/DiscoveryException",
+            "joynr/exceptions/NoCompatibleProviderFoundException",
             "joynr/util/LongTimer"
         ],
-        function(Promise, DiscoveryQos, Util, LongTimer) {
+        function(Promise, DiscoveryQos, Util, DiscoveryException, NoCompatibleProviderFoundException, LongTimer) {
             function discoverStaticCapabilities(
                     capabilities,
                     domains,
@@ -81,42 +83,59 @@ define(
                     discoveryScope : applicationDiscoveryQos.discoveryScope,
                     cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs
                 })).then(
-                        function(discoveredCaps) {
-                            // filter caps according to chosen arbitration strategy
-                            var arbitratedCaps =
-                                    applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
-                            var versionCompatibleArbitratedCaps = [];
-                            var i;
-                            // if deferred is still pending => discoveryTimeoutMs is not expired yet
-                            if (deferred.pending) {
-                                // if there are caps found
-                                for (i = 0; i < arbitratedCaps.length; i++) {
-                                    if (arbitratedCaps[i].providerVersion.majorVersion === proxyVersion.majorVersion &&
-                                        arbitratedCaps[i].providerVersion.minorVersion >= proxyVersion.minorVersion) {
-                                        versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
+                    function(discoveredCaps) {
+                        // filter caps according to chosen arbitration strategy
+                        var arbitratedCaps =
+                                applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
+                        var versionCompatibleArbitratedCaps = [];
+                        var i;
+                        // if deferred is still pending => discoveryTimeoutMs is not expired yet
+                        if (deferred.pending) {
+                            // if there are caps found
+                            deferred.incompatibleVersionsFound = [];
+                            var providerVersion;
+
+                            var addtoListIfNotExisting = function(list, providerVersion) {
+                                var j;
+                                for (j = 0; j < list.length; ++j) {
+                                    if (list[j].majorVersion === providerVersion.majorVersion &&
+                                        list[j].minorVersion === providerVersion.minorVersion) {
+                                        return;
                                     }
                                 }
-                                if (versionCompatibleArbitratedCaps.length > 0) {
-                                    // report the discovered & arbitrated caps
-                                    deferred.pending = false;
-                                    deferred.resolve(versionCompatibleArbitratedCaps);
+                                list.push(providerVersion);
+                            };
+
+                            for (i = 0; i < arbitratedCaps.length; i++) {
+                                providerVersion = arbitratedCaps[i].providerVersion;
+                                if (providerVersion.majorVersion === proxyVersion.majorVersion &&
+                                    providerVersion.minorVersion >= proxyVersion.minorVersion) {
+                                    versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
                                 } else {
-                                    // retry discovery in discoveryRetryDelayMs ms
-                                    LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
-                                        discoverCapabilities(
-                                                capabilityDiscoveryStub,
-                                                domains,
-                                                interfaceName,
-                                                applicationDiscoveryQos,
-                                                proxyVersion,
-                                                deferred);
-                                    }, applicationDiscoveryQos.discoveryRetryDelayMs);
+                                    addtoListIfNotExisting(deferred.incompatibleVersionsFound, providerVersion);
                                 }
                             }
-                        }).catch(function(error) {
-                            deferred.pending = false;
-                            deferred.reject(error);
-                        });
+                            if (versionCompatibleArbitratedCaps.length > 0) {
+                                // report the discovered & arbitrated caps
+                                deferred.pending = false;
+                                deferred.resolve(versionCompatibleArbitratedCaps);
+                            } else {
+                                // retry discovery in discoveryRetryDelayMs ms
+                                LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
+                                    discoverCapabilities(
+                                            capabilityDiscoveryStub,
+                                            domains,
+                                            interfaceName,
+                                            applicationDiscoveryQos,
+                                            proxyVersion,
+                                            deferred);
+                                }, applicationDiscoveryQos.discoveryRetryDelayMs);
+                            }
+                        }
+                }).catch(function(error) {
+                    deferred.pending = false;
+                    deferred.reject(error);
+                });
             }
 
             /**
@@ -158,6 +177,7 @@ define(
                                         var deferred = {
                                             resolve : resolve,
                                             reject : reject,
+                                            incompatibleVersionsFound : [],
                                             pending : true
                                         };
                                         if (settings.staticArbitration && staticCapabilities) {
@@ -174,15 +194,31 @@ define(
                                                             .setTimeout(
                                                                     function discoveryCapabilitiesTimeOut() {
                                                                         deferred.pending = false;
-                                                                        reject(new Error(
+
+                                                                        if (deferred.incompatibleVersionsFound.length > 0) {
+                                                                            var message =
+                                                                                "no compatible provider found within discovery timeout for domains \""
+                                                                                    + JSON.stringify(settings.domains)
+                                                                                    + "\", interface \""
+                                                                                    + settings.interfaceName
+                                                                                    + "\" with discoveryQos \""
+                                                                                    + JSON.stringify(settings.discoveryQos)
+                                                                                    + "\"";
+                                                                            reject(new NoCompatibleProviderFoundException({
+                                                                                detailMessage: message,
+                                                                                discoveredVersions: deferred.incompatibleVersionsFound,
+                                                                                interfaceName: settings.interfaceName
+                                                                            }));
+                                                                        } else {
+                                                                            reject(new DiscoveryException({ detailMessage:
                                                                                 "no provider found within discovery timeout for domains \""
                                                                                     + JSON.stringify(settings.domains)
                                                                                     + "\", interface \""
                                                                                     + settings.interfaceName
                                                                                     + "\" with discoveryQos \""
-                                                                                    + JSON
-                                                                                            .stringify(settings.discoveryQos)
-                                                                                    + "\""));
+                                                                                    + JSON.stringify(settings.discoveryQos)
+                                                                                    + "\"" }));
+                                                                        }
                                                                     },
                                                                     settings.discoveryQos.discoveryTimeoutMs);
                                             var resolveWrapper = function(args) {
