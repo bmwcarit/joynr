@@ -23,7 +23,9 @@ import static java.lang.String.format;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
@@ -113,7 +115,7 @@ public class Arbitrator {
 
         localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
 
-            private Set<Version> discoveredVersions = new HashSet<>();
+            private Map<String, Set<Version>> discoveredVersions = new HashMap<>();
 
             @Override
             public void onFailure(JoynrRuntimeException error) {
@@ -248,7 +250,7 @@ public class Arbitrator {
         restartArbitrationIfNotExpired(null);
     }
 
-    protected void restartArbitrationIfNotExpired(Set<Version> discoveredVersions) {
+    protected void restartArbitrationIfNotExpired(Map<String, Set<Version>> discoveredVersions) {
         if (isArbitrationInTime()) {
             logger.info("Restarting Arbitration");
             long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);

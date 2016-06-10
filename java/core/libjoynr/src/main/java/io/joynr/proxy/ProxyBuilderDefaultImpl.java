@@ -19,7 +19,8 @@ package io.joynr.proxy;
  * #L%
  */
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,6 +35,8 @@ import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
@@ -196,7 +199,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         // Arbitrator cannot return early
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
 
-            private Set<Version> discoveredVersions;
+            private Map<String, Set<Version>> discoveredVersions;
 
             @Override
             public void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
@@ -210,14 +213,39 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             public void notifyArbitrationStatusChanged(ArbitrationStatus arbitrationStatus) {
                 if (arbitrationStatus == ArbitrationStatus.ArbitrationCanceledForever && discoveredVersions != null
                         && !discoveredVersions.isEmpty()) {
-                    proxyInvocationHandler.setThrowableForInvoke(new NoCompatibleProviderFoundException(interfaceName,
-                                                                                                        discoveredVersions));
+                    JoynrRuntimeException exception = null;
+                    if (domains.size() == 1) {
+                        if (discoveredVersions.size() != 1) {
+                            throw new IllegalStateException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
+                        }
+                        exception = new NoCompatibleProviderFoundException(interfaceName,
+                                                                           interfaceVersion,
+                                                                           discoveredVersions.keySet()
+                                                                                             .iterator()
+                                                                                             .next(),
+                                                                           discoveredVersions.values()
+                                                                                             .iterator()
+                                                                                             .next());
+                    } else if (domains.size() > 1) {
+                        Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
+                        for (Map.Entry<String, Set<Version>> versionsByDomainEntry : discoveredVersions.entrySet()) {
+                            exceptionsByDomain.put(versionsByDomainEntry.getKey(),
+                                                   new NoCompatibleProviderFoundException(interfaceName,
+                                                                                          interfaceVersion,
+                                                                                          versionsByDomainEntry.getKey(),
+                                                                                          versionsByDomainEntry.getValue()));
+                        }
+                        exception = new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain);
+                    }
+                    if (exception != null) {
+                        proxyInvocationHandler.setThrowableForInvoke(exception);
+                    }
                 }
             }
 
             @Override
-            public void setDiscoveredVersions(Set<Version> discoveredVersions) {
-                this.discoveredVersions = new HashSet<>(discoveredVersions);
+            public void setDiscoveredVersions(Map<String, Set<Version>> discoveredVersions) {
+                this.discoveredVersions = new HashMap<>(discoveredVersions);
             }
         });
 

@@ -23,11 +23,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -134,19 +136,55 @@ public class DiscoveryEntryVersionFilterTest {
         DiscoveryEntry discoveryEntry = mock(DiscoveryEntry.class);
         Version providerVersion = new Version(2, 0);
         when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
+        when(discoveryEntry.getDomain()).thenReturn("domain");
         DiscoveryEntry otherDiscoveryEntry = mock(DiscoveryEntry.class);
         Version otherProviderVersion = new Version(4, 10);
         when(otherDiscoveryEntry.getProviderVersion()).thenReturn(otherProviderVersion);
+        when(otherDiscoveryEntry.getDomain()).thenReturn("domain");
         Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(discoveryEntry, otherDiscoveryEntry);
 
-        Set<Version> filteredOutVersions = new HashSet<>();
+        Map<String, Set<Version>> filteredOutVersions = new HashMap<>();
 
         Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, filteredOutVersions);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
         assertFalse(filteredOutVersions.isEmpty());
-        assertEquals(2, filteredOutVersions.size());
-        assertTrue(filteredOutVersions.containsAll(Sets.newHashSet(providerVersion, otherProviderVersion)));
+        assertTrue(filteredOutVersions.containsKey("domain"));
+        Set<Version> versions = filteredOutVersions.get("domain");
+        assertTrue(versions.containsAll(Sets.newHashSet(providerVersion, otherProviderVersion)));
+    }
+
+    @Test
+    public void testVersionsCollectedByDomain() {
+        Version callerVersion = new Version(1, 0);
+        DiscoveryEntry discoveryEntry = mock(DiscoveryEntry.class);
+        Version providerVersion = new Version(2, 0);
+        when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
+        when(discoveryEntry.getDomain()).thenReturn("domain-1");
+
+        DiscoveryEntry otherDiscoveryEntry = mock(DiscoveryEntry.class);
+        Version otherProviderVersion = new Version(4, 10);
+        when(otherDiscoveryEntry.getProviderVersion()).thenReturn(otherProviderVersion);
+        when(otherDiscoveryEntry.getDomain()).thenReturn("domain-2");
+        Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(discoveryEntry, otherDiscoveryEntry);
+
+        Map<String, Set<Version>> filteredOutVersions = new HashMap<>();
+
+        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, filteredOutVersions);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        assertFalse(filteredOutVersions.isEmpty());
+
+        assertTrue(filteredOutVersions.containsKey("domain-1"));
+        Set<Version> versions = filteredOutVersions.get("domain-1");
+        assertNotNull(versions);
+        assertTrue(versions.containsAll(Sets.newHashSet(providerVersion)));
+
+        assertTrue(filteredOutVersions.containsKey("domain-2"));
+        versions = filteredOutVersions.get("domain-2");
+        assertNotNull(versions);
+        assertTrue(versions.containsAll(Sets.newHashSet(otherProviderVersion)));
     }
 }

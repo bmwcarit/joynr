@@ -19,19 +19,21 @@ package io.joynr.proxy;
  * #L%
  */
 
+import static org.junit.Assert.assertTrue;
+
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Before;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,6 +53,8 @@ import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
@@ -91,12 +95,12 @@ public class ProxyBuilderDefaultImplTest {
     @Captor
     private ArgumentCaptor<ArbitrationCallback> arbitrationCallbackCaptor;
 
-    private Set<String> domains = Sets.newHashSet("domain1");
+    @Captor
+    private ArgumentCaptor<JoynrRuntimeException> exceptionCaptor;
 
     private ProxyBuilderDefaultImpl<TestInterface> subject;
 
-    @Before
-    public void setup() throws Exception {
+    public void setup(Set<String> domains) throws Exception {
         subject = new ProxyBuilderDefaultImpl<TestInterface>(localDiscoveryAggregator,
                                                              domains,
                                                              TestInterface.class,
@@ -116,6 +120,8 @@ public class ProxyBuilderDefaultImplTest {
 
     @Test
     public void testNoCompatibleProviderFoundSetOnInvocationHandler() throws Exception {
+        final Set<String> domains = Sets.newHashSet("domain1");
+        setup(domains);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         doAnswer(new Answer<Void>() {
             @Override
@@ -126,7 +132,9 @@ public class ProxyBuilderDefaultImplTest {
                         Thread.sleep(10L);
                         verify(arbitrator).setArbitrationListener(arbitrationCallbackCaptor.capture());
                         ArbitrationCallback callback = arbitrationCallbackCaptor.getValue();
-                        callback.setDiscoveredVersions(Sets.newHashSet(new Version(100, 100)));
+                        Map<String, Set<Version>> versionsByDomain = new HashMap<>();
+                        versionsByDomain.put(domains.iterator().next(), Sets.newHashSet(new Version(100, 100)));
+                        callback.setDiscoveredVersions(versionsByDomain);
                         callback.notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationCanceledForever);
                         return null;
                     }
@@ -137,7 +145,42 @@ public class ProxyBuilderDefaultImplTest {
         subject.build();
         executor.shutdown();
         executor.awaitTermination(100L, TimeUnit.MILLISECONDS);
-        verify(proxyInvocationHandler).setThrowableForInvoke(Mockito.<NoCompatibleProviderFoundException> any());
+        verify(proxyInvocationHandler).setThrowableForInvoke(exceptionCaptor.capture());
+        JoynrRuntimeException capturedException = exceptionCaptor.getValue();
+        assertTrue(capturedException instanceof NoCompatibleProviderFoundException);
     }
 
+    @Test
+    public void testMultiDomainNoCompatibleProviderFoundSetOnInvocationHandler() throws Exception {
+        final Set<String> domains = Sets.newHashSet("domain-1", "domain-2");
+        setup(domains);
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                executor.submit(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        Thread.sleep(10L);
+                        verify(arbitrator).setArbitrationListener(arbitrationCallbackCaptor.capture());
+                        ArbitrationCallback callback = arbitrationCallbackCaptor.getValue();
+                        Map<String, Set<Version>> versionsByDomain = new HashMap<>();
+                        for (String domain : domains) {
+                            versionsByDomain.put(domain, Sets.newHashSet(new Version(100, 100)));
+                        }
+                        callback.setDiscoveredVersions(versionsByDomain);
+                        callback.notifyArbitrationStatusChanged(ArbitrationStatus.ArbitrationCanceledForever);
+                        return null;
+                    }
+                });
+                return null;
+            }
+        }).when(arbitrator).startArbitration();
+        subject.build();
+        executor.shutdown();
+        executor.awaitTermination(100L, TimeUnit.MILLISECONDS);
+        verify(proxyInvocationHandler).setThrowableForInvoke(exceptionCaptor.capture());
+        JoynrRuntimeException capturedException = exceptionCaptor.getValue();
+        assertTrue(capturedException instanceof MultiDomainNoCompatibleProviderFoundException);
+    }
 }

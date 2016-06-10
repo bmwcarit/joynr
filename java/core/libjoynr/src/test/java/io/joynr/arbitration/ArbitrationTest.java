@@ -33,6 +33,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -116,7 +117,7 @@ public class ArbitrationTest {
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
                                                     Mockito.<Set<DiscoveryEntry>> any(),
-                                                    Mockito.<Set<Version>> any());
+                                                    Mockito.<Map<String, Set<Version>>> any());
     }
 
     @Test
@@ -583,7 +584,7 @@ public class ArbitrationTest {
 
         verify(discoveryEntryVersionFilter).filter(interfaceVersion,
                                                    new HashSet<DiscoveryEntry>(capabilitiesList),
-                                                   new HashSet<Version>());
+                                                   new HashMap<String, Set<Version>>());
     }
 
     @Test
@@ -604,15 +605,15 @@ public class ArbitrationTest {
             @SuppressWarnings("unchecked")
             @Override
             public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
-                Set<Version> filteredVersions = (Set<Version>) invocation.getArguments()[2];
+                Map<String, Set<Version>> filteredVersions = (Map<String, Set<Version>>) invocation.getArguments()[2];
                 Set<DiscoveryEntry> discoveryEntries = (Set<DiscoveryEntry>) invocation.getArguments()[1];
-                filteredVersions.add(discoveryEntries.iterator().next().getProviderVersion());
+                filteredVersions.put(domain, Sets.newHashSet(discoveryEntries.iterator().next().getProviderVersion()));
                 discoveryEntries.clear();
                 return new HashSet<>();
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
                                                    Mockito.<Set<DiscoveryEntry>> any(),
-                                                   Mockito.<Set<Version>> any());
+                                                   Mockito.<Map<String, Set<Version>>> any());
         DiscoveryQos discoveryQos = new DiscoveryQos(10L, arbitrationStrategyFunction, 0L);
         reset(localDiscoveryAggregator);
         doAnswer(new Answer<Object>() {
@@ -636,6 +637,8 @@ public class ArbitrationTest {
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
 
-        verify(arbitrationCallback).setDiscoveredVersions(Sets.newHashSet(incompatibleVersion));
+        Map<String, Set<Version>> discoveredVersions = new HashMap<>();
+        discoveredVersions.put(domain, Sets.newHashSet(incompatibleVersion));
+        verify(arbitrationCallback).setDiscoveredVersions(discoveredVersions);
     }
 }

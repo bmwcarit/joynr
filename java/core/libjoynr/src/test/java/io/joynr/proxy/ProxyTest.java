@@ -34,13 +34,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import io.joynr.Async;
-import io.joynr.JoynrVersion;
-import io.joynr.Sync;
-import io.joynr.runtime.SystemServicesSettings;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -64,6 +60,9 @@ import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 
+import io.joynr.Async;
+import io.joynr.JoynrVersion;
+import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryEntryVersionFilter;
@@ -89,6 +88,7 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
@@ -263,7 +263,7 @@ public class ProxyTest {
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
                                                     Mockito.<Set<DiscoveryEntry>> any(),
-                                                    Mockito.<Set<Version>> any());
+                                                    Mockito.<Map<String, Set<Version>>> any());
     }
 
     private <T> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {
