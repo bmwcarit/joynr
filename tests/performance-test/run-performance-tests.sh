@@ -146,7 +146,7 @@ function startCppPerformanceTestProvider {
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
     cd $PERFORMANCETESTS_BIN_DIR
-    ./performance-provider-app $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    ./performance-provider-app --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
 
     # Wait long enough in order to allow the provider to finish the registration procedure
     sleep 5
@@ -155,7 +155,7 @@ function startCppPerformanceTestProvider {
     # will not succeed.
     kill $PROVIDER_PID
     wait $PROVIDER_PID
-    ./performance-provider-app $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    ./performance-provider-app --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     sleep 5
 
     echo "C++ performance test provider started"
