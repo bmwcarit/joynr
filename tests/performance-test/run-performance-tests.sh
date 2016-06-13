@@ -30,6 +30,7 @@ PERFORMANCETESTS_BIN_DIR=""
 PERFORMANCETESTS_SOURCE_DIR=""
 PERFORMANCETESTS_RESULTS_DIR=""
 TESTCASE=""
+USE_MAVEN=ON # Indicates whether java applications shall be started with maven or as standalone apps
 
 ### Constants ###
 DOMAINNAME="performance_test_domain"
@@ -91,7 +92,13 @@ function startJetty {
     JETTY_STDERR=$PERFORMANCETESTS_RESULTS_DIR/jetty_stderr.txt
 
     cd $JETTY_PATH
-    mvn jetty:run-war --quiet 1>$JETTY_STDOUT 2>$JETTY_STDERR & JETTY_PID=$!
+
+    if [ "$USE_MAVEN" != "ON" ]
+    then
+        java -jar start.jar 1>$JETTY_STDOUT 2>$JETTY_STDERR & JETTY_PID=$!
+    else
+        mvn jetty:run-war --quiet 1>$JETTY_STDOUT 2>$JETTY_STDERR & JETTY_PID=$!
+    fi
 
     waitUntilJettyStarted
 }
@@ -158,10 +165,14 @@ function startJavaPerformanceTestProvider {
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
-    mvn exec:java -o \
-        -Dexec.mainClass="$CONSUMERCLASS" \
-        -Dexec.args="$CONSUMERARGS" \
-        1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    if [ "$USE_MAVEN" != "ON" ]
+    then
+        java -jar performance-test-provider.jar $CONSUMERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    else
+        mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" -Dexec.args="$CONSUMERARGS" \
+            1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    fi
+
     sleep 5
 
     echo "Performance test provider started"
@@ -186,8 +197,15 @@ function performJavaConsumerTest {
     for (( i=0; i < $NUM_INSTANCES; ++i ))
     do
         echo "Launching consumer $i ..."
-        mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
+
+        if [ "$USE_MAVEN" != "ON" ]
+        then
+            java -jar performance-test-consumer.jar $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+        else
+           mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
            -Dexec.args="$CONSUMERARGS" 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+        fi
+
         TEST_PIDS+=$CUR_PID
         TEST_PIDS+=" "
     done
@@ -236,8 +254,15 @@ function performJsConsumerTest {
 
 function stopJetty {
     echo "Stopping jetty"
-    cd $JETTY_PATH
-    mvn jetty:stop --quiet
+
+    if [ "$USE_MAVEN" != "ON" ]
+    then
+        kill $JETTY_PID
+    else
+        cd $JETTY_PATH
+        mvn jetty:stop --quiet
+    fi
+
     wait $JETTY_PID
     JETTY_PID=""
 }
@@ -272,7 +297,7 @@ function echoUsage {
 -r <performance-results-dir> -s <performance-source-dir> \
 -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|OAP_TO_BACKEND_MOSQ|\
 CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-bin-dir>\
-[-c <number-of-consumers> -x <number-of-runs>]"
+[-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF>]"
 }
 
 function checkDirExists {
@@ -284,7 +309,7 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:j:p:r:s:t:x:y:" OPTIONS;
+while getopts "c:j:p:r:s:t:x:y:m:" OPTIONS;
 do
     case $OPTIONS in
         c)
@@ -311,6 +336,9 @@ do
             ;;
         y)
             JOYNR_BIN_DIR=${OPTARG%/}
+            ;;
+        m)
+            USE_MAVEN=$OPTARG
             ;;
         \?)
             echoUsage
