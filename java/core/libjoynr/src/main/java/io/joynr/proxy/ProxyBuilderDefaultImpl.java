@@ -35,7 +35,6 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
-import io.joynr.exceptions.NoCompatibleProviderFoundException.VersionInformation;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.util.VersionUtil;
@@ -211,15 +210,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             public void notifyArbitrationStatusChanged(ArbitrationStatus arbitrationStatus) {
                 if (arbitrationStatus == ArbitrationStatus.ArbitrationCanceledForever && discoveredVersions != null
                         && !discoveredVersions.isEmpty()) {
-                    Set<VersionInformation> discoveredVersionStrings = new HashSet<>();
-                    for (Version discoveredVersion : discoveredVersions) {
-                        discoveredVersionStrings.add(new VersionInformation(discoveredVersion.getMajorVersion()
-                                                                                             .intValue(),
-                                                                            discoveredVersion.getMinorVersion()
-                                                                                             .intValue()));
-                    }
                     proxyInvocationHandler.setThrowableForInvoke(new NoCompatibleProviderFoundException(interfaceName,
-                                                                                                        discoveredVersionStrings));
+                                                                                                        discoveredVersions));
                 }
             }
 

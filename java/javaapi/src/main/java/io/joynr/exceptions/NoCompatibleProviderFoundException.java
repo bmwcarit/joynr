@@ -23,6 +23,8 @@ import static java.lang.String.format;
 
 import java.util.Set;
 
+import joynr.types.Version;
+
 /**
  * Joynr exception to report arbitration failures because of version incompatibility.
  */
@@ -30,62 +32,8 @@ public class NoCompatibleProviderFoundException extends DiscoveryException {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * A detail class holding information about a version which was discovered
-     * for the {@Link NoCompatibleProviderFoundException#getInterfaceName() interface}
-     * for which this exception is being thrown.
-     */
-    public static class VersionInformation {
-        private int major;
-        private int minor;
-
-        public VersionInformation(int major, int minor) {
-            this.major = major;
-            this.minor = minor;
-        }
-
-        public int getMajor() {
-            return major;
-        }
-
-        public int getMinor() {
-            return minor;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + major;
-            result = prime * result + minor;
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            VersionInformation other = (VersionInformation) obj;
-            if (major != other.major)
-                return false;
-            if (minor != other.minor)
-                return false;
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return "VersionInformation [major=" + major + ", minor=" + minor + "]";
-        }
-
-    }
-
     private String interfaceName;
-    private Set<VersionInformation> discoveredVersions;
+    private Set<Version> discoveredVersions;
 
     /**
      * Constructor for a NoCompatibleProviderFoundException with the name of
@@ -98,7 +46,7 @@ public class NoCompatibleProviderFoundException extends DiscoveryException {
      *            the set of versions for which providers were found, but aren't compatible with the version being
      *            looked for.
      */
-    public NoCompatibleProviderFoundException(String interfaceName, Set<VersionInformation> discoveredVersions) {
+    public NoCompatibleProviderFoundException(String interfaceName, Set<Version> discoveredVersions) {
         super(format("Unable to find a provider for %s with a compatible version.%nVersions found: %s",
                      interfaceName,
                      discoveredVersions));
@@ -110,7 +58,7 @@ public class NoCompatibleProviderFoundException extends DiscoveryException {
         return interfaceName;
     }
 
-    public Set<VersionInformation> getDiscoveredVersions() {
+    public Set<Version> getDiscoveredVersions() {
         return discoveredVersions;
     }
 
