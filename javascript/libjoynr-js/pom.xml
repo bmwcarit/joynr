@@ -37,10 +37,8 @@
 		<atmosphere.javascript.version>2.0.9</atmosphere.javascript.version>
 		<requirejs.version>2.1.22</requirejs.version>
 		<bluebird.version>3.1.1</bluebird.version>
-		<jasmine.version>1.3.1</jasmine.version>
 		<log4javascript.version>1.4.10</log4javascript.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
-		<phantomjs-maven-plugin.version>0.4</phantomjs-maven-plugin.version>
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
 		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
 		<joynr.provisioning.bounceProxyBaseUrl>http://127.0.0.1:8080</joynr.provisioning.bounceProxyBaseUrl>
@@ -333,7 +331,6 @@
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
 									<includes>js-formatter/code-formatter-config.xml,
-											  js-test-driver/phantomjs-jstd.js,
 											  almond/almond-0.2.5.js</includes>
 								</artifactItem>
 								<artifactItem>
@@ -378,22 +375,6 @@
 									<type>jar</type>
 									<outputDirectory>${project.build.directory}/test-lib/requirejs</outputDirectory>
 									<includes>META-INF/resources/webjars/requirejs/${requirejs.version}/require.js</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.webjars</groupId>
-									<artifactId>jasmine</artifactId>
-									<version>${jasmine.version}</version>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/test-lib/jasmine</outputDirectory>
-									<includes>META-INF/resources/webjars/jasmine/${jasmine.version}/jasmine.js</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.javascript</groupId>
-									<artifactId>js-dependencies</artifactId>
-									<version>${project.version}</version>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/test-lib/</outputDirectory>
-									<includes>jasmine_jstd_adapter/JasmineAdapter.js</includes>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
@@ -622,22 +603,6 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
-				<groupId>com.github.klieber</groupId>
-				<artifactId>phantomjs-maven-plugin</artifactId>
-				<version>${phantomjs-maven-plugin.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>install</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<version>1.9.7</version>
-				</configuration>
-			</plugin>
-
 			<!-- run the tests -->
 
 			<!-- do the "npm install" to get karma and dependencies -->
@@ -791,25 +756,6 @@
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
-											com.github.klieber
-										</groupId>
-										<artifactId>
-											phantomjs-maven-plugin
-										</artifactId>
-										<versionRange>
-											[0.4,)
-										</versionRange>
-										<goals>
-											<goal>install</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
 											com.github.skwakman.nodejs-maven-plugin
 										</groupId>
 										<artifactId>
@@ -933,7 +879,7 @@
 							</execution>
 						</executions>
 					</plugin>
-					<!-- jasmine-node for node.js tests -->
+					<!-- run nodejs based unit tests -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
