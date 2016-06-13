@@ -31,6 +31,7 @@ PERFORMANCETESTS_SOURCE_DIR=""
 PERFORMANCETESTS_RESULTS_DIR=""
 TESTCASE=""
 USE_MAVEN=ON # Indicates whether java applications shall be started with maven or as standalone apps
+MOSQUITTO_CONF=""
 
 ### Constants ###
 DOMAINNAME="performance_test_domain"
@@ -109,7 +110,13 @@ function startMosquitto {
     MOSQUITTO_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/mosquitto_stdout.txt
     MOSQUITTO_STDERR=$PERFORMANCETESTS_RESULTS_DIR/mosquitto_stderr.txt
 
-    mosquitto -c /etc/mosquitto/mosquitto.conf 1>$MOSQUITTO_STDOUT 2>$MOSQUITTO_STDERR & MOSQUITTO_PID=$!
+    if [ "$MOSQUITTO_CONF" != "" ] && [ -f $MOSQUITTO_CONF ]
+    then
+        mosquitto -c $MOSQUITTO_CONF 1>$MOSQUITTO_STDOUT 2>$MOSQUITTO_STDERR & MOSQUITTO_PID=$!
+    else
+        echo "WARNING: No mosquitto.conf provided"
+        mosquitto 1>$MOSQUITTO_STDOUT 2>$MOSQUITTO_STDERR & MOSQUITTO_PID=$!
+    fi
 
     sleep 2
 
@@ -297,7 +304,7 @@ function echoUsage {
 -r <performance-results-dir> -s <performance-source-dir> \
 -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|OAP_TO_BACKEND_MOSQ|\
 CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-bin-dir>\
-[-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF>]"
+[-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf>]"
 }
 
 function checkDirExists {
@@ -309,7 +316,7 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:j:p:r:s:t:x:y:m:" OPTIONS;
+while getopts "c:j:p:r:s:t:x:y:m:z:" OPTIONS;
 do
     case $OPTIONS in
         c)
@@ -339,6 +346,9 @@ do
             ;;
         m)
             USE_MAVEN=$OPTARG
+            ;;
+        z)
+            MOSQUITTO_CONF=$OPTARG
             ;;
         \?)
             echoUsage
