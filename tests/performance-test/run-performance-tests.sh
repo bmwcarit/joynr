@@ -128,10 +128,9 @@ function startCppClusterController {
 
     CC_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/cc_stdout.txt
     CC_STDERR=$PERFORMANCETESTS_RESULTS_DIR/cc_stderr.txt
-    CC_CONFIG_FILE=$PERFORMANCETESTS_BIN_DIR/resources/$1
 
     cd $JOYNR_BIN_DIR
-    ./cluster-controller $CC_CONFIG_FILE 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
+    ./cluster-controller 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
     sleep 5
@@ -383,7 +382,7 @@ rm -f $REPORTFILE
 
 if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] || [ "$TESTCASE" == "ALL" ]
 then
-    startCppClusterController cc-default-messaging.settings
+    startCppClusterController
     startCppPerformanceTestProvider
 
     echo "### Starting performance tests ###"
@@ -439,7 +438,7 @@ then
     checkDirExists $JETTY_PATH
     startJetty
     startMosquitto
-    startCppClusterController default-messaging.settings
+    startCppClusterController
     startJavaPerformanceTestProvider
 
     echo "### Starting performance tests ###"
