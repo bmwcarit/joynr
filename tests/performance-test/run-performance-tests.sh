@@ -43,7 +43,7 @@ JAVA_WARMUPS=50
 
 # For test cases with a single consumer, this constant stores the number of messages which
 # will be transmitted during the test
-SINGLECONSUMER_RUNS=10000
+SINGLECONSUMER_RUNS=1000
 
 # For test cases with several consumers, this constant stores how many consumer instances will
 # be created
@@ -51,7 +51,7 @@ MULTICONSUMER_NUMINSTANCES=5
 
 # For test cases with several consumers, this constant stores how many messages a single
 # consumer transmits
-MULTICONSUMER_RUNS=2000
+MULTICONSUMER_RUNS=200
 
 # If a test case has to transmit a string, the length will be determined by this constant
 INPUTDATA_STRINGLENGTH=10
