@@ -108,10 +108,7 @@ public class Arbitrator {
      */
     public void startArbitration() {
         logger.debug("start arbitration for domain: {}, interface: {}", domains, interfaceName);
-        // TODO qos map is not used. Implement qos filter in
-        // capabilitiesDirectory or remove qos argument.
-        arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
-        notifyArbitrationStatusChanged();
+        updateArbitrationStatus(ArbitrationStatus.ArbitrationRunning);
 
         localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
 
@@ -145,8 +142,7 @@ public class Arbitrator {
                     if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
                         Set<String> participantIds = getParticipantIds(selectedCapabilities);
                         arbitrationResult.setParticipantIds(participantIds);
-                        arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
-                        updateArbitrationResultAtListener();
+                        arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
                     } else {
                         restartArbitrationIfNotExpired(discoveredVersions);
                     }
@@ -208,9 +204,9 @@ public class Arbitrator {
         // listener is now ready to receive arbitration result/status
         arbitrationListenerSemaphore.release();
         if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
-            updateArbitrationResultAtListener();
+            arbitrationFinished(arbitrationStatus, arbitrationResult);
         } else if (arbitrationStatus != ArbitrationStatus.ArbitrationNotStarted) {
-            notifyArbitrationStatusChanged();
+            updateArbitrationStatus(arbitrationStatus);
         }
 
     }
@@ -218,7 +214,10 @@ public class Arbitrator {
     /**
      * Sets the arbitration result at the arbitrationListener if the listener is already registered
      */
-    protected void updateArbitrationResultAtListener() {
+    protected void arbitrationFinished(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
+        this.arbitrationStatus = arbitrationStatus;
+        this.arbitrationResult = arbitrationResult;
+
         // wait for arbitration listener to be registered
         if (arbitrationListenerSemaphore.tryAcquire()) {
             arbitrationListener.setArbitrationResult(arbitrationStatus, arbitrationResult);
@@ -230,7 +229,8 @@ public class Arbitrator {
      * Notify the arbitrationListener about a changed status without setting an arbitrationResult (e.g. when arbitration
      * failed)
      */
-    protected void notifyArbitrationStatusChanged() {
+    protected void updateArbitrationStatus(ArbitrationStatus arbitrationStatus) {
+        this.arbitrationStatus = arbitrationStatus;
         // wait for arbitration listener to be registered
         if (arbitrationListenerSemaphore.tryAcquire()) {
             arbitrationListener.notifyArbitrationStatusChanged(arbitrationStatus);
