@@ -108,8 +108,6 @@ public class Arbitrator {
      */
     public void startArbitration() {
         logger.debug("start arbitration for domain: {}, interface: {}", domains, interfaceName);
-        updateArbitrationStatus(ArbitrationStatus.ArbitrationRunning);
-
         localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
 
             private Map<String, Set<Version>> discoveredVersions = new HashMap<>();
@@ -205,10 +203,7 @@ public class Arbitrator {
         arbitrationListenerSemaphore.release();
         if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
             arbitrationFinished(arbitrationStatus, arbitrationResult);
-        } else if (arbitrationStatus != ArbitrationStatus.ArbitrationNotStarted) {
-            updateArbitrationStatus(arbitrationStatus);
         }
-
     }
 
     /**
@@ -220,20 +215,7 @@ public class Arbitrator {
 
         // wait for arbitration listener to be registered
         if (arbitrationListenerSemaphore.tryAcquire()) {
-            arbitrationListener.setArbitrationResult(arbitrationStatus, arbitrationResult);
-            arbitrationListenerSemaphore.release();
-        }
-    }
-
-    /**
-     * Notify the arbitrationListener about a changed status without setting an arbitrationResult (e.g. when arbitration
-     * failed)
-     */
-    protected void updateArbitrationStatus(ArbitrationStatus arbitrationStatus) {
-        this.arbitrationStatus = arbitrationStatus;
-        // wait for arbitration listener to be registered
-        if (arbitrationListenerSemaphore.tryAcquire()) {
-            arbitrationListener.notifyArbitrationStatusChanged(arbitrationStatus);
+            arbitrationListener.onSuccess(arbitrationResult);
             arbitrationListenerSemaphore.release();
         }
     }
@@ -268,7 +250,8 @@ public class Arbitrator {
                 if (discoveredVersions != null && !discoveredVersions.isEmpty()) {
                     arbitrationListener.setDiscoveredVersions(discoveredVersions);
                 }
-                arbitrationListener.notifyArbitrationStatusChanged(arbitrationStatus);
+                arbitrationListener.onError(new DiscoveryException("Unable to find provider in time: interface: "
+                        + interfaceName + " domains: " + domains));
             }
         }
     }

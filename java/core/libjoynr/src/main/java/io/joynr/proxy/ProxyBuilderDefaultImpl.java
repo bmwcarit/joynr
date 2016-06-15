@@ -29,13 +29,11 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.arbitration.ArbitrationCallback;
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.MessagingQos;
@@ -202,45 +200,44 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             private Map<String, Set<Version>> discoveredVersions;
 
             @Override
-            public void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
-                if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
-                    proxyInvocationHandler.createConnector(arbitrationResult);
-                    messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
-                }
+            public void onSuccess(ArbitrationResult arbitrationResult) {
+                proxyInvocationHandler.createConnector(arbitrationResult);
+                messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
             }
 
             @Override
-            public void notifyArbitrationStatusChanged(ArbitrationStatus arbitrationStatus) {
-                if (arbitrationStatus == ArbitrationStatus.ArbitrationCanceledForever && discoveredVersions != null
-                        && !discoveredVersions.isEmpty()) {
-                    JoynrRuntimeException exception = null;
-                    if (domains.size() == 1) {
-                        if (discoveredVersions.size() != 1) {
-                            throw new IllegalStateException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
+            public void onError(Throwable throwable) {
+                Throwable reason = null;
+                if (throwable instanceof DiscoveryException) {
+                    if (discoveredVersions != null && !discoveredVersions.isEmpty()) {
+                        if (domains.size() == 1) {
+                            if (discoveredVersions.size() != 1) {
+                                throw new IllegalStateException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
+                            }
+                            reason = new NoCompatibleProviderFoundException(interfaceName,
+                                                                            interfaceVersion,
+                                                                            discoveredVersions.keySet()
+                                                                                              .iterator()
+                                                                                              .next(),
+                                                                            discoveredVersions.values()
+                                                                                              .iterator()
+                                                                                              .next());
+                        } else if (domains.size() > 1) {
+                            Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
+                            for (Map.Entry<String, Set<Version>> versionsByDomainEntry : discoveredVersions.entrySet()) {
+                                exceptionsByDomain.put(versionsByDomainEntry.getKey(),
+                                                       new NoCompatibleProviderFoundException(interfaceName,
+                                                                                              interfaceVersion,
+                                                                                              versionsByDomainEntry.getKey(),
+                                                                                              versionsByDomainEntry.getValue()));
+                            }
+                            reason = new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain);
                         }
-                        exception = new NoCompatibleProviderFoundException(interfaceName,
-                                                                           interfaceVersion,
-                                                                           discoveredVersions.keySet()
-                                                                                             .iterator()
-                                                                                             .next(),
-                                                                           discoveredVersions.values()
-                                                                                             .iterator()
-                                                                                             .next());
-                    } else if (domains.size() > 1) {
-                        Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
-                        for (Map.Entry<String, Set<Version>> versionsByDomainEntry : discoveredVersions.entrySet()) {
-                            exceptionsByDomain.put(versionsByDomainEntry.getKey(),
-                                                   new NoCompatibleProviderFoundException(interfaceName,
-                                                                                          interfaceVersion,
-                                                                                          versionsByDomainEntry.getKey(),
-                                                                                          versionsByDomainEntry.getValue()));
-                        }
-                        exception = new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain);
                     }
-                    if (exception != null) {
-                        proxyInvocationHandler.setThrowableForInvoke(exception);
-                    }
+                } else {
+                    reason = throwable;
                 }
+                proxyInvocationHandler.setThrowableForInvoke(reason);
             }
 
             @Override
