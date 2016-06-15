@@ -83,6 +83,10 @@
 				<directory>src/test/resources</directory>
 				<filtering>true</filtering>
 			</testResource>
+			<testResource>
+				<directory>src/test/karma</directory>
+				<filtering>true</filtering>
+			</testResource>
 			<!-- the source folder must be copied as resource since otherwise only
 				java files would be copied -->
 			<testResource>
