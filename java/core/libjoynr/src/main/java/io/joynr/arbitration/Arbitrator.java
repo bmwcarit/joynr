@@ -113,91 +113,7 @@ public class Arbitrator {
      */
     public void startArbitration() {
         logger.debug("start arbitration for domain: {}, interface: {}", domains, interfaceName);
-        localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
-
-            @Override
-            public void onFailure(JoynrRuntimeException error) {
-                Arbitrator.this.onError(error);
-            }
-
-            @Override
-            public void onSuccess(DiscoveryEntry[] discoveryEntries) {
-                assert discoveryEntries != null : "Discovery entries may not be null.";
-                if (allDomainsDiscovered(discoveryEntries)) {
-                    logger.debug("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
-                    Set<DiscoveryEntry> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
-
-                    Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
-                            .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
-
-                    logger.debug("Selected capabilities: {}", selectedCapabilities);
-                    if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
-                        Set<String> participantIds = getParticipantIds(selectedCapabilities);
-                        arbitrationResult.setParticipantIds(participantIds);
-                        arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
-                    } else {
-                        arbitrationFailed(discoveredVersions);
-                    }
-                } else {
-                    if (isArbitrationInTime()) {
-                        restartArbitration();
-                    } else {
-                        arbitrationFailed(discoveredVersions);
-                    }
-                }
-            }
-
-            private boolean allDomainsDiscovered(DiscoveryEntry[] discoveryEntries) {
-                Set<String> discoveredDomains = new HashSet<String>();
-                for (DiscoveryEntry foundDiscoveryEntry : discoveryEntries) {
-                    discoveredDomains.add(foundDiscoveryEntry.getDomain());
-                }
-                boolean allDomainsDiscovered = discoveredDomains.equals(domains);
-
-                if (!allDomainsDiscovered) {
-                    Set<String> missingDomains = new HashSet<String>(domains);
-                    missingDomains.removeAll(discoveredDomains);
-                    logger.debug("All domains must be found. Domains not found: {}", missingDomains);
-                }
-
-                return allDomainsDiscovered;
-            }
-
-            private Set<String> getParticipantIds(Collection<DiscoveryEntry> selectedCapabilities) {
-                Set<String> participantIds = new HashSet<>();
-                for (DiscoveryEntry selectedCapability : selectedCapabilities) {
-                    if (selectedCapability != null) {
-                        participantIds.add(selectedCapability.getParticipantId());
-                    }
-                }
-                logger.debug("Resulting participant IDs: {}", participantIds);
-                return participantIds;
-            }
-
-            private Set<DiscoveryEntry> filterDiscoveryEntries(DiscoveryEntry[] discoveryEntries) {
-                Set<DiscoveryEntry> discoveryEntriesSet;
-                // If onChange subscriptions are required ignore
-                // providers that do not support them
-                if (discoveryQos.getProviderMustSupportOnChange()) {
-                    discoveryEntriesSet = new HashSet<DiscoveryEntry>(discoveryEntries.length);
-                    for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-                        ProviderQos providerQos = discoveryEntry.getQos();
-                        if (providerQos.getSupportsOnChangeSubscriptions()) {
-                            discoveryEntriesSet.add(discoveryEntry);
-                        }
-                    }
-                } else {
-                    discoveryEntriesSet = Sets.newHashSet(discoveryEntries);
-                }
-                discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion, discoveryEntriesSet, discoveredVersions);
-                if (discoveryEntriesSet.isEmpty()) {
-                    logger.debug(
-                              format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
-                                                           interfaceName, interfaceVersion, Arrays.toString(discoveryEntries)));
-                }
-                return discoveryEntriesSet;
-            }
-        }, domains.toArray(new String[domains.size()]), interfaceName,
+        localDiscoveryAggregator.lookup(new DiscoveryCallback(), domains.toArray(new String[domains.size()]), interfaceName,
                                         new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                                                                      discoveryQos.getDiscoveryTimeoutMs(),
                                                                      joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
@@ -268,4 +184,89 @@ public class Arbitrator {
         }
     }
 
+    private class DiscoveryCallback extends Callback<DiscoveryEntry[]> {
+
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                Arbitrator.this.onError(error);
+            }
+
+            @Override
+            public void onSuccess(DiscoveryEntry[] discoveryEntries) {
+                assert discoveryEntries != null : "Discovery entries may not be null.";
+                if (allDomainsDiscovered(discoveryEntries)) {
+                    logger.debug("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
+                    Set<DiscoveryEntry> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
+
+                    Collection<DiscoveryEntry> selectedCapabilities = arbitrationStrategyFunction
+                            .select(discoveryQos.getCustomParameters(), discoveryEntriesSet);
+
+                    logger.debug("Selected capabilities: {}", selectedCapabilities);
+                    if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
+                        Set<String> participantIds = getParticipantIds(selectedCapabilities);
+                        arbitrationResult.setParticipantIds(participantIds);
+                        arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
+                    } else {
+                        arbitrationFailed(discoveredVersions);
+                    }
+                } else {
+                    if (isArbitrationInTime()) {
+                        restartArbitration();
+                    } else {
+                        arbitrationFailed(discoveredVersions);
+                    }
+                }
+            }
+
+        private boolean allDomainsDiscovered(DiscoveryEntry[] discoveryEntries) {
+            Set<String> discoveredDomains = new HashSet<>();
+            for (DiscoveryEntry foundDiscoveryEntry : discoveryEntries) {
+                discoveredDomains.add(foundDiscoveryEntry.getDomain());
+            }
+            boolean allDomainsDiscovered = discoveredDomains.equals(domains);
+
+            if (!allDomainsDiscovered) {
+                Set<String> missingDomains = new HashSet<>(domains);
+                missingDomains.removeAll(discoveredDomains);
+                logger.debug("All domains must be found. Domains not found: {}", missingDomains);
+            }
+
+                return allDomainsDiscovered;
+            }
+
+            private Set<String> getParticipantIds(Collection<DiscoveryEntry> selectedCapabilities) {
+                Set<String> participantIds = new HashSet<>();
+                for (DiscoveryEntry selectedCapability : selectedCapabilities) {
+                    if (selectedCapability != null) {
+                        participantIds.add(selectedCapability.getParticipantId());
+                    }
+                }
+                logger.debug("Resulting participant IDs: {}", participantIds);
+                return participantIds;
+            }
+
+        private Set<DiscoveryEntry> filterDiscoveryEntries(DiscoveryEntry[] discoveryEntries) {
+            Set<DiscoveryEntry> discoveryEntriesSet;
+            // If onChange subscriptions are required ignore
+            // providers that do not support them
+            if (discoveryQos.getProviderMustSupportOnChange()) {
+                discoveryEntriesSet = new HashSet<>(discoveryEntries.length);
+                for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+                    ProviderQos providerQos = discoveryEntry.getQos();
+                    if (providerQos.getSupportsOnChangeSubscriptions()) {
+                        discoveryEntriesSet.add(discoveryEntry);
+                    }
+                }
+            } else {
+                discoveryEntriesSet = Sets.newHashSet(discoveryEntries);
+            }
+            discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion, discoveryEntriesSet, discoveredVersions);
+            if (discoveryEntriesSet.isEmpty()) {
+                logger.debug(
+                          format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
+                                                       interfaceName, interfaceVersion, Arrays.toString(discoveryEntries)));
+            }
+            return discoveryEntriesSet;
+        }
+    }
 }
