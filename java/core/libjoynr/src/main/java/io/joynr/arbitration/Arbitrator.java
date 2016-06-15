@@ -67,6 +67,7 @@ public class Arbitrator {
     private Version interfaceVersion;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
+    private final Map<String, Set<Version>> discoveredVersions = new HashMap<>();
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public Arbitrator(final Set<String> domains,
@@ -97,7 +98,11 @@ public class Arbitrator {
         } else if (exception instanceof JoynrShutdownException) {
             logger.warn("CapabilitiesCallback onError: " + exception.getMessage(), exception);
         } else if (exception instanceof JoynrRuntimeException) {
-            restartArbitrationIfNotExpired();
+            if (isArbitrationInTime()) {
+                restartArbitration();
+            } else {
+                arbitrationFailed(discoveredVersions);
+            }
         } else {
             logger.error("CapabilitiesCallback onError thowable: " + exception.getMessage(), exception);
         }
@@ -110,8 +115,6 @@ public class Arbitrator {
         logger.debug("start arbitration for domain: {}, interface: {}", domains, interfaceName);
         localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
 
-            private Map<String, Set<Version>> discoveredVersions = new HashMap<>();
-
             @Override
             public void onFailure(JoynrRuntimeException error) {
                 Arbitrator.this.onError(error);
@@ -120,16 +123,7 @@ public class Arbitrator {
             @Override
             public void onSuccess(DiscoveryEntry[] discoveryEntries) {
                 assert discoveryEntries != null : "Discovery entries may not be null.";
-                Set<String> discoveredDomains = new HashSet<String>();
-                for (DiscoveryEntry foundDiscoveryEntry: discoveryEntries) {
-                    discoveredDomains.add(foundDiscoveryEntry.getDomain());
-                }
-                if (!discoveredDomains.equals(domains)) {
-                    Set<String> missingDomains = new HashSet<String>(domains);
-                    missingDomains.removeAll(discoveredDomains);
-                    String discoveryErrorMessage = "All domains must be found. The following domain(s) was/were not found: " + missingDomains;
-                    Arbitrator.this.onError(new DiscoveryException(discoveryErrorMessage));
-                } else {
+                if (allDomainsDiscovered(discoveryEntries)) {
                     logger.debug("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
                     Set<DiscoveryEntry> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
@@ -142,9 +136,31 @@ public class Arbitrator {
                         arbitrationResult.setParticipantIds(participantIds);
                         arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
                     } else {
-                        restartArbitrationIfNotExpired(discoveredVersions);
+                        arbitrationFailed(discoveredVersions);
+                    }
+                } else {
+                    if (isArbitrationInTime()) {
+                        restartArbitration();
+                    } else {
+                        arbitrationFailed(discoveredVersions);
                     }
                 }
+            }
+
+            private boolean allDomainsDiscovered(DiscoveryEntry[] discoveryEntries) {
+                Set<String> discoveredDomains = new HashSet<String>();
+                for (DiscoveryEntry foundDiscoveryEntry : discoveryEntries) {
+                    discoveredDomains.add(foundDiscoveryEntry.getDomain());
+                }
+                boolean allDomainsDiscovered = discoveredDomains.equals(domains);
+
+                if (!allDomainsDiscovered) {
+                    Set<String> missingDomains = new HashSet<String>(domains);
+                    missingDomains.removeAll(discoveredDomains);
+                    logger.debug("All domains must be found. Domains not found: {}", missingDomains);
+                }
+
+                return allDomainsDiscovered;
             }
 
             private Set<String> getParticipantIds(Collection<DiscoveryEntry> selectedCapabilities) {
@@ -228,31 +244,27 @@ public class Arbitrator {
         return System.currentTimeMillis() < arbitrationDeadline;
     }
 
-    protected void restartArbitrationIfNotExpired() {
-        restartArbitrationIfNotExpired(null);
+    protected void restartArbitration() {
+        logger.info("Restarting Arbitration");
+        long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
+        try {
+            if (backoff > 0) {
+                Thread.sleep(backoff);
+            }
+            startArbitration();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
-    protected void restartArbitrationIfNotExpired(Map<String, Set<Version>> discoveredVersions) {
-        if (isArbitrationInTime()) {
-            logger.info("Restarting Arbitration");
-            long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
-            try {
-                if (backoff > 0) {
-                    Thread.sleep(backoff);
-                }
-                startArbitration();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+    protected void arbitrationFailed(Map<String, Set<Version>> discoveredVersions) {
+        arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
+        if (arbitrationListenerSemaphore.tryAcquire()) {
+            if (discoveredVersions != null && !discoveredVersions.isEmpty()) {
+                arbitrationListener.setDiscoveredVersions(discoveredVersions);
             }
-        } else {
-            arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
-            if (arbitrationListenerSemaphore.tryAcquire()) {
-                if (discoveredVersions != null && !discoveredVersions.isEmpty()) {
-                    arbitrationListener.setDiscoveredVersions(discoveredVersions);
-                }
-                arbitrationListener.onError(new DiscoveryException("Unable to find provider in time: interface: "
-                        + interfaceName + " domains: " + domains));
-            }
+            arbitrationListener.onError(new DiscoveryException("Unable to find provider in time: interface: "
+                    + interfaceName + " domains: " + domains));
         }
     }
 
