@@ -925,10 +925,7 @@
 									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_unit_tests.sh</commandlineArgs>
 								</configuration>
 								<id>process-unit-tests-nodejs</id>
-								<!--
 								<phase>process-test-classes</phase>
-								-->
-								<phase>none</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
@@ -939,10 +936,7 @@
 									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
 								</configuration>
 								<id>run-unit-tests-nodejs</id>
-								<!--
 								<phase>test</phase>
-								-->
-								<phase>none</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
