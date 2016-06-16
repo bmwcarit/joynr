@@ -19,8 +19,6 @@ package io.joynr.proxy;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,8 +32,6 @@ import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
-import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.util.VersionUtil;
@@ -197,8 +193,6 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         // Arbitrator cannot return early
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
 
-            private Map<String, Set<Version>> discoveredVersions;
-
             @Override
             public void onSuccess(ArbitrationResult arbitrationResult) {
                 proxyInvocationHandler.createConnector(arbitrationResult);
@@ -207,42 +201,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
             @Override
             public void onError(Throwable throwable) {
-                Throwable reason = null;
-                if (throwable instanceof DiscoveryException) {
-                    if (discoveredVersions != null && !discoveredVersions.isEmpty()) {
-                        if (domains.size() == 1) {
-                            if (discoveredVersions.size() != 1) {
-                                throw new IllegalStateException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
-                            }
-                            reason = new NoCompatibleProviderFoundException(interfaceName,
-                                                                            interfaceVersion,
-                                                                            discoveredVersions.keySet()
-                                                                                              .iterator()
-                                                                                              .next(),
-                                                                            discoveredVersions.values()
-                                                                                              .iterator()
-                                                                                              .next());
-                        } else if (domains.size() > 1) {
-                            Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
-                            for (Map.Entry<String, Set<Version>> versionsByDomainEntry : discoveredVersions.entrySet()) {
-                                exceptionsByDomain.put(versionsByDomainEntry.getKey(),
-                                                       new NoCompatibleProviderFoundException(interfaceName,
-                                                                                              interfaceVersion,
-                                                                                              versionsByDomainEntry.getKey(),
-                                                                                              versionsByDomainEntry.getValue()));
-                            }
-                            reason = new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain);
-                        }
-                    }
-                } else {
-                    reason = throwable;
-                }
-                proxyInvocationHandler.setThrowableForInvoke(reason);
-            }
-
-            @Override
-            public void setDiscoveredVersions(Map<String, Set<Version>> discoveredVersions) {
-                this.discoveredVersions = new HashMap<>(discoveredVersions);
+                proxyInvocationHandler.setThrowableForInvoke(throwable);
             }
         });
 

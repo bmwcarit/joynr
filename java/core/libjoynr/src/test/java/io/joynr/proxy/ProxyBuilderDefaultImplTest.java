@@ -36,7 +36,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -121,8 +120,7 @@ public class ProxyBuilderDefaultImplTest {
     }
 
     @Test
-    @Ignore
-    public void testNoCompatibleProviderFoundSetOnInvocationHandler() throws Exception {
+    public void testNoCompatibleProviderPassedToOnError() throws Exception {
         final String domain = "domain1";
         final Set<String> domains = Sets.newHashSet(domain);
         setup(domains);
@@ -176,7 +174,6 @@ public class ProxyBuilderDefaultImplTest {
                             versionsByDomain.put(domain, discoveredVersions);
                             exceptionsByDomain.put(domain, new NoCompatibleProviderFoundException("interfaceName", new Version(1,1), domain, discoveredVersions));
                         }
-                        callback.setDiscoveredVersions(versionsByDomain);
                         callback.onError(new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain));
                         return null;
                     }

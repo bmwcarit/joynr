@@ -1,7 +1,5 @@
 package io.joynr.arbitration;
 
-import java.util.Map;
-
 /*
  * #%L
  * %%
@@ -21,10 +19,6 @@ import java.util.Map;
  * #L%
  */
 
-import java.util.Set;
-
-import joynr.types.Version;
-
 /**
  * Interface to receive arbitration results.
  *
@@ -34,6 +28,4 @@ public interface ArbitrationCallback {
     void onError(Throwable throwable);
 
     void onSuccess(ArbitrationResult arbitrationResult);
-
-    void setDiscoveredVersions(Map<String, Set<Version>> discoveredVersions);
 }

@@ -37,6 +37,8 @@ import com.google.common.collect.Sets;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
+import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.proxy.Callback;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntry;
@@ -175,13 +177,41 @@ public class Arbitrator {
 
     protected void arbitrationFailed(Map<String, Set<Version>> discoveredVersions) {
         arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
+        Throwable reason;
         if (arbitrationListenerSemaphore.tryAcquire()) {
-            if (discoveredVersions != null && !discoveredVersions.isEmpty()) {
-                arbitrationListener.setDiscoveredVersions(discoveredVersions);
+            if (discoveredVersions == null || discoveredVersions.isEmpty()) {
+                reason = new DiscoveryException("Unable to find provider in time: interface: "
+                        + interfaceName + " domains: " + domains);
+            } else {
+                reason = noCompatibleProviderFound(discoveredVersions);
             }
-            arbitrationListener.onError(new DiscoveryException("Unable to find provider in time: interface: "
-                    + interfaceName + " domains: " + domains));
+            arbitrationListener.onError(reason);
         }
+    }
+
+    private Throwable noCompatibleProviderFound(Map<String, Set<Version>> discoveredVersions) {
+        Throwable reason = null;
+        if (domains.size() == 1) {
+            if (discoveredVersions.size() != 1) {
+                reason = new IllegalStateException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
+            } else {
+                reason = new NoCompatibleProviderFoundException(interfaceName,
+                                                                interfaceVersion,
+                                                                discoveredVersions.keySet().iterator().next(),
+                                                                discoveredVersions.values().iterator().next());
+            }
+        } else if (domains.size() > 1) {
+            Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
+            for (Map.Entry<String, Set<Version>> versionsByDomainEntry : discoveredVersions.entrySet()) {
+                exceptionsByDomain.put(versionsByDomainEntry.getKey(),
+                                       new NoCompatibleProviderFoundException(interfaceName,
+                                                                              interfaceVersion,
+                                                                              versionsByDomainEntry.getKey(),
+                                                                              versionsByDomainEntry.getValue()));
+            }
+            reason = new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain);
+        }
+        return reason;
     }
 
     private class DiscoveryCallback extends Callback<DiscoveryEntry[]> {
