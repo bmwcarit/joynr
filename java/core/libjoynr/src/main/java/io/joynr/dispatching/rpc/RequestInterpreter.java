@@ -42,6 +42,9 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
+import io.joynr.JoynrVersion;
+import io.joynr.util.AnnotationUtil;
+import joynr.types.Version;
 
 public class RequestInterpreter {
     private static final Logger logger = LoggerFactory.getLogger(RequestInterpreter.class);
@@ -69,7 +72,8 @@ public class RequestInterpreter {
             callback.onFailure(e);
             return;
         } catch (Exception e) {
-            callback.onFailure(new MethodInvocationException(e));
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getClass(), JoynrVersion.class);
+            callback.onFailure(new MethodInvocationException(e, new Version(joynrVersion.major(), joynrVersion.minor())));
             return;
         }
         promise.then(new PromiseListener() {
@@ -93,7 +97,7 @@ public class RequestInterpreter {
                                                               request.getMethodName(),
                                                               request.getParamDatatypes());
 
-        ensureMethodMetaInformationPresent(request, methodSignature);
+        ensureMethodMetaInformationPresent(requestCaller, request, methodSignature);
 
         Method method = methodSignatureToMethodMap.get(methodSignature);
 
@@ -106,7 +110,9 @@ public class RequestInterpreter {
             return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);
-            throw new MethodInvocationException(e);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getClass(), JoynrVersion.class);
+            throw new MethodInvocationException(e, new Version(joynrVersion.major(), joynrVersion.minor()));
+
         } catch (InvocationTargetException e) {
             logger.debug("invokeMethod error", e);
             Throwable cause = e.getCause();
@@ -116,7 +122,9 @@ public class RequestInterpreter {
         }
     }
 
-    private void ensureMethodMetaInformationPresent(OneWayRequest request, MethodSignature methodSignature) {
+    private void ensureMethodMetaInformationPresent(RequestCaller requestCaller,
+                                                    OneWayRequest request,
+                                                    MethodSignature methodSignature) {
         try {
             if (!methodSignatureToMethodMap.containsKey(methodSignature)) {
                 Method method;
@@ -127,8 +135,8 @@ public class RequestInterpreter {
             }
         } catch (NoSuchMethodException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non existing method" + request, e);
-            throw new MethodInvocationException(e.toString());
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getClass(), JoynrVersion.class);
+            throw new MethodInvocationException(e.toString(), new Version(joynrVersion.major(), joynrVersion.minor()));
         }
     }
-
 }
