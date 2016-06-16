@@ -47,7 +47,6 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.proxy.Callback;
-import io.joynr.util.AnnotationUtil;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
