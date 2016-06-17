@@ -43,7 +43,13 @@ function(JoynrGenerator)
     )
     cmake_parse_arguments(joynrGenerator "" "${singleValueArgs}" "" ${ARGN})
 
-    set(joynrGeneratorCmd "-jar" "${JoynrGenerator_JAR}")
+    set(JAVA_OPTS
+        -XX:InitialHeapSize=512m
+        -XX:MaxHeapSize=1g
+        -XX:PermSize=256m
+        -XX:MaxPermSize=512m
+    )
+    set(joynrGeneratorCmd "${JAVA_OPTS}" "-jar" "${JoynrGenerator_JAR}")
 
     if(joynrGenerator_MODELPATH)
         get_filename_component(joynrGenerator_ABSOLUTE_MODELPATH ${joynrGenerator_MODELPATH} ABSOLUTE)
