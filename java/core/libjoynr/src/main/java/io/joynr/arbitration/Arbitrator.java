@@ -40,6 +40,7 @@ import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.proxy.Callback;
+import joynr.exceptions.ApplicationException;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
@@ -92,21 +93,19 @@ public class Arbitrator {
         this.discoveryEntryVersionFilter = discoveryEntryVersionFilter;
     }
 
-    // TODO JOYN-911 make sure we are shutting down correctly onError
     protected void onError(Throwable exception) {
-        if (exception instanceof IllegalStateException) {
-            logger.error("CapabilitiesCallback: " + exception.getMessage(), exception);
-            return;
-        } else if (exception instanceof JoynrShutdownException) {
-            logger.warn("CapabilitiesCallback onError: " + exception.getMessage(), exception);
+        if (exception instanceof JoynrShutdownException) {
+            arbitrationFailed(exception);
         } else if (exception instanceof JoynrRuntimeException) {
             if (isArbitrationInTime()) {
                 restartArbitration();
             } else {
                 arbitrationFailed(exception);
             }
+        } else if (exception instanceof ApplicationException) {
+            arbitrationFailed(exception);
         } else {
-            logger.error("CapabilitiesCallback onError thowable: " + exception.getMessage(), exception);
+            arbitrationFailed(new JoynrRuntimeException(exception));
         }
     }
 
