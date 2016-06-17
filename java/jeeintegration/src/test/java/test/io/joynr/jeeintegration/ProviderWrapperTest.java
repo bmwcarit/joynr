@@ -23,6 +23,7 @@ package test.io.joynr.jeeintegration;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
@@ -40,6 +41,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.ProviderWrapper;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
@@ -61,6 +63,8 @@ public class ProviderWrapperTest {
         Promise<Deferred<String>> testServiceMethodNoArgs();
 
         Promise<DeferredVoid> testServiceMethodVoidReturn();
+
+        Promise<DeferredVoid> assertMessageContextActive();
     }
 
     public static interface TestServiceInterface {
@@ -71,6 +75,8 @@ public class ProviderWrapperTest {
         String testServiceMethodNoArgs();
 
         void testServiceMethodVoidReturn();
+
+        void assertMessageContextActive();
     }
 
     public static class TestServiceImpl implements TestServiceInterface {
@@ -87,6 +93,11 @@ public class ProviderWrapperTest {
 
         @Override
         public void testServiceMethodVoidReturn() {
+        }
+
+        @Override
+        public void assertMessageContextActive() {
+            assertTrue(JoynrJeeMessageContext.getInstance().isActive());
         }
 
     }
@@ -146,6 +157,18 @@ public class ProviderWrapperTest {
 
         assertTrue(result instanceof Promise);
         assertPromiseEquals(result, "test");
+    }
+
+    @Test
+    public void testMessageScopeActivated() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceProviderInterface.class.getMethod("assertMessageContextActive");
+
+        assertFalse(JoynrJeeMessageContext.getInstance().isActive());
+        subject.invoke(proxy, method, new Object[0]);
+        assertFalse(JoynrJeeMessageContext.getInstance().isActive());
     }
 
     @SuppressWarnings("rawtypes")

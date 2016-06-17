@@ -20,6 +20,8 @@ package io.joynr.jeeintegration;
  */
 
 import static java.lang.String.format;
+
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
@@ -39,10 +41,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class wraps an EJB which is decorated with {@link io.joynr.jeeintegration.api.ServiceProvider} and has a valid service interface specified
- * (that is it extends {@link JoynrProvider}). When the bean is discovered in
- * {@link JoynrIntegrationBean#initialise()} an instance of this class is registered as the provider with the
- * joynr runtime. When joynr wants to call a method of the specified service interface, then this instance will obtain a
+ * This class wraps an EJB which is decorated with {@link io.joynr.jeeintegration.api.ServiceProvider} and has a valid
+ * service interface specified (that is it extends {@link JoynrProvider}). When the bean is discovered in
+ * {@link JoynrIntegrationBean#initialise()} an instance of this class is registered as the provider with the joynr
+ * runtime. When joynr wants to call a method of the specified service interface, then this instance will obtain a
  * reference to the bean via the {@link JoynrIntegrationBean#beanManager} and will delegate to the corresponding method
  * on that bean (i.e. with the same name and parameters). The result is then wrapped in a deferred / promise and
  * returned.
@@ -90,18 +92,24 @@ public class ProviderWrapper implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Method delegateToMethod = getMethodFromInterfaces(bean.getBeanClass(), method);
         Object delegate = createDelegateForMethod(method);
-        Object result = delegateToMethod.invoke(delegate, args);
-        if (delegate != this) {
-            AbstractDeferred deferred;
-            if (result == null && method.getReturnType().equals(Void.class)) {
-                deferred = new DeferredVoid();
-                ((DeferredVoid) deferred).resolve();
-            } else {
-                deferred = new Deferred();
-                ((Deferred) deferred).resolve(result);
+        Object result;
+        try {
+            JoynrJeeMessageContext.getInstance().activate();
+            result = delegateToMethod.invoke(delegate, args);
+            if (delegate != this) {
+                AbstractDeferred deferred;
+                if (result == null && method.getReturnType().equals(Void.class)) {
+                    deferred = new DeferredVoid();
+                    ((DeferredVoid) deferred).resolve();
+                } else {
+                    deferred = new Deferred();
+                    ((Deferred) deferred).resolve(result);
+                }
+                Promise promiseResult = new Promise(deferred);
+                return promiseResult;
             }
-            Promise promiseResult = new Promise(deferred);
-            return promiseResult;
+        } finally {
+            JoynrJeeMessageContext.getInstance().deactivate();
         }
         return result;
     }
