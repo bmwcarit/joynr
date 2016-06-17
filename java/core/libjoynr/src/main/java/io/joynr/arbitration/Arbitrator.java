@@ -103,7 +103,7 @@ public class Arbitrator {
             if (isArbitrationInTime()) {
                 restartArbitration();
             } else {
-                arbitrationFailed(discoveredVersions);
+                arbitrationFailed(exception);
             }
         } else {
             logger.error("CapabilitiesCallback onError thowable: " + exception.getMessage(), exception);
@@ -175,11 +175,17 @@ public class Arbitrator {
         }
     }
 
-    protected void arbitrationFailed(Map<String, Set<Version>> discoveredVersions) {
+    protected void arbitrationFailed() {
+        arbitrationFailed(null);
+    }
+
+    protected void arbitrationFailed(Throwable exception) {
         arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
         Throwable reason;
         if (arbitrationListenerSemaphore.tryAcquire()) {
-            if (discoveredVersions == null || discoveredVersions.isEmpty()) {
+            if (exception != null) {
+                reason = exception;
+            } else if (discoveredVersions == null || discoveredVersions.isEmpty()) {
                 reason = new DiscoveryException("Unable to find provider in time: interface: "
                         + interfaceName + " domains: " + domains);
             } else {
@@ -237,13 +243,13 @@ public class Arbitrator {
                         arbitrationResult.setParticipantIds(participantIds);
                         arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
                     } else {
-                        arbitrationFailed(discoveredVersions);
+                        arbitrationFailed();
                     }
                 } else {
                     if (isArbitrationInTime()) {
                         restartArbitration();
                     } else {
-                        arbitrationFailed(discoveredVersions);
+                        arbitrationFailed();
                     }
                 }
             }
