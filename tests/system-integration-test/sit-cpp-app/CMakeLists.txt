@@ -7,7 +7,7 @@ project(jsit-0.19.0-SNAPSHOT)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetCppStandard.cmake)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/CMake")
 
 option(
     GENERATE_SOURCES
@@ -33,7 +33,7 @@ if(${GENERATE_SOURCES})
     message(STATUS "variable JoynrGenerator_FOUND=${JoynrGenerator_FOUND}")
     message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
     JoynrGenerator(
-        OUTPUTPATH ${CMAKE_SOURCE_DIR}/src/main/generated-cpp
+        OUTPUTPATH ${CMAKE_SOURCE_DIR}/src/main/generated-sources
         MODELPATH ${CMAKE_SOURCE_DIR}/src/main/model/SystemIntegrationTest.fidl
         GENERATION_LANGUAGE "cpp"
     )
@@ -44,19 +44,19 @@ file(
     GLOB_RECURSE
     GENERATED_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "src/main/generated-cpp/include/*.h"
+    "src/main/generated-sources/include/*.h"
 )
 
 file(
     GLOB_RECURSE
     GENERATED_SOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "src/main/generated-cpp/*.cpp"
+    "src/main/generated-sources/*.cpp"
 )
 
 set(
     GENERATED_INCLUDE_DIRS
-    "src/main/generated-cpp/include"
+    "src/main/generated-sources/include"
 )
 
 # Put the Joynr_LIB_COMMON_INCLUDE_DIRS last so that it is possible to override types

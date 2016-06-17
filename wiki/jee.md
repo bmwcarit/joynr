@@ -224,3 +224,23 @@ It is also possible to target multiple providers with one proxy. You can achieve
 this by either spcifying a set of domains during lookup, or a custom
 `ArbitrationStrategyFunction` in the `DiscoveryQos`, or combine both approaches.
 See the [Java Developer Guide](java.md) for details.
+
+## Overriding Jackson library used at runtime
+
+joynr ships with a newer version of Jackson than is used by Glassfish / Payara 4.1.
+Generally, this shouldn't be a problem. If, however, you observe errors relating
+to the JSON serialisation, try setting up your WAR to use the Jackson libraries
+shipped with joynr.
+
+In order to do this, you must provide the following content in the 
+`glassfish-web.xml` file (situated in the `WEB-INF` folder of your WAR):
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN"
+		"http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
+	<glassfish-web-app>
+	  <class-loader delegate="false" />
+	</glassfish-web-app>
+
+... here, the `<class-loader delegate="false" />` part is the relevant bit.
+

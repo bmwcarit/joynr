@@ -57,6 +57,11 @@ if [[ "all" == ${SELECTED_TEST} ]]
 then
   log "building all tests"
   MAVEN_PROJECT="$(join_strings "${MAVEN_PREFIX}" "${TESTS[@]}")"
+elif [[ "system-integration-test" == ${SELECTED_TEST} ]]
+then
+  log "building system-integration-test"
+  MAVEN_PROJECT=",io.joynr.tests.system-integration-test:sit-cpp-app"
+  SRC_FOLDER="${SRC_FOLDER}/system-integration-test/sit-cpp-app"
 elif [[ " ${TESTS[@]} " =~ " ${SELECTED_TEST} " ]]
 then
   log "building ${SELECTED_TEST} test"
@@ -75,6 +80,7 @@ env
 cd /data/src/
 mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests \
 --projects \
+io.joynr.tools.generator:dependency-libs,\
 io.joynr.tools.generator:generator-framework,\
 io.joynr.tools.generator:joynr-generator-maven-plugin,\
 io.joynr.tools.generator:java-generator,\

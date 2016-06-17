@@ -38,11 +38,17 @@ int main(int argc, char* argv[])
 
     // Check the usage
     const std::string programName(argv[0]);
-    if (argc != 2) {
-        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain>", programName);
+    bool runForever = false;
+
+    if (argc < 2) {
+        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain> [runForever]", programName);
         return -1;
     }
 
+    if (argc == 3) {
+        const std::string runForeverArg(argv[2]);
+        runForever = runForeverArg == "runForever";
+    }
     // Get the provider domain
     const std::string providerDomain(argv[1]);
     JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
@@ -59,18 +65,24 @@ int main(int argc, char* argv[])
             std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch());
     providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
 
     // Register the provider
     runtime->registerProvider<test::SystemIntegrationTestProvider>(
             providerDomain, provider, providerQos);
 
-    bool successful = semaphore.waitFor(std::chrono::milliseconds(30000));
+    if (runForever) {
+        while (true) {
+            semaphore.wait();
+        }
+    } else {
+        bool successful = semaphore.waitFor(std::chrono::milliseconds(30000));
 
-    // Unregister the provider
-    runtime->unregisterProvider<test::SystemIntegrationTestProvider>(providerDomain, provider);
+        // Unregister the provider
+        runtime->unregisterProvider<test::SystemIntegrationTestProvider>(providerDomain, provider);
 
-    delete runtime;
+        delete runtime;
 
-    return successful ? 0 : -1;
+        return successful ? 0 : -1;
+    }
 }

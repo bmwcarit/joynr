@@ -6,12 +6,17 @@ includetests=OFF
 
 function usage
 {
-    echo "usage: cpp-build-rpm-package.sh [--includetests ON|OFF]"
+    echo "usage: cpp-build-rpm-package.sh [--rpm-spec <RPM spec>] [--includetests ON|OFF]"
     echo "default is: includetests $includetests"
 }
 
+RPMSPEC="cpp/distribution/joynr.spec"
+
 while [ "$1" != "" ]; do
     case $1 in
+        --rpm-spec )            shift
+                                RPMSPEC=$1
+                                ;;
         -t | --includetests )   shift
                                 includetests="$1"
                                 ;;
@@ -44,8 +49,8 @@ mkdir /data/build/joynr/package/RPM/SRPMS
 mkdir /data/build/joynr/package/RPM/joynr
 
 # copy RPM spec file
-cp /data/src/cpp/distribution/joynr.spec /data/build/joynr/package/RPM/SPECS
-
+cp /data/src/$RPMSPEC /data/build/joynr/package/RPM/SPECS
+RPMSPEC_BASENAME=`basename /data/src/$RPMSPEC`
 cd /data/build/joynr
 
 SRCDIR=/data/src
@@ -93,7 +98,7 @@ cp $JOYNR_GENERATOR_SCRIPT_SRCDIR/$JOYNR_GENERATOR_CONFIG_CMAKE_VERSION $JOYNR_G
 sed "s/set(JoynrGenerator_JAR.*)/set(JoynrGenerator_JAR \"\/usr\/libexec\/joynr\/$JOYNR_GENERATOR_JAR\")/"< $JOYNR_GENERATOR_CONFIG_CMAKE_SRC > $JOYNR_GENERATOR_CONFIG_CMAKE_DESTDIR/$JOYNR_GENERATOR_CONFIG_CMAKE
 
 cd /data/build/joynr/package/RPM/SPECS
-rpmbuild -bb ${rpm_with_flags} --buildroot $DESTDIR joynr.spec
+rpmbuild -bb ${rpm_with_flags} --buildroot $DESTDIR $RPMSPEC_BASENAME
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
