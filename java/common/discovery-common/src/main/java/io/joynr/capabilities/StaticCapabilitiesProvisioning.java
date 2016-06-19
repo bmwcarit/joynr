@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,32 +38,41 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 
+/**
+ * Loads a set of JSON encoded {@link GlobalDiscoveryEntry discovery entries} from the property named
+ * {@link #PROPERTY_PROVISIONED_CAPABILITIES joynr.capabilities.provisioned} and makes them available via
+ * {@link #getDiscoveryEntries()}.
+ *
+ * This component will fail-fast - that is, it will throw a {@link JoynrRuntimeException} during initialization if the
+ * JSON read from the property cannot bit parsed.
+ */
 public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning {
-    public static final String STATIC_PROVISIONING_PROPERTIES = "static_capabilities_provisioning.properties";
+
     public static final String PROPERTY_PROVISIONED_CAPABILITIES = "joynr.capabilities.provisioned";
     private Collection<DiscoveryEntry> discoveryEntries;
     private static Logger logger = LoggerFactory.getLogger(StaticCapabilitiesProvisioning.class);
 
     @Inject
-    public StaticCapabilitiesProvisioning(@Named(STATIC_PROVISIONING_PROPERTIES) Properties properties,
+    public StaticCapabilitiesProvisioning(@Named(PROPERTY_PROVISIONED_CAPABILITIES) String provisionedCapabilitiesJsonString,
                                           ObjectMapper objectMapper) {
-        loadDiscoveryEntries(properties, objectMapper);
+        loadDiscoveryEntries(provisionedCapabilitiesJsonString, objectMapper);
     }
 
-    private void loadDiscoveryEntries(Properties properties, ObjectMapper objectMapper) {
+    private void loadDiscoveryEntries(String provisionedCapabilitiesJsonString, ObjectMapper objectMapper) {
         discoveryEntries = new HashSet<DiscoveryEntry>();
-        String entries = properties.getProperty(PROPERTY_PROVISIONED_CAPABILITIES);
-        logger.debug("Statically provisioned capabilities properties value: {}", entries);
+        logger.debug("Statically provisioned capabilities properties value: {}", provisionedCapabilitiesJsonString);
         List<GlobalDiscoveryEntry> newEntries = null;
         try {
-            newEntries = objectMapper.readValue(entries, new TypeReference<List<GlobalDiscoveryEntry>>() {
-            });
+            newEntries = objectMapper.readValue(provisionedCapabilitiesJsonString,
+                                                new TypeReference<List<GlobalDiscoveryEntry>>() {
+                                                });
             logger.debug("Statically provisioned entries loaded: {}", newEntries);
             for (GlobalDiscoveryEntry globalDiscoveryEntry : newEntries) {
                 discoveryEntries.add(globalDiscoveryEntry);
             }
         } catch (IOException e) {
-            String message = format("Unable to load provisioned capabilities. Invalid JSON value: %s", entries);
+            String message = format("Unable to load provisioned capabilities. Invalid JSON value: %s",
+                                    provisionedCapabilitiesJsonString);
             throw new JoynrRuntimeException(message, e);
         }
     }

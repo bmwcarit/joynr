@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,6 +36,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
+import com.google.inject.name.Names;
 
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -51,19 +51,8 @@ public class StaticCapabilitiesProvisioningTest {
 
     @Before
     public void setUp() throws Exception {
-        Guice.createInjector(new AbstractModule() {
-            @Override
-            protected void configure() {
-                objectMapper = new ObjectMapper();
-                objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
-                bind(ObjectMapper.class).toInstance(objectMapper);
-                requestStaticInjection(CapabilityUtils.class);
-            }
-        });
-    }
-
-    @After
-    public void tearDown() throws Exception {
+        objectMapper = new ObjectMapper();
+        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
     }
 
     @Test
@@ -97,20 +86,12 @@ public class StaticCapabilitiesProvisioningTest {
         discoveryEntries.add(entry1);
         discoveryEntries.add(entry2);
 
-        String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
-        final Properties properties = new Properties();
-        properties.put(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES, serializedDiscoveryEntries);
-        Injector injector = Guice.createInjector(new AbstractModule() {
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
 
-            @Override
-            protected void configure() {
-                bind(ObjectMapper.class).toInstance(objectMapper);
+        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
+        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
-            }
-        }, new StaticCapabilitiesProvisioningModule(properties));
-
-        CapabilitiesProvisioning capabilitiesProvisioning = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = capabilitiesProvisioning.getDiscoveryEntries();
         assertThat(provisionedDiscoveryEntries, hasItem(entry1));
         assertThat(provisionedDiscoveryEntries, hasItem(entry2));
     }
@@ -119,12 +100,21 @@ public class StaticCapabilitiesProvisioningTest {
     public void testInvalidJson() {
         Properties properties = new Properties();
         properties.put(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES, "this is not json");
+        Injector injector = createInjectorForJsonValue("this is not json");
+        injector.getInstance(CapabilitiesProvisioning.class);
+    }
+
+    private Injector createInjectorForJsonValue(final String jsonValue) {
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
                 bind(ObjectMapper.class).toInstance(objectMapper);
+                bind(String.class).annotatedWith(Names.named(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES))
+                                  .toInstance(jsonValue);
+                requestStaticInjection(CapabilityUtils.class);
             }
-        }, new StaticCapabilitiesProvisioningModule(properties));
-        injector.getInstance(CapabilitiesProvisioning.class);
+        },
+                                                 new StaticCapabilitiesProvisioningModule());
+        return injector;
     }
 }
