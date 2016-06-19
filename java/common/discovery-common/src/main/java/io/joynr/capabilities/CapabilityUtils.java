@@ -19,6 +19,13 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import static java.lang.String.format;
+
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -34,6 +41,8 @@ import joynr.types.DiscoveryEntry;
  * Conversion helpers for CapabilityInformation, CapabilityEntry and DiscoveryEntry
  */
 public class CapabilityUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(CapabilityUtils.class);
 
     @Inject
     private static ObjectMapper objectMapper;
@@ -83,6 +92,22 @@ public class CapabilityUtils {
                                         discoveryEntry.getExpiryDateMs(),
                                         discoveryEntry.getPublicKeyId(),
                                         serializeAddress(globalAddress));
+    }
+
+    public static Address getAddressFromGlobalDiscoveryEntry(GlobalDiscoveryEntry globaleDiscoveryEntry) {
+        if (globaleDiscoveryEntry == null || globaleDiscoveryEntry.getAddress() == null) {
+            throw new IllegalArgumentException("Neither globalDiscoveryEntry nor its address can be null.");
+        }
+        logger.trace("Attempting to deserialize {} as an Address.", globaleDiscoveryEntry.getAddress());
+        Address result;
+        try {
+            result = objectMapper.readValue(globaleDiscoveryEntry.getAddress(), Address.class);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(format("Global discovery entry address value %s cannot be deserialized as an Address.",
+                                                      globaleDiscoveryEntry.getAddress()),
+                                               e);
+        }
+        return result;
     }
 
     private static String serializeAddress(Address globalAddress) {

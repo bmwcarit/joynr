@@ -21,7 +21,6 @@ package io.joynr.capabilities;
 
 import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +35,6 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -100,8 +98,6 @@ TransportReadyListener {
 
     private GlobalAddressProvider globalAddressProvider;
 
-    private ObjectMapper objectMapper;
-
     private Address globalAddress;
     private Object globalAddressLock = new Object();
 
@@ -136,14 +132,12 @@ TransportReadyListener {
                                           DiscoveryEntryStore localDiscoveryEntryStore,
                                           DiscoveryEntryStore globalDiscoveryEntryCache,
                                           MessageRouter messageRouter,
-                                          GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient,
-                                          ObjectMapper objectMapper) {
+                                          GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient) {
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.messageRouter = messageRouter;
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
-        this.objectMapper = objectMapper;
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
 
         String defaultPublicKeyId = "";
@@ -460,12 +454,7 @@ TransportReadyListener {
         for (GlobalDiscoveryEntry ce : caps) {
             // TODO when are entries purged from the messagingEndpointDirectory?
             if (ce.getParticipantId() != null && ce.getAddress() != null) {
-                Address address;
-                try {
-                    address = objectMapper.readValue(ce.getAddress(), Address.class);
-                } catch (IOException e) {
-                    throw new JoynrRuntimeException(e);
-                }
+                Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(ce);
                 messageRouter.addNextHop(ce.getParticipantId(), address);
             }
         }

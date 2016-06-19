@@ -162,8 +162,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         localDiscoveryEntryStoreMock,
                                                                         globalDiscoveryEntryCacheMock,
                                                                         messageRouter,
-                                                                        globalCapabilitiesClient,
-                                                                        new ObjectMapper());
+                                                                        globalCapabilitiesClient);
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] parameterList = { new CustomParameter("key1", "value1"),
