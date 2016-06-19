@@ -18,9 +18,8 @@ package io.joynr.capabilities;
  * limitations under the License.
  * #L%
  */
+
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collection;
@@ -37,11 +36,8 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.ProvisionException;
 
-import io.joynr.capabilities.CapabilitiesProvisioning;
-import io.joynr.capabilities.CapabilityUtils;
-import io.joynr.capabilities.StaticCapabilitiesProvisioning;
-import io.joynr.capabilities.StaticCapabilitiesProvisioningModule;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
@@ -119,7 +115,7 @@ public class StaticCapabilitiesProvisioningTest {
         assertThat(provisionedDiscoveryEntries, hasItem(entry2));
     }
 
-    @Test
+    @Test(expected = ProvisionException.class)
     public void testInvalidJson() {
         Properties properties = new Properties();
         properties.put(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES, "this is not json");
@@ -129,9 +125,6 @@ public class StaticCapabilitiesProvisioningTest {
                 bind(ObjectMapper.class).toInstance(objectMapper);
             }
         }, new StaticCapabilitiesProvisioningModule(properties));
-        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> discoveryEntries = subject.getDiscoveryEntries();
-        assertNotNull(discoveryEntries);
-        assertEquals(0, discoveryEntries.size());
+        injector.getInstance(CapabilitiesProvisioning.class);
     }
 }

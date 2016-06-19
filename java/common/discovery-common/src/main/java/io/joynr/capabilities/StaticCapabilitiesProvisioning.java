@@ -19,6 +19,8 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 
 import java.util.Collection;
@@ -34,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 
@@ -62,7 +65,8 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                 discoveryEntries.add(globalDiscoveryEntry);
             }
         } catch (IOException e) {
-            logger.error("Unable to load provisioned capabilities. Invalid JSON value: {}", entries, e);
+            String message = format("Unable to load provisioned capabilities. Invalid JSON value: %s", entries);
+            throw new JoynrRuntimeException(message, e);
         }
     }
 
