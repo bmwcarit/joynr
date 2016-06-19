@@ -47,7 +47,6 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
         loadDiscoveryEntries(properties, objectMapper);
     }
 
-    @SuppressWarnings("unchecked")
     private void loadDiscoveryEntries(Properties properties, ObjectMapper objectMapper) {
         discoveryEntries = new HashSet<DiscoveryEntry>();
         Object entries = properties.get(PROPERTY_PROVISIONED_CAPABILITIES);
