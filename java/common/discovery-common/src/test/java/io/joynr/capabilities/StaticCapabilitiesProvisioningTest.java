@@ -19,6 +19,8 @@ package io.joynr.capabilities;
  * #L%
  */
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collection;
@@ -115,6 +117,21 @@ public class StaticCapabilitiesProvisioningTest {
         Collection<DiscoveryEntry> provisionedDiscoveryEntries = capabilitiesProvisioning.getDiscoveryEntries();
         assertThat(provisionedDiscoveryEntries, hasItem(entry1));
         assertThat(provisionedDiscoveryEntries, hasItem(entry2));
+    }
 
+    @Test
+    public void testInvalidJson() {
+        Properties properties = new Properties();
+        properties.put(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES, "this is not json");
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(ObjectMapper.class).toInstance(objectMapper);
+            }
+        }, new StaticCapabilitiesProvisioningModule(properties));
+        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
+        Collection<DiscoveryEntry> discoveryEntries = subject.getDiscoveryEntries();
+        assertNotNull(discoveryEntries);
+        assertEquals(0, discoveryEntries.size());
     }
 }

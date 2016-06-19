@@ -19,13 +19,12 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import java.io.IOException;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-
-import joynr.types.DiscoveryEntry;
-import joynr.types.GlobalDiscoveryEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
 
 public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning {
     public static final String STATIC_PROVISIONING_PROPERTIES = "static_capabilities_provisioning.properties";
@@ -49,17 +51,18 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
 
     private void loadDiscoveryEntries(Properties properties, ObjectMapper objectMapper) {
         discoveryEntries = new HashSet<DiscoveryEntry>();
-        Object entries = properties.get(PROPERTY_PROVISIONED_CAPABILITIES);
+        String entries = properties.getProperty(PROPERTY_PROVISIONED_CAPABILITIES);
+        logger.debug("Statically provisioned capabilities properties value: {}", entries);
         List<GlobalDiscoveryEntry> newEntries = null;
         try {
-            newEntries = objectMapper.readValue((String) entries, new TypeReference<List<GlobalDiscoveryEntry>>() {
+            newEntries = objectMapper.readValue(entries, new TypeReference<List<GlobalDiscoveryEntry>>() {
             });
+            logger.debug("Statically provisioned entries loaded: {}", newEntries);
             for (GlobalDiscoveryEntry globalDiscoveryEntry : newEntries) {
                 discoveryEntries.add(globalDiscoveryEntry);
             }
-        } catch (Exception e) {
-            logger.error("unable to load provisioned capabilities. "
-                    + (newEntries != null ? "to be processed entry: " + newEntries : ""), e);
+        } catch (IOException e) {
+            logger.error("Unable to load provisioned capabilities. Invalid JSON value: {}", entries, e);
         }
     }
 
