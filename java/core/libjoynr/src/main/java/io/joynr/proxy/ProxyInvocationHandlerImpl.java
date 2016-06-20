@@ -140,8 +140,17 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         } catch (Exception e) {
             throw new JoynrRuntimeException(e);
         }
-        throw new DiscoveryException("Arbitration and Connector failed: domain: " + domains + " interface: "
-                + interfaceName + " qos: " + discoveryQos + ": Arbitration could not be finished in time.");
+
+        if (throwable != null) {
+            if (throwable instanceof JoynrRuntimeException) {
+                throw (JoynrRuntimeException) throwable;
+            } else {
+                throw new JoynrRuntimeException(throwable);
+            }
+        } else {
+            throw new DiscoveryException("Arbitration and Connector failed: domain: " + domains + " interface: "
+                    + interfaceName + " qos: " + discoveryQos + ": Arbitration could not be finished in time.");
+        }
     }
 
     /**

@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
 
 public abstract class ProxyInvocationHandler implements InvocationHandler {
 
-    private Throwable throwable;
+    protected Throwable throwable;
 
     abstract Object invoke(Method method, Object[] args) throws ApplicationException;
 

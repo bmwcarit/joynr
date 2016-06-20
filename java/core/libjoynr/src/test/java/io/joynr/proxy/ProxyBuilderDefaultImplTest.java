@@ -59,6 +59,7 @@ import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.Version;
 
@@ -100,6 +101,9 @@ public class ProxyBuilderDefaultImplTest {
     private ArgumentCaptor<JoynrRuntimeException> exceptionCaptor;
 
     private ProxyBuilderDefaultImpl<TestInterface> subject;
+
+    @Mock
+    private ProxyCreatedCallback<TestInterface> proxyCreatedCallback;
 
     public void setup(Set<String> domains) throws Exception {
         subject = new ProxyBuilderDefaultImpl<TestInterface>(localDiscoveryAggregator,
@@ -145,10 +149,10 @@ public class ProxyBuilderDefaultImplTest {
                 return null;
             }
         }).when(arbitrator).startArbitration();
-        subject.build();
+        subject.build(proxyCreatedCallback);
         executor.shutdown();
         executor.awaitTermination(100L, TimeUnit.MILLISECONDS);
-        verify(proxyInvocationHandler).setThrowableForInvoke(exceptionCaptor.capture());
+        verify(proxyCreatedCallback).onProxyCreationError(exceptionCaptor.capture());
         JoynrRuntimeException capturedException = exceptionCaptor.getValue();
         assertTrue(capturedException instanceof NoCompatibleProviderFoundException);
     }
@@ -181,10 +185,10 @@ public class ProxyBuilderDefaultImplTest {
                 return null;
             }
         }).when(arbitrator).startArbitration();
-        subject.build();
+        subject.build(proxyCreatedCallback);
         executor.shutdown();
         executor.awaitTermination(100L, TimeUnit.MILLISECONDS);
-        verify(proxyInvocationHandler).setThrowableForInvoke(exceptionCaptor.capture());
+        verify(proxyCreatedCallback).onProxyCreationError(exceptionCaptor.capture());
         JoynrRuntimeException capturedException = exceptionCaptor.getValue();
         assertTrue(capturedException instanceof MultiDomainNoCompatibleProviderFoundException);
     }
