@@ -30,6 +30,7 @@
 
 #include "joynr/Logger.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 
 namespace joynr
 {

@@ -30,6 +30,7 @@
 #include "tests/utils/LibJoynrMockObjects.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/testTypes/DerivedStruct.h"
 #include "joynr/tests/testTypes/AnotherDerivedStruct.h"

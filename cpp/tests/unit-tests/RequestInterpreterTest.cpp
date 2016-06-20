@@ -23,6 +23,7 @@
 #include "joynr/IRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>

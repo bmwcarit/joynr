@@ -28,6 +28,7 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/MessageRouter.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 
 namespace joynr
 {

@@ -20,6 +20,7 @@
 #define JOYNREXCEPTIONSUTIL_H
 
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/Variant.h"
 namespace joynr
 {
