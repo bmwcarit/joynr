@@ -52,6 +52,7 @@ import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.dispatching.RequestReplyManager;
@@ -180,6 +181,7 @@ public class RpcStubbingTest {
                                             @Override
                                             protected void configure() {
                                                 requestStaticInjection(RpcUtils.class);
+                                                install(new JoynrMessageScopeModule());
                                                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
                                                 messagingStubFactory = MapBinder.newMapBinder(binder(),
                                                                                               new TypeLiteral<Class<? extends Address>>() {

@@ -19,6 +19,22 @@ package io.joynr.messaging;
  * #L%
  */
 
+import static org.mockito.Mockito.when;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import io.joynr.common.ExpiryDate;
 
 import io.joynr.messaging.routing.ChildMessageRouter;
@@ -30,19 +46,6 @@ import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChildMessageRouterTest {
@@ -80,10 +83,10 @@ public class ChildMessageRouterTest {
                                                messagingStubFactory);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
 
-        Mockito.when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
-        Mockito.when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
-        Mockito.when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
-        Mockito.when(parentAddress.getChannelId()).thenReturn("MessageRouterImplTestChannel");
+        when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
+        when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
+        when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
+        when(parentAddress.getChannelId()).thenReturn("MessageRouterImplTestChannel");
 
     }
 

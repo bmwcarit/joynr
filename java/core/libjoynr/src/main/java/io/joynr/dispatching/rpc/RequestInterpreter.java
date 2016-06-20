@@ -28,10 +28,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.messaging.JoynrMessageCreator;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -48,13 +50,18 @@ import io.joynr.util.AnnotationUtil;
 import joynr.types.Version;
 
 public class RequestInterpreter {
+
     private static final Logger logger = LoggerFactory.getLogger(RequestInterpreter.class);
 
     private JoynrMessageScope joynrMessageScope;
 
+    private Provider<JoynrMessageCreator> joynrMessageCreatorProvider;
+
     @Inject
-    public RequestInterpreter(JoynrMessageScope joynrMessageScope) {
+    public RequestInterpreter(JoynrMessageScope joynrMessageScope,
+                              Provider<JoynrMessageCreator> joynrMessageCreatorProvider) {
         this.joynrMessageScope = joynrMessageScope;
+        this.joynrMessageCreatorProvider = joynrMessageCreatorProvider;
     }
 
     // use for caching because creation of MethodMetaInformation is expensive
@@ -112,6 +119,7 @@ public class RequestInterpreter {
                 params = request.getParams();
             }
             joynrMessageScope.activate();
+            joynrMessageCreatorProvider.get().setMessageCreatorId(request.getCreatorUserId());
             return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);
