@@ -20,6 +20,7 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.exceptions.ApplicationException;
 
 import java.lang.reflect.InvocationHandler;
@@ -30,6 +31,8 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     private Throwable throwable;
 
     abstract Object invoke(Method method, Object[] args) throws ApplicationException;
+
+    public abstract void abort(JoynrRuntimeException exception);
 
     abstract void createConnector(ArbitrationResult result);
 

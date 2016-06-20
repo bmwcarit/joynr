@@ -32,6 +32,7 @@ import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.util.VersionUtil;
@@ -201,7 +202,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
             @Override
             public void onError(Throwable throwable) {
-                proxyInvocationHandler.setThrowableForInvoke(throwable);
+                if (throwable instanceof JoynrRuntimeException) {
+                    proxyInvocationHandler.abort((JoynrRuntimeException) throwable);
+                } else {
+                    proxyInvocationHandler.abort(new JoynrRuntimeException(throwable));
+                }
             }
         });
 

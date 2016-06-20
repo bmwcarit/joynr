@@ -38,6 +38,7 @@ import io.joynr.proxy.invocation.SubscriptionInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 
 import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +49,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+import joynr.MethodMetaInformation;
 import joynr.exceptions.ApplicationException;
 
 import org.slf4j.Logger;
@@ -406,6 +408,34 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             throw e;
         } catch (Exception e) {
             throw new JoynrRuntimeException(e);
+        }
+    }
+
+    @Override
+    public void abort(JoynrRuntimeException exception) {
+        setThrowableForInvoke(exception);
+
+        for (Iterator<MethodInvocation> iterator = queuedRpcList.iterator(); iterator.hasNext();) {
+            MethodInvocation invocation = iterator.next();
+            try {
+                MethodMetaInformation metaInfo = new MethodMetaInformation(invocation.getMethod());
+                int callbackIndex = metaInfo.getCallbackIndex();
+                if (callbackIndex > -1) {
+                    ICallback callback = (ICallback) invocation.getArgs()[callbackIndex];
+                    callback.onFailure(exception);
+                }
+            } catch (Exception metaInfoException) {
+                logger.error("aborting call to method: " + invocation.getMethod().getName()
+                                     + " but unable to call onError callback because of: "
+                                     + metaInfoException.getMessage(),
+                             metaInfoException);
+            }
+            invocation.getFuture().onFailure(exception);
+        }
+
+        for (Iterator<SubscriptionInvocation> iterator = queuedSubscriptionInvocationList.iterator(); iterator.hasNext();) {
+            SubscriptionInvocation invocation = iterator.next();
+            invocation.getFuture().onFailure(exception);
         }
     }
 }
