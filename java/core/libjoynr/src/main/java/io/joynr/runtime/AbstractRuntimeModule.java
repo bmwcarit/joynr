@@ -44,6 +44,7 @@ import io.joynr.capabilities.CapabilitiesRegistrarImpl;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
+import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.DispatcherImpl;
@@ -101,6 +102,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         install(new JsonMessageSerializerModule());
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
                                           .build(ProxyInvocationHandlerFactory.class));
+        install(new JoynrMessageScopeModule());
 
         messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
         }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {

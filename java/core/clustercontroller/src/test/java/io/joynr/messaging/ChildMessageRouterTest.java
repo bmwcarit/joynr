@@ -1,7 +1,5 @@
 package io.joynr.messaging;
 
-import io.joynr.common.ExpiryDate;
-
 /*
  * #%L
  * %%
@@ -20,6 +18,8 @@ import io.joynr.common.ExpiryDate;
  * limitations under the License.
  * #L%
  */
+
+import io.joynr.common.ExpiryDate;
 
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;

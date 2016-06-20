@@ -43,14 +43,18 @@ import joynr.Request;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
 import io.joynr.JoynrVersion;
+import io.joynr.context.JoynrMessageScope;
 import io.joynr.util.AnnotationUtil;
 import joynr.types.Version;
 
 public class RequestInterpreter {
     private static final Logger logger = LoggerFactory.getLogger(RequestInterpreter.class);
 
+    private JoynrMessageScope joynrMessageScope;
+
     @Inject
-    public RequestInterpreter() {
+    public RequestInterpreter(JoynrMessageScope joynrMessageScope) {
+        this.joynrMessageScope = joynrMessageScope;
     }
 
     // use for caching because creation of MethodMetaInformation is expensive
@@ -107,6 +111,7 @@ public class RequestInterpreter {
                 // method with parameters
                 params = request.getParams();
             }
+            joynrMessageScope.activate();
             return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);
@@ -119,6 +124,8 @@ public class RequestInterpreter {
             logger.error("RequestInterpreter: Could not perform an RPC invocation: {}", cause == null ? e.toString()
                     : cause.getMessage());
             throw new ProviderRuntimeException(cause == null ? e.toString() : cause.toString());
+        } finally {
+            joynrMessageScope.deactivate();
         }
     }
 
