@@ -584,7 +584,7 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
     for (const auto& entry : persistedCapabilities) {
         joynr::types::DiscoveryEntry convDiscEntry;
         convertCapabilityEntryIntoDiscoveryEntry(entry, convDiscEntry);
-        insertInCache(convDiscEntry, false, true, false);
+        insertInCache(convDiscEntry, entry.isGlobal(), true, entry.isGlobal());
     }
 }
 
