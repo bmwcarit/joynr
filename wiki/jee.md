@@ -10,6 +10,9 @@ other services
 * Internally uses EE container managed thread pools
 * Uses the EE container's JAX RS to receive joynr messages
 
+There is also an example application based on the Radio App example. See the end of this
+document for a description of the example.
+
 ## Installation
 
 If you're building from source, then you can build and install the artifact to
@@ -224,3 +227,52 @@ It is also possible to target multiple providers with one proxy. You can achieve
 this by either spcifying a set of domains during lookup, or a custom
 `ArbitrationStrategyFunction` in the `DiscoveryQos`, or combine both approaches.
 See the [Java Developer Guide](java.md) for details.
+
+## Example
+
+Under `examples/radio-jee` you can find an example application which is based on the
+[Radio App example](./Tutorial.md). It uses the same `radio.fidl` file from the tutorial
+but implements it as a JEE provider application and a separate JEE consumer application.
+
+The project is sub-divided into one multi-module parent project and three subprojects:
+
+```
+ - radio-jee
+   |- radio-jee-api
+   |- radio-jee-provider
+   |- radio-jee-consumer
+```
+
+In order to build the project, change to the `radio-jee` directory and call `mvn install`.
+
+The following describes running the example on [Payara 4.1](http://www.payara.fish). First,
+install the application server and you will also need to install an MQTT broker, e.g.
+[Mosquitto](http://mosquitto.org).
+
+Start the MQTT broker, and make sure it's accepting traffic on `1883`.
+
+Next, fire up the joynr backend service by changing to the `radio-jee` directory and
+executing `mvn -N -Pbackend-services jetty:run`.
+
+Then start up the Payara server by changing to the Payara install directory and executing
+`bin/asadmin start-domain`. Follow the instructions above for configuring the required
+managed executor service. Finally, deploy the provider and consumer applications:
+
+- `bin/asadmin deploy <joynr home>/examples/radio-jee/radio-jee-provider/target/radio-jee-provider.war`
+- `bin/asadmin deploy <joynr home>/examples/radio-jee/radio-jee-consumer/target/radio-jee-consumer.war`
+
+Once both applications have started up successfully, you can use an HTTP client (e.g. `curl`
+on the command line or [Paw](https://luckymarmot.com/paw) on Mac OS X) to trigger calls
+from the consumer to the client:
+
+- `curl -X POST http://localhost:8080/radio-jee-consumer/radio-stations/shuffle`
+	- This method has no explicit return value, if you don't get an error, it worked
+- `curl http://localhost:8080/radio-jee-consumer/radio-stations/current-station`
+	- This gets the current station, and you should see some output similar to:
+	  `{"country":"GERMANY","name":"Bayern 3","trafficService":true}`
+
+Next, explore the code in the `radio-jee-provider` and `radio-jee-consumer` projects.
+Note the `radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java`
+and `radio-jee-consumer/src/main/java/io/joynr/examples/jee/RadioConsumerRestEndpoint.java`
+classes in particular, which represent the implementation of the joynr provider for the
+Radio service, and the consumer thereof.
