@@ -98,12 +98,15 @@ public class ProviderWrapper implements InvocationHandler {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Method delegateToMethod = getMethodFromInterfaces(bean.getBeanClass(), method);
-        Object delegate = createDelegateForMethod(method);
+        boolean isProviderMethod = matchesJoynrProviderMethod(method);
+        Method delegateToMethod = getMethodFromInterfaces(bean.getBeanClass(), method, isProviderMethod);
+        Object delegate = createDelegateForMethod(method, isProviderMethod);
         Object result;
         try {
-            JoynrJeeMessageContext.getInstance().activate();
-            copyMessageCreatorInfo();
+            if (delegateToMethod != method) {
+                JoynrJeeMessageContext.getInstance().activate();
+                copyMessageCreatorInfo();
+            }
             result = delegateToMethod.invoke(delegate, args);
             if (delegate != this) {
                 AbstractDeferred deferred;
@@ -118,7 +121,9 @@ public class ProviderWrapper implements InvocationHandler {
                 return promiseResult;
             }
         } finally {
-            JoynrJeeMessageContext.getInstance().deactivate();
+            if (delegateToMethod != method) {
+                JoynrJeeMessageContext.getInstance().deactivate();
+            }
         }
         return result;
     }
@@ -141,18 +146,20 @@ public class ProviderWrapper implements InvocationHandler {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Object createDelegateForMethod(Method method) {
-        if (OBJECT_METHODS.contains(method) || matchesJoynrProviderMethod(method)) {
+    private Object createDelegateForMethod(Method method, boolean isProviderMethod) {
+        if (OBJECT_METHODS.contains(method) || isProviderMethod) {
             return this;
         }
         return bean.create((CreationalContext) beanManager.createCreationalContext(bean));
     }
 
-    private Method getMethodFromInterfaces(Class<?> beanClass, Method method) throws NoSuchMethodException {
+    private Method getMethodFromInterfaces(Class<?> beanClass,
+                                           Method method,
+                                           boolean isProviderMethod) throws NoSuchMethodException {
         String name = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         Method result = method;
-        if (!matchesJoynrProviderMethod(method)) {
+        if (!isProviderMethod) {
             result = null;
             for (Class<?> interfaceClass : beanClass.getInterfaces()) {
                 try {
