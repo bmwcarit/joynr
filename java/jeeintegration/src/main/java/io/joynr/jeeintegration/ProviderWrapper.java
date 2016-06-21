@@ -21,7 +21,9 @@ package io.joynr.jeeintegration;
 
 import static java.lang.String.format;
 
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
+import io.joynr.messaging.JoynrMessageCreator;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
@@ -32,6 +34,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
@@ -39,6 +42,8 @@ import javax.enterprise.inject.spi.BeanManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
 
 /**
  * This class wraps an EJB which is decorated with {@link io.joynr.jeeintegration.api.ServiceProvider} and has a valid
@@ -57,6 +62,7 @@ public class ProviderWrapper implements InvocationHandler {
 
     private Bean<?> bean;
     private BeanManager beanManager;
+    private Injector injector;
 
     /**
      * Initialises the instance with the service interface which will be exposed and the bean reference it is meant to
@@ -66,10 +72,12 @@ public class ProviderWrapper implements InvocationHandler {
      *            the bean reference to which calls will be delegated.
      * @param beanManager
      *            the bean manager
+     * @param injector
      */
-    public ProviderWrapper(Bean<?> bean, BeanManager beanManager) {
+    public ProviderWrapper(Bean<?> bean, BeanManager beanManager, Injector injector) {
         this.bean = bean;
         this.beanManager = beanManager;
+        this.injector = injector;
     }
 
     /**
@@ -95,6 +103,7 @@ public class ProviderWrapper implements InvocationHandler {
         Object result;
         try {
             JoynrJeeMessageContext.getInstance().activate();
+            copyMessageCreatorInfo();
             result = delegateToMethod.invoke(delegate, args);
             if (delegate != this) {
                 AbstractDeferred deferred;
@@ -112,6 +121,23 @@ public class ProviderWrapper implements InvocationHandler {
             JoynrJeeMessageContext.getInstance().deactivate();
         }
         return result;
+    }
+
+    private void copyMessageCreatorInfo() {
+        JoynrMessageCreator joynrMessageCreator = injector.getInstance(JoynrMessageCreator.class);
+        Set<Bean<?>> beans = beanManager.getBeans(JoynrCallingPrincipal.class);
+        if (beans.size() != 1) {
+            throw new IllegalStateException("There must be exactly one EJB of type "
+                    + JoynrCallingPrincipal.class.getName() + ". Found " + beans.size());
+        }
+        @SuppressWarnings("unchecked")
+        Bean<JoynrCallingPrincipal> bean = (Bean<JoynrCallingPrincipal>) beans.iterator().next();
+        JoynrCallingPrincipal reference = (JoynrCallingPrincipal) beanManager.getReference(bean,
+                                                                                           JoynrCallingPrincipal.class,
+                                                                                           beanManager.createCreationalContext(bean));
+        String messageCreatorId = joynrMessageCreator.getMessageCreatorId();
+        LOG.trace("Setting user '{}' for message processing context.", messageCreatorId);
+        reference.setUsername(messageCreatorId);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

@@ -105,7 +105,8 @@ public class JoynrIntegrationBean {
             Object provider = Proxy.newProxyInstance(bean.getBeanClass().getClassLoader(),
                                                                             new Class<?>[]{ serviceInterface },
                                                                             new ProviderWrapper(bean,
-                                                                                                beanManager));
+                                                                         beanManager,
+                                                                         joynrRuntimeFactory.getInjector()));
             ProviderQos providerQos = null;
             for (ProviderQosFactory factory : providerQosFactories) {
                 if (factory.providesFor(serviceInterface)) {
