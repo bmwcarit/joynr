@@ -57,9 +57,12 @@ class EnumHTemplate extends EnumTemplate {
 #include <cstdint>
 #include <ostream>
 #include <string>
-#include <cstdint>
+
 #include "joynr/Util.h"
 #include "joynr/Variant.h"
+
+#include <muesli/TypeRegistry.h>
+#include <muesli/Traits.h>
 
 «IF type.hasExtendsDeclaration»
 	#include «type.extendedType.includeOf»
@@ -194,6 +197,16 @@ struct hash<«type.buildPackagePath("::", true)»::«typeName»::«getNestedEnum
 	}
 };
 } // namespace std
+
+MUESLI_REGISTER_TYPE(«type.typeName», "«type.typeNameOfContainingClass.replace("::", ".")»")
+
+namespace muesli
+{
+template <>
+struct EnumTraits<«type.typeName»>
+{
+	using Wrapper = «type.typeNameOfContainingClass»;
+};
 
 #endif // «headerGuard»
 '''

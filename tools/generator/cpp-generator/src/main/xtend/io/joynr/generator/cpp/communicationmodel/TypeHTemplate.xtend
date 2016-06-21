@@ -70,6 +70,14 @@ class TypeHTemplate extends CompoundTypeTemplate {
 	#include «member.includeOf»
 «ENDFOR»
 
+#include <muesli/TypeRegistry.h>
+«IF type.members.size > 0 »
+#include <muesli/NameValuePair.h>
+«ENDIF»
+«IF hasExtendsDeclaration(type)»
+#include <muesli/BaseClass.h>
+«ENDIF»
+
 «getNamespaceStarter(type, true)»
 
 /**
@@ -255,7 +263,11 @@ protected:
 	«ENDIF»
 
 
+«val serializeObjName = typeName.toLowerCase + "Obj"»
 private:
+	// serialize «typeName» with muesli
+	template <typename Archive>
+	friend void serialize(Archive& archive, «typeName»& «serializeObjName»);
 
 	// members
 	«FOR member: getMembers(type)»
@@ -267,6 +279,25 @@ private:
 };
 
 std::size_t hash_value(const «typeName»& «typeName.toFirstLower»Value);
+
+// serialize «typeName» with muesli
+template <typename Archive>
+void serialize(Archive& archive, «typeName»& «serializeObjName»)
+{
+«IF getMembers(type).size > 0 || hasExtendsDeclaration(type)»
+	archive(
+			«IF hasExtendsDeclaration(type)»
+			muesli::BaseClass<«getExtendedType(type).joynrName»>(&«serializeObjName»)«IF type.members.size >0 »,«ENDIF»
+			«ENDIF»
+			«FOR member: type.members SEPARATOR ','»
+			muesli::make_nvp("«member.joynrName»", «serializeObjName».«member.joynrName»)
+			«ENDFOR»
+	);
+«ELSE»
+	std::ignore = archive;
+	std::ignore = «serializeObjName»;
+«ENDIF»
+}
 
 «getNamespaceEnder(type, true)»
 
@@ -291,6 +322,8 @@ struct hash<«type.typeName»> {
 	}
 };
 } // namespace std
+
+MUESLI_REGISTER_TYPE(«type.typeName», "«type.typeName.replace("::", ".")»")
 
 #endif // «headerGuard»
 '''

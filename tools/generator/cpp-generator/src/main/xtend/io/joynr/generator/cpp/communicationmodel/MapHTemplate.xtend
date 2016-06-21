@@ -69,11 +69,15 @@ class MapHTemplate extends MapTemplate {
 	#include «member.includeOf»
 «ENDFOR»
 
+#include <muesli/TypeRegistry.h>
+
 «getNamespaceStarter(type, true)»
 
 «type.typeDefinition»
 
 «getNamespaceEnder(type, true)»
+
+MUESLI_REGISTER_TYPE(«type.typeName», "«type.typeName.replace("::", ".")»")
 
 #endif // «headerGuard»
 '''
@@ -82,7 +86,7 @@ private def getTypeDefinition(FMapType type)
 '''
 «val mapType = "std::map<"  + type.keyType.typeName + ", " + type.valueType.typeName + ">"»
 /**
- * @brief Enumeration wrapper class «type.joynrName»
+ * @brief Map class «type.joynrName»
  *
  * @version «majorVersion».«minorVersion»
  */
