@@ -21,6 +21,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/types/Version.h"
 #include "string"
 
 namespace joynr
@@ -48,6 +49,8 @@ public:
                                            IBroadcastListener* broadcastListener) = 0;
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
                                              IBroadcastListener* broadcastListener) = 0;
+
+    virtual types::Version getProviderVersion() = 0;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RequestCaller);
