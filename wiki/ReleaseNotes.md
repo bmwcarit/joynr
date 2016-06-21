@@ -5,7 +5,13 @@
   completion (or failure) of the discovery process.
 
 ##Other changes
-* **[C++, Java, JS]** Enriched the system integration tests to have test from c++/node apps towards java jee apps
+* **[C++, Java, JS]** Enriched the system integration tests to have test from c++/node apps towards
+  java jee apps
+* **[C++]** Removed option `USE_PLATFORM_DEPENDENCIES` from CMake. By default all dependencies are
+  resolved from system installation paths. However, joynr offers options
+  (`USE_PLATFORM_<DEPENDENCY>=OFF`) to turn system resolution off. In this case, joynr downloads
+  and builds individual dependencies during the joynr build using CMake's ExternalProject_Add
+  mechanism.
 
 #joynr 0.18.2
 This is a minor bug fix release.
