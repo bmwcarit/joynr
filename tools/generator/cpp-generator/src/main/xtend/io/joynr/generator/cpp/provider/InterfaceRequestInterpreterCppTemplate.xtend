@@ -38,6 +38,10 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 	@Inject private extension MethodUtil
 	@Inject private extension InterfaceUtil
 
+	def getRequestCallerName() {
+		francaIntf.joynrName.toFirstLower + "RequestCallerVar"
+	}
+
 	def handleInputParams(FMethod method) {
 		val methodName = method.joynrName
 		val inputParams = getInputParameters(method)
@@ -57,7 +61,7 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 							«ELSEIF input.isArray»
 								//isArray
 								if (!«inputName»Var.is<std::vector<Variant>>()) {
-									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
+									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)", «requestCallerName»->getProviderVersion()));
 									return;
 								}
 								std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
@@ -65,7 +69,7 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 							«ELSEIF inputType.isByteBuffer»
 								//isArray
 								if (!«inputName»Var.is<std::vector<Variant>>()) {
-									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
+									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)", «requestCallerName»->getProviderVersion()));
 									return;
 								}
 								std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
@@ -90,7 +94,7 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 								«IF method.fireAndForget»
 									JOYNR_LOG_ERROR(logger, "Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)");
 								«ELSE»
-									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)"));
+									onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («input.joynrTypeName»)", «requestCallerName»->getProviderVersion()));
 								«ENDIF»
 									return;
 								}
@@ -100,9 +104,9 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 '''
 	}
 
-	override generate()
+	override generate() {
+		val interfaceName = francaIntf.joynrName
 '''
-«val interfaceName = francaIntf.joynrName»
 «warning()»
 #include <functional>
 #include <tuple>
@@ -127,7 +131,6 @@ INIT_LOGGER(«interfaceName»RequestInterpreter);
 {
 }
 
-«val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
 «val attributes = getAttributes(francaIntf)»
 «val methodsWithoutFireAndForget = getMethods(francaIntf).filter[!fireAndForget]»
 void «interfaceName»RequestInterpreter::execute(
@@ -141,11 +144,11 @@ void «interfaceName»RequestInterpreter::execute(
 	std::ignore = paramValues;//if all methods of the interface are empty, the paramValues would not be used and give a warning.
 	std::ignore = paramTypes;//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
 
-	«IF francaIntf.hasReadAttribute || francaIntf.hasWriteAttribute || !methodsWithoutFireAndForget.empty»
-		// cast generic RequestCaller to «interfaceName»Requestcaller
-		std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
-				std::dynamic_pointer_cast<«interfaceName»RequestCaller>(requestCaller);
+	// cast generic RequestCaller to «interfaceName»Requestcaller
+	std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
+		std::dynamic_pointer_cast<«interfaceName»RequestCaller>(requestCaller);
 
+	«IF francaIntf.hasReadAttribute || francaIntf.hasWriteAttribute || !methodsWithoutFireAndForget.empty»
 		// execute operation
 		«IF !attributes.empty»
 			«FOR attribute : attributes»
@@ -194,7 +197,7 @@ void «interfaceName»RequestInterpreter::execute(
 						«ELSEIF attribute.isArray»
 							«val attributeRef = joynrGenerationPrefix + "::util::convertVariantVectorToVector<" + attributeType.typeName + ">(paramList)"»
 							if (!«attributeName»Var.is<std::vector<Variant>>()) {
-								onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
+								onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)", «requestCallerName»->getProviderVersion()));
 								return;
 							}
 							std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
@@ -203,7 +206,7 @@ void «interfaceName»RequestInterpreter::execute(
 						«ELSEIF attributeType.isByteBuffer»
 							//isArray
 							if (!«attributeName»Var.is<std::vector<Variant>>()) {
-								onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
+								onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)", «requestCallerName»->getProviderVersion()));
 								return;
 							}
 							std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
@@ -225,7 +228,7 @@ void «interfaceName»RequestInterpreter::execute(
 							«ELSE»
 								if (!«attributeName»Var.is<«attribute.typeName»>()) {
 							«ENDIF»
-								onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
+								onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)", «requestCallerName»->getProviderVersion()));
 								return;
 							}
 							«attribute.typeName» typedInput«attributeName.toFirstUpper» =
@@ -238,7 +241,7 @@ void «interfaceName»RequestInterpreter::execute(
 								};
 						«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerOnSuccess, onError);
 					} catch (const std::invalid_argument& exception) {
-						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
+						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)", «requestCallerName»->getProviderVersion()));
 					}
 					return;
 				}
@@ -289,7 +292,7 @@ void «interfaceName»RequestInterpreter::execute(
 							requestCallerOnSuccess,
 							onError);
 				} catch (const std::invalid_argument& exception) {
-					onError(exceptions::MethodInvocationException(exception.what()));
+					onError(exceptions::MethodInvocationException(exception.what(), «requestCallerName»->getProviderVersion()));
 				}
 				return;
 			}
@@ -300,7 +303,7 @@ void «interfaceName»RequestInterpreter::execute(
 	«ENDIF»
 
 	JOYNR_LOG_WARN(logger, "unknown method name for interface «interfaceName»: {}", methodName);
-	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + methodName));
+	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + methodName, «requestCallerName»->getProviderVersion()));
 }
 
 void «interfaceName»RequestInterpreter::execute(
@@ -346,4 +349,5 @@ void «interfaceName»RequestInterpreter::execute(
 }
 «getNamespaceEnder(francaIntf)»
 '''
+}
 }
