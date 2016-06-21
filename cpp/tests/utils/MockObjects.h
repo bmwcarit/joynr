@@ -98,6 +98,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IProxyBuilder.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/types/Version.h"
 
 #include "libjoynr/websocket/WebSocketPpClient.h"
 #include "runtimes/cluster-controller-runtime/websocket/QWebSocketSendWrapper.h"
@@ -649,7 +650,12 @@ public:
         onSuccess(tStringMapIn);
     }
 
+    const joynr::types::Version& getProviderVersion() const {
+        return providerVersion;
+    }
+
     MockTestRequestCaller() :
+            providerVersion(47, 11),
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
     {
         ON_CALL(
@@ -680,6 +686,7 @@ public:
 
     }
     MockTestRequestCaller(testing::Cardinality getLocationCardinality) :
+            providerVersion(47, 11),
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
     {
         EXPECT_CALL(
@@ -717,6 +724,9 @@ public:
     MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));
 
     std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
+
+private:
+    joynr::types::Version providerVersion;
 };
 
 class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {

@@ -98,6 +98,25 @@ void ClassDeserializerImpl<exceptions::ApplicationException>::deserialize(
         }
     }
 }
+
+template <>
+void ClassDeserializerImpl<exceptions::MethodInvocationException>::deserialize(
+        exceptions::MethodInvocationException& t,
+        IObject& o)
+{
+    while (o.hasNextField()) {
+        IField& field = o.nextField();
+        if (field.name() == "detailMessage") {
+            t.setMessage(field.value());
+        } else if (field.name() == "providerVersion") {
+            IObject& providerVersionObject = field.value();
+            Version providerVersion;
+            ClassDeserializerImpl<Version>::deserialize(providerVersion, providerVersionObject);
+            t.setProviderVersion(providerVersion);
+        }
+    }
+}
+
 template <>
 void ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(
         exceptions::JoynrRuntimeException& t,
@@ -127,13 +146,6 @@ void ClassDeserializerImpl<exceptions::DiscoveryException>::deserialize(
 template <>
 void ClassDeserializerImpl<exceptions::JoynrTimeOutException>::deserialize(
         exceptions::JoynrTimeOutException& t,
-        IObject& o)
-{
-    ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(t, o);
-}
-template <>
-void ClassDeserializerImpl<exceptions::MethodInvocationException>::deserialize(
-        exceptions::MethodInvocationException& t,
         IObject& o)
 {
     ClassDeserializerImpl<exceptions::JoynrRuntimeException>::deserialize(t, o);
@@ -204,6 +216,20 @@ void ClassSerializerImpl<exceptions::ApplicationException>::serialize(
 }
 
 template <>
+void ClassSerializerImpl<exceptions::MethodInvocationException>::serialize(
+        const exceptions::MethodInvocationException& exception,
+        std::ostream& stream)
+{
+    initSerialization(JoynrTypeId<exceptions::MethodInvocationException>::getTypeName(), stream);
+    if (!exception.getMessage().empty()) {
+        stream << R"("detailMessage": ")" << exception.getMessage() << R"(",)";
+    }
+    stream << R"("providerVersion": )";
+    ClassSerializerImpl<Version>::serialize(exception.getProviderVersion(), stream);
+    stream << "}"; // exception
+}
+
+template <>
 void ClassSerializerImpl<exceptions::JoynrRuntimeException>::serialize(
         const exceptions::JoynrRuntimeException& exception,
         std::ostream& stream)
@@ -234,14 +260,6 @@ void ClassSerializerImpl<exceptions::JoynrTimeOutException>::serialize(
 {
     serializeExceptionWithDetailMessage(
             JoynrTypeId<exceptions::JoynrTimeOutException>::getTypeName(), exception, stream);
-}
-template <>
-void ClassSerializerImpl<exceptions::MethodInvocationException>::serialize(
-        const exceptions::MethodInvocationException& exception,
-        std::ostream& stream)
-{
-    serializeExceptionWithDetailMessage(
-            JoynrTypeId<exceptions::MethodInvocationException>::getTypeName(), exception, stream);
 }
 template <>
 void ClassSerializerImpl<exceptions::PublicationMissedException>::serialize(

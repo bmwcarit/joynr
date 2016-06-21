@@ -54,6 +54,10 @@ public:
                                        const Version& providerVersion) noexcept;
     const std::string& getTypeName() const override;
     MethodInvocationException* clone() const override;
+
+    void setProviderVersion(const Version& providerVersion);
+    const Version& getProviderVersion() const;
+
     /**
      * @brief The typeName used for serialization and logging.
      */

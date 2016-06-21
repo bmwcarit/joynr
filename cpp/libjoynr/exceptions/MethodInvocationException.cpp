@@ -47,6 +47,16 @@ MethodInvocationException::MethodInvocationException(const std::string& message,
 {
 }
 
+const Version& MethodInvocationException::getProviderVersion() const
+{
+    return providerVersion;
+}
+
+void MethodInvocationException::setProviderVersion(const Version& providerVersion)
+{
+    this->providerVersion = providerVersion;
+}
+
 const std::string& MethodInvocationException::getTypeName() const
 {
     return MethodInvocationException::TYPE_NAME();
