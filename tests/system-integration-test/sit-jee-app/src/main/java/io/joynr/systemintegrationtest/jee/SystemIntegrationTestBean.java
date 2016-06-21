@@ -20,17 +20,32 @@ package io.joynr.systemintegrationtest.jee;
  */
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import joynr.test.SystemIntegrationTestSync;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 
 @Stateless
 @ServiceProvider(serviceInterface = SystemIntegrationTestSync.class)
 public class SystemIntegrationTestBean implements SystemIntegrationTestSync {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SystemIntegrationTestBean.class);
+
+    private JoynrCallingPrincipal joynrCallerPrincipal;
+
+    @Inject
+    public SystemIntegrationTestBean(JoynrCallingPrincipal joynrCallerPrincipal) {
+        this.joynrCallerPrincipal = joynrCallerPrincipal;
+    }
+
     @Override
     public Integer add(Integer addendA, Integer addendB) {
+        LOG.info("SIT INFO Being called by: " + joynrCallerPrincipal.getUsername());
         return addendA + addendB;
     }
 
