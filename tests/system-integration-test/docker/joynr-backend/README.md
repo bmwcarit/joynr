@@ -1,7 +1,7 @@
 # joynr backend Docker Image
 
 This directory contains the necessary scripts to build a Docker Image
-containing an Apache Tomcat runtime with the following three joynr
+containing a Jetty runtime with the following three joynr
 WAR components deployed:
 
 * Discovery Service
