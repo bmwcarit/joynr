@@ -336,7 +336,8 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     sharedWebSocket = new SharedWebSocket({
                         remoteAddress : ccAddress,
-                        localAddress : localAddress
+                        localAddress : localAddress,
+                        provisioning : provisioning.websocket || {}
                     });
 
                     webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
