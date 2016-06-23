@@ -31,6 +31,7 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
 using ::testing::Return;
+using ::testing::Pointee;
 using namespace joynr;
 
 class MessageRouterTest : public ::testing::Test {
@@ -220,4 +221,26 @@ TEST_F(MessageRouterTest, routeMessageToMqttAddress) {
             create(addressWithChannelId("mqtt", destinationChannelId))
             ).Times(1);
     routeMessageToAddress(destinationParticipantId, address);
+}
+
+TEST_F(MessageRouterTest, restoreRoutingTable) {
+    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
+    std::remove(routingTablePersistenceFilename.c_str());
+
+    auto messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
+    auto messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>());
+    std::string participantId = "myParticipantId";
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
+
+    // MUST be done BEFORE savePersistence to pass the persistence filename to the publicationManager
+    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+    messageRouter->addProvisionedNextHop(participantId, address); // Saves the RoutingTable to the persistence file.
+
+    messageRouter = std::make_unique<MessageRouter>(messagingStubFactory, std::unique_ptr<IPlatformSecurityManager>());
+
+    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+
+    joynrMessage.setHeaderTo(participantId);
+    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*address))));
+    messageRouter->route(joynrMessage);
 }

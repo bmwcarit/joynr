@@ -474,7 +474,9 @@ void MessageRouter::addNextHopToParent(
 void MessageRouter::loadRoutingTable(std::string fileName)
 {
     // update reference file
-    routingTableFileName = std::move(fileName);
+    if (fileName != routingTableFileName) {
+        routingTableFileName = std::move(fileName);
+    }
 
     WriteLocker lock(routingTableLock);
     try {

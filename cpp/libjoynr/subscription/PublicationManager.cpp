@@ -152,10 +152,8 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler)
           delayedScheduler(scheduler),
           shutDownMutex(),
           shuttingDown(false),
-          subscriptionRequestStorageFileName(
-                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-          broadcastSubscriptionRequestStorageFileName(
-                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          subscriptionRequestStorageFileName(),
+          broadcastSubscriptionRequestStorageFileName(),
           queuedSubscriptionRequests(),
           queuedSubscriptionRequestsMutex(),
           queuedBroadcastSubscriptionRequests(),
@@ -165,8 +163,6 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler)
           broadcastFilters(),
           broadcastFilterLock()
 {
-    loadSavedAttributeSubscriptionRequestsMap();
-    loadSavedBroadcastSubscriptionRequestsMap();
 }
 
 PublicationManager::PublicationManager(int maxThreads)
@@ -177,10 +173,8 @@ PublicationManager::PublicationManager(int maxThreads)
           delayedScheduler(new ThreadPoolDelayedScheduler(maxThreads, "PubManager")),
           shutDownMutex(),
           shuttingDown(false),
-          subscriptionRequestStorageFileName(
-                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-          broadcastSubscriptionRequestStorageFileName(
-                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          subscriptionRequestStorageFileName(),
+          broadcastSubscriptionRequestStorageFileName(),
           queuedSubscriptionRequests(),
           queuedSubscriptionRequestsMutex(),
           queuedBroadcastSubscriptionRequests(),
@@ -190,8 +184,6 @@ PublicationManager::PublicationManager(int maxThreads)
           broadcastFilters(),
           broadcastFilterLock()
 {
-    loadSavedAttributeSubscriptionRequestsMap();
-    loadSavedBroadcastSubscriptionRequestsMap();
 }
 
 bool isSubscriptionExpired(const SubscriptionQos* qos, int offset = 0)
@@ -532,22 +524,34 @@ void PublicationManager::restore(const std::string& providerId,
     }
 }
 
-// This function assumes that subscriptionList is a copy that is exclusively used by this function
-void PublicationManager::saveAttributeSubscriptionRequestsMap(
-        const std::vector<Variant>& subscriptionVector)
+void PublicationManager::loadSavedAttributeSubscriptionRequestsMap(const std::string& fileName)
 {
-    JOYNR_LOG_DEBUG(logger, "Saving active attribute subscriptionRequests to file.");
+    JOYNR_LOG_DEBUG(logger, "Loading stored AttributeSubscriptionrequests.");
 
-    saveSubscriptionRequestsMap(subscriptionVector, subscriptionRequestStorageFileName);
-}
-
-void PublicationManager::loadSavedAttributeSubscriptionRequestsMap()
-{
+    // update reference file
+    if (fileName != subscriptionRequestStorageFileName) {
+        subscriptionRequestStorageFileName = std::move(fileName);
+    }
 
     loadSavedSubscriptionRequestsMap<SubscriptionRequestInformation>(
             subscriptionRequestStorageFileName,
             queuedSubscriptionRequestsMutex,
             queuedSubscriptionRequests);
+}
+
+void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap(const std::string& fileName)
+{
+    JOYNR_LOG_DEBUG(logger, "Loading stored BroadcastSubscriptionrequests.");
+
+    // update reference file
+    if (fileName != broadcastSubscriptionRequestStorageFileName) {
+        broadcastSubscriptionRequestStorageFileName = std::move(fileName);
+    }
+
+    loadSavedSubscriptionRequestsMap<BroadcastSubscriptionRequestInformation>(
+            broadcastSubscriptionRequestStorageFileName,
+            queuedBroadcastSubscriptionRequestsMutex,
+            queuedBroadcastSubscriptionRequests);
 }
 
 // This function assumes that subscriptionList is a copy that is exclusively used by this function
@@ -559,14 +563,13 @@ void PublicationManager::saveBroadcastSubscriptionRequestsMap(
     saveSubscriptionRequestsMap(subscriptionVector, broadcastSubscriptionRequestStorageFileName);
 }
 
-void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
+// This function assumes that subscriptionList is a copy that is exclusively used by this function
+void PublicationManager::saveAttributeSubscriptionRequestsMap(
+        const std::vector<Variant>& subscriptionVector)
 {
-    JOYNR_LOG_DEBUG(logger, "Loading stored BroadcastSubscriptionrequests.");
+    JOYNR_LOG_DEBUG(logger, "Saving active attribute subscriptionRequests to file.");
 
-    loadSavedSubscriptionRequestsMap<BroadcastSubscriptionRequestInformation>(
-            broadcastSubscriptionRequestStorageFileName,
-            queuedBroadcastSubscriptionRequestsMutex,
-            queuedBroadcastSubscriptionRequests);
+    saveSubscriptionRequestsMap(subscriptionVector, subscriptionRequestStorageFileName);
 }
 
 template <class RequestInformationType>

@@ -156,6 +156,9 @@ public:
                                    const std::vector<Variant>& values,
                                    const std::vector<std::shared_ptr<IBroadcastFilter>>& filters);
 
+    void loadSavedBroadcastSubscriptionRequestsMap(const std::string& fileName);
+    void loadSavedAttributeSubscriptionRequestsMap(const std::string& fileName);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
 
@@ -226,9 +229,7 @@ private:
     bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
     void saveAttributeSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
-    void loadSavedAttributeSubscriptionRequestsMap();
     void saveBroadcastSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
-    void loadSavedBroadcastSubscriptionRequestsMap();
 
     void reschedulePublication(const std::string& subscriptionId, std::int64_t nextPublication);
 
