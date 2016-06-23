@@ -267,6 +267,7 @@ public void run() {
     ProxyBuilder<<Interface>Proxy> proxyBuilder =
         runtime.getProxyBuilder(providerDomain, <Interface>Proxy.class);
     try {
+        // Also can call proxyBuilder.build(callback)
         <interface>Proxy = proxyBuilder.
             setMessagingQos(new MessagingQos()).
             setDiscoveryQos(discoveryQos).
@@ -280,6 +281,8 @@ public void run() {
     }
 }
 ```
+A callback can also be added to the proxyBuilder.build() call, allowing application code to be
+notified when the discovery process has completed.
 
 It is also possible to obtain a proxy for targeting multiple providers. You can either do
 this by specifying a set of domains, by providing a custom `ArbitrationStrategyFunction`

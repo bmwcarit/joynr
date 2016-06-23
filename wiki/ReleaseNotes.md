@@ -1,7 +1,8 @@
 #joynr 0.19.0
 
 ##API relevant changes
-None.
+* **[Java]** Added ability to pass a callback to the proxyBuilder.build() method to be notified on
+  completion (or failure) of the discovery process.
 
 ##Other changes
 * **[C++, Java, JS]** Enriched the system integration tests to have test from c++/node apps towards java jee apps
