@@ -131,11 +131,16 @@ var messagingValue = {
     maxQueueSizeInKBytes: <max queue size in KB bytes> // default value is 10000
 };
 
+var persistencyValue = {
+    clearPersistency: <true|false> // clear persistent data during startup. Default value is false
+};
+
 var websocketLibJoynrProvisioning = {
     capabilities: capabilitiesValue, //optional
     logging: loggingValue, //optional
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
+    persistency: persistencyValue, //optional
     ccAddress: <ccAddress>, /*
                              * mandatory input: the address, how the cluster controller
                              * can be reached. For the WebSocketLibjoynrRuntime, the
@@ -157,6 +162,7 @@ var interTabLibjoynrProvisioning = {
     logging: loggingValue, //optional
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
+    persistency: persistencyValue, //optional
     window : <window object>,
     windowId : windowId,
     parentWindow : <parent windows>, // e.g. window.opener || window.top
@@ -168,6 +174,7 @@ var inProcessProvisioning = {
     logging: loggingValue, //optional
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
+    persistency: persistencyValue, //optional
     bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
     bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/
     channelId: <channelId to be used>, // optional
@@ -183,6 +190,7 @@ var interTabClusterControllerProvisioning = {
     logging: loggingValue, //optional
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
+    persistency: persistencyValue, //optional
     bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
     bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/
     channelId: <channelId to be used>, // optional

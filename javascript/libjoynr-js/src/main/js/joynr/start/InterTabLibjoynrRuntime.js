@@ -304,7 +304,10 @@ define(
 
                             log = LoggerFactory.getLogger("joynr.start.InterTabLibjoynrRuntime");
 
-                            persistency = new LocalStorage();
+                            var persistencyProvisioning = provisioning.persistency || {};
+                            persistency = new LocalStorage({
+                                clearPersistency : persistencyProvisioning.clearPersistency
+                            });
 
                             if (Util.checkNullUndefined(provisioning.parentWindow)) {
                                 log.debug("provisioning.parentWindow not set. Use default setting \""
