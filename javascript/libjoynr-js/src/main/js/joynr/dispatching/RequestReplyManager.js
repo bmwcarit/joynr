@@ -32,6 +32,7 @@ define(
             "joynr/util/LongTimer",
             "joynr/exceptions/MethodInvocationException",
             "joynr/exceptions/ProviderRuntimeException",
+            "joynr/types/Version",
             "joynr/system/LoggerFactory"
         ],
         function(
@@ -45,6 +46,7 @@ define(
                 LongTimer,
                 MethodInvocationException,
                 ProviderRuntimeException,
+                Version,
                 LoggerFactory) {
             /**
              * The RequestReplyManager is responsible maintaining a list of providers that wish to
@@ -269,7 +271,11 @@ define(
                                                 + request.methodName
                                                 + "\" or an attribute \""
                                                 + attributeName
-                                                + "\" in the provider"
+                                                + "\" in the provider",
+                                            providerVersion: new Version({
+                                                majorVersion: provider.constructor.MAJOR_VERSION,
+                                                minorVersion: provider.constructor.MINOR_VERSION
+                                            })
                                         });
                                     }
                                 }
@@ -278,7 +284,11 @@ define(
                                 else {
                                     exception = new MethodInvocationException({
                                         detailMessage: "Could not find an operation \""
-                                            + request.methodName + "\" in the provider"
+                                            + request.methodName + "\" in the provider",
+                                        providerVersion: new Version({
+                                            majorVersion: provider.constructor.MAJOR_VERSION,
+                                            minorVersion: provider.constructor.MINOR_VERSION
+                                        })
                                     });
                                 }
                             }
@@ -360,7 +370,11 @@ define(
                                     } else {
                                         throw new MethodInvocationException({
                                             detailMessage: "Could not find an operation \""
-                                                + request.methodName + "\" in the provider"
+                                                + request.methodName + "\" in the provider",
+                                            providerVersion: new Version({
+                                                majorVersion: provider.constructor.MAJOR_VERSION,
+                                                minorVersion: provider.constructor.MINOR_VERSION
+                                            })
                                         });
                                     }
                                 };
