@@ -17,6 +17,7 @@
  * #L%
  */
 
+#include <algorithm>
 #include "joynr/LocalCapabilitiesDirectory.h"
 
 #include <boost/algorithm/string/predicate.hpp>
@@ -656,6 +657,16 @@ void LocalCapabilitiesDirectory::insertInCache(const CapabilityEntry& entry,
     }
 }
 
+bool LocalCapabilitiesDirectory::hasEntryInCache(const CapabilityEntry& entry, bool localEntries)
+{
+    // the combination participantId is unique for [domain, interfaceName, authtoken]
+    std::vector<CapabilityEntry> entryList =
+            searchCache(entry.getParticipantId(), std::chrono::milliseconds(-1), localEntries);
+
+    bool found = std::find(entryList.cbegin(), entryList.cend(), entry) != entryList.cend();
+    return found;
+}
+
 void LocalCapabilitiesDirectory::insertInCache(const joynr::types::DiscoveryEntry& discoveryEntry,
                                                bool isGlobal,
                                                bool localCache,
@@ -665,25 +676,9 @@ void LocalCapabilitiesDirectory::insertInCache(const joynr::types::DiscoveryEntr
     convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, newEntry);
     newEntry.setGlobal(isGlobal);
 
-    // do not dublicate entries:
-    // the combination participantId is unique for [domain, interfaceName, authtoken]
-    // check only for local registration: when register in the global cache, a second entry is an
-    // update of the age and a refresh
-    bool foundMatch = false;
-    if (localCache) {
-        std::vector<CapabilityEntry> entryList =
-                searchCache(newEntry.getParticipantId(), std::chrono::milliseconds(-1), true);
-        for (CapabilityEntry oldEntry : entryList) {
-            if (oldEntry == newEntry) {
-                foundMatch = true;
-                break;
-            }
-        }
-    }
-
     // after logic about duplicate entries stated in comment above
     // TypedClientMultiCache updates the age as stated in comment above
-    bool allowInsertInLocalCache = !foundMatch && localCache;
+    bool allowInsertInLocalCache = localCache && !hasEntryInCache(newEntry, localCache);
     insertInCache(newEntry, allowInsertInLocalCache, globalCache);
 }
 
