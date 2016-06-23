@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,19 @@
 
 #include <vector>
 
+#include "joynr/BaseReply.h"
+#include "joynr/Reply.h"
 #include "joynr/JoynrExport.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/Variant.h"
 
 namespace joynr
 {
 
-class JOYNR_EXPORT SubscriptionPublication
+class JOYNR_EXPORT SubscriptionPublication : public BaseReply
 {
 public:
     SubscriptionPublication();
+
+    explicit SubscriptionPublication(BaseReply&& reply);
 
     SubscriptionPublication(const SubscriptionPublication&) = default;
     SubscriptionPublication& operator=(const SubscriptionPublication&) = default;
@@ -47,16 +49,8 @@ public:
     std::string getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 
-    std::vector<Variant> getResponseVariant() const;
-    void setResponseVariant(const std::vector<Variant>& response);
-
-    const Variant& getErrorVariant() const;
-    void setErrorVariant(const Variant& errorVariant);
-
 private:
     std::string subscriptionId;
-    std::vector<Variant> responseVariant;
-    Variant errorVariant;
 };
 
 } // namespace joynr

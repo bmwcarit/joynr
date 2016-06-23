@@ -17,34 +17,35 @@
  * #L%
  */
 
-#include "joynr/Reply.h"
+#include "joynr/BaseReply.h"
+
+#include <memory>
+
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
 
-bool isReplyRegistered = Variant::registerType<Reply>("joynr.Reply");
-
-Reply::Reply() : requestReplyId()
+BaseReply::BaseReply() : response(), error()
 {
 }
 
-const std::string& Reply::getRequestReplyId() const
+std::shared_ptr<exceptions::JoynrException> BaseReply::getError() const
 {
-    return requestReplyId;
+    return error;
 }
 
-void Reply::setRequestReplyId(const std::string& requestReplyId)
+void BaseReply::setError(std::shared_ptr<exceptions::JoynrException> error)
 {
-    this->requestReplyId = requestReplyId;
+    this->error = std::move(error);
 }
 
-bool Reply::operator==(const Reply& other) const
+bool BaseReply::operator==(const BaseReply& other) const
 {
-    return requestReplyId == other.getRequestReplyId() && BaseReply::operator==(other);
+    return error == other.getError();
 }
 
-bool Reply::operator!=(const Reply& other) const
+bool BaseReply::operator!=(const BaseReply& other) const
 {
     return !(*this == other);
 }

@@ -50,7 +50,7 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 #include "joynr/TypeUtil.h"
 #include "joynr/Request.h"
 #include "joynr/OneWayRequest.h"
-#include "joynr/Reply.h"
+#include "joynr/BaseReply.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
@@ -68,7 +68,7 @@ INIT_LOGGER(«interfaceName»RequestInterpreter);
 void «interfaceName»RequestInterpreter::execute(
 		std::shared_ptr<joynr::RequestCaller> requestCaller,
 		Request& request,
-		std::function<void (Reply&& reply)> onSuccess,
+		std::function<void (BaseReply&& reply)> onSuccess,
 		std::function<void (const exceptions::JoynrException& exception)> onError
 ) {
 	«IF francaIntf.hasReadAttribute || francaIntf.hasWriteAttribute || !methodsWithoutFireAndForget.empty»
@@ -87,7 +87,7 @@ void «interfaceName»RequestInterpreter::execute(
 				if (methodName == "get«attributeName.toFirstUpper»"){
 					auto requestCallerOnSuccess =
 							[onSuccess = std::move(onSuccess)](«attribute.typeName» «attributeName»){
-								Reply reply;
+								BaseReply reply;
 								reply.setResponse(std::move(«attributeName»));
 								onSuccess(std::move(reply));
 							};
@@ -102,7 +102,7 @@ void «interfaceName»RequestInterpreter::execute(
 						request.getParams(typedInput«attributeName.toFirstUpper»);
 						auto requestCallerOnSuccess =
 								[onSuccess = std::move(onSuccess)] () {
-									onSuccess(Reply());
+									onSuccess(BaseReply());
 								};
 						«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», std::move(requestCallerOnSuccess), onError);
 					} catch (const std::exception&) {
@@ -126,7 +126,7 @@ void «interfaceName»RequestInterpreter::execute(
 				«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
 				auto requestCallerOnSuccess =
 						[onSuccess = std::move(onSuccess)](«outputTypedParamList»){
-							Reply reply;
+							BaseReply reply;
 							reply.setResponse(
 							«FOR param : method.outputParameters SEPARATOR ','»
 							«param.joynrName»

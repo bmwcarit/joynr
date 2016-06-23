@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,12 @@ static bool isSubscriptionPublicationRegistered =
 
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
-SubscriptionPublication::SubscriptionPublication()
-        : subscriptionId(), responseVariant(), errorVariant(Variant::NULL_VARIANT())
+SubscriptionPublication::SubscriptionPublication() : subscriptionId()
+{
+}
+
+SubscriptionPublication::SubscriptionPublication(Reply&& reply)
+        : response(std::move(reply.response)), error(std::move(reply.error))
 {
 }
 
@@ -42,29 +46,10 @@ void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionI
     this->subscriptionId = subscriptionId;
 }
 
-std::vector<Variant> SubscriptionPublication::getResponseVariant() const
-{
-    return responseVariant;
-}
-
-void SubscriptionPublication::setResponseVariant(const std::vector<Variant>& response)
-{
-    this->responseVariant = response;
-}
-
-const Variant& SubscriptionPublication::getErrorVariant() const
-{
-    return this->errorVariant;
-}
-
-void SubscriptionPublication::setErrorVariant(const Variant& errorVariant)
-{
-    this->errorVariant = errorVariant;
-}
-
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
 {
-    return subscriptionId == other.getSubscriptionId();
+    return subscriptionId == other.getSubscriptionId() && BaseReply::operator==(other);
+    ;
 }
 
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const

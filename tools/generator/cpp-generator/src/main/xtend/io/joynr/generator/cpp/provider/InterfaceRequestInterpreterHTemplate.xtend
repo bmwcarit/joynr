@@ -52,7 +52,7 @@ namespace joynr
 class RequestCaller;
 class Request;
 class OneWayRequest;
-class Reply;
+class BaseReply;
 
 namespace exceptions
 {
@@ -78,13 +78,13 @@ public:
 	 * @param requestCaller Object on which the method is to be executed
 	 * @param request Request which was received
 	 * @param onSuccess A callback function to be called once the asynchronous computation has
-	 * finished with success. Its signature expects a Reply containing the output parameters.
+	 * finished with success. Its signature expects a BaseReply containing the output parameters.
 	 * @param onError A callback function to be called once the asynchronous computation fails.
 	 * Its signature expects a JoynrException.
 	 */
 	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
 				 Request& request,
-				 std::function<void (Reply&& reply)> onSuccess,
+				 std::function<void (BaseReply&& reply)> onSuccess,
 				 std::function<void (const exceptions::JoynrException& exception)> onError) override;
 
 	/**

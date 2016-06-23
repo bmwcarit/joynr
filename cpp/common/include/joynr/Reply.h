@@ -22,20 +22,21 @@
 #include <string>
 #include <vector>
 
+#include "joynr/BaseReply.h"
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/Variant.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/serializer/Serializer.h"
-#include "joynr/serializer/SerializationPlaceholder.h"
 
 namespace joynr
 {
-class JOYNRCOMMON_EXPORT Reply
+class JOYNRCOMMON_EXPORT Reply : public BaseReply
 {
 public:
     Reply();
+    virtual ~Reply() = default;
+
+    Reply(Reply&) = default;
+    Reply& operator=(Reply&) = default;
+
     Reply(Reply&&) = default;
-    ~Reply() = default;
     Reply& operator=(Reply&&) = default;
 
     bool operator==(const Reply&) const;
@@ -43,33 +44,6 @@ public:
 
     const std::string& getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
-
-    const std::vector<Variant>& getResponseVariant() const;
-    void setResponseVariant(std::vector<Variant> response);
-
-    const Variant& getErrorVariant() const;
-    void setErrorVariant(const Variant& errorVariant);
-
-    std::shared_ptr<exceptions::JoynrException> getError() const;
-    void setError(std::shared_ptr<exceptions::JoynrException> error);
-
-    template <typename... Ts>
-    void setResponse(Ts&&... values)
-    {
-        response.setData(std::make_tuple(std::forward<Ts>(values)...));
-    }
-
-    template <typename... Ts>
-    void getResponse(std::tuple<Ts...>& responseTuple)
-    {
-        assert(hasResponse());
-        response.getData(responseTuple);
-    }
-
-    bool hasResponse() const
-    {
-        return response.containsInboundData();
-    }
 
     template <typename Archive>
     void serialize(Archive& archive)
@@ -79,10 +53,6 @@ public:
 
 private:
     std::string requestReplyId;
-    std::vector<Variant> responseVariant;
-    joynr::serializer::SerializationPlaceholder response;
-    Variant errorVariant;
-    std::shared_ptr<exceptions::JoynrException> error;
 };
 
 } // namespace joynr
