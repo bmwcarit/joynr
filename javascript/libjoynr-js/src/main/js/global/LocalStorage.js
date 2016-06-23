@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,29 @@
  *
  * @returns constructor for a localStorage object
  */
-define([], function() {
+define([ "joynr/util/Util"
+], function(Util) {
     /**
      * constructor for a localStorage object
+     * @param {Object}
+     *            settings the settings object
+     * @param {Boolean}
+     *            settings.clearPersistency localStorage is cleared if set to true
      *
      * @constructor LocalStorage
      */
-    var LocalStorage = function() {
-        return localStorage;
-    };
+    var LocalStorage =
+            function(settings) {
+                settings = settings || {};
+                Util.checkPropertyIfDefined(
+                        settings.clearPersistency,
+                        "Boolean",
+                        "settings.clearPersistency");
+                if (settings.clearPersistency) {
+                    localStorage.clear();
+                }
+                return localStorage;
+            };
 
     return LocalStorage;
 });

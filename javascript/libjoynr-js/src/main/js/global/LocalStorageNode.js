@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,37 @@
 /**
  * @returns constructor for a localStorage object
  */
-define([ "node-localstorage"
-], function(LocalStorage) {
+define([
+    "node-localstorage",
+    "joynr/util/Util"
+], function(LocalStorage, Util) {
     /**
      * LocalStorage constructor (node wrapper for LocalStorage)
      * @constructor LocalStorageWrapper
      * @classdesc node wrapper for LocalStorage
      *
+     * @param {Object}
+     *            settings the settings object
+     * @param {Boolean}
+     *            settings.clearPersistency localStorage is cleared if set to true
      * @param {String}
-     *            newLocation optional, passed on to node-localstorage LocalStorage constructor
+     *            settings.location optional, passed on to node-localstorage LocalStorage constructor
      * @param {Number}
-     *            quota optional, passed on to node-localstorage LocalStorage constructor
+     *            settings.quota optional, passed on to node-localstorage LocalStorage constructor
      */
-    var LocalStorageWrapper = function(newLocation, quota) {
-        var location = newLocation || "./localStorageStorage";
-        return new LocalStorage.LocalStorage(location, quota);
-    };
+    var LocalStorageWrapper =
+            function(settings) {
+                settings = settings || {};
+                var location = settings.location || "./localStorageStorage";
+                var localStorage = new LocalStorage.LocalStorage(location, settings.quota);
+                Util.checkPropertyIfDefined(
+                        settings.clearPersistency,
+                        "Boolean",
+                        "settings.clearPersistency");
+                if (settings.clearPersistency) {
+                    localStorage.clear();
+                }
+                return localStorage;
+            };
     return LocalStorageWrapper;
 });

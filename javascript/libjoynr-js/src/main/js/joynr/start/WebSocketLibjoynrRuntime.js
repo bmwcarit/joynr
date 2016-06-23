@@ -308,7 +308,10 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     log = LoggerFactory.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
-                    persistency = new LocalStorage();
+                    var persistencyProvisioning = provisioning.persistency || {};
+                    persistency = new LocalStorage({
+                        clearPersistency : persistencyProvisioning.clearPersistency
+                    });
 
                     initialRoutingTable = {};
                     untypedCapabilities = provisioning.capabilities || [];
