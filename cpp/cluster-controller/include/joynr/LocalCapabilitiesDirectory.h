@@ -255,6 +255,7 @@ private:
 
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
+    bool hasEntryInCache(const CapabilityEntry& entry, bool localEntries);
 };
 
 // NOTE: This future is used to convert the synchronous call of the middleware
