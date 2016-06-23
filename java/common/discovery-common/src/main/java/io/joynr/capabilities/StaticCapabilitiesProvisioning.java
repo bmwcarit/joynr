@@ -22,7 +22,6 @@ package io.joynr.capabilities;
 import static java.lang.String.format;
 
 import java.io.IOException;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +34,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.routing.RoutingTable;
+import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 
@@ -54,12 +56,45 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
 
     @Inject
     public StaticCapabilitiesProvisioning(@Named(PROPERTY_PROVISIONED_CAPABILITIES) String provisionedCapabilitiesJsonString,
-                                          ObjectMapper objectMapper) {
-        loadDiscoveryEntries(provisionedCapabilitiesJsonString, objectMapper);
+                                          ObjectMapper objectMapper,
+                                          RoutingTable routingTable,
+                                          LegacyCapabilitiesProvisioning legacyCapabilitiesProvisioning) {
+        discoveryEntries = new HashSet<DiscoveryEntry>();
+        addEntriesFromSerialisedJson(provisionedCapabilitiesJsonString, objectMapper);
+        addLegacyEntriesIfMissingFromJson(legacyCapabilitiesProvisioning);
+        addAddressesToRoutingTable(routingTable);
     }
 
-    private void loadDiscoveryEntries(String provisionedCapabilitiesJsonString, ObjectMapper objectMapper) {
-        discoveryEntries = new HashSet<DiscoveryEntry>();
+    private void addAddressesToRoutingTable(RoutingTable routingTable) {
+        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+            if (discoveryEntry instanceof GlobalDiscoveryEntry) {
+                GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) discoveryEntry;
+                routingTable.put(globalDiscoveryEntry.getParticipantId(),
+                                 CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry));
+            }
+        }
+    }
+
+    private void addLegacyEntriesIfMissingFromJson(LegacyCapabilitiesProvisioning legacyCapabilitiesProvisioning) {
+        if (!discoveryEntriesContainsEntryForInterface(GlobalCapabilitiesDirectory.INTERFACE_NAME)) {
+            discoveryEntries.add(legacyCapabilitiesProvisioning.getDiscoveryEntryForInterface(GlobalCapabilitiesDirectory.class));
+        }
+        if (!discoveryEntriesContainsEntryForInterface(GlobalDomainAccessController.INTERFACE_NAME)) {
+            discoveryEntries.add(legacyCapabilitiesProvisioning.getDiscoveryEntryForInterface(GlobalDomainAccessController.class));
+        }
+    }
+
+    private boolean discoveryEntriesContainsEntryForInterface(String interfaceName) {
+        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+            if (discoveryEntry instanceof GlobalDiscoveryEntry
+                    && interfaceName.equals(((GlobalDiscoveryEntry) discoveryEntry).getInterfaceName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void addEntriesFromSerialisedJson(String provisionedCapabilitiesJsonString, ObjectMapper objectMapper) {
         logger.debug("Statically provisioned capabilities properties value: {}", provisionedCapabilitiesJsonString);
         List<GlobalDiscoveryEntry> newEntries = null;
         try {
@@ -81,4 +116,5 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     public Collection<DiscoveryEntry> getDiscoveryEntries() {
         return discoveryEntries;
     }
+
 }

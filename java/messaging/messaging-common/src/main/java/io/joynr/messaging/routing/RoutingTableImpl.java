@@ -26,34 +26,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.RoutingTypes.Address;
 
 @Singleton
 public class RoutingTableImpl implements RoutingTable {
+
     private static final Logger logger = LoggerFactory.getLogger(RoutingTableImpl.class);
-    ConcurrentMap<String, Address> hashMap = Maps.newConcurrentMap();
 
-    RoutingTableImpl() {
-    }
-
-    // CHECKSTYLE:OFF
-    @Inject
-    public RoutingTableImpl(@Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabiltitiesDirectoryAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                            @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
-                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
-        // CHECKSTYLE:ON
-        this.put(capabilitiesDirectoryParticipantId, capabiltitiesDirectoryAddress);
-        this.put(domainAccessControllerParticipantId, domainAccessControllerAddress);
-        this.put(discoveryProviderParticipantId, discoveryProviderAddress);
-    }
+    private ConcurrentMap<String, Address> hashMap = Maps.newConcurrentMap();
 
     @Override
     public Address get(String participantId) {
@@ -99,7 +80,6 @@ public class RoutingTableImpl implements RoutingTable {
     @Override
     public void remove(String participantId) {
         hashMap.remove(participantId);
-
     }
 
     @Override

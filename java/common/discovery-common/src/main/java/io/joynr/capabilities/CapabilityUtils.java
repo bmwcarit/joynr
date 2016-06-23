@@ -94,17 +94,17 @@ public class CapabilityUtils {
                                         serializeAddress(globalAddress));
     }
 
-    public static Address getAddressFromGlobalDiscoveryEntry(GlobalDiscoveryEntry globaleDiscoveryEntry) {
-        if (globaleDiscoveryEntry == null || globaleDiscoveryEntry.getAddress() == null) {
+    public static Address getAddressFromGlobalDiscoveryEntry(GlobalDiscoveryEntry globalDiscoveryEntry) {
+        if (globalDiscoveryEntry == null || globalDiscoveryEntry.getAddress() == null) {
             throw new IllegalArgumentException("Neither globalDiscoveryEntry nor its address can be null.");
         }
-        logger.trace("Attempting to deserialize {} as an Address.", globaleDiscoveryEntry.getAddress());
+        logger.trace("Attempting to deserialize {} as an Address.", globalDiscoveryEntry.getAddress());
         Address result;
         try {
-            result = objectMapper.readValue(globaleDiscoveryEntry.getAddress(), Address.class);
+            result = objectMapper.readValue(globalDiscoveryEntry.getAddress(), Address.class);
         } catch (IOException e) {
             throw new IllegalArgumentException(format("Global discovery entry address value %s cannot be deserialized as an Address.",
-                                                      globaleDiscoveryEntry.getAddress()),
+                                                      globalDiscoveryEntry.getAddress()),
                                                e);
         }
         return result;

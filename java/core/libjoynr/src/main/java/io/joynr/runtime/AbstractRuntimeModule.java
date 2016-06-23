@@ -19,15 +19,6 @@ package io.joynr.runtime;
  * #L%
  */
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID;
-import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITYDIRECTORYURL;
-import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
-import static io.joynr.messaging.MessagingPropertyKeys.DISCOVERYDIRECTORYURL;
-
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
 import java.util.concurrent.Executors;
@@ -38,10 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -96,22 +83,10 @@ import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
-import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.MqttAddress;
-import joynr.types.DiscoveryEntry;
-import joynr.types.GlobalDiscoveryEntry;
-import joynr.types.ProviderQos;
-import joynr.types.Version;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
-
-    private static final Logger logger = LoggerFactory.getLogger(AbstractRuntimeModule.class);
-
-    private static final long NO_EXPIRY = Long.MAX_VALUE;
 
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
@@ -177,105 +152,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     }
 
     @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS)
-    // CHECKSTYLE:OFF
-    Address getCapabilitiesDirectoryAddress(CapabilitiesProvisioning capabilitiesProvisioning,
-                                            ObjectMapper objectMapper,
-                                            @Named(DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
-                                            @Named(CAPABILITYDIRECTORYURL) String deprecatedCapabilityDirectoryUrl,
-                                            @Named(CHANNELID) String channelId,
-                                            @Named(PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String domain,
-                                            @Named(PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String participantId,
-                                            @Named(PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId) {
-        // CHECKSTYLE:ON
-        Address address = getProvisionedAddressForInterface(capabilitiesProvisioning,
-                                                            GlobalCapabilitiesDirectory.INTERFACE_NAME);
-        // The following falls back to the deprecated properties if no
-        // global domain access controller was provisioned via JSON.
-        // Will be removed in the future.
-        if (address == null) {
-            // deprecated: will be removed by 2016-12-31
-            if (deprecatedCapabilityDirectoryUrl != null && deprecatedCapabilityDirectoryUrl.length() > 0) {
-                address = getAddress(deprecatedCapabilityDirectoryUrl, channelId, capabilitiesDirectoryChannelId);
-            } else {
-                address = getAddress(discoveryDirectoryUrl, channelId, capabilitiesDirectoryChannelId);
-            }
-            addDiscoveryEntry(capabilitiesProvisioning,
-                              address,
-                              GlobalCapabilitiesDirectory.class,
-                              GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                              capabilitiesDirectoryChannelId,
-                              domain,
-                              participantId);
-        }
-        return address;
-    }
-
-    @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS)
-    Address getDomainAccessControllerAddress(CapabilitiesProvisioning capabilitiesProvisioning,
-                                             @Named(DISCOVERYDIRECTORYURL) String discoveryDirectoryUrl,
-                                             @Named(CAPABILITYDIRECTORYURL) String deprecatedCapabilityDirectoryUrl,
-                                             @Named(CHANNELID) String channelId,
-                                             @Named(PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String domain,
-                                             @Named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String participantId,
-                                             @Named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
-        Address address = getProvisionedAddressForInterface(capabilitiesProvisioning,
-                                                            GlobalDomainAccessController.INTERFACE_NAME);
-        // The following falls back to the deprecated properties if no
-        // global domain access controller was provisioned via JSON.
-        // Will be removed in the future.
-        if (address == null) {
-            if (deprecatedCapabilityDirectoryUrl != null && deprecatedCapabilityDirectoryUrl.length() > 0) {
-                address = getAddress(deprecatedCapabilityDirectoryUrl, channelId, domainAccessControllerChannelId);
-            } else {
-                address = getAddress(discoveryDirectoryUrl, channelId, domainAccessControllerChannelId);
-            }
-            addDiscoveryEntry(capabilitiesProvisioning,
-                              address,
-                              GlobalDomainAccessController.class,
-                              GlobalDomainAccessController.INTERFACE_NAME,
-                              channelId,
-                              domainAccessControllerChannelId,
-                              participantId);
-        }
-        return address;
-    }
-
-    private void addDiscoveryEntry(CapabilitiesProvisioning capabilitiesProvisioning,
-                                   Address address,
-                                   Class<?> interfaceClass,
-                                   String interfaceName,
-                                   String channelId,
-                                   String domain,
-                                   String participantId) {
-        DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
-                                                                                domain,
-                                                                                interfaceName,
-                                                                                participantId,
-                                                                                new ProviderQos(),
-                                                                                System.currentTimeMillis(),
-                                                                                NO_EXPIRY,
-                                                                                "",
-                                                                                address);
-        capabilitiesProvisioning.getDiscoveryEntries().add(discoveryEntry);
-    }
-
-    private Address getProvisionedAddressForInterface(CapabilitiesProvisioning capabilitiesProvisioning,
-                                                      String interfaceName) {
-        Address result = null;
-        for (DiscoveryEntry discoveryEntry : capabilitiesProvisioning.getDiscoveryEntries()) {
-            if (discoveryEntry instanceof GlobalDiscoveryEntry
-                    && interfaceName.equals(discoveryEntry.getInterfaceName())) {
-                result = CapabilityUtils.getAddressFromGlobalDiscoveryEntry((GlobalDiscoveryEntry) discoveryEntry);
-            }
-        }
-        return result;
-    }
-
-    @Provides
     @Named(MessageRouter.SCHEDULEDTHREADPOOL)
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
         ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
@@ -287,13 +163,4 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         return scheduler;
     }
 
-    private Address getAddress(String serverUrl, String localChannelId, String targetChannelId) {
-        if (localChannelId.equals(targetChannelId)) {
-            return new InProcessAddress();
-        } else if (serverUrl.startsWith("http")) {
-            return new ChannelAddress(serverUrl, targetChannelId);
-        } else {
-            return new MqttAddress(serverUrl, targetChannelId);
-        }
-    }
 }
