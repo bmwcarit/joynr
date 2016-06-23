@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     // Check the usage
     std::string programName(argv[0]);
     if (argc != 2) {
-        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain> <addend-A> <addend-B>", programName);
+        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain>", programName);
         return -1;
     }
 
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     // As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
     // is triggered. If the discovery process does not find matching providers within the
     // arbitration timeout duration it will be terminated and you will get an arbitration exception.
-    discoveryQos.setDiscoveryTimeoutMs(40000);
+    discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Mins
     // Provider entries in the global capabilities directory are cached locally. Discovery will
     // consider entries in this cache valid if they are younger as the max age of cached
     // providers as defined in the QoS. All valid entries will be processed by the arbitrator when
@@ -90,9 +90,16 @@ int main(int argc, char* argv[])
     try {
         proxy->add(sum, addendA, addendB);
         success = (sum == addendA + addendB);
+        JOYNR_LOG_INFO(logger,
+                       "SIT RESULT success: C++ consumer -> {} ({} + {} = {})",
+                       providerDomain,
+                       addendA,
+                       addendB,
+                       sum);
     } catch (exceptions::JoynrException& e) {
         // exception sink
         success = false;
+        JOYNR_LOG_INFO(logger, "SIT RESULT error: C++ consumer -> {}", providerDomain);
     }
 
     delete proxy;

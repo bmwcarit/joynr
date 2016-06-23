@@ -167,7 +167,7 @@ void LibJoynrRuntime::init(
     std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder(
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain));
     joynr::system::IDiscoverySync* proxy =
-            discoveryProxyBuilder->setMessagingQos(MessagingQos(10000))
+            discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
                     ->setCached(false)
                     ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                     ->build();

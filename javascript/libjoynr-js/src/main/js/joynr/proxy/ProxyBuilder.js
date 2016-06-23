@@ -119,7 +119,7 @@ define("joynr/proxy/ProxyBuilder", [
          * @param {String}
          *            settings.domain - the domain on which the provider should be looked for
          * @param {DiscoveryQos}
-         *            settings.discoveryQos - jsthe settings object determining arbitration
+         *            settings.discoveryQos - the settings object determining arbitration
          *            parameters
          * @param {MessagingQos}
          *            settings.messagingQos - the settings object determining arbitration parameters

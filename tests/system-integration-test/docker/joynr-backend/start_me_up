@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "127.0.0.1     backend" >> /etc/hosts
+catalina.sh run

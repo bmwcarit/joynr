@@ -1,3 +1,11 @@
+#joynr 0.19.0
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++, Java, JS]** Enriched the system integration tests to have test from c++/node apps towards java jee apps
+
 #joynr 0.18.2
 This is a minor bug fix release.
 

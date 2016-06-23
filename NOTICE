@@ -136,6 +136,7 @@ This project has dependencies to:
   io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
   io.joynr.examples:location-tester under The Apache Software License, Version 2.0
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
+  io.joynr.examples:radio-jee under The Apache Software License, Version 2.0
   io.joynr.examples:radio-js under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
@@ -185,10 +186,14 @@ This project has dependencies to:
   io.joynr.javascript:js-dependencies under The Apache Software License, Version 2.0
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
+  io.joynr.tests.system-integration-test:sit-cpp-app under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-jee-app under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-node-app under The Apache Software License, Version 2.0
   io.joynr.tests:inter-language-test under The Apache Software License, Version 2.0
   io.joynr.tests:performance-test under The Apache Software License, Version 2.0
   io.joynr.tests:robustness-test under The Apache Software License, Version 2.0
   io.joynr.tests:system-integration-test under The Apache Software License, Version 2.0
+  io.joynr.tests:test-base under The Apache Software License, Version 2.0
   io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
@@ -206,7 +211,6 @@ This project has dependencies to:
   io.joynr:java under The Apache Software License, Version 2.0
   io.joynr:javascript under The Apache Software License, Version 2.0
   io.joynr:joynr under The Apache Software License, Version 2.0
-  io.joynr:test-base under The Apache Software License, Version 2.0
   io.joynr:tests under The Apache Software License, Version 2.0
   io.joynr:tools under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
@@ -328,6 +332,9 @@ This project has dependencies to:
   Plexus Classworlds under The Apache Software License, Version 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
+  radio-jee-api under The Apache Software License, Version 2.0
+  radio-jee-consumer under The Apache Software License, Version 2.0
+  radio-jee-provider under The Apache Software License, Version 2.0
   Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
@@ -346,6 +353,7 @@ This project has dependencies to:
   Simple API for CSS under The W3C Software License
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
+  SLF4J JDK14 Binding under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl
   sqlite4java under The Apache Software License, Version 2.0
