@@ -22,12 +22,15 @@ package joynr.exceptions;
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.types.Version;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Joynr exception class to report error during method invocations (RPC) at a provider
  * ("no such method", invalid arguments, etc.)
  */
 public class MethodInvocationException extends JoynrRuntimeException {
     private static final long serialVersionUID = 2077255751860166967L;
+    @JsonProperty("providerVersion")
     private Version providerVersion;
 
     /**
