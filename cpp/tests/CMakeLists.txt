@@ -468,6 +468,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         "unit-tests/mqtt/*.cpp"
         "unit-tests/websocket/*.cpp"
         "unit-tests/jsonserializer/*.cpp"
+        "unit-tests/serializer/*.cpp"
     )
 
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})

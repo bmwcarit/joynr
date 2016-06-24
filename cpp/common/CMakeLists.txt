@@ -53,6 +53,7 @@ file(
     GLOB_RECURSE JoynrCommon_PUBLIC_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "include/joynr/*.h"
+    "include/joynr/serializer/*.h"
 )
 
 file(
