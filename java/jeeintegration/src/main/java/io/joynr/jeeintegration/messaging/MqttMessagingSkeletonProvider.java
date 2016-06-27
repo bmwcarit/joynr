@@ -53,12 +53,12 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private MqttMessageSerializerFactory messageSerializerFactory;
 
     @Inject
-    public MqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String disableReceive,
+    public MqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
                                          @Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
                                          MqttMessageSerializerFactory messageSerializerFactory) {
-        httpBridgeEnabled = Boolean.valueOf(disableReceive);
+        httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
