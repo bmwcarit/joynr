@@ -44,6 +44,14 @@ public:
      * @brief Constructor for a MethodInvocationException without detail message.
      */
     MethodInvocationException() noexcept;
+
+    /**
+     * @brief Copy Constructor
+     *
+     * @param other The PublicationMissedException to copy from.
+     */
+    MethodInvocationException(const MethodInvocationException& other);
+
     /**
      * @brief Constructor for a MethodInvocationException with detail message.
      *
@@ -57,6 +65,11 @@ public:
 
     void setProviderVersion(const Version& providerVersion);
     const Version& getProviderVersion() const;
+
+    /**
+     * Equality operator
+     */
+    bool operator==(const MethodInvocationException& other) const;
 
     /**
      * @brief The typeName used for serialization and logging.

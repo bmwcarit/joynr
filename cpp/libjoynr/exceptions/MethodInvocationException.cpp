@@ -47,6 +47,11 @@ MethodInvocationException::MethodInvocationException(const std::string& message,
 {
 }
 
+MethodInvocationException::MethodInvocationException(const MethodInvocationException& other)
+        : JoynrRuntimeException(other), providerVersion(other.providerVersion)
+{
+}
+
 const Version& MethodInvocationException::getProviderVersion() const
 {
     return providerVersion;
@@ -71,6 +76,11 @@ const std::string& MethodInvocationException::TYPE_NAME()
 {
     static const std::string TYPE_NAME = "joynr.exceptions.MethodInvocationException";
     return TYPE_NAME;
+}
+
+bool MethodInvocationException::operator==(const MethodInvocationException& other) const
+{
+    return message == other.getMessage() && providerVersion == other.getProviderVersion();
 }
 
 } // namespace exceptions
