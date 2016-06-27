@@ -85,7 +85,7 @@ public class DispatcherImpl implements Dispatcher {
                                         Set<String> toParticipantIds,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos messagingQos,
-                                        boolean broadcast) throws IOException {
+                                        boolean broadcast) {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                                  toParticipantId,
@@ -101,7 +101,7 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionStop(String fromParticipantId,
                                      Set<String> toParticipantIds,
                                      SubscriptionStop subscriptionStop,
-                                     MessagingQos messagingQos) throws IOException {
+                                     MessagingQos messagingQos) {
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
                                                                               toParticipantId,
@@ -116,7 +116,7 @@ public class DispatcherImpl implements Dispatcher {
     public void sendSubscriptionPublication(String fromParticipantId,
                                             Set<String> toParticipantIds,
                                             SubscriptionPublication publication,
-                                            MessagingQos messagingQos) throws IOException {
+                                            MessagingQos messagingQos) {
 
         for (String toParticipantId : toParticipantIds) {
             JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,

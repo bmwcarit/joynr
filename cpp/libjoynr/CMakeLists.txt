@@ -103,6 +103,7 @@ file(
     "common/*.cpp"
     "communication-model/*.cpp"
     "dispatcher/*.cpp"
+    "exceptions/*.cpp"
     "in-process/*.cpp"
     "joynr-messaging/*.cpp"
     "json/*.cpp"

@@ -19,54 +19,26 @@ package io.joynr.proxy;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 
 import joynr.exceptions.ApplicationException;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 public interface ConnectorInvocationHandler {
 
-    Object executeAsyncMethod(Method method, Object[] args, Future<?> future) throws JoynrSendBufferFullException,
-                                                                             JoynrMessageNotSentException,
-                                                                             JsonGenerationException,
-                                                                             JsonMappingException, IOException;
+    Object executeAsyncMethod(Method method, Object[] args, Future<?> future);
 
-    Object executeSyncMethod(Method method, Object[] args) throws JoynrCommunicationException,
-                                                          JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                                          JsonGenerationException, JsonMappingException, IOException,
-                                                          InstantiationException, IllegalAccessException,
-                                                          ApplicationException, JoynrRuntimeException;
+    Object executeSyncMethod(Method method, Object[] args) throws ApplicationException;
 
-    void executeOneWayMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
-                                                          JoynrMessageNotSentException, JsonGenerationException,
-                                                          JsonMappingException, IOException;
+    void executeOneWayMethod(Method method, Object[] args);
 
-    void executeSubscriptionMethod(BroadcastSubscribeInvocation broadcastSubscription)
-                                                                                      throws JoynrSendBufferFullException,
-                                                                                      JoynrMessageNotSentException,
-                                                                                      JsonGenerationException,
-                                                                                      JsonMappingException, IOException;
+    void executeSubscriptionMethod(BroadcastSubscribeInvocation broadcastSubscription);
 
-    void executeSubscriptionMethod(UnsubscribeInvocation unsubscribeInvocation) throws JoynrSendBufferFullException,
-                                                                               JoynrMessageNotSentException,
-                                                                               JsonGenerationException,
-                                                                               JsonMappingException, IOException;
+    void executeSubscriptionMethod(UnsubscribeInvocation unsubscribeInvocation);
 
-    void executeSubscriptionMethod(AttributeSubscribeInvocation attributeSubscription)
-                                                                                      throws JoynrSendBufferFullException,
-                                                                                      JoynrMessageNotSentException,
-                                                                                      JsonGenerationException,
-                                                                                      JsonMappingException, IOException;
+    void executeSubscriptionMethod(AttributeSubscribeInvocation attributeSubscription);
 
 }

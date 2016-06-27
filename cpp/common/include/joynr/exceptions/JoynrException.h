@@ -261,31 +261,6 @@ public:
 };
 
 /**
- * @brief Joynr exception class to report error during method invocations (RPC) at a provider
- * ("no such method", invalid arguments, etc.)
- */
-class JOYNRCOMMON_EXPORT MethodInvocationException : public JoynrRuntimeException
-{
-public:
-    /**
-     * @brief Constructor for a MethodInvocationException without detail message.
-     */
-    MethodInvocationException() noexcept = default;
-    /**
-     * @brief Constructor for a MethodInvocationException with detail message.
-     *
-     * @param message Further description of the reported invocation error
-     */
-    explicit MethodInvocationException(const std::string& message) noexcept;
-    const std::string getTypeName() const override;
-    MethodInvocationException* clone() const override;
-    /**
-     * @brief The typeName used for serialization and logging.
-     */
-    static const std::string TYPE_NAME;
-};
-
-/**
  * @brief Joynr exception to report errors at the provider if no error enums are defined
  * in the corresponding Franca model file. It will also be used to wrap an transmit
  * unexpected exceptions which are thrown by the provider.

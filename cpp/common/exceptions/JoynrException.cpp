@@ -35,8 +35,6 @@ const std::string JoynrMessageNotSentException::TYPE_NAME =
 const std::string JoynrDelayMessageException::TYPE_NAME =
         "io.joynr.exceptions.JoynrDelayMessageException";
 const std::string DiscoveryException::TYPE_NAME = "io.joynr.exceptions.DiscoveryException";
-const std::string MethodInvocationException::TYPE_NAME =
-        "joynr.exceptions.MethodInvocationException";
 const std::string ProviderRuntimeException::TYPE_NAME = "joynr.exceptions.ProviderRuntimeException";
 const std::string PublicationMissedException::TYPE_NAME =
         "joynr.exceptions.PublicationMissedException";
@@ -58,9 +56,6 @@ static const bool isJoynrJoynrDelayMessageExceptionRegistered =
                 JoynrDelayMessageException::TYPE_NAME);
 static const bool isDiscoveryExceptionRegistered =
         Variant::registerType<joynr::exceptions::DiscoveryException>(DiscoveryException::TYPE_NAME);
-static const bool isMethodInvocationExceptionRegistered =
-        Variant::registerType<joynr::exceptions::MethodInvocationException>(
-                MethodInvocationException::TYPE_NAME);
 static const bool isProviderRuntimeExceptionRegistered =
         Variant::registerType<joynr::exceptions::ProviderRuntimeException>(
                 ProviderRuntimeException::TYPE_NAME);
@@ -217,21 +212,6 @@ const std::string DiscoveryException::getTypeName() const
 DiscoveryException* DiscoveryException::clone() const
 {
     return new DiscoveryException(const_cast<DiscoveryException&>(*this));
-}
-
-MethodInvocationException::MethodInvocationException(const std::string& message) noexcept
-        : JoynrRuntimeException(message)
-{
-}
-
-const std::string MethodInvocationException::getTypeName() const
-{
-    return MethodInvocationException::TYPE_NAME;
-}
-
-MethodInvocationException* MethodInvocationException::clone() const
-{
-    return new MethodInvocationException(const_cast<MethodInvocationException&>(*this));
 }
 
 ProviderRuntimeException::ProviderRuntimeException(const std::string& message) noexcept

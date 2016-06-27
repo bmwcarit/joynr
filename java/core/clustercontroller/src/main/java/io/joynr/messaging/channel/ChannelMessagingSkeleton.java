@@ -28,8 +28,6 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 
-import java.io.IOException;
-
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
@@ -58,7 +56,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton {
         try {
             addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
             messageRouter.route(message);
-        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException exception) {
+        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException exception) {
             logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader(), exception);
             failureAction.execute(exception);
         }
