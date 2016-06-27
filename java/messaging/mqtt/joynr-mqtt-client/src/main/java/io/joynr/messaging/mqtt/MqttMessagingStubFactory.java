@@ -20,7 +20,6 @@ package io.joynr.messaging.mqtt;
  */
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.JoynrMessageSerializer;
@@ -30,21 +29,21 @@ public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFac
 
     private MqttMessageSerializerFactory mqttMessageSerializerFactory;
     private JoynrMqttClient mqttClient;
-    private MqttAddress replyToMqttAddress;
+    private MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator;
 
     @Inject
     public MqttMessagingStubFactory(MqttMessageSerializerFactory mqttMessageSerializerFactory,
-                                    MqttClientFactory mqttClientFactory,
-                                    @Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress replyToMqttAddress) {
+                                    MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator,
+                                    MqttClientFactory mqttClientFactory) {
         this.mqttMessageSerializerFactory = mqttMessageSerializerFactory;
-        this.replyToMqttAddress = replyToMqttAddress;
         this.mqttClient = mqttClientFactory.create();
+        this.mqttMessageReplyToAddressCalculator = mqttMessageReplyToAddressCalculator;
     }
 
     @Override
     protected MqttMessagingStub createInternal(MqttAddress address) {
         JoynrMessageSerializer messageSerializer = mqttMessageSerializerFactory.create(address);
-        return new MqttMessagingStub(address, replyToMqttAddress, mqttClient, messageSerializer);
+        return new MqttMessagingStub(address, mqttClient, messageSerializer, mqttMessageReplyToAddressCalculator);
     }
 
     @Override

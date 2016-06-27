@@ -29,8 +29,10 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.mqtt.DefaultMqttMessageReplyToAddressCalculator;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
+import io.joynr.messaging.mqtt.MqttMessageReplyToAddressCalculator;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
@@ -67,7 +69,7 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     @Provides
     @Named(PROPERTY_MQTT_ADDRESS)
     public MqttAddress provideMqttOwnAddress(MqttGlobalAddressFactory globalAddressFactory) {
-        return (MqttAddress) globalAddressFactory.create();
+        return globalAddressFactory.create();
     }
 
     @Override
@@ -84,6 +86,7 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);
+        bind(MqttMessageReplyToAddressCalculator.class).to(DefaultMqttMessageReplyToAddressCalculator.class);
     }
 
 }
