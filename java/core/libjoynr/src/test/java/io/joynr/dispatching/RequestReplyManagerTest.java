@@ -63,6 +63,7 @@ import com.google.inject.Injector;
 import com.google.inject.name.Names;
 
 import io.joynr.common.ExpiryDate;
+import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RpcUtils;
@@ -123,6 +124,7 @@ public class RequestReplyManagerTest {
 
             @Override
             protected void configure() {
+                install(new JoynrMessageScopeModule());
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);

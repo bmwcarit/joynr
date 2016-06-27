@@ -20,6 +20,10 @@ package io.joynr.jeeintegration;
  */
 
 import static java.lang.String.format;
+
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
+import io.joynr.messaging.JoynrMessageCreator;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
@@ -30,6 +34,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
@@ -38,11 +43,13 @@ import javax.enterprise.inject.spi.BeanManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Injector;
+
 /**
- * This class wraps an EJB which is decorated with {@link io.joynr.jeeintegration.api.ServiceProvider} and has a valid service interface specified
- * (that is it extends {@link JoynrProvider}). When the bean is discovered in
- * {@link JoynrIntegrationBean#initialise()} an instance of this class is registered as the provider with the
- * joynr runtime. When joynr wants to call a method of the specified service interface, then this instance will obtain a
+ * This class wraps an EJB which is decorated with {@link io.joynr.jeeintegration.api.ServiceProvider} and has a valid
+ * service interface specified (that is it extends {@link JoynrProvider}). When the bean is discovered in
+ * {@link JoynrIntegrationBean#initialise()} an instance of this class is registered as the provider with the joynr
+ * runtime. When joynr wants to call a method of the specified service interface, then this instance will obtain a
  * reference to the bean via the {@link JoynrIntegrationBean#beanManager} and will delegate to the corresponding method
  * on that bean (i.e. with the same name and parameters). The result is then wrapped in a deferred / promise and
  * returned.
@@ -55,6 +62,7 @@ public class ProviderWrapper implements InvocationHandler {
 
     private Bean<?> bean;
     private BeanManager beanManager;
+    private Injector injector;
 
     /**
      * Initialises the instance with the service interface which will be exposed and the bean reference it is meant to
@@ -64,10 +72,12 @@ public class ProviderWrapper implements InvocationHandler {
      *            the bean reference to which calls will be delegated.
      * @param beanManager
      *            the bean manager
+     * @param injector
      */
-    public ProviderWrapper(Bean<?> bean, BeanManager beanManager) {
+    public ProviderWrapper(Bean<?> bean, BeanManager beanManager, Injector injector) {
         this.bean = bean;
         this.beanManager = beanManager;
+        this.injector = injector;
     }
 
     /**
@@ -88,37 +98,68 @@ public class ProviderWrapper implements InvocationHandler {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Method delegateToMethod = getMethodFromInterfaces(bean.getBeanClass(), method);
-        Object delegate = createDelegateForMethod(method);
-        Object result = delegateToMethod.invoke(delegate, args);
-        if (delegate != this) {
-            AbstractDeferred deferred;
-            if (result == null && method.getReturnType().equals(Void.class)) {
-                deferred = new DeferredVoid();
-                ((DeferredVoid) deferred).resolve();
-            } else {
-                deferred = new Deferred();
-                ((Deferred) deferred).resolve(result);
+        boolean isProviderMethod = matchesJoynrProviderMethod(method);
+        Method delegateToMethod = getMethodFromInterfaces(bean.getBeanClass(), method, isProviderMethod);
+        Object delegate = createDelegateForMethod(method, isProviderMethod);
+        Object result;
+        try {
+            if (delegateToMethod != method) {
+                JoynrJeeMessageContext.getInstance().activate();
+                copyMessageCreatorInfo();
             }
-            Promise promiseResult = new Promise(deferred);
-            return promiseResult;
+            result = delegateToMethod.invoke(delegate, args);
+            if (delegate != this) {
+                AbstractDeferred deferred;
+                if (result == null && method.getReturnType().equals(Void.class)) {
+                    deferred = new DeferredVoid();
+                    ((DeferredVoid) deferred).resolve();
+                } else {
+                    deferred = new Deferred();
+                    ((Deferred) deferred).resolve(result);
+                }
+                Promise promiseResult = new Promise(deferred);
+                return promiseResult;
+            }
+        } finally {
+            if (delegateToMethod != method) {
+                JoynrJeeMessageContext.getInstance().deactivate();
+            }
         }
         return result;
     }
 
+    private void copyMessageCreatorInfo() {
+        JoynrMessageCreator joynrMessageCreator = injector.getInstance(JoynrMessageCreator.class);
+        Set<Bean<?>> beans = beanManager.getBeans(JoynrCallingPrincipal.class);
+        if (beans.size() != 1) {
+            throw new IllegalStateException("There must be exactly one EJB of type "
+                    + JoynrCallingPrincipal.class.getName() + ". Found " + beans.size());
+        }
+        @SuppressWarnings("unchecked")
+        Bean<JoynrCallingPrincipal> bean = (Bean<JoynrCallingPrincipal>) beans.iterator().next();
+        JoynrCallingPrincipal reference = (JoynrCallingPrincipal) beanManager.getReference(bean,
+                                                                                           JoynrCallingPrincipal.class,
+                                                                                           beanManager.createCreationalContext(bean));
+        String messageCreatorId = joynrMessageCreator.getMessageCreatorId();
+        LOG.trace("Setting user '{}' for message processing context.", messageCreatorId);
+        reference.setUsername(messageCreatorId);
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Object createDelegateForMethod(Method method) {
-        if (OBJECT_METHODS.contains(method) || matchesJoynrProviderMethod(method)) {
+    private Object createDelegateForMethod(Method method, boolean isProviderMethod) {
+        if (OBJECT_METHODS.contains(method) || isProviderMethod) {
             return this;
         }
         return bean.create((CreationalContext) beanManager.createCreationalContext(bean));
     }
 
-    private Method getMethodFromInterfaces(Class<?> beanClass, Method method) throws NoSuchMethodException {
+    private Method getMethodFromInterfaces(Class<?> beanClass,
+                                           Method method,
+                                           boolean isProviderMethod) throws NoSuchMethodException {
         String name = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         Method result = method;
-        if (!matchesJoynrProviderMethod(method)) {
+        if (!isProviderMethod) {
             result = null;
             for (Class<?> interfaceClass : beanClass.getInterfaces()) {
                 try {
