@@ -29,7 +29,6 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.mqtt.DefaultMqttMessageReplyToAddressCalculator;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
 import io.joynr.messaging.mqtt.MqttMessageReplyToAddressCalculator;
@@ -44,9 +43,17 @@ import joynr.system.RoutingTypes.MqttAddress;
 /**
  * Like {@link io.joynr.messaging.mqtt.MqttModule}, but configures the {@link MqttMessagingSkeletonProvider} so that if
  * the {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} property
- * is set to <code>true</true>, messages are only sent via MQTT, but not received via MQTT. This is so that we can
- * receive messages via HTTP from the {@link JeeServletMessageReceiver} in order for a load balancer to be able to
- * distribute the load across a JEE cluster.
+ * is set to <code>true</true>, messages are only sent via MQTT, but not received via MQTT and also that if the
+ * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_SHARED_SUBSCRIPTIONS} property is set to
+ * <code>true</code>, then the shared subscription versions of the messaging skeleton and reply-to address calculator
+ * are used.
+ *
+ * In the case of the HTTP bridge, this is so that we can receive messages via HTTP from the
+ * {@link JeeServletMessageReceiver} in order for a load balancer to be able to distribute the load across a JEE
+ * cluster.
+ *
+ * In the case of shared subscriptions we allow load balancing of incoming MQTT messages via the HiveMQ feature of
+ * shared subscriptions.
  */
 public class JeeMqttMessageSendingModule extends AbstractModule {
 
@@ -86,7 +93,7 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);
-        bind(MqttMessageReplyToAddressCalculator.class).to(DefaultMqttMessageReplyToAddressCalculator.class);
+        bind(MqttMessageReplyToAddressCalculator.class).toProvider(SharedSubscriptionReplyToAddressCalculatorProvider.class);
     }
 
 }
