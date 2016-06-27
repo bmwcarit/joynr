@@ -59,6 +59,15 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
         mqttClient = mqttClientFactory.create();
         mqttClient.setMessageListener(this);
         mqttClient.start();
+        subscribe();
+    }
+
+    /**
+     * Performs standard subscription to the {@link #ownAddress own address'} topic; override this method to perform
+     * custom subscriptions. One use-case could be to subscribe to one topic for incoming messages and another topic for
+     * replies.
+     */
+    protected void subscribe() {
         mqttClient.subscribe(ownAddress.getTopic() + "/#");
     }
 
@@ -86,4 +95,13 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton {
         transmit(message, failureAction);
 
     }
+
+    protected JoynrMqttClient getClient() {
+        return mqttClient;
+    }
+
+    protected MqttAddress getOwnAddress() {
+        return ownAddress;
+    }
+
 }

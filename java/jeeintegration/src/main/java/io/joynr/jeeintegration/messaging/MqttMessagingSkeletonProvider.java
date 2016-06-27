@@ -20,6 +20,8 @@ package io.joynr.jeeintegration.messaging;
  */
 
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
+import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS;
+import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,31 +49,45 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private final static Logger logger = LoggerFactory.getLogger(MqttMessagingSkeletonProvider.class);
 
     private boolean httpBridgeEnabled;
+    private boolean sharedSubscriptionsEnabled;
     private MqttAddress ownAddress;
     private MessageRouter messageRouter;
     private MqttClientFactory mqttClientFactory;
     private MqttMessageSerializerFactory messageSerializerFactory;
+    private String channelId;
 
     @Inject
     public MqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
+                                         @Named(JEE_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                          @Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
-                                         MqttMessageSerializerFactory messageSerializerFactory) {
+                                         MqttMessageSerializerFactory messageSerializerFactory,
+                                         @Named(CHANNELID) String channelId) {
         httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
+        sharedSubscriptionsEnabled = Boolean.valueOf(enableSharedSubscriptions);
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.messageSerializerFactory = messageSerializerFactory;
-        logger.debug("Created with httpBridgeEnabled: {}\n\townAddress: {}\n\tmessageRouter: {}"
-                + "\n\tmqttClientFactory: {}\n\tmessageSerializer: {}", new Object[]{ httpBridgeEnabled,
-                this.ownAddress, this.messageRouter, this.mqttClientFactory, this.messageSerializerFactory });
+        this.channelId = channelId;
+        logger.debug("Created with httpBridgeEnabled: {}\n\tsharedSubscriptionsEnabled: {}\n\t"
+                + "ownAddress: {}\n\tmessageRouter: {}\n\tmqttClientFactory: {}"
+                + "\n\tmessageSerializer: {}\n\tchannelId: {}", new Object[]{ httpBridgeEnabled,
+                sharedSubscriptionsEnabled, this.ownAddress, this.messageRouter, this.mqttClientFactory,
+                this.messageSerializerFactory, this.channelId });
     }
 
     @Override
     public IMessagingSkeleton get() {
         if (httpBridgeEnabled) {
             return new NoOpMessagingSkeleton(mqttClientFactory);
+        } else if (sharedSubscriptionsEnabled) {
+            return new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                                messageRouter,
+                                                                mqttClientFactory,
+                                                                messageSerializerFactory,
+                                                                channelId);
         }
         return new MqttMessagingSkeleton(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
     }
