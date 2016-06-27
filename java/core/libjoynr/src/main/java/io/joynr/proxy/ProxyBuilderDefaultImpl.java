@@ -19,8 +19,6 @@ package io.joynr.proxy;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -29,15 +27,12 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.arbitration.ArbitrationCallback;
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
-import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.util.VersionUtil;
@@ -63,6 +58,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private MessageRouter messageRouter;
     private Address libjoynrMessagingAddress;
     private long maxMessagingTtl;
+
+    private T proxy;
 
     ProxyBuilderDefaultImpl(DiscoveryAsync localDiscoveryAggregator,
                             Set<String> domains,
@@ -164,25 +161,37 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
      */
     @Override
     public T build() {
-        arbitrator.startArbitration();
-        ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler();
+        return build(new ProxyCreatedCallback<T>() {
 
-        return ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
+            @Override
+            public void onProxyCreationFinished(T result) {
+                logger.debug("proxy created: interface: {} domains: {}", interfaceName, domains);
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                logger.error("error creating proxy: interface: {} domains: {}, error", new Object[]{ interfaceName,
+                        domains, error.getMessage() });
+            }
+        });
     }
 
     @Override
-    public void build(final ProxyCreatedCallback<T> callback) {
+    public T build(final ProxyCreatedCallback<T> callback) {
         try {
-            T proxy = build();
-            callback.onProxyCreated(proxy);
-        } catch (JoynrIllegalStateException e) {
+            arbitrator.startArbitration();
+            ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler(callback);
+            proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
+            return proxy;
+        } catch (JoynrRuntimeException e) {
             logger.debug("error building proxy", e);
-            callback.onProxyCreationError(e.toString());
+            callback.onProxyCreationError(e);
+            throw e;
         }
     }
 
     // Method called by both synchronous and asynchronous build() to create a ProxyInvocationHandler
-    private ProxyInvocationHandler createProxyInvocationHandler() {
+    private ProxyInvocationHandler createProxyInvocationHandler(final ProxyCreatedCallback<T> callback) {
         if (buildCalled) {
             throw new JoynrIllegalStateException("Proxy builder was already used to build a proxy. Please create a new proxy builder for each proxy.");
         }
@@ -198,54 +207,23 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         // But if the listener is set after the ProxyInvocationHandler the
         // Arbitrator cannot return early
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
-
-            private Map<String, Set<Version>> discoveredVersions;
-
             @Override
-            public void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
-                if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
-                    proxyInvocationHandler.createConnector(arbitrationResult);
-                    messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
-                }
+            public void onSuccess(ArbitrationResult arbitrationResult) {
+                proxyInvocationHandler.createConnector(arbitrationResult);
+                messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
+                callback.onProxyCreationFinished(proxy);
             }
 
             @Override
-            public void notifyArbitrationStatusChanged(ArbitrationStatus arbitrationStatus) {
-                if (arbitrationStatus == ArbitrationStatus.ArbitrationCanceledForever && discoveredVersions != null
-                        && !discoveredVersions.isEmpty()) {
-                    JoynrRuntimeException exception = null;
-                    if (domains.size() == 1) {
-                        if (discoveredVersions.size() != 1) {
-                            throw new IllegalStateException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
-                        }
-                        exception = new NoCompatibleProviderFoundException(interfaceName,
-                                                                           interfaceVersion,
-                                                                           discoveredVersions.keySet()
-                                                                                             .iterator()
-                                                                                             .next(),
-                                                                           discoveredVersions.values()
-                                                                                             .iterator()
-                                                                                             .next());
-                    } else if (domains.size() > 1) {
-                        Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
-                        for (Map.Entry<String, Set<Version>> versionsByDomainEntry : discoveredVersions.entrySet()) {
-                            exceptionsByDomain.put(versionsByDomainEntry.getKey(),
-                                                   new NoCompatibleProviderFoundException(interfaceName,
-                                                                                          interfaceVersion,
-                                                                                          versionsByDomainEntry.getKey(),
-                                                                                          versionsByDomainEntry.getValue()));
-                        }
-                        exception = new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain);
-                    }
-                    if (exception != null) {
-                        proxyInvocationHandler.setThrowableForInvoke(exception);
-                    }
+            public void onError(Throwable throwable) {
+                JoynrRuntimeException reason;
+                if (throwable instanceof JoynrRuntimeException) {
+                    reason = (JoynrRuntimeException) throwable;
+                } else {
+                    reason = new JoynrRuntimeException(throwable);
                 }
-            }
-
-            @Override
-            public void setDiscoveredVersions(Map<String, Set<Version>> discoveredVersions) {
-                this.discoveredVersions = new HashMap<>(discoveredVersions);
+                proxyInvocationHandler.abort(reason);
+                callback.onProxyCreationError(reason);
             }
         });
 

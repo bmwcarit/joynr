@@ -19,7 +19,6 @@ package io.joynr.proxy;
  * #L%
  */
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -27,9 +26,6 @@ import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.DispatcherUtils;
@@ -40,9 +36,7 @@ import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
@@ -87,12 +81,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     @SuppressWarnings("unchecked")
     @Override
-    public Future<?> executeAsyncMethod(Method method, Object[] params, Future<?> future)
-                                                                                         throws JoynrSendBufferFullException,
-                                                                                         JoynrMessageNotSentException,
-                                                                                         JsonGenerationException,
-                                                                                         JsonMappingException,
-                                                                                         IOException {
+    public Future<?> executeAsyncMethod(Method method, Object[] params, Future<?> future) {
 
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
@@ -141,10 +130,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     @CheckForNull
     @Override
-    public Object executeSyncMethod(Method method, Object[] args) throws ApplicationException, JoynrRuntimeException,
-                                                                 JsonGenerationException, JsonMappingException,
-                                                                 IOException, InstantiationException,
-                                                                 IllegalAccessException {
+    public Object executeSyncMethod(Method method, Object[] args) throws ApplicationException {
 
         // TODO does a method with 0 args pass in an empty args array, or null for args?
         if (method == null) {
@@ -187,9 +173,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeOneWayMethod(Method method, Object[] args) throws JoynrSendBufferFullException,
-                                                                 JoynrMessageNotSentException, JsonGenerationException,
-                                                                 JsonMappingException, IOException {
+    public void executeOneWayMethod(Method method, Object[] args) {
         // TODO does a method with 0 args pass in an empty args array, or null for args?
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
@@ -203,11 +187,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeSubscriptionMethod(UnsubscribeInvocation unsubscribeInvocation)
-                                                                                      throws JoynrSendBufferFullException,
-                                                                                      JoynrMessageNotSentException,
-                                                                                      JsonGenerationException,
-                                                                                      JsonMappingException, IOException {
+    public void executeSubscriptionMethod(UnsubscribeInvocation unsubscribeInvocation) {
 
         if (toParticipantIds.isEmpty()) {
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
@@ -220,12 +200,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeSubscriptionMethod(AttributeSubscribeInvocation attributeSubscription)
-                                                                                             throws JoynrSendBufferFullException,
-                                                                                             JoynrMessageNotSentException,
-                                                                                             JsonGenerationException,
-                                                                                             JsonMappingException,
-                                                                                             IOException {
+    public void executeSubscriptionMethod(AttributeSubscribeInvocation attributeSubscription) {
         if (toParticipantIds.isEmpty()) {
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
         }
@@ -234,12 +209,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeSubscriptionMethod(BroadcastSubscribeInvocation broadcastSubscription)
-                                                                                             throws JoynrSendBufferFullException,
-                                                                                             JoynrMessageNotSentException,
-                                                                                             JsonGenerationException,
-                                                                                             JsonMappingException,
-                                                                                             IOException {
+    public void executeSubscriptionMethod(BroadcastSubscribeInvocation broadcastSubscription) {
 
         if (toParticipantIds.isEmpty()) {
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");

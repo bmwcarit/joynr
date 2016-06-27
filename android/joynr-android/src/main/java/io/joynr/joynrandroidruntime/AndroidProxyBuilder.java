@@ -21,6 +21,7 @@ package io.joynr.joynrandroidruntime;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
@@ -66,7 +67,7 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
             return buildProxy();
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             if (callback != null) {
-                callback.onProxyCreationError(e.getMessage());
+                callback.onProxyCreationError(new JoynrRuntimeException(e));
             }
             return null;
         }
@@ -78,7 +79,7 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
         if (participantId != null) {
             builder.setParticipantId(participantId);
         }
-        T proxy = builder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        T proxy = builder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build(callback);
         Log.d("JAS", "Returning Proxy");
         return proxy;
     }
@@ -92,7 +93,7 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
     protected void onPostExecute(T result) {
         if (result != null && callback != null) {
             Log.d("JAS", "calling onProxyCreated Callback");
-            callback.onProxyCreated(result);
+            callback.onProxyCreationFinished(result);
         }
     }
 
@@ -131,9 +132,10 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
     }
 
     @Override
-    public void build(ProxyCreatedCallback<T> newCallback) {
+    public T build(ProxyCreatedCallback<T> newCallback) {
         this.callback = newCallback;
         this.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        return null;
 
     }
 }

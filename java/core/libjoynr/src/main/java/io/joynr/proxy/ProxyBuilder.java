@@ -21,6 +21,7 @@ package io.joynr.proxy;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 
 /**
@@ -42,18 +43,19 @@ public interface ProxyBuilder<T> {
     public interface ProxyCreatedCallback<T> {
 
         /**
-         * Called when the proxy is created and ready to use. Does not ensure successful arbitration.
+         * Called when the proxy is created and ready to use.
+         * Discovery has completed successfully
          *
          * @param result result of proxy creation
          */
-        public void onProxyCreated(T result);
+        public void onProxyCreationFinished(T result);
 
         /**
          * Called when an error occurred during proxy creation.
          *
-         * @param errorMessage error message
+         * @param error A JoynrRuntimeException that prevented proxy creation
          */
-        public void onProxyCreationError(String errorMessage);
+        public void onProxyCreationError(JoynrRuntimeException error);
     }
 
     /**
@@ -91,10 +93,12 @@ public interface ProxyBuilder<T> {
     public abstract T build();
 
     /**
-     * Async version of {@link build}
+     * Passes a callback to {@link build} that is called when the proxy is finished
      *
      * @param callback callback for asynchronous handling
+     * @return Returns a dynamic proxy object, implementing all methods of the interfaces passed in when the
+     *         proxyBuilder was created.
      */
-    public abstract void build(ProxyCreatedCallback<T> callback);
+    public abstract T build(ProxyCreatedCallback<T> callback);
 
 }
