@@ -39,6 +39,8 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class SharedSubscriptionReplyToAddressCalculatorProvider implements
         Provider<MqttMessageReplyToAddressCalculator> {
 
+    public static final String REPLYTO_PREFIX = "replyto/";
+
     private MqttAddress replyToMqttAddress;
 
     @Inject
@@ -46,7 +48,7 @@ public class SharedSubscriptionReplyToAddressCalculatorProvider implements
                                                               @Named(JEE_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions) {
         MqttAddress replyToAddressToUse = replyToMqttAddress;
         if (Boolean.valueOf(enableSharedSubscriptions)) {
-            replyToAddressToUse = new MqttAddress(replyToMqttAddress.getBrokerUri(), "replyto/"
+            replyToAddressToUse = new MqttAddress(replyToMqttAddress.getBrokerUri(), REPLYTO_PREFIX
                     + replyToMqttAddress.getTopic());
         }
         this.replyToMqttAddress = replyToAddressToUse;

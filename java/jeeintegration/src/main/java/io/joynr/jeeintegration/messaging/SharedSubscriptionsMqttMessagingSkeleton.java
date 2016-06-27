@@ -20,6 +20,7 @@ package io.joynr.jeeintegration.messaging;
  */
 
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_ADDRESS;
+import static io.joynr.jeeintegration.messaging.SharedSubscriptionReplyToAddressCalculatorProvider.REPLYTO_PREFIX;
 
 import static java.lang.String.format;
 
@@ -57,7 +58,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     @Override
     protected void subscribe() {
         getClient().subscribe("$share:" + sanitiseChannelIdForUseAsTopic() + ":" + getOwnAddress().getTopic() + "/+");
-        getClient().subscribe("replyto/" + getOwnAddress().getTopic() + "/+");
+        getClient().subscribe(REPLYTO_PREFIX + getOwnAddress().getTopic() + "/+");
     }
 
     private String sanitiseChannelIdForUseAsTopic() {
