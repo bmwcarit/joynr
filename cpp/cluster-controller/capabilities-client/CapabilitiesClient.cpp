@@ -47,17 +47,8 @@ INIT_LOGGER(CapabilitiesClient);
 // The capabilitiesClient should not be responsible to change the DiscoveryQoS.
 
 CapabilitiesClient::CapabilitiesClient()
-        : defaultCapabilitiesProxy(nullptr),
-          capabilitiesProxy(nullptr),
-          capabilitiesProxyBuilder(nullptr),
-          capabilitiesProxyWorker(nullptr)
+        : defaultCapabilitiesProxy(nullptr), capabilitiesProxyBuilder(nullptr)
 {
-}
-
-void CapabilitiesClient::setDefaultGlobalCapabilitiesDirectoryProxy()
-{
-    assert(defaultCapabilitiesProxy);
-    capabilitiesProxyWorker = defaultCapabilitiesProxy.get();
 }
 
 std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> CapabilitiesClient::
@@ -75,26 +66,25 @@ void CapabilitiesClient::add(
         return;
     }
 
-    setDefaultGlobalCapabilitiesDirectoryProxy();
-
     std::function<void(const exceptions::JoynrException&)> onError =
             [&](const exceptions::JoynrException& error) {
         std::ignore = error;
         JOYNR_LOG_ERROR(logger, "Error occured during the execution of capabilitiesProxy->add");
     };
-    capabilitiesProxyWorker->addAsync(capabilitiesInformationList, nullptr, onError);
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
 }
 
 void CapabilitiesClient::remove(const std::string& participantId)
 {
-    setDefaultGlobalCapabilitiesDirectoryProxy();
-    capabilitiesProxyWorker->remove(participantId);
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->remove(participantId);
 }
 
 void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 {
-    setDefaultGlobalCapabilitiesDirectoryProxy();
-    capabilitiesProxyWorker->remove(participantIdList);
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->remove(participantIdList);
 }
 
 std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
@@ -127,8 +117,8 @@ void CapabilitiesClient::lookup(
                 onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    setDefaultGlobalCapabilitiesDirectoryProxy();
-    capabilitiesProxyWorker->lookupAsync(
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->lookupAsync(
             participantId,
             [onSuccess](const joynr::types::GlobalDiscoveryEntry& capability) {
                 std::vector<joynr::types::GlobalDiscoveryEntry> result;
