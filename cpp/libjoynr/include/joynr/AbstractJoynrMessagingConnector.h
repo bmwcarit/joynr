@@ -50,7 +50,7 @@ public:
                                     ISubscriptionManager* subscriptionManager,
                                     const std::string& domain,
                                     const std::string& interfaceName,
-                                    const std::string proxyParticipantId,
+                                    const std::string& proxyParticipantId,
                                     const std::string& providerParticipantId,
                                     const MessagingQos& qosSettings,
                                     IClientCache* cache,

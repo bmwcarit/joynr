@@ -130,8 +130,8 @@ public:
 	«interfaceName»JoynrMessagingConnector(
 		joynr::IJoynrMessageSender* messageSender,
 		joynr::ISubscriptionManager* subscriptionManager,
-		const std::string &domain,
-		const std::string proxyParticipantId,
+		const std::string& domain,
+		const std::string& proxyParticipantId,
 		const std::string& providerParticipantId,
 		const joynr::MessagingQos &qosSettings,
 		joynr::IClientCache *cache,
