@@ -26,7 +26,8 @@ provisioning.ccAddress = {
 };
 
 provisioning.persistency = {
-    clearPersistency : true
+    clearPersistency : true,
+    location : "./radioLocalStorage"
 };
 
 provisioning.logging = {

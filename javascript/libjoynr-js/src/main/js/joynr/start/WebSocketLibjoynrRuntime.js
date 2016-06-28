@@ -310,7 +310,8 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     var persistencyProvisioning = provisioning.persistency || {};
                     persistency = new LocalStorage({
-                        clearPersistency : persistencyProvisioning.clearPersistency
+                        clearPersistency : persistencyProvisioning.clearPersistency,
+                        location : persistencyProvisioning.location
                     });
 
                     initialRoutingTable = {};
